@@ -634,6 +634,13 @@ const Discover = () => {
             variant="outline"
             size="icon"
             className="h-16 w-16 rounded-full border-2 hover:border-accent hover:bg-accent/10 hover:text-accent"
+            onClick={() => {
+              toast({
+                title: "Super Like! ⭐",
+                description: "This feature is coming soon!",
+              });
+            }}
+            title="Super Like (Coming Soon)"
           >
             <Star className="h-8 w-8" />
           </Button>

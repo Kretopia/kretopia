@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Sparkles, Users, Briefcase, Wallet, Zap } from "lucide-react";
+import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 
 const Landing = () => {
   return (
@@ -58,6 +59,26 @@ const Landing = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Post Opportunity Section */}
+      <section className="px-6 py-16 bg-muted/30">
+        <div className="container mx-auto max-w-4xl text-center">
+          <div className="mb-6">
+            <Briefcase className="mx-auto h-12 w-12 text-primary mb-4" />
+            <h2 className="text-3xl font-bold mb-3 md:text-4xl">
+              Looking to Hire Creators?
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
+              Post your job, collaboration, or barter opportunity in seconds. 
+              No account needed to get started.
+            </p>
+          </div>
+          <PostOpportunityDialog variant="hero" size="xl" />
+          <p className="mt-4 text-sm text-muted-foreground">
+            AI-moderated to keep our community safe
+          </p>
         </div>
       </section>
 

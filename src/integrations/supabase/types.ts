@@ -161,7 +161,7 @@ export type Database = {
         Row: {
           compensation: string | null
           created_at: string | null
-          created_by: string
+          created_by: string | null
           description: string
           id: string
           image_url: string | null
@@ -175,7 +175,7 @@ export type Database = {
         Insert: {
           compensation?: string | null
           created_at?: string | null
-          created_by: string
+          created_by?: string | null
           description: string
           id?: string
           image_url?: string | null
@@ -189,7 +189,7 @@ export type Database = {
         Update: {
           compensation?: string | null
           created_at?: string | null
-          created_by?: string
+          created_by?: string | null
           description?: string
           id?: string
           image_url?: string | null

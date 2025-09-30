@@ -1,1 +1,4 @@
 project_id = "kwmcocsitwssrtzkdojh"
+
+[functions.moderate-opportunity]
+verify_jwt = false

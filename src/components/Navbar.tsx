@@ -29,7 +29,7 @@ const Navbar = ({ user }: NavbarProps) => {
           <img 
             src={logoWhite} 
             alt="ThriveIN" 
-            className="h-16"
+            className="h-32"
           />
         </Link>
 

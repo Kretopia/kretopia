@@ -112,15 +112,16 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Portfolio</h3>
+    <div className="space-y-3 md:space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-lg md:text-xl font-semibold">Portfolio</h3>
         {isOwnProfile && (
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
-              <Button variant="gradient" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Item
+              <Button variant="gradient" size="sm" className="text-xs md:text-sm">
+                <Plus className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Add Item</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
@@ -179,20 +180,20 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card p-12 text-center">
-          <Upload className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-          <h3 className="mb-2 text-xl font-semibold">No portfolio items yet</h3>
-          <p className="text-muted-foreground">Showcase your best work to stand out</p>
+        <div className="rounded-xl md:rounded-2xl border border-border bg-card p-8 md:p-12 text-center">
+          <Upload className="mx-auto mb-3 md:mb-4 h-12 w-12 md:h-16 md:w-16 text-muted-foreground" />
+          <h3 className="mb-1 md:mb-2 text-lg md:text-xl font-semibold">No portfolio items yet</h3>
+          <p className="text-sm md:text-base text-muted-foreground">Showcase your best work to stand out</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {items.map((item) => {
             const thumbnail = getMediaThumbnail(item);
             const mediaInfo = parseMediaUrl(item.media_url);
             const isPlayable = mediaInfo || ['video', 'audio'].includes(item.media_type);
 
             return (
-              <div key={item.id} className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-card transition-all">
+              <div key={item.id} className="group relative rounded-xl md:rounded-2xl border border-border bg-card overflow-hidden hover:shadow-card transition-all">
                 <div 
                   className="aspect-video bg-muted relative cursor-pointer"
                   onClick={() => isPlayable && setSelectedItem(item)}
@@ -245,11 +246,11 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
                     )}
                   </div>
                 </div>
-                <div className="p-4">
-                  <h4 className="font-semibold mb-1">{item.title}</h4>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{item.description}</p>
+                <div className="p-3 md:p-4">
+                  <h4 className="font-semibold mb-0.5 md:mb-1 text-sm md:text-base">{item.title}</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-1.5 md:mb-2">{item.description}</p>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="bg-primary/10 text-primary px-2 py-1 rounded">{item.category}</span>
+                    <span className="bg-primary/10 text-primary px-1.5 md:px-2 py-0.5 md:py-1 rounded text-xs">{item.category}</span>
                     <span className="flex items-center gap-1">
                       <Eye className="h-3 w-3" />
                       {item.view_count}

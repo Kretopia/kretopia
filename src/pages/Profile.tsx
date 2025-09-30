@@ -167,47 +167,47 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-4 md:p-6">
       <div className="container mx-auto max-w-4xl">
         {/* Profile Header */}
-        <div className="mb-8 overflow-hidden rounded-3xl border border-border bg-card shadow-card">
-          <div className="relative h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
+        <div className="mb-6 md:mb-8 overflow-hidden rounded-2xl md:rounded-3xl border border-border bg-card shadow-card">
+          <div className="relative h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
           
-          <div className="relative px-8 pb-8">
-            <div className="mb-6 -mt-16 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div className="flex items-end gap-4">
+          <div className="relative px-4 md:px-8 pb-6 md:pb-8">
+            <div className="mb-4 md:mb-6 -mt-12 md:-mt-16 flex flex-col items-start gap-3 md:gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 md:gap-4 w-full sm:w-auto">
                 <img
                   src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
                   alt="Profile"
-                  className="h-32 w-32 rounded-2xl border-4 border-card object-cover"
+                  className="h-24 w-24 md:h-32 md:w-32 rounded-xl md:rounded-2xl border-4 border-card object-cover"
                 />
-                <div>
-                  <h1 className="mb-1 text-3xl font-bold">{profile.full_name}</h1>
-                  <p className="mb-2 text-lg text-muted-foreground">
+                <div className="flex-1">
+                  <h1 className="mb-1 text-xl md:text-3xl font-bold leading-tight">{profile.full_name}</h1>
+                  <p className="mb-2 text-base md:text-lg text-muted-foreground">
                     {profile.role}
                   </p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs md:text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {profile.location || 'Remote'}
+                      <MapPin className="h-3 w-3 md:h-4 md:w-4" />
+                      <span className="truncate">{profile.location || 'Remote'}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-accent text-accent" />
-                      4.9 (New member)
+                      <Star className="h-3 w-3 md:h-4 md:w-4 fill-accent text-accent" />
+                      <span>4.9 (New member)</span>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={handleShare}>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button variant="outline" size="icon" onClick={handleShare} className="flex-1 sm:flex-none">
                   <Share2 className="h-4 w-4" />
                 </Button>
                 <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="gradient">
+                    <Button variant="gradient" className="flex-1 sm:flex-none">
                       <Edit className="h-4 w-4" />
-                      Edit Profile
+                      <span className="ml-2">Edit Profile</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[500px]">
@@ -267,18 +267,18 @@ const Profile = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 rounded-2xl border border-border bg-background p-6">
+            <div className="grid grid-cols-3 gap-2 md:gap-4 rounded-xl md:rounded-2xl border border-border bg-background p-4 md:p-6">
               <div className="text-center">
-                <div className="mb-1 text-2xl font-bold text-primary">{stats.connections}</div>
-                <div className="text-sm text-muted-foreground">Connections</div>
+                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-primary">{stats.connections}</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Connections</div>
               </div>
               <div className="text-center">
-                <div className="mb-1 text-2xl font-bold text-secondary">{stats.projects}</div>
-                <div className="text-sm text-muted-foreground">Projects</div>
+                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-secondary">{stats.projects}</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Projects</div>
               </div>
               <div className="text-center">
-                <div className="mb-1 text-2xl font-bold text-accent">{stats.responseRate}%</div>
-                <div className="text-sm text-muted-foreground">Response Rate</div>
+                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-accent">{stats.responseRate}%</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Response Rate</div>
               </div>
             </div>
           </div>
@@ -286,17 +286,17 @@ const Profile = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="about" className="w-full">
-          <TabsList className="mb-6 w-full justify-start rounded-2xl bg-card p-1">
-            <TabsTrigger value="about" className="rounded-xl">About</TabsTrigger>
-            <TabsTrigger value="portfolio" className="rounded-xl">Portfolio</TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-xl">Reviews</TabsTrigger>
-            <TabsTrigger value="stats" className="rounded-xl">Achievements</TabsTrigger>
+          <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
+            <TabsTrigger value="about" className="rounded-lg md:rounded-xl text-xs md:text-sm">About</TabsTrigger>
+            <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
+            <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
+            <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="about" className="space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <h3 className="mb-3 text-xl font-semibold">About</h3>
-              <p className="text-muted-foreground">
+          <TabsContent value="about" className="space-y-4 md:space-y-6">
+            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+              <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
                 {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
               </p>
             </div>
@@ -316,21 +316,21 @@ const Profile = () => {
               onRefresh={fetchData}
             />
 
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <h3 className="mb-4 text-xl font-semibold">Credits</h3>
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                  <Briefcase className="h-8 w-8 text-primary" />
+            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+              <h3 className="mb-3 md:mb-4 text-lg md:text-xl font-semibold">Credits</h3>
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl md:rounded-2xl bg-primary/10">
+                  <Briefcase className="h-6 w-6 md:h-8 md:w-8 text-primary" />
                 </div>
                 <div>
-                  <div className="text-3xl font-bold">{profile.credits}</div>
-                  <div className="text-sm text-muted-foreground">Available Credits</div>
+                  <div className="text-2xl md:text-3xl font-bold">{profile.credits}</div>
+                  <div className="text-xs md:text-sm text-muted-foreground">Available Credits</div>
                 </div>
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="portfolio" className="space-y-4">
+          <TabsContent value="portfolio" className="space-y-3 md:space-y-4">
             <PortfolioSection 
               items={portfolioItems} 
               isOwnProfile={true}
@@ -338,7 +338,7 @@ const Profile = () => {
             />
           </TabsContent>
 
-          <TabsContent value="reviews" className="space-y-4">
+          <TabsContent value="reviews" className="space-y-3 md:space-y-4">
             <ReviewsSection 
               reviews={reviews} 
               isOwnProfile={true}
@@ -347,7 +347,7 @@ const Profile = () => {
             />
           </TabsContent>
 
-          <TabsContent value="stats" className="space-y-4">
+          <TabsContent value="stats" className="space-y-3 md:space-y-4">
             <IndustryStatsSection 
               stats={industryStats}
               isOwnProfile={true}

@@ -61,13 +61,13 @@ export const SocialLinksSection = ({ links, isOwnProfile, onRefresh }: SocialLin
   const hasLinks = Object.values(links).some(v => v);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold">Connect</h3>
+    <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6">
+      <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
+        <h3 className="text-lg md:text-xl font-semibold">Connect</h3>
         {isOwnProfile && (
           <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">Edit Links</Button>
+              <Button variant="outline" size="sm" className="text-xs md:text-sm">Edit Links</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
@@ -92,18 +92,18 @@ export const SocialLinksSection = ({ links, isOwnProfile, onRefresh }: SocialLin
       </div>
 
       {!hasLinks ? (
-        <p className="text-sm text-muted-foreground text-center py-4">No social links added yet</p>
+        <p className="text-xs md:text-sm text-muted-foreground text-center py-3 md:py-4">No social links added yet</p>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 md:gap-3">
           {socialPlatforms.map(({ key, label, icon: Icon }) => {
             const url = (links as any)[key];
             if (!url) return null;
             return (
-              <Button key={key} variant="outline" size="sm" asChild className="justify-start">
+              <Button key={key} variant="outline" size="sm" asChild className="justify-start text-xs md:text-sm h-9 md:h-10">
                 <a href={url} target="_blank" rel="noopener noreferrer">
-                  <Icon className="h-4 w-4 mr-2" />
-                  {label}
-                  <ExternalLink className="h-3 w-3 ml-auto" />
+                  <Icon className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 flex-shrink-0" />
+                  <span className="truncate">{label}</span>
+                  <ExternalLink className="h-3 w-3 ml-auto flex-shrink-0" />
                 </a>
               </Button>
             );

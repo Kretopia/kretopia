@@ -78,15 +78,16 @@ export const IndustryStatsSection = ({ stats, isOwnProfile, onRefresh }: Industr
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Industry Stats & Achievements</h3>
+    <div className="space-y-3 md:space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-lg md:text-xl font-semibold">Industry Stats & Achievements</h3>
         {isOwnProfile && (
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
-              <Button variant="gradient" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Stat
+              <Button variant="gradient" size="sm" className="text-xs md:text-sm">
+                <Plus className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">Add Stat</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
@@ -137,39 +138,39 @@ export const IndustryStatsSection = ({ stats, isOwnProfile, onRefresh }: Industr
       </div>
 
       {stats.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card p-12 text-center">
-          <Trophy className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-          <h3 className="mb-2 text-xl font-semibold">No stats yet</h3>
-          <p className="text-muted-foreground">Add your achievements to build credibility</p>
+        <div className="rounded-xl md:rounded-2xl border border-border bg-card p-8 md:p-12 text-center">
+          <Trophy className="mx-auto mb-3 md:mb-4 h-12 w-12 md:h-16 md:w-16 text-muted-foreground" />
+          <h3 className="mb-1 md:mb-2 text-lg md:text-xl font-semibold">No stats yet</h3>
+          <p className="text-sm md:text-base text-muted-foreground">Add your achievements to build credibility</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {stats.map((stat) => (
-            <div key={stat.id} className="group rounded-2xl border border-border bg-card p-6 hover:shadow-card transition-all">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-xl ${stat.is_featured ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'}`}>
+            <div key={stat.id} className="group rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 hover:shadow-card transition-all">
+              <div className="flex items-start justify-between mb-2 md:mb-3 gap-2">
+                <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
+                  <div className={`p-2 md:p-3 rounded-lg md:rounded-xl flex-shrink-0 ${stat.is_featured ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'}`}>
                     {getIcon(stat.stat_type)}
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide">{stat.stat_type}</p>
-                    <h4 className="font-semibold">{stat.title}</h4>
+                    <h4 className="font-semibold text-sm md:text-base">{stat.title}</h4>
                   </div>
                 </div>
                 {isOwnProfile && (
-                  <Button size="icon" variant="ghost" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDelete(stat.id)}>
-                    <Trash2 className="h-4 w-4" />
+                  <Button size="icon" variant="ghost" className="h-7 w-7 md:h-8 md:w-8 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" onClick={() => handleDelete(stat.id)}>
+                    <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                   </Button>
                 )}
               </div>
               {stat.value && (
-                <p className="text-2xl font-bold text-primary mb-2">{stat.value}</p>
+                <p className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{stat.value}</p>
               )}
-              <p className="text-sm text-muted-foreground mb-2">{stat.description}</p>
+              <p className="text-xs md:text-sm text-muted-foreground mb-1 md:mb-2 leading-relaxed">{stat.description}</p>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{stat.issuer}</span>
+                <span className="truncate">{stat.issuer}</span>
                 {stat.date_achieved && (
-                  <span>{new Date(stat.date_achieved).getFullYear()}</span>
+                  <span className="flex-shrink-0 ml-2">{new Date(stat.date_achieved).getFullYear()}</span>
                 )}
               </div>
             </div>

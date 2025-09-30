@@ -1,0 +1,131 @@
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Wallet, Plus, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+
+export const WalletCard = () => {
+  const [wallet, setWallet] = useState<any>(null);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchWallet();
+  }, []);
+
+  const fetchWallet = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Fetch wallet
+    const { data: walletData } = await supabase
+      .from('wallets')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (walletData) {
+      setWallet(walletData);
+    } else {
+      // Create wallet if doesn't exist
+      const { data: newWallet } = await supabase
+        .from('wallets')
+        .insert({ user_id: user.id, credits: 10 })
+        .select()
+        .single();
+      setWallet(newWallet);
+    }
+
+    // Fetch recent transactions
+    const { data: transactions } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (transactions) setRecentTransactions(transactions);
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <Wallet className="h-5 w-5" />
+          ThrivePay Wallet
+        </CardTitle>
+        <Button size="sm" variant="outline">
+          <Plus className="h-4 w-4 mr-1" />
+          Add Funds
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {/* Balance Display */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-4">
+              <p className="text-sm text-primary-foreground/80">Credits</p>
+              <p className="text-3xl font-bold text-primary-foreground">
+                {wallet?.credits || 0}
+              </p>
+            </div>
+            <div className="rounded-lg border p-4">
+              <p className="text-sm text-muted-foreground">Balance</p>
+              <p className="text-3xl font-bold">
+                ${(wallet?.balance || 0).toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          {/* Recent Transactions */}
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <h4 className="text-sm font-semibold">Recent Activity</h4>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/wallet')}>
+                View All
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {recentTransactions.length === 0 ? (
+                <p className="text-center text-sm text-muted-foreground py-4">
+                  No transactions yet
+                </p>
+              ) : (
+                recentTransactions.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="flex items-center gap-3">
+                      {tx.type.includes('earned') || tx.type.includes('received') ? (
+                        <div className="rounded-full bg-green-500/10 p-2">
+                          <ArrowDownRight className="h-4 w-4 text-green-500" />
+                        </div>
+                      ) : (
+                        <div className="rounded-full bg-red-500/10 p-2">
+                          <ArrowUpRight className="h-4 w-4 text-red-500" />
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">{tx.description || tx.type}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(tx.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-sm font-semibold ${
+                      tx.type.includes('earned') || tx.type.includes('received') 
+                        ? 'text-green-500' 
+                        : 'text-red-500'
+                    }`}>
+                      {tx.type.includes('earned') || tx.type.includes('received') ? '+' : '-'}
+                      {tx.type.includes('credit') ? `${tx.amount} credits` : `$${tx.amount}`}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

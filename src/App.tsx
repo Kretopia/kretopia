@@ -13,6 +13,8 @@ import Spark from "./pages/Spark";
 import Profile from "./pages/Profile";
 import Leaderboard from "./pages/Leaderboard";
 import Circle from "./pages/Circle";
+import ThriveDesk from "./pages/ThriveDesk";
+import ThriveStudio from "./pages/ThriveStudio";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
@@ -52,6 +54,8 @@ const App = () => {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+            <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
+            <Route path="/studio" element={<ProtectedRoute><ThriveStudio /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

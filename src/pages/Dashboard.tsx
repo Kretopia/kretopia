@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Sparkles, 
   TrendingUp, 
   Users, 
   Briefcase, 
   Zap,
-  ArrowRight
+  ArrowRight,
+  MessageCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { WalletCard } from "@/components/WalletCard";
+import { useNavigate } from "react-router-dom";
 
 interface Profile {
   credits: number;
@@ -24,7 +28,9 @@ const Dashboard = () => {
     projects: 0,
     profileViews: 0
   });
+  const [activeProjects, setActiveProjects] = useState<any[]>([]);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -57,9 +63,23 @@ const Dashboard = () => {
       setStats(prev => ({
         ...prev,
         circle: connectionsCount || 0,
-        projects: 3, // Mock for now
-        profileViews: 342 // Mock for now
       }));
+
+      // Fetch active projects
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('*, matches!inner(*)')
+        .eq('status', 'active')
+        .or(`matches.user1_id.eq.${user.id},matches.user2_id.eq.${user.id}`)
+        .limit(5);
+
+      if (projectsData) {
+        setActiveProjects(projectsData);
+        setStats(prev => ({
+          ...prev,
+          projects: projectsData.length,
+        }));
+      }
     };
 
     fetchProfile();
@@ -84,37 +104,62 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {/* Stats Cards */}
-        <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Credits Balance"
-            value={profile?.credits?.toString() || "0"}
-            change="+10 today"
-            icon={<Sparkles className="h-6 w-6" />}
-            gradient="from-primary to-secondary"
-          />
-          <StatCard
-            title="My Circle"
-            value={stats.circle.toString()}
-            change="+5 this week"
-            icon={<Users className="h-6 w-6" />}
-            gradient="from-secondary to-accent"
-          />
-          <StatCard
-            title="Active Projects"
-            value={stats.projects.toString()}
-            change="2 pending"
-            icon={<Briefcase className="h-6 w-6" />}
-            gradient="from-accent to-primary"
-          />
-          <StatCard
-            title="Profile Views"
-            value={stats.profileViews.toString()}
-            change="+23% this month"
-            icon={<TrendingUp className="h-6 w-6" />}
-            gradient="from-primary to-secondary"
-          />
+        {/* Stats Cards & Wallet */}
+        <div className="mb-8 grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 grid gap-6 md:grid-cols-2">
+            <StatCard
+              title="My Circle"
+              value={stats.circle.toString()}
+              change="+5 this week"
+              icon={<Users className="h-6 w-6" />}
+              gradient="from-secondary to-accent"
+            />
+            <StatCard
+              title="Active Projects"
+              value={stats.projects.toString()}
+              change="In progress"
+              icon={<Briefcase className="h-6 w-6" />}
+              gradient="from-accent to-primary"
+            />
+          </div>
+          <WalletCard />
         </div>
+
+        {/* Active Projects */}
+        {activeProjects.length > 0 && (
+          <div className="mb-8">
+            <h2 className="mb-4 text-2xl font-bold">Active Projects</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {activeProjects.map((project) => (
+                <Card 
+                  key={project.id} 
+                  className="cursor-pointer transition-smooth hover:shadow-glow"
+                  onClick={() => navigate(`/desk/${project.id}`)}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="truncate">{project.title}</span>
+                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {project.description || 'No description'}
+                    </p>
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                        {project.status}
+                      </span>
+                      {project.budget && (
+                        <span className="text-xs text-muted-foreground">{project.budget}</span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="mb-8">

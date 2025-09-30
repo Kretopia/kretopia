@@ -29,6 +29,7 @@ interface Card {
   compensation?: string;
   description: string;
   user_id?: string;
+  created_by?: string;
   portfolio?: PortfolioItem[];
   socialStats?: {
     instagram_followers?: number;
@@ -134,6 +135,7 @@ const Discover = () => {
         tags: opp.tags || [],
         compensation: opp.compensation,
         description: opp.description,
+        created_by: opp.created_by,
       }));
 
       // Mix creators and opportunities based on active tab
@@ -205,12 +207,88 @@ const Discover = () => {
           .maybeSingle();
 
         if (theirSwipe) {
-          // Mutual match! Create connection
-          await supabase.from('connections').insert({
-            user_id: user.id,
-            connected_user_id: currentCard.user_id,
-            status: 'accepted'
-          });
+          // Mutual match! Create match record
+          const { data: matchData } = await supabase
+            .from('matches')
+            .insert({
+              user1_id: user.id,
+              user2_id: currentCard.user_id,
+              match_type: 'creator',
+              status: 'active',
+            })
+            .select()
+            .single();
+
+          if (matchData) {
+            // Create connection
+            await supabase.from('connections').insert({
+              user_id: user.id,
+              connected_user_id: currentCard.user_id,
+              status: 'accepted',
+            });
+
+            // Award XP
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('xp')
+              .eq('user_id', user.id)
+              .single();
+            
+            if (profile) {
+              await supabase
+                .from('profiles')
+                .update({ xp: profile.xp + 20 })
+                .eq('user_id', user.id);
+              
+              await supabase
+                .from('xp_activities')
+                .insert({
+                  user_id: user.id,
+                  activity_type: 'creator_connection',
+                  xp_earned: 20,
+                  description: `Connected with ${currentCard.name}`
+                });
+            }
+
+            toast({
+              title: "It's a Match! 🎉",
+              description: `You and ${currentCard.name} connected! +20 XP`,
+            });
+
+            // Navigate to My Circle after a brief delay
+            setTimeout(() => navigate('/circle'), 2000);
+          }
+          return;
+        }
+      }
+
+      // For opportunities, create match and project
+      if (currentCard.type === 'opportunity') {
+        const { data: matchData } = await supabase
+          .from('matches')
+          .insert({
+            user1_id: user.id,
+            user2_id: currentCard.created_by,
+            target_id: currentCard.id,
+            match_type: 'opportunity',
+            status: 'active',
+          })
+          .select()
+          .single();
+
+        if (matchData) {
+          // Create ThriveDesk project
+          const { data: projectData } = await supabase
+            .from('projects')
+            .insert({
+              match_id: matchData.id,
+              title: currentCard.name,
+              description: currentCard.description,
+              budget: currentCard.compensation,
+              status: 'active',
+            })
+            .select()
+            .single();
 
           // Award XP
           const { data: profile } = await supabase
@@ -222,58 +300,29 @@ const Discover = () => {
           if (profile) {
             await supabase
               .from('profiles')
-              .update({ xp: profile.xp + 20 })
+              .update({ xp: profile.xp + 50 })
               .eq('user_id', user.id);
             
             await supabase
               .from('xp_activities')
               .insert({
                 user_id: user.id,
-                activity_type: 'creator_connection',
-                xp_earned: 20,
-                description: `Connected with ${currentCard.name}`
+                activity_type: 'job_match',
+                xp_earned: 50,
+                description: `Matched with ${currentCard.name}`
               });
           }
 
           toast({
-            title: "It's a Match! 🎉",
-            description: `You and ${currentCard.name} connected! +20 XP`,
+            title: "Opportunity Matched! 💼",
+            description: `Opening ThriveDesk for: ${currentCard.name}`,
           });
 
-          // Navigate to My Circle after a brief delay
-          setTimeout(() => navigate('/circle'), 2000);
-          return;
+          // Navigate to ThriveDesk
+          if (projectData) {
+            setTimeout(() => navigate(`/desk/${projectData.id}`), 2000);
+          }
         }
-      }
-
-      // For opportunities, just award XP
-      if (currentCard.type === 'opportunity') {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('xp')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (profile) {
-          await supabase
-            .from('profiles')
-            .update({ xp: profile.xp + 50 })
-            .eq('user_id', user.id);
-          
-          await supabase
-            .from('xp_activities')
-            .insert({
-              user_id: user.id,
-              activity_type: 'job_match',
-              xp_earned: 50,
-              description: `Interested in ${currentCard.name}`
-            });
-        }
-
-        toast({
-          title: "Opportunity Saved! 💼",
-          description: `${currentCard.name} added to your desk +50 XP`,
-        });
       } else {
         toast({
           title: "Liked! 💫",

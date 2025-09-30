@@ -46,6 +46,12 @@ const Navbar = ({ user }: NavbarProps) => {
                   Spark
                 </Button>
               </Link>
+              <Link to="/studio">
+                <Button variant="ghost" className="gap-1.5">
+                  <Sparkles className="h-4 w-4" />
+                  Studio
+                </Button>
+              </Link>
               <Link to="/leaderboard">
                 <Button variant="ghost" size="icon">
                   <Trophy className="h-4 w-4" />

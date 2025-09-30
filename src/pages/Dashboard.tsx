@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Sparkles, 
@@ -14,7 +14,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WalletCard } from "@/components/WalletCard";
-import { useNavigate } from "react-router-dom";
 
 interface Profile {
   credits: number;
@@ -31,6 +30,7 @@ const Dashboard = () => {
   const [activeProjects, setActiveProjects] = useState<any[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -83,7 +83,68 @@ const Dashboard = () => {
     };
 
     fetchProfile();
-  }, [toast]);
+    
+    // Handle payment/subscription success from URL params
+    const paymentStatus = searchParams.get("payment");
+    const subscriptionStatus = searchParams.get("subscription");
+    const amount = searchParams.get("amount");
+    const type = searchParams.get("type");
+    
+    if (paymentStatus === "success" && amount && type) {
+      toast({
+        title: "Payment successful!",
+        description: `Added ${amount} ${type} to your wallet`,
+      });
+      
+      // Update wallet after successful payment
+      const updateWallet = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data: currentWallet } = await supabase
+          .from('wallets')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (currentWallet) {
+          const updateData = type === "credits" 
+            ? { credits: (currentWallet.credits || 0) + Number(amount) }
+            : { balance: (currentWallet.balance || 0) + Number(amount) };
+          
+          await supabase
+            .from('wallets')
+            .update(updateData)
+            .eq('user_id', user.id);
+        }
+          
+        await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            amount: Number(amount),
+            type: `${type}_purchased`,
+            description: `Purchased ${amount} ${type}`,
+          });
+          
+        fetchProfile();
+      };
+      
+      updateWallet();
+      navigate("/dashboard", { replace: true });
+    }
+    
+    if (subscriptionStatus === "success") {
+      toast({
+        title: "Subscription activated!",
+        description: "Your subscription is now active",
+      });
+      
+      // Trigger subscription check
+      supabase.functions.invoke("check-subscription");
+      navigate("/dashboard", { replace: true });
+    }
+  }, [toast, searchParams, navigate]);
 
   return (
     <div className="min-h-screen p-6">

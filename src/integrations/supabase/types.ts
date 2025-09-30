@@ -157,6 +157,73 @@ export type Database = {
         }
         Relationships: []
       }
+      milestones: {
+        Row: {
+          amount: number
+          created_at: string | null
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          paid_at: string | null
+          paid_to: string | null
+          project_id: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          paid_at?: string | null
+          paid_to?: string | null
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          paid_at?: string | null
+          paid_to?: string | null
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_paid_to_fkey"
+            columns: ["paid_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opportunities: {
         Row: {
           compensation: string | null
@@ -296,6 +363,11 @@ export type Database = {
           soundcloud_url: string | null
           spotify_listeners: number | null
           spotify_url: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_end_date: string | null
+          subscription_product_id: string | null
+          subscription_status: string | null
           subscription_tier: string | null
           tiktok_followers: number | null
           total_engagement_rate: number | null
@@ -330,6 +402,11 @@ export type Database = {
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end_date?: string | null
+          subscription_product_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
           tiktok_followers?: number | null
           total_engagement_rate?: number | null
@@ -364,6 +441,11 @@ export type Database = {
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end_date?: string | null
+          subscription_product_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
           tiktok_followers?: number | null
           total_engagement_rate?: number | null

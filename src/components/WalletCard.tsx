@@ -1,14 +1,24 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, Plus, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Wallet, Plus, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export const WalletCard = () => {
   const [wallet, setWallet] = useState<any>(null);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [topUpDialogOpen, setTopUpDialogOpen] = useState(false);
+  const [topUpType, setTopUpType] = useState<"credits" | "balance">("credits");
+  const [topUpAmount, setTopUpAmount] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchWallet();
@@ -18,7 +28,6 @@ export const WalletCard = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch wallet
     const { data: walletData } = await supabase
       .from('wallets')
       .select('*')
@@ -28,7 +37,6 @@ export const WalletCard = () => {
     if (walletData) {
       setWallet(walletData);
     } else {
-      // Create wallet if doesn't exist
       const { data: newWallet } = await supabase
         .from('wallets')
         .insert({ user_id: user.id, credits: 10 })
@@ -37,7 +45,6 @@ export const WalletCard = () => {
       setWallet(newWallet);
     }
 
-    // Fetch recent transactions
     const { data: transactions } = await supabase
       .from('transactions')
       .select('*')
@@ -48,6 +55,43 @@ export const WalletCard = () => {
     if (transactions) setRecentTransactions(transactions);
   };
 
+  const handleTopUp = async () => {
+    if (!topUpAmount || Number(topUpAmount) <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: { 
+          amount: Number(topUpAmount),
+          type: topUpType
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, "_blank");
+        setTopUpDialogOpen(false);
+        setTopUpAmount("");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create payment",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -55,10 +99,75 @@ export const WalletCard = () => {
           <Wallet className="h-5 w-5" />
           ThrivePay Wallet
         </CardTitle>
-        <Button size="sm" variant="outline">
-          <Plus className="h-4 w-4 mr-1" />
-          Add Funds
-        </Button>
+        <Dialog open={topUpDialogOpen} onOpenChange={setTopUpDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="outline">
+              <Plus className="h-4 w-4 mr-1" />
+              Add Funds
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Funds to Wallet</DialogTitle>
+              <DialogDescription>
+                Top up your ThrivePay wallet with credits or balance
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Top-up Type</Label>
+                <RadioGroup value={topUpType} onValueChange={(value: any) => setTopUpType(value)}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="credits" id="credits" />
+                    <Label htmlFor="credits" className="cursor-pointer">
+                      Credits ($0.10 per credit)
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="balance" id="balance" />
+                    <Label htmlFor="balance" className="cursor-pointer">
+                      USD Balance
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="amount">
+                  Amount ({topUpType === "credits" ? "credits" : "USD"})
+                </Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder={topUpType === "credits" ? "100" : "10.00"}
+                  value={topUpAmount}
+                  onChange={(e) => setTopUpAmount(e.target.value)}
+                  min="1"
+                  step={topUpType === "credits" ? "1" : "0.01"}
+                />
+                {topUpType === "credits" && topUpAmount && (
+                  <p className="text-sm text-muted-foreground">
+                    Total: ${(Number(topUpAmount) * 0.10).toFixed(2)}
+                  </p>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleTopUp} disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Funds
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

@@ -17,6 +17,7 @@ import Circle from "./pages/Circle";
 import ThriveDesk from "./pages/ThriveDesk";
 import Projects from "./pages/Projects";
 import ThriveStudio from "./pages/ThriveStudio";
+import Subscription from "./pages/Subscription";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import ManageOpportunities from "./pages/ManageOpportunities";
 import NotFound from "./pages/NotFound";
@@ -63,6 +64,7 @@ const App = () => {
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             <Route path="/studio" element={<ProtectedRoute><ThriveStudio /></ProtectedRoute>} />
+            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

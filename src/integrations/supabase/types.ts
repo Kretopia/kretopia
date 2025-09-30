@@ -204,6 +204,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          avg_views: number | null
           behance_url: string | null
           bio: string | null
           created_at: string | null
@@ -211,19 +212,28 @@ export type Database = {
           full_name: string
           id: string
           imdb_url: string | null
+          instagram_followers: number | null
           instagram_url: string | null
+          linkedin_connections: number | null
           linkedin_url: string | null
           location: string | null
           role: string
           soundcloud_url: string | null
+          spotify_listeners: number | null
           spotify_url: string | null
+          tiktok_followers: number | null
+          total_engagement_rate: number | null
+          twitter_followers: number | null
           twitter_url: string | null
           updated_at: string | null
           user_id: string
+          verified_metrics: boolean | null
           website: string | null
+          youtube_subscribers: number | null
         }
         Insert: {
           avatar_url?: string | null
+          avg_views?: number | null
           behance_url?: string | null
           bio?: string | null
           created_at?: string | null
@@ -231,19 +241,28 @@ export type Database = {
           full_name: string
           id?: string
           imdb_url?: string | null
+          instagram_followers?: number | null
           instagram_url?: string | null
+          linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
           role: string
           soundcloud_url?: string | null
+          spotify_listeners?: number | null
           spotify_url?: string | null
+          tiktok_followers?: number | null
+          total_engagement_rate?: number | null
+          twitter_followers?: number | null
           twitter_url?: string | null
           updated_at?: string | null
           user_id: string
+          verified_metrics?: boolean | null
           website?: string | null
+          youtube_subscribers?: number | null
         }
         Update: {
           avatar_url?: string | null
+          avg_views?: number | null
           behance_url?: string | null
           bio?: string | null
           created_at?: string | null
@@ -251,16 +270,24 @@ export type Database = {
           full_name?: string
           id?: string
           imdb_url?: string | null
+          instagram_followers?: number | null
           instagram_url?: string | null
+          linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
           role?: string
           soundcloud_url?: string | null
+          spotify_listeners?: number | null
           spotify_url?: string | null
+          tiktok_followers?: number | null
+          total_engagement_rate?: number | null
+          twitter_followers?: number | null
           twitter_url?: string | null
           updated_at?: string | null
           user_id?: string
+          verified_metrics?: boolean | null
           website?: string | null
+          youtube_subscribers?: number | null
         }
         Relationships: []
       }

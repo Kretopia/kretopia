@@ -29,6 +29,15 @@ interface Profile {
   twitter_url?: string;
   spotify_url?: string;
   soundcloud_url?: string;
+  youtube_subscribers?: number;
+  instagram_followers?: number;
+  tiktok_followers?: number;
+  spotify_listeners?: number;
+  twitter_followers?: number;
+  linkedin_connections?: number;
+  total_engagement_rate?: number;
+  avg_views?: number;
+  verified_metrics?: boolean;
 }
 
 const Profile = () => {
@@ -302,16 +311,7 @@ const Profile = () => {
             </div>
 
             <SocialLinksSection 
-              links={{
-                website: profile.website,
-                linkedin_url: profile.linkedin_url,
-                behance_url: profile.behance_url,
-                imdb_url: profile.imdb_url,
-                instagram_url: profile.instagram_url,
-                twitter_url: profile.twitter_url,
-                spotify_url: profile.spotify_url,
-                soundcloud_url: profile.soundcloud_url,
-              }}
+              profile={profile}
               isOwnProfile={true}
               onRefresh={fetchData}
             />

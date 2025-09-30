@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Heart, Star, MapPin, DollarSign, Sparkles } from "lucide-react";
+import { X, Heart, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,6 +16,14 @@ interface Card {
   tags: string[];
   compensation?: string;
   description: string;
+  socialStats?: {
+    instagram_followers?: number;
+    youtube_subscribers?: number;
+    tiktok_followers?: number;
+    spotify_listeners?: number;
+    total_engagement_rate?: number;
+    verified_metrics?: boolean;
+  };
 }
 
 const Discover = () => {
@@ -29,7 +37,7 @@ const Discover = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Fetch profiles (creators)
+      // Fetch profiles (creators) with social stats
       const { data: profiles } = await supabase
         .from('profiles')
         .select('*')
@@ -52,6 +60,14 @@ const Discover = () => {
         image: profile.avatar_url || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop`,
         tags: ['Creator'],
         description: profile.bio || 'Creative professional looking to collaborate',
+        socialStats: {
+          instagram_followers: profile.instagram_followers,
+          youtube_subscribers: profile.youtube_subscribers,
+          tiktok_followers: profile.tiktok_followers,
+          spotify_listeners: profile.spotify_listeners,
+          total_engagement_rate: profile.total_engagement_rate,
+          verified_metrics: profile.verified_metrics,
+        },
       }));
 
       const opportunityCards: Card[] = (opportunities || []).map(opp => ({
@@ -191,6 +207,78 @@ const Discover = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">{currentCard.description}</p>
+
+            {/* Social Stats for Creators */}
+            {currentCard.type === "creator" && currentCard.socialStats && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold">Audience Reach</span>
+                  {currentCard.socialStats.verified_metrics && (
+                    <CheckCircle2 className="h-4 w-4 text-accent ml-auto" />
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {currentCard.socialStats.instagram_followers && (
+                    <div className="text-center p-2 rounded-lg bg-muted/50">
+                      <div className="text-lg font-bold text-primary">
+                        {currentCard.socialStats.instagram_followers >= 1000000 
+                          ? `${(currentCard.socialStats.instagram_followers / 1000000).toFixed(1)}M`
+                          : currentCard.socialStats.instagram_followers >= 1000 
+                          ? `${(currentCard.socialStats.instagram_followers / 1000).toFixed(1)}K`
+                          : currentCard.socialStats.instagram_followers}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Instagram</div>
+                    </div>
+                  )}
+                  {currentCard.socialStats.youtube_subscribers && (
+                    <div className="text-center p-2 rounded-lg bg-muted/50">
+                      <div className="text-lg font-bold text-primary">
+                        {currentCard.socialStats.youtube_subscribers >= 1000000 
+                          ? `${(currentCard.socialStats.youtube_subscribers / 1000000).toFixed(1)}M`
+                          : currentCard.socialStats.youtube_subscribers >= 1000 
+                          ? `${(currentCard.socialStats.youtube_subscribers / 1000).toFixed(1)}K`
+                          : currentCard.socialStats.youtube_subscribers}
+                      </div>
+                      <div className="text-xs text-muted-foreground">YouTube</div>
+                    </div>
+                  )}
+                  {currentCard.socialStats.tiktok_followers && (
+                    <div className="text-center p-2 rounded-lg bg-muted/50">
+                      <div className="text-lg font-bold text-primary">
+                        {currentCard.socialStats.tiktok_followers >= 1000000 
+                          ? `${(currentCard.socialStats.tiktok_followers / 1000000).toFixed(1)}M`
+                          : currentCard.socialStats.tiktok_followers >= 1000 
+                          ? `${(currentCard.socialStats.tiktok_followers / 1000).toFixed(1)}K`
+                          : currentCard.socialStats.tiktok_followers}
+                      </div>
+                      <div className="text-xs text-muted-foreground">TikTok</div>
+                    </div>
+                  )}
+                  {currentCard.socialStats.spotify_listeners && (
+                    <div className="text-center p-2 rounded-lg bg-muted/50">
+                      <div className="text-lg font-bold text-primary">
+                        {currentCard.socialStats.spotify_listeners >= 1000000 
+                          ? `${(currentCard.socialStats.spotify_listeners / 1000000).toFixed(1)}M`
+                          : currentCard.socialStats.spotify_listeners >= 1000 
+                          ? `${(currentCard.socialStats.spotify_listeners / 1000).toFixed(1)}K`
+                          : currentCard.socialStats.spotify_listeners}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Spotify</div>
+                    </div>
+                  )}
+                </div>
+                {currentCard.socialStats.total_engagement_rate && (
+                  <div className="mt-3 p-2 rounded-lg bg-accent/10 flex items-center justify-center gap-2">
+                    <Eye className="h-4 w-4 text-accent" />
+                    <span className="text-sm">
+                      <span className="font-bold text-accent">{currentCard.socialStats.total_engagement_rate}%</span>
+                      <span className="text-muted-foreground ml-1">engagement</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

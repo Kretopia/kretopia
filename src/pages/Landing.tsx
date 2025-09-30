@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Sparkles, Users, Briefcase, Wallet, Zap } from "lucide-react";
+import { Sparkles, Users, Briefcase, Wallet, Zap, Lightbulb, Rocket, Trophy } from "lucide-react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -138,9 +138,33 @@ const Landing = () => {
             />
             <FeatureCard
               icon={<Zap className="h-8 w-8" />}
-              title="AI Studio"
+              title="ThriveStudio"
               description="Generate content, bios, and creatives with AI tools"
               gradient="from-primary to-secondary"
+            />
+            <FeatureCard
+              icon={<Lightbulb className="h-8 w-8" />}
+              title="ThriveDesk"
+              description="Manage projects, milestones, and client communications seamlessly"
+              gradient="from-secondary to-accent"
+            />
+            <FeatureCard
+              icon={<Sparkles className="h-8 w-8" />}
+              title="Spark Feed"
+              description="Share updates, connect with creators, and build your community"
+              gradient="from-accent to-primary"
+            />
+            <FeatureCard
+              icon={<Rocket className="h-8 w-8" />}
+              title="Circle"
+              description="Network with creators, build your circle, and collaborate"
+              gradient="from-primary to-secondary"
+            />
+            <FeatureCard
+              icon={<Trophy className="h-8 w-8" />}
+              title="Leaderboard"
+              description="Climb the ranks, showcase your achievements, and get recognized"
+              gradient="from-secondary to-accent"
             />
           </div>
         </div>

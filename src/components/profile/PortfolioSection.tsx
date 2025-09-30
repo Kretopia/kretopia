@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, ExternalLink, Trash2, Eye } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, Eye, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MediaPlayerModal } from "./MediaPlayerModal";
+import { getMediaThumbnail, parseMediaUrl } from "@/lib/mediaUtils";
 
 interface PortfolioItem {
   id: string;
@@ -30,6 +32,7 @@ interface PortfolioSectionProps {
 export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSectionProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [newItem, setNewItem] = useState({
     title: "",
     description: "",
@@ -183,52 +186,89 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((item) => (
-            <div key={item.id} className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-card transition-all">
-              <div className="aspect-video bg-muted relative">
-                {item.media_type === 'image' && (
-                  <img src={item.media_url} alt={item.title} className="w-full h-full object-cover" />
-                )}
-                {item.media_type === 'video' && (
-                  <video src={item.media_url} className="w-full h-full object-cover" />
-                )}
-                {item.media_type === 'audio' && (
-                  <div className="flex items-center justify-center h-full">
-                    <audio controls src={item.media_url} className="w-full px-4" />
-                  </div>
-                )}
-                {item.media_type === 'document' && (
-                  <div className="flex items-center justify-center h-full">
-                    <ExternalLink className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                )}
-                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button size="icon" variant="outline" className="h-8 w-8" asChild>
-                    <a href={item.media_url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  </Button>
-                  {isOwnProfile && (
-                    <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => handleDelete(item.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+          {items.map((item) => {
+            const thumbnail = getMediaThumbnail(item);
+            const mediaInfo = parseMediaUrl(item.media_url);
+            const isPlayable = mediaInfo || ['video', 'audio'].includes(item.media_type);
+
+            return (
+              <div key={item.id} className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:shadow-card transition-all">
+                <div 
+                  className="aspect-video bg-muted relative cursor-pointer"
+                  onClick={() => isPlayable && setSelectedItem(item)}
+                >
+                  <img 
+                    src={thumbnail} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=400&h=300&fit=crop';
+                    }}
+                  />
+                  
+                  {/* Play button overlay for playable media */}
+                  {isPlayable && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center">
+                        <Play className="h-8 w-8 text-primary-foreground ml-1" fill="currentColor" />
+                      </div>
+                    </div>
                   )}
+
+                  {/* Platform badge */}
+                  {mediaInfo && (
+                    <div className="absolute top-2 left-2">
+                      <span className="bg-black/60 text-white text-xs px-2 py-1 rounded-full capitalize">
+                        {mediaInfo.platform}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button size="icon" variant="outline" className="h-8 w-8 bg-background/90" asChild>
+                      <a href={item.media_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
+                    {isOwnProfile && (
+                      <Button 
+                        size="icon" 
+                        variant="outline" 
+                        className="h-8 w-8 bg-background/90" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(item.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h4 className="font-semibold mb-1">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{item.description}</p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="bg-primary/10 text-primary px-2 py-1 rounded">{item.category}</span>
+                    <span className="flex items-center gap-1">
+                      <Eye className="h-3 w-3" />
+                      {item.view_count}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="p-4">
-                <h4 className="font-semibold mb-1">{item.title}</h4>
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{item.description}</p>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="bg-primary/10 text-primary px-2 py-1 rounded">{item.category}</span>
-                  <span className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    {item.view_count}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+      )}
+
+      {/* Media Player Modal */}
+      {selectedItem && (
+        <MediaPlayerModal
+          isOpen={!!selectedItem}
+          onClose={() => setSelectedItem(null)}
+          item={selectedItem}
+        />
       )}
     </div>
   );

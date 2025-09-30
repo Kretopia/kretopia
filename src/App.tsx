@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Discover from "./pages/Discover";
 import Spark from "./pages/Spark";
 import Profile from "./pages/Profile";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
@@ -48,6 +49,7 @@ const App = () => {
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
             <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

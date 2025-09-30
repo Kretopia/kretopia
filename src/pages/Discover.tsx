@@ -104,11 +104,38 @@ const Discover = () => {
       direction,
     });
 
+    // Award XP for matches
+    if (direction === "right") {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (profile) {
+        const xpAmount = currentCard.type === 'opportunity' ? 50 : 20;
+        await supabase
+          .from('profiles')
+          .update({ xp: profile.xp + xpAmount })
+          .eq('user_id', user.id);
+        
+        await supabase
+          .from('xp_activities')
+          .insert({
+            user_id: user.id,
+            activity_type: currentCard.type === 'opportunity' ? 'job_match' : 'creator_connection',
+            xp_earned: xpAmount,
+            description: `Matched with ${currentCard.name}`
+          });
+      }
+    }
+
     const action = direction === "right" ? "liked" : "passed";
+    const xpText = direction === "right" && currentCard.type === "opportunity" ? " +50 XP" : direction === "right" ? " +20 XP" : "";
     toast({
       title: direction === "right" ? "Match! 💫" : "Keep swiping",
       description: direction === "right" 
-        ? `You ${action} ${currentCard.name}` 
+        ? `You ${action} ${currentCard.name}${xpText}` 
         : "Maybe the next one is perfect for you",
     });
     

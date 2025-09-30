@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, User, LogOut, Flame } from "lucide-react";
+import { Sparkles, User, LogOut, Flame, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,6 +44,11 @@ const Navbar = ({ user }: NavbarProps) => {
                 <Button variant="ghost" className="gap-1.5">
                   <Flame className="h-4 w-4" />
                   Spark
+                </Button>
+              </Link>
+              <Link to="/leaderboard">
+                <Button variant="ghost" size="icon">
+                  <Trophy className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/profile">

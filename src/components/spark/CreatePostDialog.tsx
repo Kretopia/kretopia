@@ -98,9 +98,32 @@ export const CreatePostDialog = ({ open, onOpenChange, onPostCreated }: CreatePo
 
       if (insertError) throw insertError;
 
+      // Award XP for posting
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({ xp: profile.xp + 10 })
+          .eq('user_id', user.id);
+        
+        await supabase
+          .from('xp_activities')
+          .insert({
+            user_id: user.id,
+            activity_type: 'post_created',
+            xp_earned: 10,
+            description: 'Created a new post'
+          });
+      }
+
       toast({
         title: "Post created!",
-        description: "Your spark has been shared with your circle"
+        description: "Your spark has been shared with your circle. +10 XP"
       });
 
       // Reset form

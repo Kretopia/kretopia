@@ -97,6 +97,36 @@ export type Database = {
           },
         ]
       }
+      invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          id: string
+          invitee_email: string
+          invitee_user_id: string | null
+          inviter_id: string
+          status: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          id?: string
+          invitee_email: string
+          invitee_user_id?: string | null
+          inviter_id: string
+          status?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          id?: string
+          invitee_email?: string
+          invitee_user_id?: string | null
+          inviter_id?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       opportunities: {
         Row: {
           compensation: string | null
@@ -214,6 +244,7 @@ export type Database = {
           imdb_url: string | null
           instagram_followers: number | null
           instagram_url: string | null
+          level: number | null
           linkedin_connections: number | null
           linkedin_url: string | null
           location: string | null
@@ -229,6 +260,7 @@ export type Database = {
           user_id: string
           verified_metrics: boolean | null
           website: string | null
+          xp: number | null
           youtube_subscribers: number | null
         }
         Insert: {
@@ -243,6 +275,7 @@ export type Database = {
           imdb_url?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
@@ -258,6 +291,7 @@ export type Database = {
           user_id: string
           verified_metrics?: boolean | null
           website?: string | null
+          xp?: number | null
           youtube_subscribers?: number | null
         }
         Update: {
@@ -272,6 +306,7 @@ export type Database = {
           imdb_url?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
@@ -287,6 +322,7 @@ export type Database = {
           user_id?: string
           verified_metrics?: boolean | null
           website?: string | null
+          xp?: number | null
           youtube_subscribers?: number | null
         }
         Relationships: []
@@ -390,12 +426,42 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_activities: {
+        Row: {
+          activity_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          user_id: string
+          xp_earned: number
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_level: {
+        Args: { xp: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

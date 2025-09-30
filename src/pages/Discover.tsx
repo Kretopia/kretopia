@@ -1,10 +1,22 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Filter, Lock, Image, Video, Music } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 type CardType = "creator" | "opportunity";
+
+interface PortfolioItem {
+  id: string;
+  title: string;
+  media_type: string;
+  media_url: string;
+  thumbnail_url?: string;
+}
 
 interface Card {
   id: string;
@@ -16,6 +28,8 @@ interface Card {
   tags: string[];
   compensation?: string;
   description: string;
+  user_id?: string;
+  portfolio?: PortfolioItem[];
   socialStats?: {
     instagram_followers?: number;
     youtube_subscribers?: number;
@@ -30,45 +44,85 @@ const Discover = () => {
   const [cards, setCards] = useState<Card[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"all" | "creators" | "opportunities">("all");
+  const [locationFilter, setLocationFilter] = useState<string>("all");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
+  const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Fetch profiles (creators) with social stats
-      const { data: profiles } = await supabase
+      // Fetch user's subscription tier and swipe limits
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('subscription_tier, daily_swipes')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (userProfile) {
+        setSubscriptionTier(userProfile.subscription_tier || 'free');
+        const maxSwipes = userProfile.subscription_tier === 'free' ? 20 : 999;
+        setDailySwipesLeft(maxSwipes - (userProfile.daily_swipes || 0));
+      }
+
+      // Fetch profiles (creators) with social stats and portfolio
+      let profilesQuery = supabase
         .from('profiles')
         .select('*')
-        .neq('user_id', user.id)
-        .limit(10);
+        .neq('user_id', user.id);
+
+      // Apply filters
+      if (roleFilter !== 'all') {
+        profilesQuery = profilesQuery.eq('role', roleFilter);
+      }
+      
+      const { data: profiles } = await profilesQuery.limit(20);
+
+      // Fetch portfolio items for each profile
+      const profileIds = (profiles || []).map(p => p.user_id);
+      const { data: portfolioItems } = await supabase
+        .from('portfolio_items')
+        .select('*')
+        .in('user_id', profileIds)
+        .eq('featured', true)
+        .limit(3);
 
       // Fetch opportunities
-      const { data: opportunities } = await supabase
+      let opportunitiesQuery = supabase
         .from('opportunities')
         .select('*')
-        .eq('status', 'active')
-        .limit(10);
+        .eq('status', 'active');
 
-      const creatorCards: Card[] = (profiles || []).map(profile => ({
-        id: profile.id,
-        type: 'creator' as CardType,
-        name: profile.full_name,
-        title: profile.role,
-        location: profile.location || 'Remote',
-        image: profile.avatar_url || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop`,
-        tags: ['Creator'],
-        description: profile.bio || 'Creative professional looking to collaborate',
-        socialStats: {
-          instagram_followers: profile.instagram_followers,
-          youtube_subscribers: profile.youtube_subscribers,
-          tiktok_followers: profile.tiktok_followers,
-          spotify_listeners: profile.spotify_listeners,
-          total_engagement_rate: profile.total_engagement_rate,
-          verified_metrics: profile.verified_metrics,
-        },
-      }));
+      const { data: opportunities } = await opportunitiesQuery.limit(20);
+
+      const creatorCards: Card[] = (profiles || []).map(profile => {
+        const userPortfolio = (portfolioItems || []).filter(item => item.user_id === profile.user_id);
+        return {
+          id: profile.id,
+          type: 'creator' as CardType,
+          name: profile.full_name,
+          title: profile.role,
+          location: profile.location || 'Remote',
+          image: profile.avatar_url || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop`,
+          tags: ['Creator'],
+          description: profile.bio || 'Creative professional looking to collaborate',
+          user_id: profile.user_id,
+          portfolio: userPortfolio,
+          socialStats: {
+            instagram_followers: profile.instagram_followers,
+            youtube_subscribers: profile.youtube_subscribers,
+            tiktok_followers: profile.tiktok_followers,
+            spotify_listeners: profile.spotify_listeners,
+            total_engagement_rate: profile.total_engagement_rate,
+            verified_metrics: profile.verified_metrics,
+          },
+        };
+      });
 
       const opportunityCards: Card[] = (opportunities || []).map(opp => ({
         id: opp.id,
@@ -82,19 +136,53 @@ const Discover = () => {
         description: opp.description,
       }));
 
-      // Mix creators and opportunities
-      const allCards = [...creatorCards, ...opportunityCards].sort(() => Math.random() - 0.5);
-      setCards(allCards);
+      // Mix creators and opportunities based on active tab
+      let filteredCards: Card[] = [];
+      if (activeTab === 'creators') {
+        filteredCards = creatorCards;
+      } else if (activeTab === 'opportunities') {
+        filteredCards = opportunityCards;
+      } else {
+        filteredCards = [...creatorCards, ...opportunityCards].sort(() => Math.random() - 0.5);
+      }
+
+      setCards(filteredCards);
       setLoading(false);
     };
 
     fetchData();
-  }, []);
+  }, [activeTab, locationFilter, roleFilter]);
 
   const handleSwipe = async (direction: "left" | "right") => {
     const currentCard = cards[currentIndex];
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Check swipe limits
+    if (dailySwipesLeft <= 0 && subscriptionTier === 'free') {
+      toast({
+        title: "Daily limit reached",
+        description: "Upgrade to premium for unlimited swipes!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update swipe count
+    const { data: currentProfile } = await supabase
+      .from('profiles')
+      .select('daily_swipes')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (currentProfile) {
+      await supabase
+        .from('profiles')
+        .update({ daily_swipes: (currentProfile.daily_swipes || 0) + 1 })
+        .eq('user_id', user.id);
+    }
+    
+    setDailySwipesLeft(prev => prev - 1);
 
     // Save swipe to database
     await supabase.from('swipes').insert({
@@ -104,40 +192,100 @@ const Discover = () => {
       direction,
     });
 
-    // Award XP for matches
+    // Check for mutual match if swiping right
     if (direction === "right") {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('xp')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (profile) {
-        const xpAmount = currentCard.type === 'opportunity' ? 50 : 20;
-        await supabase
-          .from('profiles')
-          .update({ xp: profile.xp + xpAmount })
-          .eq('user_id', user.id);
-        
-        await supabase
-          .from('xp_activities')
-          .insert({
-            user_id: user.id,
-            activity_type: currentCard.type === 'opportunity' ? 'job_match' : 'creator_connection',
-            xp_earned: xpAmount,
-            description: `Matched with ${currentCard.name}`
-          });
-      }
-    }
+      // For creators, check if they swiped right on us
+      if (currentCard.type === 'creator' && currentCard.user_id) {
+        const { data: theirSwipe } = await supabase
+          .from('swipes')
+          .select('*')
+          .eq('user_id', currentCard.user_id)
+          .eq('target_id', user.id)
+          .eq('direction', 'right')
+          .maybeSingle();
 
-    const action = direction === "right" ? "liked" : "passed";
-    const xpText = direction === "right" && currentCard.type === "opportunity" ? " +50 XP" : direction === "right" ? " +20 XP" : "";
-    toast({
-      title: direction === "right" ? "Match! 💫" : "Keep swiping",
-      description: direction === "right" 
-        ? `You ${action} ${currentCard.name}${xpText}` 
-        : "Maybe the next one is perfect for you",
-    });
+        if (theirSwipe) {
+          // Mutual match! Create connection
+          await supabase.from('connections').insert({
+            user_id: user.id,
+            connected_user_id: currentCard.user_id,
+            status: 'accepted'
+          });
+
+          // Award XP
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('xp')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (profile) {
+            await supabase
+              .from('profiles')
+              .update({ xp: profile.xp + 20 })
+              .eq('user_id', user.id);
+            
+            await supabase
+              .from('xp_activities')
+              .insert({
+                user_id: user.id,
+                activity_type: 'creator_connection',
+                xp_earned: 20,
+                description: `Connected with ${currentCard.name}`
+              });
+          }
+
+          toast({
+            title: "It's a Match! 🎉",
+            description: `You and ${currentCard.name} connected! +20 XP`,
+          });
+
+          // Navigate to My Circle after a brief delay
+          setTimeout(() => navigate('/circle'), 2000);
+          return;
+        }
+      }
+
+      // For opportunities, just award XP
+      if (currentCard.type === 'opportunity') {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('xp')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile) {
+          await supabase
+            .from('profiles')
+            .update({ xp: profile.xp + 50 })
+            .eq('user_id', user.id);
+          
+          await supabase
+            .from('xp_activities')
+            .insert({
+              user_id: user.id,
+              activity_type: 'job_match',
+              xp_earned: 50,
+              description: `Interested in ${currentCard.name}`
+            });
+        }
+
+        toast({
+          title: "Opportunity Saved! 💼",
+          description: `${currentCard.name} added to your desk +50 XP`,
+        });
+      } else {
+        toast({
+          title: "Liked! 💫",
+          description: `You liked ${currentCard.name}. Waiting for them to match back!`,
+        });
+      }
+    } else {
+      toast({
+        title: "Keep swiping",
+        description: "Maybe the next one is perfect for you",
+      });
+    }
     
     if (currentIndex < cards.length - 1) {
       setCurrentIndex(currentIndex + 1);
@@ -172,14 +320,62 @@ const Discover = () => {
   const currentCard = cards[currentIndex];
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        {/* Card Counter */}
-        <div className="mb-4 text-center">
-          <span className="text-sm text-muted-foreground">
-            {currentIndex + 1} / {cards.length}
-          </span>
+    <div className="min-h-screen p-4 md:p-6">
+      <div className="mx-auto max-w-6xl">
+        {/* Header with Tabs and Filters */}
+        <div className="mb-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Discover</h1>
+            {subscriptionTier === 'free' && (
+              <Badge variant="secondary" className="gap-1">
+                {dailySwipesLeft} swipes left
+              </Badge>
+            )}
+          </div>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-4">
+            <TabsList className="w-full">
+              <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
+              <TabsTrigger value="creators" className="flex-1">Creators</TabsTrigger>
+              <TabsTrigger value="opportunities" className="flex-1">Opportunities</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Filters */}
+          <div className="flex gap-2 items-center">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="Creator">Creator</SelectItem>
+                <SelectItem value="Musician">Musician</SelectItem>
+                <SelectItem value="Photographer">Photographer</SelectItem>
+                <SelectItem value="Videographer">Videographer</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {subscriptionTier === 'free' && (
+              <Badge variant="outline" className="gap-1 text-muted-foreground">
+                <Lock className="h-3 w-3" />
+                More filters with Premium
+              </Badge>
+            )}
+          </div>
         </div>
+
+        {/* Card View */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            {/* Card Counter */}
+            <div className="mb-4 text-center">
+              <span className="text-sm text-muted-foreground">
+                {currentIndex + 1} / {cards.length}
+              </span>
+            </div>
 
         {/* Swipe Card */}
         <div className="relative mb-6 overflow-hidden rounded-3xl border border-border bg-card shadow-card">
@@ -234,6 +430,32 @@ const Discover = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">{currentCard.description}</p>
+
+            {/* Portfolio Preview for Creators */}
+            {currentCard.type === "creator" && currentCard.portfolio && currentCard.portfolio.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Image className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold">Featured Work</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {currentCard.portfolio.slice(0, 3).map((item) => (
+                    <div key={item.id} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                      <img 
+                        src={item.thumbnail_url || item.media_url} 
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        {item.media_type === 'video' && <Video className="h-6 w-6 text-white" />}
+                        {item.media_type === 'audio' && <Music className="h-6 w-6 text-white" />}
+                        {item.media_type === 'image' && <Image className="h-6 w-6 text-white" />}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Social Stats for Creators */}
             {currentCard.type === "creator" && currentCard.socialStats && (
@@ -338,9 +560,11 @@ const Discover = () => {
           </Button>
         </div>
 
-        {/* Swipe Hint */}
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>Swipe right to connect • Swipe left to pass</p>
+            {/* Swipe Hint */}
+            <div className="mt-6 text-center text-sm text-muted-foreground">
+              <p>Swipe right to connect • Swipe left to pass</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

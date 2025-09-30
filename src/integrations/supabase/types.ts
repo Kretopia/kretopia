@@ -127,6 +127,36 @@ export type Database = {
         }
         Relationships: []
       }
+      matches: {
+        Row: {
+          created_at: string | null
+          id: string
+          match_type: string
+          status: string | null
+          target_id: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          match_type: string
+          status?: string | null
+          target_id?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          match_type?: string
+          status?: string | null
+          target_id?: string | null
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
       opportunities: {
         Row: {
           compensation: string | null
@@ -239,11 +269,13 @@ export type Database = {
           bio: string | null
           created_at: string | null
           credits: number | null
+          daily_swipes: number | null
           full_name: string
           id: string
           imdb_url: string | null
           instagram_followers: number | null
           instagram_url: string | null
+          last_swipe_reset: string | null
           level: number | null
           linkedin_connections: number | null
           linkedin_url: string | null
@@ -252,6 +284,7 @@ export type Database = {
           soundcloud_url: string | null
           spotify_listeners: number | null
           spotify_url: string | null
+          subscription_tier: string | null
           tiktok_followers: number | null
           total_engagement_rate: number | null
           twitter_followers: number | null
@@ -270,11 +303,13 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           credits?: number | null
+          daily_swipes?: number | null
           full_name: string
           id?: string
           imdb_url?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          last_swipe_reset?: string | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
@@ -283,6 +318,7 @@ export type Database = {
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
+          subscription_tier?: string | null
           tiktok_followers?: number | null
           total_engagement_rate?: number | null
           twitter_followers?: number | null
@@ -301,11 +337,13 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           credits?: number | null
+          daily_swipes?: number | null
           full_name?: string
           id?: string
           imdb_url?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          last_swipe_reset?: string | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
@@ -314,6 +352,7 @@ export type Database = {
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
+          subscription_tier?: string | null
           tiktok_followers?: number | null
           total_engagement_rate?: number | null
           twitter_followers?: number | null

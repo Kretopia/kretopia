@@ -398,64 +398,128 @@ const CreateTaskDialog = ({ projectId, onSuccess }: any) => {
 const FileUploadDialog = ({ projectId, onSuccess }: any) => {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: "File too large",
+        description: `Maximum file size is ${formatFileSize(MAX_FILE_SIZE)}. Your file is ${formatFileSize(file.size)}.`,
+        variant: "destructive",
+      });
+      e.target.value = ''; // Reset input
+      setSelectedFile(null);
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
 
     setUploading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    const filePath = `${projectId}/${Date.now()}-${file.name}`;
-
-    // Upload to storage
-    const { error: uploadError } = await supabase.storage
-      .from('project-files')
-      .upload(filePath, file);
-
-    if (uploadError) {
+    
+    if (!user) {
       toast({
-        title: "Upload failed",
+        title: "Authentication error",
+        description: "You must be logged in to upload files.",
         variant: "destructive",
       });
       setUploading(false);
       return;
     }
 
-    // Get public URL
-    const { data } = supabase.storage
-      .from('project-files')
-      .getPublicUrl(filePath);
+    const filePath = `${projectId}/${Date.now()}-${selectedFile.name}`;
 
-    // Save to database
-    const { error: dbError } = await supabase
-      .from('project_files')
-      .insert({
-        project_id: projectId,
-        user_id: user?.id,
-        file_name: file.name,
-        file_url: data.publicUrl,
-        file_size: file.size,
-        file_type: file.type,
-      });
+    try {
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('project-files')
+        .upload(filePath, selectedFile);
 
-    if (dbError) {
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        toast({
+          title: "Upload failed",
+          description: uploadError.message || "Failed to upload file to storage.",
+          variant: "destructive",
+        });
+        setUploading(false);
+        return;
+      }
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('project-files')
+        .getPublicUrl(filePath);
+
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('project_files')
+        .insert({
+          project_id: projectId,
+          user_id: user.id,
+          file_name: selectedFile.name,
+          file_url: data.publicUrl,
+          file_size: selectedFile.size,
+          file_type: selectedFile.type,
+        });
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        toast({
+          title: "Failed to save file",
+          description: dbError.message || "File uploaded but could not be saved to database.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success! 🎉",
+          description: `${selectedFile.name} (${formatFileSize(selectedFile.size)}) uploaded successfully.`,
+        });
+        setSelectedFile(null);
+        setOpen(false);
+        onSuccess();
+      }
+    } catch (error: any) {
+      console.error('Unexpected error:', error);
       toast({
-        title: "Failed to save file",
+        title: "Unexpected error",
+        description: error.message || "An unexpected error occurred during upload.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "File uploaded successfully",
-      });
-      setOpen(false);
-      onSuccess();
     }
+    
     setUploading(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen) {
+        setSelectedFile(null);
+      }
+    }}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Upload className="h-4 w-4 mr-1" />
@@ -467,12 +531,34 @@ const FileUploadDialog = ({ projectId, onSuccess }: any) => {
           <DialogTitle>Upload File</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <Input
-            type="file"
-            onChange={handleFileUpload}
-            disabled={uploading}
-          />
-          {uploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
+          <div>
+            <Label>Select File (Max {formatFileSize(MAX_FILE_SIZE)})</Label>
+            <Input
+              type="file"
+              onChange={handleFileSelect}
+              disabled={uploading}
+            />
+          </div>
+          {selectedFile && (
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p><strong>File:</strong> {selectedFile.name}</p>
+              <p><strong>Size:</strong> {formatFileSize(selectedFile.size)}</p>
+              <p><strong>Type:</strong> {selectedFile.type || 'Unknown'}</p>
+            </div>
+          )}
+          {uploading && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Uploading...</span>
+            </div>
+          )}
+          <Button 
+            onClick={handleFileUpload} 
+            disabled={!selectedFile || uploading}
+            className="w-full"
+          >
+            {uploading ? "Uploading..." : "Upload File"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

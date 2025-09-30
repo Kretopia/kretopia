@@ -1,9 +1,25 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Sparkles, Users, Briefcase, Wallet, Zap } from "lucide-react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const Landing = () => {
+  const [opportunitiesCount, setOpportunitiesCount] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchOpportunitiesCount = async () => {
+      const { count } = await supabase
+        .from('opportunities')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active');
+      
+      setOpportunitiesCount(count || 0);
+    };
+
+    fetchOpportunitiesCount();
+  }, []);
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -70,10 +86,14 @@ const Landing = () => {
             <h2 className="text-3xl font-bold mb-3 md:text-4xl">
               Looking to Hire Creators?
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
               Post your job, collaboration, or barter opportunity in seconds. 
               No account needed to get started.
             </p>
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
+              <Sparkles className="h-4 w-4" />
+              <span>{opportunitiesCount} Active Opportunities Available</span>
+            </div>
           </div>
           <PostOpportunityDialog variant="hero" size="xl" />
           <p className="mt-4 text-sm text-muted-foreground">

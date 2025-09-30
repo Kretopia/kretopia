@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Filter, Lock, Image, Video, Music } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 type CardType = "creator" | "opportunity";
 
@@ -479,6 +479,18 @@ const Discover = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">{currentCard.description}</p>
+
+            {/* View Details Button for Opportunities */}
+            {currentCard.type === "opportunity" && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <Link to={`/opportunity/${currentCard.id}`}>
+                  <Button variant="outline" className="w-full">
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Full Details
+                  </Button>
+                </Link>
+              </div>
+            )}
 
             {/* Portfolio Preview for Creators */}
             {currentCard.type === "creator" && currentCard.portfolio && currentCard.portfolio.length > 0 && (

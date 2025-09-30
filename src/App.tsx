@@ -15,6 +15,8 @@ import Leaderboard from "./pages/Leaderboard";
 import Circle from "./pages/Circle";
 import ThriveDesk from "./pages/ThriveDesk";
 import ThriveStudio from "./pages/ThriveStudio";
+import OpportunityDetail from "./pages/OpportunityDetail";
+import ManageOpportunities from "./pages/ManageOpportunities";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
@@ -47,6 +49,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/opportunity/:id" element={<OpportunityDetail />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
@@ -56,6 +59,7 @@ const App = () => {
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             <Route path="/studio" element={<ProtectedRoute><ThriveStudio /></ProtectedRoute>} />
+            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

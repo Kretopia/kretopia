@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Loader2 } from "lucide-react";
+import { Briefcase, Loader2, Upload, X } from "lucide-react";
 
 interface PostOpportunityDialogProps {
   variant?: "default" | "outline" | "hero";
@@ -33,6 +33,21 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
     deliverables: "",
     duration: "",
   });
+  
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +75,26 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
         return;
       }
 
+      // Upload image if provided
+      let imageUrl = null;
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('portfolio')
+          .upload(filePath, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('portfolio')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
       // Create opportunity without auth
       const { error: opportunityError } = await supabase
         .from('opportunities')
@@ -75,6 +110,7 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
           duration: formData.duration,
           tags: [formData.company],
           status: 'active',
+          image_url: imageUrl,
         });
 
       if (opportunityError) throw opportunityError;
@@ -97,6 +133,8 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
         deliverables: "",
         duration: "",
       });
+      setImageFile(null);
+      setImagePreview("");
       setOpen(false);
     } catch (error) {
       console.error('Error posting opportunity:', error);
@@ -246,6 +284,48 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
               value={formData.duration}
               onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image">Opportunity Image</Label>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('image')?.click()}
+                  className="w-full"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {imageFile ? "Change Image" : "Upload Image"}
+                </Button>
+                {imageFile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview("");
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {imagePreview && (
+                <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>

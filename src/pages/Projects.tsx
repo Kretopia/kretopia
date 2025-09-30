@@ -56,17 +56,36 @@ const Projects = () => {
       return;
     }
 
-    // Fetch all projects where user is involved
+    // First, fetch matches where user is involved
+    const { data: matchesData, error: matchesError } = await supabase
+      .from('matches')
+      .select('id, user1_id, user2_id')
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+
+    if (matchesError) {
+      console.error('Error fetching matches:', matchesError);
+      toast({
+        title: "Error",
+        description: "Failed to load projects",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!matchesData || matchesData.length === 0) {
+      setProjects([]);
+      setLoading(false);
+      return;
+    }
+
+    const matchIds = matchesData.map(m => m.id);
+
+    // Fetch projects for these matches
     const { data: projectsData, error } = await supabase
       .from('projects')
-      .select(`
-        *,
-        matches!inner (
-          user1_id,
-          user2_id
-        )
-      `)
-      .or(`matches.user1_id.eq.${user.id},matches.user2_id.eq.${user.id}`)
+      .select('*')
+      .in('match_id', matchIds)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -76,22 +95,27 @@ const Projects = () => {
         description: "Failed to load projects",
         variant: "destructive",
       });
+      setProjects([]);
     } else {
       // Fetch collaborator details
       const projectsWithCollaborators = await Promise.all(
         (projectsData || []).map(async (project) => {
-          const collaboratorId = project.matches.user1_id === user.id 
-            ? project.matches.user2_id 
-            : project.matches.user1_id;
+          const match = matchesData.find(m => m.id === project.match_id);
+          if (!match) return { ...project, matches: null, collaborator: null };
+
+          const collaboratorId = match.user1_id === user.id 
+            ? match.user2_id 
+            : match.user1_id;
 
           const { data: profile } = await supabase
             .from('profiles')
             .select('full_name, avatar_url')
             .eq('user_id', collaboratorId)
-            .single();
+            .maybeSingle();
 
           return {
             ...project,
+            matches: match,
             collaborator: profile,
           };
         })

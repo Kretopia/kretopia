@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { 
@@ -8,15 +9,71 @@ import {
   Zap,
   ArrowRight
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Profile {
+  credits: number;
+  full_name: string;
+}
 
 const Dashboard = () => {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [stats, setStats] = useState({
+    connections: 0,
+    projects: 0,
+    profileViews: 0
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('credits, full_name')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load profile",
+          variant: "destructive",
+        });
+      } else {
+        setProfile(data);
+      }
+
+      // Fetch connections count
+      const { count: connectionsCount } = await supabase
+        .from('connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'accepted');
+
+      setStats(prev => ({
+        ...prev,
+        connections: connectionsCount || 0,
+        projects: 3, // Mock for now
+        profileViews: 342 // Mock for now
+      }));
+    };
+
+    fetchProfile();
+  }, [toast]);
+
   return (
     <div className="min-h-screen p-6">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <h1 className="mb-2 text-4xl font-bold">Welcome back, Creator! 👋</h1>
+            <h1 className="mb-2 text-4xl font-bold">
+              Welcome back, {profile?.full_name || 'Creator'}! 👋
+            </h1>
             <p className="text-muted-foreground">Here's what's happening with your network</p>
           </div>
           <Link to="/discover">
@@ -31,28 +88,28 @@ const Dashboard = () => {
         <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Credits Balance"
-            value="60"
+            value={profile?.credits?.toString() || "0"}
             change="+10 today"
             icon={<Sparkles className="h-6 w-6" />}
             gradient="from-primary to-secondary"
           />
           <StatCard
             title="Connections"
-            value="128"
+            value={stats.connections.toString()}
             change="+5 this week"
             icon={<Users className="h-6 w-6" />}
             gradient="from-secondary to-accent"
           />
           <StatCard
             title="Active Projects"
-            value="3"
+            value={stats.projects.toString()}
             change="2 pending"
             icon={<Briefcase className="h-6 w-6" />}
             gradient="from-accent to-primary"
           />
           <StatCard
             title="Profile Views"
-            value="342"
+            value={stats.profileViews.toString()}
             change="+23% this month"
             icon={<TrendingUp className="h-6 w-6" />}
             gradient="from-primary to-secondary"
@@ -76,10 +133,10 @@ const Dashboard = () => {
               to="/profile"
             />
             <QuickActionCard
-              title="AI Studio"
-              description="Generate content with AI-powered tools"
+              title="View Connections"
+              description="Connect with other creators on the platform"
               icon={<Sparkles className="h-5 w-5" />}
-              to="/studio"
+              to="/discover"
             />
           </div>
         </div>
@@ -89,19 +146,14 @@ const Dashboard = () => {
           <h2 className="mb-4 text-2xl font-bold">Recent Activity</h2>
           <div className="space-y-4">
             <ActivityItem
-              title="New match found"
-              description="Sarah Martinez wants to collaborate on a music video"
-              time="2 hours ago"
-            />
-            <ActivityItem
-              title="Proposal sent"
-              description="You sent a proposal for 'Brand Identity Design'"
-              time="5 hours ago"
+              title="Profile created"
+              description="Your profile is now live and visible to other creators"
+              time="Today"
             />
             <ActivityItem
               title="Credits earned"
-              description="Received +10 credits from daily login bonus"
-              time="Yesterday"
+              description="Welcome bonus credited to your account"
+              time="Today"
             />
           </div>
         </div>

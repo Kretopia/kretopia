@@ -1,8 +1,80 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, Briefcase, Share2, Edit } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Profile {
+  full_name: string;
+  role: string;
+  bio: string;
+  location: string;
+  avatar_url: string;
+  credits: number;
+}
 
 const Profile = () => {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [stats, setStats] = useState({
+    connections: 0,
+    projects: 0,
+    responseRate: 98
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load profile",
+          variant: "destructive",
+        });
+      } else {
+        setProfile(data);
+      }
+
+      // Fetch connections count
+      const { count: connectionsCount } = await supabase
+        .from('connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'accepted');
+
+      setStats(prev => ({
+        ...prev,
+        connections: connectionsCount || 0,
+      }));
+    };
+
+    fetchProfile();
+  }, [toast]);
+
+  const handleShare = () => {
+    toast({
+      title: "Profile link copied!",
+      description: "Share your profile with others",
+    });
+  };
+
+  if (!profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading profile...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-6">
       <div className="container mx-auto max-w-4xl">
@@ -14,30 +86,30 @@ const Profile = () => {
             <div className="mb-6 -mt-16 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-end gap-4">
                 <img
-                  src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"
+                  src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
                   alt="Profile"
                   className="h-32 w-32 rounded-2xl border-4 border-card object-cover"
                 />
                 <div>
-                  <h1 className="mb-1 text-3xl font-bold">Jordan Rivers</h1>
+                  <h1 className="mb-1 text-3xl font-bold">{profile.full_name}</h1>
                   <p className="mb-2 text-lg text-muted-foreground">
-                    Music Producer & Sound Designer
+                    {profile.role}
                   </p>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <MapPin className="h-4 w-4" />
-                      Los Angeles, CA
+                      {profile.location || 'Remote'}
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 fill-accent text-accent" />
-                      4.9 (23 reviews)
+                      4.9 (New member)
                     </div>
                   </div>
                 </div>
               </div>
               
               <div className="flex gap-2">
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" onClick={handleShare}>
                   <Share2 className="h-4 w-4" />
                 </Button>
                 <Button variant="gradient">
@@ -50,15 +122,15 @@ const Profile = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 rounded-2xl border border-border bg-background p-6">
               <div className="text-center">
-                <div className="mb-1 text-2xl font-bold text-primary">156</div>
+                <div className="mb-1 text-2xl font-bold text-primary">{stats.connections}</div>
                 <div className="text-sm text-muted-foreground">Connections</div>
               </div>
               <div className="text-center">
-                <div className="mb-1 text-2xl font-bold text-secondary">42</div>
+                <div className="mb-1 text-2xl font-bold text-secondary">{stats.projects}</div>
                 <div className="text-sm text-muted-foreground">Projects</div>
               </div>
               <div className="text-center">
-                <div className="mb-1 text-2xl font-bold text-accent">98%</div>
+                <div className="mb-1 text-2xl font-bold text-accent">{stats.responseRate}%</div>
                 <div className="text-sm text-muted-foreground">Response Rate</div>
               </div>
             </div>
@@ -77,91 +149,38 @@ const Profile = () => {
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
               <h3 className="mb-3 text-xl font-semibold">About</h3>
               <p className="text-muted-foreground">
-                Award-winning music producer with 10+ years of experience in the industry. 
-                Specializing in electronic music, hip-hop, and cinematic soundtracks. 
-                Passionate about collaborating with emerging artists and pushing creative boundaries.
+                {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
               </p>
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <h3 className="mb-4 text-xl font-semibold">Skills</h3>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Music Production",
-                  "Sound Design",
-                  "Mixing & Mastering",
-                  "Ableton Live",
-                  "Logic Pro",
-                  "Audio Engineering",
-                  "Composition",
-                  "Arrangement",
-                ].map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm"
-                  >
-                    {skill}
-                  </span>
-                ))}
+              <h3 className="mb-4 text-xl font-semibold">Credits</h3>
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+                  <Briefcase className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <div className="text-3xl font-bold">{profile.credits}</div>
+                  <div className="text-sm text-muted-foreground">Available Credits</div>
+                </div>
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              {[1, 2, 3, 4].map((item) => (
-                <div
-                  key={item}
-                  className="group overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow"
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={`https://images.unsplash.com/photo-149923997537${item}?w=400&h=300&fit=crop`}
-                      alt={`Project ${item}`}
-                      className="h-full w-full object-cover transition-smooth group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h4 className="mb-1 font-semibold">Project Title {item}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Electronic music production
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-2xl border border-border bg-card p-12 text-center shadow-card">
+              <Briefcase className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+              <h3 className="mb-2 text-xl font-semibold">No portfolio items yet</h3>
+              <p className="text-muted-foreground">Add your work to showcase your talents</p>
             </div>
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-4">
-            {[1, 2, 3].map((review) => (
-              <div
-                key={review}
-                className="rounded-2xl border border-border bg-card p-6 shadow-card"
-              >
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={`https://images.unsplash.com/photo-150393031906${review}?w=50&h=50&fit=crop`}
-                      alt="Reviewer"
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                    <div>
-                      <div className="font-semibold">Client Name</div>
-                      <div className="text-sm text-muted-foreground">2 weeks ago</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-accent text-accent" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-muted-foreground">
-                  Amazing work! Jordan delivered exactly what we needed and went above and beyond. 
-                  Highly professional and creative. Would definitely work together again.
-                </p>
-              </div>
-            ))}
+            <div className="rounded-2xl border border-border bg-card p-12 text-center shadow-card">
+              <Star className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+              <h3 className="mb-2 text-xl font-semibold">No reviews yet</h3>
+              <p className="text-muted-foreground">Complete projects to receive reviews</p>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

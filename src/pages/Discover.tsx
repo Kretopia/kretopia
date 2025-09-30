@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Heart, Star, MapPin, DollarSign, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type CardType = "creator" | "opportunity";
 
 interface Card {
-  id: number;
+  id: string;
   type: CardType;
   name: string;
   title: string;
@@ -17,79 +18,108 @@ interface Card {
   description: string;
 }
 
-const mockCards: Card[] = [
-  {
-    id: 1,
-    type: "opportunity",
-    name: "Brand Identity Project",
-    title: "Looking for Creative Designer",
-    location: "Remote",
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=500&fit=crop",
-    tags: ["Design", "Branding", "Paid"],
-    compensation: "$500-800",
-    description: "Need a talented designer for complete brand identity package including logo, colors, and guidelines.",
-  },
-  {
-    id: 2,
-    type: "creator",
-    name: "Sarah Martinez",
-    title: "Music Producer & Composer",
-    location: "Los Angeles, CA",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop",
-    tags: ["Music", "Production", "Collaboration"],
-    description: "Passionate about creating unique soundscapes. Looking for vocalists and visual artists to collaborate with.",
-  },
-  {
-    id: 3,
-    type: "opportunity",
-    name: "Short Film Project",
-    title: "Cinematographer Needed",
-    location: "New York, NY",
-    image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=500&fit=crop",
-    tags: ["Film", "Barter", "Creative"],
-    compensation: "Barter",
-    description: "Working on an indie short film. Looking for a skilled cinematographer. Can offer editing services in exchange.",
-  },
-  {
-    id: 4,
-    type: "creator",
-    name: "Alex Chen",
-    title: "Motion Designer & Animator",
-    location: "San Francisco, CA",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop",
-    tags: ["Animation", "Motion Design", "3D"],
-    description: "Specializing in 3D motion graphics and character animation. Open to music videos and commercial work.",
-  },
-];
-
 const Discover = () => {
-  const [cards, setCards] = useState<Card[]>(mockCards);
+  const [cards, setCards] = useState<Card[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const handleSwipe = (direction: "left" | "right") => {
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch profiles (creators)
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('*')
+        .neq('user_id', user.id)
+        .limit(10);
+
+      // Fetch opportunities
+      const { data: opportunities } = await supabase
+        .from('opportunities')
+        .select('*')
+        .eq('status', 'active')
+        .limit(10);
+
+      const creatorCards: Card[] = (profiles || []).map(profile => ({
+        id: profile.id,
+        type: 'creator' as CardType,
+        name: profile.full_name,
+        title: profile.role,
+        location: profile.location || 'Remote',
+        image: profile.avatar_url || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop`,
+        tags: ['Creator'],
+        description: profile.bio || 'Creative professional looking to collaborate',
+      }));
+
+      const opportunityCards: Card[] = (opportunities || []).map(opp => ({
+        id: opp.id,
+        type: 'opportunity' as CardType,
+        name: opp.title,
+        title: opp.type.charAt(0).toUpperCase() + opp.type.slice(1),
+        location: opp.location || 'Remote',
+        image: opp.image_url || `https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=500&fit=crop`,
+        tags: opp.tags || [],
+        compensation: opp.compensation,
+        description: opp.description,
+      }));
+
+      // Mix creators and opportunities
+      const allCards = [...creatorCards, ...opportunityCards].sort(() => Math.random() - 0.5);
+      setCards(allCards);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const handleSwipe = async (direction: "left" | "right") => {
+    const currentCard = cards[currentIndex];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Save swipe to database
+    await supabase.from('swipes').insert({
+      user_id: user.id,
+      target_id: currentCard.id,
+      target_type: currentCard.type,
+      direction,
+    });
+
     const action = direction === "right" ? "liked" : "passed";
     toast({
       title: direction === "right" ? "Match! 💫" : "Keep swiping",
       description: direction === "right" 
-        ? `You ${action} ${cards[currentIndex].name}` 
+        ? `You ${action} ${currentCard.name}` 
         : "Maybe the next one is perfect for you",
     });
     
     if (currentIndex < cards.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Reset to beginning or show "no more cards" message
       setCurrentIndex(0);
     }
   };
 
-  if (cards.length === 0 || currentIndex >= cards.length) {
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <div className="text-center">
+          <Sparkles className="mx-auto mb-4 h-16 w-16 animate-pulse text-primary" />
+          <p className="text-muted-foreground">Loading opportunities...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (cards.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
         <div className="text-center">
           <Sparkles className="mx-auto mb-4 h-16 w-16 text-primary" />
-          <h2 className="mb-2 text-2xl font-bold">You've seen everything!</h2>
+          <h2 className="mb-2 text-2xl font-bold">No cards available yet</h2>
           <p className="text-muted-foreground">Check back later for new opportunities</p>
         </div>
       </div>

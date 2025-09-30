@@ -6,7 +6,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden px-6 py-20 md:py-32">
+      <section className="relative overflow-hidden px-6 py-12 md:py-24">
         <div className="absolute inset-0 gradient-accent opacity-50" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(271_91%_65%/0.1),transparent_50%)]" />
         
@@ -31,14 +31,14 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link to="/onboarding">
+              <Link to="/auth">
                 <Button variant="hero" size="xl">
                   Start Your Journey
                 </Button>
               </Link>
-              <Link to="/discover">
+              <Link to="/auth">
                 <Button variant="outline" size="xl">
-                  Explore Opportunities
+                  Get Started Free
                 </Button>
               </Link>
             </div>
@@ -115,7 +115,7 @@ const Landing = () => {
               <p className="mb-8 text-lg text-primary-foreground/80">
                 Join thousands of creators building their careers on ThriveIN
               </p>
-              <Link to="/onboarding">
+              <Link to="/auth">
                 <Button 
                   variant="outline" 
                   size="xl"

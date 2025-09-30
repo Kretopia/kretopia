@@ -38,6 +38,65 @@ export type Database = {
         }
         Relationships: []
       }
+      industry_stats: {
+        Row: {
+          created_at: string
+          date_achieved: string | null
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_featured: boolean | null
+          issuer: string | null
+          stat_type: string
+          title: string
+          updated_at: string
+          user_id: string
+          value: string | null
+          verification_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          date_achieved?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_featured?: boolean | null
+          issuer?: string | null
+          stat_type: string
+          title: string
+          updated_at?: string
+          user_id: string
+          value?: string | null
+          verification_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          date_achieved?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_featured?: boolean | null
+          issuer?: string | null
+          stat_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          value?: string | null
+          verification_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "industry_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       opportunities: {
         Row: {
           compensation: string | null
@@ -83,44 +142,199 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          embed_code: string | null
+          featured: boolean | null
+          id: string
+          media_type: string
+          media_url: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          embed_code?: string | null
+          featured?: boolean | null
+          id?: string
+          media_type: string
+          media_url: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          embed_code?: string | null
+          featured?: boolean | null
+          id?: string
+          media_type?: string
+          media_url?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          behance_url: string | null
           bio: string | null
           created_at: string | null
           credits: number | null
           full_name: string
           id: string
+          imdb_url: string | null
+          instagram_url: string | null
+          linkedin_url: string | null
           location: string | null
           role: string
+          soundcloud_url: string | null
+          spotify_url: string | null
+          twitter_url: string | null
           updated_at: string | null
           user_id: string
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
+          behance_url?: string | null
           bio?: string | null
           created_at?: string | null
           credits?: number | null
           full_name: string
           id?: string
+          imdb_url?: string | null
+          instagram_url?: string | null
+          linkedin_url?: string | null
           location?: string | null
           role: string
+          soundcloud_url?: string | null
+          spotify_url?: string | null
+          twitter_url?: string | null
           updated_at?: string | null
           user_id: string
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
+          behance_url?: string | null
           bio?: string | null
           created_at?: string | null
           credits?: number | null
           full_name?: string
           id?: string
+          imdb_url?: string | null
+          instagram_url?: string | null
+          linkedin_url?: string | null
           location?: string | null
           role?: string
+          soundcloud_url?: string | null
+          spotify_url?: string | null
+          twitter_url?: string | null
           updated_at?: string | null
           user_id?: string
+          website?: string | null
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          collaboration_type: string | null
+          created_at: string
+          id: string
+          is_endorsed: boolean | null
+          is_verified: boolean | null
+          profile_id: string
+          project_name: string | null
+          rating: number | null
+          review_text: string
+          reviewer_avatar_url: string | null
+          reviewer_company: string | null
+          reviewer_id: string | null
+          reviewer_name: string
+          reviewer_role: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          collaboration_type?: string | null
+          created_at?: string
+          id?: string
+          is_endorsed?: boolean | null
+          is_verified?: boolean | null
+          profile_id: string
+          project_name?: string | null
+          rating?: number | null
+          review_text: string
+          reviewer_avatar_url?: string | null
+          reviewer_company?: string | null
+          reviewer_id?: string | null
+          reviewer_name: string
+          reviewer_role?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          collaboration_type?: string | null
+          created_at?: string
+          id?: string
+          is_endorsed?: boolean | null
+          is_verified?: boolean | null
+          profile_id?: string
+          project_name?: string | null
+          rating?: number | null
+          review_text?: string
+          reviewer_avatar_url?: string | null
+          reviewer_company?: string | null
+          reviewer_id?: string | null
+          reviewer_name?: string
+          reviewer_role?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       swipes: {
         Row: {

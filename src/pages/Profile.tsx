@@ -8,6 +8,10 @@ import { Label } from "@/components/ui/label";
 import { MapPin, Star, Briefcase, Share2, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PortfolioSection } from "@/components/profile/PortfolioSection";
+import { ReviewsSection } from "@/components/profile/ReviewsSection";
+import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
+import { SocialLinksSection } from "@/components/profile/SocialLinksSection";
 
 interface Profile {
   full_name: string;
@@ -16,10 +20,22 @@ interface Profile {
   location: string;
   avatar_url: string;
   credits: number;
+  user_id: string;
+  website?: string;
+  linkedin_url?: string;
+  behance_url?: string;
+  imdb_url?: string;
+  instagram_url?: string;
+  twitter_url?: string;
+  spotify_url?: string;
+  soundcloud_url?: string;
 }
 
 const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [portfolioItems, setPortfolioItems] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [industryStats, setIndustryStats] = useState([]);
   const [stats, setStats] = useState({
     connections: 0,
     projects: 0,
@@ -35,48 +51,73 @@ const Profile = () => {
   });
   const { toast } = useToast();
 
+  const fetchData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load profile",
+        variant: "destructive",
+      });
+    } else {
+      setProfile(data);
+      setEditForm({
+        full_name: data.full_name || "",
+        role: data.role || "",
+        bio: data.bio || "",
+        location: data.location || "",
+        avatar_url: data.avatar_url || ""
+      });
+    }
+
+    // Fetch connections count
+    const { count: connectionsCount } = await supabase
+      .from('connections')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'accepted');
+
+    // Fetch portfolio items
+    const { data: portfolioData } = await supabase
+      .from('portfolio_items')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    // Fetch reviews
+    const { data: reviewsData } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('profile_id', user.id)
+      .order('created_at', { ascending: false });
+
+    // Fetch industry stats
+    const { data: statsData } = await supabase
+      .from('industry_stats')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('display_order', { ascending: true });
+
+    setStats(prev => ({
+      ...prev,
+      connections: connectionsCount || 0,
+      projects: portfolioData?.length || 0,
+    }));
+    setPortfolioItems(portfolioData || []);
+    setReviews(reviewsData || []);
+    setIndustryStats(statsData || []);
+  };
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load profile",
-          variant: "destructive",
-        });
-      } else {
-        setProfile(data);
-        setEditForm({
-          full_name: data.full_name || "",
-          role: data.role || "",
-          bio: data.bio || "",
-          location: data.location || "",
-          avatar_url: data.avatar_url || ""
-        });
-      }
-
-      // Fetch connections count
-      const { count: connectionsCount } = await supabase
-        .from('connections')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'accepted');
-
-      setStats(prev => ({
-        ...prev,
-        connections: connectionsCount || 0,
-      }));
-    };
-
-    fetchProfile();
+    fetchData();
   }, [toast]);
 
   const handleShare = () => {
@@ -249,6 +290,7 @@ const Profile = () => {
             <TabsTrigger value="about" className="rounded-xl">About</TabsTrigger>
             <TabsTrigger value="portfolio" className="rounded-xl">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-xl">Reviews</TabsTrigger>
+            <TabsTrigger value="stats" className="rounded-xl">Achievements</TabsTrigger>
           </TabsList>
 
           <TabsContent value="about" className="space-y-6">
@@ -258,6 +300,21 @@ const Profile = () => {
                 {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
               </p>
             </div>
+
+            <SocialLinksSection 
+              links={{
+                website: profile.website,
+                linkedin_url: profile.linkedin_url,
+                behance_url: profile.behance_url,
+                imdb_url: profile.imdb_url,
+                instagram_url: profile.instagram_url,
+                twitter_url: profile.twitter_url,
+                spotify_url: profile.spotify_url,
+                soundcloud_url: profile.soundcloud_url,
+              }}
+              isOwnProfile={true}
+              onRefresh={fetchData}
+            />
 
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
               <h3 className="mb-4 text-xl font-semibold">Credits</h3>
@@ -274,19 +331,28 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-4">
-            <div className="rounded-2xl border border-border bg-card p-12 text-center shadow-card">
-              <Briefcase className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-              <h3 className="mb-2 text-xl font-semibold">No portfolio items yet</h3>
-              <p className="text-muted-foreground">Add your work to showcase your talents</p>
-            </div>
+            <PortfolioSection 
+              items={portfolioItems} 
+              isOwnProfile={true}
+              onRefresh={fetchData}
+            />
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-4">
-            <div className="rounded-2xl border border-border bg-card p-12 text-center shadow-card">
-              <Star className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-              <h3 className="mb-2 text-xl font-semibold">No reviews yet</h3>
-              <p className="text-muted-foreground">Complete projects to receive reviews</p>
-            </div>
+            <ReviewsSection 
+              reviews={reviews} 
+              isOwnProfile={true}
+              profileUserId={profile.user_id}
+              onRefresh={fetchData}
+            />
+          </TabsContent>
+
+          <TabsContent value="stats" className="space-y-4">
+            <IndustryStatsSection 
+              stats={industryStats}
+              isOwnProfile={true}
+              onRefresh={fetchData}
+            />
           </TabsContent>
         </Tabs>
       </div>

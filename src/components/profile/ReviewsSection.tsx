@@ -1,0 +1,196 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Star, MessageSquarePlus, Award, CheckCircle, XCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Review {
+  id: string;
+  reviewer_name: string;
+  reviewer_role: string;
+  reviewer_company: string;
+  reviewer_avatar_url: string;
+  rating: number;
+  review_text: string;
+  project_name: string;
+  is_endorsed: boolean;
+  is_verified: boolean;
+  status: string;
+  created_at: string;
+}
+
+interface ReviewsSectionProps {
+  reviews: Review[];
+  isOwnProfile: boolean;
+  profileUserId: string;
+  onRefresh: () => void;
+}
+
+export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh }: ReviewsSectionProps) => {
+  const [isRequestOpen, setIsRequestOpen] = useState(false);
+  const [requestForm, setRequestForm] = useState({
+    reviewer_name: "",
+    reviewer_role: "",
+    reviewer_company: "",
+    project_name: ""
+  });
+  const { toast } = useToast();
+
+  const handleRequestReview = () => {
+    toast({
+      title: "Review request sent!",
+      description: "We'll notify them to leave a review for you",
+    });
+    setIsRequestOpen(false);
+    setRequestForm({ reviewer_name: "", reviewer_role: "", reviewer_company: "", project_name: "" });
+  };
+
+  const handleUpdateStatus = async (reviewId: string, status: string) => {
+    const { error } = await supabase
+      .from('reviews')
+      .update({ status })
+      .eq('id', reviewId);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to update review", variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: `Review ${status}` });
+      onRefresh();
+    }
+  };
+
+  const approvedReviews = reviews.filter(r => r.status === 'approved');
+  const pendingReviews = reviews.filter(r => r.status === 'pending');
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Reviews & Endorsements</h3>
+        {isOwnProfile && (
+          <Dialog open={isRequestOpen} onOpenChange={setIsRequestOpen}>
+            <DialogTrigger asChild>
+              <Button variant="gradient" size="sm">
+                <MessageSquarePlus className="h-4 w-4 mr-2" />
+                Request Review
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Request a Review</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Reviewer Name</Label>
+                  <Input value={requestForm.reviewer_name} onChange={(e) => setRequestForm({ ...requestForm, reviewer_name: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Their Role</Label>
+                  <Input value={requestForm.reviewer_role} onChange={(e) => setRequestForm({ ...requestForm, reviewer_role: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Company/Organization</Label>
+                  <Input value={requestForm.reviewer_company} onChange={(e) => setRequestForm({ ...requestForm, reviewer_company: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Project Worked On</Label>
+                  <Input value={requestForm.project_name} onChange={(e) => setRequestForm({ ...requestForm, project_name: e.target.value })} />
+                </div>
+                <Button onClick={handleRequestReview} className="w-full" variant="gradient">Send Request</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      {isOwnProfile && pendingReviews.length > 0 && (
+        <div className="rounded-2xl border border-accent bg-accent/5 p-4">
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <Star className="h-5 w-5 text-accent" />
+            Pending Reviews ({pendingReviews.length})
+          </h4>
+          <div className="space-y-3">
+            {pendingReviews.map((review) => (
+              <div key={review.id} className="bg-card rounded-xl p-4 border border-border">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="font-medium">{review.reviewer_name}</p>
+                    <p className="text-sm text-muted-foreground">{review.reviewer_role}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => handleUpdateStatus(review.id, 'approved')}>
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Approve
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleUpdateStatus(review.id, 'rejected')}>
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-sm">{review.review_text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {approvedReviews.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-card p-12 text-center">
+          <Star className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+          <h3 className="mb-2 text-xl font-semibold">No reviews yet</h3>
+          <p className="text-muted-foreground">Build your credibility with reviews from collaborators</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {approvedReviews.map((review) => (
+            <div key={review.id} className="rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-start gap-4">
+                <img
+                  src={review.reviewer_avatar_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"}
+                  alt={review.reviewer_name}
+                  className="h-12 w-12 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">{review.reviewer_name}</p>
+                        {review.is_verified && (
+                          <CheckCircle className="h-4 w-4 text-primary" />
+                        )}
+                        {review.is_endorsed && (
+                          <Award className="h-4 w-4 text-accent" />
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {review.reviewer_role} at {review.reviewer_company}
+                      </p>
+                      {review.project_name && (
+                        <p className="text-sm text-muted-foreground">Project: {review.project_name}</p>
+                      )}
+                    </div>
+                    {review.rating && (
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'fill-accent text-accent' : 'text-muted'}`} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground">{review.review_text}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};

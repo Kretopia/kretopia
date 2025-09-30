@@ -42,12 +42,12 @@ const Navbar = ({ user }: NavbarProps) => {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg">
-      <div className="container mx-auto flex items-center justify-between px-4 py-2">
+      <div className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center">
           <img 
             src={logoWhite} 
             alt="ThriveIN" 
-            className="h-16"
+            className="h-20"
           />
         </Link>
 
@@ -99,8 +99,8 @@ const Navbar = ({ user }: NavbarProps) => {
               {/* Mobile Menu */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden">
-                    <Menu className="h-6 w-6" />
+                  <Button variant="ghost" size="icon" className="lg:hidden h-12 w-12">
+                    <Menu className="h-7 w-7" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent>

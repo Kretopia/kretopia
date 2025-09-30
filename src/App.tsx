@@ -21,6 +21,7 @@ import Subscription from "./pages/Subscription";
 import EarnCredits from "./pages/EarnCredits";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import ManageOpportunities from "./pages/ManageOpportunities";
+import StorageManagement from "./pages/StorageManagement";
 import TestRunner from "./pages/TestRunner";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
@@ -67,6 +68,7 @@ const App = () => {
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             <Route path="/studio" element={<ProtectedRoute><ThriveStudio /></ProtectedRoute>} />
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+            <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
             <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
             <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />

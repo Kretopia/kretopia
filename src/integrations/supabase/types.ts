@@ -478,6 +478,8 @@ export type Database = {
           soundcloud_url: string | null
           spotify_listeners: number | null
           spotify_url: string | null
+          storage_limit_bytes: number | null
+          storage_used_bytes: number | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_end_date: string | null
@@ -517,6 +519,8 @@ export type Database = {
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
+          storage_limit_bytes?: number | null
+          storage_used_bytes?: number | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_end_date?: string | null
@@ -556,6 +560,8 @@ export type Database = {
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
+          storage_limit_bytes?: number | null
+          storage_used_bytes?: number | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_end_date?: string | null
@@ -947,6 +953,10 @@ export type Database = {
       calculate_level: {
         Args: { xp: number }
         Returns: number
+      }
+      check_storage_available: {
+        Args: { file_size_param: number; user_id_param: string }
+        Returns: boolean
       }
     }
     Enums: {

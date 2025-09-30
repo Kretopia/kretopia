@@ -399,9 +399,16 @@ const FileUploadDialog = ({ projectId, onSuccess }: any) => {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [storageInfo, setStorageInfo] = useState<{used: number, limit: number} | null>(null);
   const { toast } = useToast();
 
-  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB per file limit
+
+  useEffect(() => {
+    if (open) {
+      fetchStorageInfo();
+    }
+  }, [open]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -409,6 +416,24 @@ const FileUploadDialog = ({ projectId, onSuccess }: any) => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const fetchStorageInfo = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('storage_used_bytes, storage_limit_bytes')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile) {
+      setStorageInfo({
+        used: profile.storage_used_bytes || 0,
+        limit: profile.storage_limit_bytes || 1073741824
+      });
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -425,7 +450,20 @@ const FileUploadDialog = ({ projectId, onSuccess }: any) => {
         description: `Maximum file size is ${formatFileSize(MAX_FILE_SIZE)}. Your file is ${formatFileSize(file.size)}.`,
         variant: "destructive",
       });
-      e.target.value = ''; // Reset input
+      e.target.value = '';
+      setSelectedFile(null);
+      return;
+    }
+
+    // Check storage availability
+    if (storageInfo && (storageInfo.used + file.size) > storageInfo.limit) {
+      const availableSpace = storageInfo.limit - storageInfo.used;
+      toast({
+        title: "Not enough storage",
+        description: `You need ${formatFileSize(file.size)} but only have ${formatFileSize(availableSpace)} available. Upgrade your plan for more storage.`,
+        variant: "destructive",
+      });
+      e.target.value = '';
       setSelectedFile(null);
       return;
     }
@@ -531,6 +569,27 @@ const FileUploadDialog = ({ projectId, onSuccess }: any) => {
           <DialogTitle>Upload File</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          {storageInfo && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Storage Used</span>
+                <span className="font-medium">
+                  {formatFileSize(storageInfo.used)} / {formatFileSize(storageInfo.limit)}
+                </span>
+              </div>
+              <div className="w-full bg-secondary rounded-full h-2">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{ width: `${Math.min((storageInfo.used / storageInfo.limit) * 100, 100)}%` }}
+                />
+              </div>
+              {(storageInfo.used / storageInfo.limit) > 0.8 && (
+                <p className="text-sm text-amber-600">
+                  ⚠️ You're running low on storage. Consider upgrading your plan.
+                </p>
+              )}
+            </div>
+          )}
           <div>
             <Label>Select File (Max {formatFileSize(MAX_FILE_SIZE)})</Label>
             <Input

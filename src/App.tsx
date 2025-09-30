@@ -21,6 +21,7 @@ import Subscription from "./pages/Subscription";
 import EarnCredits from "./pages/EarnCredits";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import ManageOpportunities from "./pages/ManageOpportunities";
+import TestRunner from "./pages/TestRunner";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
@@ -68,6 +69,7 @@ const App = () => {
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+            <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

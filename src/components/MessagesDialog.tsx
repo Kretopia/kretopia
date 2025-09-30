@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Send, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { validateMessage, sanitizeInput } from "@/lib/errorHandling";
 
 interface Message {
   id: string;
@@ -126,7 +127,20 @@ export const MessagesDialog = ({
   const sendMessage = async () => {
     if (!newMessage.trim() || !currentUserId) return;
 
+    // Validate message
+    const validationErrors = validateMessage(newMessage);
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Invalid message",
+        description: validationErrors[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSending(true);
+
+    const sanitizedContent = sanitizeInput(newMessage);
 
     const { error } = await supabase
       .from('messages')
@@ -134,7 +148,7 @@ export const MessagesDialog = ({
         sender_id: currentUserId,
         receiver_id: matchUserId,
         match_id: matchId,
-        content: newMessage.trim(),
+        content: sanitizedContent,
       });
 
     if (error) {

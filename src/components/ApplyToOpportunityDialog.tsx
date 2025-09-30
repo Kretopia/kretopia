@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { validateApplication, sanitizeInput, isValidUrl, handleSupabaseError } from "@/lib/errorHandling";
 
 interface ApplyToOpportunityDialogProps {
   open: boolean;
@@ -27,10 +28,24 @@ export const ApplyToOpportunityDialog = ({
   const { toast } = useToast();
 
   const handleSubmit = async () => {
-    if (!coverLetter.trim()) {
+    // Validate inputs
+    const portfolioLinksArray = portfolioLink ? [portfolioLink] : [];
+    const validationErrors = validateApplication(coverLetter, portfolioLinksArray);
+    
+    if (validationErrors.length > 0) {
       toast({
-        title: "Cover letter required",
-        description: "Please write a brief cover letter",
+        title: "Validation Error",
+        description: validationErrors[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate URL format if provided
+    if (portfolioLink && !isValidUrl(portfolioLink)) {
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a valid URL starting with http:// or https://",
         variant: "destructive",
       });
       return;
@@ -49,34 +64,27 @@ export const ApplyToOpportunityDialog = ({
       return;
     }
 
-    const portfolioLinks = portfolioLink ? [portfolioLink] : [];
+    const sanitizedCoverLetter = sanitizeInput(coverLetter);
 
     const { error } = await supabase
       .from('applications')
       .insert({
         opportunity_id: opportunityId,
         applicant_id: user.id,
-        cover_letter: coverLetter,
-        portfolio_links: portfolioLinks,
+        cover_letter: sanitizedCoverLetter,
+        portfolio_links: portfolioLinksArray,
         status: 'pending',
       });
 
     setIsSubmitting(false);
 
     if (error) {
-      if (error.code === '23505') { // Unique constraint violation
-        toast({
-          title: "Already applied",
-          description: "You've already applied to this opportunity",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to submit application. Please try again.",
-          variant: "destructive",
-        });
-      }
+      const appError = handleSupabaseError(error);
+      toast({
+        title: appError.code === 'DUPLICATE_RECORD' ? "Already applied" : "Error",
+        description: appError.message,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -109,8 +117,12 @@ export const ApplyToOpportunityDialog = ({
               value={coverLetter}
               onChange={(e) => setCoverLetter(e.target.value)}
               rows={6}
+              maxLength={5000}
               className="resize-none"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              {coverLetter.length}/5000 characters (minimum 50)
+            </p>
           </div>
 
           <div className="space-y-2">

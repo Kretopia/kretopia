@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, Flame, Trophy, Users, Sparkles, Menu, Settings, LayoutDashboard, Compass, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,8 +20,10 @@ interface NavbarProps {
 
 const Navbar = ({ user }: NavbarProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const isLandingPage = location.pathname === "/";
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -50,7 +52,7 @@ const Navbar = ({ user }: NavbarProps) => {
         </Link>
 
         <div className="flex items-center gap-4">
-          {user ? (
+          {user && !isLandingPage ? (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -148,7 +150,7 @@ const Navbar = ({ user }: NavbarProps) => {
                 </div>
               </SheetContent>
             </Sheet>
-          ) : (
+          ) : !user && isLandingPage ? (
             <>
               <Link to="/auth">
                 <Button variant="ghost">Sign In</Button>
@@ -157,7 +159,11 @@ const Navbar = ({ user }: NavbarProps) => {
                 <Button variant="gradient">Get Started</Button>
               </Link>
             </>
-          )}
+          ) : user && isLandingPage ? (
+            <Link to="/dashboard">
+              <Button variant="gradient">Go to Dashboard</Button>
+            </Link>
+          ) : null}
         </div>
       </div>
     </nav>

@@ -10,6 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { z } from "zod";
+
+const projectSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
+  description: z.string().trim().max(500, "Description must be less than 500 characters").optional(),
+  budget: z.string().trim().max(50, "Budget must be less than 50 characters").optional(),
+  deadline: z.string().optional(),
+});
 
 interface Project {
   id: string;
@@ -127,66 +135,90 @@ const Projects = () => {
   };
 
   const handleCreateProject = async () => {
-    if (!newProject.title.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a project title",
-        variant: "destructive",
-      });
-      return;
-    }
+    try {
+      // Validate input
+      const validationResult = projectSchema.safeParse(newProject);
+      
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: "Validation Error",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        return;
+      }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "Please sign in to create a project",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // Create a self-match for solo projects
-    const { data: match, error: matchError } = await supabase
-      .from('matches')
-      .insert({
-        user1_id: user.id,
-        user2_id: user.id,
-        match_type: 'solo_project',
-        status: 'active',
-      })
-      .select()
-      .single();
+      // Create a self-match for solo projects
+      const { data: match, error: matchError } = await supabase
+        .from('matches')
+        .insert({
+          user1_id: user.id,
+          user2_id: user.id,
+          match_type: 'solo_project',
+          status: 'active',
+        })
+        .select()
+        .single();
 
-    if (matchError) {
-      toast({
-        title: "Error",
-        description: "Failed to create project",
-        variant: "destructive",
-      });
-      return;
-    }
+      if (matchError) {
+        console.error('Match creation error:', matchError);
+        toast({
+          title: "Error",
+          description: `Failed to create project: ${matchError.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
 
-    const { data: project, error: projectError } = await supabase
-      .from('projects')
-      .insert({
-        match_id: match.id,
-        title: newProject.title,
-        description: newProject.description || null,
-        budget: newProject.budget || null,
-        deadline: newProject.deadline || null,
-        status: 'active',
-      })
-      .select()
-      .single();
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .insert({
+          match_id: match.id,
+          title: validationResult.data.title,
+          description: validationResult.data.description || null,
+          budget: validationResult.data.budget || null,
+          deadline: validationResult.data.deadline || null,
+          status: 'active',
+        })
+        .select()
+        .single();
 
-    if (projectError) {
-      toast({
-        title: "Error",
-        description: "Failed to create project",
-        variant: "destructive",
-      });
-    } else {
+      if (projectError) {
+        console.error('Project creation error:', projectError);
+        toast({
+          title: "Error",
+          description: `Failed to create project: ${projectError.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Success! 🎉",
         description: "Project created successfully",
       });
       setCreateDialogOpen(false);
       setNewProject({ title: "", description: "", budget: "", deadline: "" });
+      fetchProjects(); // Refresh the list
       navigate(`/desk/${project.id}`);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

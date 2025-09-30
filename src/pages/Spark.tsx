@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CreatePostDialog } from "@/components/spark/CreatePostDialog";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
+import { getMediaThumbnail } from "@/lib/mediaUtils";
 
 interface SparkPost {
   id: string;
@@ -231,20 +232,7 @@ const PostCard = ({
     <div className="group relative break-inside-avoid overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-smooth hover:shadow-glow">
       {/* Media */}
       <div className="relative overflow-hidden cursor-pointer" onClick={onMediaClick}>
-        {post.media_type === 'video' ? (
-          <video
-            src={post.media_url}
-            className="h-auto w-full object-cover"
-            controls={false}
-            muted
-            loop
-            onMouseEnter={(e) => e.currentTarget.play()}
-            onMouseLeave={(e) => {
-              e.currentTarget.pause();
-              e.currentTarget.currentTime = 0;
-            }}
-          />
-        ) : post.media_type === 'audio' ? (
+        {post.media_type === 'audio' ? (
           <div className="flex h-48 items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
             <div className="text-center">
               <Music className="mx-auto mb-2 h-12 w-12 text-primary" />
@@ -253,7 +241,7 @@ const PostCard = ({
           </div>
         ) : (
           <img
-            src={post.thumbnail_url || post.media_url}
+            src={getMediaThumbnail(post)}
             alt={post.title || 'Post'}
             className="h-auto w-full object-cover"
           />

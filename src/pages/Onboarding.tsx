@@ -26,6 +26,8 @@ const Onboarding = () => {
   const [portfolioDesc, setPortfolioDesc] = useState("");
   const [portfolioFile, setPortfolioFile] = useState<File | null>(null);
   const [portfolioPreview, setPortfolioPreview] = useState<string | null>(null);
+  const [portfolioLink, setPortfolioLink] = useState("");
+  const [portfolioInputType, setPortfolioInputType] = useState<"upload" | "link">("upload");
   
   // Social links
   const [instagram, setInstagram] = useState("");
@@ -122,8 +124,9 @@ const Onboarding = () => {
     if (!user) return;
 
     let mediaUrl = "";
+    let mediaType = "link";
     
-    if (portfolioFile) {
+    if (portfolioInputType === "upload" && portfolioFile) {
       const fileExt = portfolioFile.name.split('.').pop();
       const fileName = `${user.id}/${Math.random()}.${fileExt}`;
       
@@ -145,6 +148,26 @@ const Onboarding = () => {
         .getPublicUrl(fileName);
       
       mediaUrl = publicUrl;
+      mediaType = portfolioFile.type.startsWith('video/') ? 'video' : 'image';
+    } else if (portfolioInputType === "link" && portfolioLink) {
+      mediaUrl = portfolioLink;
+      // Detect type from URL
+      if (portfolioLink.includes('youtube.com') || portfolioLink.includes('youtu.be') || portfolioLink.includes('vimeo.com')) {
+        mediaType = 'video';
+      } else if (portfolioLink.includes('soundcloud.com') || portfolioLink.includes('spotify.com')) {
+        mediaType = 'audio';
+      } else {
+        mediaType = 'link';
+      }
+    }
+
+    if (!mediaUrl) {
+      toast({
+        title: "Error",
+        description: "Please provide either a file or a link",
+        variant: "destructive",
+      });
+      return;
     }
 
     const { error } = await supabase
@@ -154,7 +177,7 @@ const Onboarding = () => {
         title: portfolioTitle,
         description: portfolioDesc,
         media_url: mediaUrl,
-        media_type: portfolioFile?.type.startsWith('video/') ? 'video' : 'image',
+        media_type: mediaType,
         thumbnail_url: portfolioPreview
       });
 
@@ -291,21 +314,21 @@ const Onboarding = () => {
   const progressPercent = (stepNumber / totalSteps) * 100;
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-12">
+    <div className="flex min-h-screen items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
       <div className="w-full max-w-2xl">
         {/* Level & XP Display */}
-        <div className="mb-8 rounded-2xl border border-primary/20 bg-card p-6 shadow-glow">
-          <div className="mb-4 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 rounded-2xl border border-primary/20 bg-card p-4 sm:p-6 shadow-glow">
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-gradient-to-br from-primary to-secondary p-3">
-                <Trophy className="h-6 w-6 text-primary-foreground" />
+              <div className="rounded-full bg-gradient-to-br from-primary to-secondary p-2 sm:p-3">
+                <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Level {level}</p>
-                <p className="text-2xl font-bold">{xp} XP</p>
+                <p className="text-xl sm:text-2xl font-bold">{xp} XP</p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <p className="text-sm text-muted-foreground">Progress</p>
               <p className="text-lg font-semibold">{Math.round(progressPercent)}%</p>
             </div>
@@ -314,20 +337,20 @@ const Onboarding = () => {
         </div>
 
         {/* Step Content */}
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-card">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-8 shadow-card">
           {step === "profile" && (
             <form onSubmit={handleProfileSubmit} className="space-y-6">
               <div>
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="rounded-lg bg-primary/10 p-2">
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2 w-fit">
                     <Camera className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Build Your EPK</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold">Build Your EPK</h2>
                     <p className="text-sm text-muted-foreground">Step 1 of {totalSteps}</p>
                   </div>
                 </div>
-                <p className="text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Tell us about yourself to earn <span className="font-semibold text-primary">50 XP</span>
                 </p>
               </div>
@@ -364,8 +387,8 @@ const Onboarding = () => {
                   />
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button type="submit" variant="gradient" size="lg" className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="submit" variant="gradient" size="lg" className="w-full">
                   Continue & Earn 50 XP
                 </Button>
               </div>
@@ -375,16 +398,16 @@ const Onboarding = () => {
           {step === "portfolio" && (
             <form onSubmit={handlePortfolioSubmit} className="space-y-6">
               <div>
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="rounded-lg bg-primary/10 p-2">
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2 w-fit">
                     <Upload className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Add Portfolio Item</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold">Add Portfolio Item</h2>
                     <p className="text-sm text-muted-foreground">Step 2 of {totalSteps}</p>
                   </div>
                 </div>
-                <p className="text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Showcase your work to earn <span className="font-semibold text-primary">100 XP</span>
                 </p>
               </div>
@@ -409,30 +432,71 @@ const Onboarding = () => {
                     rows={3}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="portfolioFile">Upload Media</Label>
-                  <Input
-                    id="portfolioFile"
-                    type="file"
-                    accept="image/*,video/*"
-                    onChange={handleFileChange}
-                  />
-                  {portfolioPreview && (
-                    <div className="mt-2 rounded-lg overflow-hidden border">
-                      {portfolioFile?.type.startsWith('video/') ? (
-                        <video src={portfolioPreview} className="w-full" controls />
-                      ) : (
-                        <img src={portfolioPreview} alt="Preview" className="w-full" />
-                      )}
-                    </div>
-                  )}
+                
+                {/* Toggle between upload and link */}
+                <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                  <Button
+                    type="button"
+                    variant={portfolioInputType === "upload" ? "default" : "ghost"}
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setPortfolioInputType("upload")}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload File
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={portfolioInputType === "link" ? "default" : "ghost"}
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setPortfolioInputType("link")}
+                  >
+                    <LinkIcon className="h-4 w-4 mr-2" />
+                    Add Link
+                  </Button>
                 </div>
+
+                {portfolioInputType === "upload" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="portfolioFile">Upload Media</Label>
+                    <Input
+                      id="portfolioFile"
+                      type="file"
+                      accept="image/*,video/*"
+                      onChange={handleFileChange}
+                    />
+                    {portfolioPreview && (
+                      <div className="mt-2 rounded-lg overflow-hidden border">
+                        {portfolioFile?.type.startsWith('video/') ? (
+                          <video src={portfolioPreview} className="w-full" controls />
+                        ) : (
+                          <img src={portfolioPreview} alt="Preview" className="w-full" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="portfolioLink">Portfolio Link</Label>
+                    <Input
+                      id="portfolioLink"
+                      type="url"
+                      placeholder="https://youtube.com/watch?v=... or any portfolio URL"
+                      value={portfolioLink}
+                      onChange={(e) => setPortfolioLink(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      YouTube, Vimeo, SoundCloud, Spotify, or any portfolio link
+                    </p>
+                  </div>
+                )}
               </div>
-              <div className="flex gap-3">
-                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg" className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg" className="w-full sm:flex-1">
                   Skip for now
                 </Button>
-                <Button type="submit" variant="gradient" size="lg" className="flex-1">
+                <Button type="submit" variant="gradient" size="lg" className="w-full sm:flex-1">
                   Continue & Earn 100 XP
                 </Button>
               </div>
@@ -442,16 +506,16 @@ const Onboarding = () => {
           {step === "social" && (
             <form onSubmit={handleSocialSubmit} className="space-y-6">
               <div>
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="rounded-lg bg-primary/10 p-2">
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2 w-fit">
                     <LinkIcon className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Connect Social Links</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold">Connect Social Links</h2>
                     <p className="text-sm text-muted-foreground">Step 3 of {totalSteps}</p>
                   </div>
                 </div>
-                <p className="text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Link your profiles to earn <span className="font-semibold text-primary">75 XP</span>
                 </p>
               </div>
@@ -487,11 +551,11 @@ const Onboarding = () => {
                   />
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg" className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg" className="w-full sm:flex-1">
                   Skip for now
                 </Button>
-                <Button type="submit" variant="gradient" size="lg" className="flex-1">
+                <Button type="submit" variant="gradient" size="lg" className="w-full sm:flex-1">
                   Continue & Earn 75 XP
                 </Button>
               </div>
@@ -501,16 +565,16 @@ const Onboarding = () => {
           {step === "stats" && (
             <form onSubmit={handleStatsSubmit} className="space-y-6">
               <div>
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="rounded-lg bg-primary/10 p-2">
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2 w-fit">
                     <Award className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Add Achievement</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold">Add Achievement</h2>
                     <p className="text-sm text-muted-foreground">Step 4 of {totalSteps}</p>
                   </div>
                 </div>
-                <p className="text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Highlight your accomplishments to earn <span className="font-semibold text-primary">50 XP</span>
                 </p>
               </div>
@@ -534,11 +598,11 @@ const Onboarding = () => {
                   />
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg" className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg" className="w-full sm:flex-1">
                   Skip for now
                 </Button>
-                <Button type="submit" variant="gradient" size="lg" className="flex-1">
+                <Button type="submit" variant="gradient" size="lg" className="w-full sm:flex-1">
                   Continue & Earn 50 XP
                 </Button>
               </div>
@@ -548,16 +612,16 @@ const Onboarding = () => {
           {step === "invite" && (
             <form onSubmit={handleInviteSubmit} className="space-y-6">
               <div>
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="rounded-lg bg-primary/10 p-2">
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2 w-fit">
                     <Users className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Invite Friends</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold">Invite Friends</h2>
                     <p className="text-sm text-muted-foreground">Step 5 of {totalSteps}</p>
                   </div>
                 </div>
-                <p className="text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Earn <span className="font-semibold text-primary">25 XP per friend</span> you invite
                 </p>
               </div>
@@ -592,11 +656,11 @@ const Onboarding = () => {
                   </div>
                 )}
               </div>
-              <div className="flex gap-3">
-                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg" className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg" className="w-full sm:flex-1">
                   Skip for now
                 </Button>
-                <Button type="submit" variant="gradient" size="lg" className="flex-1" disabled={inviteEmails.length === 0}>
+                <Button type="submit" variant="gradient" size="lg" className="w-full sm:flex-1" disabled={inviteEmails.length === 0}>
                   Send Invites
                 </Button>
               </div>
@@ -605,16 +669,16 @@ const Onboarding = () => {
 
           {step === "complete" && (
             <div className="space-y-6 text-center">
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-secondary/20">
-                <Trophy className="h-12 w-12 text-primary" />
+              <div className="mx-auto flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-secondary/20">
+                <Trophy className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
               </div>
               <div>
-                <h2 className="mb-2 text-3xl font-bold">Welcome to Level {level}!</h2>
-                <p className="text-muted-foreground">
+                <h2 className="mb-2 text-2xl sm:text-3xl font-bold">Welcome to Level {level}!</h2>
+                <p className="text-sm sm:text-base text-muted-foreground">
                   You've earned {xp} XP. Keep growing your network and leveling up on the leaderboard!
                 </p>
               </div>
-              <div className="rounded-lg border bg-muted p-4">
+              <div className="rounded-lg border bg-muted p-4 text-left">
                 <p className="text-sm text-muted-foreground mb-2">Ways to earn more XP:</p>
                 <ul className="text-sm space-y-1">
                   <li>🔥 Post content: <span className="font-semibold">10 XP</span></li>

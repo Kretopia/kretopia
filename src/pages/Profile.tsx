@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MapPin, Star, Briefcase, Share2, Edit } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { MapPin, Star, Briefcase, Share2, Edit, Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
@@ -46,11 +47,12 @@ const Profile = () => {
   const [reviews, setReviews] = useState([]);
   const [industryStats, setIndustryStats] = useState([]);
   const [stats, setStats] = useState({
-    connections: 0,
+    circle: 0,
     projects: 0,
     responseRate: 98
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -58,6 +60,7 @@ const Profile = () => {
     location: "",
     avatar_url: ""
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -117,7 +120,7 @@ const Profile = () => {
 
     setStats(prev => ({
       ...prev,
-      connections: connectionsCount || 0,
+      circle: connectionsCount || 0,
       projects: portfolioData?.length || 0,
     }));
     setPortfolioItems(portfolioData || []);
@@ -134,6 +137,55 @@ const Profile = () => {
       title: "Profile link copied!",
       description: "Share your profile with others",
     });
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    setIsUploadingAvatar(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('portfolio')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('portfolio')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile({ ...profile!, avatar_url: publicUrl });
+      setEditForm({ ...editForm, avatar_url: publicUrl });
+      
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload profile picture",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   const handleEditSave = async () => {
@@ -185,11 +237,35 @@ const Profile = () => {
           <div className="relative px-4 md:px-8 pb-6 md:pb-8">
             <div className="mb-4 md:mb-6 -mt-12 md:-mt-16 flex flex-col items-start gap-3 md:gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 md:gap-4 w-full sm:w-auto">
-                <img
-                  src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
-                  alt="Profile"
-                  className="h-24 w-24 md:h-32 md:w-32 rounded-xl md:rounded-2xl border-4 border-card object-cover"
-                />
+                <div className="relative group">
+                  <Avatar className="h-24 w-24 md:h-32 md:w-32 rounded-xl md:rounded-2xl border-4 border-card">
+                    <AvatarImage 
+                      src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
+                      alt={profile.full_name}
+                    />
+                    <AvatarFallback className="text-2xl md:text-4xl">
+                      {profile.full_name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    className="absolute inset-0 flex items-center justify-center rounded-xl md:rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="h-6 w-6 md:h-8 md:w-8 text-white animate-spin" />
+                    ) : (
+                      <Camera className="h-6 w-6 md:h-8 md:w-8 text-white" />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                </div>
                 <div className="flex-1">
                   <h1 className="mb-1 text-xl md:text-3xl font-bold leading-tight">{profile.full_name}</h1>
                   <p className="mb-2 text-base md:text-lg text-muted-foreground">
@@ -222,6 +298,9 @@ const Profile = () => {
                   <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                       <DialogTitle>Edit Profile</DialogTitle>
+                      <DialogDescription>
+                        Update your profile information and settings
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
@@ -278,8 +357,8 @@ const Profile = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 md:gap-4 rounded-xl md:rounded-2xl border border-border bg-background p-4 md:p-6">
               <div className="text-center">
-                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-primary">{stats.connections}</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Connections</div>
+                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-primary">{stats.circle}</div>
+                <div className="text-xs md:text-sm text-muted-foreground">My Circle</div>
               </div>
               <div className="text-center">
                 <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-secondary">{stats.projects}</div>

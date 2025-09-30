@@ -110,7 +110,7 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
       label: 'LinkedIn', 
       icon: Linkedin,
       statKey: 'linkedin_connections',
-      statLabel: 'connections'
+      statLabel: 'circle'
     },
     { key: 'behance', urlKey: 'behance_url', label: 'Behance', icon: Globe },
     { key: 'imdb', urlKey: 'imdb_url', label: 'IMDb', icon: Globe },

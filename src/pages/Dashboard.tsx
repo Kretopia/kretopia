@@ -20,7 +20,7 @@ interface Profile {
 const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState({
-    connections: 0,
+    circle: 0,
     projects: 0,
     profileViews: 0
   });
@@ -56,7 +56,7 @@ const Dashboard = () => {
 
       setStats(prev => ({
         ...prev,
-        connections: connectionsCount || 0,
+        circle: connectionsCount || 0,
         projects: 3, // Mock for now
         profileViews: 342 // Mock for now
       }));
@@ -94,8 +94,8 @@ const Dashboard = () => {
             gradient="from-primary to-secondary"
           />
           <StatCard
-            title="Connections"
-            value={stats.connections.toString()}
+            title="My Circle"
+            value={stats.circle.toString()}
             change="+5 this week"
             icon={<Users className="h-6 w-6" />}
             gradient="from-secondary to-accent"
@@ -133,7 +133,7 @@ const Dashboard = () => {
               to="/profile"
             />
             <QuickActionCard
-              title="View Connections"
+              title="Grow Your Circle"
               description="Connect with other creators on the platform"
               icon={<Sparkles className="h-5 w-5" />}
               to="/discover"

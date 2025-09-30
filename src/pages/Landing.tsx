@@ -37,7 +37,7 @@ const Landing = () => {
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button variant="outline" size="xl" className="text-foreground">
+                <Button variant="outline" size="xl">
                   Get Started Free
                 </Button>
               </Link>
@@ -119,7 +119,7 @@ const Landing = () => {
                 <Button 
                   variant="outline" 
                   size="xl"
-                  className="border-2 border-primary-foreground/40 bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground backdrop-blur-sm"
+                  className="border-2 border-primary-foreground/70 bg-primary-foreground/15 hover:bg-primary-foreground/25 text-primary-foreground backdrop-blur-sm font-semibold"
                 >
                   Get Started Free
                 </Button>

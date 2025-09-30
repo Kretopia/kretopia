@@ -20,6 +20,20 @@ serve(async (req) => {
 
     console.log('Generating content for type:', type);
 
+    // Use different models based on content type
+    const isImageGeneration = type === 'image';
+    const model = isImageGeneration ? "google/gemini-2.5-flash-image-preview" : "google/gemini-2.5-flash";
+    
+    const requestBody: any = {
+      model: model,
+      messages: messages,
+    };
+
+    // Add modalities for image generation
+    if (isImageGeneration) {
+      requestBody.modalities = ["image", "text"];
+    }
+
     // Use Lovable AI for content generation
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -27,10 +41,7 @@ serve(async (req) => {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: messages,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -58,11 +69,15 @@ serve(async (req) => {
 
     const data = await response.json();
     const content = data.choices[0].message.content;
+    const images = data.choices[0].message.images;
 
     console.log('Content generated successfully');
 
     return new Response(
-      JSON.stringify({ content }),
+      JSON.stringify({ 
+        content,
+        images: images || null
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

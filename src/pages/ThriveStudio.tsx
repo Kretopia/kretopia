@@ -24,6 +24,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   type?: ContentType;
+  imageUrl?: string;
 }
 
 const ThriveStudio = () => {
@@ -57,17 +58,17 @@ const ThriveStudio = () => {
   };
 
   const contentTypes = [
-    { id: "copy", label: "Copy", icon: <FileText className="h-4 w-4" />, cost: 1 },
-    { id: "image", label: "Images", icon: <ImageIcon className="h-4 w-4" />, cost: 5 },
-    { id: "video", label: "Video", icon: <Video className="h-4 w-4" />, cost: 10 },
-    { id: "music", label: "Music", icon: <Music className="h-4 w-4" />, cost: 10 },
-    { id: "voice", label: "Voice", icon: <Mic className="h-4 w-4" />, cost: 3 },
+    { id: "copy", label: "Copy", icon: <FileText className="h-4 w-4" />, cost: 1, available: true },
+    { id: "image", label: "Images", icon: <ImageIcon className="h-4 w-4" />, cost: 5, available: true },
+    { id: "video", label: "Video", icon: <Video className="h-4 w-4" />, cost: 10, available: false },
+    { id: "music", label: "Music", icon: <Music className="h-4 w-4" />, cost: 10, available: false },
+    { id: "voice", label: "Voice", icon: <Mic className="h-4 w-4" />, cost: 3, available: false },
   ];
 
   const getSystemPrompt = (type: ContentType) => {
     const prompts = {
       copy: "You are a professional copywriter. Help create engaging copy for bios, posts, contracts, and captions.",
-      image: "You are an AI image generation assistant. Describe images in detail for generation.",
+      image: "Generate a high-quality, professional image based on the user's description. Be creative and detailed.",
       video: "You are a video concept consultant. Help brainstorm and plan video content.",
       music: "You are a music creation consultant. Help with concepts, lyrics, and composition ideas.",
       voice: "You are a voiceover script writer. Create professional voiceover scripts.",
@@ -115,8 +116,9 @@ const ThriveStudio = () => {
 
       const assistantMessage: Message = { 
         role: "assistant", 
-        content: data.content,
-        type: selectedType
+        content: data.content || "Image generated successfully!",
+        type: selectedType,
+        imageUrl: data.images?.[0]?.image_url?.url
       };
       setMessages((prev) => [...prev, assistantMessage]);
 
@@ -183,19 +185,29 @@ const ThriveStudio = () => {
         {/* Content Type Selector */}
         <div className="mb-6 flex flex-wrap gap-2">
           {contentTypes.map((type) => (
-            <Button
-              key={type.id}
-              variant={selectedType === type.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedType(type.id as ContentType)}
-              className="gap-2"
-            >
-              {type.icon}
-              {type.label}
-              <Badge variant="secondary" className="ml-1 text-xs">
-                {type.cost}
-              </Badge>
-            </Button>
+            <div key={type.id} className="relative">
+              <Button
+                variant={selectedType === type.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => type.available && setSelectedType(type.id as ContentType)}
+                className="gap-2"
+                disabled={!type.available}
+              >
+                {type.icon}
+                {type.label}
+                <Badge variant="secondary" className="ml-1 text-xs">
+                  {type.cost}
+                </Badge>
+              </Button>
+              {!type.available && (
+                <Badge 
+                  variant="outline" 
+                  className="absolute -right-2 -top-2 text-xs bg-background"
+                >
+                  Soon
+                </Badge>
+              )}
+            </div>
           ))}
         </div>
 
@@ -226,7 +238,18 @@ const ThriveStudio = () => {
                           : "bg-muted"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      {message.imageUrl ? (
+                        <div className="space-y-2">
+                          <img 
+                            src={message.imageUrl} 
+                            alt="Generated content" 
+                            className="rounded-lg max-w-full h-auto"
+                          />
+                          <p className="text-sm">{message.content}</p>
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      )}
                       {message.role === "assistant" && (
                         <div className="mt-2 flex gap-2">
                           <Button
@@ -236,6 +259,20 @@ const ThriveStudio = () => {
                           >
                             <Copy className="h-3 w-3" />
                           </Button>
+                          {message.imageUrl && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = message.imageUrl!;
+                                link.download = 'generated-image.png';
+                                link.click();
+                              }}
+                            >
+                              <Download className="h-3 w-3" />
+                            </Button>
+                          )}
                         </div>
                       )}
                     </div>

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Flame, Trophy, Users, Sparkles, Menu, Settings, LayoutDashboard, Compass, Briefcase } from "lucide-react";
+import { User, LogOut, Flame, Trophy, Users, Sparkles, Menu, Settings, LayoutDashboard, Compass, Briefcase, FolderKanban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import logoWhite from "@/assets/logo-white.png";
@@ -87,6 +87,14 @@ const Navbar = ({ user }: NavbarProps) => {
                   >
                     <Flame className="h-5 w-5" />
                     Spark
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start gap-3 h-12"
+                    onClick={() => handleNavigation("/projects")}
+                  >
+                    <FolderKanban className="h-5 w-5" />
+                    ThriveDesk
                   </Button>
                   <Button 
                     variant="ghost" 

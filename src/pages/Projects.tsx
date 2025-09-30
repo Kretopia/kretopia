@@ -1,0 +1,360 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+
+interface Project {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  created_at: string;
+  deadline: string | null;
+  budget: string | null;
+  match_id: string | null;
+  matches?: {
+    user1_id: string;
+    user2_id: string;
+  };
+  collaborator?: {
+    full_name: string;
+    avatar_url: string | null;
+  };
+}
+
+const Projects = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newProject, setNewProject] = useState({
+    title: "",
+    description: "",
+    budget: "",
+    deadline: "",
+  });
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    // Fetch all projects where user is involved
+    const { data: projectsData, error } = await supabase
+      .from('projects')
+      .select(`
+        *,
+        matches!inner (
+          user1_id,
+          user2_id
+        )
+      `)
+      .or(`matches.user1_id.eq.${user.id},matches.user2_id.eq.${user.id}`)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching projects:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load projects",
+        variant: "destructive",
+      });
+    } else {
+      // Fetch collaborator details
+      const projectsWithCollaborators = await Promise.all(
+        (projectsData || []).map(async (project) => {
+          const collaboratorId = project.matches.user1_id === user.id 
+            ? project.matches.user2_id 
+            : project.matches.user1_id;
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('user_id', collaboratorId)
+            .single();
+
+          return {
+            ...project,
+            collaborator: profile,
+          };
+        })
+      );
+
+      setProjects(projectsWithCollaborators);
+    }
+    setLoading(false);
+  };
+
+  const handleCreateProject = async () => {
+    if (!newProject.title.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a project title",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Create a self-match for solo projects
+    const { data: match, error: matchError } = await supabase
+      .from('matches')
+      .insert({
+        user1_id: user.id,
+        user2_id: user.id,
+        match_type: 'solo_project',
+        status: 'active',
+      })
+      .select()
+      .single();
+
+    if (matchError) {
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert({
+        match_id: match.id,
+        title: newProject.title,
+        description: newProject.description || null,
+        budget: newProject.budget || null,
+        deadline: newProject.deadline || null,
+        status: 'active',
+      })
+      .select()
+      .single();
+
+    if (projectError) {
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success! 🎉",
+        description: "Project created successfully",
+      });
+      setCreateDialogOpen(false);
+      setNewProject({ title: "", description: "", budget: "", deadline: "" });
+      navigate(`/desk/${project.id}`);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Clock className="h-4 w-4" />;
+      case 'completed':
+        return <CheckCircle2 className="h-4 w-4" />;
+      case 'on_hold':
+        return <AlertCircle className="h-4 w-4" />;
+      default:
+        return <FolderKanban className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'text-primary';
+      case 'completed':
+        return 'text-accent';
+      case 'on_hold':
+        return 'text-muted-foreground';
+      default:
+        return 'text-muted-foreground';
+    }
+  };
+
+  const filteredProjects = projects.filter(project =>
+    project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <Briefcase className="mx-auto mb-4 h-16 w-16 animate-pulse text-primary" />
+          <p className="text-muted-foreground">Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-4 md:p-6">
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="mb-2 text-3xl font-bold flex items-center gap-2">
+              <FolderKanban className="h-8 w-8 text-primary" />
+              ThriveDesk
+            </h1>
+            <p className="text-muted-foreground">
+              Organize your projects, collabs & opportunities
+            </p>
+          </div>
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="gradient" size="lg" className="gap-2">
+                <Plus className="h-5 w-5" />
+                New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Create New Project</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Project Title *</Label>
+                  <Input
+                    id="title"
+                    placeholder="My Awesome Project"
+                    value={newProject.title}
+                    onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="What is this project about?"
+                    value={newProject.description}
+                    onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="budget">Budget (Optional)</Label>
+                  <Input
+                    id="budget"
+                    placeholder="$1,000 - $5,000"
+                    value={newProject.budget}
+                    onChange={(e) => setNewProject({ ...newProject, budget: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="deadline">Deadline (Optional)</Label>
+                  <Input
+                    id="deadline"
+                    type="date"
+                    value={newProject.deadline}
+                    onChange={(e) => setNewProject({ ...newProject, deadline: e.target.value })}
+                  />
+                </div>
+                <Button onClick={handleCreateProject} className="w-full" variant="gradient">
+                  Create Project
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Search */}
+        <div className="mb-6 relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Projects Grid */}
+        {filteredProjects.length === 0 ? (
+          <Card className="p-12 text-center">
+            <FolderKanban className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+            <h2 className="mb-2 text-xl font-semibold">
+              {searchQuery ? "No projects found" : "No Projects Yet"}
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery 
+                ? "Try adjusting your search" 
+                : "Create your first project to get started"}
+            </p>
+            {!searchQuery && (
+              <Button onClick={() => setCreateDialogOpen(true)} variant="gradient">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Project
+              </Button>
+            )}
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredProjects.map((project) => (
+              <Card
+                key={project.id}
+                className="p-6 cursor-pointer transition-smooth hover:shadow-glow"
+                onClick={() => navigate(`/desk/${project.id}`)}
+              >
+                <div className="mb-4 flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`rounded-lg bg-primary/10 p-2 ${getStatusColor(project.status)}`}>
+                      {getStatusIcon(project.status)}
+                    </div>
+                    <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
+                      {project.status}
+                    </Badge>
+                  </div>
+                </div>
+
+                <h3 className="mb-2 text-lg font-semibold line-clamp-1">{project.title}</h3>
+                
+                {project.description && (
+                  <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
+                    {project.description}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between text-sm">
+                  <div className="text-muted-foreground">
+                    {new Date(project.created_at).toLocaleDateString()}
+                  </div>
+                  {project.collaborator && project.matches?.user1_id !== project.matches?.user2_id && (
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-semibold text-primary-foreground">
+                        {project.collaborator.full_name.charAt(0)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Projects;

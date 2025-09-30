@@ -15,6 +15,7 @@ import PublicProfile from "./pages/PublicProfile";
 import Leaderboard from "./pages/Leaderboard";
 import Circle from "./pages/Circle";
 import ThriveDesk from "./pages/ThriveDesk";
+import Projects from "./pages/Projects";
 import ThriveStudio from "./pages/ThriveStudio";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import ManageOpportunities from "./pages/ManageOpportunities";
@@ -59,6 +60,7 @@ const App = () => {
             <Route path="/profile/:userId" element={<ProtectedRoute><PublicProfile /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+            <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             <Route path="/studio" element={<ProtectedRoute><ThriveStudio /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />

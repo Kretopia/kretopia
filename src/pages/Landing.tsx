@@ -20,7 +20,7 @@ const Landing = () => {
             <h1 className="mb-6 text-5xl font-bold leading-tight md:text-7xl">
               Your Creative Network,
               <br />
-              <span className="gradient-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(271_91%_65%/0.5)]">
+              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 Powered by AI
               </span>
             </h1>
@@ -67,7 +67,9 @@ const Landing = () => {
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-bold md:text-5xl">
               Everything You Need to{" "}
-              <span className="gradient-primary bg-clip-text text-transparent">Thrive</span>
+              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Thrive
+              </span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
               From discovery to payment, ThriveIN handles it all
@@ -106,20 +108,20 @@ const Landing = () => {
       {/* CTA Section */}
       <section className="px-6 py-20">
         <div className="container mx-auto max-w-4xl">
-          <div className="gradient-primary relative overflow-hidden rounded-3xl p-12 text-center shadow-card">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-secondary to-accent p-12 text-center shadow-card">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(0_0%_100%/0.1),transparent_50%)]" />
-            <div className="relative">
+            <div className="relative text-primary-foreground">
               <h2 className="mb-4 text-4xl font-bold md:text-5xl">
                 Ready to Thrive?
               </h2>
-              <p className="mb-8 text-lg text-primary-foreground/80">
+              <p className="mb-8 text-lg opacity-90">
                 Join thousands of creators building their careers on ThriveIN
               </p>
               <Link to="/auth">
                 <Button 
                   variant="outline" 
                   size="xl"
-                  className="border-2 border-primary-foreground/70 bg-primary-foreground/15 hover:bg-primary-foreground/25 text-primary-foreground backdrop-blur-sm font-semibold"
+                  className="border-2 border-white/70 bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm font-semibold"
                 >
                   Get Started Free
                 </Button>

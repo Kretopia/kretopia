@@ -164,6 +164,7 @@ const Projects = () => {
         .from('projects')
         .insert({
           match_id: null,
+          created_by: user.id,
           title: validationResult.data.title,
           description: validationResult.data.description || null,
           budget: validationResult.data.budget || null,

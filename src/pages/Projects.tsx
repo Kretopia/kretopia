@@ -159,32 +159,11 @@ const Projects = () => {
         return;
       }
 
-      // Create a self-match for solo projects
-      const { data: match, error: matchError } = await supabase
-        .from('matches')
-        .insert({
-          user1_id: user.id,
-          user2_id: user.id,
-          match_type: 'solo_project',
-          status: 'active',
-        })
-        .select()
-        .single();
-
-      if (matchError) {
-        console.error('Match creation error:', matchError);
-        toast({
-          title: "Error",
-          description: `Failed to create project: ${matchError.message}`,
-          variant: "destructive",
-        });
-        return;
-      }
-
+      // Create solo project without a match (match_id can be null for solo projects)
       const { data: project, error: projectError } = await supabase
         .from('projects')
         .insert({
-          match_id: match.id,
+          match_id: null,
           title: validationResult.data.title,
           description: validationResult.data.description || null,
           budget: validationResult.data.budget || null,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Heart, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2 } from "lucide-react";
+import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -299,7 +299,7 @@ const Discover = () => {
             className="h-20 w-20 rounded-full"
             onClick={() => handleSwipe("right")}
           >
-            <Heart className="h-8 w-8" />
+            <Flame className="h-8 w-8" />
           </Button>
           
           <Button

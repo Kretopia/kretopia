@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Filter, Lock, Image, Video, Music } from "lucide-react";
+import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Filter, Lock, Image, Video, Music, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -50,6 +50,10 @@ const Discover = () => {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -159,6 +163,12 @@ const Discover = () => {
     const currentCard = cards[currentIndex];
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Trigger animation
+    setSwipeDirection(direction);
+    
+    // Wait for animation
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     // Check swipe limits
     if (dailySwipesLeft <= 0 && subscriptionTier === 'free') {
@@ -349,6 +359,45 @@ const Discover = () => {
     } else {
       setCurrentIndex(0);
     }
+    
+    // Reset animation state
+    setSwipeDirection(null);
+    setDragOffset({ x: 0, y: 0 });
+  };
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      setDragOffset({
+        x: clientX - centerX,
+        y: clientY - centerY
+      });
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    
+    // If dragged far enough, trigger swipe
+    if (Math.abs(dragOffset.x) > 100) {
+      handleSwipe(dragOffset.x > 0 ? "right" : "left");
+    } else {
+      // Reset position
+      setDragOffset({ x: 0, y: 0 });
+    }
   };
 
   if (loading) {
@@ -453,7 +502,41 @@ const Discover = () => {
             </div>
 
         {/* Swipe Card */}
-        <div className="relative mb-6 overflow-hidden rounded-3xl border border-border bg-card shadow-card">
+        <div 
+          ref={cardRef}
+          className="relative mb-6 overflow-hidden rounded-3xl border border-border bg-card shadow-card cursor-grab active:cursor-grabbing select-none transition-transform duration-300"
+          style={{
+            transform: swipeDirection 
+              ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '20deg' : '-20deg'})`
+              : isDragging
+              ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.1}deg)`
+              : 'translateX(0) translateY(0) rotate(0deg)',
+            opacity: swipeDirection ? 0 : Math.max(0.5, 1 - Math.abs(dragOffset.x) / 300)
+          }}
+          onMouseDown={handleDragStart}
+          onMouseMove={handleDragMove}
+          onMouseUp={handleDragEnd}
+          onMouseLeave={handleDragEnd}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+        >
+          {/* Swipe Direction Indicators */}
+          {isDragging && Math.abs(dragOffset.x) > 50 && (
+            <>
+              {dragOffset.x > 0 && (
+                <div className="absolute top-8 right-8 z-10 px-6 py-3 bg-accent/90 text-white font-bold text-xl rounded-lg rotate-12 border-4 border-white">
+                  LIKE
+                </div>
+              )}
+              {dragOffset.x < 0 && (
+                <div className="absolute top-8 left-8 z-10 px-6 py-3 bg-destructive/90 text-white font-bold text-xl rounded-lg -rotate-12 border-4 border-white">
+                  NOPE
+                </div>
+              )}
+            </>
+          )}
+          
           {/* Image */}
           <div className="relative h-96 overflow-hidden">
             <img
@@ -505,6 +588,18 @@ const Discover = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">{currentCard.description}</p>
+
+            {/* View Profile Button for Creators */}
+            {currentCard.type === "creator" && currentCard.user_id && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <Link to={`/profile/${currentCard.user_id}`}>
+                  <Button variant="outline" className="w-full">
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    View Full Profile
+                  </Button>
+                </Link>
+              </div>
+            )}
 
             {/* View Details Button for Opportunities */}
             {currentCard.type === "opportunity" && (
@@ -623,8 +718,9 @@ const Discover = () => {
           <Button
             variant="outline"
             size="icon"
-            className="h-16 w-16 rounded-full border-2 hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="h-16 w-16 rounded-full border-2 hover:border-destructive hover:bg-destructive/10 hover:text-destructive transition-all hover:scale-110 active:scale-95"
             onClick={() => handleSwipe("left")}
+            disabled={isDragging}
           >
             <X className="h-8 w-8" />
           </Button>
@@ -632,18 +728,21 @@ const Discover = () => {
           <Button
             variant="gradient"
             size="icon"
-            className="h-20 w-20 rounded-full"
+            className="h-20 w-20 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 active:scale-95"
             onClick={() => handleSwipe("right")}
+            disabled={isDragging}
+            title="Like"
           >
-            <Flame className="h-8 w-8" />
+            <Flame className="h-10 w-10" />
           </Button>
           
           <Button
             variant="outline"
             size="icon"
-            className="h-16 w-16 rounded-full border-2 hover:border-accent hover:bg-accent/10 hover:text-accent"
+            className="h-16 w-16 rounded-full border-2 hover:border-accent hover:bg-accent/10 hover:text-accent transition-all hover:scale-110 active:scale-95"
             onClick={() => handleSwipe("right", true)}
             title="Super Like"
+            disabled={isDragging}
           >
             <Star className="h-8 w-8" />
           </Button>
@@ -651,7 +750,8 @@ const Discover = () => {
 
             {/* Swipe Hint */}
             <div className="mt-6 text-center text-sm text-muted-foreground">
-              <p>Swipe right to connect • Swipe left to pass</p>
+              <p>🔥 Like • ⭐ Super Like • ❌ Pass</p>
+              <p className="mt-1 text-xs">Drag cards or use buttons</p>
             </div>
           </div>
         </div>

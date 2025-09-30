@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, User, LogOut, Flame, Trophy, Users } from "lucide-react";
+import { User, LogOut, Flame, Trophy, Users, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import logoBlack from "@/assets/logo-black.png";
 
 interface NavbarProps {
   user?: { email?: string } | null;
@@ -24,11 +25,12 @@ const Navbar = ({ user }: NavbarProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
-        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
-          <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2 shadow-glow">
-            <Sparkles className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold text-foreground">ThriveIN</span>
+        <Link to={user ? "/dashboard" : "/"} className="flex items-center">
+          <img 
+            src={logoBlack} 
+            alt="ThriveIN" 
+            className="h-8 dark:invert"
+          />
         </Link>
 
         <div className="flex items-center gap-4">

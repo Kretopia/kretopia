@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Flame, MessageCircle, Share2, Bookmark, MoreVertical } from "lucide-react";
+import { Flame, MessageCircle, Share2, Bookmark, MoreVertical, Plus, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CreatePostDialog } from "@/components/spark/CreatePostDialog";
+import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 
 interface SparkPost {
   id: string;
@@ -26,6 +28,8 @@ const Spark = () => {
   const [posts, setPosts] = useState<SparkPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<SparkPost | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -34,6 +38,30 @@ const Spark = () => {
 
   const fetchPosts = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      // Get user's connections (both directions)
+      const { data: connections, error: connectionsError } = await supabase
+        .from('connections')
+        .select('user_id, connected_user_id')
+        .eq('status', 'accepted')
+        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`);
+
+      if (connectionsError) throw connectionsError;
+
+      // Extract connected user IDs
+      const connectedUserIds = connections?.map(conn => 
+        conn.user_id === user.id ? conn.connected_user_id : conn.user_id
+      ) || [];
+
+      // Include current user's posts too
+      connectedUserIds.push(user.id);
+
+      // Fetch posts only from connected users
       const { data, error } = await supabase
         .from('portfolio_items')
         .select(`
@@ -44,6 +72,7 @@ const Spark = () => {
             role
           )
         `)
+        .in('user_id', connectedUserIds)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -130,8 +159,15 @@ const Spark = () => {
               <Flame className="h-8 w-8 text-primary" />
               Spark
             </h1>
-            <p className="text-muted-foreground">Discover inspiring work from creators</p>
+            <p className="text-muted-foreground">Discover inspiring work from your circle</p>
           </div>
+          <Button
+            onClick={() => setCreateDialogOpen(true)}
+            className="gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            Create
+          </Button>
         </div>
 
         {/* Masonry Grid */}
@@ -142,6 +178,7 @@ const Spark = () => {
               post={post}
               isLiked={likedPosts.has(post.id)}
               onLike={() => handleLike(post.id)}
+              onMediaClick={() => setSelectedPost(post)}
             />
           ))}
         </div>
@@ -151,11 +188,30 @@ const Spark = () => {
             <div className="text-center">
               <Flame className="mx-auto mb-4 h-16 w-16 text-muted-foreground/50" />
               <h2 className="mb-2 text-2xl font-bold">No posts yet</h2>
-              <p className="text-muted-foreground">Be the first to share your work!</p>
+              <p className="text-muted-foreground">Connect with others to see their sparks!</p>
             </div>
           </div>
         )}
       </div>
+
+      <CreatePostDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onPostCreated={fetchPosts}
+      />
+
+      {selectedPost && (
+        <MediaPlayerModal
+          isOpen={!!selectedPost}
+          onClose={() => setSelectedPost(null)}
+          item={{
+            title: selectedPost.title || "Post",
+            description: selectedPost.description || "",
+            media_url: selectedPost.media_url,
+            media_type: selectedPost.media_type
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -163,16 +219,18 @@ const Spark = () => {
 const PostCard = ({
   post,
   isLiked,
-  onLike
+  onLike,
+  onMediaClick
 }: {
   post: SparkPost;
   isLiked: boolean;
   onLike: () => void;
+  onMediaClick: () => void;
 }) => {
   return (
     <div className="group relative break-inside-avoid overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-smooth hover:shadow-glow">
       {/* Media */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden cursor-pointer" onClick={onMediaClick}>
         {post.media_type === 'video' ? (
           <video
             src={post.media_url}
@@ -186,6 +244,13 @@ const PostCard = ({
               e.currentTarget.currentTime = 0;
             }}
           />
+        ) : post.media_type === 'audio' ? (
+          <div className="flex h-48 items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
+            <div className="text-center">
+              <Music className="mx-auto mb-2 h-12 w-12 text-primary" />
+              <p className="text-sm font-medium">Audio Track</p>
+            </div>
+          </div>
         ) : (
           <img
             src={post.thumbnail_url || post.media_url}

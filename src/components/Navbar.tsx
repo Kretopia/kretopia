@@ -22,13 +22,13 @@ const Navbar = ({ user }: NavbarProps) => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
-          <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2">
+          <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2 shadow-glow">
             <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold">ThriveIN</span>
+          <span className="text-xl font-bold text-foreground">ThriveIN</span>
         </Link>
 
         <div className="flex items-center gap-4">

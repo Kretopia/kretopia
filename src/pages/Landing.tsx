@@ -20,7 +20,7 @@ const Landing = () => {
             <h1 className="mb-6 text-5xl font-bold leading-tight md:text-7xl">
               Your Creative Network,
               <br />
-              <span className="gradient-primary bg-clip-text text-transparent">
+              <span className="gradient-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(271_91%_65%/0.5)]">
                 Powered by AI
               </span>
             </h1>
@@ -37,7 +37,7 @@ const Landing = () => {
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button variant="outline" size="xl">
+                <Button variant="outline" size="xl" className="text-foreground">
                   Get Started Free
                 </Button>
               </Link>
@@ -119,7 +119,7 @@ const Landing = () => {
                 <Button 
                   variant="outline" 
                   size="xl"
-                  className="border-primary-foreground/20 bg-primary-foreground/10 hover:bg-primary-foreground/20"
+                  className="border-2 border-primary-foreground/40 bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground backdrop-blur-sm"
                 >
                   Get Started Free
                 </Button>

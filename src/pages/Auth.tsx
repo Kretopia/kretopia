@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Sparkles } from "lucide-react";
 
 const Auth = () => {
@@ -16,6 +17,17 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate(redirectTo);
+    }
+  }, [user, navigate, redirectTo]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +49,7 @@ const Auth = () => {
         title: "Welcome back!",
         description: "You've successfully signed in",
       });
-      navigate("/dashboard");
+      navigate(redirectTo);
     }
     setLoading(false);
   };
@@ -50,7 +62,7 @@ const Auth = () => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/onboarding`,
+        emailRedirectTo: `${window.location.origin}${redirectTo}`,
         data: {
           full_name: fullName,
           role: role,
@@ -67,8 +79,9 @@ const Auth = () => {
     } else {
       toast({
         title: "Success!",
-        description: "Your account has been created. Redirecting to onboarding...",
+        description: "Your account has been created. You can now apply for opportunities!",
       });
+      // Redirect to onboarding first, then they can go to the opportunity
       navigate("/onboarding");
     }
     setLoading(false);
@@ -83,7 +96,9 @@ const Auth = () => {
           </div>
           <h1 className="mb-2 text-4xl font-bold">Welcome to ThriveIN</h1>
           <p className="text-muted-foreground">
-            Join the creative network powered by AI
+            {searchParams.get("redirect")?.includes("/opportunity/") 
+              ? "Create an account to apply for this opportunity" 
+              : "Join the creative network powered by AI"}
           </p>
         </div>
 

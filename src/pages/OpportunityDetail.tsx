@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus } from "lucide-react";
 
 interface Opportunity {
   id: string;
@@ -25,9 +26,11 @@ interface Opportunity {
 
 const OpportunityDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchOpportunity = async () => {
@@ -55,6 +58,16 @@ const OpportunityDetail = () => {
       title: "Link Copied! 📋",
       description: "Share this opportunity with others",
     });
+  };
+
+  const handleApply = () => {
+    if (!user) {
+      // Redirect to auth page with current opportunity as redirect target
+      navigate(`/auth?redirect=/opportunity/${id}`);
+    } else {
+      // User is authenticated, navigate to Discover to apply
+      navigate("/discover");
+    }
   };
 
   if (loading) {
@@ -198,15 +211,20 @@ const OpportunityDetail = () => {
 
           {/* Apply Button */}
           {isActive ? (
-            <Link to="/auth">
-              <Button size="lg" className="w-full">
-                Apply for this Opportunity
-              </Button>
-            </Link>
+            <Button size="lg" className="w-full" onClick={handleApply}>
+              {!user && <UserPlus className="mr-2 h-5 w-5" />}
+              {user ? "Apply for this Opportunity" : "Sign Up to Apply"}
+            </Button>
           ) : (
             <Button size="lg" className="w-full" disabled>
               Campaign Ended
             </Button>
+          )}
+          
+          {!user && (
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Create a free account to apply for this opportunity
+            </p>
           )}
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WalletCard } from "@/components/WalletCard";
+import { checkAndAwardDailyLogin } from "@/lib/creditSystem";
 
 interface Profile {
   credits: number;
@@ -36,6 +37,15 @@ const Dashboard = () => {
     const fetchProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Check and award daily login credits
+      const dailyResult = await checkAndAwardDailyLogin(user.id);
+      if (dailyResult.awarded) {
+        toast({
+          title: "Daily Bonus! 🎉",
+          description: "+3 credits for logging in today",
+        });
+      }
 
       const { data, error } = await supabase
         .from('profiles')

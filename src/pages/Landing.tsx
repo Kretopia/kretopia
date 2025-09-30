@@ -146,6 +146,135 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="px-6 py-20 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
+              Choose Your{" "}
+              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Path
+              </span>
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              Start free and upgrade as you grow. Earn credits through activity or subscribe for unlimited access.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-4">
+            <PricingCard
+              name="Free"
+              price="$0"
+              period="/forever"
+              features={[
+                "10 starting credits",
+                "Earn credits by activity",
+                "Basic features",
+                "Community access",
+              ]}
+              cta="Get Started"
+              ctaLink="/auth"
+            />
+            <PricingCard
+              name="Thriver"
+              price="$9.99"
+              period="/month"
+              features={[
+                "50 credits/month",
+                "Basic features",
+                "Email support",
+                "ThriveDesk access",
+              ]}
+              cta="Subscribe"
+              ctaLink="/subscription"
+            />
+            <PricingCard
+              name="Creator Pro"
+              price="$29.99"
+              period="/month"
+              popular
+              features={[
+                "200 credits/month",
+                "Priority support",
+                "Advanced features",
+                "Milestone payments",
+              ]}
+              cta="Subscribe"
+              ctaLink="/subscription"
+            />
+            <PricingCard
+              name="Enterprise"
+              price="$99.99"
+              period="/month"
+              features={[
+                "1000 credits/month",
+                "VIP support 24/7",
+                "All features",
+                "Custom integrations",
+              ]}
+              cta="Subscribe"
+              ctaLink="/subscription"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* How to Earn Credits Section */}
+      <section className="px-6 py-20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
+              Earn Credits,{" "}
+              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Level Up
+              </span>
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              Stay active on ThriveIN and earn credits without spending a dime
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <EarnCard
+              icon="🎯"
+              title="Complete Your Profile"
+              credits="+10 credits"
+              description="Fill out your profile and upload your portfolio"
+            />
+            <EarnCard
+              icon="🤝"
+              title="Make Connections"
+              credits="+5 credits"
+              description="Connect with other creators (1 credit per connection)"
+            />
+            <EarnCard
+              icon="💼"
+              title="Complete Projects"
+              credits="+20 credits"
+              description="Finish collaborations and get rewarded"
+            />
+            <EarnCard
+              icon="⭐"
+              title="Get Reviews"
+              credits="+15 credits"
+              description="Receive 5-star reviews from clients"
+            />
+            <EarnCard
+              icon="🔥"
+              title="Daily Activity"
+              credits="+3 credits"
+              description="Log in daily and stay active"
+            />
+            <EarnCard
+              icon="📝"
+              title="Post Opportunities"
+              credits="+2 credits"
+              description="Share gigs and help the community"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="px-6 py-20">
         <div className="container mx-auto max-w-4xl">
@@ -192,6 +321,81 @@ const FeatureCard = ({
         {icon}
       </div>
       <h3 className="mb-2 text-xl font-semibold">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+};
+
+const PricingCard = ({
+  name,
+  price,
+  period,
+  features,
+  popular,
+  cta,
+  ctaLink,
+}: {
+  name: string;
+  price: string;
+  period: string;
+  features: string[];
+  popular?: boolean;
+  cta: string;
+  ctaLink: string;
+}) => {
+  return (
+    <div className={`relative rounded-2xl border bg-card p-6 shadow-card ${popular ? 'border-primary scale-105' : 'border-border'}`}>
+      {popular && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+            Most Popular
+          </span>
+        </div>
+      )}
+      <div className="mb-6">
+        <h3 className="mb-2 text-2xl font-bold">{name}</h3>
+        <div className="flex items-baseline gap-1">
+          <span className="text-4xl font-bold">{price}</span>
+          <span className="text-muted-foreground">{period}</span>
+        </div>
+      </div>
+      <ul className="mb-6 space-y-3">
+        {features.map((feature, index) => (
+          <li key={index} className="flex items-start gap-2 text-sm">
+            <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-2 w-2 rounded-full bg-primary" />
+            </div>
+            <span>{feature}</span>
+          </li>
+        ))}
+      </ul>
+      <Link to={ctaLink}>
+        <Button className="w-full" variant={popular ? "default" : "outline"}>
+          {cta}
+        </Button>
+      </Link>
+    </div>
+  );
+};
+
+const EarnCard = ({
+  icon,
+  title,
+  credits,
+  description,
+}: {
+  icon: string;
+  title: string;
+  credits: string;
+  description: string;
+}) => {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+      <div className="mb-3 text-4xl">{icon}</div>
+      <h3 className="mb-2 text-lg font-semibold">{title}</h3>
+      <div className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+        {credits}
+      </div>
       <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   );

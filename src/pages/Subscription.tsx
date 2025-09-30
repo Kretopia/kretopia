@@ -9,7 +9,7 @@ import { Check, Loader2, Sparkles } from "lucide-react";
 
 const SUBSCRIPTION_TIERS = [
   {
-    name: "Basic",
+    name: "Thriver",
     price: "$9.99",
     priceId: "price_1SD3owJvOS7zG18hXCqHcExm",
     productId: "prod_T9MYOv0ucDM6MT",
@@ -23,7 +23,7 @@ const SUBSCRIPTION_TIERS = [
     ],
   },
   {
-    name: "Pro",
+    name: "Creator Pro",
     price: "$29.99",
     priceId: "price_1SD3pLJvOS7zG18hyhVHXByZ",
     productId: "prod_T9MYqqkqTWy1Wm",

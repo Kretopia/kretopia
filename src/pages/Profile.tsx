@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { MapPin, Star, Briefcase, Share2, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +24,14 @@ const Profile = () => {
     connections: 0,
     projects: 0,
     responseRate: 98
+  });
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: "",
+    role: "",
+    bio: "",
+    location: "",
+    avatar_url: ""
   });
   const { toast } = useToast();
 
@@ -42,6 +54,13 @@ const Profile = () => {
         });
       } else {
         setProfile(data);
+        setEditForm({
+          full_name: data.full_name || "",
+          role: data.role || "",
+          bio: data.bio || "",
+          location: data.location || "",
+          avatar_url: data.avatar_url || ""
+        });
       }
 
       // Fetch connections count
@@ -65,6 +84,37 @@ const Profile = () => {
       title: "Profile link copied!",
       description: "Share your profile with others",
     });
+  };
+
+  const handleEditSave = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: editForm.full_name,
+        role: editForm.role,
+        bio: editForm.bio,
+        location: editForm.location,
+        avatar_url: editForm.avatar_url,
+      })
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    } else {
+      setProfile({ ...profile!, ...editForm });
+      setIsEditOpen(false);
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+    }
   };
 
   if (!profile) {
@@ -112,10 +162,66 @@ const Profile = () => {
                 <Button variant="outline" size="icon" onClick={handleShare}>
                   <Share2 className="h-4 w-4" />
                 </Button>
-                <Button variant="gradient">
-                  <Edit className="h-4 w-4" />
-                  Edit Profile
-                </Button>
+                <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="gradient">
+                      <Edit className="h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Edit Profile</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="full_name">Full Name</Label>
+                        <Input
+                          id="full_name"
+                          value={editForm.full_name}
+                          onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="role">Role</Label>
+                        <Input
+                          id="role"
+                          value={editForm.role}
+                          onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          value={editForm.location}
+                          onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea
+                          id="bio"
+                          value={editForm.bio}
+                          onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                          rows={4}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="avatar_url">Avatar URL</Label>
+                        <Input
+                          id="avatar_url"
+                          value={editForm.avatar_url}
+                          onChange={(e) => setEditForm({ ...editForm, avatar_url: e.target.value })}
+                          placeholder="https://example.com/avatar.jpg"
+                        />
+                      </div>
+                      <Button onClick={handleEditSave} className="w-full" variant="gradient">
+                        Save Changes
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
 

@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Sparkles, Users, Briefcase, Wallet, Zap, Lightbulb, Rocket, Trophy } from "lucide-react";
-import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { Users, Briefcase, Wallet, Zap, Lightbulb, Rocket, Trophy, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { PostOpportunitySection } from "@/components/landing/PostOpportunitySection";
+import { FeatureCard } from "@/components/landing/FeatureCard";
+import { PricingCard } from "@/components/landing/PricingCard";
+import { EarnCard } from "@/components/landing/EarnCard";
+import { Button } from "@/components/ui/button";
 
 const Landing = () => {
   const [opportunitiesCount, setOpportunitiesCount] = useState<number>(0);
@@ -22,85 +26,8 @@ const Landing = () => {
   }, []);
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden px-6 py-12 md:py-24">
-        <div className="absolute inset-0 gradient-accent opacity-50" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(271_91%_65%/0.1),transparent_50%)]" />
-        
-        <div className="container relative mx-auto max-w-6xl">
-          <div className="animate-slide-up text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span>Where Creators Connect & Thrive</span>
-            </div>
-            
-            <h1 className="mb-6 text-5xl font-bold leading-tight md:text-7xl">
-              Your Creative Network,
-              <br />
-              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Powered by AI
-              </span>
-            </h1>
-            
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground md:text-xl">
-              Connect with creators, discover opportunities, and grow your career. 
-              ThriveIN matches you with the perfect collabs, gigs, and partnerships.
-            </p>
-            
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link to="/auth">
-                <Button variant="hero" size="xl">
-                  Start Your Journey
-                </Button>
-              </Link>
-              <Link to="/auth">
-                <Button variant="outline" size="xl">
-                  Get Started Free
-                </Button>
-              </Link>
-            </div>
-            
-            <div className="mt-10 flex items-center justify-center gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-accent" />
-                <span>Free to join</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-secondary" />
-                <span>AI-powered matching</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-                <span>Earn as you create</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Post Opportunity Section */}
-      <section className="px-6 py-16 bg-muted/30">
-        <div className="container mx-auto max-w-4xl text-center">
-          <div className="mb-6">
-            <Briefcase className="mx-auto h-12 w-12 text-primary mb-4" />
-            <h2 className="text-3xl font-bold mb-3 md:text-4xl">
-              Looking to Hire Creators?
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
-              Post your job, collaboration, or barter opportunity in seconds. 
-              No account needed to get started.
-            </p>
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
-              <Sparkles className="h-4 w-4" />
-              <span>{opportunitiesCount} Active Opportunities Available</span>
-            </div>
-          </div>
-          <PostOpportunityDialog variant="hero" size="xl" />
-          <p className="mt-4 text-sm text-muted-foreground">
-            AI-moderated to keep our community safe
-          </p>
-        </div>
-      </section>
+      <HeroSection />
+      <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
 
       {/* Features Section */}
       <section className="px-6 py-20">
@@ -258,7 +185,7 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
             <EarnCard
               icon="🎯"
               title="Complete Your Profile"
@@ -328,101 +255,5 @@ const Landing = () => {
   );
 };
 
-const FeatureCard = ({ 
-  icon, 
-  title, 
-  description, 
-  gradient 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string;
-  gradient: string;
-}) => {
-  return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1 hover:shadow-glow">
-      <div className={`mb-4 inline-flex rounded-xl bg-gradient-to-br ${gradient} p-3 text-primary-foreground`}>
-        {icon}
-      </div>
-      <h3 className="mb-2 text-xl font-semibold">{title}</h3>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-  );
-};
-
-const PricingCard = ({
-  name,
-  price,
-  period,
-  features,
-  popular,
-  cta,
-  ctaLink,
-}: {
-  name: string;
-  price: string;
-  period: string;
-  features: string[];
-  popular?: boolean;
-  cta: string;
-  ctaLink: string;
-}) => {
-  return (
-    <div className={`relative rounded-2xl border bg-card p-6 shadow-card ${popular ? 'border-primary scale-105' : 'border-border'}`}>
-      {popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-            Most Popular
-          </span>
-        </div>
-      )}
-      <div className="mb-6">
-        <h3 className="mb-2 text-2xl font-bold">{name}</h3>
-        <div className="flex items-baseline gap-1">
-          <span className="text-4xl font-bold">{price}</span>
-          <span className="text-muted-foreground">{period}</span>
-        </div>
-      </div>
-      <ul className="mb-6 space-y-3">
-        {features.map((feature, index) => (
-          <li key={index} className="flex items-start gap-2 text-sm">
-            <div className="mt-0.5 h-5 w-5 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
-              <div className="h-2 w-2 rounded-full bg-primary" />
-            </div>
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
-      <Link to={ctaLink}>
-        <Button className="w-full" variant={popular ? "default" : "outline"}>
-          {cta}
-        </Button>
-      </Link>
-    </div>
-  );
-};
-
-const EarnCard = ({
-  icon,
-  title,
-  credits,
-  description,
-}: {
-  icon: string;
-  title: string;
-  credits: string;
-  description: string;
-}) => {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-      <div className="mb-3 text-4xl">{icon}</div>
-      <h3 className="mb-2 text-lg font-semibold">{title}</h3>
-      <div className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
-        {credits}
-      </div>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-  );
-};
 
 export default Landing;

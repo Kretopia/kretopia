@@ -172,7 +172,7 @@ export const WalletCard = () => {
       <CardContent>
         <div className="space-y-4">
           {/* Balance Display */}
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-2">
             <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-4">
               <p className="text-sm text-primary-foreground/80">Credits</p>
               <p className="text-3xl font-bold text-primary-foreground">

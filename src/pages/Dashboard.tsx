@@ -167,8 +167,8 @@ const Dashboard = () => {
             </h1>
             <p className="text-muted-foreground">Here's what's happening with your network</p>
           </div>
-          <Link to="/discover">
-            <Button variant="gradient" size="lg">
+          <Link to="/discover" className="w-full md:w-auto">
+            <Button variant="gradient" size="lg" className="w-full md:w-auto">
               <Zap className="h-4 w-4" />
               Discover Now
             </Button>
@@ -176,8 +176,8 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Cards & Wallet */}
-        <div className="mb-8 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 grid gap-6 md:grid-cols-2">
+        <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="md:col-span-2 lg:col-span-2 grid gap-6 grid-cols-1 sm:grid-cols-2">
             <StatCard
               title="My Circle"
               value={stats.circle.toString()}

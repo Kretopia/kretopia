@@ -392,13 +392,13 @@ const Discover = () => {
           </Tabs>
 
           {/* Filters */}
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap gap-2 items-center">
             <Filter className="h-4 w-4 text-muted-foreground" />
             
             {/* Show different filters based on active tab */}
             {(activeTab === 'all' || activeTab === 'creators') && (
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -413,7 +413,7 @@ const Discover = () => {
             
             {activeTab === 'opportunities' && (
               <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Location" />
                 </SelectTrigger>
                 <SelectContent>

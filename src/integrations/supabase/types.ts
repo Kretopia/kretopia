@@ -162,10 +162,14 @@ export type Database = {
           compensation: string | null
           created_at: string | null
           created_by: string | null
+          deliverables: string | null
           description: string
+          duration: string | null
           id: string
           image_url: string | null
           location: string | null
+          requirements: string | null
+          skills: string[] | null
           status: string | null
           tags: string[] | null
           title: string
@@ -176,10 +180,14 @@ export type Database = {
           compensation?: string | null
           created_at?: string | null
           created_by?: string | null
+          deliverables?: string | null
           description: string
+          duration?: string | null
           id?: string
           image_url?: string | null
           location?: string | null
+          requirements?: string | null
+          skills?: string[] | null
           status?: string | null
           tags?: string[] | null
           title: string
@@ -190,10 +198,14 @@ export type Database = {
           compensation?: string | null
           created_at?: string | null
           created_by?: string | null
+          deliverables?: string | null
           description?: string
+          duration?: string | null
           id?: string
           image_url?: string | null
           location?: string | null
+          requirements?: string | null
+          skills?: string[] | null
           status?: string | null
           tags?: string[] | null
           title?: string

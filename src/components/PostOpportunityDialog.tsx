@@ -28,6 +28,10 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
     description: "",
     compensation: "",
     location: "",
+    requirements: "",
+    skills: "",
+    deliverables: "",
+    duration: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,6 +69,10 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
           description: formData.description,
           compensation: formData.compensation,
           location: formData.location,
+          requirements: formData.requirements,
+          skills: formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
+          deliverables: formData.deliverables,
+          duration: formData.duration,
           tags: [formData.company],
           status: 'active',
         });
@@ -84,6 +92,10 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
         description: "",
         compensation: "",
         location: "",
+        requirements: "",
+        skills: "",
+        deliverables: "",
+        duration: "",
       });
       setOpen(false);
     } catch (error) {
@@ -191,6 +203,48 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
               placeholder="e.g., Los Angeles, CA or Remote"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="requirements">Requirements</Label>
+            <Textarea
+              id="requirements"
+              placeholder="e.g., 5k+ Instagram followers, 2+ years experience, portfolio required"
+              value={formData.requirements}
+              onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="skills">Skills Needed (comma-separated)</Label>
+            <Input
+              id="skills"
+              placeholder="e.g., Video Editing, Social Media Marketing, Photography"
+              value={formData.skills}
+              onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="deliverables">Deliverables</Label>
+            <Textarea
+              id="deliverables"
+              placeholder="e.g., 3 Instagram posts, 1 YouTube video, weekly content calendar"
+              value={formData.deliverables}
+              onChange={(e) => setFormData({ ...formData, deliverables: e.target.value })}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="duration">Duration/Timeline</Label>
+            <Input
+              id="duration"
+              placeholder="e.g., 1 month, 3-6 months, Ongoing"
+              value={formData.duration}
+              onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
             />
           </div>
 

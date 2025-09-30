@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { User, LogOut, Flame, Trophy, Users, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import logoBlack from "@/assets/logo-black.png";
+import logoWhite from "@/assets/logo-white.png";
 
 interface NavbarProps {
   user?: { email?: string } | null;
@@ -27,9 +27,9 @@ const Navbar = ({ user }: NavbarProps) => {
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center">
           <img 
-            src={logoBlack} 
+            src={logoWhite} 
             alt="ThriveIN" 
-            className="h-8 dark:invert"
+            className="h-16"
           />
         </Link>
 

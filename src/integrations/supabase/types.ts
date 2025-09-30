@@ -625,6 +625,10 @@ export type Database = {
       project_messages: {
         Row: {
           created_at: string | null
+          file_name: string | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string | null
           id: string
           message: string
           project_id: string
@@ -632,6 +636,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
           id?: string
           message: string
           project_id: string
@@ -639,6 +647,10 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
           id?: string
           message?: string
           project_id?: string

@@ -1,27 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  MessageCircle, 
-  CheckSquare, 
-  Upload, 
   Send, 
   Plus,
   ArrowLeft,
   Calendar,
   DollarSign,
-  Loader2
+  Loader2,
+  Image as ImageIcon,
+  FileText,
+  MoreVertical,
+  Paperclip
 } from "lucide-react";
 
 const ThriveDesk = () => {
@@ -35,12 +37,19 @@ const ThriveDesk = () => {
   const [files, setFiles] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (projectId) {
       fetchProjectData();
     }
   }, [projectId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const fetchProjectData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -56,7 +65,7 @@ const ThriveDesk = () => {
     if (projectData) {
       setProject(projectData);
 
-      // Fetch messages
+      // Fetch messages with file info
       const { data: messagesData } = await supabase
         .from('project_messages')
         .select('*, profiles(full_name, avatar_url)')
@@ -88,30 +97,80 @@ const ThriveDesk = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() && !attachedFile) return;
 
     setSendingMessage(true);
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { error } = await supabase
-      .from('project_messages')
-      .insert({
-        project_id: projectId,
-        user_id: user?.id,
-        message: newMessage,
-      });
+    try {
+      let fileUrl = null;
+      let fileName = null;
+      let fileSize = null;
+      let fileType = null;
 
-    if (error) {
+      // Upload file if attached
+      if (attachedFile) {
+        const filePath = `${projectId}/${Date.now()}-${attachedFile.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('project-files')
+          .upload(filePath, attachedFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('project-files')
+          .getPublicUrl(filePath);
+
+        fileUrl = data.publicUrl;
+        fileName = attachedFile.name;
+        fileSize = attachedFile.size;
+        fileType = attachedFile.type;
+      }
+
+      const { error } = await supabase
+        .from('project_messages')
+        .insert({
+          project_id: projectId,
+          user_id: user?.id,
+          message: newMessage || (attachedFile ? `Shared ${attachedFile.name}` : ''),
+          file_url: fileUrl,
+          file_name: fileName,
+          file_size: fileSize,
+          file_type: fileType,
+        });
+
+      if (error) throw error;
+
+      setNewMessage("");
+      setAttachedFile(null);
+      fetchProjectData();
+    } catch (error: any) {
       toast({
         title: "Failed to send",
-        description: "Could not send your message.",
+        description: error.message || "Could not send your message.",
         variant: "destructive",
       });
-    } else {
-      setNewMessage("");
-      fetchProjectData();
     }
     setSendingMessage(false);
+  };
+
+  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAttachedFile(file);
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const isImageFile = (fileType: string) => {
+    return fileType?.startsWith('image/');
   };
 
   if (loading) {
@@ -134,166 +193,228 @@ const ThriveDesk = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">{project.title}</h1>
-              <Badge className="mt-1">{project.status}</Badge>
+    <div className="min-h-screen bg-background">
+      <div className="flex h-screen">
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <div className="border-b px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-semibold">{project.title}</h1>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Workspace for project collaboration
+                  </p>
+                </div>
+              </div>
+              <Badge variant="secondary">{project.status}</Badge>
+            </div>
+          </div>
+
+          {/* Messages Area */}
+          <ScrollArea className="flex-1 px-6">
+            <div className="py-4 space-y-6 max-w-4xl">
+              {messages.map((msg) => (
+                <div key={msg.id} className="space-y-3">
+                  <div className="flex gap-3">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={msg.profiles?.avatar_url} />
+                      <AvatarFallback>
+                        {msg.profiles?.full_name?.[0] || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-semibold text-sm">
+                          {msg.profiles?.full_name || 'User'}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(msg.created_at).toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm leading-relaxed">{msg.message}</p>
+                      
+                      {/* File attachment */}
+                      {msg.file_url && (
+                        <div className="mt-3">
+                          {isImageFile(msg.file_type) ? (
+                            <div className="rounded-lg overflow-hidden border max-w-md">
+                              <img 
+                                src={msg.file_url} 
+                                alt={msg.file_name}
+                                className="w-full h-auto"
+                              />
+                            </div>
+                          ) : (
+                            <a 
+                              href={msg.file_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-3 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
+                            >
+                              <FileText className="h-5 w-5 text-primary" />
+                              <div className="text-left">
+                                <p className="text-sm font-medium">{msg.file_name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatFileSize(msg.file_size)}
+                                </p>
+                              </div>
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
+
+          {/* Message Input */}
+          <div className="border-t p-4">
+            <div className="max-w-4xl">
+              {attachedFile && (
+                <div className="mb-2 p-2 bg-secondary rounded-lg flex items-center gap-2">
+                  <Paperclip className="h-4 w-4" />
+                  <span className="text-sm flex-1">{attachedFile.name}</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setAttachedFile(null)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileAttach}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+                <Input
+                  placeholder="Type your message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                  className="flex-1"
+                />
+                <Button onClick={handleSendMessage} disabled={sendingMessage}>
+                  {sendingMessage ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Project Info */}
-        <Card className="mb-6">
-          <CardContent className="flex gap-6 p-6">
-            {project.budget && (
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{project.budget}</span>
-              </div>
-            )}
-            {project.deadline && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  Due {new Date(project.deadline).toLocaleDateString()}
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Main Content */}
-        <Tabs defaultValue="chat" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="chat" className="gap-2">
-              <MessageCircle className="h-4 w-4" />
-              Chat
-            </TabsTrigger>
-            <TabsTrigger value="tasks" className="gap-2">
-              <CheckSquare className="h-4 w-4" />
-              Tasks
-            </TabsTrigger>
-            <TabsTrigger value="files" className="gap-2">
-              <Upload className="h-4 w-4" />
-              Files
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Chat Tab */}
-          <TabsContent value="chat">
-            <Card>
-              <CardContent className="p-0">
-                <div className="h-[500px] flex flex-col">
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {messages.map((msg) => (
-                      <div key={msg.id} className="flex gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={msg.profiles?.avatar_url} />
-                          <AvatarFallback>
-                            {msg.profiles?.full_name?.[0] || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-baseline gap-2 mb-1">
-                            <span className="font-semibold text-sm">
-                              {msg.profiles?.full_name || 'User'}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(msg.created_at).toLocaleTimeString()}
-                            </span>
-                          </div>
-                          <p className="text-sm">{msg.message}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t p-4 flex gap-2">
-                    <Input
-                      placeholder="Type your message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    />
-                    <Button onClick={handleSendMessage} disabled={sendingMessage}>
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
+        {/* Right Sidebar */}
+        <div className="w-80 border-l bg-muted/30">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-6">
+              {/* Project Info */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm">Project Details</h3>
+                <div className="space-y-2">
+                  {project.budget && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <span>{project.budget}</span>
+                    </div>
+                  )}
+                  {project.deadline && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
 
-          {/* Tasks Tab */}
-          <TabsContent value="tasks">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Tasks</CardTitle>
-                <CreateTaskDialog projectId={projectId!} onSuccess={fetchProjectData} />
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {tasks.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    No tasks yet. Create one to get started!
-                  </p>
-                ) : (
-                  tasks.map((task) => (
-                    <TaskItem key={task.id} task={task} onUpdate={fetchProjectData} />
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+              <Separator />
 
-          {/* Files Tab */}
-          <TabsContent value="files">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Files</CardTitle>
-                <FileUploadDialog projectId={projectId!} onSuccess={fetchProjectData} />
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {files.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    No files uploaded yet
-                  </p>
-                ) : (
-                  files.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Upload className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium text-sm">{file.file_name}</p>
+              {/* Tasks Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-sm">Tasks</h3>
+                  <CreateTaskDialog projectId={projectId!} onSuccess={fetchProjectData} />
+                </div>
+                <div className="space-y-2">
+                  {tasks.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">
+                      No tasks yet
+                    </p>
+                  ) : (
+                    tasks.slice(0, 5).map((task) => (
+                      <TaskItem key={task.id} task={task} onUpdate={fetchProjectData} compact />
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Files Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-sm">Files</h3>
+                  <FileUploadDialog projectId={projectId!} onSuccess={fetchProjectData} />
+                </div>
+                <div className="space-y-2">
+                  {files.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">
+                      No files yet
+                    </p>
+                  ) : (
+                    files.slice(0, 5).map((file) => (
+                      <a
+                        key={file.id}
+                        href={file.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+                      >
+                        <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium truncate">{file.file_name}</p>
                           <p className="text-xs text-muted-foreground">
-                            Uploaded by {file.profiles?.full_name} • {new Date(file.created_at).toLocaleDateString()}
+                            {formatFileSize(file.file_size)}
                           </p>
                         </div>
-                      </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={file.file_url} target="_blank" rel="noopener noreferrer">
-                          View
-                        </a>
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                      </a>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );
 };
 
 // Task Item Component
-const TaskItem = ({ task, onUpdate }: any) => {
+const TaskItem = ({ task, onUpdate, compact = false }: any) => {
   const { toast } = useToast();
 
   const updateTaskStatus = async (newStatus: string) => {
@@ -312,12 +433,38 @@ const TaskItem = ({ task, onUpdate }: any) => {
     }
   };
 
+  if (compact) {
+    return (
+      <div className="flex items-start gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+        <input
+          type="checkbox"
+          checked={task.status === 'completed'}
+          onChange={(e) => updateTaskStatus(e.target.checked ? 'completed' : 'todo')}
+          className="mt-1 h-4 w-4 rounded border-border"
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{task.title}</p>
+          {task.due_date && (
+            <p className="text-xs text-muted-foreground">
+              {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-between p-3 border rounded-lg">
       <div className="flex-1">
         <p className="font-medium">{task.title}</p>
         {task.description && (
           <p className="text-sm text-muted-foreground">{task.description}</p>
+        )}
+        {task.due_date && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Due: {new Date(task.due_date).toLocaleDateString()}
+          </p>
         )}
       </div>
       <Select value={task.status} onValueChange={updateTaskStatus}>
@@ -339,9 +486,12 @@ const CreateTaskDialog = ({ projectId, onSuccess }: any) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const { toast } = useToast();
 
   const handleCreate = async () => {
+    if (!title.trim()) return;
+
     const { data: { user } } = await supabase.auth.getUser();
 
     const { error } = await supabase
@@ -350,6 +500,7 @@ const CreateTaskDialog = ({ projectId, onSuccess }: any) => {
         project_id: projectId,
         title,
         description,
+        due_date: dueDate || null,
         created_by: user?.id,
       });
 
@@ -361,6 +512,7 @@ const CreateTaskDialog = ({ projectId, onSuccess }: any) => {
     } else {
       setTitle("");
       setDescription("");
+      setDueDate("");
       setOpen(false);
       onSuccess();
     }
@@ -369,9 +521,8 @@ const CreateTaskDialog = ({ projectId, onSuccess }: any) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-1" />
-          New Task
+        <Button size="sm" variant="ghost">
+          <Plus className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -381,11 +532,19 @@ const CreateTaskDialog = ({ projectId, onSuccess }: any) => {
         <div className="space-y-4">
           <div>
             <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task title" />
           </div>
           <div>
-            <Label>Description</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Label>Description (optional)</Label>
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Add details..." />
+          </div>
+          <div>
+            <Label>Due Date (optional)</Label>
+            <Input 
+              type="date" 
+              value={dueDate} 
+              onChange={(e) => setDueDate(e.target.value)} 
+            />
           </div>
           <Button onClick={handleCreate} className="w-full">Create Task</Button>
         </div>
@@ -559,9 +718,8 @@ const FileUploadDialog = ({ projectId, onSuccess }: any) => {
       }
     }}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Upload className="h-4 w-4 mr-1" />
-          Upload File
+        <Button size="sm" variant="ghost">
+          <Plus className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>

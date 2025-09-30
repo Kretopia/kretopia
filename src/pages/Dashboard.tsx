@@ -15,11 +15,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { WalletCard } from "@/components/WalletCard";
 import { checkAndAwardDailyLogin } from "@/lib/creditSystem";
+import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
+import { checkProfileCompletion, PROFILE_COMPLETION_XP } from "@/lib/profileCompletion";
+import { Database } from "@/integrations/supabase/types";
 
-interface Profile {
-  credits: number;
-  full_name: string;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -49,7 +49,7 @@ const Dashboard = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('credits, full_name')
+        .select('*')
         .eq('user_id', user.id)
         .single();
 
@@ -174,6 +174,13 @@ const Dashboard = () => {
             </Button>
           </Link>
         </div>
+
+        {/* Profile Completion Card */}
+        {profile && checkProfileCompletion(profile).percentage < 100 && (
+          <div className="mb-8">
+            <ProfileCompletionCard completion={checkProfileCompletion(profile)} />
+          </div>
+        )}
 
         {/* Stats Cards & Wallet */}
         <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">

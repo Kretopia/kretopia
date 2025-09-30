@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft } from "lucide-react";
+import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
 
 interface Opportunity {
   id: string;
@@ -29,6 +30,7 @@ const OpportunityDetail = () => {
   const navigate = useNavigate();
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showApplyDialog, setShowApplyDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -65,8 +67,8 @@ const OpportunityDetail = () => {
       // Redirect to auth page with current opportunity as redirect target
       navigate(`/auth?redirect=/opportunity/${id}`);
     } else {
-      // User is authenticated, navigate to Discover to apply
-      navigate("/discover");
+      // User is authenticated, open apply dialog
+      setShowApplyDialog(true);
     }
   };
 
@@ -229,6 +231,16 @@ const OpportunityDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Apply Dialog */}
+      {opportunity && (
+        <ApplyToOpportunityDialog 
+          open={showApplyDialog}
+          onOpenChange={setShowApplyDialog}
+          opportunityId={opportunity.id}
+          opportunityTitle={opportunity.title}
+        />
+      )}
     </div>
   );
 };

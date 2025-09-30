@@ -155,7 +155,7 @@ const Discover = () => {
     fetchData();
   }, [activeTab, locationFilter, roleFilter]);
 
-  const handleSwipe = async (direction: "left" | "right") => {
+  const handleSwipe = async (direction: "left" | "right", isSuperLike: boolean = false) => {
     const currentCard = cards[currentIndex];
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -192,7 +192,15 @@ const Discover = () => {
       target_id: currentCard.id,
       target_type: currentCard.type,
       direction,
+      is_super_like: isSuperLike,
     });
+
+    if (isSuperLike) {
+      toast({
+        title: "Super Like Sent! ⭐",
+        description: "They'll see you liked them extra!",
+      });
+    }
 
     // Check for mutual match if swiping right
     if (direction === "right") {
@@ -634,13 +642,8 @@ const Discover = () => {
             variant="outline"
             size="icon"
             className="h-16 w-16 rounded-full border-2 hover:border-accent hover:bg-accent/10 hover:text-accent"
-            onClick={() => {
-              toast({
-                title: "Super Like! ⭐",
-                description: "This feature is coming soon!",
-              });
-            }}
-            title="Super Like (Coming Soon)"
+            onClick={() => handleSwipe("right", true)}
+            title="Super Like"
           >
             <Star className="h-8 w-8" />
           </Button>

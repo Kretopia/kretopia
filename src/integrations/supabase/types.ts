@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          applicant_id: string
+          cover_letter: string | null
+          created_at: string | null
+          id: string
+          opportunity_id: string
+          portfolio_links: string[] | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          applicant_id: string
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          opportunity_id: string
+          portfolio_links?: string[] | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          applicant_id?: string
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          opportunity_id?: string
+          portfolio_links?: string[] | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           connected_user_id: string
@@ -157,6 +198,47 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          match_id: string | null
+          read: boolean | null
+          receiver_id: string
+          sender_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          match_id?: string | null
+          read?: boolean | null
+          receiver_id: string
+          sender_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          match_id?: string | null
+          read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestones: {
         Row: {
           amount: number
@@ -223,6 +305,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          link: string | null
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       opportunities: {
         Row: {
@@ -701,6 +816,7 @@ export type Database = {
           created_at: string | null
           direction: string
           id: string
+          is_super_like: boolean | null
           target_id: string
           target_type: string
           user_id: string
@@ -709,6 +825,7 @@ export type Database = {
           created_at?: string | null
           direction: string
           id?: string
+          is_super_like?: boolean | null
           target_id: string
           target_type: string
           user_id: string
@@ -717,6 +834,7 @@ export type Database = {
           created_at?: string | null
           direction?: string
           id?: string
+          is_super_like?: boolean | null
           target_id?: string
           target_type?: string
           user_id?: string

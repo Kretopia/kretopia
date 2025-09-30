@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Discover from "./pages/Discover";
 import Spark from "./pages/Spark";
 import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
 import Leaderboard from "./pages/Leaderboard";
 import Circle from "./pages/Circle";
 import ThriveDesk from "./pages/ThriveDesk";
@@ -55,6 +56,7 @@ const App = () => {
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
             <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/profile/:userId" element={<ProtectedRoute><PublicProfile /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />

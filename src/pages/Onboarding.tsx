@@ -300,6 +300,26 @@ const Onboarding = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload a file smaller than 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file type
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload an image or video file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setPortfolioFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {

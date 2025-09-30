@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles } from "lucide-react";
+import { Sparkles, AlertCircle } from "lucide-react";
+import { validateEmail, validatePassword } from "@/lib/validation";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +16,8 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -31,6 +34,22 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate inputs
+    const emailValidation = validateEmail(email);
+    const passwordValidation = validatePassword(password);
+    
+    if (!emailValidation.valid) {
+      setEmailError(emailValidation.error || "");
+      return;
+    }
+    if (!passwordValidation.valid) {
+      setPasswordError(passwordValidation.error || "");
+      return;
+    }
+    
+    setEmailError("");
+    setPasswordError("");
     setLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -39,11 +58,19 @@ const Auth = () => {
     });
 
     if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error.message.includes("Invalid login credentials")) {
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Welcome back!",
@@ -56,6 +83,40 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate inputs
+    const emailValidation = validateEmail(email);
+    const passwordValidation = validatePassword(password);
+    
+    if (!fullName.trim() || fullName.length < 2) {
+      toast({
+        title: "Validation Error",
+        description: "Name must be at least 2 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!role.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your role",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!emailValidation.valid) {
+      setEmailError(emailValidation.error || "");
+      return;
+    }
+    if (!passwordValidation.valid) {
+      setPasswordError(passwordValidation.error || "");
+      return;
+    }
+    
+    setEmailError("");
+    setPasswordError("");
     setLoading(true);
 
     const { error } = await supabase.auth.signUp({
@@ -64,24 +125,31 @@ const Auth = () => {
       options: {
         emailRedirectTo: `${window.location.origin}${redirectTo}`,
         data: {
-          full_name: fullName,
-          role: role,
+          full_name: fullName.trim(),
+          role: role.trim(),
         },
       },
     });
 
     if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error.message.includes("already registered")) {
+        toast({
+          title: "Account Exists",
+          description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Success!",
         description: "Your account has been created. You can now apply for opportunities!",
       });
-      // Redirect to onboarding first, then they can go to the opportunity
       navigate("/onboarding");
     }
     setLoading(false);
@@ -117,9 +185,19 @@ const Auth = () => {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError("");
+                  }}
                   required
+                  className={emailError ? "border-destructive" : ""}
                 />
+                {emailError && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {emailError}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signin-password">Password</Label>
@@ -128,9 +206,19 @@ const Auth = () => {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError("");
+                  }}
                   required
+                  className={passwordError ? "border-destructive" : ""}
                 />
+                {passwordError && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {passwordError}
+                  </p>
+                )}
               </div>
               <Button
                 type="submit"
@@ -155,6 +243,8 @@ const Auth = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
+                  minLength={2}
+                  maxLength={100}
                 />
               </div>
               <div className="space-y-2">
@@ -166,6 +256,7 @@ const Auth = () => {
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   required
+                  maxLength={100}
                 />
               </div>
               <div className="space-y-2">
@@ -175,9 +266,19 @@ const Auth = () => {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError("");
+                  }}
                   required
+                  className={emailError ? "border-destructive" : ""}
                 />
+                {emailError && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {emailError}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
@@ -186,10 +287,23 @@ const Auth = () => {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError("");
+                  }}
                   required
-                  minLength={6}
+                  minLength={8}
+                  className={passwordError ? "border-destructive" : ""}
                 />
+                {passwordError && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {passwordError}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Must be at least 8 characters
+                </p>
               </div>
               <Button
                 type="submit"

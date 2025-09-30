@@ -394,18 +394,36 @@ const Discover = () => {
           {/* Filters */}
           <div className="flex gap-2 items-center">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="Creator">Creator</SelectItem>
-                <SelectItem value="Musician">Musician</SelectItem>
-                <SelectItem value="Photographer">Photographer</SelectItem>
-                <SelectItem value="Videographer">Videographer</SelectItem>
-              </SelectContent>
-            </Select>
+            
+            {/* Show different filters based on active tab */}
+            {(activeTab === 'all' || activeTab === 'creators') && (
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="Creator">Creator</SelectItem>
+                  <SelectItem value="Musician">Musician</SelectItem>
+                  <SelectItem value="Photographer">Photographer</SelectItem>
+                  <SelectItem value="Videographer">Videographer</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            
+            {activeTab === 'opportunities' && (
+              <Select value={locationFilter} onValueChange={setLocationFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  <SelectItem value="remote">Remote</SelectItem>
+                  <SelectItem value="onsite">On-site</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
             {subscriptionTier === 'free' && (
               <Badge variant="outline" className="gap-1 text-muted-foreground">

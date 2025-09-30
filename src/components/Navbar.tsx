@@ -40,12 +40,12 @@ const Navbar = ({ user }: NavbarProps) => {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg">
-      <div className="container mx-auto flex items-center justify-between px-6 py-4">
+      <div className="container mx-auto flex items-center justify-between px-4 py-2">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center">
           <img 
             src={logoWhite} 
             alt="ThriveIN" 
-            className="h-32"
+            className="h-16"
           />
         </Link>
 

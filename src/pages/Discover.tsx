@@ -468,21 +468,21 @@ const Discover = () => {
   const currentCard = cards[currentIndex];
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-3 sm:p-4 md:p-6">
       <div className="mx-auto max-w-6xl">
         {/* Header with Tabs and Filters */}
-        <div className="mb-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h1 className="text-3xl font-bold">Discover</h1>
+        <div className="mb-4 sm:mb-6">
+          <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Discover</h1>
             {subscriptionTier === 'free' && (
-              <Badge variant="secondary" className="gap-1">
+              <Badge variant="secondary" className="gap-1 w-fit">
                 {dailySwipesLeft} swipes left
               </Badge>
             )}
           </div>
 
           {/* Search Bar */}
-          <div className="mb-4">
+          <div className="mb-3 sm:mb-4">
             <SearchBar
               onSearch={(query, filters) => {
                 setSearchQuery(query);
@@ -500,11 +500,11 @@ const Discover = () => {
           </div>
 
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-4">
-            <TabsList className="w-full">
-              <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-              <TabsTrigger value="creators" className="flex-1">Creators</TabsTrigger>
-              <TabsTrigger value="opportunities" className="flex-1">Opportunities</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-3 sm:mb-4">
+            <TabsList className="w-full grid grid-cols-3">
+              <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
+              <TabsTrigger value="creators" className="text-xs sm:text-sm">Creators</TabsTrigger>
+              <TabsTrigger value="opportunities" className="text-xs sm:text-sm">Opportunities</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -515,7 +515,7 @@ const Discover = () => {
             {/* Show different filters based on active tab */}
             {(activeTab === 'all' || activeTab === 'creators') && (
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-full sm:w-40">
+                <SelectTrigger className="w-full sm:w-40 h-9">
                   <SelectValue placeholder="Role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -530,7 +530,7 @@ const Discover = () => {
             
             {activeTab === 'opportunities' && (
               <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger className="w-full sm:w-40">
+                <SelectTrigger className="w-full sm:w-40 h-9">
                   <SelectValue placeholder="Location" />
                 </SelectTrigger>
                 <SelectContent>
@@ -543,9 +543,10 @@ const Discover = () => {
             )}
 
             {subscriptionTier === 'free' && (
-              <Badge variant="outline" className="gap-1 text-muted-foreground">
+              <Badge variant="outline" className="gap-1 text-xs text-muted-foreground">
                 <Lock className="h-3 w-3" />
-                More filters with Premium
+                <span className="hidden sm:inline">More filters with Premium</span>
+                <span className="sm:hidden">Premium filters</span>
               </Badge>
             )}
           </div>
@@ -555,7 +556,7 @@ const Discover = () => {
         <div className="flex justify-center">
           <div className="w-full max-w-md">
             {/* Card Counter */}
-            <div className="mb-4 text-center">
+            <div className="mb-3 sm:mb-4 text-center">
               <span className="text-sm text-muted-foreground">
                 {currentIndex + 1} / {cards.length}
               </span>
@@ -564,7 +565,7 @@ const Discover = () => {
         {/* Swipe Card */}
         <div 
           ref={cardRef}
-          className="relative mb-6 overflow-hidden rounded-3xl border border-border bg-card shadow-card cursor-grab active:cursor-grabbing select-none"
+          className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl border border-border bg-card shadow-card cursor-grab active:cursor-grabbing select-none"
           style={{
             transform: swipeDirection 
               ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '20deg' : '-20deg'})`
@@ -586,12 +587,12 @@ const Discover = () => {
           {isDragging && Math.abs(dragOffset.x) > 30 && (
             <>
               {dragOffset.x > 0 && (
-                <div className="absolute top-8 right-8 z-10 px-6 py-3 bg-accent/90 text-white font-bold text-xl rounded-lg rotate-12 border-4 border-white">
+                <div className="absolute top-4 sm:top-8 right-4 sm:right-8 z-10 px-4 sm:px-6 py-2 sm:py-3 bg-accent/90 text-white font-bold text-lg sm:text-xl rounded-lg rotate-12 border-2 sm:border-4 border-white">
                   LIKE
                 </div>
               )}
               {dragOffset.x < 0 && (
-                <div className="absolute top-8 left-8 z-10 px-6 py-3 bg-destructive/90 text-white font-bold text-xl rounded-lg -rotate-12 border-4 border-white">
+                <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-10 px-4 sm:px-6 py-2 sm:py-3 bg-destructive/90 text-white font-bold text-lg sm:text-xl rounded-lg -rotate-12 border-2 sm:border-4 border-white">
                   NOPE
                 </div>
               )}
@@ -599,7 +600,7 @@ const Discover = () => {
           )}
           
           {/* Image */}
-          <div className="relative h-96 overflow-hidden">
+          <div className="relative h-64 sm:h-80 md:h-96 overflow-hidden">
             <img
               src={currentCard.image}
               alt={currentCard.name}
@@ -608,8 +609,8 @@ const Discover = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
             
             {/* Type Badge */}
-            <div className="absolute right-4 top-4">
-              <div className={`rounded-full px-4 py-2 text-sm font-medium ${
+            <div className="absolute right-3 sm:right-4 top-3 sm:top-4">
+              <div className={`rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium ${
                 currentCard.type === "creator" 
                   ? "bg-primary/90 text-primary-foreground" 
                   : "bg-secondary/90 text-secondary-foreground"
@@ -620,42 +621,43 @@ const Discover = () => {
           </div>
 
           {/* Content */}
-          <div className="p-6">
-            <h2 className="mb-1 text-2xl font-bold">{currentCard.name}</h2>
-            <p className="mb-3 text-lg text-muted-foreground">{currentCard.title}</p>
+          <div className="p-4 sm:p-6">
+            <h2 className="mb-1 text-xl sm:text-2xl font-bold">{currentCard.name}</h2>
+            <p className="mb-2 sm:mb-3 text-base sm:text-lg text-muted-foreground">{currentCard.title}</p>
 
-            <div className="mb-4 flex flex-wrap items-center gap-4 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="mb-3 sm:mb-4 flex flex-wrap items-center gap-3 sm:gap-4 text-sm">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                {currentCard.location}
+                <span className="text-xs sm:text-sm">{currentCard.location}</span>
               </div>
               {currentCard.compensation && (
-                <div className="flex items-center gap-2 text-accent">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-accent">
                   <DollarSign className="h-4 w-4" />
-                  {currentCard.compensation}
+                  <span className="text-xs sm:text-sm">{currentCard.compensation}</span>
                 </div>
               )}
             </div>
 
-            <div className="mb-4 flex flex-wrap gap-2">
+            <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5 sm:gap-2">
               {currentCard.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-border bg-muted px-3 py-1 text-xs"
+                  className="rounded-full border border-border bg-muted px-2.5 py-0.5 sm:px-3 sm:py-1 text-xs"
                 >
                   {tag}
                 </span>
               ))}
             </div>
 
-            <p className="text-sm text-muted-foreground">{currentCard.description}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{currentCard.description}</p>
 
             {/* View Profile Button for Creators */}
             {currentCard.type === "creator" && currentCard.user_id && (
-              <div className="mt-4 pt-4 border-t border-border">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  size="sm"
+                  className="w-full h-9"
                   onClick={() => navigate(`/profile/${currentCard.user_id}`, { 
                     state: { cardIndex: currentIndex } 
                   })}
@@ -668,9 +670,9 @@ const Discover = () => {
 
             {/* View Details Button for Opportunities */}
             {currentCard.type === "opportunity" && (
-              <div className="mt-4 pt-4 border-t border-border">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
                 <Link to={`/opportunity/${currentCard.id}`}>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full h-9">
                     <Eye className="mr-2 h-4 w-4" />
                     View Full Details
                   </Button>
@@ -680,12 +682,12 @@ const Discover = () => {
 
             {/* Portfolio Preview for Creators */}
             {currentCard.type === "creator" && currentCard.portfolio && currentCard.portfolio.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
                   <Image className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-semibold">Featured Work</span>
+                  <span className="text-xs sm:text-sm font-semibold">Featured Work</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                   {currentCard.portfolio.slice(0, 3).map((item) => (
                     <div key={item.id} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
                       <img 
@@ -694,9 +696,9 @@ const Discover = () => {
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        {item.media_type === 'video' && <Video className="h-6 w-6 text-white" />}
-                        {item.media_type === 'audio' && <Music className="h-6 w-6 text-white" />}
-                        {item.media_type === 'image' && <Image className="h-6 w-6 text-white" />}
+                        {item.media_type === 'video' && <Video className="h-5 w-5 sm:h-6 sm:w-6 text-white" />}
+                        {item.media_type === 'audio' && <Music className="h-5 w-5 sm:h-6 sm:w-6 text-white" />}
+                        {item.media_type === 'image' && <Image className="h-5 w-5 sm:h-6 sm:w-6 text-white" />}
                       </div>
                     </div>
                   ))}
@@ -706,18 +708,18 @@ const Discover = () => {
 
             {/* Social Stats for Creators */}
             {currentCard.type === "creator" && currentCard.socialStats && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
                   <Users className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-semibold">Audience Reach</span>
+                  <span className="text-xs sm:text-sm font-semibold">Audience Reach</span>
                   {currentCard.socialStats.verified_metrics && (
                     <CheckCircle2 className="h-4 w-4 text-accent ml-auto" />
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   {currentCard.socialStats.instagram_followers && (
                     <div className="text-center p-2 rounded-lg bg-muted/50">
-                      <div className="text-lg font-bold text-primary">
+                      <div className="text-base sm:text-lg font-bold text-primary">
                         {currentCard.socialStats.instagram_followers >= 1000000 
                           ? `${(currentCard.socialStats.instagram_followers / 1000000).toFixed(1)}M`
                           : currentCard.socialStats.instagram_followers >= 1000 
@@ -729,7 +731,7 @@ const Discover = () => {
                   )}
                   {currentCard.socialStats.youtube_subscribers && (
                     <div className="text-center p-2 rounded-lg bg-muted/50">
-                      <div className="text-lg font-bold text-primary">
+                      <div className="text-base sm:text-lg font-bold text-primary">
                         {currentCard.socialStats.youtube_subscribers >= 1000000 
                           ? `${(currentCard.socialStats.youtube_subscribers / 1000000).toFixed(1)}M`
                           : currentCard.socialStats.youtube_subscribers >= 1000 
@@ -741,7 +743,7 @@ const Discover = () => {
                   )}
                   {currentCard.socialStats.tiktok_followers && (
                     <div className="text-center p-2 rounded-lg bg-muted/50">
-                      <div className="text-lg font-bold text-primary">
+                      <div className="text-base sm:text-lg font-bold text-primary">
                         {currentCard.socialStats.tiktok_followers >= 1000000 
                           ? `${(currentCard.socialStats.tiktok_followers / 1000000).toFixed(1)}M`
                           : currentCard.socialStats.tiktok_followers >= 1000 
@@ -753,7 +755,7 @@ const Discover = () => {
                   )}
                   {currentCard.socialStats.spotify_listeners && (
                     <div className="text-center p-2 rounded-lg bg-muted/50">
-                      <div className="text-lg font-bold text-primary">
+                      <div className="text-base sm:text-lg font-bold text-primary">
                         {currentCard.socialStats.spotify_listeners >= 1000000 
                           ? `${(currentCard.socialStats.spotify_listeners / 1000000).toFixed(1)}M`
                           : currentCard.socialStats.spotify_listeners >= 1000 
@@ -765,9 +767,9 @@ const Discover = () => {
                   )}
                 </div>
                 {currentCard.socialStats.total_engagement_rate && (
-                  <div className="mt-3 p-2 rounded-lg bg-accent/10 flex items-center justify-center gap-2">
+                  <div className="mt-2 sm:mt-3 p-2 rounded-lg bg-accent/10 flex items-center justify-center gap-2">
                     <Eye className="h-4 w-4 text-accent" />
-                    <span className="text-sm">
+                    <span className="text-xs sm:text-sm">
                       <span className="font-bold text-accent">{currentCard.socialStats.total_engagement_rate}%</span>
                       <span className="text-muted-foreground ml-1">engagement</span>
                     </span>
@@ -779,42 +781,42 @@ const Discover = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-3 sm:gap-4">
           <Button
             variant="outline"
             size="icon"
-            className="h-16 w-16 rounded-full border-2 hover:border-destructive hover:bg-destructive/10 hover:text-destructive transition-all hover:scale-110 active:scale-95"
+            className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 hover:border-destructive hover:bg-destructive/10 hover:text-destructive transition-all hover:scale-110 active:scale-95"
             onClick={() => handleSwipe("left")}
             disabled={isDragging}
           >
-            <X className="h-8 w-8" />
+            <X className="h-7 w-7 sm:h-8 sm:w-8" />
           </Button>
           
           <Button
             variant="gradient"
             size="icon"
-            className="h-20 w-20 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 active:scale-95"
+            className="h-16 w-16 sm:h-20 sm:w-20 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 active:scale-95"
             onClick={() => handleSwipe("right")}
             disabled={isDragging}
             title="Like"
           >
-            <Flame className="h-10 w-10" />
+            <Flame className="h-8 w-8 sm:h-10 sm:w-10" />
           </Button>
           
           <Button
             variant="outline"
             size="icon"
-            className="h-16 w-16 rounded-full border-2 hover:border-accent hover:bg-accent/10 hover:text-accent transition-all hover:scale-110 active:scale-95"
+            className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 hover:border-accent hover:bg-accent/10 hover:text-accent transition-all hover:scale-110 active:scale-95"
             onClick={() => handleSwipe("right", true)}
             title="Super Like"
             disabled={isDragging}
           >
-            <Star className="h-8 w-8" />
+            <Star className="h-7 w-7 sm:h-8 sm:w-8" />
           </Button>
         </div>
 
             {/* Swipe Hint */}
-            <div className="mt-6 text-center text-sm text-muted-foreground">
+            <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-muted-foreground">
               <p>🔥 Like • ⭐ Super Like • ❌ Pass</p>
               <p className="mt-1 text-xs">Drag cards or use buttons</p>
             </div>

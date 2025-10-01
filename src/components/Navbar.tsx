@@ -53,12 +53,12 @@ const Navbar = ({ user }: NavbarProps) => {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg">
-      <div className="container mx-auto flex items-center justify-between px-4 py-4">
+      <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center">
           <img 
             src={logoWhite} 
             alt="ThriveIN" 
-            className="h-20"
+            className="h-16 sm:h-20"
           />
         </Link>
 
@@ -104,24 +104,23 @@ const Navbar = ({ user }: NavbarProps) => {
           </div>
         )}
 
-        <div className="flex items-center gap-4">
-          {user && !isLandingPage ? (
+        <div className="flex items-center gap-2 sm:gap-4">{user && !isLandingPage ? (
             <>
               {/* Mobile Menu */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden h-12 w-12">
-                    <Menu className="h-7 w-7" />
+                  <Button variant="ghost" size="icon" className="lg:hidden h-10 w-10 sm:h-12 sm:w-12">
+                    <Menu className="h-6 w-6 sm:h-7 sm:w-7" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent>
+                <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
                   <SheetHeader>
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col gap-4 mt-8">
+                  <div className="flex flex-col gap-2 mt-6">
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/spark")}
                     >
                       <Flame className="h-5 w-5" />
@@ -129,7 +128,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/studio")}
                     >
                       <Sparkles className="h-5 w-5" />
@@ -137,7 +136,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/subscription")}
                     >
                       <Zap className="h-5 w-5" />
@@ -145,7 +144,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/storage")}
                     >
                       <HardDrive className="h-5 w-5" />
@@ -153,7 +152,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/earn-credits")}
                     >
                       <Coins className="h-5 w-5" />
@@ -161,7 +160,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/manage-opportunities")}
                     >
                       <Briefcase className="h-5 w-5" />
@@ -169,7 +168,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/leaderboard")}
                     >
                       <Trophy className="h-5 w-5" />
@@ -180,7 +179,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/profile")}
                     >
                       <User className="h-5 w-5" />
@@ -188,7 +187,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Button>
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-11"
                       onClick={() => handleNavigation("/profile?tab=settings")}
                     >
                       <Settings className="h-5 w-5" />
@@ -196,7 +195,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="justify-start gap-3 h-12 text-destructive hover:text-destructive"
+                      className="justify-start gap-3 h-11 text-destructive hover:text-destructive mt-2"
                       onClick={handleSignOut}
                     >
                       <LogOut className="h-5 w-5" />

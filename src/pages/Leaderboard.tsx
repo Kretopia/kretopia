@@ -26,12 +26,16 @@ const Leaderboard = () => {
 
   const fetchLeaderboard = async () => {
     setLoading(true);
-    // Get top 50 users
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Get top 51 users (extra to account for filtering owner)
     const { data: leaders, error } = await supabase
       .from('profiles')
       .select('id, user_id, full_name, avatar_url, xp, level, role')
       .order('xp', { ascending: false })
-      .limit(50);
+      .limit(51);
 
     if (error) {
       console.error('Error fetching leaderboard:', error);
@@ -39,11 +43,23 @@ const Leaderboard = () => {
       return;
     }
 
-    setTopUsers(leaders || []);
+    // Filter out owner (thriveuae@gmail.com) - get their user_id first
+    const { data: ownerProfile } = await supabase.auth.getUser();
+    
+    // Hardcode: Filter out thriveuae@gmail.com by checking against known email
+    // In a real scenario, you'd store this as an admin flag in the database
+    const filteredLeaders = (leaders || []).filter(leader => {
+      // Exclude owner by user_id if current user is owner
+      if (user?.email === 'thriveuae@gmail.com') {
+        return leader.user_id !== user.id;
+      }
+      return true;
+    }).slice(0, 50);
 
-    // Get current user's rank
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    setTopUsers(filteredLeaders);
+
+    // Get current user's rank (if not owner)
+    if (user && user.email !== 'thriveuae@gmail.com') {
       const { data: profile } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url, xp, level, role')

@@ -245,27 +245,27 @@ const Projects = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-3 sm:p-4 md:p-6">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-4 sm:mb-6 flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="mb-2 text-3xl font-bold flex items-center gap-2">
-              <FolderKanban className="h-8 w-8 text-primary" />
+            <h1 className="mb-1 sm:mb-2 text-2xl sm:text-3xl font-bold flex items-center gap-2">
+              <FolderKanban className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               ThriveDesk
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Organize your projects, collabs & opportunities
             </p>
           </div>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="gradient" size="lg" className="gap-2">
-                <Plus className="h-5 w-5" />
+              <Button variant="gradient" size="lg" className="gap-2 w-full md:w-auto">
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
                 New Project
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="w-[95vw] sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Create New Project</DialogTitle>
               </DialogHeader>
@@ -316,24 +316,24 @@ const Projects = () => {
         </div>
 
         {/* Search */}
-        <div className="mb-6 relative">
+        <div className="mb-4 sm:mb-6 relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10"
           />
         </div>
 
         {/* Projects Grid */}
         {filteredProjects.length === 0 ? (
-          <Card className="p-12 text-center">
-            <FolderKanban className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-            <h2 className="mb-2 text-xl font-semibold">
+          <Card className="p-8 sm:p-12 text-center">
+            <FolderKanban className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
+            <h2 className="mb-2 text-lg sm:text-xl font-semibold">
               {searchQuery ? "No projects found" : "No Projects Yet"}
             </h2>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">
               {searchQuery 
                 ? "Try adjusting your search" 
                 : "Create your first project to get started"}
@@ -346,33 +346,33 @@ const Projects = () => {
             )}
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((project) => (
               <Card
                 key={project.id}
-                className="p-6 cursor-pointer transition-smooth hover:shadow-glow"
+                className="p-4 sm:p-6 cursor-pointer transition-smooth hover:shadow-glow"
                 onClick={() => navigate(`/desk/${project.id}`)}
               >
-                <div className="mb-4 flex items-start justify-between">
+                <div className="mb-3 sm:mb-4 flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <div className={`rounded-lg bg-primary/10 p-2 ${getStatusColor(project.status)}`}>
+                    <div className={`rounded-lg bg-primary/10 p-1.5 sm:p-2 ${getStatusColor(project.status)}`}>
                       {getStatusIcon(project.status)}
                     </div>
-                    <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
+                    <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="text-xs">
                       {project.status}
                     </Badge>
                   </div>
                 </div>
 
-                <h3 className="mb-2 text-lg font-semibold line-clamp-1">{project.title}</h3>
+                <h3 className="mb-2 text-base sm:text-lg font-semibold line-clamp-1">{project.title}</h3>
                 
                 {project.description && (
-                  <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
+                  <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground line-clamp-2">
                     {project.description}
                   </p>
                 )}
 
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <div className="text-muted-foreground">
                     {new Date(project.created_at).toLocaleDateString()}
                   </div>

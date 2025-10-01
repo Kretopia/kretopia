@@ -88,20 +88,20 @@ const Circle = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-3 sm:p-4 md:p-6">
       <div className="mx-auto max-w-4xl">
-        <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-bold">My Circle</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="mb-1 sm:mb-2 text-2xl sm:text-3xl font-bold">My Circle</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Your network of {connections.length} creative connections
           </p>
         </div>
 
         {connections.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Users className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-            <h2 className="mb-2 text-xl font-semibold">No connections yet</h2>
-            <p className="text-muted-foreground mb-4">
+          <Card className="p-8 sm:p-12 text-center">
+            <Users className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
+            <h2 className="mb-2 text-lg sm:text-xl font-semibold">No connections yet</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">
               Start swiping on Discover to build your creative network!
             </p>
             <Button onClick={() => window.location.href = '/discover'}>
@@ -109,11 +109,11 @@ const Circle = () => {
             </Button>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
             {connections.map((connection) => (
-              <Card key={connection.id} className="p-6 transition-smooth hover:shadow-glow">
-                <div className="flex gap-4">
-                  <Avatar className="h-16 w-16">
+              <Card key={connection.id} className="p-4 sm:p-6 transition-smooth hover:shadow-glow">
+                <div className="flex gap-3 sm:gap-4">
+                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
                     <AvatarImage src={connection.profile.avatar_url || undefined} />
                     <AvatarFallback>
                       {connection.profile.full_name.split(' ').map(n => n[0]).join('')}
@@ -121,10 +121,10 @@ const Circle = () => {
                   </Avatar>
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold truncate">
+                    <h3 className="font-semibold truncate text-sm sm:text-base">
                       {connection.profile.full_name}
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                       {connection.profile.role}
                     </p>
                     {connection.profile.location && (
@@ -136,16 +136,16 @@ const Circle = () => {
                 </div>
 
                 {connection.profile.bio && (
-                  <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+                  <p className="mt-3 text-xs sm:text-sm text-muted-foreground line-clamp-2">
                     {connection.profile.bio}
                   </p>
                 )}
 
-                <div className="mt-4 flex gap-2">
+                <div className="mt-3 sm:mt-4 flex gap-2">
                   <Button 
                     variant="default" 
                     size="sm"
-                    className="flex-1 gap-2"
+                    className="flex-1 gap-1.5 sm:gap-2 h-9"
                     onClick={() => handleMessage(
                       connection.connected_user_id, 
                       connection.profile.full_name,
@@ -153,18 +153,19 @@ const Circle = () => {
                     )}
                   >
                     <MessageCircle className="h-4 w-4" />
-                    Message
+                    <span className="text-xs sm:text-sm">Message</span>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
+                    className="h-9 px-3 text-xs sm:text-sm"
                     onClick={() => window.location.href = `/profile/${connection.connected_user_id}`}
                   >
                     View Profile
                   </Button>
                 </div>
 
-                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="mt-2 sm:mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
                   Connected {new Date(connection.created_at).toLocaleDateString()}
                 </div>

@@ -13,7 +13,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
 
 interface NavbarProps {
@@ -113,34 +122,10 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/dashboard")}
-                    >
-                      <LayoutDashboard className="h-5 w-5" />
-                      Dashboard
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/discover")}
-                    >
-                      <Compass className="h-5 w-5" />
-                      Discover
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
                       onClick={() => handleNavigation("/spark")}
                     >
                       <Flame className="h-5 w-5" />
                       Spark
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/projects")}
-                    >
-                      <FolderKanban className="h-5 w-5" />
-                      ThriveDesk
                     </Button>
                     <Button 
                       variant="ghost" 
@@ -190,14 +175,6 @@ const Navbar = ({ user }: NavbarProps) => {
                       <Trophy className="h-5 w-5" />
                       Leaderboard
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/circle")}
-                    >
-                      <Users className="h-5 w-5" />
-                      Circle
-                    </Button>
                     
                     <Separator className="my-2" />
                     
@@ -229,18 +206,59 @@ const Navbar = ({ user }: NavbarProps) => {
                 </SheetContent>
               </Sheet>
 
-              {/* Desktop Sign Out */}
+              {/* Desktop User Menu */}
               <NotificationCenter />
               <SupportDialog />
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleSignOut}
-                className="hidden lg:flex"
-                title="Sign Out"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hidden lg:flex h-10 w-10 rounded-full"
+                  >
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                        {user?.email?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">My Account</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/profile?tab=settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/subscription")}>
+                    <Zap className="mr-2 h-4 w-4" />
+                    Subscription
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/storage")}>
+                    <HardDrive className="mr-2 h-4 w-4" />
+                    Storage
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={handleSignOut}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : !user && isLandingPage ? (
             <>

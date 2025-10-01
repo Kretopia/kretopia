@@ -28,6 +28,7 @@ import WaitlistAdmin from "./pages/WaitlistAdmin";
 import TestRunner from "./pages/TestRunner";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
+import BottomNav from "./components/BottomNav";
 
 const queryClient = new QueryClient();
 
@@ -53,8 +54,10 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Navbar user={user} />
+      <BrowserRouter>
+        <Navbar user={user} />
+        {user && <BottomNav />}
+        <div className={user ? "pb-20 lg:pb-0" : ""}>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
@@ -81,7 +84,8 @@ const App = () => {
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
+        </div>
+      </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );

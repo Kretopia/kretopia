@@ -332,19 +332,7 @@ const Discover = () => {
     );
   }
 
-  if (cards.length === 0) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4 pb-20">
-        <div className="text-center">
-          <Sparkles className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary" />
-          <h2 className="mb-2 text-xl sm:text-2xl font-bold">No cards available</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Check back later</p>
-        </div>
-      </div>
-    );
-  }
-
-  const currentCard = cards[currentIndex];
+  const currentCard = cards.length > 0 ? cards[currentIndex] : null;
 
   return (
     <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-24 sm:pb-20">
@@ -426,11 +414,45 @@ const Discover = () => {
               )}
             </div>
 
-            <div className="mb-3 sm:mb-4 text-center text-xs sm:text-sm text-muted-foreground">
-              {currentIndex + 1} / {cards.length}
-            </div>
+            {cards.length > 0 && (
+              <div className="mb-3 sm:mb-4 text-center text-xs sm:text-sm text-muted-foreground">
+                {currentIndex + 1} / {cards.length}
+              </div>
+            )}
 
-            <div 
+            {cards.length === 0 ? (
+              <div className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg">
+                <div className="relative h-72 sm:h-80 md:h-96 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10">
+                  <div className="text-center p-6">
+                    <Sparkles className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary animate-pulse" />
+                    {activeTab === 'creators' ? (
+                      <>
+                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">No more creators right now</h2>
+                        <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                          Check back soon for new creative professionals
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => window.location.reload()}
+                          className="mt-2"
+                        >
+                          Refresh
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">No opportunities available</h2>
+                        <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                          Be the first to create an opportunity
+                        </p>
+                        <QuickCreateOpportunityDialog />
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div
               ref={cardRef}
               className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg cursor-grab active:cursor-grabbing select-none"
               style={{
@@ -524,8 +546,11 @@ const Discover = () => {
                 )}
               </div>
             </div>
+            )}
 
-            <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            {cards.length > 0 && (
+              <>
+                <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
               <Button 
                 variant="outline" 
                 size="icon" 
@@ -557,8 +582,10 @@ const Discover = () => {
 
             <div className="text-center text-xs sm:text-sm text-muted-foreground">
               <p>🔥 Like • ⭐ Super Like • ❌ Pass</p>
-              <p className="mt-1 text-xs">Drag cards or tap buttons</p>
+              <p className="mt-1 text-xs">Drag or tap buttons</p>
             </div>
+              </>
+            )}
           </div>
         </div>
       </div>

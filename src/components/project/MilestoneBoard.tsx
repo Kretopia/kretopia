@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard } from "lucide-react";
 
 interface Milestone {
   id: string;
@@ -105,6 +105,38 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     } else {
       toast({ title: "Payment recorded! 💰" });
       onUpdate();
+    }
+  };
+
+  const handleStripePayment = async (milestone: Milestone) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({ title: "Error", description: "Please sign in to make a payment", variant: "destructive" });
+        return;
+      }
+
+      toast({ title: "Creating payment session..." });
+      
+      const { data, error } = await supabase.functions.invoke('create-milestone-payment', {
+        body: {
+          milestoneId: milestone.id,
+          amount: milestone.amount,
+          title: milestone.title,
+          projectId: projectId,
+        },
+      });
+
+      if (error) throw error;
+
+      // Open Stripe checkout in new tab
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast({ title: "Payment window opened! 💳" });
+      }
+    } catch (error: any) {
+      console.error('Error creating payment:', error);
+      toast({ title: "Error", description: error.message || "Failed to create payment session", variant: "destructive" });
     }
   };
 
@@ -270,14 +302,25 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
                           </>
                         )}
                         {userRole === 'client' && milestone.status === 'completed' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarkAsPaid(milestone.id)}
-                            className="gap-2"
-                          >
-                            <DollarSign className="h-4 w-4" />
-                            Mark as Paid
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleStripePayment(milestone)}
+                              className="gap-2"
+                            >
+                              <CreditCard className="h-4 w-4" />
+                              Pay ${Number(milestone.amount).toFixed(2)}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleMarkAsPaid(milestone.id)}
+                              className="gap-2"
+                            >
+                              <DollarSign className="h-4 w-4" />
+                              Mark as Paid
+                            </Button>
+                          </>
                         )}
                       </>
                     )}

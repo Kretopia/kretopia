@@ -62,6 +62,52 @@ const ThriveDesk = () => {
     if (projectId) {
       fetchProjectData();
     }
+
+    // Check for payment success/failure in URL
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    const milestoneId = params.get('milestone');
+
+    if (paymentStatus === 'success' && milestoneId) {
+      // Update milestone to paid status
+      const updateMilestoneToPaid = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          const { error } = await supabase
+            .from('milestones')
+            .update({ 
+              status: 'paid', 
+              paid_at: new Date().toISOString(),
+              paid_to: user?.id
+            })
+            .eq('id', milestoneId);
+
+          if (error) throw error;
+          toast({
+            title: "Payment successful! 💰",
+            description: "Milestone has been marked as paid.",
+          });
+          fetchProjectData();
+        } catch (error: any) {
+          console.error('Error updating milestone:', error);
+          toast({
+            title: "Payment received",
+            description: "But failed to update milestone status. Please contact support.",
+            variant: "destructive",
+          });
+        }
+      };
+      updateMilestoneToPaid();
+
+      // Clean URL
+      window.history.replaceState({}, '', `/thrive-desk/${projectId}`);
+    } else if (paymentStatus === 'cancelled') {
+      toast({
+        title: "Payment cancelled",
+        description: "You can retry the payment anytime.",
+      });
+      window.history.replaceState({}, '', `/thrive-desk/${projectId}`);
+    }
   }, [projectId]);
 
   useEffect(() => {

@@ -9,7 +9,11 @@ import {
   Briefcase, 
   Zap,
   ArrowRight,
-  MessageCircle
+  MessageCircle,
+  Trophy,
+  Coins,
+  HardDrive,
+  BarChart3
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -275,6 +279,49 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Features & Tools */}
+        <div className="mb-6 sm:mb-8">
+          <h2 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-bold">Features & Tools</h2>
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <QuickActionCard
+              title="Subscription"
+              description="Manage your plan and billing settings"
+              icon={<Zap className="h-5 w-5" />}
+              to="/subscription"
+            />
+            <QuickActionCard
+              title="Analytics"
+              description="Track your performance and engagement"
+              icon={<BarChart3 className="h-5 w-5" />}
+              to="/analytics"
+            />
+            <QuickActionCard
+              title="Storage"
+              description="Manage your files and media library"
+              icon={<HardDrive className="h-5 w-5" />}
+              to="/storage"
+            />
+            <QuickActionCard
+              title="Manage Opportunities"
+              description="View and edit your posted opportunities"
+              icon={<Briefcase className="h-5 w-5" />}
+              to="/manage-opportunities"
+            />
+            <QuickActionCard
+              title="Earn Credits"
+              description="Complete tasks and earn more credits"
+              icon={<Coins className="h-5 w-5" />}
+              to="/earn-credits"
+            />
+            <QuickActionCard
+              title="Leaderboard"
+              description="See top creators and your ranking"
+              icon={<Trophy className="h-5 w-5" />}
+              to="/leaderboard"
+            />
+          </div>
+        </div>
 
         {/* Quick Actions */}
         <div className="mb-6 sm:mb-8">

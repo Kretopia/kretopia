@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Trophy, Sparkles, Menu, Settings, Briefcase, Zap, Coins, HardDrive, TrendingUp } from "lucide-react";
+import { User, LogOut, Sparkles, Menu, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
@@ -82,57 +82,6 @@ const Navbar = ({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/subscription")}
-                    >
-                      <Zap className="h-5 w-5" />
-                      Subscription
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/analytics")}
-                    >
-                      <TrendingUp className="h-5 w-5" />
-                      Analytics
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/storage")}
-                    >
-                      <HardDrive className="h-5 w-5" />
-                      Storage
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/manage-opportunities")}
-                    >
-                      <Briefcase className="h-5 w-5" />
-                      Manage Opportunities
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/earn-credits")}
-                    >
-                      <Coins className="h-5 w-5" />
-                      Earn Credits
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/leaderboard")}
-                    >
-                      <Trophy className="h-5 w-5" />
-                      Leaderboard
-                    </Button>
-                    
-                    <Separator className="my-3" />
-                    
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"

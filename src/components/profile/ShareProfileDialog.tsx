@@ -58,12 +58,13 @@ ${profileUrl}
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="flex-1 min-w-[130px] sm:flex-none gap-2">
           <Share2 className="h-4 w-4" />
-          Share Profile
+          <span className="hidden xs:inline">Share Profile</span>
+          <span className="xs:hidden">Share</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>Share Your Profile</DialogTitle>
           <DialogDescription>

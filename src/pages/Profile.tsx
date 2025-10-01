@@ -419,29 +419,30 @@ const Profile = () => {
                 </div>
               </div>
               
-              <div className="flex gap-2 w-full sm:w-auto">
-                <ShareProfileDialog profile={profile} />
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                 {isReorderMode ? (
                   <>
-                    <Button variant="outline" onClick={() => setIsReorderMode(false)} className="flex-1 sm:flex-none">
+                    <Button variant="outline" onClick={() => setIsReorderMode(false)} className="flex-1 min-w-[100px] sm:flex-none">
                       Cancel
                     </Button>
-                    <Button variant="gradient" onClick={handleSaveSectionOrder} className="flex-1 sm:flex-none">
+                    <Button variant="gradient" onClick={handleSaveSectionOrder} className="flex-1 min-w-[120px] sm:flex-none">
                       Save Order
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" onClick={() => setIsReorderMode(true)} className="flex-1 sm:flex-none">
+                    <ShareProfileDialog profile={profile} />
+                    <Button variant="outline" onClick={() => setIsReorderMode(true)} className="flex-1 min-w-[100px] sm:flex-none">
                       Reorder
                     </Button>
                     <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="gradient" className="flex-1 sm:flex-none">
-                      <Edit className="h-4 w-4" />
-                      <span className="ml-2">Edit Profile</span>
-                    </Button>
-                  </DialogTrigger>
+                      <DialogTrigger asChild>
+                        <Button variant="gradient" className="flex-1 min-w-[120px] sm:flex-none">
+                          <Edit className="h-4 w-4" />
+                          <span className="ml-2 hidden xs:inline">Edit Profile</span>
+                          <span className="ml-2 xs:hidden">Edit</span>
+                        </Button>
+                      </DialogTrigger>
                   <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                       <DialogTitle>Edit Profile</DialogTitle>

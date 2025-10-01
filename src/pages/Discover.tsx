@@ -380,9 +380,10 @@ const Discover = () => {
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
       
+      // Apply resistance to movement - only move 40% of actual drag distance
       setDragOffset({
-        x: clientX - centerX,
-        y: clientY - centerY
+        x: (clientX - centerX) * 0.4,
+        y: (clientY - centerY) * 0.2
       });
     }
   };
@@ -391,11 +392,11 @@ const Discover = () => {
     if (!isDragging) return;
     setIsDragging(false);
     
-    // If dragged far enough, trigger swipe
-    if (Math.abs(dragOffset.x) > 100) {
+    // Require stronger swipe - need to drag at least 150px (accounting for resistance)
+    if (Math.abs(dragOffset.x) > 60) {
       handleSwipe(dragOffset.x > 0 ? "right" : "left");
     } else {
-      // Reset position
+      // Reset position with smooth animation
       setDragOffset({ x: 0, y: 0 });
     }
   };
@@ -504,14 +505,15 @@ const Discover = () => {
         {/* Swipe Card */}
         <div 
           ref={cardRef}
-          className="relative mb-6 overflow-hidden rounded-3xl border border-border bg-card shadow-card cursor-grab active:cursor-grabbing select-none transition-transform duration-300"
+          className="relative mb-6 overflow-hidden rounded-3xl border border-border bg-card shadow-card cursor-grab active:cursor-grabbing select-none"
           style={{
             transform: swipeDirection 
               ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '20deg' : '-20deg'})`
               : isDragging
-              ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.1}deg)`
+              ? `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.15}deg)`
               : 'translateX(0) translateY(0) rotate(0deg)',
-            opacity: swipeDirection ? 0 : Math.max(0.5, 1 - Math.abs(dragOffset.x) / 300)
+            opacity: swipeDirection ? 0 : 1,
+            transition: isDragging ? 'none' : 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
           }}
           onMouseDown={handleDragStart}
           onMouseMove={handleDragMove}
@@ -522,7 +524,7 @@ const Discover = () => {
           onTouchEnd={handleDragEnd}
         >
           {/* Swipe Direction Indicators */}
-          {isDragging && Math.abs(dragOffset.x) > 50 && (
+          {isDragging && Math.abs(dragOffset.x) > 30 && (
             <>
               {dragOffset.x > 0 && (
                 <div className="absolute top-8 right-8 z-10 px-6 py-3 bg-accent/90 text-white font-bold text-xl rounded-lg rotate-12 border-4 border-white">

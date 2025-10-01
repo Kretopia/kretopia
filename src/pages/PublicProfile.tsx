@@ -228,24 +228,7 @@ const PublicProfile = () => {
                 </div>
               </div>
               
-              <div className="flex gap-2 w-full sm:w-auto">
-                {connectionStatus === 'accepted' ? (
-                  <Button onClick={handleMessage} variant="gradient" className="flex-1 sm:flex-none">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Message
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={handleConnect} 
-                    variant={connectionStatus === 'pending' ? 'outline' : 'gradient'}
-                    disabled={connectionStatus === 'pending'}
-                    className="flex-1 sm:flex-none"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    {connectionStatus === 'pending' ? 'Request Sent' : 'Connect'}
-                  </Button>
-                )}
-              </div>
+              {/* Removed direct connect button - users must mutually match through Discover */}
             </div>
 
             {/* Stats */}
@@ -283,11 +266,23 @@ const PublicProfile = () => {
               </p>
             </div>
 
-            <SocialLinksSection 
-              profile={profile}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
+            {/* Only show social links if connected */}
+            {isConnected && (
+              <SocialLinksSection 
+                profile={profile}
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            )}
+            
+            {!isConnected && (
+              <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+                <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">Social Links</h3>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  Connect with {profile.full_name.split(' ')[0]} through Discover to see their social media profiles and contact information.
+                </p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-3 md:space-y-4">

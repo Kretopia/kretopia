@@ -99,19 +99,11 @@ ${profileUrl}
 
           {/* Pre-written share text */}
           <div className="space-y-2">
-            <Label htmlFor="share-text">Ready-to-Share Copy</Label>
-            <div className="relative">
-              <textarea
-                id="share-text"
-                value={shareText}
-                readOnly
-                rows={8}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-              />
+            <div className="flex items-center justify-between">
+              <Label htmlFor="share-text">Ready-to-Share Copy</Label>
               <Button
                 variant="outline"
                 size="sm"
-                className="absolute right-2 top-2"
                 onClick={() => copyToClipboard(shareText, 'text')}
               >
                 {copiedText ? (
@@ -127,6 +119,13 @@ ${profileUrl}
                 )}
               </Button>
             </div>
+            <textarea
+              id="share-text"
+              value={shareText}
+              readOnly
+              rows={8}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+            />
           </div>
 
           {/* Social share buttons */}
@@ -153,6 +152,13 @@ ${profileUrl}
                 onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`, '_blank')}
               >
                 Facebook
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank')}
+              >
+                WhatsApp
               </Button>
               <Button
                 variant="outline"

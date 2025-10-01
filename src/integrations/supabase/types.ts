@@ -591,6 +591,7 @@ export type Database = {
           project_credits: number | null
           review_share_token: string | null
           role: string
+          section_order: Json | null
           soundcloud_url: string | null
           spotify_listeners: number | null
           spotify_url: string | null
@@ -642,6 +643,7 @@ export type Database = {
           project_credits?: number | null
           review_share_token?: string | null
           role: string
+          section_order?: Json | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
@@ -693,6 +695,7 @@ export type Database = {
           project_credits?: number | null
           review_share_token?: string | null
           role?: string
+          section_order?: Json | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null

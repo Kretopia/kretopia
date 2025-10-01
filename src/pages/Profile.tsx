@@ -19,6 +19,11 @@ import { SkillsSection } from "@/components/profile/SkillsSection";
 import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { CreditsSection } from "@/components/profile/CreditsSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
+import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from "lucide-react";
 
 interface Profile {
   full_name: string;
@@ -51,6 +56,45 @@ interface Profile {
   total_engagement_rate?: number;
   avg_views?: number;
   verified_metrics?: boolean;
+  section_order?: string[];
+}
+
+interface SortableItemProps {
+  id: string;
+  children: React.ReactNode;
+  isEditMode: boolean;
+}
+
+const SortableItem = ({ id, children, isEditMode }: SortableItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative">
+      {isEditMode && (
+        <div
+          {...attributes}
+          {...listeners}
+          className="absolute -left-8 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing z-10"
+        >
+          <GripVertical className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+        </div>
+      )}
+      {children}
+    </div>
+  );
 }
 
 const Profile = () => {
@@ -66,6 +110,16 @@ const Profile = () => {
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isReorderMode, setIsReorderMode] = useState(false);
+  const [sectionOrder, setSectionOrder] = useState<string[]>([
+    "bio",
+    "social_stats",
+    "skills",
+    "credits",
+    "awards",
+    "press",
+    "social_links",
+  ]);
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -93,8 +147,20 @@ const Profile = () => {
         variant: "destructive",
       });
     } else {
-      setProfile(data);
+      const order = data.section_order as string[] | null;
+      setProfile({ ...data, section_order: order });
       setUserBadge(data.badge || 'beta');
+      setSectionOrder(
+        order || [
+          "bio",
+          "social_stats",
+          "skills",
+          "credits",
+          "awards",
+          "press",
+          "social_links",
+        ]
+      );
       setEditForm({
         full_name: data.full_name || "",
         role: data.role || "",
@@ -145,6 +211,49 @@ const Profile = () => {
   useEffect(() => {
     fetchData();
   }, [toast]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setSectionOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const handleSaveSectionOrder = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ section_order: sectionOrder })
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save section order",
+        variant: "destructive",
+      });
+    } else {
+      setIsReorderMode(false);
+      toast({
+        title: "Success",
+        description: "Section order saved successfully",
+      });
+    }
+  };
 
   const handleShare = () => {
     toast({
@@ -311,7 +420,21 @@ const Profile = () => {
                 <Button variant="outline" size="icon" onClick={handleShare} className="flex-1 sm:flex-none">
                   <Share2 className="h-4 w-4" />
                 </Button>
-                <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                {isReorderMode ? (
+                  <>
+                    <Button variant="outline" onClick={() => setIsReorderMode(false)} className="flex-1 sm:flex-none">
+                      Cancel
+                    </Button>
+                    <Button variant="gradient" onClick={handleSaveSectionOrder} className="flex-1 sm:flex-none">
+                      Save Order
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" onClick={() => setIsReorderMode(true)} className="flex-1 sm:flex-none">
+                      Reorder
+                    </Button>
+                    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                   <DialogTrigger asChild>
                     <Button variant="gradient" className="flex-1 sm:flex-none">
                       <Edit className="h-4 w-4" />
@@ -374,6 +497,8 @@ const Profile = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
+                  </>
+                )}
               </div>
             </div>
 
@@ -401,49 +526,96 @@ const Profile = () => {
             <TabsTrigger value="overview" className="rounded-lg md:rounded-xl text-xs md:text-sm">Overview</TabsTrigger>
             <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
-            <TabsTrigger value="press" className="rounded-lg md:rounded-xl text-xs md:text-sm">Press</TabsTrigger>
             <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 md:space-y-6">
-            {/* Skills Section - At the top for quick glance */}
-            <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-              <SkillsSection
-                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
-                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
-                jobTitle={profile.job_title}
-                industry={profile.industry}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sectionOrder}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className={`space-y-4 md:space-y-6 ${isReorderMode ? 'pl-8' : ''}`}>
+                  {sectionOrder.map((sectionId) => {
+                    const sections: Record<string, React.ReactNode> = {
+                      bio: (
+                        <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+                          <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
+                          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                            {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
+                          </p>
+                        </div>
+                      ),
+                      social_stats: (
+                        <SocialStatsSection
+                          youtubeSubscribers={profile.youtube_subscribers}
+                          instagramFollowers={profile.instagram_followers}
+                          tiktokFollowers={profile.tiktok_followers}
+                          spotifyListeners={profile.spotify_listeners}
+                          twitterFollowers={profile.twitter_followers}
+                          linkedinConnections={profile.linkedin_connections}
+                          verifiedMetrics={profile.verified_metrics}
+                        />
+                      ),
+                      skills: (
+                        <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+                          <SkillsSection
+                            professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
+                            passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
+                            jobTitle={profile.job_title}
+                            industry={profile.industry}
+                            isOwnProfile={true}
+                            onRefresh={fetchData}
+                          />
+                        </div>
+                      ),
+                      credits: (
+                        <CreditsSection 
+                          credits={Array.isArray(profile.project_credits) ? profile.project_credits : []}
+                          isOwnProfile={true}
+                          onRefresh={fetchData}
+                        />
+                      ),
+                      awards: (
+                        <AwardsSection 
+                          awards={Array.isArray(profile.awards) ? profile.awards : []}
+                          isOwnProfile={true}
+                          onRefresh={fetchData}
+                        />
+                      ),
+                      press: (
+                        <PressLinksSection 
+                          pressLinks={Array.isArray(profile.press_links) ? profile.press_links : []}
+                          isOwnProfile={true}
+                          onRefresh={fetchData}
+                        />
+                      ),
+                      social_links: (
+                        <SocialLinksSection 
+                          profile={profile}
+                          isOwnProfile={true}
+                          onRefresh={fetchData}
+                        />
+                      ),
+                    };
 
-            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-              <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
-              </p>
-            </div>
+                    const section = sections[sectionId];
+                    if (!section) return null;
 
-            <CreditsSection 
-              credits={Array.isArray(profile.project_credits) ? profile.project_credits : []}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-
-            <AwardsSection 
-              awards={Array.isArray(profile.awards) ? profile.awards : []}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-
-            <SocialLinksSection 
-              profile={profile}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-
-            <InviteCodesCard />
+                    return (
+                      <SortableItem key={sectionId} id={sectionId} isEditMode={isReorderMode}>
+                        {section}
+                      </SortableItem>
+                    );
+                  })}
+                  {!isReorderMode && <InviteCodesCard />}
+                </div>
+              </SortableContext>
+            </DndContext>
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-3 md:space-y-4">
@@ -459,14 +631,6 @@ const Profile = () => {
               reviews={reviews} 
               isOwnProfile={true}
               profileUserId={profile.user_id}
-              onRefresh={fetchData}
-            />
-          </TabsContent>
-
-          <TabsContent value="press" className="space-y-3 md:space-y-4">
-            <PressLinksSection 
-              pressLinks={Array.isArray(profile.press_links) ? profile.press_links : []}
-              isOwnProfile={true}
               onRefresh={fetchData}
             />
           </TabsContent>

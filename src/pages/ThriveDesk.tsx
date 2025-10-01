@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskBoard } from "@/components/project/TaskBoard";
+import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,7 +46,9 @@ const ThriveDesk = () => {
   const [project, setProject] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [milestones, setMilestones] = useState<any[]>([]);
   const [files, setFiles] = useState<any[]>([]);
+  const [userRole, setUserRole] = useState<'creator' | 'client'>('creator');
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
@@ -104,10 +107,23 @@ const ThriveDesk = () => {
       })
       .subscribe();
 
+    const milestonesChannel = supabase
+      .channel(`project-milestones-${projectId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'milestones',
+        filter: `project_id=eq.${projectId}`
+      }, () => {
+        fetchProjectData();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(tasksChannel);
       supabase.removeChannel(filesChannel);
+      supabase.removeChannel(milestonesChannel);
     };
   }, [projectId]);
 
@@ -124,6 +140,9 @@ const ThriveDesk = () => {
 
     if (projectData) {
       setProject(projectData);
+
+      // Determine user role (creator is client who pays, others are creators/freelancers)
+      setUserRole(projectData.created_by === user.id ? 'client' : 'creator');
 
       // Fetch messages with file info
       const { data: messagesData } = await supabase
@@ -142,6 +161,15 @@ const ThriveDesk = () => {
         .order('created_at', { ascending: false });
 
       if (tasksData) setTasks(tasksData);
+
+      // Fetch milestones
+      const { data: milestonesData } = await supabase
+        .from('milestones')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (milestonesData) setMilestones(milestonesData);
 
       // Fetch files
       const { data: filesData } = await supabase
@@ -299,6 +327,10 @@ const ThriveDesk = () => {
               <CheckSquare className="h-3.5 w-3.5" />
               <span className="hidden xs:inline">Tasks</span>
             </TabsTrigger>
+            <TabsTrigger value="milestones" className="gap-1.5 text-xs">
+              <DollarSign className="h-3.5 w-3.5" />
+              <span className="hidden xs:inline">Milestones</span>
+            </TabsTrigger>
             <TabsTrigger value="details" className="gap-1.5 text-xs">
               <FileText className="h-3.5 w-3.5" />
               <span className="hidden xs:inline">Details</span>
@@ -373,6 +405,15 @@ const ThriveDesk = () => {
 
         <TabsContent value="tasks" className="flex-1 m-0 p-3 overflow-auto">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+        </TabsContent>
+
+        <TabsContent value="milestones" className="flex-1 m-0 p-3 overflow-auto">
+          <MilestoneBoard 
+            milestones={milestones} 
+            projectId={projectId!} 
+            onUpdate={fetchProjectData}
+            userRole={userRole}
+          />
         </TabsContent>
 
         <TabsContent value="details" className="flex-1 m-0 overflow-auto">
@@ -455,6 +496,9 @@ const ThriveDesk = () => {
                 </TabsTrigger>
                 <TabsTrigger value="tasks" className="gap-2">
                   <CheckSquare className="h-4 w-4" />Tasks
+                </TabsTrigger>
+                <TabsTrigger value="milestones" className="gap-2">
+                  <DollarSign className="h-4 w-4" />Milestones
                 </TabsTrigger>
                 <TabsTrigger value="timeline" className="gap-2">
                   <Clock className="h-4 w-4" />Timeline
@@ -539,6 +583,15 @@ const ThriveDesk = () => {
 
             <TabsContent value="tasks" className="flex-1 m-0 p-6 overflow-auto">
               <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+            </TabsContent>
+
+            <TabsContent value="milestones" className="flex-1 m-0 p-6 overflow-auto">
+              <MilestoneBoard 
+                milestones={milestones} 
+                projectId={projectId!} 
+                onUpdate={fetchProjectData}
+                userRole={userRole}
+              />
             </TabsContent>
 
             <TabsContent value="timeline" className="flex-1 m-0 p-6">

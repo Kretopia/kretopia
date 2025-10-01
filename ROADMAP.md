@@ -66,8 +66,15 @@
   - [x] Visual stats cards with trends
 
 ## 🚧 In Progress
-- [ ] Milestone-based payment system
-- [ ] Escrow functionality for secure transactions
+- [x] **Milestone-based Payment System** 💰
+  - [x] Create milestones within projects
+  - [x] Link payments to specific deliverables
+  - [x] Progress tracking per milestone
+  - [x] Status workflow (pending → in progress → review → completed → paid)
+  - [x] Role-based permissions (client vs creator)
+  - [x] Payment tracking and history
+  - [ ] Stripe payment integration
+  - [ ] Escrow functionality
 
 ## 📋 High Priority (Next Sprint)
 

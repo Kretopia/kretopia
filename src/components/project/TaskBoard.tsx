@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, GripVertical, Calendar, User } from "lucide-react";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -133,6 +133,26 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
   );
 }
 
+function DroppableColumn({ status, tasks, onUpdate }: { status: typeof STATUSES[0], tasks: Task[], onUpdate: () => void }) {
+  const { setNodeRef } = useDroppable({ id: status.value });
+
+  return (
+    <div ref={setNodeRef} className={`rounded-lg p-3 md:p-4 ${status.color} min-h-[300px] md:min-h-[400px]`}>
+      <div className="mb-3 md:mb-4 flex items-center justify-between">
+        <h4 className="font-semibold text-sm">{status.label}</h4>
+        <Badge variant="secondary" className="text-xs">{tasks.length}</Badge>
+      </div>
+      <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+        <div className="space-y-2">
+          {tasks.map(task => (
+            <SortableTask key={task.id} task={task} onUpdate={onUpdate} />
+          ))}
+        </div>
+      </SortableContext>
+    </div>
+  );
+}
+
 export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -186,7 +206,7 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
     const activeTask = tasks.find(t => t.id === active.id);
     const overStatus = over.id as string;
 
-    if (activeTask && STATUSES.some(s => s.value === overStatus)) {
+    if (activeTask && STATUSES.some(s => s.value === overStatus) && activeTask.status !== overStatus) {
       const { error } = await supabase
         .from('project_tasks')
         .update({ status: overStatus })
@@ -195,6 +215,7 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
+        toast({ title: "Task moved! ✅" });
         onUpdate();
       }
     }
@@ -267,19 +288,12 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
           {STATUSES.map(status => {
             const statusTasks = tasks.filter(t => t.status === status.value);
             return (
-              <SortableContext key={status.value} items={statusTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                <div className={`rounded-lg p-3 md:p-4 ${status.color} min-h-[300px] md:min-h-[400px]`} id={status.value}>
-                  <div className="mb-3 md:mb-4 flex items-center justify-between">
-                    <h4 className="font-semibold text-sm">{status.label}</h4>
-                    <Badge variant="secondary" className="text-xs">{statusTasks.length}</Badge>
-                  </div>
-                  <div className="space-y-2">
-                    {statusTasks.map(task => (
-                      <SortableTask key={task.id} task={task} onUpdate={onUpdate} />
-                    ))}
-                  </div>
-                </div>
-              </SortableContext>
+              <DroppableColumn 
+                key={status.value} 
+                status={status} 
+                tasks={statusTasks} 
+                onUpdate={onUpdate} 
+              />
             );
           })}
         </div>

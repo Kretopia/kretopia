@@ -62,7 +62,7 @@ const Navbar = ({ user }: NavbarProps) => {
           <img 
             src={theme === "dark" ? logoWhite : logoBlack} 
             alt="ThriveIN Logo" 
-            className="h-16 sm:h-20"
+            className="h-10 sm:h-14 md:h-16 lg:h-20 xl:h-24 w-auto object-contain transition-all duration-300"
           />
         </Link>
 

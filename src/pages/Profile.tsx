@@ -20,6 +20,7 @@ import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { CreditsSection } from "@/components/profile/CreditsSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -419,9 +420,7 @@ const Profile = () => {
               </div>
               
               <div className="flex gap-2 w-full sm:w-auto">
-                <Button variant="outline" size="icon" onClick={handleShare} className="flex-1 sm:flex-none">
-                  <Share2 className="h-4 w-4" />
-                </Button>
+                <ShareProfileDialog profile={profile} />
                 {isReorderMode ? (
                   <>
                     <Button variant="outline" onClick={() => setIsReorderMode(false)} className="flex-1 sm:flex-none">

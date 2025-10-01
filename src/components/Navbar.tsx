@@ -5,7 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
 import { NotificationCenter } from "@/components/NotificationCenter";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "next-themes";
 import logoWhite from "@/assets/logo-white.png";
+import logoBlack from "@/assets/logo-black.png";
 import {
   Sheet,
   SheetContent,
@@ -35,6 +38,7 @@ const Navbar = ({ user }: NavbarProps) => {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const isLandingPage = location.pathname === "/";
+  const { theme } = useTheme();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -56,7 +60,7 @@ const Navbar = ({ user }: NavbarProps) => {
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center" aria-label="ThriveIN Home">
           <img 
-            src={logoWhite} 
+            src={theme === "dark" ? logoWhite : logoBlack} 
             alt="ThriveIN Logo" 
             className="h-16 sm:h-20"
           />
@@ -104,7 +108,9 @@ const Navbar = ({ user }: NavbarProps) => {
           </div>
         )}
 
-        <div className="flex items-center gap-2 sm:gap-4">{user && !isLandingPage ? (
+        <div className="flex items-center gap-2 sm:gap-4">
+          <ThemeToggle />
+          {user && !isLandingPage ? (
             <>
               {/* Mobile Menu */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,7 @@ const Profile = () => {
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [industryStats, setIndustryStats] = useState([]);
+  const [userBadge, setUserBadge] = useState<'og' | 'beta' | 'official' | null>(null);
   const [stats, setStats] = useState({
     circle: 0,
     projects: 0,
@@ -82,6 +84,7 @@ const Profile = () => {
       });
     } else {
       setProfile(data);
+      setUserBadge(data.badge || 'beta');
       setEditForm({
         full_name: data.full_name || "",
         role: data.role || "",
@@ -267,7 +270,17 @@ const Profile = () => {
                   />
                 </div>
                 <div className="flex-1">
-                  <h1 className="mb-1 text-xl md:text-3xl font-bold leading-tight">{profile.full_name}</h1>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h1 className="text-xl md:text-3xl font-bold leading-tight">{profile.full_name}</h1>
+                    {userBadge && (
+                      <Badge 
+                        variant={userBadge === 'og' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {userBadge === 'og' ? '⭐ OG Thriver' : '🚀 Beta'}
+                      </Badge>
+                    )}
+                  </div>
                   <p className="mb-2 text-base md:text-lg text-muted-foreground">
                     {profile.role}
                   </p>

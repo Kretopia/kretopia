@@ -560,6 +560,7 @@ export type Database = {
           available_invites: number | null
           avatar_url: string | null
           avg_views: number | null
+          badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
           created_at: string | null
@@ -603,6 +604,7 @@ export type Database = {
           available_invites?: number | null
           avatar_url?: string | null
           avg_views?: number | null
+          badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
           created_at?: string | null
@@ -646,6 +648,7 @@ export type Database = {
           available_invites?: number | null
           avatar_url?: string | null
           avg_views?: number | null
+          badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
           created_at?: string | null
@@ -1245,6 +1248,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           avg_views: number | null
+          badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
           created_at: string | null
@@ -1275,6 +1279,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           avg_views?: number | null
+          badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
           created_at?: string | null
@@ -1305,6 +1310,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           avg_views?: number | null
+          badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
           created_at?: string | null
@@ -1369,7 +1375,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      user_badge: "og" | "beta" | "official"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1496,6 +1502,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_badge: ["og", "beta", "official"],
+    },
   },
 } as const

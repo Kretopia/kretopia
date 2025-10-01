@@ -85,11 +85,17 @@ const Projects = () => {
     const matchIds = matchesData?.map(m => m.id) || [];
 
     // Fetch both matched projects and solo projects created by user
-    const { data: projectsData, error } = await supabase
+    let query = supabase
       .from('projects')
-      .select('*')
-      .or(`match_id.in.(${matchIds.join(',')}),and(match_id.is.null,created_by.eq.${user.id})`)
-      .order('created_at', { ascending: false });
+      .select('*');
+
+    if (matchIds.length > 0) {
+      query = query.or(`match_id.in.(${matchIds.join(',')}),and(match_id.is.null,created_by.eq.${user.id})`);
+    } else {
+      query = query.is('match_id', null).eq('created_by', user.id);
+    }
+
+    const { data: projectsData, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching projects:', error);
@@ -245,10 +251,10 @@ const Projects = () => {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-4 md:p-6">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8 pb-20 sm:pb-6">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <div className="mb-4 sm:mb-6 flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="mb-1 sm:mb-2 text-2xl sm:text-3xl font-bold flex items-center gap-2">
               <FolderKanban className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
@@ -319,7 +325,7 @@ const Projects = () => {
         </div>
 
         {/* Search */}
-        <div className="mb-4 sm:mb-6 relative">
+        <div className="mb-6 sm:mb-8 relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search projects..."
@@ -349,7 +355,7 @@ const Projects = () => {
             )}
           </Card>
         ) : (
-          <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((project) => (
               <Card
                 key={project.id}

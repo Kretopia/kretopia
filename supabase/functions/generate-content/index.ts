@@ -34,6 +34,40 @@ serve(async (req) => {
       requestBody.modalities = ["image", "text"];
     }
 
+    // Add tool calling for task suggestions
+    if (type === "suggest") {
+      requestBody.tools = [
+        {
+          type: "function",
+          function: {
+            name: "suggest_tasks",
+            description: "Return 3-5 actionable task suggestions.",
+            parameters: {
+              type: "object",
+              properties: {
+                suggestions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      title: { type: "string" },
+                      priority: { type: "string", enum: ["low", "medium", "high"] },
+                      category: { type: "string" }
+                    },
+                    required: ["title", "priority", "category"],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ["suggestions"],
+              additionalProperties: false
+            }
+          }
+        }
+      ];
+      requestBody.tool_choice = { type: "function", function: { name: "suggest_tasks" } };
+    }
+
     // Use Lovable AI for content generation
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

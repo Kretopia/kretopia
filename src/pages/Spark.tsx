@@ -62,7 +62,7 @@ const Spark = () => {
       // Include current user's posts too
       connectedUserIds.push(user.id);
 
-      // Fetch posts only from connected users
+      // Fetch all posts from connected users (both Spark posts and Portfolio items)
       const { data, error } = await supabase
         .from('portfolio_items')
         .select(`

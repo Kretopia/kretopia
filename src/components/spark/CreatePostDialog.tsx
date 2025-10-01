@@ -83,7 +83,7 @@ export const CreatePostDialog = ({ open, onOpenChange, onPostCreated }: CreatePo
         thumbnailUrl = publicUrl;
       }
 
-      // Create portfolio item
+      // Create Spark post (category: "spark" means it won't show in Portfolio)
       const { error: insertError } = await supabase
         .from("portfolio_items")
         .insert({
@@ -93,7 +93,7 @@ export const CreatePostDialog = ({ open, onOpenChange, onPostCreated }: CreatePo
           media_url: mediaUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
           media_type: mediaType || "image",
           thumbnail_url: thumbnailUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
-          category: "spark"
+          category: "spark" // Spark-only posts won't appear in Portfolio
         });
 
       if (insertError) throw insertError;

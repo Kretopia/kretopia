@@ -136,6 +136,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "industry_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       invites: {
@@ -291,10 +298,24 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "milestones_paid_to_fkey"
             columns: ["paid_to"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_paid_to_fkey"
+            columns: ["paid_to"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -451,6 +472,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "portfolio_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -627,6 +655,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "project_files_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       project_messages: {
@@ -676,6 +711,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "project_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -838,10 +880,24 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -973,7 +1029,99 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          avg_views: number | null
+          behance_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          imdb_url: string | null
+          instagram_followers: number | null
+          instagram_url: string | null
+          level: number | null
+          linkedin_connections: number | null
+          linkedin_url: string | null
+          location: string | null
+          role: string | null
+          soundcloud_url: string | null
+          spotify_listeners: number | null
+          spotify_url: string | null
+          tiktok_followers: number | null
+          total_engagement_rate: number | null
+          twitter_followers: number | null
+          twitter_url: string | null
+          updated_at: string | null
+          user_id: string | null
+          verified_metrics: boolean | null
+          website: string | null
+          xp: number | null
+          youtube_subscribers: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          avg_views?: number | null
+          behance_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          imdb_url?: string | null
+          instagram_followers?: number | null
+          instagram_url?: string | null
+          level?: number | null
+          linkedin_connections?: number | null
+          linkedin_url?: string | null
+          location?: string | null
+          role?: string | null
+          soundcloud_url?: string | null
+          spotify_listeners?: number | null
+          spotify_url?: string | null
+          tiktok_followers?: number | null
+          total_engagement_rate?: number | null
+          twitter_followers?: number | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified_metrics?: boolean | null
+          website?: string | null
+          xp?: number | null
+          youtube_subscribers?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          avg_views?: number | null
+          behance_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          imdb_url?: string | null
+          instagram_followers?: number | null
+          instagram_url?: string | null
+          level?: number | null
+          linkedin_connections?: number | null
+          linkedin_url?: string | null
+          location?: string | null
+          role?: string | null
+          soundcloud_url?: string | null
+          spotify_listeners?: number | null
+          spotify_url?: string | null
+          tiktok_followers?: number | null
+          total_engagement_rate?: number | null
+          twitter_followers?: number | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified_metrics?: boolean | null
+          website?: string | null
+          xp?: number | null
+          youtube_subscribers?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_level: {

@@ -50,9 +50,10 @@ const PublicProfile = () => {
 
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Fetch profile
+    // Fetch profile using the secure public_profiles view
+    // This view excludes sensitive data like payment info and subscription details
     const { data, error } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('*')
       .eq('user_id', userId)
       .single();

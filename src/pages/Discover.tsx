@@ -84,9 +84,10 @@ const Discover = () => {
         setDailySwipesLeft(maxSwipes - (userProfile.daily_swipes || 0));
       }
 
-      // Fetch profiles (creators) with social stats and portfolio
+      // Fetch profiles (creators) using the secure public_profiles view
+      // This view excludes sensitive data like payment info and subscription details
       let profilesQuery = supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('*')
         .neq('user_id', user.id);
 

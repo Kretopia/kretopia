@@ -308,13 +308,13 @@ const PublicProfile = () => {
             </div>
 
             <CreditsSection 
-              credits={Array.isArray(profile.project_credits) ? profile.project_credits : []}
+              userId={userId}
               isOwnProfile={false}
               onRefresh={fetchData}
             />
 
             <AwardsSection 
-              awards={Array.isArray(profile.awards) ? profile.awards : []}
+              userId={userId}
               isOwnProfile={false}
               onRefresh={fetchData}
             />

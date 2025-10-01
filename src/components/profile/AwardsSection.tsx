@@ -1,153 +1,188 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, X, Award } from "lucide-react";
+import { Plus, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { AchievementCard } from "./AchievementCard";
 
 interface AwardItem {
+  id: string;
   title: string;
   organization: string;
-  year: string;
+  year: number;
   description?: string;
+  category?: string;
+  image_url?: string;
+  verification_status?: "unverified" | "pending" | "verified";
+  is_featured?: boolean;
 }
 
 interface AwardsSectionProps {
-  awards: AwardItem[];
+  userId: string;
   isOwnProfile: boolean;
   onRefresh: () => void;
 }
 
-export const AwardsSection = ({ awards = [], isOwnProfile, onRefresh }: AwardsSectionProps) => {
+export const AwardsSection = ({ userId, isOwnProfile, onRefresh }: AwardsSectionProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editAwards, setEditAwards] = useState<AwardItem[]>(awards);
-  const [newAward, setNewAward] = useState<AwardItem>({ 
-    title: "", 
-    organization: "", 
-    year: "", 
-    description: "" 
+  const [awards, setAwards] = useState<AwardItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newAward, setNewAward] = useState({
+    title: "",
+    organization: "",
+    year: new Date().getFullYear(),
+    description: "",
+    category: "",
   });
-  const { toast } = useToast();
 
-  const addAward = () => {
-    if (!newAward.title.trim() || !newAward.organization.trim()) {
-      toast({ title: "Please fill in award title and organization", variant: "destructive" });
+  useEffect(() => {
+    fetchAwards();
+  }, [userId]);
+
+  const fetchAwards = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("awards")
+        .select("*")
+        .eq("user_id", userId)
+        .order("year", { ascending: false });
+
+      if (error) throw error;
+      setAwards((data || []) as AwardItem[]);
+    } catch (error) {
+      console.error("Error fetching awards:", error);
+      toast.error("Failed to load awards");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addAward = async () => {
+    if (!newAward.title || !newAward.organization || !newAward.year) {
+      toast.error("Please fill in title, organization, and year");
       return;
     }
-    setEditAwards([...editAwards, newAward]);
-    setNewAward({ title: "", organization: "", year: "", description: "" });
-  };
 
-  const removeAward = (index: number) => {
-    setEditAwards(editAwards.filter((_, i) => i !== index));
-  };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-  const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+      const { error } = await supabase.from("awards").insert({
+        user_id: user.id,
+        ...newAward,
+      });
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({ awards: editAwards as any })
-      .eq('user_id', user.id);
+      if (error) throw error;
 
-    if (error) {
-      toast({ title: "Error", description: "Failed to update awards", variant: "destructive" });
-    } else {
-      toast({ title: "Success", description: "Awards updated" });
-      setIsEditOpen(false);
+      toast.success("Award added successfully");
+      setNewAward({
+        title: "",
+        organization: "",
+        year: new Date().getFullYear(),
+        description: "",
+        category: "",
+      });
+      fetchAwards();
       onRefresh();
+    } catch (error) {
+      console.error("Error adding award:", error);
+      toast.error("Failed to add award");
     }
   };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from("awards").delete().eq("id", id);
+      if (error) throw error;
+
+      toast.success("Award deleted");
+      fetchAwards();
+      onRefresh();
+    } catch (error) {
+      console.error("Error deleting award:", error);
+      toast.error("Failed to delete award");
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading awards...</div>;
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold flex items-center gap-2">
-          <Award className="h-5 w-5 text-primary" />
-          Awards & Recognition
-        </h3>
+        <h3 className="text-lg font-semibold">Awards & Recognition</h3>
         {isOwnProfile && (
           <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
             <DialogTrigger asChild>
-              <Button variant="gradient" size="sm">
+              <Button variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Award
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Manage Your Awards</DialogTitle>
+                <DialogTitle>Add Award</DialogTitle>
               </DialogHeader>
-              <div className="space-y-6 py-4">
-                <div className="space-y-4 rounded-lg border p-4 bg-muted/50">
-                  <h4 className="font-semibold text-sm">Add New Award</h4>
-                  <div className="grid gap-3">
-                    <div>
-                      <Label>Award Title</Label>
-                      <Input
-                        value={newAward.title}
-                        onChange={(e) => setNewAward({ ...newAward, title: e.target.value })}
-                        placeholder="e.g., Best Director, Gold Medal"
-                      />
-                    </div>
-                    <div>
-                      <Label>Organization</Label>
-                      <Input
-                        value={newAward.organization}
-                        onChange={(e) => setNewAward({ ...newAward, organization: e.target.value })}
-                        placeholder="e.g., Cannes Film Festival, Grammy Awards"
-                      />
-                    </div>
-                    <div>
-                      <Label>Year</Label>
-                      <Input
-                        value={newAward.year}
-                        onChange={(e) => setNewAward({ ...newAward, year: e.target.value })}
-                        placeholder="2025"
-                      />
-                    </div>
-                    <div>
-                      <Label>Description (optional)</Label>
-                      <Textarea
-                        value={newAward.description}
-                        onChange={(e) => setNewAward({ ...newAward, description: e.target.value })}
-                        placeholder="Brief description of the achievement"
-                        rows={3}
-                      />
-                    </div>
-                    <Button onClick={addAward} variant="outline" size="sm">
-                      <Plus className="h-4 w-4 mr-2" /> Add Award
-                    </Button>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Award Title *</Label>
+                  <Input
+                    id="title"
+                    value={newAward.title}
+                    onChange={(e) => setNewAward({ ...newAward, title: e.target.value })}
+                    placeholder="e.g., Best Director Award"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="organization">Organization *</Label>
+                    <Input
+                      id="organization"
+                      value={newAward.organization}
+                      onChange={(e) => setNewAward({ ...newAward, organization: e.target.value })}
+                      placeholder="e.g., Academy Awards"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="year">Year *</Label>
+                    <Input
+                      id="year"
+                      type="number"
+                      value={newAward.year}
+                      onChange={(e) => setNewAward({ ...newAward, year: parseInt(e.target.value) })}
+                      placeholder="e.g., 2023"
+                    />
                   </div>
                 </div>
-
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Your Awards</h4>
-                  {editAwards.map((award, idx) => (
-                    <div key={idx} className="flex items-start gap-2 rounded-lg border p-3">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{award.title}</p>
-                        <p className="text-sm text-muted-foreground">{award.organization} • {award.year}</p>
-                        {award.description && (
-                          <p className="text-xs text-muted-foreground mt-1">{award.description}</p>
-                        )}
-                      </div>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeAward(idx)}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {editAwards.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">No awards added yet</p>
-                  )}
+                  <Label htmlFor="category">Category</Label>
+                  <Input
+                    id="category"
+                    value={newAward.category}
+                    onChange={(e) => setNewAward({ ...newAward, category: e.target.value })}
+                    placeholder="e.g., Film, Music, Design"
+                  />
                 </div>
-
-                <Button onClick={handleSave} className="w-full" variant="gradient">
-                  Save Changes
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newAward.description}
+                    onChange={(e) => setNewAward({ ...newAward, description: e.target.value })}
+                    placeholder="Additional details about the award..."
+                    rows={3}
+                  />
+                </div>
+                
+                <Button onClick={addAward} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Award
                 </Button>
               </div>
             </DialogContent>
@@ -155,29 +190,35 @@ export const AwardsSection = ({ awards = [], isOwnProfile, onRefresh }: AwardsSe
         )}
       </div>
 
-      {awards.length > 0 ? (
-        <div className="grid gap-3">
-          {awards.map((award, idx) => (
-            <div key={idx} className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-start gap-3">
-                <Award className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="font-semibold">{award.title}</p>
-                  <p className="text-sm text-muted-foreground">{award.organization} • {award.year}</p>
-                  {award.description && (
-                    <p className="text-sm text-muted-foreground mt-2">{award.description}</p>
-                  )}
-                </div>
-              </div>
-            </div>
+      {awards.length === 0 ? (
+        <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <Award className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
+          <h3 className="mb-2 text-lg font-semibold">No awards yet</h3>
+          <p className="text-sm text-muted-foreground">
+            {isOwnProfile ? "Add your achievements and recognition" : "No awards to display"}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {awards.map((award) => (
+            <AchievementCard
+              key={award.id}
+              variant="award"
+              title={award.title}
+              subtitle={award.organization}
+              description={award.description}
+              year={award.year}
+              imageUrl={award.image_url}
+              verificationStatus={award.verification_status}
+              isFeatured={award.is_featured}
+              isOwnProfile={isOwnProfile}
+              onDelete={() => handleDelete(award.id)}
+              icon={<Award className="h-16 w-16" />}
+              metadata={award.category ? { Category: award.category } : undefined}
+            />
           ))}
         </div>
-      ) : !isOwnProfile ? (
-        <div className="rounded-2xl border border-border bg-card p-8 text-center">
-          <Award className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-muted-foreground">No awards added yet</p>
-        </div>
-      ) : null}
+      )}
     </div>
   );
 };

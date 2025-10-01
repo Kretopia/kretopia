@@ -1,169 +1,186 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, X, Film, ExternalLink } from "lucide-react";
+import { Plus, Film } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { AchievementCard } from "./AchievementCard";
 
 interface Credit {
+  id: string;
   project_name: string;
   role: string;
-  year: string;
-  platform: string;
+  year: number;
+  platform?: string;
   url?: string;
+  thumbnail_url?: string;
+  verification_status?: "unverified" | "pending" | "verified";
+  is_featured?: boolean;
 }
 
 interface CreditsSectionProps {
-  credits: Credit[];
+  userId: string;
   isOwnProfile: boolean;
   onRefresh: () => void;
 }
 
-export const CreditsSection = ({ credits = [], isOwnProfile, onRefresh }: CreditsSectionProps) => {
+export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSectionProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editCredits, setEditCredits] = useState<Credit[]>(credits);
-  const [newCredit, setNewCredit] = useState<Credit>({ 
-    project_name: "", 
-    role: "", 
-    year: "", 
+  const [credits, setCredits] = useState<Credit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newCredit, setNewCredit] = useState({
+    project_name: "",
+    role: "",
+    year: new Date().getFullYear(),
     platform: "",
-    url: "" 
+    url: "",
   });
-  const { toast } = useToast();
 
-  const addCredit = () => {
-    if (!newCredit.project_name.trim() || !newCredit.role.trim()) {
-      toast({ title: "Please fill in project name and role", variant: "destructive" });
+  useEffect(() => {
+    fetchCredits();
+  }, [userId]);
+
+  const fetchCredits = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("credits")
+        .select("*")
+        .eq("user_id", userId)
+        .order("year", { ascending: false });
+
+      if (error) throw error;
+      setCredits((data || []) as Credit[]);
+    } catch (error) {
+      console.error("Error fetching credits:", error);
+      toast.error("Failed to load credits");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addCredit = async () => {
+    if (!newCredit.project_name || !newCredit.role || !newCredit.year) {
+      toast.error("Please fill in project name, role, and year");
       return;
     }
-    setEditCredits([...editCredits, newCredit]);
-    setNewCredit({ project_name: "", role: "", year: "", platform: "", url: "" });
-  };
 
-  const removeCredit = (index: number) => {
-    setEditCredits(editCredits.filter((_, i) => i !== index));
-  };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-  const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+      const { error } = await supabase.from("credits").insert({
+        user_id: user.id,
+        ...newCredit,
+      });
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({ project_credits: editCredits as any })
-      .eq('user_id', user.id);
+      if (error) throw error;
 
-    if (error) {
-      toast({ title: "Error", description: "Failed to update credits", variant: "destructive" });
-    } else {
-      toast({ title: "Success", description: "Credits updated" });
-      setIsEditOpen(false);
+      toast.success("Credit added successfully");
+      setNewCredit({
+        project_name: "",
+        role: "",
+        year: new Date().getFullYear(),
+        platform: "",
+        url: "",
+      });
+      fetchCredits();
       onRefresh();
+    } catch (error) {
+      console.error("Error adding credit:", error);
+      toast.error("Failed to add credit");
     }
   };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from("credits").delete().eq("id", id);
+      if (error) throw error;
+
+      toast.success("Credit deleted");
+      fetchCredits();
+      onRefresh();
+    } catch (error) {
+      console.error("Error deleting credit:", error);
+      toast.error("Failed to delete credit");
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading credits...</div>;
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold flex items-center gap-2">
-          <Film className="h-5 w-5 text-primary" />
-          Credits & Projects
-        </h3>
+        <h3 className="text-lg font-semibold">Credits</h3>
         {isOwnProfile && (
           <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
             <DialogTrigger asChild>
-              <Button variant="gradient" size="sm">
+              <Button variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Credit
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Manage Your Credits</DialogTitle>
+                <DialogTitle>Add Credit</DialogTitle>
               </DialogHeader>
-              <div className="space-y-6 py-4">
-                <div className="space-y-4 rounded-lg border p-4 bg-muted/50">
-                  <h4 className="font-semibold text-sm">Add New Credit</h4>
-                  <div className="grid gap-3">
-                    <div>
-                      <Label>Project Name</Label>
-                      <Input
-                        value={newCredit.project_name}
-                        onChange={(e) => setNewCredit({ ...newCredit, project_name: e.target.value })}
-                        placeholder="e.g., Short Film, Album, Campaign"
-                      />
-                    </div>
-                    <div>
-                      <Label>Your Role</Label>
-                      <Input
-                        value={newCredit.role}
-                        onChange={(e) => setNewCredit({ ...newCredit, role: e.target.value })}
-                        placeholder="e.g., Director, Producer, Photographer"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label>Year</Label>
-                        <Input
-                          value={newCredit.year}
-                          onChange={(e) => setNewCredit({ ...newCredit, year: e.target.value })}
-                          placeholder="2025"
-                        />
-                      </div>
-                      <div>
-                        <Label>Platform</Label>
-                        <Input
-                          value={newCredit.platform}
-                          onChange={(e) => setNewCredit({ ...newCredit, platform: e.target.value })}
-                          placeholder="Netflix, Spotify, etc."
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label>URL (optional)</Label>
-                      <Input
-                        value={newCredit.url}
-                        onChange={(e) => setNewCredit({ ...newCredit, url: e.target.value })}
-                        placeholder="https://..."
-                        type="url"
-                      />
-                    </div>
-                    <Button onClick={addCredit} variant="outline" size="sm">
-                      <Plus className="h-4 w-4 mr-2" /> Add Credit
-                    </Button>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="project">Project Name *</Label>
+                    <Input
+                      id="project"
+                      value={newCredit.project_name}
+                      onChange={(e) => setNewCredit({ ...newCredit, project_name: e.target.value })}
+                      placeholder="e.g., The Matrix"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Role *</Label>
+                    <Input
+                      id="role"
+                      value={newCredit.role}
+                      onChange={(e) => setNewCredit({ ...newCredit, role: e.target.value })}
+                      placeholder="e.g., Director"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="year">Year *</Label>
+                    <Input
+                      id="year"
+                      type="number"
+                      value={newCredit.year}
+                      onChange={(e) => setNewCredit({ ...newCredit, year: parseInt(e.target.value) })}
+                      placeholder="e.g., 2023"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="platform">Platform</Label>
+                    <Input
+                      id="platform"
+                      value={newCredit.platform}
+                      onChange={(e) => setNewCredit({ ...newCredit, platform: e.target.value })}
+                      placeholder="e.g., Netflix, Spotify"
+                    />
+                  </div>
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="url">URL</Label>
+                    <Input
+                      id="url"
+                      value={newCredit.url}
+                      onChange={(e) => setNewCredit({ ...newCredit, url: e.target.value })}
+                      placeholder="https://..."
+                    />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Your Credits</h4>
-                  {editCredits.map((credit, idx) => (
-                    <div key={idx} className="flex items-start gap-2 rounded-lg border p-3">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{credit.project_name}</p>
-                        <p className="text-sm text-muted-foreground">{credit.role}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {credit.platform && `${credit.platform} • `}{credit.year}
-                        </p>
-                        {credit.url && (
-                          <a href={credit.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
-                            View Project
-                          </a>
-                        )}
-                      </div>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeCredit(idx)}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {editCredits.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">No credits added yet</p>
-                  )}
-                </div>
-
-                <Button onClick={handleSave} className="w-full" variant="gradient">
-                  Save Changes
+                
+                <Button onClick={addCredit} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Credit
                 </Button>
               </div>
             </DialogContent>
@@ -171,36 +188,35 @@ export const CreditsSection = ({ credits = [], isOwnProfile, onRefresh }: Credit
         )}
       </div>
 
-      {credits.length > 0 ? (
-        <div className="grid gap-3">
-          {credits.map((credit, idx) => (
-            <div
-              key={idx}
-              className="rounded-xl border border-border bg-card p-4"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
-                  <p className="font-semibold">{credit.project_name}</p>
-                  <p className="text-sm text-primary">{credit.role}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {credit.platform && `${credit.platform} • `}{credit.year}
-                  </p>
-                </div>
-                {credit.url && (
-                  <a href={credit.url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
-                  </a>
-                )}
-              </div>
-            </div>
+      {credits.length === 0 ? (
+        <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <Film className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
+          <h3 className="mb-2 text-lg font-semibold">No credits yet</h3>
+          <p className="text-sm text-muted-foreground">
+            {isOwnProfile ? "Start by adding your project credits" : "No credits to display"}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {credits.map((credit) => (
+            <AchievementCard
+              key={credit.id}
+              variant="credit"
+              title={credit.project_name}
+              subtitle={credit.role}
+              year={credit.year}
+              url={credit.url}
+              imageUrl={credit.thumbnail_url}
+              verificationStatus={credit.verification_status}
+              isFeatured={credit.is_featured}
+              isOwnProfile={isOwnProfile}
+              onDelete={() => handleDelete(credit.id)}
+              icon={<Film className="h-16 w-16" />}
+              metadata={credit.platform ? { Platform: credit.platform } : undefined}
+            />
           ))}
         </div>
-      ) : !isOwnProfile ? (
-        <div className="rounded-2xl border border-border bg-card p-8 text-center">
-          <Film className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-muted-foreground">No credits added yet</p>
-        </div>
-      ) : null}
+      )}
     </div>
   );
 };

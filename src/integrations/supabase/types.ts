@@ -55,6 +55,60 @@ export type Database = {
           },
         ]
       }
+      awards: {
+        Row: {
+          category: string | null
+          certificate_url: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_featured: boolean | null
+          organization: string
+          title: string
+          updated_at: string
+          user_id: string
+          verification_status: string | null
+          verification_url: string | null
+          year: number | null
+        }
+        Insert: {
+          category?: string | null
+          certificate_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          organization: string
+          title: string
+          updated_at?: string
+          user_id: string
+          verification_status?: string | null
+          verification_url?: string | null
+          year?: number | null
+        }
+        Update: {
+          category?: string | null
+          certificate_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          organization?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          verification_status?: string | null
+          verification_url?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       connections: {
         Row: {
           connected_user_id: string
@@ -76,6 +130,60 @@ export type Database = {
           id?: string
           status?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      credits: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          embed_data: Json | null
+          id: string
+          is_featured: boolean | null
+          platform: string | null
+          project_name: string
+          role: string
+          thumbnail_url: string | null
+          updated_at: string
+          url: string | null
+          user_id: string
+          verification_status: string | null
+          verification_url: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          embed_data?: Json | null
+          id?: string
+          is_featured?: boolean | null
+          platform?: string | null
+          project_name: string
+          role: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          url?: string | null
+          user_id: string
+          verification_status?: string | null
+          verification_url?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          embed_data?: Json | null
+          id?: string
+          is_featured?: boolean | null
+          platform?: string | null
+          project_name?: string
+          role?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+          verification_status?: string | null
+          verification_url?: string | null
+          year?: number | null
         }
         Relationships: []
       }
@@ -560,6 +668,57 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      press_links: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          excerpt: string | null
+          id: string
+          is_featured: boolean | null
+          og_data: Json | null
+          publication: string | null
+          published_date: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          url: string
+          user_id: string
+          verification_status: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          excerpt?: string | null
+          id?: string
+          is_featured?: boolean | null
+          og_data?: Json | null
+          publication?: string | null
+          published_date?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          url: string
+          user_id: string
+          verification_status?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          excerpt?: string | null
+          id?: string
+          is_featured?: boolean | null
+          og_data?: Json | null
+          publication?: string | null
+          published_date?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+          verification_status?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

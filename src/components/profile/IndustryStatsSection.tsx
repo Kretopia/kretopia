@@ -77,6 +77,10 @@ export const IndustryStatsSection = ({ stats, isOwnProfile, onRefresh }: Industr
     }
   };
 
+  if (loading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading stats...</div>;
+  }
+
   return (
     <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between gap-2">

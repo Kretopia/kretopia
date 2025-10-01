@@ -584,14 +584,14 @@ const Profile = () => {
                       ),
                       credits: (
                         <CreditsSection 
-                          credits={Array.isArray(profile.project_credits) ? profile.project_credits : []}
+                          userId={user.id}
                           isOwnProfile={true}
                           onRefresh={fetchData}
                         />
                       ),
                       awards: (
                         <AwardsSection 
-                          awards={Array.isArray(profile.awards) ? profile.awards : []}
+                          userId={user.id}
                           isOwnProfile={true}
                           onRefresh={fetchData}
                         />

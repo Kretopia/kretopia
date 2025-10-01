@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, UserPlus, X, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, ArrowRight } from "lucide-react";
 
 interface Match {
   user_id: string;
@@ -223,9 +221,7 @@ Format as JSON array:
           <div className="text-center py-6">
             <Sparkles className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
             <p className="text-sm text-muted-foreground mb-3">
-              {matches.length > 0 
-                ? "No more recommendations right now"
-                : "Not enough data for recommendations yet"}
+              Finding your ideal collaborators...
             </p>
             <Button variant="outline" size="sm" onClick={analyzeMatches} disabled={analyzing}>
               {analyzing ? (
@@ -236,7 +232,7 @@ Format as JSON array:
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Find Matches
+                  Discover Matches
                 </>
               )}
             </Button>
@@ -255,7 +251,9 @@ Format as JSON array:
               <Sparkles className="h-5 w-5" />
               AI Match Recommendations
             </CardTitle>
-            <CardDescription>Collaborators matched to your profile</CardDescription>
+            <CardDescription>
+              {visibleMatches.length} potential collaborator{visibleMatches.length !== 1 ? 's' : ''} found
+            </CardDescription>
           </div>
           <Button variant="ghost" size="sm" onClick={analyzeMatches} disabled={analyzing}>
             {analyzing ? (
@@ -266,70 +264,62 @@ Format as JSON array:
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px] pr-3">
-          <div className="space-y-3">
-            {visibleMatches.map((match) => (
-              <Card key={match.user_id} className="p-3 hover:bg-accent/50 transition-colors">
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-12 w-12 flex-shrink-0 cursor-pointer" onClick={() => navigate(`/profile/${match.user_id}`)}>
-                    <AvatarImage src={match.avatar_url || undefined} />
-                    <AvatarFallback>{match.full_name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 
-                        className="font-semibold text-sm cursor-pointer hover:underline"
-                        onClick={() => navigate(`/profile/${match.user_id}`)}
-                      >
-                        {match.full_name}
-                      </h4>
-                      <Badge variant={match.compatibility_score >= 80 ? "default" : "secondary"} className="text-xs">
-                        {match.compatibility_score}% Match
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-xs text-muted-foreground mb-2">{match.role}</p>
-                    
-                    {match.bio && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{match.bio}</p>
-                    )}
-                    
-                    {match.compatibility_reasons && match.compatibility_reasons.length > 0 && (
-                      <ul className="text-xs space-y-1 mb-3">
-                        {match.compatibility_reasons.slice(0, 2).map((reason, i) => (
-                          <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-primary mt-0.5">•</span>
-                            <span className="text-muted-foreground">{reason}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handleConnect(match.user_id)}
-                      >
-                        <UserPlus className="h-3.5 w-3.5 mr-1" />
-                        Connect
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => handleDismiss(match.user_id)}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3">
+          {visibleMatches.slice(0, 3).map((match, index) => (
+            <Card key={match.user_id} className="p-4 relative overflow-hidden">
+              {/* Blurred background effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5 backdrop-blur-sm" />
+              
+              <div className="relative space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* Blurred avatar placeholder */}
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 blur-sm" />
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm blur-sm select-none">
+                          Match #{index + 1}
+                        </span>
+                        <Badge variant={match.compatibility_score >= 80 ? "default" : "secondary"} className="text-xs">
+                          {match.compatibility_score}% Match
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground blur-sm select-none">
+                        Creative Professional
+                      </p>
                     </div>
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
+                
+                {match.compatibility_reasons && match.compatibility_reasons.length > 0 && (
+                  <ul className="text-xs space-y-1.5 pl-1">
+                    {match.compatibility_reasons.slice(0, 2).map((reason, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <Sparkles className="h-3 w-3 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="text-muted-foreground">{reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <Button 
+          className="w-full" 
+          size="lg"
+          onClick={() => navigate('/discover')}
+        >
+          <Sparkles className="h-4 w-4 mr-2" />
+          Discover & Connect
+          <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
+
+        <p className="text-xs text-center text-muted-foreground">
+          Head to Discover to see full profiles and connect
+        </p>
       </CardContent>
     </Card>
   );

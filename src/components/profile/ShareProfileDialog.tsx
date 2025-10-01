@@ -33,6 +33,7 @@ ${profileUrl}
 #CreativePortfolio #Thrive`;
 
   const handleSocialShare = (platform: string) => {
+    console.log('Share button clicked:', platform);
     let shareUrl = '';
     
     switch (platform) {
@@ -53,8 +54,19 @@ ${profileUrl}
         break;
     }
     
+    console.log('Opening URL:', shareUrl);
+    
     if (shareUrl) {
-      window.open(shareUrl, '_blank', 'noopener,noreferrer');
+      if (platform === 'email') {
+        window.location.href = shareUrl;
+      } else {
+        const newWindow = window.open(shareUrl, '_blank');
+        if (!newWindow) {
+          console.error('Popup blocked! Trying alternative method...');
+          window.location.href = shareUrl;
+        }
+      }
+      
       toast({
         title: "Opening share dialog",
         description: `Redirecting to ${platform}...`,

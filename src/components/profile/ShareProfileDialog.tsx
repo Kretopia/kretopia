@@ -22,7 +22,7 @@ export const ShareProfileDialog = ({ profile }: ShareProfileDialogProps) => {
 
   const profileUrl = `${window.location.origin}/profile/${profile.user_id}`;
   
-  const shareText = `Check out my creative portfolio on Thrive! 🎨✨
+  const shareText = `Check out my creative portfolio on ThriveIN! 🎨✨
 
 ${profile.full_name} | ${profile.role}
 ${profile.bio ? profile.bio.slice(0, 100) + (profile.bio.length > 100 ? '...' : '') : ''}
@@ -30,7 +30,7 @@ ${profile.bio ? profile.bio.slice(0, 100) + (profile.bio.length > 100 ? '...' : 
 View my work, collaborations, and achievements:
 ${profileUrl}
 
-#CreativePortfolio #Thrive`;
+#CreativePortfolio #ThriveIN`;
 
   const handleSocialShare = (platform: string) => {
     console.log('Share button clicked:', platform);
@@ -50,7 +50,7 @@ ${profileUrl}
         shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
         break;
       case 'email':
-        shareUrl = `mailto:?subject=${encodeURIComponent(profile.full_name + "'s Creative Portfolio on Thrive")}&body=${encodeURIComponent(shareText)}`;
+        shareUrl = `mailto:?subject=${encodeURIComponent(profile.full_name + "'s Creative Portfolio on ThriveIN")}&body=${encodeURIComponent(shareText)}`;
         break;
     }
     

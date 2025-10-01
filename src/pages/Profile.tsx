@@ -584,21 +584,21 @@ const Profile = () => {
                       ),
                       credits: (
                         <CreditsSection 
-                          userId={user.id}
+                          userId={profile.user_id}
                           isOwnProfile={true}
                           onRefresh={fetchData}
                         />
                       ),
                       awards: (
                         <AwardsSection 
-                          userId={user.id}
+                          userId={profile.user_id}
                           isOwnProfile={true}
                           onRefresh={fetchData}
                         />
                       ),
                       press: (
                         <PressLinksSection 
-                          pressLinks={Array.isArray(profile.press_links) ? profile.press_links : []}
+                          userId={profile.user_id}
                           isOwnProfile={true}
                           onRefresh={fetchData}
                         />

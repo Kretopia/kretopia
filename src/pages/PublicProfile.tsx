@@ -345,7 +345,7 @@ const PublicProfile = () => {
 
           <TabsContent value="press" className="space-y-3 md:space-y-4">
             <PressLinksSection 
-              pressLinks={Array.isArray(profile.press_links) ? profile.press_links : []}
+              userId={userId}
               isOwnProfile={false}
               onRefresh={fetchData}
             />

@@ -8,6 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { SearchBar } from "@/components/SearchBar";
+import { OpportunityFilters } from "@/components/opportunity/OpportunityFilters";
+import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportunitiesDialog";
+import { Bookmark } from "lucide-react";
 
 type CardType = "creator" | "opportunity";
 
@@ -474,11 +477,14 @@ const Discover = () => {
         <div className="mb-4 sm:mb-6">
           <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Discover</h1>
-            {subscriptionTier === 'free' && (
-              <Badge variant="secondary" className="gap-1 w-fit">
-                {dailySwipesLeft} swipes left
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              <SavedOpportunitiesDialog />
+              {subscriptionTier === 'free' && (
+                <Badge variant="secondary" className="gap-1 w-fit">
+                  {dailySwipesLeft} swipes left
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Search Bar */}

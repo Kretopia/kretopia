@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft } from "lucide-react";
+import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck } from "lucide-react";
 import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
 
 interface Opportunity {
@@ -31,6 +31,7 @@ const OpportunityDetail = () => {
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -51,7 +52,21 @@ const OpportunityDetail = () => {
     };
 
     fetchOpportunity();
-  }, [id]);
+    
+    // Check if opportunity is saved
+    const checkSaved = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('saved_opportunities')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('opportunity_id', id)
+        .maybeSingle();
+      setIsSaved(!!data);
+    };
+    
+    checkSaved();
+  }, [id, user]);
 
   const handleShare = () => {
     const url = window.location.href;
@@ -69,6 +84,46 @@ const OpportunityDetail = () => {
     } else {
       // User is authenticated, open apply dialog
       setShowApplyDialog(true);
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!user) {
+      navigate(`/auth?redirect=/opportunity/${id}`);
+      return;
+    }
+
+    if (isSaved) {
+      // Remove bookmark
+      const { error } = await supabase
+        .from('saved_opportunities')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('opportunity_id', id);
+      
+      if (!error) {
+        setIsSaved(false);
+        toast({
+          title: "Removed from saved",
+          description: "Opportunity removed from your bookmarks",
+        });
+      }
+    } else {
+      // Add bookmark
+      const { error } = await supabase
+        .from('saved_opportunities')
+        .insert({
+          user_id: user.id,
+          opportunity_id: id,
+        });
+      
+      if (!error) {
+        setIsSaved(true);
+        toast({
+          title: "Saved! 🔖",
+          description: "Opportunity added to your bookmarks",
+        });
+      }
     }
   };
 
@@ -109,9 +164,14 @@ const OpportunityDetail = () => {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <Button variant="outline" size="icon" onClick={handleShare}>
-            <Share2 className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" onClick={handleBookmark}>
+              {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleShare}>
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Status Badge */}

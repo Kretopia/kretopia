@@ -282,6 +282,10 @@ const Navbar = ({ user }: NavbarProps) => {
                     <HardDrive className="mr-2 h-4 w-4" />
                     Storage
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/manage-opportunities")}>
+                    <Briefcase className="mr-2 h-4 w-4" />
+                    My Applications
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={handleSignOut}

@@ -23,6 +23,7 @@ const Circle = lazy(() => import("./pages/Circle"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const Projects = lazy(() => import("./pages/Projects"));
+const Analytics = lazy(() => import("./pages/Analytics"));
 const ThriveStudio = lazy(() => import("./pages/ThriveStudio"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const EarnCredits = lazy(() => import("./pages/EarnCredits"));
@@ -97,6 +98,7 @@ const App = () => {
                   <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                   <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
                   <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
+                  <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                   <Route path="/studio" element={<ProtectedRoute><ThriveStudio /></ProtectedRoute>} />
                   <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
                   <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />

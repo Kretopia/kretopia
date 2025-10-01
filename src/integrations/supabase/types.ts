@@ -149,11 +149,13 @@ export type Database = {
         Row: {
           accepted_at: string | null
           created_at: string | null
+          current_uses: number | null
           id: string
           invite_code: string | null
           invitee_email: string
           invitee_user_id: string | null
           inviter_id: string
+          max_uses: number | null
           status: string | null
           used_at: string | null
           used_by: string | null
@@ -161,11 +163,13 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           created_at?: string | null
+          current_uses?: number | null
           id?: string
           invite_code?: string | null
           invitee_email: string
           invitee_user_id?: string | null
           inviter_id: string
+          max_uses?: number | null
           status?: string | null
           used_at?: string | null
           used_by?: string | null
@@ -173,11 +177,13 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           created_at?: string | null
+          current_uses?: number | null
           id?: string
           invite_code?: string | null
           invitee_email?: string
           invitee_user_id?: string | null
           inviter_id?: string
+          max_uses?: number | null
           status?: string | null
           used_at?: string | null
           used_by?: string | null
@@ -1349,6 +1355,10 @@ export type Database = {
       check_storage_available: {
         Args: { file_size_param: number; user_id_param: string }
         Returns: boolean
+      }
+      create_multi_use_code: {
+        Args: { num_uses: number; owner_email: string }
+        Returns: string
       }
       create_notification: {
         Args: {

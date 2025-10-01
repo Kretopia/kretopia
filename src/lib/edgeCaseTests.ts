@@ -177,12 +177,18 @@ export class EdgeCaseTests {
         { xp: profile.xp, level: profile.level }
       );
 
-      // Test 3: Credits non-negative
+      // Test 3: Check wallet exists and credits non-negative
+      const { data: wallet } = await supabase
+        .from('wallets')
+        .select('credits')
+        .eq('user_id', profile.user_id)
+        .single();
+      
       this.log(
-        'Credits non-negative',
-        profile.credits >= 0,
+        'Wallet credits non-negative',
+        wallet ? wallet.credits >= 0 : false,
         undefined,
-        { credits: profile.credits }
+        { credits: wallet?.credits || 0 }
       );
     }
 

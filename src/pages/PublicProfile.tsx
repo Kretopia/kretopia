@@ -12,6 +12,9 @@ import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
 import { SocialLinksSection } from "@/components/profile/SocialLinksSection";
 import { SkillsSection } from "@/components/profile/SkillsSection";
+import { PressLinksSection } from "@/components/profile/PressLinksSection";
+import { CreditsSection } from "@/components/profile/CreditsSection";
+import { AwardsSection } from "@/components/profile/AwardsSection";
 
 interface Profile {
   full_name: string;
@@ -24,6 +27,9 @@ interface Profile {
   industry?: string;
   professional_skills?: any;
   passion_skills?: any;
+  press_links?: any;
+  project_credits?: any;
+  awards?: any;
   website?: string;
   linkedin_url?: string;
   behance_url?: string;
@@ -273,43 +279,16 @@ const PublicProfile = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="about" className="w-full">
+        <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
-            <TabsTrigger value="about" className="rounded-lg md:rounded-xl text-xs md:text-sm">About</TabsTrigger>
-            <TabsTrigger value="skills" className="rounded-lg md:rounded-xl text-xs md:text-sm">Skills</TabsTrigger>
+            <TabsTrigger value="overview" className="rounded-lg md:rounded-xl text-xs md:text-sm">Overview</TabsTrigger>
             <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
+            <TabsTrigger value="press" className="rounded-lg md:rounded-xl text-xs md:text-sm">Press</TabsTrigger>
             <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="about" className="space-y-4 md:space-y-6">
-            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-              <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
-              </p>
-            </div>
-
-            {/* Only show social links if connected */}
-            {isConnected && (
-              <SocialLinksSection 
-                profile={profile}
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            )}
-            
-            {!isConnected && (
-              <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-                <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">Social Links</h3>
-                <p className="text-sm md:text-base text-muted-foreground">
-                  Connect with {profile.full_name.split(' ')[0]} through Discover to see their social media profiles and contact information.
-                </p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="skills" className="space-y-3 md:space-y-4">
+          <TabsContent value="overview" className="space-y-4 md:space-y-6">
             <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
               <SkillsSection
                 professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
@@ -320,6 +299,31 @@ const PublicProfile = () => {
                 onRefresh={fetchData}
               />
             </div>
+
+            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+              <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                {profile.bio || 'No bio available'}
+              </p>
+            </div>
+
+            <CreditsSection 
+              credits={Array.isArray(profile.project_credits) ? profile.project_credits : []}
+              isOwnProfile={false}
+              onRefresh={fetchData}
+            />
+
+            <AwardsSection 
+              awards={Array.isArray(profile.awards) ? profile.awards : []}
+              isOwnProfile={false}
+              onRefresh={fetchData}
+            />
+
+            <SocialLinksSection 
+              profile={profile}
+              isOwnProfile={false}
+              onRefresh={fetchData}
+            />
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-3 md:space-y-4">
@@ -335,6 +339,14 @@ const PublicProfile = () => {
               reviews={reviews} 
               isOwnProfile={false}
               profileUserId={profile.user_id}
+              onRefresh={fetchData}
+            />
+          </TabsContent>
+
+          <TabsContent value="press" className="space-y-3 md:space-y-4">
+            <PressLinksSection 
+              pressLinks={Array.isArray(profile.press_links) ? profile.press_links : []}
+              isOwnProfile={false}
               onRefresh={fetchData}
             />
           </TabsContent>

@@ -566,11 +566,11 @@ export type Database = {
           available_invites: number | null
           avatar_url: string | null
           avg_views: number | null
+          awards: Json | null
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
           created_at: string | null
-          credits: number | null
           daily_swipes: number | null
           full_name: string
           id: string
@@ -586,7 +586,9 @@ export type Database = {
           linkedin_url: string | null
           location: string | null
           passion_skills: Json | null
+          press_links: Json | null
           professional_skills: Json | null
+          project_credits: number | null
           review_share_token: string | null
           role: string
           soundcloud_url: string | null
@@ -615,11 +617,11 @@ export type Database = {
           available_invites?: number | null
           avatar_url?: string | null
           avg_views?: number | null
+          awards?: Json | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
           created_at?: string | null
-          credits?: number | null
           daily_swipes?: number | null
           full_name: string
           id?: string
@@ -635,7 +637,9 @@ export type Database = {
           linkedin_url?: string | null
           location?: string | null
           passion_skills?: Json | null
+          press_links?: Json | null
           professional_skills?: Json | null
+          project_credits?: number | null
           review_share_token?: string | null
           role: string
           soundcloud_url?: string | null
@@ -664,11 +668,11 @@ export type Database = {
           available_invites?: number | null
           avatar_url?: string | null
           avg_views?: number | null
+          awards?: Json | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
           created_at?: string | null
-          credits?: number | null
           daily_swipes?: number | null
           full_name?: string
           id?: string
@@ -684,7 +688,9 @@ export type Database = {
           linkedin_url?: string | null
           location?: string | null
           passion_skills?: Json | null
+          press_links?: Json | null
           professional_skills?: Json | null
+          project_credits?: number | null
           review_share_token?: string | null
           role?: string
           soundcloud_url?: string | null

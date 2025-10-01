@@ -24,10 +24,41 @@ interface SkillsSectionProps {
   onRefresh: () => void;
 }
 
-const SKILL_CATEGORIES = [
-  "Creative", "Technical", "Business", "Communication", "Design", 
-  "Production", "Marketing", "Development", "Music", "Video", "Photography"
-];
+// Predefined skills by category for easy selection
+const SKILL_OPTIONS: Record<string, string[]> = {
+  "Photography & Visual": [
+    "Portrait Photography", "Fashion Photography", "Product Photography", "Event Photography",
+    "Landscape Photography", "Food Photography", "Architectural Photography", "Street Photography"
+  ],
+  "Video & Film": [
+    "Videography", "Film Production", "Cinematography", "Video Editing",
+    "Color Grading", "Documentary Filmmaking", "Commercial Production", "Music Videos"
+  ],
+  "Audio & Music": [
+    "Music Production", "Audio Engineering", "Sound Design", "Mixing & Mastering",
+    "Composition", "Beat Making", "Podcast Production", "Voiceover"
+  ],
+  "Design": [
+    "Graphic Design", "UI/UX Design", "Brand Design", "Logo Design",
+    "Illustration", "Typography", "Print Design", "Packaging Design"
+  ],
+  "Motion & Animation": [
+    "Motion Graphics", "2D Animation", "3D Animation", "VFX",
+    "After Effects", "Character Animation", "Stop Motion"
+  ],
+  "Content & Social": [
+    "Content Creation", "Social Media Management", "Copywriting", "Influencer Marketing",
+    "YouTube Content", "TikTok Content", "Instagram Strategy", "Community Management"
+  ],
+  "Creative Direction": [
+    "Creative Direction", "Art Direction", "Brand Strategy", "Campaign Development",
+    "Project Management", "Team Leadership"
+  ],
+  "Technical": [
+    "Web Development", "Mobile Development", "3D Modeling", "Game Design",
+    "Virtual Reality", "Augmented Reality", "Technical Direction"
+  ]
+};
 
 export const SkillsSection = ({ 
   professionalSkills = [], 
@@ -42,18 +73,36 @@ export const SkillsSection = ({
   const [editIndustry, setEditIndustry] = useState(industry);
   const [editProfessional, setEditProfessional] = useState<Skill[]>(professionalSkills);
   const [editPassion, setEditPassion] = useState<Skill[]>(passionSkills);
-  const [newSkill, setNewSkill] = useState({ skill: "", level: 3, category: "Creative", type: "professional" });
+  const [selectedCategory, setSelectedCategory] = useState<string>(Object.keys(SKILL_OPTIONS)[0]);
+  const [selectedSkill, setSelectedSkill] = useState<string>("");
+  const [selectedLevel, setSelectedLevel] = useState<number>(3);
+  const [skillType, setSkillType] = useState<"professional" | "passion">("professional");
   const { toast } = useToast();
 
   const addSkill = () => {
-    if (!newSkill.skill.trim()) return;
-    
-    if (newSkill.type === "professional") {
-      setEditProfessional([...editProfessional, { skill: newSkill.skill, level: newSkill.level, category: newSkill.category }]);
-    } else {
-      setEditPassion([...editPassion, { skill: newSkill.skill, level: newSkill.level, category: newSkill.category }]);
+    if (!selectedSkill.trim()) {
+      toast({ title: "Please select a skill", variant: "destructive" });
+      return;
     }
-    setNewSkill({ skill: "", level: 3, category: "Creative", type: newSkill.type });
+    
+    const newSkillObj = { skill: selectedSkill, level: selectedLevel, category: selectedCategory };
+    
+    if (skillType === "professional") {
+      if (editProfessional.some(s => s.skill === selectedSkill)) {
+        toast({ title: "Skill already added", variant: "destructive" });
+        return;
+      }
+      setEditProfessional([...editProfessional, newSkillObj]);
+    } else {
+      if (editPassion.some(s => s.skill === selectedSkill)) {
+        toast({ title: "Skill already added", variant: "destructive" });
+        return;
+      }
+      setEditPassion([...editPassion, newSkillObj]);
+    }
+    
+    setSelectedSkill("");
+    setSelectedLevel(3);
   };
 
   const removeSkill = (type: string, index: number) => {
@@ -147,39 +196,54 @@ export const SkillsSection = ({
                   </h4>
                   
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="col-span-2">
-                        <Input
-                          placeholder="Skill name"
-                          value={newSkill.type === "professional" ? newSkill.skill : ""}
-                          onChange={(e) => setNewSkill({ ...newSkill, skill: e.target.value, type: "professional" })}
-                          onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                        />
-                      </div>
-                      <Select value={newSkill.category} onValueChange={(v) => setNewSkill({ ...newSkill, category: v })}>
+                    <div className="grid gap-3">
+                      <Select value={skillType} onValueChange={(v: "professional" | "passion") => setSkillType(v)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {SKILL_CATEGORIES.map(cat => (
+                          <SelectItem value="professional">Professional Skill</SelectItem>
+                          <SelectItem value="passion">Passion / Hobby</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.keys(SKILL_OPTIONS).map(cat => (
                             <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <Select value={String(newSkill.level)} onValueChange={(v) => setNewSkill({ ...newSkill, level: Number(v) })}>
+                      
+                      <Select value={selectedSkill} onValueChange={setSelectedSkill}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select skill" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SKILL_OPTIONS[selectedCategory]?.map(skill => (
+                            <SelectItem key={skill} value={skill}>{skill}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={String(selectedLevel)} onValueChange={(v) => setSelectedLevel(Number(v))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">Beginner</SelectItem>
-                          <SelectItem value="2">Intermediate</SelectItem>
-                          <SelectItem value="3">Proficient</SelectItem>
-                          <SelectItem value="4">Advanced</SelectItem>
-                          <SelectItem value="5">Expert</SelectItem>
+                          <SelectItem value="1">⭐ Beginner</SelectItem>
+                          <SelectItem value="2">⭐⭐ Intermediate</SelectItem>
+                          <SelectItem value="3">⭐⭐⭐ Proficient</SelectItem>
+                          <SelectItem value="4">⭐⭐⭐⭐ Advanced</SelectItem>
+                          <SelectItem value="5">⭐⭐⭐⭐⭐ Expert</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button onClick={addSkill} className="col-span-2" size="sm">
-                        <Plus className="h-4 w-4 mr-2" /> Add Skill
+                      
+                      <Button onClick={addSkill} className="w-full" variant="gradient" size="sm">
+                        <Plus className="h-4 w-4 mr-2" /> Add {skillType === "professional" ? "Professional" : "Passion"} Skill
                       </Button>
                     </div>
                     
@@ -209,72 +273,36 @@ export const SkillsSection = ({
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h4 className="font-semibold flex items-center gap-2">
+                <div className="space-y-3 pt-4 border-t">
+                  <h4 className="font-semibold flex items-center gap-2 text-sm">
                     <Sparkles className="h-4 w-4 text-secondary" />
-                    Passion Projects & Hobbies
+                    Passion Skills Added
                   </h4>
-                  
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="col-span-2">
-                        <Input
-                          placeholder="Skill name"
-                          value={newSkill.type === "passion" ? newSkill.skill : ""}
-                          onChange={(e) => setNewSkill({ ...newSkill, skill: e.target.value, type: "passion" })}
-                          onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                        />
-                      </div>
-                      <Select value={newSkill.category} onValueChange={(v) => setNewSkill({ ...newSkill, category: v })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SKILL_CATEGORIES.map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select value={String(newSkill.level)} onValueChange={(v) => setNewSkill({ ...newSkill, level: Number(v) })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Beginner</SelectItem>
-                          <SelectItem value="2">Intermediate</SelectItem>
-                          <SelectItem value="3">Proficient</SelectItem>
-                          <SelectItem value="4">Advanced</SelectItem>
-                          <SelectItem value="5">Expert</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button onClick={() => { setNewSkill({ ...newSkill, type: "passion" }); addSkill(); }} className="col-span-2" size="sm">
-                        <Plus className="h-4 w-4 mr-2" /> Add Skill
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {editPassion.map((skill, idx) => (
-                        <div key={idx} className="flex items-center gap-2 rounded-lg border p-2">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{skill.skill}</p>
-                            <p className="text-xs text-muted-foreground">{skill.category}</p>
-                          </div>
-                          <div className="flex gap-0.5">
-                            {[...Array(skill.level)].map((_, i) => (
-                              <Star key={i} className="h-3 w-3 fill-secondary text-secondary" />
-                            ))}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => removeSkill("passion", idx)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                  <div className="space-y-2">
+                    {editPassion.map((skill, idx) => (
+                      <div key={idx} className="flex items-center gap-2 rounded-lg border p-2">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{skill.skill}</p>
+                          <p className="text-xs text-muted-foreground">{skill.category}</p>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex gap-0.5">
+                          {[...Array(skill.level)].map((_, i) => (
+                            <Star key={i} className="h-3 w-3 fill-secondary text-secondary" />
+                          ))}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => removeSkill("passion", idx)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    {editPassion.length === 0 && (
+                      <p className="text-sm text-muted-foreground text-center py-2">No passion skills added yet</p>
+                    )}
                   </div>
                 </div>
 

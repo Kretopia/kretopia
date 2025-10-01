@@ -16,6 +16,9 @@ import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection"
 import { SocialLinksSection } from "@/components/profile/SocialLinksSection";
 import { InviteCodesCard } from "@/components/profile/InviteCodesCard";
 import { SkillsSection } from "@/components/profile/SkillsSection";
+import { PressLinksSection } from "@/components/profile/PressLinksSection";
+import { CreditsSection } from "@/components/profile/CreditsSection";
+import { AwardsSection } from "@/components/profile/AwardsSection";
 
 interface Profile {
   full_name: string;
@@ -23,12 +26,14 @@ interface Profile {
   bio: string;
   location: string;
   avatar_url: string;
-  credits: number;
   user_id: string;
   job_title?: string;
   industry?: string;
   professional_skills?: any;
   passion_skills?: any;
+  press_links?: any;
+  project_credits?: any;
+  awards?: any;
   website?: string;
   linkedin_url?: string;
   behance_url?: string;
@@ -391,46 +396,17 @@ const Profile = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="about" className="w-full">
+        <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
-            <TabsTrigger value="about" className="rounded-lg md:rounded-xl text-xs md:text-sm">About</TabsTrigger>
-            <TabsTrigger value="skills" className="rounded-lg md:rounded-xl text-xs md:text-sm">Skills</TabsTrigger>
+            <TabsTrigger value="overview" className="rounded-lg md:rounded-xl text-xs md:text-sm">Overview</TabsTrigger>
             <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
+            <TabsTrigger value="press" className="rounded-lg md:rounded-xl text-xs md:text-sm">Press</TabsTrigger>
             <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="about" className="space-y-4 md:space-y-6">
-            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-              <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
-              </p>
-            </div>
-
-            <SocialLinksSection 
-              profile={profile}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-
-            <InviteCodesCard />
-
-            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-              <h3 className="mb-3 md:mb-4 text-lg md:text-xl font-semibold">Credits</h3>
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl md:rounded-2xl bg-primary/10">
-                  <Briefcase className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-                </div>
-                <div>
-                  <div className="text-2xl md:text-3xl font-bold">{profile.credits}</div>
-                  <div className="text-xs md:text-sm text-muted-foreground">Available Credits</div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="skills" className="space-y-3 md:space-y-4">
+          <TabsContent value="overview" className="space-y-4 md:space-y-6">
+            {/* Skills Section - At the top for quick glance */}
             <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
               <SkillsSection
                 professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
@@ -441,6 +417,33 @@ const Profile = () => {
                 onRefresh={fetchData}
               />
             </div>
+
+            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+              <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
+              </p>
+            </div>
+
+            <CreditsSection 
+              credits={Array.isArray(profile.project_credits) ? profile.project_credits : []}
+              isOwnProfile={true}
+              onRefresh={fetchData}
+            />
+
+            <AwardsSection 
+              awards={Array.isArray(profile.awards) ? profile.awards : []}
+              isOwnProfile={true}
+              onRefresh={fetchData}
+            />
+
+            <SocialLinksSection 
+              profile={profile}
+              isOwnProfile={true}
+              onRefresh={fetchData}
+            />
+
+            <InviteCodesCard />
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-3 md:space-y-4">
@@ -456,6 +459,14 @@ const Profile = () => {
               reviews={reviews} 
               isOwnProfile={true}
               profileUserId={profile.user_id}
+              onRefresh={fetchData}
+            />
+          </TabsContent>
+
+          <TabsContent value="press" className="space-y-3 md:space-y-4">
+            <PressLinksSection 
+              pressLinks={Array.isArray(profile.press_links) ? profile.press_links : []}
+              isOwnProfile={true}
               onRefresh={fetchData}
             />
           </TabsContent>

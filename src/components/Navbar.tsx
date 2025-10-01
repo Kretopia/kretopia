@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { User, LogOut, Flame, Trophy, Users, Sparkles, Menu, Settings, LayoutDashboard, Compass, Briefcase, FolderKanban, Zap, Coins, HardDrive } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { SupportDialog } from "@/components/SupportDialog";
 import logoWhite from "@/assets/logo-white.png";
 import {
   Sheet,
@@ -228,6 +229,7 @@ const Navbar = ({ user }: NavbarProps) => {
               </Sheet>
 
               {/* Desktop Sign Out */}
+              <SupportDialog />
               <Button 
                 variant="ghost" 
                 size="icon" 

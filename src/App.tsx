@@ -22,6 +22,7 @@ import EarnCredits from "./pages/EarnCredits";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import ManageOpportunities from "./pages/ManageOpportunities";
 import StorageManagement from "./pages/StorageManagement";
+import SupportDashboard from "./pages/SupportDashboard";
 import TestRunner from "./pages/TestRunner";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
@@ -71,6 +72,7 @@ const App = () => {
             <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
             <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+            <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
             <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

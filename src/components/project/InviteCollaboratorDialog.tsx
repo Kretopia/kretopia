@@ -21,14 +21,38 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
     if (!email) return;
     
     setSending(true);
-    // TODO: Implement actual invite system with database table
-    toast({
-      title: "Invite sent! 📧",
-      description: `Invitation sent to ${email}`,
-    });
-    setEmail("");
-    setSending(false);
-    onInvite();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from('project_collaborators')
+        .insert({
+          project_id: projectId,
+          email: email.toLowerCase(),
+          invited_by: user.id,
+          role: 'member',
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Invite sent! 📧",
+        description: `Invitation sent to ${email}`,
+      });
+      setEmail("");
+      onInvite();
+    } catch (error) {
+      console.error('Error inviting collaborator:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send invitation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -10,6 +11,7 @@ import { CreatorFilters, type CreatorFilterState } from "@/components/discover/C
 import { OpportunityFiltersComponent, type OpportunityFilterState } from "@/components/discover/OpportunityFiltersComponent";
 import { CreditPromptDialog } from "@/components/discover/CreditPromptDialog";
 import { QuickCreateOpportunityDialog } from "@/components/discover/QuickCreateOpportunityDialog";
+import { checkProfileCompletion } from "@/lib/profileCompletion";
 
 type CardType = "creator" | "opportunity";
 
@@ -57,6 +59,8 @@ const Discover = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showCreditPrompt, setShowCreditPrompt] = useState(false);
+  const [profileIncomplete, setProfileIncomplete] = useState(false);
+  const [profileCompletionPercent, setProfileCompletionPercent] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -94,9 +98,21 @@ const Discover = () => {
 
       const { data: userProfile } = await supabase
         .from('profiles')
-        .select('subscription_tier, daily_swipes, level, xp')
+        .select('*')
         .eq('user_id', user.id)
         .single();
+      
+      // Check profile completion
+      if (userProfile) {
+        const { data: portfolioItems } = await supabase
+          .from('portfolio_items')
+          .select('id')
+          .eq('user_id', user.id);
+        
+        const completionStatus = checkProfileCompletion(userProfile, portfolioItems?.length || 0);
+        setProfileIncomplete(!completionStatus.isComplete);
+        setProfileCompletionPercent(completionStatus.completionPercentage);
+      }
       
       if (userProfile) {
         setSubscriptionTier(userProfile.subscription_tier || 'free');
@@ -119,7 +135,11 @@ const Discover = () => {
         let profilesQuery = supabase
           .from('public_profiles')
           .select('*')
-          .neq('user_id', user.id);
+          .neq('user_id', user.id)
+          .not('full_name', 'is', null)
+          .not('bio', 'is', null)
+          .not('avatar_url', 'is', null)
+          .not('location', 'is', null);
 
         if (creatorFilters.role !== 'all') {
           profilesQuery = profilesQuery.eq('role', creatorFilters.role);
@@ -130,7 +150,14 @@ const Discover = () => {
         
         const { data: profiles } = await profilesQuery.limit(50);
 
-        const profileIds = (profiles || []).map(p => p.user_id);
+        // Further filter out profiles with incomplete data
+        const completeProfiles = (profiles || []).filter(profile => {
+          return profile.full_name !== 'New User' && 
+                 profile.role !== 'Creator' && 
+                 profile.bio && profile.bio.length > 20;
+        });
+
+        const profileIds = completeProfiles.map(p => p.user_id);
         const { data: portfolioItems } = await supabase
           .from('portfolio_items')
           .select('*')
@@ -138,7 +165,7 @@ const Discover = () => {
           .eq('featured', true)
           .limit(3);
 
-        const creatorCards: Card[] = (profiles || []).map(profile => {
+        const creatorCards: Card[] = completeProfiles.map(profile => {
           const userPortfolio = (portfolioItems || []).filter(item => item.user_id === profile.user_id);
           return {
             id: profile.id,
@@ -341,6 +368,24 @@ const Discover = () => {
               <TabsTrigger value="opportunities" className="text-sm sm:text-base">Opportunities</TabsTrigger>
             </TabsList>
           </Tabs>
+
+          {profileIncomplete && (
+            <Alert className="border-accent bg-accent/10">
+              <AlertCircle className="h-4 w-4 text-accent" />
+              <AlertDescription className="text-sm">
+                <span className="font-semibold">Complete your profile to be discovered!</span>
+                <br />
+                Your profile is {profileCompletionPercent}% complete. Add bio, skills, portfolio & more to appear in others' discovery feed.
+                <Button 
+                  variant="link" 
+                  className="h-auto p-0 ml-1 text-accent font-semibold"
+                  onClick={() => navigate('/profile')}
+                >
+                  Complete Profile →
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-[250px_1fr] gap-4 sm:gap-6">

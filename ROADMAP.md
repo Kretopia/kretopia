@@ -64,33 +64,28 @@
   - [x] Portfolio performance metrics
   - [x] Engagement rate calculations
   - [x] Visual stats cards with trends
-
-## 🚧 In Progress
-- [x] **Milestone-based Payment System** 💰 ✅ COMPLETED
+- [x] **Milestone-based Payment System with Escrow** 💰
   - [x] Create milestones within projects
   - [x] Link payments to specific deliverables
   - [x] Progress tracking per milestone
   - [x] Status workflow (pending → in progress → review → completed → paid)
   - [x] Role-based permissions (client vs creator)
-  - [x] Payment tracking and history
   - [x] Stripe payment integration
-  - [ ] Escrow functionality
+  - [x] Simplified escrow (7-day fund hold)
+  - [x] Automatic payment capture on approval
+  - [x] Refund on rejection
+
+## 🚧 In Progress
+
 
 ## 📋 High Priority (Next Sprint)
 
 ### Payment & Financial
-- [ ] Milestone-based payment system
-  - [ ] Create milestones within projects
-  - [ ] Link payments to specific deliverables
-  - [ ] Progress tracking per milestone
-- [ ] Escrow system
-  - [ ] Secure fund holding
-  - [ ] Multi-party approval workflow
-  - [ ] Dispute resolution process
-  - [ ] Automatic release on completion
-- [ ] Stripe integration enhancements
+- [ ] Full Stripe Connect escrow (unlimited hold time)
+- [ ] Platform commission system
 - [ ] Invoice generation
-- [ ] Payment history
+- [ ] Payment history dashboard
+- [ ] Multi-currency support
 
 ### Project Collaboration
 - [ ] Real-time project workspace

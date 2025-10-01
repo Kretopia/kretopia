@@ -32,11 +32,11 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { milestoneId, amount, title, projectId } = await req.json();
+    const { milestoneId, amount, title, projectId, useEscrow } = await req.json();
     if (!milestoneId || !amount || !title) {
       throw new Error("Missing required fields: milestoneId, amount, or title");
     }
-    logStep("Payment request received", { milestoneId, amount, title });
+    logStep("Payment request received", { milestoneId, amount, title, useEscrow });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -53,7 +53,7 @@ serve(async (req) => {
     }
 
     // Create checkout session with dynamic amount
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -62,7 +62,7 @@ serve(async (req) => {
             currency: "usd",
             product_data: {
               name: `Milestone Payment: ${title}`,
-              description: `Payment for project milestone`,
+              description: useEscrow ? `Escrow payment for project milestone (funds held until approved)` : `Payment for project milestone`,
             },
             unit_amount: Math.round(parseFloat(amount) * 100), // Convert to cents
           },
@@ -70,16 +70,32 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/thrive-desk/${projectId}?payment=success&milestone=${milestoneId}`,
+      success_url: `${req.headers.get("origin")}/thrive-desk/${projectId}?payment=success&milestone=${milestoneId}&escrow=${useEscrow ? 'true' : 'false'}`,
       cancel_url: `${req.headers.get("origin")}/thrive-desk/${projectId}?payment=cancelled`,
       metadata: {
         milestoneId,
         projectId,
         userId: user.id,
+        useEscrow: useEscrow ? 'true' : 'false',
       },
-    });
+    };
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    // For escrow, use manual capture (authorize only, don't capture immediately)
+    if (useEscrow) {
+      sessionConfig.payment_intent_data = {
+        capture_method: 'manual',
+        metadata: {
+          milestoneId,
+          projectId,
+          userId: user.id,
+        },
+      };
+      logStep("Using escrow mode with manual capture");
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    logStep("Checkout session created", { sessionId: session.id, url: session.url, escrow: useEscrow });
 
     return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

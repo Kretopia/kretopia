@@ -67,26 +67,58 @@ const ThriveDesk = () => {
     const params = new URLSearchParams(window.location.search);
     const paymentStatus = params.get('payment');
     const milestoneId = params.get('milestone');
+    const useEscrow = params.get('escrow') === 'true';
 
     if (paymentStatus === 'success' && milestoneId) {
-      // Update milestone to paid status
-      const updateMilestoneToPaid = async () => {
+      // Fetch the payment intent from the milestone
+      const updateMilestonePayment = async () => {
         try {
-          const { data: { user } } = await supabase.auth.getUser();
-          const { error } = await supabase
-            .from('milestones')
-            .update({ 
-              status: 'paid', 
-              paid_at: new Date().toISOString(),
-              paid_to: user?.id
-            })
-            .eq('id', milestoneId);
+          // First get the checkout session to retrieve payment intent
+          const checkoutSessionId = params.get('session_id');
+          
+          if (useEscrow) {
+            // For escrow, we need to get the payment intent ID
+            const { data: sessionData, error: sessionError } = await supabase.functions.invoke('get-payment-intent', {
+              body: { sessionId: checkoutSessionId },
+            });
 
-          if (error) throw error;
-          toast({
-            title: "Payment successful! 💰",
-            description: "Milestone has been marked as paid.",
-          });
+            if (!sessionError && sessionData?.paymentIntentId) {
+              // Update milestone with payment intent for escrow
+              const { error } = await supabase
+                .from('milestones')
+                .update({ 
+                  status: 'pending',
+                  escrow_status: 'authorized',
+                  payment_intent_id: sessionData.paymentIntentId,
+                })
+                .eq('id', milestoneId);
+
+              if (error) throw error;
+              toast({
+                title: "Escrow secured! 🔒",
+                description: "Funds are held safely. They'll be released when you approve the work.",
+              });
+            }
+          } else {
+            // Regular payment - mark as paid immediately
+            const { data: { user } } = await supabase.auth.getUser();
+            const { error } = await supabase
+              .from('milestones')
+              .update({ 
+                status: 'paid', 
+                paid_at: new Date().toISOString(),
+                paid_to: user?.id,
+                escrow_status: 'none',
+              })
+              .eq('id', milestoneId);
+
+            if (error) throw error;
+            toast({
+              title: "Payment successful! 💰",
+              description: "Milestone has been marked as paid.",
+            });
+          }
+
           fetchProjectData();
         } catch (error: any) {
           console.error('Error updating milestone:', error);
@@ -97,7 +129,7 @@ const ThriveDesk = () => {
           });
         }
       };
-      updateMilestoneToPaid();
+      updateMilestonePayment();
 
       // Clean URL
       window.history.replaceState({}, '', `/thrive-desk/${projectId}`);

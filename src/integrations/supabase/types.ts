@@ -385,9 +385,11 @@ export type Database = {
           created_by: string
           description: string | null
           due_date: string | null
+          escrow_status: string | null
           id: string
           paid_at: string | null
           paid_to: string | null
+          payment_intent_id: string | null
           project_id: string
           status: string
           title: string
@@ -399,9 +401,11 @@ export type Database = {
           created_by: string
           description?: string | null
           due_date?: string | null
+          escrow_status?: string | null
           id?: string
           paid_at?: string | null
           paid_to?: string | null
+          payment_intent_id?: string | null
           project_id: string
           status?: string
           title: string
@@ -413,9 +417,11 @@ export type Database = {
           created_by?: string
           description?: string | null
           due_date?: string | null
+          escrow_status?: string | null
           id?: string
           paid_at?: string | null
           paid_to?: string | null
+          payment_intent_id?: string | null
           project_id?: string
           status?: string
           title?: string

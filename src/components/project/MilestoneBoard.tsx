@@ -20,6 +20,8 @@ interface Milestone {
   paid_to: string | null;
   paid_at: string | null;
   created_at: string;
+  payment_intent_id: string | null;
+  escrow_status: string;
 }
 
 interface MilestoneBoardProps {
@@ -108,7 +110,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     }
   };
 
-  const handleStripePayment = async (milestone: Milestone) => {
+  const handleStripePayment = async (milestone: Milestone, useEscrow: boolean = false) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -116,7 +118,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
         return;
       }
 
-      toast({ title: "Creating payment session..." });
+      toast({ title: useEscrow ? "Creating escrow payment..." : "Creating payment session..." });
       
       const { data, error } = await supabase.functions.invoke('create-milestone-payment', {
         body: {
@@ -124,6 +126,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
           amount: milestone.amount,
           title: milestone.title,
           projectId: projectId,
+          useEscrow: useEscrow,
         },
       });
 
@@ -132,11 +135,65 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
       // Open Stripe checkout in new tab
       if (data?.url) {
         window.open(data.url, '_blank');
-        toast({ title: "Payment window opened! 💳" });
+        toast({ title: useEscrow ? "Escrow payment window opened! 🔒" : "Payment window opened! 💳" });
       }
     } catch (error: any) {
       console.error('Error creating payment:', error);
       toast({ title: "Error", description: error.message || "Failed to create payment session", variant: "destructive" });
+    }
+  };
+
+  const handleCapturePayment = async (milestone: Milestone) => {
+    try {
+      if (!milestone.payment_intent_id) {
+        toast({ title: "Error", description: "No payment to capture", variant: "destructive" });
+        return;
+      }
+
+      toast({ title: "Releasing escrow funds..." });
+
+      const { data, error } = await supabase.functions.invoke('capture-milestone-payment', {
+        body: {
+          paymentIntentId: milestone.payment_intent_id,
+          action: 'capture',
+          milestoneId: milestone.id,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Funds released! 💰", description: "Payment has been transferred to the creator." });
+      onUpdate();
+    } catch (error: any) {
+      console.error('Error capturing payment:', error);
+      toast({ title: "Error", description: error.message || "Failed to capture payment", variant: "destructive" });
+    }
+  };
+
+  const handleCancelPayment = async (milestone: Milestone) => {
+    try {
+      if (!milestone.payment_intent_id) {
+        toast({ title: "Error", description: "No payment to cancel", variant: "destructive" });
+        return;
+      }
+
+      toast({ title: "Cancelling escrow payment..." });
+
+      const { data, error } = await supabase.functions.invoke('capture-milestone-payment', {
+        body: {
+          paymentIntentId: milestone.payment_intent_id,
+          action: 'cancel',
+          milestoneId: milestone.id,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Escrow cancelled", description: "Funds have been refunded." });
+      onUpdate();
+    } catch (error: any) {
+      console.error('Error cancelling payment:', error);
+      toast({ title: "Error", description: error.message || "Failed to cancel payment", variant: "destructive" });
     }
   };
 
@@ -235,13 +292,23 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
               <Card key={milestone.id} className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold">{milestone.title}</h4>
-                      <Badge className={statusConfig.color}>
-                        <StatusIcon className="h-3 w-3 mr-1" />
-                        {statusConfig.label}
-                      </Badge>
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <h4 className="font-semibold">{milestone.title}</h4>
+                       <Badge className={statusConfig.color}>
+                         <StatusIcon className="h-3 w-3 mr-1" />
+                         {statusConfig.label}
+                       </Badge>
+                       {milestone.escrow_status === 'authorized' && (
+                         <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                           🔒 Escrow Secured
+                         </Badge>
+                       )}
+                       {milestone.escrow_status === 'captured' && (
+                         <Badge variant="secondary" className="bg-green-100 text-green-700">
+                           ✓ Escrow Released
+                         </Badge>
+                       )}
+                     </div>
                     {milestone.description && (
                       <p className="text-sm text-muted-foreground">{milestone.description}</p>
                     )}
@@ -263,68 +330,115 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {milestone.status !== 'paid' && (
-                      <>
-                        {userRole === 'creator' && milestone.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleStatusChange(milestone.id, 'in_progress')}
-                          >
-                            Start Work
-                          </Button>
-                        )}
-                        {userRole === 'creator' && milestone.status === 'in_progress' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleStatusChange(milestone.id, 'review')}
-                          >
-                            Submit for Review
-                          </Button>
-                        )}
-                        {userRole === 'client' && milestone.status === 'review' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleStatusChange(milestone.id, 'in_progress')}
-                            >
-                              Request Changes
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => handleStatusChange(milestone.id, 'completed')}
-                            >
-                              Approve
-                            </Button>
-                          </>
-                        )}
-                        {userRole === 'client' && milestone.status === 'completed' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleStripePayment(milestone)}
-                              className="gap-2"
-                            >
-                              <CreditCard className="h-4 w-4" />
-                              Pay ${Number(milestone.amount).toFixed(2)}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleMarkAsPaid(milestone.id)}
-                              className="gap-2"
-                            >
-                              <DollarSign className="h-4 w-4" />
-                              Mark as Paid
-                            </Button>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
+                   <div className="flex flex-col gap-2">
+                     {milestone.status !== 'paid' && (
+                       <>
+                         {/* Pending - Creator starts work */}
+                         {userRole === 'creator' && milestone.status === 'pending' && (
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => handleStatusChange(milestone.id, 'in_progress')}
+                           >
+                             Start Work
+                           </Button>
+                         )}
+
+                         {/* Pending - Client can secure with escrow */}
+                         {userRole === 'client' && milestone.status === 'pending' && milestone.escrow_status === 'none' && (
+                           <Button
+                             size="sm"
+                             onClick={() => handleStripePayment(milestone, true)}
+                             className="gap-2"
+                           >
+                             🔒 Secure with Escrow
+                           </Button>
+                         )}
+
+                         {/* In Progress - Creator submits for review */}
+                         {userRole === 'creator' && milestone.status === 'in_progress' && (
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => handleStatusChange(milestone.id, 'review')}
+                           >
+                             Submit for Review
+                           </Button>
+                         )}
+
+                         {/* Review - Client can approve or request changes */}
+                         {userRole === 'client' && milestone.status === 'review' && (
+                           <>
+                             {milestone.escrow_status === 'authorized' ? (
+                               <>
+                                 <Button
+                                   size="sm"
+                                   onClick={() => handleCapturePayment(milestone)}
+                                   className="gap-2"
+                                 >
+                                   ✓ Approve & Release ${Number(milestone.amount).toFixed(2)}
+                                 </Button>
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => handleCancelPayment(milestone)}
+                                 >
+                                   ✕ Reject & Refund
+                                 </Button>
+                               </>
+                             ) : (
+                               <>
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => handleStatusChange(milestone.id, 'in_progress')}
+                                 >
+                                   Request Changes
+                                 </Button>
+                                 <Button
+                                   size="sm"
+                                   onClick={() => handleStatusChange(milestone.id, 'completed')}
+                                 >
+                                   Approve
+                                 </Button>
+                               </>
+                             )}
+                           </>
+                         )}
+
+                         {/* Completed - Client can pay */}
+                         {userRole === 'client' && milestone.status === 'completed' && milestone.escrow_status === 'none' && (
+                           <>
+                             <Button
+                               size="sm"
+                               onClick={() => handleStripePayment(milestone, false)}
+                               className="gap-2"
+                             >
+                               <CreditCard className="h-4 w-4" />
+                               Pay Now ${Number(milestone.amount).toFixed(2)}
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               onClick={() => handleStripePayment(milestone, true)}
+                               className="gap-2"
+                             >
+                               🔒 Pay with Escrow
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               onClick={() => handleMarkAsPaid(milestone.id)}
+                               className="gap-2 text-xs"
+                             >
+                               <DollarSign className="h-4 w-4" />
+                               Mark Paid (offline)
+                             </Button>
+                           </>
+                         )}
+                       </>
+                     )}
+                   </div>
                 </div>
               </Card>
             );

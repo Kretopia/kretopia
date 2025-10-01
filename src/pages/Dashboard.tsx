@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AIMatchRecommendations } from "@/components/AIMatchRecommendations";
 import { 
   Sparkles, 
   TrendingUp, 
@@ -279,6 +280,11 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
+        {/* AI Match Recommendations */}
+        <div className="mb-6 sm:mb-8">
+          <AIMatchRecommendations />
+        </div>
 
         {/* Features & Tools */}
         <div className="mb-6 sm:mb-8">

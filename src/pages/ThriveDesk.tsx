@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskBoard } from "@/components/project/TaskBoard";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { AIAutomation } from "@/components/project/AIAutomation";
+import { TimeTracker } from "@/components/project/TimeTracker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -380,113 +381,111 @@ const ThriveDesk = () => {
 
   // Responsive rendering
   const renderMobileLayout = () => (
-    <div className="flex flex-col h-screen">
-      {/* Mobile Header */}
-      <div className="border-b px-4 py-3 bg-background sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/projects')}>
+    <div className="flex flex-col h-screen pb-16">
+      {/* Mobile Header - Improved touch targets */}
+      <div className="border-b px-3 py-2.5 bg-background sticky top-0 z-10">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => navigate('/projects')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-semibold truncate">{project.title}</h1>
-            <Badge variant="secondary" className="text-xs">{project.status}</Badge>
+            <h1 className="text-base font-semibold truncate leading-tight">{project.title}</h1>
+            <Badge variant="secondary" className="text-xs mt-0.5">{project.status}</Badge>
           </div>
         </div>
       </div>
 
-      {/* Mobile Tabs */}
+      {/* Mobile Tabs - Larger touch targets */}
       <Tabs defaultValue="messages" className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b px-2 bg-background">
-          <TabsList className="w-full justify-start h-12 bg-transparent">
-            <TabsTrigger value="messages" className="gap-1.5 text-xs">
-              <Send className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Messages</span>
+        <div className="border-b bg-background">
+          <TabsList className="w-full justify-around h-14 bg-transparent rounded-none p-0">
+            <TabsTrigger value="messages" className="flex-1 gap-1 data-[state=active]:bg-background h-full">
+              <Send className="h-4 w-4" />
+              <span className="text-xs">Messages</span>
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="gap-1.5 text-xs">
-              <CheckSquare className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Tasks</span>
+            <TabsTrigger value="tasks" className="flex-1 gap-1 data-[state=active]:bg-background h-full">
+              <CheckSquare className="h-4 w-4" />
+              <span className="text-xs">Tasks</span>
             </TabsTrigger>
-            <TabsTrigger value="milestones" className="gap-1.5 text-xs">
-              <DollarSign className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Milestones</span>
+            <TabsTrigger value="milestones" className="flex-1 gap-1 data-[state=active]:bg-background h-full">
+              <DollarSign className="h-4 w-4" />
+              <span className="text-xs">Pay</span>
             </TabsTrigger>
-            <TabsTrigger value="details" className="gap-1.5 text-xs">
-              <FileText className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Details</span>
+            <TabsTrigger value="details" className="flex-1 gap-1 data-[state=active]:bg-background h-full">
+              <FileText className="h-4 w-4" />
+              <span className="text-xs">Info</span>
             </TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="messages" className="flex-1 flex flex-col m-0 overflow-hidden">
-          <ScrollArea className="flex-1 px-4">
-            <div className="py-4 space-y-4">
+          <ScrollArea className="flex-1 px-3">
+            <div className="py-3 space-y-3">
               {messages.map((msg) => (
-                <div key={msg.id} className="space-y-2">
-                  <div className="flex gap-2">
-                    <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage src={msg.profiles?.avatar_url} />
-                      <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-semibold text-sm truncate">{msg.profiles?.full_name || 'User'}</span>
-                        <span className="text-xs text-muted-foreground flex-shrink-0">
-                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <p className="text-sm leading-relaxed break-words">{msg.message}</p>
-                      {msg.file_url && (
-                        <div className="mt-2">
-                          {isImageFile(msg.file_type) ? (
-                            <img src={msg.file_url} alt={msg.file_name} className="rounded-lg max-w-full h-auto" />
-                          ) : (
-                            <a href={msg.file_url} target="_blank" rel="noopener noreferrer" 
-                               className="flex items-center gap-2 p-2 bg-secondary rounded-lg text-sm">
-                              <FileText className="h-4 w-4 flex-shrink-0" />
-                              <span className="truncate">{msg.file_name}</span>
-                            </a>
-                          )}
-                        </div>
-                      )}
+                <div key={msg.id} className="flex gap-2.5">
+                  <Avatar className="h-9 w-9 flex-shrink-0">
+                    <AvatarImage src={msg.profiles?.avatar_url} />
+                    <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="font-semibold text-sm truncate">{msg.profiles?.full_name || 'User'}</span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
+                    <p className="text-sm leading-relaxed break-words">{msg.message}</p>
+                    {msg.file_url && (
+                      <div className="mt-2">
+                        {isImageFile(msg.file_type) ? (
+                          <img src={msg.file_url} alt={msg.file_name} className="rounded-lg max-w-full h-auto" />
+                        ) : (
+                          <a href={msg.file_url} target="_blank" rel="noopener noreferrer" 
+                             className="flex items-center gap-2 p-3 bg-secondary rounded-lg text-sm active:bg-secondary/80">
+                            <FileText className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{msg.file_name}</span>
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
-          <div className="border-t p-3 bg-background">
+          <div className="border-t p-3 bg-background safe-area-bottom">
             {attachedFile && (
-              <div className="mb-2 p-2 bg-secondary rounded-lg flex items-center gap-2 text-sm">
-                <Paperclip className="h-3.5 w-3.5 flex-shrink-0" />
+              <div className="mb-2 p-2.5 bg-secondary rounded-lg flex items-center gap-2 text-sm">
+                <Paperclip className="h-4 w-4 flex-shrink-0" />
                 <span className="flex-1 truncate">{attachedFile.name}</span>
-                <Button variant="ghost" size="sm" onClick={() => setAttachedFile(null)}>Remove</Button>
+                <Button variant="ghost" size="sm" className="h-8" onClick={() => setAttachedFile(null)}>Remove</Button>
               </div>
             )}
             <div className="flex gap-2">
               <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileAttach} />
-              <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
-                <Paperclip className="h-4 w-4" />
+              <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => fileInputRef.current?.click()}>
+                <Paperclip className="h-5 w-5" />
               </Button>
               <Input
                 placeholder="Message..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                className="flex-1 text-sm"
+                className="flex-1 h-11 text-base"
               />
-              <Button onClick={handleSendMessage} disabled={sendingMessage} size="icon">
-                {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <Button onClick={handleSendMessage} disabled={sendingMessage} size="icon" className="h-11 w-11">
+                {sendingMessage ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
               </Button>
             </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 p-3 overflow-auto">
+        <TabsContent value="tasks" className="flex-1 m-0 p-2 overflow-auto">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 p-3 overflow-auto">
+        <TabsContent value="milestones" className="flex-1 m-0 p-2 overflow-auto">
           <MilestoneBoard 
             milestones={milestones} 
             projectId={projectId!} 
@@ -497,22 +496,35 @@ const ThriveDesk = () => {
 
         <TabsContent value="details" className="flex-1 m-0 overflow-auto">
           <ScrollArea className="h-full">
-            <div className="p-4 space-y-4">
-              <Card className="p-4">
-                <h3 className="font-semibold mb-3">Project Details</h3>
-                {project.description && <p className="text-sm mb-3">{project.description}</p>}
+            <div className="p-3 space-y-3">
+              <Card className="p-3">
+                <h3 className="font-semibold text-sm mb-2">Project Details</h3>
+                {project.description && <p className="text-sm mb-3 leading-relaxed">{project.description}</p>}
                 {project.budget && (
-                  <div className="flex items-center gap-2 text-sm mb-2">
+                  <div className="flex items-center gap-2 text-sm mb-2 p-2 bg-secondary/50 rounded">
                     <DollarSign className="h-4 w-4" />
                     <span>{project.budget}</span>
                   </div>
                 )}
                 {project.deadline && (
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex items-center gap-2 text-sm p-2 bg-secondary/50 rounded">
                     <Calendar className="h-4 w-4" />
                     <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
                   </div>
                 )}
+              </Card>
+              <Card className="p-3">
+                <h3 className="font-semibold text-sm mb-3">Progress</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-3 bg-secondary/50 rounded">
+                    <p className="text-2xl font-bold">{tasks.length}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Tasks</p>
+                  </div>
+                  <div className="text-center p-3 bg-secondary/50 rounded">
+                    <p className="text-2xl font-bold">{milestones.length}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Milestones</p>
+                  </div>
+                </div>
               </Card>
             </div>
           </ScrollArea>
@@ -709,6 +721,9 @@ const ThriveDesk = () => {
         <div className="h-full overflow-auto">
           <ScrollArea className="h-full">
             <div className="p-3 space-y-3">
+              {/* Time Tracker */}
+              <TimeTracker projectId={projectId!} tasks={tasks} />
+
               {/* AI Task Assistant */}
               <AIAutomation 
                 projectId={projectId!}

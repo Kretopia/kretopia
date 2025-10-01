@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ProjectTemplates } from "@/components/project/ProjectTemplates";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -257,61 +258,64 @@ const Projects = () => {
               Organize your projects, collabs & opportunities
             </p>
           </div>
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="gradient" size="lg" className="gap-2 w-full md:w-auto">
-                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-                New Project
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="w-[95vw] sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Create New Project</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Project Title *</Label>
-                  <Input
-                    id="title"
-                    placeholder="My Awesome Project"
-                    value={newProject.title}
-                    onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="What is this project about?"
-                    value={newProject.description}
-                    onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="budget">Budget (Optional)</Label>
-                  <Input
-                    id="budget"
-                    placeholder="$1,000 - $5,000"
-                    value={newProject.budget}
-                    onChange={(e) => setNewProject({ ...newProject, budget: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="deadline">Deadline (Optional)</Label>
-                  <Input
-                    id="deadline"
-                    type="date"
-                    value={newProject.deadline}
-                    onChange={(e) => setNewProject({ ...newProject, deadline: e.target.value })}
-                  />
-                </div>
-                <Button onClick={handleCreateProject} className="w-full" variant="gradient">
-                  Create Project
+          <div className="flex gap-2 w-full md:w-auto">
+            <ProjectTemplates onSelect={fetchProjects} />
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="gradient" size="lg" className="gap-2 flex-1 md:flex-none">
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Blank Project
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Create Blank Project</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Project Title *</Label>
+                    <Input
+                      id="title"
+                      placeholder="My Awesome Project"
+                      value={newProject.title}
+                      onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="What is this project about?"
+                      value={newProject.description}
+                      onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="budget">Budget (Optional)</Label>
+                    <Input
+                      id="budget"
+                      placeholder="$1,000 - $5,000"
+                      value={newProject.budget}
+                      onChange={(e) => setNewProject({ ...newProject, budget: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="deadline">Deadline (Optional)</Label>
+                    <Input
+                      id="deadline"
+                      type="date"
+                      value={newProject.deadline}
+                      onChange={(e) => setNewProject({ ...newProject, deadline: e.target.value })}
+                    />
+                  </div>
+                  <Button onClick={handleCreateProject} className="w-full" variant="gradient">
+                    Create Project
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Search */}

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Flame, Trophy, Users, Sparkles, Menu, Settings, LayoutDashboard, Compass, Briefcase, FolderKanban, Zap, Coins, HardDrive } from "lucide-react";
+import { User, LogOut, Flame, Trophy, Users, Sparkles, Menu, Settings, LayoutDashboard, Compass, Briefcase, FolderKanban, Zap, Coins, HardDrive, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
@@ -81,6 +81,12 @@ const Navbar = ({ user }: NavbarProps) => {
                 Discover
               </Button>
             </Link>
+            <Link to="/messages">
+              <Button variant="ghost" size="sm" className="gap-2" aria-label="Go to Messages">
+                <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                Messages
+              </Button>
+            </Link>
             <Link to="/projects">
               <Button variant="ghost" size="sm" className="gap-2">
                 <FolderKanban className="h-4 w-4" />
@@ -124,6 +130,14 @@ const Navbar = ({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-2 mt-6">
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-11"
+                      onClick={() => handleNavigation("/messages")}
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                      Messages
+                    </Button>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-11"

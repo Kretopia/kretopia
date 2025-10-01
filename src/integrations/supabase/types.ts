@@ -1493,6 +1493,31 @@ export type Database = {
       }
     }
     Views: {
+      conversation_list: {
+        Row: {
+          content: string | null
+          conversation_id: string | null
+          created_at: string | null
+          match_id: string | null
+          message_id: string | null
+          read: boolean | null
+          receiver_avatar: string | null
+          receiver_id: string | null
+          receiver_name: string | null
+          sender_avatar: string | null
+          sender_id: string | null
+          sender_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_profiles: {
         Row: {
           avatar_url: string | null

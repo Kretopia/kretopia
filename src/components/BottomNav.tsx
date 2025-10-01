@@ -14,7 +14,7 @@ const BottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-background/95 backdrop-blur-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-background/95 backdrop-blur-lg" role="navigation" aria-label="Mobile navigation">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
@@ -22,6 +22,8 @@ const BottomNav = () => {
             <Link
               key={path}
               to={path}
+              aria-label={`Navigate to ${label}`}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-smooth min-w-[64px]",
                 isActive 
@@ -29,7 +31,7 @@ const BottomNav = () => {
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
               )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-5 w-5" aria-hidden="true" />
               <span className="text-xs font-medium">{label}</span>
             </Link>
           );

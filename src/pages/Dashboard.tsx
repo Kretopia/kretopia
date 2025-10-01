@@ -18,11 +18,13 @@ import { checkAndAwardDailyLogin } from "@/lib/creditSystem";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { checkProfileCompletion, PROFILE_COMPLETION_XP } from "@/lib/profileCompletion";
 import { Database } from "@/integrations/supabase/types";
+import { SkeletonStat } from "@/components/ui/skeleton-card";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     circle: 0,
     projects: 0,
@@ -35,6 +37,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -90,6 +93,8 @@ const Dashboard = () => {
           projects: projectsData.length,
         }));
       }
+      
+      setLoading(false);
     };
 
     fetchProfile();
@@ -184,23 +189,55 @@ const Dashboard = () => {
 
         {/* Stats Cards & Wallet */}
         <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="md:col-span-2 lg:col-span-2 grid gap-4 sm:gap-6 grid-cols-2">
-            <StatCard
-              title="My Circle"
-              value={stats.circle.toString()}
-              change="+5 this week"
-              icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
-              gradient="from-secondary to-accent"
-            />
-            <StatCard
-              title="Active Projects"
-              value={stats.projects.toString()}
-              change="In progress"
-              icon={<Briefcase className="h-5 w-5 sm:h-6 sm:w-6" />}
-              gradient="from-accent to-primary"
-            />
-          </div>
-          <WalletCard />
+          {loading ? (
+            <>
+              <div className="md:col-span-2 lg:col-span-2 grid gap-4 sm:gap-6 grid-cols-2">
+                <SkeletonStat />
+                <SkeletonStat />
+                <SkeletonStat />
+                <SkeletonStat />
+              </div>
+              <div className="md:col-span-2 lg:col-span-1">
+                <SkeletonStat />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="md:col-span-2 lg:col-span-2 grid gap-4 sm:gap-6 grid-cols-2">
+                <StatCard
+                  title="My Circle"
+                  value={stats.circle.toString()}
+                  change="+5 this week"
+                  icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  gradient="from-secondary to-accent"
+                />
+                <StatCard
+                  title="Active Projects"
+                  value={stats.projects.toString()}
+                  change="In progress"
+                  icon={<Briefcase className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  gradient="from-accent to-primary"
+                />
+                <StatCard
+                  title="Total Views"
+                  value={stats.profileViews.toString()}
+                  change="Last 30 days"
+                  icon={<TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  gradient="from-primary to-secondary"
+                />
+                <StatCard
+                  title="Total XP"
+                  value={profile?.xp?.toString() || '0'}
+                  change={`Level ${profile?.level || 1}`}
+                  icon={<Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />}
+                  gradient="from-secondary to-primary"
+                />
+              </div>
+              <div className="md:col-span-2 lg:col-span-1">
+                <WalletCard />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Active Projects */}

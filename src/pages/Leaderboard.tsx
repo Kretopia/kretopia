@@ -4,6 +4,7 @@ import { Trophy, TrendingUp, Medal, Award, Crown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { SkeletonLeaderboardItem } from "@/components/ui/skeleton-card";
 
 interface LeaderboardUser {
   id: string;
@@ -114,8 +115,10 @@ const Leaderboard = () => {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Trophy className="h-16 w-16 animate-pulse text-primary" />
+          <div className="space-y-3">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <SkeletonLeaderboardItem key={i} />
+            ))}
           </div>
         ) : topUsers.length === 0 ? (
           <Card className="p-12 text-center">

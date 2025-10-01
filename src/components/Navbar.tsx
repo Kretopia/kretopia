@@ -52,28 +52,28 @@ const Navbar = ({ user }: NavbarProps) => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg">
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4">
-        <Link to={user ? "/dashboard" : "/"} className="flex items-center">
+        <Link to={user ? "/dashboard" : "/"} className="flex items-center" aria-label="ThriveIN Home">
           <img 
             src={logoWhite} 
-            alt="ThriveIN" 
+            alt="ThriveIN Logo" 
             className="h-16 sm:h-20"
           />
         </Link>
 
         {/* Desktop Navigation */}
         {user && !isLandingPage && (
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1" role="menubar" aria-label="Desktop menu">
             <Link to="/dashboard">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <LayoutDashboard className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="gap-2" aria-label="Go to Dashboard">
+                <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
                 Dashboard
               </Button>
             </Link>
             <Link to="/discover">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Compass className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="gap-2" aria-label="Go to Discover">
+                <Compass className="h-4 w-4" aria-hidden="true" />
                 Discover
               </Button>
             </Link>

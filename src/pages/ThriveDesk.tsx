@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TaskBoard } from "@/components/project/TaskBoard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,6 +63,53 @@ const ThriveDesk = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Real-time subscriptions
+  useEffect(() => {
+    if (!projectId) return;
+
+    const messagesChannel = supabase
+      .channel(`project-messages-${projectId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'project_messages',
+        filter: `project_id=eq.${projectId}`
+      }, () => {
+        fetchProjectData();
+      })
+      .subscribe();
+
+    const tasksChannel = supabase
+      .channel(`project-tasks-${projectId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'project_tasks',
+        filter: `project_id=eq.${projectId}`
+      }, () => {
+        fetchProjectData();
+      })
+      .subscribe();
+
+    const filesChannel = supabase
+      .channel(`project-files-${projectId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'project_files',
+        filter: `project_id=eq.${projectId}`
+      }, () => {
+        fetchProjectData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(tasksChannel);
+      supabase.removeChannel(filesChannel);
+    };
+  }, [projectId]);
 
   const fetchProjectData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -474,24 +522,7 @@ const ThriveDesk = () => {
               </TabsContent>
 
               <TabsContent value="tasks" className="flex-1 m-0 p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">All Tasks</h3>
-                    <CreateTaskDialog projectId={projectId!} onSuccess={fetchProjectData} />
-                  </div>
-                  <div className="space-y-3">
-                    {tasks.length === 0 ? (
-                      <Card className="p-8 text-center">
-                        <CheckSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">No tasks yet. Create one to get started!</p>
-                      </Card>
-                    ) : (
-                      tasks.map((task) => (
-                        <TaskItem key={task.id} task={task} onUpdate={fetchProjectData} />
-                      ))
-                    )}
-                  </div>
-                </div>
+                <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
               </TabsContent>
 
               <TabsContent value="timeline" className="flex-1 m-0 p-6">

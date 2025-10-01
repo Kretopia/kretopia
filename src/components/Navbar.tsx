@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Sparkles, Menu, Settings, Zap } from "lucide-react";
+import { User, LogOut, Sparkles, Menu, Settings, Zap, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
@@ -80,10 +80,10 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/studio")}
+                      onClick={() => handleNavigation("/messages")}
                     >
-                      <Sparkles className="h-5 w-5" />
-                      Studio
+                      <MessageCircle className="h-5 w-5" />
+                      Messages
                     </Button>
                     
                     <Separator className="my-3" />
@@ -103,6 +103,14 @@ const Navbar = ({ user }: NavbarProps) => {
                     >
                       <Settings className="h-5 w-5" />
                       Settings
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/studio")}
+                    >
+                      <Sparkles className="h-5 w-5" />
+                      AI Studio
                     </Button>
                     
                     <Separator className="my-3" />

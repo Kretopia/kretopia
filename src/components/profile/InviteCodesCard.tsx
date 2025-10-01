@@ -13,6 +13,8 @@ interface InviteCode {
   used_by: string | null;
   used_at: string | null;
   invitee_email: string | null;
+  max_uses: number;
+  current_uses: number;
 }
 
 export const InviteCodesCard = () => {
@@ -66,12 +68,10 @@ export const InviteCodesCard = () => {
   };
 
   const availableInvites = inviteCodes.filter(
-    (inv) => inv.status === "pending" && !inv.used_by
+    (inv) => (inv.current_uses || 0) < (inv.max_uses || 1)
   ).length;
 
-  const usedInvites = inviteCodes.filter(
-    (inv) => inv.status === "accepted" && inv.used_by
-  ).length;
+  const totalUsed = inviteCodes.reduce((acc, inv) => acc + (inv.current_uses || 0), 0);
 
   if (loading) {
     return (
@@ -105,7 +105,7 @@ export const InviteCodesCard = () => {
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
-            {usedInvites} used
+            {totalUsed} total uses
           </Badge>
         </div>
       </div>
@@ -120,35 +120,45 @@ export const InviteCodesCard = () => {
             <div
               key={invite.id}
               className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
-                invite.used_by
+                (invite.current_uses || 0) >= (invite.max_uses || 1)
                   ? "bg-muted/50 border-muted"
                   : "bg-card border-primary/20 hover:border-primary/40"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <code className="px-3 py-1.5 bg-primary/10 text-primary rounded font-mono font-semibold text-lg">
-                  {invite.invite_code}
-                </code>
-                {invite.used_by && (
-                  <div className="flex flex-col">
-                    <Badge variant="default" className="w-fit mb-1">
-                      Used
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <code className="px-3 py-1.5 bg-primary/10 text-primary rounded font-mono font-semibold text-lg">
+                    {invite.invite_code}
+                  </code>
+                  {(invite.max_uses || 1) > 1 && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      Multi-use: {invite.current_uses || 0}/{invite.max_uses}
                     </Badge>
-                    {invite.invitee_email && (
-                      <span className="text-xs text-muted-foreground">
-                        by {invite.invitee_email}
-                      </span>
-                    )}
-                    {invite.used_at && (
-                      <span className="text-xs text-muted-foreground">
-                        on {new Date(invite.used_at).toLocaleDateString()}
-                      </span>
+                  )}
+                  {(invite.current_uses || 0) >= (invite.max_uses || 1) && (
+                    <Badge variant="default">
+                      Fully Used
+                    </Badge>
+                  )}
+                </div>
+                {invite.invitee_email && invite.invitee_email.length > 0 && (
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    {(invite.max_uses || 1) > 1 ? (
+                      <p>{invite.current_uses || 0} people used this code</p>
+                    ) : (
+                      <>
+                        <p>Used by {invite.invitee_email}</p>
+                        {invite.used_at && (
+                          <p>on {new Date(invite.used_at).toLocaleDateString()}</p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
               </div>
 
-              {!invite.used_by && (
+              {(invite.current_uses || 0) < (invite.max_uses || 1) && (
                 <Button
                   variant="outline"
                   size="sm"

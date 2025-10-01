@@ -78,18 +78,20 @@ const SortableItem = ({ id, children, isEditMode }: SortableItemProps) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.8 : 1,
+    cursor: isEditMode ? 'grab' : 'default',
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative">
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`relative ${isEditMode ? 'ring-2 ring-primary/20 rounded-2xl' : ''}`}
+      {...(isEditMode ? { ...attributes, ...listeners } : {})}
+    >
       {isEditMode && (
-        <div
-          {...attributes}
-          {...listeners}
-          className="absolute -left-8 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing z-10"
-        >
-          <GripVertical className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+        <div className="absolute left-2 top-2 z-10 pointer-events-none">
+          <GripVertical className="h-5 w-5 text-primary" />
         </div>
       )}
       {children}
@@ -539,7 +541,14 @@ const Profile = () => {
                 items={sectionOrder}
                 strategy={verticalListSortingStrategy}
               >
-                <div className={`space-y-4 md:space-y-6 ${isReorderMode ? 'pl-8' : ''}`}>
+                <div className="space-y-4 md:space-y-6">
+                  {isReorderMode && (
+                    <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 mb-4 animate-fade-in">
+                      <p className="text-sm text-foreground font-medium">
+                        🎯 Drag and drop cards to reorder them, then click "Save Order"
+                      </p>
+                    </div>
+                  )}
                   {sectionOrder.map((sectionId) => {
                     const sections: Record<string, React.ReactNode> = {
                       bio: (

@@ -13,6 +13,7 @@ import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
 import { SocialLinksSection } from "@/components/profile/SocialLinksSection";
+import { InviteCodesCard } from "@/components/profile/InviteCodesCard";
 
 interface Profile {
   full_name: string;
@@ -393,6 +394,8 @@ const Profile = () => {
               isOwnProfile={true}
               onRefresh={fetchData}
             />
+
+            <InviteCodesCard />
 
             <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
               <h3 className="mb-3 md:mb-4 text-lg md:text-xl font-semibold">Credits</h3>

@@ -92,7 +92,7 @@ const App = () => {
                   <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
                   <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                  <Route path="/profile/:userId" element={<ProtectedRoute><PublicProfile /></ProtectedRoute>} />
+                  <Route path="/profile/:userId" element={<PublicProfile />} />
                   <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
                   <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
                   <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

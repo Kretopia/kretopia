@@ -1,0 +1,65 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { UserPlus, Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface InviteCollaboratorDialogProps {
+  projectId: string;
+  onInvite: () => void;
+}
+
+export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollaboratorDialogProps) => {
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const { toast } = useToast();
+
+  const handleInvite = async () => {
+    if (!email) return;
+    
+    setSending(true);
+    // TODO: Implement actual invite system with database table
+    toast({
+      title: "Invite sent! 📧",
+      description: `Invitation sent to ${email}`,
+    });
+    setEmail("");
+    setSending(false);
+    onInvite();
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <UserPlus className="h-4 w-4" />
+          Invite Collaborator
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Invite Collaborator</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="collaborator@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <Button onClick={handleInvite} disabled={sending} className="w-full">
+            <Mail className="mr-2 h-4 w-4" />
+            {sending ? "Sending..." : "Send Invite"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};

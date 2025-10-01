@@ -5,6 +5,7 @@ import { TaskBoard } from "@/components/project/TaskBoard";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { AIAutomation } from "@/components/project/AIAutomation";
 import { TimeTracker } from "@/components/project/TimeTracker";
+import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

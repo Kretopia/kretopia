@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Star, Briefcase, ArrowLeft, MessageCircle, UserPlus } from "lucide-react";
+import { MapPin, Star, Briefcase, ArrowLeft, MessageCircle, UserPlus, UserCheck } from "lucide-react";
+import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
@@ -56,12 +57,14 @@ const PublicProfile = () => {
   });
   const [isConnected, setIsConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'none' | 'pending' | 'accepted'>('none');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
 
   const fetchData = async () => {
     if (!userId) return;
 
     const { data: { user } } = await supabase.auth.getUser();
+    setIsLoggedIn(!!user);
     
     // Fetch profile using the secure public_profiles view
     // This view excludes sensitive data like payment info and subscription details
@@ -257,7 +260,16 @@ const PublicProfile = () => {
                 </div>
               </div>
               
-              {/* Removed direct connect button - users must mutually match through Discover */}
+              {/* Action buttons */}
+              {!isLoggedIn && (
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  <Button onClick={() => navigate('/auth')} variant="gradient" className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Sign Up to Connect
+                  </Button>
+                  <PostOpportunityDialog />
+                </div>
+              )}
             </div>
 
             {/* Stats */}

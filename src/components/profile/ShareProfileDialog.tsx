@@ -32,6 +32,36 @@ ${profileUrl}
 
 #CreativePortfolio #Thrive`;
 
+  const handleSocialShare = (platform: string) => {
+    let shareUrl = '';
+    
+    switch (platform) {
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profileUrl)}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`;
+        break;
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+        break;
+      case 'email':
+        shareUrl = `mailto:?subject=${encodeURIComponent(profile.full_name + "'s Creative Portfolio on Thrive")}&body=${encodeURIComponent(shareText)}`;
+        break;
+    }
+    
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'noopener,noreferrer');
+      toast({
+        title: "Opening share dialog",
+        description: `Redirecting to ${platform}...`,
+      });
+    }
+  };
+
   const copyToClipboard = async (text: string, type: 'url' | 'text') => {
     try {
       await navigator.clipboard.writeText(text);
@@ -135,35 +165,35 @@ ${profileUrl}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank')}
+                onClick={() => handleSocialShare('twitter')}
               >
                 Twitter/X
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profileUrl)}`, '_blank')}
+                onClick={() => handleSocialShare('linkedin')}
               >
                 LinkedIn
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`, '_blank')}
+                onClick={() => handleSocialShare('facebook')}
               >
                 Facebook
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank')}
+                onClick={() => handleSocialShare('whatsapp')}
               >
                 WhatsApp
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(`mailto:?subject=${encodeURIComponent(profile.full_name + "'s Profile")}&body=${encodeURIComponent(shareText)}`, '_blank')}
+                onClick={() => handleSocialShare('email')}
               >
                 Email
               </Button>

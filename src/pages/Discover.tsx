@@ -295,10 +295,10 @@ const Discover = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
+      <div className="flex min-h-screen items-center justify-center p-4 pb-20">
         <div className="text-center">
-          <Sparkles className="mx-auto mb-4 h-16 w-16 animate-pulse text-primary" />
-          <p className="text-muted-foreground">Loading...</p>
+          <Sparkles className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 animate-pulse text-primary" />
+          <p className="text-sm sm:text-base text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -306,10 +306,11 @@ const Discover = () => {
 
   if (cards.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
+      <div className="flex min-h-screen items-center justify-center p-4 pb-20">
         <div className="text-center">
-          <Sparkles className="mx-auto mb-4 h-16 w-16 text-primary" />
-          <h2 className="mb-2 text-2xl font-bold">No cards available</h2>
+          <Sparkles className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary" />
+          <h2 className="mb-2 text-xl sm:text-2xl font-bold">No cards available</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Check back later</p>
         </div>
       </div>
     );
@@ -318,30 +319,31 @@ const Discover = () => {
   const currentCard = cards[currentIndex];
 
   return (
-    <div className="min-h-screen p-4 pb-20">
+    <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-24 sm:pb-20">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h1 className="text-3xl font-bold">Discover</h1>
-            <div className="flex items-center gap-2">
+        <div className="mb-4 sm:mb-6">
+          <div className="mb-3 sm:mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-2xl sm:text-3xl font-bold">Discover</h1>
+            <div className="flex items-center gap-2 flex-wrap">
               <QuickCreateOpportunityDialog />
-              <Badge variant="secondary" className="gap-1">
+              <Badge variant="secondary" className="gap-1 text-xs">
                 <Coins className="h-3 w-3" />
-                {dailySwipesLeft} swipes • {userCredits} credits
+                <span className="hidden xs:inline">{dailySwipesLeft} swipes • {userCredits} credits</span>
+                <span className="xs:hidden">{dailySwipesLeft}/{userCredits}</span>
               </Badge>
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-4">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-3 sm:mb-4">
             <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="creators">Creators</TabsTrigger>
-              <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
+              <TabsTrigger value="creators" className="text-sm sm:text-base">Creators</TabsTrigger>
+              <TabsTrigger value="opportunities" className="text-sm sm:text-base">Opportunities</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        <div className="grid lg:grid-cols-[250px_1fr] gap-6">
-          <div>
+        <div className="grid lg:grid-cols-[250px_1fr] gap-4 sm:gap-6">
+          <div className="hidden lg:block">
             {activeTab === 'creators' ? (
               <CreatorFilters 
                 filters={creatorFilters}
@@ -360,13 +362,31 @@ const Discover = () => {
           </div>
 
           <div className="max-w-md mx-auto w-full">
-            <div className="mb-4 text-center text-sm text-muted-foreground">
+            <div className="lg:hidden mb-3">
+              {activeTab === 'creators' ? (
+                <CreatorFilters 
+                  filters={creatorFilters}
+                  onFilterChange={setCreatorFilters}
+                  isPremium={subscriptionTier !== 'free'}
+                  userLevel={userLevel}
+                />
+              ) : (
+                <OpportunityFiltersComponent
+                  filters={opportunityFilters}
+                  onFilterChange={setOpportunityFilters}
+                  isPremium={subscriptionTier !== 'free'}
+                  userLevel={userLevel}
+                />
+              )}
+            </div>
+
+            <div className="mb-3 sm:mb-4 text-center text-xs sm:text-sm text-muted-foreground">
               {currentIndex + 1} / {cards.length}
             </div>
 
             <div 
               ref={cardRef}
-              className="relative mb-6 overflow-hidden rounded-3xl border bg-card shadow-lg cursor-grab active:cursor-grabbing"
+              className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg cursor-grab active:cursor-grabbing select-none"
               style={{
                 transform: swipeDirection 
                   ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '20deg' : '-20deg'})`
@@ -382,42 +402,116 @@ const Discover = () => {
               onTouchMove={handleDragMove}
               onTouchEnd={handleDragEnd}
             >
-              <div className="relative h-96">
+              {isDragging && Math.abs(dragOffset.x) > 30 && (
+                <>
+                  {dragOffset.x > 0 && (
+                    <div className="absolute top-4 sm:top-8 right-4 sm:right-8 z-10 px-3 sm:px-6 py-2 sm:py-3 bg-accent/90 text-white font-bold text-base sm:text-xl rounded-lg rotate-12 border-2 sm:border-4 border-white">
+                      LIKE
+                    </div>
+                  )}
+                  {dragOffset.x < 0 && (
+                    <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-10 px-3 sm:px-6 py-2 sm:py-3 bg-destructive/90 text-white font-bold text-base sm:text-xl rounded-lg -rotate-12 border-2 sm:border-4 border-white">
+                      NOPE
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="relative h-72 sm:h-80 md:h-96">
                 <img src={currentCard.image} alt={currentCard.name} className="h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                
+                <div className="absolute right-3 sm:right-4 top-3 sm:top-4">
+                  <div className={`rounded-full px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-medium ${
+                    currentCard.type === "creator" 
+                      ? "bg-primary/90 text-primary-foreground" 
+                      : "bg-secondary/90 text-secondary-foreground"
+                  }`}>
+                    {currentCard.type === "creator" ? "Creator" : "Opportunity"}
+                  </div>
+                </div>
               </div>
 
-              <div className="p-6">
-                <h2 className="mb-1 text-2xl font-bold">{currentCard.name}</h2>
-                <p className="mb-3 text-lg text-muted-foreground">{currentCard.title}</p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                  <MapPin className="h-4 w-4" />
-                  {currentCard.location}
+              <div className="p-4 sm:p-6">
+                <h2 className="mb-1 text-xl sm:text-2xl font-bold">{currentCard.name}</h2>
+                <p className="mb-2 sm:mb-3 text-base sm:text-lg text-muted-foreground">{currentCard.title}</p>
+                
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{currentCard.location}</span>
+                  </div>
                   {currentCard.compensation && (
-                    <>
-                      <DollarSign className="h-4 w-4 ml-2" />
-                      {currentCard.compensation}
-                    </>
+                    <div className="flex items-center gap-1 text-accent">
+                      <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span>{currentCard.compensation}</span>
+                    </div>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-3">{currentCard.description}</p>
+                
+                {currentCard.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {currentCard.tags.map((tag) => (
+                      <span key={tag} className="rounded-full border bg-muted px-2 py-0.5 text-xs">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{currentCard.description}</p>
+
+                {currentCard.type === "creator" && currentCard.user_id && (
+                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full text-xs sm:text-sm h-8 sm:h-9"
+                      onClick={() => navigate(`/profile/${currentCard.user_id}`, { 
+                        state: { cardIndex: currentIndex } 
+                      })}
+                    >
+                      <UserCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      View Full Profile
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-4">
-              <Button variant="outline" size="icon" className="h-16 w-16 rounded-full" onClick={() => handleSwipe("left")}>
-                <X className="h-8 w-8" />
+            <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 hover:border-destructive hover:bg-destructive/10 hover:text-destructive transition-all hover:scale-110 active:scale-95" 
+                onClick={() => handleSwipe("left")}
+                disabled={isDragging}
+              >
+                <X className="h-6 w-6 sm:h-8 sm:w-8" />
               </Button>
-              <Button variant="default" size="icon" className="h-20 w-20 rounded-full" onClick={() => handleSwipe("right")}>
-                <Flame className="h-10 w-10" />
+              <Button 
+                variant="default" 
+                size="icon" 
+                className="h-16 w-16 sm:h-20 sm:w-20 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 active:scale-95" 
+                onClick={() => handleSwipe("right")}
+                disabled={isDragging}
+              >
+                <Flame className="h-8 w-8 sm:h-10 sm:w-10" />
               </Button>
-              <Button variant="outline" size="icon" className="h-16 w-16 rounded-full" onClick={() => handleSwipe("right", true)}>
-                <Star className="h-8 w-8" />
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 hover:border-accent hover:bg-accent/10 hover:text-accent transition-all hover:scale-110 active:scale-95" 
+                onClick={() => handleSwipe("right", true)}
+                disabled={isDragging}
+              >
+                <Star className="h-6 w-6 sm:h-8 sm:w-8" />
               </Button>
             </div>
 
-            <div className="mt-6 text-center text-sm text-muted-foreground">
+            <div className="text-center text-xs sm:text-sm text-muted-foreground">
               <p>🔥 Like • ⭐ Super Like • ❌ Pass</p>
+              <p className="mt-1 text-xs">Drag cards or tap buttons</p>
             </div>
           </div>
         </div>

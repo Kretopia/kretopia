@@ -344,6 +344,7 @@ const Discover = () => {
             .from('projects')
             .insert({
               match_id: matchData.id,
+              created_by: user.id,
               title: currentCard.name,
               description: currentCard.description,
               budget: currentCard.compensation,

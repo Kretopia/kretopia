@@ -1,14 +1,11 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Sparkles, Menu, Settings } from "lucide-react";
+import { User, LogOut, Sparkles, Menu, Settings, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useTheme } from "next-themes";
-import logoWhite from "@/assets/logo-white.png";
-import logoBlack from "@/assets/logo-black.png";
 import {
   Sheet,
   SheetContent,
@@ -29,7 +26,6 @@ const Navbar = ({ user }: NavbarProps) => {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const isLandingPage = location.pathname === "/";
-  const { theme } = useTheme();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -49,12 +45,11 @@ const Navbar = ({ user }: NavbarProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2">
-        <Link to={user ? "/dashboard" : "/"} className="flex items-center" aria-label="ThriveIN Home">
-          <img 
-            src={theme === "dark" ? logoWhite : logoBlack} 
-            alt="ThriveIN Logo" 
-            className="h-8 sm:h-9 w-auto object-contain transition-all duration-300"
-          />
+        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2" aria-label="ThriveIN Home">
+          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80">
+            <Zap className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="text-lg sm:text-xl font-bold">thriveIN</span>
         </Link>
 
 

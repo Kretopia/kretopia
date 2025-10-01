@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -172,7 +172,7 @@ export const DirectMessageDialog = ({
               </Avatar>
               <div>
                 <DialogTitle>{recipientName}</DialogTitle>
-                <p className="text-xs text-muted-foreground">Active now</p>
+                <DialogDescription className="text-xs text-muted-foreground">Active now</DialogDescription>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>

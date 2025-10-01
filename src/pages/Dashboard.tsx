@@ -83,19 +83,24 @@ const Dashboard = () => {
         circle: connectionsCount || 0,
       }));
 
-      // Fetch active projects
-      const { data: projectsData } = await supabase
-        .from('projects')
-        .select('*, matches!inner(*)')
-        .eq('status', 'active')
-        .or(`matches.user1_id.eq.${user.id},matches.user2_id.eq.${user.id}`)
-        .limit(5);
+      // Fetch active projects through matches
+      const { data: matchesData } = await supabase
+        .from('matches')
+        .select('*, projects!inner(*)')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .limit(10);
 
-      if (projectsData) {
-        setActiveProjects(projectsData);
+      if (matchesData) {
+        const activeProjects = matchesData
+          .map(match => match.projects)
+          .flat()
+          .filter((project: any) => project && project.status === 'active')
+          .slice(0, 5);
+
+        setActiveProjects(activeProjects);
         setStats(prev => ({
           ...prev,
-          projects: projectsData.length,
+          projects: activeProjects.length,
         }));
       }
       

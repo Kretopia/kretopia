@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -173,7 +173,10 @@ export const MessagesDialog = ({
               <AvatarImage src={matchUserAvatar || undefined} />
               <AvatarFallback>{matchUserName[0]}</AvatarFallback>
             </Avatar>
-            <DialogTitle>{matchUserName}</DialogTitle>
+            <div>
+              <DialogTitle>{matchUserName}</DialogTitle>
+              <DialogDescription>Send messages and collaborate</DialogDescription>
+            </div>
           </div>
         </DialogHeader>
 

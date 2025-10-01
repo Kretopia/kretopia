@@ -64,7 +64,7 @@ const Projects = () => {
       return;
     }
 
-    // First, fetch matches where user is involved
+    // Fetch matches where user is involved
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
       .select('id, user1_id, user2_id')
@@ -81,19 +81,13 @@ const Projects = () => {
       return;
     }
 
-    if (!matchesData || matchesData.length === 0) {
-      setProjects([]);
-      setLoading(false);
-      return;
-    }
+    const matchIds = matchesData?.map(m => m.id) || [];
 
-    const matchIds = matchesData.map(m => m.id);
-
-    // Fetch projects for these matches
+    // Fetch both matched projects and solo projects created by user
     const { data: projectsData, error } = await supabase
       .from('projects')
       .select('*')
-      .in('match_id', matchIds)
+      .or(`match_id.in.(${matchIds.join(',')}),and(match_id.is.null,created_by.eq.${user.id})`)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -105,10 +99,15 @@ const Projects = () => {
       });
       setProjects([]);
     } else {
-      // Fetch collaborator details
+      // Fetch collaborator details for matched projects
       const projectsWithCollaborators = await Promise.all(
         (projectsData || []).map(async (project) => {
-          const match = matchesData.find(m => m.id === project.match_id);
+          // Skip collaborator fetch for solo projects
+          if (!project.match_id) {
+            return { ...project, matches: null, collaborator: null };
+          }
+
+          const match = matchesData?.find(m => m.id === project.match_id);
           if (!match) return { ...project, matches: null, collaborator: null };
 
           const collaboratorId = match.user1_id === user.id 

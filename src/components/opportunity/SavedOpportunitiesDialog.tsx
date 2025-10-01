@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +92,7 @@ export const SavedOpportunitiesDialog = () => {
       <DialogContent className="max-w-2xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Saved Opportunities</DialogTitle>
+          <DialogDescription>View and manage your bookmarked opportunities</DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh] pr-4">
           {loading ? (

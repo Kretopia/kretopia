@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -252,6 +252,7 @@ export const ProjectTemplates = ({ onSelect }: { onSelect?: () => void }) => {
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Choose a Project Template</DialogTitle>
+          <DialogDescription>Start your project with pre-built tasks and milestones</DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60vh]">
           {!selectedTemplate ? (

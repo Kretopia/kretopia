@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Film } from "lucide-react";
@@ -126,6 +126,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Add Credit</DialogTitle>
+                <DialogDescription>Add your project credits and professional work</DialogDescription>
               </DialogHeader>
               
               <div className="space-y-4">

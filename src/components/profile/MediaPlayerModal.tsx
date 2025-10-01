@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { parseMediaUrl } from "@/lib/mediaUtils";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,6 +83,7 @@ export const MediaPlayerModal = ({ isOpen, onClose, item }: MediaPlayerModalProp
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>{item.title}</DialogTitle>
+          <DialogDescription>Media preview</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           {renderPlayer()}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Newspaper } from "lucide-react";
@@ -150,6 +150,7 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Add Press Coverage</DialogTitle>
+                <DialogDescription>Share articles and media mentions</DialogDescription>
               </DialogHeader>
               
               <div className="space-y-4">

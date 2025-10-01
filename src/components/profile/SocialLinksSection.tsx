@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Globe, Linkedin, Instagram, Twitter, Music, ExternalLink, Users, Eye, CheckCircle2 } from "lucide-react";
@@ -131,6 +131,7 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
             <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Edit Social Data</DialogTitle>
+                <DialogDescription>Update your social links and follower counts</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 {socialPlatforms.map(({ urlKey, label, statKey, statLabel }) => (

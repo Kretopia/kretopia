@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -91,6 +91,7 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Edit Task</DialogTitle>
+                  <DialogDescription>Update task details and due date</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
@@ -235,6 +236,7 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Task</DialogTitle>
+              <DialogDescription>Add a new task to your project board</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">

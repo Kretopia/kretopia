@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, MessageCircle, Sparkles, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 
 interface Connection {
   id: string;
@@ -24,6 +25,7 @@ interface Connection {
 const Circle = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedConnection, setSelectedConnection] = useState<{ id: string; name: string; avatar?: string } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -70,11 +72,8 @@ const Circle = () => {
     setLoading(false);
   };
 
-  const handleMessage = (connectionId: string, userName: string) => {
-    toast({
-      title: "Coming Soon! 💬",
-      description: `Messaging with ${userName} will be available soon.`,
-    });
+  const handleMessage = (connectionId: string, userName: string, userAvatar?: string) => {
+    setSelectedConnection({ id: connectionId, name: userName, avatar: userAvatar || undefined });
   };
 
   if (loading) {
@@ -147,7 +146,11 @@ const Circle = () => {
                     variant="default" 
                     size="sm"
                     className="flex-1 gap-2"
-                    onClick={() => handleMessage(connection.id, connection.profile.full_name)}
+                    onClick={() => handleMessage(
+                      connection.connected_user_id, 
+                      connection.profile.full_name,
+                      connection.profile.avatar_url || undefined
+                    )}
                   >
                     <MessageCircle className="h-4 w-4" />
                     Message
@@ -168,6 +171,16 @@ const Circle = () => {
               </Card>
             ))}
           </div>
+        )}
+
+        {selectedConnection && (
+          <DirectMessageDialog
+            open={!!selectedConnection}
+            onOpenChange={(open) => !open && setSelectedConnection(null)}
+            recipientId={selectedConnection.id}
+            recipientName={selectedConnection.name}
+            recipientAvatar={selectedConnection.avatar}
+          />
         )}
       </div>
     </div>

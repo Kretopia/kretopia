@@ -4,6 +4,7 @@ import { User, LogOut, Flame, Trophy, Users, Sparkles, Menu, Settings, LayoutDas
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import logoWhite from "@/assets/logo-white.png";
 import {
   Sheet,
@@ -229,6 +230,7 @@ const Navbar = ({ user }: NavbarProps) => {
               </Sheet>
 
               {/* Desktop Sign Out */}
+              <NotificationCenter />
               <SupportDialog />
               <Button 
                 variant="ghost" 

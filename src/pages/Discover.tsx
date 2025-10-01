@@ -7,6 +7,7 @@ import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2,
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import { SearchBar } from "@/components/SearchBar";
 
 type CardType = "creator" | "opportunity";
 
@@ -48,6 +49,8 @@ const Discover = () => {
   const [activeTab, setActiveTab] = useState<"all" | "creators" | "opportunities">("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchFilters, setSearchFilters] = useState<any>({});
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
@@ -85,15 +88,34 @@ const Discover = () => {
       }
 
       // Fetch profiles (creators) using the secure public_profiles view
-      // This view excludes sensitive data like payment info and subscription details
       let profilesQuery = supabase
         .from('public_profiles')
         .select('*')
         .neq('user_id', user.id);
 
-      // Apply filters
+      // Apply search query
+      if (searchQuery) {
+        profilesQuery = profilesQuery.or(`full_name.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%,role.ilike.%${searchQuery}%`);
+      }
+
+      // Apply role filter
       if (roleFilter !== 'all') {
         profilesQuery = profilesQuery.eq('role', roleFilter);
+      }
+
+      // Apply advanced filters
+      if (searchFilters.location && searchFilters.location !== 'all') {
+        profilesQuery = profilesQuery.ilike('location', `%${searchFilters.location}%`);
+      }
+      if (searchFilters.verified) {
+        profilesQuery = profilesQuery.eq('verified_metrics', true);
+      }
+      if (searchFilters.minFollowers) {
+        profilesQuery = profilesQuery.or(
+          `instagram_followers.gte.${searchFilters.minFollowers},` +
+          `youtube_subscribers.gte.${searchFilters.minFollowers},` +
+          `tiktok_followers.gte.${searchFilters.minFollowers}`
+        );
       }
       
       const { data: profiles } = await profilesQuery.limit(20);
@@ -112,6 +134,15 @@ const Discover = () => {
         .from('opportunities')
         .select('*')
         .eq('status', 'active');
+
+      // Apply search query for opportunities
+      if (searchQuery) {
+        opportunitiesQuery = opportunitiesQuery.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,type.ilike.%${searchQuery}%`);
+      }
+
+      if (searchFilters.location && searchFilters.location !== 'all') {
+        opportunitiesQuery = opportunitiesQuery.ilike('location', `%${searchFilters.location}%`);
+      }
 
       const { data: opportunities } = await opportunitiesQuery.limit(20);
 
@@ -167,7 +198,7 @@ const Discover = () => {
     };
 
     fetchData();
-  }, [activeTab, locationFilter, roleFilter]);
+  }, [activeTab, locationFilter, roleFilter, searchQuery, searchFilters]);
 
   const handleSwipe = async (direction: "left" | "right", isSuperLike: boolean = false) => {
     const currentCard = cards[currentIndex];
@@ -448,6 +479,24 @@ const Discover = () => {
                 {dailySwipesLeft} swipes left
               </Badge>
             )}
+          </div>
+
+          {/* Search Bar */}
+          <div className="mb-4">
+            <SearchBar
+              onSearch={(query, filters) => {
+                setSearchQuery(query);
+                setSearchFilters(filters);
+              }}
+              placeholder={
+                activeTab === 'creators' 
+                  ? 'Search creators by name, role, location...'
+                  : activeTab === 'opportunities'
+                  ? 'Search opportunities...'
+                  : 'Search creators and opportunities...'
+              }
+              showFilters={subscriptionTier !== 'free'}
+            />
           </div>
 
           {/* Tabs */}

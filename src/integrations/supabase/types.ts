@@ -327,32 +327,95 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_matches: boolean | null
+          email_messages: boolean | null
+          email_opportunities: boolean | null
+          email_projects: boolean | null
+          id: string
+          in_app_all: boolean | null
+          push_matches: boolean | null
+          push_messages: boolean | null
+          push_opportunities: boolean | null
+          push_projects: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_matches?: boolean | null
+          email_messages?: boolean | null
+          email_opportunities?: boolean | null
+          email_projects?: boolean | null
+          id?: string
+          in_app_all?: boolean | null
+          push_matches?: boolean | null
+          push_messages?: boolean | null
+          push_opportunities?: boolean | null
+          push_projects?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_matches?: boolean | null
+          email_messages?: boolean | null
+          email_opportunities?: boolean | null
+          email_projects?: boolean | null
+          id?: string
+          in_app_all?: boolean | null
+          push_matches?: boolean | null
+          push_messages?: boolean | null
+          push_opportunities?: boolean | null
+          push_projects?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
+          action_text: string | null
+          action_url: string | null
+          category: string | null
           created_at: string | null
           id: string
+          image_url: string | null
           link: string | null
           message: string
+          priority: string | null
           read: boolean | null
           title: string
           type: string
           user_id: string
         }
         Insert: {
+          action_text?: string | null
+          action_url?: string | null
+          category?: string | null
           created_at?: string | null
           id?: string
+          image_url?: string | null
           link?: string | null
           message: string
+          priority?: string | null
           read?: boolean | null
           title: string
           type: string
           user_id: string
         }
         Update: {
+          action_text?: string | null
+          action_url?: string | null
+          category?: string | null
           created_at?: string | null
           id?: string
+          image_url?: string | null
           link?: string | null
           message?: string
+          priority?: string | null
           read?: boolean | null
           title?: string
           type?: string
@@ -1208,6 +1271,21 @@ export type Database = {
       check_storage_available: {
         Args: { file_size_param: number; user_id_param: string }
         Returns: boolean
+      }
+      create_notification: {
+        Args: {
+          p_action_text?: string
+          p_action_url?: string
+          p_category?: string
+          p_image_url?: string
+          p_link?: string
+          p_message: string
+          p_priority?: string
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {

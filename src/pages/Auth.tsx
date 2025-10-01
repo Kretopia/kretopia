@@ -15,9 +15,11 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [inviteError, setInviteError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -105,6 +107,16 @@ const Auth = () => {
       });
       return;
     }
+
+    if (!inviteCode.trim()) {
+      setInviteError("Invite code is required");
+      toast({
+        title: "Invite Required",
+        description: "ThriveIN is invite-only. Please enter your invite code or join the waitlist.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (!emailValidation.valid) {
       setEmailError(emailValidation.error || "");
@@ -117,7 +129,26 @@ const Auth = () => {
     
     setEmailError("");
     setPasswordError("");
+    setInviteError("");
     setLoading(true);
+
+    // Validate invite code first
+    const { data: isValid, error: validateError } = await supabase
+      .rpc('use_invite_code', { 
+        code: inviteCode.trim(), 
+        user_email: email.trim() 
+      });
+
+    if (validateError || !isValid) {
+      setInviteError("Invalid invite code");
+      toast({
+        title: "Invalid Invite Code",
+        description: "This invite code is invalid or has already been used.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -127,6 +158,7 @@ const Auth = () => {
         data: {
           full_name: fullName.trim(),
           role: role.trim(),
+          invite_code: inviteCode.trim(),
         },
       },
     });
@@ -148,7 +180,7 @@ const Auth = () => {
     } else {
       toast({
         title: "Success!",
-        description: "Your account has been created. You can now apply for opportunities!",
+        description: "Your account has been created. Welcome to ThriveIN!",
       });
       navigate("/onboarding");
     }
@@ -234,6 +266,37 @@ const Auth = () => {
 
           <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4">
+              <div className="rounded-lg bg-primary/10 p-3 mb-4">
+                <p className="text-sm text-center">
+                  🔒 ThriveIN is invite-only. Don't have a code? 
+                  <a href="/#waitlist" className="ml-1 font-semibold text-primary hover:underline">
+                    Join the waitlist
+                  </a>
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="signup-invite">Invite Code *</Label>
+                <Input
+                  id="signup-invite"
+                  type="text"
+                  placeholder="Enter your invite code"
+                  value={inviteCode}
+                  onChange={(e) => {
+                    setInviteCode(e.target.value);
+                    setInviteError("");
+                  }}
+                  required
+                  className={inviteError ? "border-destructive" : ""}
+                />
+                {inviteError && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {inviteError}
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="signup-name">Full Name</Label>
                 <Input

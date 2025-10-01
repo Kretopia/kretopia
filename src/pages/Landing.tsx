@@ -7,6 +7,7 @@ import { PostOpportunitySection } from "@/components/landing/PostOpportunitySect
 import { FeatureCard } from "@/components/landing/FeatureCard";
 import { PricingCard } from "@/components/landing/PricingCard";
 import { EarnCard } from "@/components/landing/EarnCard";
+import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { Button } from "@/components/ui/button";
 
 const Landing = () => {
@@ -226,6 +227,24 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Waitlist Section */}
+      <section id="waitlist" className="px-6 py-20 bg-muted/30">
+        <div className="container mx-auto max-w-2xl">
+          <div className="mb-8 text-center">
+            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
+              Join the{" "}
+              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Waitlist
+              </span>
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              ThriveIN is invite-only. Apply now and if you meet our creator criteria, we'll send you an invite code with 5 invites to share.
+            </p>
+          </div>
+          <WaitlistForm />
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="px-6 py-20">
         <div className="container mx-auto max-w-4xl">
@@ -233,7 +252,7 @@ const Landing = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(0_0%_100%/0.1),transparent_50%)]" />
             <div className="relative text-primary-foreground">
               <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-                Ready to Thrive?
+                Have an Invite Code?
               </h2>
               <p className="mb-8 text-lg opacity-90">
                 Join thousands of creators building their careers on ThriveIN
@@ -244,7 +263,7 @@ const Landing = () => {
                   size="xl"
                   className="border-2 border-white/70 bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm font-semibold"
                 >
-                  Get Started Free
+                  Sign Up Now
                 </Button>
               </Link>
             </div>

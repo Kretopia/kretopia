@@ -150,28 +150,37 @@ export type Database = {
           accepted_at: string | null
           created_at: string | null
           id: string
+          invite_code: string | null
           invitee_email: string
           invitee_user_id: string | null
           inviter_id: string
           status: string | null
+          used_at: string | null
+          used_by: string | null
         }
         Insert: {
           accepted_at?: string | null
           created_at?: string | null
           id?: string
+          invite_code?: string | null
           invitee_email: string
           invitee_user_id?: string | null
           inviter_id: string
           status?: string | null
+          used_at?: string | null
+          used_by?: string | null
         }
         Update: {
           accepted_at?: string | null
           created_at?: string | null
           id?: string
+          invite_code?: string | null
           invitee_email?: string
           invitee_user_id?: string | null
           inviter_id?: string
           status?: string | null
+          used_at?: string | null
+          used_by?: string | null
         }
         Relationships: []
       }
@@ -548,6 +557,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          available_invites: number | null
           avatar_url: string | null
           avg_views: number | null
           behance_url: string | null
@@ -560,6 +570,7 @@ export type Database = {
           imdb_url: string | null
           instagram_followers: number | null
           instagram_url: string | null
+          invite_code_used: string | null
           last_swipe_reset: string | null
           level: number | null
           linkedin_connections: number | null
@@ -589,6 +600,7 @@ export type Database = {
           youtube_subscribers: number | null
         }
         Insert: {
+          available_invites?: number | null
           avatar_url?: string | null
           avg_views?: number | null
           behance_url?: string | null
@@ -601,6 +613,7 @@ export type Database = {
           imdb_url?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          invite_code_used?: string | null
           last_swipe_reset?: string | null
           level?: number | null
           linkedin_connections?: number | null
@@ -630,6 +643,7 @@ export type Database = {
           youtube_subscribers?: number | null
         }
         Update: {
+          available_invites?: number | null
           avatar_url?: string | null
           avg_views?: number | null
           behance_url?: string | null
@@ -642,6 +656,7 @@ export type Database = {
           imdb_url?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          invite_code_used?: string | null
           last_swipe_reset?: string | null
           level?: number | null
           linkedin_connections?: number | null
@@ -1113,6 +1128,63 @@ export type Database = {
           },
         ]
       }
+      waitlist: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role: string
+          spotify_url: string | null
+          status: string | null
+          twitter_url: string | null
+          updated_at: string | null
+          website: string | null
+          why_join: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role: string
+          spotify_url?: string | null
+          status?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website?: string | null
+          why_join?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role?: string
+          spotify_url?: string | null
+          status?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          website?: string | null
+          why_join?: string | null
+        }
+        Relationships: []
+      }
       wallets: {
         Row: {
           balance: number | null
@@ -1286,6 +1358,14 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      generate_invite_codes: {
+        Args: { num_codes?: number; user_id_param: string }
+        Returns: undefined
+      }
+      use_invite_code: {
+        Args: { code: string; user_email: string }
+        Returns: boolean
       }
     }
     Enums: {

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Filter, Lock, Image, Video, Music, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 type CardType = "creator" | "opportunity";
 
@@ -56,6 +56,15 @@ const Discover = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Restore card index if returning from profile view
+    const state = location.state as { cardIndex?: number };
+    if (state?.cardIndex !== undefined) {
+      setCurrentIndex(state.cardIndex);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -594,12 +603,16 @@ const Discover = () => {
             {/* View Profile Button for Creators */}
             {currentCard.type === "creator" && currentCard.user_id && (
               <div className="mt-4 pt-4 border-t border-border">
-                <Link to={`/profile/${currentCard.user_id}`}>
-                  <Button variant="outline" className="w-full">
-                    <UserCircle className="mr-2 h-4 w-4" />
-                    View Full Profile
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate(`/profile/${currentCard.user_id}`, { 
+                    state: { cardIndex: currentIndex } 
+                  })}
+                >
+                  <UserCircle className="mr-2 h-4 w-4" />
+                  View Full Profile
+                </Button>
               </div>
             )}
 

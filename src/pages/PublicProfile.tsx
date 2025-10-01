@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -31,6 +31,7 @@ interface Profile {
 const PublicProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -187,7 +188,10 @@ const PublicProfile = () => {
         {/* Back Button */}
         <Button
           variant="ghost"
-          onClick={() => navigate('/discover')}
+          onClick={() => {
+            const state = location.state as { cardIndex?: number };
+            navigate('/discover', { state: { cardIndex: state?.cardIndex } });
+          }}
           className="mb-4 gap-2"
         >
           <ArrowLeft className="h-4 w-4" />

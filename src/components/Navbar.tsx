@@ -57,7 +57,7 @@ const Navbar = ({ user }: NavbarProps) => {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg" role="navigation" aria-label="Main navigation">
-      <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2">
+      <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-1">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center" aria-label="ThriveIN Home">
           <img 
             src={theme === "dark" ? logoWhite : logoBlack} 

@@ -17,8 +17,11 @@ export type Database = {
       applications: {
         Row: {
           applicant_id: string
+          application_notes: string | null
+          availability: string | null
           cover_letter: string | null
           created_at: string | null
+          expected_rate: string | null
           id: string
           opportunity_id: string
           portfolio_links: string[] | null
@@ -27,8 +30,11 @@ export type Database = {
         }
         Insert: {
           applicant_id: string
+          application_notes?: string | null
+          availability?: string | null
           cover_letter?: string | null
           created_at?: string | null
+          expected_rate?: string | null
           id?: string
           opportunity_id: string
           portfolio_links?: string[] | null
@@ -37,8 +43,11 @@ export type Database = {
         }
         Update: {
           applicant_id?: string
+          application_notes?: string | null
+          availability?: string | null
           cover_letter?: string | null
           created_at?: string | null
+          expected_rate?: string | null
           id?: string
           opportunity_id?: string
           portfolio_links?: string[] | null
@@ -1232,6 +1241,38 @@ export type Database = {
           },
         ]
       }
+      saved_opportunities: {
+        Row: {
+          created_at: string | null
+          id: string
+          notes: string | null
+          opportunity_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          opportunity_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          opportunity_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_opportunities_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_messages: {
         Row: {
           content: string
@@ -1613,6 +1654,37 @@ export type Database = {
           youtube_subscribers?: number | null
         }
         Relationships: []
+      }
+      user_applications_view: {
+        Row: {
+          applicant_id: string | null
+          application_notes: string | null
+          availability: string | null
+          compensation: string | null
+          cover_letter: string | null
+          created_at: string | null
+          expected_rate: string | null
+          id: string | null
+          location: string | null
+          opportunity_id: string | null
+          opportunity_title: string | null
+          opportunity_type: string | null
+          portfolio_links: string[] | null
+          poster_avatar: string | null
+          poster_id: string | null
+          poster_name: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {

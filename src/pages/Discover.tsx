@@ -167,7 +167,8 @@ const Discover = () => {
         let opportunitiesQuery = supabase
           .from('opportunities')
           .select('*')
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .neq('created_by', user.id);
 
         if (opportunityFilters.type !== 'all') {
           opportunitiesQuery = opportunitiesQuery.eq('type', opportunityFilters.type);
@@ -279,14 +280,14 @@ const Discover = () => {
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
-      setDragOffset({ x: (clientX - centerX) * 0.4, y: 0 });
+      setDragOffset({ x: (clientX - centerX) * 0.15, y: 0 });
     }
   };
 
   const handleDragEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    if (Math.abs(dragOffset.x) > 60) {
+    if (Math.abs(dragOffset.x) > 100) {
       handleSwipe(dragOffset.x > 0 ? "right" : "left");
     } else {
       setDragOffset({ x: 0, y: 0 });

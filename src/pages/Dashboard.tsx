@@ -157,15 +157,15 @@ const Dashboard = () => {
   }, [toast, searchParams, navigate]);
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-4 sm:p-6">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div className="mb-6 sm:mb-8 flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-center">
           <div>
-            <h1 className="mb-2 text-4xl font-bold">
+            <h1 className="mb-1 sm:mb-2 text-2xl sm:text-3xl md:text-4xl font-bold">
               Welcome back, {profile?.full_name || 'Creator'}! 👋
             </h1>
-            <p className="text-muted-foreground">Here's what's happening with your network</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Here's what's happening with your network</p>
           </div>
           <Link to="/discover" className="w-full md:w-auto">
             <Button variant="gradient" size="lg" className="w-full md:w-auto">
@@ -177,26 +177,26 @@ const Dashboard = () => {
 
         {/* Profile Completion Card */}
         {profile && checkProfileCompletion(profile).percentage < 100 && (
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <ProfileCompletionCard completion={checkProfileCompletion(profile)} />
           </div>
         )}
 
         {/* Stats Cards & Wallet */}
-        <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="md:col-span-2 lg:col-span-2 grid gap-6 grid-cols-1 sm:grid-cols-2">
+        <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="md:col-span-2 lg:col-span-2 grid gap-4 sm:gap-6 grid-cols-2">
             <StatCard
               title="My Circle"
               value={stats.circle.toString()}
               change="+5 this week"
-              icon={<Users className="h-6 w-6" />}
+              icon={<Users className="h-5 w-5 sm:h-6 sm:w-6" />}
               gradient="from-secondary to-accent"
             />
             <StatCard
               title="Active Projects"
               value={stats.projects.toString()}
               change="In progress"
-              icon={<Briefcase className="h-6 w-6" />}
+              icon={<Briefcase className="h-5 w-5 sm:h-6 sm:w-6" />}
               gradient="from-accent to-primary"
             />
           </div>
@@ -205,27 +205,27 @@ const Dashboard = () => {
 
         {/* Active Projects */}
         {activeProjects.length > 0 && (
-          <div className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold">Active Projects</h2>
-            <div className="grid gap-4 md:grid-cols-2">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-bold">Active Projects</h2>
+            <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
               {activeProjects.map((project) => (
                 <Card 
                   key={project.id} 
                   className="cursor-pointer transition-smooth hover:shadow-glow"
                   onClick={() => navigate(`/desk/${project.id}`)}
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="truncate">{project.title}</span>
-                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+                      <span className="truncate pr-2">{project.title}</span>
+                      <MessageCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                  <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                       {project.description || 'No description'}
                     </p>
-                    <div className="mt-3 flex items-center gap-2">
-                      <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                    <div className="mt-2 sm:mt-3 flex items-center gap-2 flex-wrap">
+                      <span className="text-xs px-2 py-0.5 sm:py-1 rounded-full bg-primary/10 text-primary">
                         {project.status}
                       </span>
                       {project.budget && (
@@ -240,9 +240,9 @@ const Dashboard = () => {
         )}
 
         {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="mb-4 text-2xl font-bold">Quick Actions</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-bold">Quick Actions</h2>
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
             <QuickActionCard
               title="Find Opportunities"
               description="Browse and swipe through new gigs and collabs"
@@ -266,8 +266,8 @@ const Dashboard = () => {
 
         {/* Recent Activity */}
         <div>
-          <h2 className="mb-4 text-2xl font-bold">Recent Activity</h2>
-          <div className="space-y-4">
+          <h2 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-bold">Recent Activity</h2>
+          <div className="space-y-3 sm:space-y-4">
             <ActivityItem
               title="Profile created"
               description="Your profile is now live and visible to other creators"
@@ -299,14 +299,14 @@ const StatCard = ({
   gradient: string;
 }) => {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-      <div className="mb-4 flex items-center justify-between">
-        <div className={`rounded-xl bg-gradient-to-br ${gradient} p-3 text-primary-foreground`}>
+    <div className="rounded-xl sm:rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-card">
+      <div className="mb-3 sm:mb-4 flex items-center justify-between">
+        <div className={`rounded-lg sm:rounded-xl bg-gradient-to-br ${gradient} p-2 sm:p-3 text-primary-foreground`}>
           {icon}
         </div>
       </div>
-      <div className="mb-1 text-3xl font-bold">{value}</div>
-      <div className="mb-1 text-sm font-medium text-foreground">{title}</div>
+      <div className="mb-1 text-2xl sm:text-3xl font-bold">{value}</div>
+      <div className="mb-0.5 sm:mb-1 text-xs sm:text-sm font-medium text-foreground">{title}</div>
       <div className="text-xs text-muted-foreground">{change}</div>
     </div>
   );
@@ -325,15 +325,15 @@ const QuickActionCard = ({
 }) => {
   return (
     <Link to={to}>
-      <div className="group rounded-2xl border border-border bg-card p-6 shadow-card transition-smooth hover:-translate-y-1 hover:border-primary/50 hover:shadow-glow">
-        <div className="mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+      <div className="group rounded-xl sm:rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-card transition-smooth hover:-translate-y-1 hover:border-primary/50 hover:shadow-glow">
+        <div className="mb-3 sm:mb-4 inline-flex rounded-lg sm:rounded-xl bg-primary/10 p-2 sm:p-3 text-primary">
           {icon}
         </div>
-        <h3 className="mb-2 text-lg font-semibold">{title}</h3>
-        <p className="mb-4 text-sm text-muted-foreground">{description}</p>
-        <div className="flex items-center gap-2 text-sm font-medium text-primary">
+        <h3 className="mb-1 sm:mb-2 text-base sm:text-lg font-semibold">{title}</h3>
+        <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground">{description}</p>
+        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-primary">
           Get started
-          <ArrowRight className="h-4 w-4 transition-smooth group-hover:translate-x-1" />
+          <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 transition-smooth group-hover:translate-x-1" />
         </div>
       </div>
     </Link>
@@ -350,13 +350,13 @@ const ActivityItem = ({
   time: string;
 }) => {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-      <div className="flex items-start justify-between">
-        <div>
-          <h4 className="mb-1 font-semibold">{title}</h4>
-          <p className="text-sm text-muted-foreground">{description}</p>
+    <div className="rounded-lg sm:rounded-xl border border-border bg-card p-3 sm:p-4 shadow-card">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1">
+          <h4 className="mb-0.5 sm:mb-1 text-sm sm:text-base font-semibold">{title}</h4>
+          <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>
         </div>
-        <span className="text-xs text-muted-foreground">{time}</span>
+        <span className="text-xs text-muted-foreground flex-shrink-0">{time}</span>
       </div>
     </div>
   );

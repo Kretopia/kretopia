@@ -288,11 +288,8 @@ const Onboarding = () => {
         });
     }
 
-    // No XP reward for invites - just access control
-    toast({
-      title: "Invites Sent!",
-      description: `You've invited ${inviteEmails.length} friend${inviteEmails.length > 1 ? 's' : ''} to ThriveIN`,
-    });
+    const xpBonus = inviteEmails.length * 25;
+    await addXP(xpBonus, `Invited ${inviteEmails.length} friend${inviteEmails.length > 1 ? 's' : ''}`);
     setStep("complete");
   };
 

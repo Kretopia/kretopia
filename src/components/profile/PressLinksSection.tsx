@@ -135,6 +135,10 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
     return <div className="text-center py-8 text-muted-foreground">Loading press links...</div>;
   }
 
+  if (pressLinks.length === 0 && !isOwnProfile) {
+    return null;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

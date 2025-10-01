@@ -119,6 +119,10 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
 
   const hasData = socialPlatforms.some(p => (profile as any)[p.urlKey] || (profile as any)[p.statKey as string]);
 
+  if (!hasData && !isOwnProfile) {
+    return null;
+  }
+
   return (
     <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6">
       <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">

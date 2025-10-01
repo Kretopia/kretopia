@@ -39,6 +39,15 @@ interface Profile {
   twitter_url?: string;
   spotify_url?: string;
   soundcloud_url?: string;
+  youtube_subscribers?: number;
+  instagram_followers?: number;
+  tiktok_followers?: number;
+  spotify_listeners?: number;
+  twitter_followers?: number;
+  linkedin_connections?: number;
+  total_engagement_rate?: number;
+  avg_views?: number;
+  verified_metrics?: boolean;
 }
 
 const PublicProfile = () => {
@@ -49,6 +58,9 @@ const PublicProfile = () => {
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [industryStats, setIndustryStats] = useState([]);
+  const [credits, setCredits] = useState([]);
+  const [awards, setAwards] = useState([]);
+  const [pressLinks, setPressLinks] = useState([]);
   const [userBadge, setUserBadge] = useState<'og' | 'beta' | 'official' | null>(null);
   const [stats, setStats] = useState({
     circle: 0,
@@ -140,6 +152,27 @@ const PublicProfile = () => {
       .eq('user_id', userId)
       .order('display_order', { ascending: true });
 
+    // Fetch credits
+    const { data: creditsData } = await supabase
+      .from('credits')
+      .select('*')
+      .eq('user_id', userId)
+      .order('year', { ascending: false });
+
+    // Fetch awards
+    const { data: awardsData } = await supabase
+      .from('awards')
+      .select('*')
+      .eq('user_id', userId)
+      .order('year', { ascending: false });
+
+    // Fetch press links
+    const { data: pressData } = await supabase
+      .from('press_links')
+      .select('*')
+      .eq('user_id', userId)
+      .order('published_date', { ascending: false });
+
     setStats(prev => ({
       ...prev,
       circle: connectionsCount || 0,
@@ -148,6 +181,9 @@ const PublicProfile = () => {
     setPortfolioItems(portfolioData || []);
     setReviews(reviewsData || []);
     setIndustryStats(statsData || []);
+    setCredits(creditsData || []);
+    setAwards(awardsData || []);
+    setPressLinks(pressData || []);
   };
 
   useEffect(() => {
@@ -305,82 +341,118 @@ const PublicProfile = () => {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
             <TabsTrigger value="overview" className="rounded-lg md:rounded-xl text-xs md:text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
-            <TabsTrigger value="press" className="rounded-lg md:rounded-xl text-xs md:text-sm">Press</TabsTrigger>
-            <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
+            {portfolioItems.length > 0 && (
+              <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
+            )}
+            {reviews.length > 0 && (
+              <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
+            )}
+            {pressLinks.length > 0 && (
+              <TabsTrigger value="press" className="rounded-lg md:rounded-xl text-xs md:text-sm">Press</TabsTrigger>
+            )}
+            {industryStats.length > 0 && (
+              <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 md:space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-              <SkillsSection
-                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
-                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
-                jobTitle={profile.job_title}
-                industry={profile.industry}
+            {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
+              (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0) ||
+              profile.job_title || profile.industry) && (
+              <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+                <SkillsSection
+                  professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
+                  passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
+                  jobTitle={profile.job_title}
+                  industry={profile.industry}
+                  isOwnProfile={false}
+                  onRefresh={fetchData}
+                />
+              </div>
+            )}
+
+            {profile.bio && (
+              <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+                <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  {profile.bio}
+                </p>
+              </div>
+            )}
+
+            {credits.length > 0 && (
+              <CreditsSection 
+                userId={userId}
                 isOwnProfile={false}
                 onRefresh={fetchData}
               />
-            </div>
+            )}
 
-            <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-              <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                {profile.bio || 'No bio available'}
-              </p>
-            </div>
+            {awards.length > 0 && (
+              <AwardsSection 
+                userId={userId}
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            )}
 
-            <CreditsSection 
-              userId={userId}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
-
-            <AwardsSection 
-              userId={userId}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
-
-            <SocialLinksSection 
-              profile={profile}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
+            {(profile.instagram_url || profile.twitter_url || profile.linkedin_url || 
+              profile.spotify_url || profile.soundcloud_url || profile.behance_url || 
+              profile.imdb_url || profile.website ||
+              (profile.instagram_followers && profile.instagram_followers > 0) ||
+              (profile.youtube_subscribers && profile.youtube_subscribers > 0) ||
+              (profile.tiktok_followers && profile.tiktok_followers > 0) ||
+              (profile.spotify_listeners && profile.spotify_listeners > 0) ||
+              (profile.twitter_followers && profile.twitter_followers > 0) ||
+              (profile.linkedin_connections && profile.linkedin_connections > 0)) && (
+              <SocialLinksSection 
+                profile={profile}
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            )}
           </TabsContent>
 
-          <TabsContent value="portfolio" className="space-y-3 md:space-y-4">
-            <PortfolioSection 
-              items={portfolioItems} 
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
-          </TabsContent>
+          {portfolioItems.length > 0 && (
+            <TabsContent value="portfolio" className="space-y-3 md:space-y-4">
+              <PortfolioSection 
+                items={portfolioItems} 
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
+          )}
 
-          <TabsContent value="reviews" className="space-y-3 md:space-y-4">
-            <ReviewsSection 
-              reviews={reviews} 
-              isOwnProfile={false}
-              profileUserId={profile.user_id}
-              onRefresh={fetchData}
-            />
-          </TabsContent>
+          {reviews.length > 0 && (
+            <TabsContent value="reviews" className="space-y-3 md:space-y-4">
+              <ReviewsSection 
+                reviews={reviews} 
+                isOwnProfile={false}
+                profileUserId={profile.user_id}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
+          )}
 
-          <TabsContent value="press" className="space-y-3 md:space-y-4">
-            <PressLinksSection 
-              userId={userId}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
-          </TabsContent>
+          {pressLinks.length > 0 && (
+            <TabsContent value="press" className="space-y-3 md:space-y-4">
+              <PressLinksSection 
+                userId={userId}
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
+          )}
 
-          <TabsContent value="stats" className="space-y-3 md:space-y-4">
-            <IndustryStatsSection 
-              stats={industryStats}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
-          </TabsContent>
+          {industryStats.length > 0 && (
+            <TabsContent value="stats" className="space-y-3 md:space-y-4">
+              <IndustryStatsSection 
+                stats={industryStats}
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

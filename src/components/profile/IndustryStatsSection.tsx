@@ -77,6 +77,9 @@ export const IndustryStatsSection = ({ stats, isOwnProfile, onRefresh }: Industr
     }
   };
 
+  if (stats.length === 0 && !isOwnProfile) {
+    return null;
+  }
 
   return (
     <div className="space-y-3 md:space-y-4">

@@ -112,6 +112,10 @@ export const AwardsSection = ({ userId, isOwnProfile, onRefresh }: AwardsSection
     return <div className="text-center py-8 text-muted-foreground">Loading awards...</div>;
   }
 
+  if (awards.length === 0 && !isOwnProfile) {
+    return null;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

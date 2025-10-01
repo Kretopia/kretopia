@@ -95,6 +95,10 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
   const approvedReviews = reviews.filter(r => r.status === 'approved');
   const pendingReviews = reviews.filter(r => r.status === 'pending');
 
+  if (approvedReviews.length === 0 && !isOwnProfile) {
+    return null;
+  }
+
   return (
     <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between gap-2">

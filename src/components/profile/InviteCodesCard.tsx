@@ -85,25 +85,23 @@ export const InviteCodesCard = () => {
   }
 
   return (
-    <Card className="p-6">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="rounded-full bg-primary/10 p-2">
-              <Gift className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-xl font-bold">Your Invite Codes</h3>
+    <Card className="p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="rounded-full bg-primary/10 p-2">
+            <Gift className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
-          <p className="text-sm text-muted-foreground">
-            Share these codes with friends to invite them to ThriveIN
-          </p>
+          <h3 className="text-lg sm:text-xl font-bold">Your Invite Codes</h3>
         </div>
-        <div className="flex gap-2">
-          <Badge variant="secondary" className="flex items-center gap-1">
+        <p className="text-sm text-muted-foreground mb-3">
+          Share these codes with friends to invite them to ThriveIN
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary" className="flex items-center gap-1 text-xs">
             <Users className="h-3 w-3" />
             {availableInvites} available
           </Badge>
-          <Badge variant="outline" className="flex items-center gap-1">
+          <Badge variant="outline" className="flex items-center gap-1 text-xs">
             <CheckCircle className="h-3 w-3" />
             {totalUsed} total uses
           </Badge>
@@ -112,80 +110,83 @@ export const InviteCodesCard = () => {
 
       <div className="space-y-3">
         {inviteCodes.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No invite codes available yet</p>
+          <div className="text-center py-6 sm:py-8 text-muted-foreground">
+            <p className="text-sm">No invite codes available yet</p>
           </div>
         ) : (
           inviteCodes.map((invite) => (
             <div
               key={invite.id}
-              className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+              className={`rounded-lg border p-3 sm:p-4 transition-colors ${
                 (invite.current_uses || 0) >= (invite.max_uses || 1)
                   ? "bg-muted/50 border-muted"
                   : "bg-card border-primary/20 hover:border-primary/40"
               }`}
             >
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <code className="px-3 py-1.5 bg-primary/10 text-primary rounded font-mono font-semibold text-lg">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <code className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-primary/10 text-primary rounded font-mono font-semibold text-base sm:text-lg flex-shrink-0">
                     {invite.invite_code}
                   </code>
+                  {(invite.current_uses || 0) < (invite.max_uses || 1) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(invite.invite_code)}
+                      className="gap-1.5 flex-shrink-0"
+                    >
+                      {copiedCode === invite.invite_code ? (
+                        <>
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="hidden sm:inline">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" />
+                          <span className="hidden sm:inline">Copy</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
                   {(invite.max_uses || 1) > 1 && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                       <Users className="h-3 w-3" />
                       Multi-use: {invite.current_uses || 0}/{invite.max_uses}
                     </Badge>
                   )}
                   {(invite.current_uses || 0) >= (invite.max_uses || 1) && (
-                    <Badge variant="default">
+                    <Badge variant="default" className="text-xs">
                       Fully Used
                     </Badge>
                   )}
                 </div>
+
                 {invite.invitee_email && invite.invitee_email.length > 0 && (
-                  <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="text-xs text-muted-foreground">
                     {(invite.max_uses || 1) > 1 ? (
                       <p>{invite.current_uses || 0} people used this code</p>
                     ) : (
                       <>
                         <p>Used by {invite.invitee_email}</p>
                         {invite.used_at && (
-                          <p>on {new Date(invite.used_at).toLocaleDateString()}</p>
+                          <p className="mt-0.5">on {new Date(invite.used_at).toLocaleDateString()}</p>
                         )}
                       </>
                     )}
                   </div>
                 )}
               </div>
-
-              {(invite.current_uses || 0) < (invite.max_uses || 1) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(invite.invite_code)}
-                  className="gap-2"
-                >
-                  {copiedCode === invite.invite_code ? (
-                    <>
-                      <CheckCircle className="h-4 w-4" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </>
-                  )}
-                </Button>
-              )}
             </div>
           ))
         )}
       </div>
 
       {availableInvites > 0 && (
-        <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             💡 <strong>Pro Tip:</strong> Share your invite codes with fellow creators you know
             and trust. Each person who joins with your code strengthens the ThriveIN community!
           </p>

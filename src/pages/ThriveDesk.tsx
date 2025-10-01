@@ -270,49 +270,462 @@ const ThriveDesk = () => {
     setIsEditingProject(true);
   };
 
-  // Mobile detection and redirect prompt
-  if (isMobile) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-6 text-center space-y-4">
-          <Monitor className="h-16 w-16 mx-auto text-primary" />
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Desktop Experience Recommended</h2>
-            <p className="text-muted-foreground">
-              ThriveDesk is optimized for desktop with advanced collaboration tools, real-time editing, and a full workspace experience.
-            </p>
+
+  // Responsive rendering
+  const renderMobileLayout = () => (
+    <div className="flex flex-col h-screen">
+      {/* Mobile Header */}
+      <div className="border-b px-4 py-3 bg-background sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/projects')}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-semibold truncate">{project.title}</h1>
+            <Badge variant="secondary" className="text-xs">{project.status}</Badge>
           </div>
-          <div className="space-y-3">
-            <Button 
-              onClick={() => {
-                const desktopUrl = window.location.href;
-                navigator.clipboard.writeText(desktopUrl);
-                toast({
-                  title: "Link copied! 📋",
-                  description: "Open this link on your desktop for the best experience.",
-                });
-              }}
-              className="w-full"
-            >
-              Copy Desktop Link
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/projects')}
-              className="w-full"
-            >
-              View All Projects
-            </Button>
-          </div>
-          <div className="pt-4 border-t">
-            <p className="text-sm text-muted-foreground">
-              Mobile version coming soon with essential features for on-the-go collaboration.
-            </p>
-          </div>
-        </Card>
+        </div>
       </div>
-    );
-  }
+
+      {/* Mobile Tabs */}
+      <Tabs defaultValue="messages" className="flex-1 flex flex-col overflow-hidden">
+        <div className="border-b px-2 bg-background">
+          <TabsList className="w-full justify-start h-12 bg-transparent">
+            <TabsTrigger value="messages" className="gap-1.5 text-xs">
+              <Send className="h-3.5 w-3.5" />
+              <span className="hidden xs:inline">Messages</span>
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="gap-1.5 text-xs">
+              <CheckSquare className="h-3.5 w-3.5" />
+              <span className="hidden xs:inline">Tasks</span>
+            </TabsTrigger>
+            <TabsTrigger value="details" className="gap-1.5 text-xs">
+              <FileText className="h-3.5 w-3.5" />
+              <span className="hidden xs:inline">Details</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="messages" className="flex-1 flex flex-col m-0 overflow-hidden">
+          <ScrollArea className="flex-1 px-4">
+            <div className="py-4 space-y-4">
+              {messages.map((msg) => (
+                <div key={msg.id} className="space-y-2">
+                  <div className="flex gap-2">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarImage src={msg.profiles?.avatar_url} />
+                      <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-semibold text-sm truncate">{msg.profiles?.full_name || 'User'}</span>
+                        <span className="text-xs text-muted-foreground flex-shrink-0">
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-sm leading-relaxed break-words">{msg.message}</p>
+                      {msg.file_url && (
+                        <div className="mt-2">
+                          {isImageFile(msg.file_type) ? (
+                            <img src={msg.file_url} alt={msg.file_name} className="rounded-lg max-w-full h-auto" />
+                          ) : (
+                            <a href={msg.file_url} target="_blank" rel="noopener noreferrer" 
+                               className="flex items-center gap-2 p-2 bg-secondary rounded-lg text-sm">
+                              <FileText className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">{msg.file_name}</span>
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
+          <div className="border-t p-3 bg-background">
+            {attachedFile && (
+              <div className="mb-2 p-2 bg-secondary rounded-lg flex items-center gap-2 text-sm">
+                <Paperclip className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="flex-1 truncate">{attachedFile.name}</span>
+                <Button variant="ghost" size="sm" onClick={() => setAttachedFile(null)}>Remove</Button>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileAttach} />
+              <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
+                <Paperclip className="h-4 w-4" />
+              </Button>
+              <Input
+                placeholder="Message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                className="flex-1 text-sm"
+              />
+              <Button onClick={handleSendMessage} disabled={sendingMessage} size="icon">
+                {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tasks" className="flex-1 m-0 p-3 overflow-auto">
+          <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+        </TabsContent>
+
+        <TabsContent value="details" className="flex-1 m-0 overflow-auto">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-4">
+              <Card className="p-4">
+                <h3 className="font-semibold mb-3">Project Details</h3>
+                {project.description && <p className="text-sm mb-3">{project.description}</p>}
+                {project.budget && (
+                  <div className="flex items-center gap-2 text-sm mb-2">
+                    <DollarSign className="h-4 w-4" />
+                    <span>{project.budget}</span>
+                  </div>
+                )}
+                {project.deadline && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4" />
+                    <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </Card>
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+
+  const renderDesktopLayout = () => (
+    <ResizablePanelGroup direction="horizontal" className="h-screen">
+      <ResizablePanel defaultSize={65} minSize={50}>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="border-b px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 flex-1">
+                <Button variant="ghost" size="icon" onClick={() => navigate('/projects')}>
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                {isEditingProject ? (
+                  <div className="flex-1">
+                    <Input
+                      value={editedProject?.title || ""}
+                      onChange={(e) => setEditedProject({ ...editedProject, title: e.target.value })}
+                      className="text-xl font-semibold"
+                      placeholder="Project title"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <h1 className="text-2xl font-semibold">{project.title}</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Collaborative workspace</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{project.status}</Badge>
+                {isEditingProject ? (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => setIsEditingProject(false)}>Cancel</Button>
+                    <Button size="sm" onClick={handleSaveProject}>
+                      <Save className="h-4 w-4 mr-2" />Save Project
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={startEditing}>
+                    <Edit className="h-4 w-4 mr-2" />Edit
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Tabs */}
+          <Tabs defaultValue="messages" className="flex-1 flex flex-col">
+            <div className="border-b px-6">
+              <TabsList className="w-full justify-start">
+                <TabsTrigger value="messages" className="gap-2">
+                  <Send className="h-4 w-4" />Messages
+                </TabsTrigger>
+                <TabsTrigger value="tasks" className="gap-2">
+                  <CheckSquare className="h-4 w-4" />Tasks
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="gap-2">
+                  <Clock className="h-4 w-4" />Timeline
+                </TabsTrigger>
+                <TabsTrigger value="team" className="gap-2">
+                  <Users className="h-4 w-4" />Team
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="messages" className="flex-1 flex flex-col m-0">
+              <ScrollArea className="flex-1 px-6">
+                <div className="py-4 space-y-6 max-w-4xl">
+                  {messages.map((msg) => (
+                    <div key={msg.id} className="space-y-3">
+                      <div className="flex gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={msg.profiles?.avatar_url} />
+                          <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-semibold text-sm">{msg.profiles?.full_name || 'User'}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-sm leading-relaxed">{msg.message}</p>
+                          {msg.file_url && (
+                            <div className="mt-3">
+                              {isImageFile(msg.file_type) ? (
+                                <div className="rounded-lg overflow-hidden border max-w-md">
+                                  <img src={msg.file_url} alt={msg.file_name} className="w-full h-auto" />
+                                </div>
+                              ) : (
+                                <a href={msg.file_url} target="_blank" rel="noopener noreferrer"
+                                   className="inline-flex items-center gap-2 px-4 py-3 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors">
+                                  <FileText className="h-5 w-5 text-primary" />
+                                  <div className="text-left">
+                                    <p className="text-sm font-medium">{msg.file_name}</p>
+                                    <p className="text-xs text-muted-foreground">{formatFileSize(msg.file_size)}</p>
+                                  </div>
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+              <div className="border-t p-4">
+                <div className="max-w-4xl">
+                  {attachedFile && (
+                    <div className="mb-2 p-2 bg-secondary rounded-lg flex items-center gap-2">
+                      <Paperclip className="h-4 w-4" />
+                      <span className="text-sm flex-1">{attachedFile.name}</span>
+                      <Button variant="ghost" size="sm" onClick={() => setAttachedFile(null)}>Remove</Button>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileAttach} />
+                    <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      placeholder="Type your message..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                      className="flex-1"
+                    />
+                    <Button onClick={handleSendMessage} disabled={sendingMessage}>
+                      {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="tasks" className="flex-1 m-0 p-6 overflow-auto">
+              <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+            </TabsContent>
+
+            <TabsContent value="timeline" className="flex-1 m-0 p-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Project Timeline</h3>
+                <Card className="p-6">
+                  <div className="space-y-6">
+                    {project.deadline && (
+                      <div className="flex items-start gap-4">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Calendar className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Project Deadline</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(project.deadline).toLocaleDateString('en-US', { 
+                              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-start gap-4">
+                      <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                        <Clock className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Created</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(project.created_at).toLocaleDateString('en-US', { 
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="team" className="flex-1 m-0 p-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Team Members</h3>
+                <Card className="p-6 text-center">
+                  <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Team collaboration features coming soon!</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    You'll be able to invite team members, assign roles, and collaborate in real-time.
+                  </p>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </ResizablePanel>
+
+      <ResizableHandle withHandle />
+
+      <ResizablePanel defaultSize={35} minSize={30} maxSize={50}>
+        <div className="h-full border-l bg-muted/30">
+          <ScrollArea className="h-full">
+            <div className="p-6 space-y-6">
+              {isEditingProject ? (
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-sm">Edit Project Details</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs">Description</Label>
+                      <Textarea
+                        value={editedProject?.description || ""}
+                        onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
+                        placeholder="Project description..."
+                        rows={4}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Budget</Label>
+                      <Input
+                        value={editedProject?.budget || ""}
+                        onChange={(e) => setEditedProject({ ...editedProject, budget: e.target.value })}
+                        placeholder="e.g., $5,000 - $10,000"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Deadline</Label>
+                      <Input
+                        type="date"
+                        value={editedProject?.deadline?.split('T')[0] || ""}
+                        onChange={(e) => setEditedProject({ ...editedProject, deadline: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Status</Label>
+                      <Select 
+                        value={editedProject?.status || "active"} 
+                        onValueChange={(value) => setEditedProject({ ...editedProject, status: value })}
+                      >
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="on_hold">On Hold</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm">Project Details</h3>
+                  <div className="space-y-3">
+                    {project.description && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Description</p>
+                        <p className="text-sm">{project.description}</p>
+                      </div>
+                    )}
+                    {project.budget && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        <span>{project.budget}</span>
+                      </div>
+                    )}
+                    {project.deadline && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-sm">Quick Tasks</h3>
+                  <CreateTaskDialog projectId={projectId!} onSuccess={fetchProjectData} />
+                </div>
+                <div className="space-y-2">
+                  {tasks.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">No tasks yet</p>
+                  ) : (
+                    tasks.slice(0, 5).map((task) => (
+                      <TaskItem key={task.id} task={task} onUpdate={fetchProjectData} compact />
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-sm">Recent Files</h3>
+                  <FileUploadDialog projectId={projectId!} onSuccess={fetchProjectData} />
+                </div>
+                <div className="space-y-2">
+                  {files.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">No files yet</p>
+                  ) : (
+                    files.slice(0, 5).map((file) => (
+                      <a
+                        key={file.id}
+                        href={file.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+                      >
+                        <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium truncate">{file.file_name}</p>
+                          <p className="text-xs text-muted-foreground">{formatFileSize(file.file_size)}</p>
+                        </div>
+                      </a>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
+  );
 
   if (loading) {
     return (
@@ -334,397 +747,8 @@ const ThriveDesk = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ResizablePanelGroup direction="horizontal" className="h-screen">
-        {/* Main Content */}
-        <ResizablePanel defaultSize={65} minSize={50}>
-          <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="border-b px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 flex-1">
-                  <Button variant="ghost" size="icon" onClick={() => navigate('/projects')}>
-                    <ArrowLeft className="h-5 w-5" />
-                  </Button>
-                  {isEditingProject ? (
-                    <div className="flex-1 space-y-2">
-                      <Input
-                        value={editedProject?.title || ""}
-                        onChange={(e) => setEditedProject({ ...editedProject, title: e.target.value })}
-                        className="text-xl font-semibold"
-                        placeholder="Project title"
-                      />
-                    </div>
-                  ) : (
-                    <div>
-                      <h1 className="text-2xl font-semibold">{project.title}</h1>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Collaborative workspace
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{project.status}</Badge>
-                  {isEditingProject ? (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => setIsEditingProject(false)}>
-                        Cancel
-                      </Button>
-                      <Button size="sm" onClick={handleSaveProject}>
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Project
-                      </Button>
-                    </>
-                  ) : (
-                    <Button size="sm" variant="outline" onClick={startEditing}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Tabs for different workspace views */}
-            <Tabs defaultValue="messages" className="flex-1 flex flex-col">
-              <div className="border-b px-6">
-                <TabsList className="w-full justify-start">
-                  <TabsTrigger value="messages" className="gap-2">
-                    <Send className="h-4 w-4" />
-                    Messages
-                  </TabsTrigger>
-                  <TabsTrigger value="tasks" className="gap-2">
-                    <CheckSquare className="h-4 w-4" />
-                    Tasks
-                  </TabsTrigger>
-                  <TabsTrigger value="timeline" className="gap-2">
-                    <Clock className="h-4 w-4" />
-                    Timeline
-                  </TabsTrigger>
-                  <TabsTrigger value="team" className="gap-2">
-                    <Users className="h-4 w-4" />
-                    Team
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="messages" className="flex-1 flex flex-col m-0">
-                <ScrollArea className="flex-1 px-6">
-                  <div className="py-4 space-y-6 max-w-4xl">
-                    {messages.map((msg) => (
-                <div key={msg.id} className="space-y-3">
-                  <div className="flex gap-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={msg.profiles?.avatar_url} />
-                      <AvatarFallback>
-                        {msg.profiles?.full_name?.[0] || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-semibold text-sm">
-                          {msg.profiles?.full_name || 'User'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(msg.created_at).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-sm leading-relaxed">{msg.message}</p>
-                      
-                      {/* File attachment */}
-                      {msg.file_url && (
-                        <div className="mt-3">
-                          {isImageFile(msg.file_type) ? (
-                            <div className="rounded-lg overflow-hidden border max-w-md">
-                              <img 
-                                src={msg.file_url} 
-                                alt={msg.file_name}
-                                className="w-full h-auto"
-                              />
-                            </div>
-                          ) : (
-                            <a 
-                              href={msg.file_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-4 py-3 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors"
-                            >
-                              <FileText className="h-5 w-5 text-primary" />
-                              <div className="text-left">
-                                <p className="text-sm font-medium">{msg.file_name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {formatFileSize(msg.file_size)}
-                                </p>
-                              </div>
-                            </a>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </ScrollArea>
-
-                {/* Message Input */}
-                <div className="border-t p-4">
-                  <div className="max-w-4xl">
-                    {attachedFile && (
-                      <div className="mb-2 p-2 bg-secondary rounded-lg flex items-center gap-2">
-                        <Paperclip className="h-4 w-4" />
-                        <span className="text-sm flex-1">{attachedFile.name}</span>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => setAttachedFile(null)}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileAttach}
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Paperclip className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        placeholder="Type your message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                        className="flex-1"
-                      />
-                      <Button onClick={handleSendMessage} disabled={sendingMessage}>
-                        {sendingMessage ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="tasks" className="flex-1 m-0 p-6">
-                <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
-              </TabsContent>
-
-              <TabsContent value="timeline" className="flex-1 m-0 p-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Project Timeline</h3>
-                  <Card className="p-6">
-                    <div className="space-y-6">
-                      {project.deadline && (
-                        <div className="flex items-start gap-4">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <Calendar className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Project Deadline</p>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(project.deadline).toLocaleDateString('en-US', { 
-                                weekday: 'long', 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      <div className="flex items-start gap-4">
-                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                          <Clock className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Created</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(project.created_at).toLocaleDateString('en-US', { 
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="team" className="flex-1 m-0 p-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Team Members</h3>
-                  <Card className="p-6 text-center">
-                    <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">Team collaboration features coming soon!</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      You'll be able to invite team members, assign roles, and collaborate in real-time.
-                    </p>
-                  </Card>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle />
-
-        {/* Right Sidebar */}
-        <ResizablePanel defaultSize={35} minSize={30} maxSize={50}>
-          <div className="h-full border-l bg-muted/30">
-            <ScrollArea className="h-full">
-              <div className="p-6 space-y-6">{isEditingProject ? (
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-sm">Edit Project Details</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <Label className="text-xs">Description</Label>
-                        <Textarea
-                          value={editedProject?.description || ""}
-                          onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
-                          placeholder="Project description..."
-                          rows={4}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Budget</Label>
-                        <Input
-                          value={editedProject?.budget || ""}
-                          onChange={(e) => setEditedProject({ ...editedProject, budget: e.target.value })}
-                          placeholder="e.g., $5,000 - $10,000"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Deadline</Label>
-                        <Input
-                          type="date"
-                          value={editedProject?.deadline?.split('T')[0] || ""}
-                          onChange={(e) => setEditedProject({ ...editedProject, deadline: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Status</Label>
-                        <Select 
-                          value={editedProject?.status || "active"} 
-                          onValueChange={(value) => setEditedProject({ ...editedProject, status: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="on_hold">On Hold</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-sm">Project Details</h3>
-                    <div className="space-y-3">
-                      {project.description && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Description</p>
-                          <p className="text-sm">{project.description}</p>
-                        </div>
-                      )}
-                      {project.budget && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          <span>{project.budget}</span>
-                        </div>
-                      )}
-                      {project.deadline && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <Separator />
-
-                {/* Tasks Section */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-sm">Quick Tasks</h3>
-                    <CreateTaskDialog projectId={projectId!} onSuccess={fetchProjectData} />
-                  </div>
-                  <div className="space-y-2">
-                    {tasks.length === 0 ? (
-                      <p className="text-xs text-muted-foreground text-center py-4">
-                        No tasks yet
-                      </p>
-                    ) : (
-                      tasks.slice(0, 5).map((task) => (
-                        <TaskItem key={task.id} task={task} onUpdate={fetchProjectData} compact />
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Files Section */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-sm">Recent Files</h3>
-                    <FileUploadDialog projectId={projectId!} onSuccess={fetchProjectData} />
-                  </div>
-                  <div className="space-y-2">
-                    {files.length === 0 ? (
-                      <p className="text-xs text-muted-foreground text-center py-4">
-                        No files yet
-                      </p>
-                    ) : (
-                      files.slice(0, 5).map((file) => (
-                        <a
-                          key={file.id}
-                          href={file.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-                        >
-                          <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate">{file.file_name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatFileSize(file.file_size)}
-                            </p>
-                          </div>
-                        </a>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </ScrollArea>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+      {isMobile ? renderMobileLayout() : renderDesktopLayout()}
     </div>
   );
 };

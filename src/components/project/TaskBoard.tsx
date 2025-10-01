@@ -263,13 +263,13 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
           {STATUSES.map(status => {
             const statusTasks = tasks.filter(t => t.status === status.value);
             return (
               <SortableContext key={status.value} items={statusTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                <div className={`rounded-lg p-4 ${status.color} min-h-[400px]`} id={status.value}>
-                  <div className="mb-4 flex items-center justify-between">
+                <div className={`rounded-lg p-3 md:p-4 ${status.color} min-h-[300px] md:min-h-[400px]`} id={status.value}>
+                  <div className="mb-3 md:mb-4 flex items-center justify-between">
                     <h4 className="font-semibold text-sm">{status.label}</h4>
                     <Badge variant="secondary" className="text-xs">{statusTasks.length}</Badge>
                   </div>

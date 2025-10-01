@@ -32,6 +32,7 @@ const SupportDashboard = lazy(() => import("./pages/SupportDashboard"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
 const TestRunner = lazy(() => import("./pages/TestRunner"));
+const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -83,6 +84,7 @@ const App = () => {
                   <Route path="/" element={<Landing />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/opportunity/:id" element={<OpportunityDetail />} />
+                  <Route path="/review" element={<SubmitReview />} />
                   <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />

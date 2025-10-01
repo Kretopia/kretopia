@@ -11,6 +11,7 @@ import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
 import { SocialLinksSection } from "@/components/profile/SocialLinksSection";
+import { SkillsSection } from "@/components/profile/SkillsSection";
 
 interface Profile {
   full_name: string;
@@ -19,6 +20,10 @@ interface Profile {
   location: string;
   avatar_url: string;
   user_id: string;
+  job_title?: string;
+  industry?: string;
+  professional_skills?: any;
+  passion_skills?: any;
   website?: string;
   linkedin_url?: string;
   behance_url?: string;
@@ -271,6 +276,7 @@ const PublicProfile = () => {
         <Tabs defaultValue="about" className="w-full">
           <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
             <TabsTrigger value="about" className="rounded-lg md:rounded-xl text-xs md:text-sm">About</TabsTrigger>
+            <TabsTrigger value="skills" className="rounded-lg md:rounded-xl text-xs md:text-sm">Skills</TabsTrigger>
             <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
             <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
@@ -301,6 +307,19 @@ const PublicProfile = () => {
                 </p>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="skills" className="space-y-3 md:space-y-4">
+            <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+              <SkillsSection
+                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
+                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
+                jobTitle={profile.job_title}
+                industry={profile.industry}
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="portfolio" className="space-y-3 md:space-y-4">

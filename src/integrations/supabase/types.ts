@@ -575,14 +575,19 @@ export type Database = {
           full_name: string
           id: string
           imdb_url: string | null
+          industry: string | null
           instagram_followers: number | null
           instagram_url: string | null
           invite_code_used: string | null
+          job_title: string | null
           last_swipe_reset: string | null
           level: number | null
           linkedin_connections: number | null
           linkedin_url: string | null
           location: string | null
+          passion_skills: Json | null
+          professional_skills: Json | null
+          review_share_token: string | null
           role: string
           soundcloud_url: string | null
           spotify_listeners: number | null
@@ -619,14 +624,19 @@ export type Database = {
           full_name: string
           id?: string
           imdb_url?: string | null
+          industry?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
           invite_code_used?: string | null
+          job_title?: string | null
           last_swipe_reset?: string | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          passion_skills?: Json | null
+          professional_skills?: Json | null
+          review_share_token?: string | null
           role: string
           soundcloud_url?: string | null
           spotify_listeners?: number | null
@@ -663,14 +673,19 @@ export type Database = {
           full_name?: string
           id?: string
           imdb_url?: string | null
+          industry?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
           invite_code_used?: string | null
+          job_title?: string | null
           last_swipe_reset?: string | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          passion_skills?: Json | null
+          professional_skills?: Json | null
+          review_share_token?: string | null
           role?: string
           soundcloud_url?: string | null
           spotify_listeners?: number | null
@@ -903,6 +918,60 @@ export type Database = {
           },
         ]
       }
+      review_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          profile_id: string
+          project_name: string | null
+          reviewer_email: string
+          reviewer_name: string
+          share_token: string
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          profile_id: string
+          project_name?: string | null
+          reviewer_email: string
+          reviewer_name: string
+          share_token?: string
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          profile_id?: string
+          project_name?: string | null
+          reviewer_email?: string
+          reviewer_name?: string
+          share_token?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "review_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           collaboration_type: string | null
@@ -916,10 +985,12 @@ export type Database = {
           review_text: string
           reviewer_avatar_url: string | null
           reviewer_company: string | null
+          reviewer_email: string | null
           reviewer_id: string | null
           reviewer_name: string
           reviewer_role: string | null
           status: string | null
+          submission_token: string | null
           updated_at: string
         }
         Insert: {
@@ -934,10 +1005,12 @@ export type Database = {
           review_text: string
           reviewer_avatar_url?: string | null
           reviewer_company?: string | null
+          reviewer_email?: string | null
           reviewer_id?: string | null
           reviewer_name: string
           reviewer_role?: string | null
           status?: string | null
+          submission_token?: string | null
           updated_at?: string
         }
         Update: {
@@ -952,10 +1025,12 @@ export type Database = {
           review_text?: string
           reviewer_avatar_url?: string | null
           reviewer_company?: string | null
+          reviewer_email?: string | null
           reviewer_id?: string | null
           reviewer_name?: string
           reviewer_role?: string | null
           status?: string | null
+          submission_token?: string | null
           updated_at?: string
         }
         Relationships: [

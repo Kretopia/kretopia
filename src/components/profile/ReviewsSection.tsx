@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Star, MessageSquarePlus, Award, CheckCircle, XCircle } from "lucide-react";
+import { Star, MessageSquarePlus, Award, CheckCircle, XCircle, Link2, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,19 +34,48 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [requestForm, setRequestForm] = useState({
     reviewer_name: "",
+    reviewer_email: "",
     reviewer_role: "",
     reviewer_company: "",
     project_name: ""
   });
   const { toast } = useToast();
 
-  const handleRequestReview = () => {
-    toast({
-      title: "Review request sent!",
-      description: "We'll notify them to leave a review for you",
-    });
-    setIsRequestOpen(false);
-    setRequestForm({ reviewer_name: "", reviewer_role: "", reviewer_company: "", project_name: "" });
+  const handleRequestReview = async () => {
+    if (!requestForm.reviewer_name || !requestForm.reviewer_email) {
+      toast({ title: "Error", description: "Name and email are required", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('review_requests')
+        .insert({
+          profile_id: profileUserId,
+          reviewer_name: requestForm.reviewer_name,
+          reviewer_email: requestForm.reviewer_email,
+          project_name: requestForm.project_name
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const reviewLink = `${window.location.origin}/review?token=${data.share_token}`;
+      
+      await navigator.clipboard.writeText(reviewLink);
+      
+      toast({
+        title: "Review link copied!",
+        description: "Share this link with your client to collect their review",
+      });
+      
+      setIsRequestOpen(false);
+      setRequestForm({ reviewer_name: "", reviewer_email: "", reviewer_role: "", reviewer_company: "", project_name: "" });
+      onRefresh();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to create review request", variant: "destructive" });
+    }
   };
 
   const handleUpdateStatus = async (reviewId: string, status: string) => {
@@ -82,25 +111,45 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Request a Review</DialogTitle>
+                <DialogDescription>
+                  Generate a shareable link for clients to easily submit their review
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label>Reviewer Name</Label>
-                  <Input value={requestForm.reviewer_name} onChange={(e) => setRequestForm({ ...requestForm, reviewer_name: e.target.value })} />
+                  <Label>Client Name *</Label>
+                  <Input 
+                    required
+                    placeholder="Jane Smith"
+                    value={requestForm.reviewer_name} 
+                    onChange={(e) => setRequestForm({ ...requestForm, reviewer_name: e.target.value })} 
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Their Role</Label>
-                  <Input value={requestForm.reviewer_role} onChange={(e) => setRequestForm({ ...requestForm, reviewer_role: e.target.value })} />
+                  <Label>Client Email *</Label>
+                  <Input 
+                    required
+                    type="email"
+                    placeholder="jane@company.com"
+                    value={requestForm.reviewer_email} 
+                    onChange={(e) => setRequestForm({ ...requestForm, reviewer_email: e.target.value })} 
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Company/Organization</Label>
-                  <Input value={requestForm.reviewer_company} onChange={(e) => setRequestForm({ ...requestForm, reviewer_company: e.target.value })} />
+                  <Label>Project Name (Optional)</Label>
+                  <Input 
+                    placeholder="Brand Campaign 2024"
+                    value={requestForm.project_name} 
+                    onChange={(e) => setRequestForm({ ...requestForm, project_name: e.target.value })} 
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label>Project Worked On</Label>
-                  <Input value={requestForm.project_name} onChange={(e) => setRequestForm({ ...requestForm, project_name: e.target.value })} />
-                </div>
-                <Button onClick={handleRequestReview} className="w-full" variant="gradient">Send Request</Button>
+                <Button onClick={handleRequestReview} className="w-full" variant="gradient">
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Generate Review Link
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  The link will be automatically copied to your clipboard
+                </p>
               </div>
             </DialogContent>
           </Dialog>

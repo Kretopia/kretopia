@@ -72,14 +72,25 @@ const PublicProfile = () => {
       .from('public_profiles')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
+      console.error('Error fetching profile:', error);
       toast({
         title: "Error",
         description: "Failed to load profile",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (!data) {
+      toast({
+        title: "Profile Not Found",
+        description: "This profile doesn't exist or has been removed",
+        variant: "destructive",
+      });
+      navigate('/');
       return;
     }
 

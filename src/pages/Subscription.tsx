@@ -29,8 +29,8 @@ const SUBSCRIPTION_TIERS = [
     }
   },
   {
-    name: "Thrive Pro",
-    tier: "pro",
+    name: "Thriver",
+    tier: "thriver",
     price: "$9",
     priceId: "price_1SDlRFJvOS7zG18hxOG2pJw3",
     productId: "prod_TA5c8GtL6ioS2h",
@@ -43,7 +43,7 @@ const SUBSCRIPTION_TIERS = [
       "Unlimited projects",
       "Advanced analytics",
       "Undo swipe feature",
-      "5 partner discounts",
+      "5% partner discounts",
     ],
     limits: {
       swipes: -1, // unlimited
@@ -51,18 +51,18 @@ const SUBSCRIPTION_TIERS = [
     }
   },
   {
-    name: "Thrive Studio",
-    tier: "studio",
+    name: "Creator Pro",
+    tier: "creator_pro",
     price: "$29",
     priceId: "price_1SDlX2JvOS7zG18hSx5frKzP",
     productId: "prod_TA5ihoppNqeijE",
     icon: Crown,
     features: [
-      "Everything in Pro",
+      "Everything in Thriver",
       "Featured profile (2x visibility)",
       "Priority matching",
       "Advanced collaboration tools",
-      "15+ partner discounts",
+      "15% partner discounts",
       "Early access to new features",
       "Dedicated support",
     ],

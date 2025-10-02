@@ -7,25 +7,25 @@ import { useNavigate } from "react-router-dom";
 interface Feature {
   name: string;
   free: boolean | string;
-  pro: boolean | string;
-  studio: boolean | string;
+  thriver: boolean | string;
+  creator_pro: boolean | string;
 }
 
 const features: Feature[] = [
-  { name: "Daily Swipes", free: "10", pro: "Unlimited", studio: "Unlimited" },
-  { name: "Active Projects", free: "1", pro: "Unlimited", studio: "Unlimited" },
-  { name: "Basic Profile", free: true, pro: true, studio: true },
-  { name: "Direct Messaging", free: true, pro: true, studio: true },
-  { name: "Portfolio Showcase", free: true, pro: true, studio: true },
-  { name: "AI Match Recommendations", free: false, pro: true, studio: true },
-  { name: "Undo Swipe", free: false, pro: true, studio: true },
-  { name: "Profile Verification Badge", free: false, pro: true, studio: true },
-  { name: "Advanced Analytics", free: false, pro: true, studio: true },
-  { name: "Featured Profile (2x visibility)", free: false, pro: false, studio: true },
-  { name: "Priority Matching", free: false, pro: false, studio: true },
-  { name: "Partner Discounts", free: "0", pro: "5", studio: "15+" },
-  { name: "Early Access to Features", free: false, pro: false, studio: true },
-  { name: "Dedicated Support", free: false, pro: false, studio: true },
+  { name: "Daily Swipes", free: "10", thriver: "Unlimited", creator_pro: "Unlimited" },
+  { name: "Active Projects", free: "1", thriver: "Unlimited", creator_pro: "Unlimited" },
+  { name: "Basic Profile", free: true, thriver: true, creator_pro: true },
+  { name: "Direct Messaging", free: true, thriver: true, creator_pro: true },
+  { name: "Portfolio Showcase", free: true, thriver: true, creator_pro: true },
+  { name: "AI Match Recommendations", free: false, thriver: true, creator_pro: true },
+  { name: "Undo Swipe", free: false, thriver: true, creator_pro: true },
+  { name: "Profile Verification Badge", free: false, thriver: true, creator_pro: true },
+  { name: "Advanced Analytics", free: false, thriver: true, creator_pro: true },
+  { name: "Featured Profile (2x visibility)", free: false, thriver: false, creator_pro: true },
+  { name: "Priority Matching", free: false, thriver: false, creator_pro: true },
+  { name: "Partner Discounts", free: "0", thriver: "5%", creator_pro: "15%" },
+  { name: "Early Access to Features", free: false, thriver: false, creator_pro: true },
+  { name: "Dedicated Support", free: false, thriver: false, creator_pro: true },
 ];
 
 interface TierComparisonProps {
@@ -48,9 +48,9 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
-      case "pro":
+      case "thriver":
         return <Sparkles className="h-5 w-5" />;
-      case "studio":
+      case "creator_pro":
         return <Crown className="h-5 w-5" />;
       default:
         return <Zap className="h-5 w-5" />;
@@ -59,8 +59,8 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
 
   const tiers = [
     { key: "free", name: "Free", price: "$0", icon: getTierIcon("free") },
-    { key: "pro", name: "Thrive Pro", price: "$9/mo", icon: getTierIcon("pro"), popular: true },
-    { key: "studio", name: "Thrive Studio", price: "$29/mo", icon: getTierIcon("studio") },
+    { key: "thriver", name: "Thriver", price: "$9/mo", icon: getTierIcon("thriver"), popular: true },
+    { key: "creator_pro", name: "Creator Pro", price: "$29/mo", icon: getTierIcon("creator_pro") },
   ];
 
   return (
@@ -120,10 +120,10 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
                 {renderValue(feature.free)}
               </div>
               <div className="flex items-center justify-center">
-                {renderValue(feature.pro)}
+                {renderValue(feature.thriver)}
               </div>
               <div className="flex items-center justify-center">
-                {renderValue(feature.studio)}
+                {renderValue(feature.creator_pro)}
               </div>
             </div>
           ))}

@@ -3,7 +3,7 @@
  * Based on Beta Roadmap requirements
  */
 
-export type SubscriptionTier = "free" | "pro" | "studio";
+export type SubscriptionTier = "free" | "thriver" | "creator_pro";
 
 export interface TierLimits {
   swipesPerDay: number; // -1 = unlimited
@@ -27,7 +27,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasPriorityMatching: false,
     partnerDiscounts: 0,
   },
-  pro: {
+  thriver: {
     swipesPerDay: -1, // unlimited
     maxProjects: -1, // unlimited
     canUndoSwipe: true,
@@ -37,7 +37,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasPriorityMatching: false,
     partnerDiscounts: 5,
   },
-  studio: {
+  creator_pro: {
     swipesPerDay: -1,
     maxProjects: -1,
     canUndoSwipe: true,
@@ -90,8 +90,8 @@ export const canCreateProject = (
 export const getTierDisplayName = (tier: SubscriptionTier): string => {
   const names: Record<SubscriptionTier, string> = {
     free: "Free",
-    pro: "Thrive Pro",
-    studio: "Thrive Studio",
+    thriver: "Thriver",
+    creator_pro: "Creator Pro",
   };
   return names[tier];
 };
@@ -104,13 +104,13 @@ export const getUpgradeMessage = (
   currentTier: SubscriptionTier
 ): string => {
   const messages: Record<keyof TierLimits, string> = {
-    swipesPerDay: "Upgrade to Pro for unlimited daily swipes",
-    maxProjects: "Upgrade to Pro for unlimited projects",
-    canUndoSwipe: "Upgrade to Pro to undo swipes",
-    canVerifyProfile: "Upgrade to Pro to get verified",
-    hasFeaturedProfile: "Upgrade to Studio for a featured profile",
-    hasAIRecommendations: "Upgrade to Pro for AI match recommendations",
-    hasPriorityMatching: "Upgrade to Studio for priority matching",
+    swipesPerDay: "Upgrade to Thriver for unlimited daily swipes",
+    maxProjects: "Upgrade to Thriver for unlimited projects",
+    canUndoSwipe: "Upgrade to Thriver to undo swipes",
+    canVerifyProfile: "Upgrade to Thriver to get verified",
+    hasFeaturedProfile: "Upgrade to Creator Pro for a featured profile",
+    hasAIRecommendations: "Upgrade to Thriver for AI match recommendations",
+    hasPriorityMatching: "Upgrade to Creator Pro for priority matching",
     partnerDiscounts: "Upgrade for exclusive partner discounts",
   };
   return messages[feature] || "Upgrade to unlock this feature";

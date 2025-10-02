@@ -133,6 +133,14 @@ const Discover = () => {
         setUserCredits(wallet.credits || 0);
       }
 
+      // Fetch user's previous swipes to filter them out
+      const { data: userSwipes } = await supabase
+        .from('swipes')
+        .select('target_id, target_type')
+        .eq('user_id', user.id);
+
+      const swipedIds = new Set(userSwipes?.map(s => s.target_id) || []);
+
       if (activeTab === 'creators') {
         let profilesQuery = supabase
           .from('public_profiles')
@@ -152,9 +160,10 @@ const Discover = () => {
         
         const { data: profiles } = await profilesQuery.limit(50);
 
-        // Further filter out profiles with incomplete data
+        // Filter out already swiped profiles and incomplete data
         const completeProfiles = (profiles || []).filter(profile => {
-          return profile.full_name !== 'New User' && 
+          return !swipedIds.has(profile.id) &&
+                 profile.full_name !== 'New User' && 
                  profile.role !== 'Creator' && 
                  profile.bio && profile.bio.length > 20;
         });
@@ -205,7 +214,10 @@ const Discover = () => {
 
         const { data: opportunities } = await opportunitiesQuery.limit(50);
 
-        const opportunityCards: Card[] = (opportunities || []).map(opp => ({
+        // Filter out already swiped opportunities
+        const unswipedOpportunities = (opportunities || []).filter(opp => !swipedIds.has(opp.id));
+
+        const opportunityCards: Card[] = unswipedOpportunities.map(opp => ({
           id: opp.id,
           type: 'opportunity' as CardType,
           name: opp.title,

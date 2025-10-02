@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Coins, Zap, Gift, CreditCard } from "lucide-react";
+import { Sparkles, Crown, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface CreditPromptDialogProps {
@@ -12,12 +12,7 @@ interface CreditPromptDialogProps {
 export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogProps) => {
   const navigate = useNavigate();
 
-  const handleEarnCredits = () => {
-    onOpenChange(false);
-    navigate('/earn-credits');
-  };
-
-  const handleBuyCredits = () => {
+  const handleUpgrade = (tier: string) => {
     onOpenChange(false);
     navigate('/subscription');
   };
@@ -27,71 +22,67 @@ export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogPro
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
-            <Coins className="h-6 w-6 text-primary" />
+            <Zap className="h-6 w-6 text-primary" />
             Out of Swipes!
           </DialogTitle>
           <DialogDescription>
-            You've reached your daily swipe limit. Get more swipes to continue discovering amazing creators and opportunities.
+            You've reached your daily limit of 10 swipes. Upgrade to get unlimited swipes and more features.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-4">
-          {/* Earn Free Credits */}
-          <Card className="p-4 hover:border-primary transition-colors cursor-pointer" onClick={handleEarnCredits}>
-            <div className="flex items-start gap-3">
-              <div className="rounded-lg bg-accent/10 p-2">
-                <Gift className="h-5 w-5 text-accent" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1">Earn Free Swipes</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Complete simple tasks to earn credits and unlock more swipes
-                </p>
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  <span>• Complete profile: +10 swipes</span>
-                  <span>• Daily login: +5 swipes</span>
-                  <span>• Connect with creators: +2 swipes each</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Buy Credits */}
-          <Card className="p-4 hover:border-primary transition-colors cursor-pointer" onClick={handleBuyCredits}>
-            <div className="flex items-start gap-3">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <CreditCard className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1">Buy Swipe Credits</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Purchase credits for instant swipes
-                </p>
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  <span>• 50 swipes: $4.99</span>
-                  <span>• 100 swipes: $8.99</span>
-                  <span>• 250 swipes: $19.99</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Premium */}
-          <Card className="p-4 border-primary bg-gradient-to-br from-primary/5 to-secondary/5 hover:border-primary transition-colors cursor-pointer" onClick={handleBuyCredits}>
+          {/* Thrive Pro */}
+          <Card 
+            className="p-4 border-primary bg-gradient-to-br from-primary/5 to-secondary/5 hover:border-primary hover:shadow-md transition-all cursor-pointer" 
+            onClick={() => handleUpgrade('pro')}
+          >
             <div className="flex items-start gap-3">
               <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2">
-                <Zap className="h-5 w-5 text-white" />
+                <Sparkles className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold mb-1 flex items-center gap-2">
-                  Go Premium
-                  <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Best Value</span>
+                  Thrive Pro
+                  <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Popular</span>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Unlimited swipes + advanced filters + priority matching
+                  Unlimited swipes + AI recommendations + verification badge
                 </p>
+                <ul className="text-xs text-muted-foreground space-y-1 mb-2">
+                  <li>✓ Unlimited daily swipes</li>
+                  <li>✓ AI match recommendations</li>
+                  <li>✓ Undo swipe feature</li>
+                  <li>✓ Profile verification badge</li>
+                </ul>
                 <div className="text-lg font-bold text-primary">
-                  $9.99/month
+                  $9/month
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Thrive Studio */}
+          <Card 
+            className="p-4 hover:border-primary transition-colors cursor-pointer" 
+            onClick={() => handleUpgrade('studio')}
+          >
+            <div className="flex items-start gap-3">
+              <div className="rounded-lg bg-gradient-to-br from-primary to-accent p-2">
+                <Crown className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Thrive Studio</h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Everything in Pro + featured profile + priority matching
+                </p>
+                <ul className="text-xs text-muted-foreground space-y-1 mb-2">
+                  <li>✓ All Pro features</li>
+                  <li>✓ Featured profile (2x visibility)</li>
+                  <li>✓ Priority matching</li>
+                  <li>✓ 15+ partner discounts</li>
+                </ul>
+                <div className="text-lg font-bold text-primary">
+                  $29/month
                 </div>
               </div>
             </div>

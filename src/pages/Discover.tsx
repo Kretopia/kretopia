@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle } from "lucide-react";
+import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle, Crown, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -12,6 +12,7 @@ import { OpportunityFiltersComponent, type OpportunityFilterState } from "@/comp
 import { CreditPromptDialog } from "@/components/discover/CreditPromptDialog";
 import { QuickCreateOpportunityDialog } from "@/components/discover/QuickCreateOpportunityDialog";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
+import { getRemainingSwipes, TIER_LIMITS, type SubscriptionTier } from "@/lib/subscriptionLimits";
 
 type CardType = "creator" | "opportunity";
 
@@ -115,10 +116,11 @@ const Discover = () => {
       }
       
       if (userProfile) {
-        setSubscriptionTier(userProfile.subscription_tier || 'free');
+        const tier = (userProfile.subscription_tier || 'free') as SubscriptionTier;
+        setSubscriptionTier(tier);
         setUserLevel(userProfile.level || 1);
-        const maxSwipes = userProfile.subscription_tier === 'free' ? 20 : 999;
-        setDailySwipesLeft(maxSwipes - (userProfile.daily_swipes || 0));
+        const remaining = getRemainingSwipes(tier, userProfile.daily_swipes || 0);
+        setDailySwipesLeft(remaining === -1 ? 999 : remaining);
       }
 
       const { data: wallet } = await supabase
@@ -234,15 +236,9 @@ const Discover = () => {
     await new Promise(resolve => setTimeout(resolve, 300));
 
     if (dailySwipesLeft <= 0) {
-      if (userCredits > 0 && subscriptionTier === 'free') {
-        await supabase.from('wallets').update({ credits: userCredits - 1 }).eq('user_id', user.id);
-        setUserCredits(userCredits - 1);
-        toast({ title: "Credit used", description: `${userCredits - 1} credits remaining` });
-      } else {
-        setSwipeDirection(null);
-        setShowCreditPrompt(true);
-        return;
-      }
+      setSwipeDirection(null);
+      setShowCreditPrompt(true);
+      return;
     }
 
     const { data: currentProfile } = await supabase
@@ -342,11 +338,24 @@ const Discover = () => {
             <h1 className="text-2xl sm:text-3xl font-bold">Discover</h1>
             <div className="flex items-center gap-2 flex-wrap">
               <QuickCreateOpportunityDialog />
-              <Badge variant="secondary" className="gap-1 text-xs">
-                <Coins className="h-3 w-3" />
-                <span className="hidden xs:inline">{dailySwipesLeft} swipes • {userCredits} credits</span>
-                <span className="xs:hidden">{dailySwipesLeft}/{userCredits}</span>
-              </Badge>
+              {subscriptionTier === 'free' ? (
+                <Badge 
+                  variant={dailySwipesLeft <= 3 ? "destructive" : "secondary"} 
+                  className="gap-1 text-xs cursor-pointer"
+                  onClick={() => dailySwipesLeft <= 3 && navigate('/subscription')}
+                >
+                  <Zap className="h-3 w-3" />
+                  <span className="hidden xs:inline">{dailySwipesLeft}/10 swipes today</span>
+                  <span className="xs:hidden">{dailySwipesLeft}/10</span>
+                  {dailySwipesLeft <= 3 && <span className="hidden sm:inline">• Upgrade for unlimited</span>}
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="gap-1 text-xs">
+                  <Sparkles className="h-3 w-3" />
+                  <span className="hidden xs:inline">Unlimited swipes</span>
+                  <span className="xs:hidden">∞</span>
+                </Badge>
+              )}
             </div>
           </div>
 

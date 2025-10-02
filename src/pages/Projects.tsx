@@ -5,13 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ProjectTemplates } from "@/components/project/ProjectTemplates";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle, DollarSign } from "lucide-react";
+import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle, DollarSign, Crown, Sparkles } from "lucide-react";
 import { z } from "zod";
+import { canCreateProject, type SubscriptionTier } from "@/lib/subscriptionLimits";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
@@ -44,6 +46,8 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>("free");
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
@@ -55,7 +59,27 @@ const Projects = () => {
 
   useEffect(() => {
     fetchProjects();
+    fetchUserTier();
   }, []);
+
+  const fetchUserTier = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("subscription_tier")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profile) {
+        setSubscriptionTier((profile.subscription_tier || "free") as SubscriptionTier);
+      }
+    } catch (error) {
+      console.error("Error fetching user tier:", error);
+    }
+  };
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -148,6 +172,12 @@ const Projects = () => {
 
   const handleCreateProject = async () => {
     try {
+      // Check project limit before creating
+      if (!canCreateProject(subscriptionTier, projects.length)) {
+        setShowUpgradePrompt(true);
+        return;
+      }
+
       // Validate input
       const validationResult = projectSchema.safeParse(newProject);
       
@@ -408,6 +438,75 @@ const Projects = () => {
           </div>
         )}
       </div>
+
+      {/* Upgrade Prompt Dialog */}
+      <Dialog open={showUpgradePrompt} onOpenChange={setShowUpgradePrompt}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Crown className="h-6 w-6 text-primary" />
+              Project Limit Reached
+            </DialogTitle>
+            <DialogDescription>
+              Free members can have 1 active project. Upgrade to Pro for unlimited projects!
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-4">
+            {/* Thrive Pro */}
+            <Card 
+              className="p-4 border-primary bg-gradient-to-br from-primary/5 to-secondary/5 hover:border-primary hover:shadow-md transition-all cursor-pointer" 
+              onClick={() => {
+                setShowUpgradePrompt(false);
+                navigate('/subscription');
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2">
+                  <Sparkles className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">Thrive Pro</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Unlimited projects + advanced collaboration tools
+                  </p>
+                  <div className="text-lg font-bold text-primary">
+                    $9/month
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Thrive Studio */}
+            <Card 
+              className="p-4 hover:border-primary transition-colors cursor-pointer" 
+              onClick={() => {
+                setShowUpgradePrompt(false);
+                navigate('/subscription');
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-primary to-accent p-2">
+                  <Crown className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">Thrive Studio</h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    All Pro features + priority support
+                  </p>
+                  <div className="text-lg font-bold text-primary">
+                    $29/month
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <Button variant="outline" onClick={() => setShowUpgradePrompt(false)} className="w-full">
+            Maybe Later
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

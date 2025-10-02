@@ -27,6 +27,7 @@ const Subscription = lazy(() => import("./pages/Subscription"));
 const EarnCredits = lazy(() => import("./pages/EarnCredits"));
 const Membership = lazy(() => import("./pages/Membership"));
 const Admin = lazy(() => import("./pages/Admin"));
+const CheckIn = lazy(() => import("./pages/CheckIn"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const StorageManagement = lazy(() => import("./pages/StorageManagement"));
@@ -102,6 +103,7 @@ const App = () => {
                   <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
                   <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
                   <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
+                  <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                   <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
                   <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />

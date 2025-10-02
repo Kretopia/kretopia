@@ -4,8 +4,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, MapPin } from "lucide-react";
+import { Plus, Edit, Trash2, MapPin, QrCode } from "lucide-react";
 import { LocationDialog } from "./LocationDialog";
+import { QRCodeDisplay } from "./QRCodeDisplay";
 import {
   Table,
   TableBody,
@@ -32,6 +33,8 @@ export function LocationsTab() {
   const [editingLocation, setEditingLocation] = useState<any>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [qrCodeOpen, setQrCodeOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -99,6 +102,11 @@ export function LocationsTab() {
     setDeleteConfirmOpen(true);
   };
 
+  const showQRCode = (location: any) => {
+    setSelectedLocation(location);
+    setQrCodeOpen(true);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -153,6 +161,14 @@ export function LocationsTab() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={() => showQRCode(location)}
+                      title="View QR Code"
+                    >
+                      <QrCode className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => handleEdit(location)}
                     >
                       <Edit className="h-4 w-4" />
@@ -177,6 +193,12 @@ export function LocationsTab() {
         onOpenChange={setDialogOpen}
         location={editingLocation}
         onSuccess={fetchLocations}
+      />
+
+      <QRCodeDisplay
+        open={qrCodeOpen}
+        onOpenChange={setQrCodeOpen}
+        location={selectedLocation}
       />
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>

@@ -70,8 +70,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/thrive-desk/${projectId}?payment=success&milestone=${milestoneId}&escrow=${useEscrow ? 'true' : 'false'}`,
-      cancel_url: `${req.headers.get("origin")}/thrive-desk/${projectId}?payment=cancelled`,
+      success_url: `${req.headers.get("origin")}/desk/${projectId}?payment=success&milestone=${milestoneId}&escrow=${useEscrow ? 'true' : 'false'}`,
+      cancel_url: `${req.headers.get("origin")}/desk/${projectId}?payment=cancelled`,
       metadata: {
         milestoneId,
         projectId,

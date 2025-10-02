@@ -6,6 +6,7 @@ import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { AIAutomation } from "@/components/project/AIAutomation";
 import { TimeTracker } from "@/components/project/TimeTracker";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
+import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,6 +58,7 @@ const ThriveDesk = () => {
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isEditingProject, setIsEditingProject] = useState(false);
   const [editedProject, setEditedProject] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -134,13 +136,13 @@ const ThriveDesk = () => {
       updateMilestonePayment();
 
       // Clean URL
-      window.history.replaceState({}, '', `/thrive-desk/${projectId}`);
+      window.history.replaceState({}, '', `/desk/${projectId}`);
     } else if (paymentStatus === 'cancelled') {
       toast({
         title: "Payment cancelled",
         description: "You can retry the payment anytime.",
       });
-      window.history.replaceState({}, '', `/thrive-desk/${projectId}`);
+      window.history.replaceState({}, '', `/desk/${projectId}`);
     }
   }, [projectId]);
 
@@ -211,6 +213,15 @@ const ThriveDesk = () => {
   const fetchProjectData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Fetch user profile
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (profileData) setUserProfile(profileData);
 
     // Fetch project
     const { data: projectData } = await supabase
@@ -384,109 +395,123 @@ const ThriveDesk = () => {
   const renderMobileLayout = () => (
     <div className="flex flex-col h-screen pb-16">
       {/* Mobile Header - Improved touch targets */}
-      <div className="border-b px-3 py-2.5 bg-background sticky top-0 z-10">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => navigate('/projects')}>
+      <div className="border-b px-3 py-3 bg-background sticky top-0 z-10 shadow-sm">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0" onClick={() => navigate('/projects')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-semibold truncate leading-tight">{project.title}</h1>
-            <Badge variant="secondary" className="text-xs mt-0.5">{project.status}</Badge>
+            <h1 className="text-base font-semibold truncate leading-tight mb-1">{project.title}</h1>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">{project.status}</Badge>
+              <span className="text-xs text-muted-foreground">•</span>
+              <span className="text-xs text-muted-foreground">{userRole === 'client' ? 'Client' : 'Creator'}</span>
+            </div>
           </div>
+          <InvoiceGenerator 
+            projectTitle={project.title}
+            projectId={projectId || ''}
+            milestones={milestones}
+            userProfile={userProfile}
+          />
         </div>
       </div>
 
       {/* Mobile Tabs - Larger touch targets */}
       <Tabs defaultValue="messages" className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b bg-background">
-          <TabsList className="w-full justify-around h-14 bg-transparent rounded-none p-0">
-            <TabsTrigger value="messages" className="flex-1 gap-1 data-[state=active]:bg-background h-full">
-              <Send className="h-4 w-4" />
-              <span className="text-xs">Messages</span>
+        <div className="border-b bg-background shadow-sm">
+          <TabsList className="w-full justify-around h-16 bg-transparent rounded-none p-0">
+            <TabsTrigger value="messages" className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col">
+              <Send className="h-5 w-5" />
+              <span className="text-xs font-medium">Messages</span>
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="flex-1 gap-1 data-[state=active]:bg-background h-full">
-              <CheckSquare className="h-4 w-4" />
-              <span className="text-xs">Tasks</span>
+            <TabsTrigger value="tasks" className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col">
+              <CheckSquare className="h-5 w-5" />
+              <span className="text-xs font-medium">Tasks</span>
             </TabsTrigger>
-            <TabsTrigger value="milestones" className="flex-1 gap-1 data-[state=active]:bg-background h-full">
-              <DollarSign className="h-4 w-4" />
-              <span className="text-xs">Pay</span>
+            <TabsTrigger value="milestones" className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col">
+              <DollarSign className="h-5 w-5" />
+              <span className="text-xs font-medium">Pay</span>
             </TabsTrigger>
-            <TabsTrigger value="details" className="flex-1 gap-1 data-[state=active]:bg-background h-full">
-              <FileText className="h-4 w-4" />
-              <span className="text-xs">Info</span>
+            <TabsTrigger value="details" className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col">
+              <FileText className="h-5 w-5" />
+              <span className="text-xs font-medium">Info</span>
             </TabsTrigger>
           </TabsList>
         </div>
 
         <TabsContent value="messages" className="flex-1 flex flex-col m-0 overflow-hidden">
-          <ScrollArea className="flex-1 px-3">
-            <div className="py-3 space-y-3">
+          <ScrollArea className="flex-1 px-4">
+            <div className="py-4 space-y-4">
               {messages.map((msg) => (
-                <div key={msg.id} className="flex gap-2.5">
-                  <Avatar className="h-9 w-9 flex-shrink-0">
+                <div key={msg.id} className="flex gap-3">
+                  <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-primary/10">
                     <AvatarImage src={msg.profiles?.avatar_url} />
-                    <AvatarFallback>{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground">
+                      {msg.profiles?.full_name?.[0] || 'U'}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 mb-1">
+                    <div className="flex items-baseline gap-2 mb-1.5">
                       <span className="font-semibold text-sm truncate">{msg.profiles?.full_name || 'User'}</span>
                       <span className="text-xs text-muted-foreground flex-shrink-0">
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className="text-sm leading-relaxed break-words">{msg.message}</p>
-                    {msg.file_url && (
-                      <div className="mt-2">
-                        {isImageFile(msg.file_type) ? (
-                          <img src={msg.file_url} alt={msg.file_name} className="rounded-lg max-w-full h-auto" />
-                        ) : (
-                          <a href={msg.file_url} target="_blank" rel="noopener noreferrer" 
-                             className="flex items-center gap-2 p-3 bg-secondary rounded-lg text-sm active:bg-secondary/80">
-                            <FileText className="h-4 w-4 flex-shrink-0" />
-                            <span className="truncate">{msg.file_name}</span>
-                          </a>
-                        )}
-                      </div>
-                    )}
+                    <div className="bg-secondary/50 rounded-2xl rounded-tl-none p-3">
+                      <p className="text-sm leading-relaxed break-words">{msg.message}</p>
+                      {msg.file_url && (
+                        <div className="mt-2">
+                          {isImageFile(msg.file_type) ? (
+                            <img src={msg.file_url} alt={msg.file_name} className="rounded-lg max-w-full h-auto border border-border" />
+                          ) : (
+                            <a href={msg.file_url} target="_blank" rel="noopener noreferrer" 
+                               className="flex items-center gap-2 p-2.5 bg-background rounded-lg text-sm active:bg-muted border border-border">
+                              <FileText className="h-4 w-4 flex-shrink-0 text-primary" />
+                              <span className="truncate text-xs">{msg.file_name}</span>
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
-          <div className="border-t p-3 bg-background safe-area-bottom">
+          <div className="border-t p-4 bg-background safe-area-bottom shadow-lg">
             {attachedFile && (
-              <div className="mb-2 p-2.5 bg-secondary rounded-lg flex items-center gap-2 text-sm">
-                <Paperclip className="h-4 w-4 flex-shrink-0" />
-                <span className="flex-1 truncate">{attachedFile.name}</span>
-                <Button variant="ghost" size="sm" className="h-8" onClick={() => setAttachedFile(null)}>Remove</Button>
+              <div className="mb-3 p-3 bg-primary/5 rounded-xl flex items-center gap-2.5 text-sm border border-primary/20">
+                <Paperclip className="h-4 w-4 flex-shrink-0 text-primary" />
+                <span className="flex-1 truncate font-medium">{attachedFile.name}</span>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAttachedFile(null)}>✕</Button>
               </div>
             )}
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
               <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileAttach} />
-              <Button variant="outline" size="icon" className="h-11 w-11" onClick={() => fileInputRef.current?.click()}>
+              <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
                 <Paperclip className="h-5 w-5" />
               </Button>
               <Input
-                placeholder="Message..."
+                placeholder="Type a message..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                className="flex-1 h-11 text-base"
+                className="flex-1 h-12 text-base rounded-xl border-2"
               />
-              <Button onClick={handleSendMessage} disabled={sendingMessage} size="icon" className="h-11 w-11">
+              <Button onClick={handleSendMessage} disabled={sendingMessage} size="icon" className="h-12 w-12 rounded-xl flex-shrink-0">
                 {sendingMessage ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
               </Button>
             </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 p-2 overflow-auto">
+        <TabsContent value="tasks" className="flex-1 m-0 p-4 overflow-auto">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 p-2 overflow-auto">
+        <TabsContent value="milestones" className="flex-1 m-0 p-4 overflow-auto">
           <MilestoneBoard 
             milestones={milestones} 
             projectId={projectId!} 
@@ -561,6 +586,13 @@ const ThriveDesk = () => {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Badge variant="secondary" className="text-xs">{project.status}</Badge>
+                <InvoiceGenerator 
+                  projectTitle={project.title}
+                  projectId={projectId || ''}
+                  milestones={milestones}
+                  userProfile={userProfile}
+                />
+                <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
                 {isEditingProject ? (
                   <>
                     <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setIsEditingProject(false)}>Cancel</Button>

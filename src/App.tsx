@@ -15,7 +15,6 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Discover = lazy(() => import("./pages/Discover"));
-const Spark = lazy(() => import("./pages/Spark"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
@@ -24,7 +23,6 @@ const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const Projects = lazy(() => import("./pages/Projects"));
 const Analytics = lazy(() => import("./pages/Analytics"));
-const ThriveStudio = lazy(() => import("./pages/ThriveStudio"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const EarnCredits = lazy(() => import("./pages/EarnCredits"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
@@ -90,7 +88,6 @@ const App = () => {
                   <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
-                  <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="/profile/:userId" element={<PublicProfile />} />
                   <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
@@ -99,7 +96,6 @@ const App = () => {
                   <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
                   <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
                   <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                  <Route path="/studio" element={<ProtectedRoute><ThriveStudio /></ProtectedRoute>} />
                   <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
                   <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
                   <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />

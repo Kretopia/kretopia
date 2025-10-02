@@ -202,7 +202,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
   const pendingAmount = totalAmount - paidAmount;
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Milestones & Payments</h3>

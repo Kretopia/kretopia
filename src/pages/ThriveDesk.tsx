@@ -507,11 +507,11 @@ const ThriveDesk = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 p-4 overflow-auto">
+        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 p-4 overflow-auto">
+        <TabsContent value="milestones" className="flex-1 m-0 overflow-auto">
           <MilestoneBoard 
             milestones={milestones} 
             projectId={projectId!} 

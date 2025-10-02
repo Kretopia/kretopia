@@ -223,7 +223,7 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Task Board</h3>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>

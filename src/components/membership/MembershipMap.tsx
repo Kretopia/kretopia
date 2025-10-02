@@ -15,7 +15,7 @@ export const MembershipMap = ({ locations }: MembershipMapProps) => {
     if (!mapContainer.current || locations.length === 0) return;
 
     // Mapbox public token (safe to include as it's a public token)
-    const mapboxToken = "pk.eyJ1IjoiYW5kcmV3dGhyaXZlIiwiYSI6ImNtNTE0ZWF0bDBhZm0ydnM4cXI5c3Z4aGgifQ.yGNcBJMZTsb7jKfhTKj5rA";
+    const mapboxToken = "pk.eyJ1IjoiZXRoYW5hdWd1c3RlIiwiYSI6ImNtZzhvbDk0dzAwaHYycnB6eWp4Zjh2OHAifQ.4uCSa5SdtxZAnC2Xvx6V5w";
     
     mapboxgl.accessToken = mapboxToken;
 

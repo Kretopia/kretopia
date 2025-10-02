@@ -25,6 +25,7 @@ const Projects = lazy(() => import("./pages/Projects"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const EarnCredits = lazy(() => import("./pages/EarnCredits"));
+const Membership = lazy(() => import("./pages/Membership"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const StorageManagement = lazy(() => import("./pages/StorageManagement"));
@@ -99,6 +100,7 @@ const App = () => {
                   <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
                   <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
                   <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
+                  <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
                   <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
                   <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
                   <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />

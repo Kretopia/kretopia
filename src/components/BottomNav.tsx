@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Compass, FolderKanban, Users } from "lucide-react";
+import { LayoutDashboard, Compass, FolderKanban, Users, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BottomNav = () => {
@@ -8,8 +8,8 @@ const BottomNav = () => {
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Home" },
     { path: "/discover", icon: Compass, label: "Discover" },
+    { path: "/membership", icon: CreditCard, label: "Member" },
     { path: "/projects", icon: FolderKanban, label: "Desk" },
-    { path: "/circle", icon: Users, label: "Circle" },
   ];
 
   return (

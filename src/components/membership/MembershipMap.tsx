@@ -14,13 +14,9 @@ export const MembershipMap = ({ locations }: MembershipMapProps) => {
   useEffect(() => {
     if (!mapContainer.current || locations.length === 0) return;
 
-    // Get Mapbox token from environment
-    const mapboxToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN;
-    if (!mapboxToken) {
-      console.error("Mapbox token not found");
-      return;
-    }
-
+    // Mapbox public token (safe to include as it's a public token)
+    const mapboxToken = "pk.eyJ1IjoiYW5kcmV3dGhyaXZlIiwiYSI6ImNtNTE0ZWF0bDBhZm0ydnM4cXI5c3Z4aGgifQ.yGNcBJMZTsb7jKfhTKj5rA";
+    
     mapboxgl.accessToken = mapboxToken;
 
     // Initialize map

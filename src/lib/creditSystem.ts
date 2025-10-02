@@ -62,13 +62,18 @@ export const checkAndAwardDailyLogin = async (userId: string) => {
     const today = new Date().toISOString().split('T')[0];
     
     // Check if user already got daily login credits today
-    const { data: existingActivity } = await supabase
+    const { data: existingActivity, error: checkError } = await supabase
       .from('xp_activities')
       .select('*')
       .eq('user_id', userId)
       .eq('activity_type', 'daily_login')
       .gte('created_at', `${today}T00:00:00`)
-      .single();
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking daily login:', checkError);
+      return { awarded: false, error: checkError };
+    }
 
     if (!existingActivity) {
       await awardCredits(

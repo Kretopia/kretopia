@@ -300,8 +300,14 @@ const Discover = () => {
       toast({ title: "Liked! 💫", description: `You liked ${currentCard.name}` });
     }
     
-    if (currentIndex < cards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    // Remove the swiped card from the array
+    const updatedCards = cards.filter((_, index) => index !== currentIndex);
+    setCards(updatedCards);
+    
+    // Keep the same index (which now shows the next card)
+    // If we're at the end, stay at the current index
+    if (currentIndex >= updatedCards.length && updatedCards.length > 0) {
+      setCurrentIndex(updatedCards.length - 1);
     }
     
     setSwipeDirection(null);

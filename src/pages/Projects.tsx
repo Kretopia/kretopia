@@ -270,11 +270,11 @@ const Projects = () => {
               Manage projects & collaborations
             </p>
           </div>
-          <div className="flex gap-2.5 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
             <ProjectTemplates onSelect={fetchProjects} />
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="gradient" size="lg" className="gap-2 flex-1 md:flex-none h-12 rounded-xl font-semibold">
+                <Button variant="gradient" size="lg" className="gap-2 w-full sm:flex-1 md:flex-none h-12 rounded-xl font-semibold">
                   <Plus className="h-5 w-5" />
                   <span className="hidden sm:inline">Blank Project</span>
                   <span className="sm:hidden">New Project</span>

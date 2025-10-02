@@ -32,8 +32,8 @@ const SUBSCRIPTION_TIERS = [
     name: "Thrive Pro",
     tier: "pro",
     price: "$9",
-    priceId: "price_1SD3owJvOS7zG18hXCqHcExm",
-    productId: "prod_T9MYOv0ucDM6MT",
+    priceId: "price_1SDlRFJvOS7zG18hxOG2pJw3",
+    productId: "prod_TA5c8GtL6ioS2h",
     icon: Sparkles,
     popular: true,
     features: [
@@ -54,8 +54,8 @@ const SUBSCRIPTION_TIERS = [
     name: "Thrive Studio",
     tier: "studio",
     price: "$29",
-    priceId: "price_1SD3pLJvOS7zG18hyhVHXByZ",
-    productId: "prod_T9MYqqkqTWy1Wm",
+    priceId: "price_1SDlX2JvOS7zG18hSx5frKzP",
+    productId: "prod_TA5ihoppNqeijE",
     icon: Crown,
     features: [
       "Everything in Pro",

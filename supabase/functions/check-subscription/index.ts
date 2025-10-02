@@ -49,17 +49,23 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No customer found, updating unsubscribed state");
       
-      // Update profile with no subscription
+      // Update profile with free tier
       await supabaseClient
         .from('profiles')
-        .update({ 
+        .update({
+          subscription_tier: 'free',
           subscription_status: 'none',
           subscription_product_id: null,
           subscription_end_date: null
         })
         .eq('user_id', user.id);
       
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({ 
+        subscribed: false, 
+        tier: 'free',
+        product_id: null,
+        subscription_end: null 
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -76,33 +82,44 @@ serve(async (req) => {
     const hasActiveSub = subscriptions.data.length > 0;
     let productId = null;
     let subscriptionEnd = null;
+    let tier = 'free';
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      
       productId = subscription.items.data[0].price.product as string;
-      logStep("Determined subscription tier", { productId });
+      
+      // Map product ID to tier
+      if (productId === 'prod_TA5c8GtL6ioS2h') {
+        tier = 'pro';
+      } else if (productId === 'prod_TA5ihoppNqeijE') {
+        tier = 'studio';
+      }
+      
+      logStep("Determined subscription tier", { productId, tier });
       
       // Update profile with subscription info
       await supabaseClient
         .from('profiles')
-        .update({ 
-          stripe_customer_id: customerId,
-          stripe_subscription_id: subscription.id,
+        .update({
+          subscription_tier: tier,
           subscription_status: 'active',
           subscription_product_id: productId,
-          subscription_end_date: subscriptionEnd
+          subscription_end_date: subscriptionEnd,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscription.id
         })
         .eq('user_id', user.id);
     } else {
       logStep("No active subscription found");
       
-      // Update profile with no active subscription
+      // Update profile to free tier
       await supabaseClient
         .from('profiles')
-        .update({ 
-          stripe_customer_id: customerId,
+        .update({
+          subscription_tier: 'free',
           subscription_status: 'none',
           subscription_product_id: null,
           subscription_end_date: null
@@ -112,6 +129,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
+      tier,
       product_id: productId,
       subscription_end: subscriptionEnd
     }), {

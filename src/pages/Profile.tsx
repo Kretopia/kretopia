@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MapPin, Star, Briefcase, Share2, Edit, Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
@@ -21,44 +22,13 @@ import { CreditsSection } from "@/components/profile/CreditsSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
+import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from "lucide-react";
 
-interface Profile {
-  full_name: string;
-  role: string;
-  bio: string;
-  location: string;
-  avatar_url: string;
-  user_id: string;
-  job_title?: string;
-  industry?: string;
-  professional_skills?: any;
-  passion_skills?: any;
-  press_links?: any;
-  project_credits?: any;
-  awards?: any;
-  website?: string;
-  linkedin_url?: string;
-  behance_url?: string;
-  imdb_url?: string;
-  instagram_url?: string;
-  twitter_url?: string;
-  spotify_url?: string;
-  soundcloud_url?: string;
-  youtube_subscribers?: number;
-  instagram_followers?: number;
-  tiktok_followers?: number;
-  spotify_listeners?: number;
-  twitter_followers?: number;
-  linkedin_connections?: number;
-  total_engagement_rate?: number;
-  avg_views?: number;
-  verified_metrics?: boolean;
-  section_order?: string[];
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface SortableItemProps {
   id: string;
@@ -105,6 +75,9 @@ const Profile = () => {
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [industryStats, setIndustryStats] = useState([]);
+  const [credits, setCredits] = useState([]);
+  const [awards, setAwards] = useState([]);
+  const [pressLinks, setPressLinks] = useState([]);
   const [userBadge, setUserBadge] = useState<'og' | 'beta' | 'official' | null>(null);
   const [stats, setStats] = useState({
     circle: 0,
@@ -201,6 +174,27 @@ const Profile = () => {
       .eq('user_id', user.id)
       .order('display_order', { ascending: true });
 
+    // Fetch credits
+    const { data: creditsData } = await supabase
+      .from('credits')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('year', { ascending: false });
+
+    // Fetch awards
+    const { data: awardsData } = await supabase
+      .from('awards')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('year', { ascending: false });
+
+    // Fetch press links
+    const { data: pressData } = await supabase
+      .from('press_links')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('published_date', { ascending: false });
+
     setStats(prev => ({
       ...prev,
       circle: connectionsCount || 0,
@@ -209,6 +203,9 @@ const Profile = () => {
     setPortfolioItems(portfolioData || []);
     setReviews(reviewsData || []);
     setIndustryStats(statsData || []);
+    setCredits(creditsData || []);
+    setAwards(awardsData || []);
+    setPressLinks(pressData || []);
   };
 
   useEffect(() => {
@@ -528,6 +525,17 @@ const Profile = () => {
                 <div className="text-xs md:text-sm text-muted-foreground">Response Rate</div>
               </div>
             </div>
+
+            {/* Profile Strength Score */}
+            {profile && (
+              <ProfileStrengthScore 
+                profile={profile}
+                portfolioCount={portfolioItems.length}
+                creditsCount={credits.length}
+                awardsCount={awards.length}
+                pressCount={pressLinks.length}
+              />
+            )}
           </div>
         </div>
 
@@ -582,8 +590,8 @@ const Profile = () => {
                       skills: (
                         <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
                           <SkillsSection
-                            professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
-                            passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
+                            professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+                            passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
                             jobTitle={profile.job_title}
                             industry={profile.industry}
                             isOwnProfile={true}

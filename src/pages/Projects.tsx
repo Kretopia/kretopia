@@ -172,13 +172,16 @@ const Projects = () => {
 
   const handleCreateProject = async () => {
     try {
+      console.log('[Projects] Starting project creation...');
       // Check project limit before creating
       if (!canCreateProject(subscriptionTier, projects.length)) {
+        console.log('[Projects] Project limit reached');
         setShowUpgradePrompt(true);
         return;
       }
 
       // Validate input
+      console.log('[Projects] Validating project data:', newProject);
       const validationResult = projectSchema.safeParse(newProject);
       
       if (!validationResult.success) {
@@ -191,8 +194,10 @@ const Projects = () => {
         return;
       }
 
+      console.log('[Projects] Getting authenticated user');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.error('[Projects] No authenticated user found');
         toast({
           title: "Authentication Error",
           description: "Please sign in to create a project",
@@ -201,23 +206,28 @@ const Projects = () => {
         return;
       }
 
+      console.log('[Projects] User authenticated, creating project for user:', user.id);
       // Create solo project without a match (match_id can be null for solo projects)
+      const projectData = {
+        match_id: null,
+        created_by: user.id,
+        title: validationResult.data.title,
+        description: validationResult.data.description || null,
+        budget: validationResult.data.budget || null,
+        deadline: validationResult.data.deadline || null,
+        status: 'active',
+      };
+      console.log('[Projects] Inserting project data:', projectData);
+      
       const { data: project, error: projectError } = await supabase
         .from('projects')
-        .insert({
-          match_id: null,
-          created_by: user.id,
-          title: validationResult.data.title,
-          description: validationResult.data.description || null,
-          budget: validationResult.data.budget || null,
-          deadline: validationResult.data.deadline || null,
-          status: 'active',
-        })
+        .insert(projectData)
         .select()
         .single();
 
       if (projectError) {
-        console.error('Project creation error:', projectError);
+        console.error('[Projects] Project creation error:', projectError);
+        console.error('[Projects] Error details:', JSON.stringify(projectError, null, 2));
         toast({
           title: "Error",
           description: `Failed to create project: ${projectError.message}`,
@@ -225,6 +235,8 @@ const Projects = () => {
         });
         return;
       }
+
+      console.log('[Projects] Project created successfully:', project);
 
       toast({
         title: "Success! 🎉",

@@ -288,24 +288,33 @@ const Profile = () => {
         .from('avatars')
         .getPublicUrl(fileName);
 
+      console.log('[Profile] Updating avatar_url in database:', publicUrl);
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
         .eq('user_id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('[Profile] Error updating avatar in database:', updateError);
+        throw updateError;
+      }
 
+      console.log('[Profile] Avatar updated successfully, refreshing profile');
       setProfile({ ...profile!, avatar_url: publicUrl });
       setEditForm({ ...editForm, avatar_url: publicUrl });
+      
+      // Refresh profile data from database to ensure it persisted
+      await fetchData();
       
       toast({
         title: "Success",
         description: "Profile picture updated successfully",
       });
     } catch (error) {
+      console.error('[Profile] Avatar upload error:', error);
       toast({
         title: "Error",
-        description: "Failed to upload profile picture",
+        description: error instanceof Error ? error.message : "Failed to upload profile picture",
         variant: "destructive",
       });
     } finally {

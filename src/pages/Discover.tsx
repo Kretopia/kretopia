@@ -94,8 +94,13 @@ const Discover = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log('[Discover] Starting to fetch data...');
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.error('[Discover] No authenticated user');
+        return;
+      }
+      console.log('[Discover] User authenticated:', user.id);
 
       const { data: userProfile } = await supabase
         .from('profiles')
@@ -142,6 +147,7 @@ const Discover = () => {
       const swipedIds = new Set(userSwipes?.map(s => s.target_id) || []);
 
       if (activeTab === 'creators') {
+        console.log('[Discover] Fetching creator profiles...');
         let profilesQuery = supabase
           .from('public_profiles')
           .select('*')
@@ -158,7 +164,14 @@ const Discover = () => {
           profilesQuery = profilesQuery.ilike('location', `%${creatorFilters.location}%`);
         }
         
-        const { data: profiles } = await profilesQuery.limit(50);
+        const { data: profiles, error: profilesError } = await profilesQuery.limit(50);
+        
+        if (profilesError) {
+          console.error('[Discover] Error fetching profiles:', profilesError);
+          console.error('[Discover] Error details:', JSON.stringify(profilesError, null, 2));
+        }
+        
+        console.log('[Discover] Fetched profiles:', profiles?.length || 0);
 
         // Filter out already swiped profiles and incomplete data
         const completeProfiles = (profiles || []).filter(profile => {
@@ -200,8 +213,10 @@ const Discover = () => {
           };
         });
 
+        console.log('[Discover] Created creator cards:', creatorCards.length);
         setCards(creatorCards);
       } else {
+        console.log('[Discover] Fetching opportunities...');
         let opportunitiesQuery = supabase
           .from('opportunities')
           .select('*')
@@ -212,7 +227,14 @@ const Discover = () => {
           opportunitiesQuery = opportunitiesQuery.eq('type', opportunityFilters.type);
         }
 
-        const { data: opportunities } = await opportunitiesQuery.limit(50);
+        const { data: opportunities, error: opportunitiesError } = await opportunitiesQuery.limit(50);
+        
+        if (opportunitiesError) {
+          console.error('[Discover] Error fetching opportunities:', opportunitiesError);
+          console.error('[Discover] Error details:', JSON.stringify(opportunitiesError, null, 2));
+        }
+        
+        console.log('[Discover] Fetched opportunities:', opportunities?.length || 0);
 
         // Filter out already swiped opportunities
         const unswipedOpportunities = (opportunities || []).filter(opp => !swipedIds.has(opp.id));

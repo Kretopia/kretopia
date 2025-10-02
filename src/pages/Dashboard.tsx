@@ -40,10 +40,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+  const fetchProfile = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       // Check and award daily login credits
@@ -104,14 +103,15 @@ const Dashboard = () => {
         }));
       }
       
-      setLoading(false);
-    };
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchProfile();
     
     // Handle payment/subscription success from URL params
     const paymentStatus = searchParams.get("payment");
-    const subscriptionStatus = searchParams.get("subscription");
+    const subscriptionSuccess = searchParams.get("subscription_success");
     const amount = searchParams.get("amount");
     const type = searchParams.get("type");
     
@@ -159,16 +159,16 @@ const Dashboard = () => {
       navigate("/dashboard", { replace: true });
     }
     
-    if (subscriptionStatus === "success") {
-      toast({
-        title: "Subscription activated!",
-        description: "Your subscription is now active",
-      });
-      
+    if (subscriptionSuccess === "true") {
       // Handle subscription activation
       const handleSubscriptionSuccess = async () => {
+        toast({
+          title: "Subscription activated! 🎉",
+          description: "Your subscription is now active",
+        });
+        
         await supabase.functions.invoke("check-subscription");
-        fetchProfile(); // Refresh profile to show updated subscription
+        await fetchProfile();
         navigate("/dashboard", { replace: true });
       };
       

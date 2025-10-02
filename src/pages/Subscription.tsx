@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Loader2, Sparkles, Zap, Crown } from "lucide-react";
+import { SUBSCRIPTION_PRODUCTS } from "@/lib/subscriptionConfig";
 
-// Updated tiers based on Beta Roadmap
+// Subscription tiers configuration
 const SUBSCRIPTION_TIERS = [
   {
     name: "Free",
@@ -23,54 +24,25 @@ const SUBSCRIPTION_TIERS = [
       "1 active project",
       "Portfolio showcase",
     ],
-    limits: {
-      swipes: 10,
-      projects: 1,
-    }
   },
   {
-    name: "Thriver",
-    tier: "thriver",
-    price: "$9",
-    priceId: "price_1SDmofJvOS7zG18hIQ8v9pHA",
-    productId: "prod_TA72LxYWp18g5A",
+    name: SUBSCRIPTION_PRODUCTS.thriver.name,
+    tier: SUBSCRIPTION_PRODUCTS.thriver.tier,
+    price: `$${SUBSCRIPTION_PRODUCTS.thriver.price}`,
+    priceId: SUBSCRIPTION_PRODUCTS.thriver.priceId,
+    productId: SUBSCRIPTION_PRODUCTS.thriver.productId,
     icon: Sparkles,
     popular: true,
-    features: [
-      "Unlimited swipes",
-      "AI match recommendations",
-      "Profile verification badge",
-      "Unlimited projects",
-      "Advanced analytics",
-      "Undo swipe feature",
-      "5% partner discounts",
-    ],
-    limits: {
-      swipes: -1, // unlimited
-      projects: -1,
-    }
+    features: SUBSCRIPTION_PRODUCTS.thriver.features,
   },
   {
-    name: "Creator Pro",
-    tier: "creator_pro",
-    price: "$29",
-    priceId: "price_1SDmouJvOS7zG18hHZgIbITt",
-    productId: "prod_TA73Hatv66ZqLu",
+    name: SUBSCRIPTION_PRODUCTS.creator_pro.name,
+    tier: SUBSCRIPTION_PRODUCTS.creator_pro.tier,
+    price: `$${SUBSCRIPTION_PRODUCTS.creator_pro.price}`,
+    priceId: SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
+    productId: SUBSCRIPTION_PRODUCTS.creator_pro.productId,
     icon: Crown,
-    features: [
-      "Everything in Thriver",
-      "Featured profile (2x visibility)",
-      "Priority matching",
-      "Advanced collaboration tools",
-      "15% partner discounts",
-      "Early access to new features",
-      "Dedicated support",
-    ],
-    limits: {
-      swipes: -1,
-      projects: -1,
-      featured: true,
-    }
+    features: SUBSCRIPTION_PRODUCTS.creator_pro.features,
   },
 ];
 

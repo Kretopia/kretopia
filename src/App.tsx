@@ -4,10 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HelmetProvider } from 'react-helmet-async';
 import { useAuth } from "./hooks/useAuth";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
-import { ErrorBoundary } from "./components/ErrorBoundary";
+import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 
 // Lazy load all page components for better performance
 const Landing = lazy(() => import("./pages/Landing"));
@@ -73,51 +74,53 @@ const App = () => {
   const { user } = useAuth();
   
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Navbar user={user} />
-            {user && <BottomNav />}
-            <div className={user ? "pb-20 lg:pb-0" : ""}>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/opportunity/:id" element={<OpportunityDetail />} />
-                  <Route path="/review" element={<SubmitReview />} />
-                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                  <Route path="/profile/:userId" element={<PublicProfile />} />
-                  <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-                  <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
-                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-                  <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-                  <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
-                  <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                  <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-                  <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
-                  <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
-                  <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
-                  <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-                  <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-                  <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
-                  <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
-                  <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
-                  <Route path="/admin/waitlist" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
-                  <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </div>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <GlobalErrorBoundary>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Navbar user={user} />
+              {user && <BottomNav />}
+              <div className={user ? "pb-20 lg:pb-0" : ""}>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/opportunity/:id" element={<OpportunityDetail />} />
+                    <Route path="/review" element={<SubmitReview />} />
+                    <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/profile/:userId" element={<PublicProfile />} />
+                    <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+                    <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+                    <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                    <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+                    <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
+                    <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                    <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+                    <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
+                    <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
+                    <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
+                    <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+                    <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
+                    <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+                    <Route path="/admin/waitlist" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
+                    <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </div>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </HelmetProvider>
+    </GlobalErrorBoundary>
   );
 };
 

@@ -618,6 +618,75 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_locations: {
+        Row: {
+          address: string
+          amenities: Json | null
+          check_in_radius_meters: number | null
+          city: string
+          country: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          latitude: number
+          logo_url: string | null
+          longitude: number
+          name: string
+          offerings: string[] | null
+          points_per_visit: number
+          qr_code: string
+          tier_required: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          amenities?: Json | null
+          check_in_radius_meters?: number | null
+          city: string
+          country: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          latitude: number
+          logo_url?: string | null
+          longitude: number
+          name: string
+          offerings?: string[] | null
+          points_per_visit?: number
+          qr_code?: string
+          tier_required?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          amenities?: Json | null
+          check_in_radius_meters?: number | null
+          city?: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          latitude?: number
+          logo_url?: string | null
+          longitude?: number
+          name?: string
+          offerings?: string[] | null
+          points_per_visit?: number
+          qr_code?: string
+          tier_required?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       portfolio_items: {
         Row: {
           category: string | null
@@ -1477,6 +1546,50 @@ export type Database = {
           },
         ]
       }
+      user_check_ins: {
+        Row: {
+          check_in_date: string
+          check_in_latitude: number | null
+          check_in_longitude: number | null
+          created_at: string
+          id: string
+          location_id: string
+          points_awarded: number
+          user_id: string
+          verified_location: boolean | null
+        }
+        Insert: {
+          check_in_date?: string
+          check_in_latitude?: number | null
+          check_in_longitude?: number | null
+          created_at?: string
+          id?: string
+          location_id: string
+          points_awarded: number
+          user_id: string
+          verified_location?: boolean | null
+        }
+        Update: {
+          check_in_date?: string
+          check_in_latitude?: number | null
+          check_in_longitude?: number | null
+          created_at?: string
+          id?: string
+          location_id?: string
+          points_awarded?: number
+          user_id?: string
+          verified_location?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_check_ins_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "partner_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       waitlist: {
         Row: {
           bio: string | null
@@ -1744,6 +1857,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_distance: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
       calculate_level: {
         Args: { xp: number }
         Returns: number

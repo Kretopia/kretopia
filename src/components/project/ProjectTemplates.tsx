@@ -244,8 +244,8 @@ export const ProjectTemplates = ({ onSelect }: { onSelect?: () => void }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full" size="lg">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button variant="outline" className="w-full h-12 rounded-xl font-semibold" size="lg">
+          <Plus className="h-5 w-5 mr-2" />
           Create from Template
         </Button>
       </DialogTrigger>

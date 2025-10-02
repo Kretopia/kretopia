@@ -274,10 +274,9 @@ const Projects = () => {
             <ProjectTemplates onSelect={fetchProjects} />
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="gradient" size="lg" className="gap-2 w-full sm:flex-1 md:flex-none h-12 rounded-xl font-semibold">
+                <Button variant="gradient" size="lg" className="gap-2 w-full md:flex-none h-12 rounded-xl font-semibold">
                   <Plus className="h-5 w-5" />
-                  <span className="hidden sm:inline">Blank Project</span>
-                  <span className="sm:hidden">New Project</span>
+                  New Project
                 </Button>
               </DialogTrigger>
               <DialogContent className="w-[95vw] sm:max-w-[500px]">

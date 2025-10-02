@@ -1924,6 +1924,10 @@ export type Database = {
         Args: { code: string; user_email: string }
         Returns: boolean
       }
+      user_has_project_access: {
+        Args: { project_id_param: string; user_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

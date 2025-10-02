@@ -10,7 +10,7 @@ import { ProjectTemplates } from "@/components/project/ProjectTemplates";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle, DollarSign } from "lucide-react";
 import { z } from "zod";
 
 const projectSchema = z.object({
@@ -59,62 +59,64 @@ const Projects = () => {
 
   const fetchProjects = async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-    // Fetch matches where user is involved
-    const { data: matchesData, error: matchesError } = await supabase
-      .from('matches')
-      .select('id, user1_id, user2_id')
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+      // Simplified query - just fetch all projects user has access to
+      // RLS will handle the filtering via the security definer function
+      const { data: projectsData, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (matchesError) {
-      console.error('Error fetching matches:', matchesError);
-      toast({
-        title: "Error",
-        description: "Failed to load projects",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
+      if (error) {
+        console.error('Error fetching projects:', error);
+        // Don't show error toast if it's just empty results
+        if (error.code !== 'PGRST116') {
+          toast({
+            title: "Loading issue",
+            description: "Couldn't load projects. Tap to retry.",
+            variant: "destructive",
+          });
+        }
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
 
-    const matchIds = matchesData?.map(m => m.id) || [];
+      if (!projectsData || projectsData.length === 0) {
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
 
-    // Fetch both matched projects and solo projects created by user
-    let query = supabase
-      .from('projects')
-      .select('*');
+      // Fetch match details for matched projects
+      const matchIds = projectsData
+        .filter(p => p.match_id)
+        .map(p => p.match_id)
+        .filter((id, index, self) => id && self.indexOf(id) === index); // unique non-null ids
 
-    if (matchIds.length > 0) {
-      query = query.or(`match_id.in.(${matchIds.join(',')}),and(match_id.is.null,created_by.eq.${user.id})`);
-    } else {
-      query = query.is('match_id', null).eq('created_by', user.id);
-    }
-
-    const { data: projectsData, error } = await query.order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching projects:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load projects",
-        variant: "destructive",
-      });
-      setProjects([]);
-    } else {
+      let matchesData: any[] = [];
+      if (matchIds.length > 0) {
+        const { data } = await supabase
+          .from('matches')
+          .select('id, user1_id, user2_id')
+          .in('id', matchIds);
+        matchesData = data || [];
+      }
       // Fetch collaborator details for matched projects
       const projectsWithCollaborators = await Promise.all(
-        (projectsData || []).map(async (project) => {
+        projectsData.map(async (project) => {
           // Skip collaborator fetch for solo projects
           if (!project.match_id) {
             return { ...project, matches: null, collaborator: null };
           }
 
-          const match = matchesData?.find(m => m.id === project.match_id);
+          const match = matchesData.find(m => m.id === project.match_id);
           if (!match) return { ...project, matches: null, collaborator: null };
 
           const collaboratorId = match.user1_id === user.id 
@@ -136,8 +138,12 @@ const Projects = () => {
       );
 
       setProjects(projectsWithCollaborators);
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setProjects([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleCreateProject = async () => {
@@ -251,26 +257,27 @@ const Projects = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 md:p-8 pb-20 sm:pb-6">
+    <div className="min-h-screen p-3 sm:p-6 md:p-8 pb-24 sm:pb-6">
       <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        {/* Header - Mobile optimized */}
+        <div className="mb-5 sm:mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="mb-1 sm:mb-2 text-2xl sm:text-3xl font-bold flex items-center gap-2">
-              <FolderKanban className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <h1 className="mb-1.5 text-2xl sm:text-3xl font-bold flex items-center gap-2.5">
+              <FolderKanban className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
               ThriveDesk
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Organize your projects, collabs & opportunities
+              Manage projects & collaborations
             </p>
           </div>
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="flex gap-2.5 w-full md:w-auto">
             <ProjectTemplates onSelect={fetchProjects} />
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="gradient" size="lg" className="gap-2 flex-1 md:flex-none">
-                  <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Blank Project
+                <Button variant="gradient" size="lg" className="gap-2 flex-1 md:flex-none h-12 rounded-xl font-semibold">
+                  <Plus className="h-5 w-5" />
+                  <span className="hidden sm:inline">Blank Project</span>
+                  <span className="sm:hidden">New Project</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="w-[95vw] sm:max-w-[500px]">
@@ -324,72 +331,76 @@ const Projects = () => {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="mb-6 sm:mb-8 relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        {/* Search - Mobile optimized */}
+        <div className="mb-5 sm:mb-8 relative">
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10"
+            className="pl-12 h-12 text-base rounded-xl border-2"
           />
         </div>
 
-        {/* Projects Grid */}
+        {/* Projects Grid - Mobile optimized */}
         {filteredProjects.length === 0 ? (
-          <Card className="p-8 sm:p-12 text-center">
-            <FolderKanban className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
-            <h2 className="mb-2 text-lg sm:text-xl font-semibold">
+          <Card className="p-8 sm:p-12 text-center rounded-2xl border-2">
+            <FolderKanban className="mx-auto mb-4 h-16 w-16 sm:h-20 sm:w-20 text-muted-foreground" />
+            <h2 className="mb-2 text-xl sm:text-2xl font-semibold">
               {searchQuery ? "No projects found" : "No Projects Yet"}
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground mb-4">
+            <p className="text-sm sm:text-base text-muted-foreground mb-5">
               {searchQuery 
                 ? "Try adjusting your search" 
                 : "Create your first project to get started"}
             </p>
             {!searchQuery && (
-              <Button onClick={() => setCreateDialogOpen(true)} variant="gradient">
-                <Plus className="mr-2 h-4 w-4" />
+              <Button onClick={() => setCreateDialogOpen(true)} variant="gradient" size="lg" className="h-12 px-8 rounded-xl">
+                <Plus className="mr-2 h-5 w-5" />
                 Create Project
               </Button>
             )}
           </Card>
         ) : (
-          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((project) => (
               <Card
                 key={project.id}
-                className="p-4 sm:p-6 cursor-pointer transition-smooth hover:shadow-glow"
+                className="p-5 cursor-pointer transition-smooth hover:shadow-glow active:scale-[0.98] rounded-2xl border-2"
                 onClick={() => navigate(`/desk/${project.id}`)}
               >
-                <div className="mb-3 sm:mb-4 flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`rounded-lg bg-primary/10 p-1.5 sm:p-2 ${getStatusColor(project.status)}`}>
+                <div className="mb-4 flex items-start justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`rounded-xl bg-primary/10 p-2 ${getStatusColor(project.status)}`}>
                       {getStatusIcon(project.status)}
                     </div>
-                    <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                    <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="text-xs font-semibold">
                       {project.status}
                     </Badge>
                   </div>
+                  {project.collaborator && project.matches?.user1_id !== project.matches?.user2_id && (
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-sm font-semibold text-primary-foreground ring-2 ring-primary/20">
+                      {project.collaborator.full_name.charAt(0)}
+                    </div>
+                  )}
                 </div>
 
-                <h3 className="mb-2 text-base sm:text-lg font-semibold line-clamp-1">{project.title}</h3>
+                <h3 className="mb-2 text-lg font-semibold line-clamp-1">{project.title}</h3>
                 
                 {project.description && (
-                  <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                  <p className="mb-3 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                     {project.description}
                   </p>
                 )}
 
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <div className="text-muted-foreground">
+                <div className="flex items-center justify-between text-sm pt-3 border-t">
+                  <div className="text-muted-foreground font-medium">
                     {new Date(project.created_at).toLocaleDateString()}
                   </div>
-                  {project.collaborator && project.matches?.user1_id !== project.matches?.user2_id && (
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-semibold text-primary-foreground">
-                        {project.collaborator.full_name.charAt(0)}
-                      </div>
+                  {project.budget && (
+                    <div className="flex items-center gap-1 text-primary font-semibold">
+                      <DollarSign className="h-4 w-4" />
+                      <span>{project.budget}</span>
                     </div>
                   )}
                 </div>

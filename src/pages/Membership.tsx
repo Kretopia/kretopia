@@ -24,22 +24,16 @@ export default function Membership() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("Membership: Component mounted, user:", user?.id);
-    if (!user) {
-      console.log("Membership: No user found");
-      return;
-    }
+    if (!user) return;
     fetchData();
   }, [user]);
 
   const fetchData = async () => {
-    console.log("Membership: Starting to fetch data...");
     setLoading(true);
     setError(null);
     
     try {
       // Fetch profile
-      console.log("Membership: Fetching profile for user:", user?.id);
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
@@ -47,16 +41,14 @@ export default function Membership() {
         .maybeSingle();
 
       if (profileError) {
-        console.error("Membership: Profile error:", profileError);
+        console.error("Profile error:", profileError);
         setError("Failed to load profile");
       } else {
-        console.log("Membership: Profile loaded:", profileData);
         setProfile(profileData);
       }
 
       // Fetch locations based on subscription tier
       const userTier = profileData?.subscription_tier || "free";
-      console.log("Membership: User tier:", userTier);
       
       const { data: locationsData, error: locationsError } = await supabase
         .from("partner_locations")
@@ -66,14 +58,12 @@ export default function Membership() {
         .order("name");
 
       if (locationsError) {
-        console.error("Membership: Locations error:", locationsError);
+        console.error("Locations error:", locationsError);
       } else {
-        console.log("Membership: Loaded locations:", locationsData?.length || 0);
         setLocations(locationsData || []);
       }
 
       // Fetch user's check-ins
-      console.log("Membership: Fetching check-ins...");
       const { data: checkInsData, error: checkInsError } = await supabase
         .from("user_check_ins")
         .select(`
@@ -85,13 +75,10 @@ export default function Membership() {
         .limit(10);
 
       if (checkInsError) {
-        console.error("Membership: Check-ins error:", checkInsError);
+        console.error("Check-ins error:", checkInsError);
       } else {
-        console.log("Membership: Loaded check-ins:", checkInsData?.length || 0);
         setCheckIns(checkInsData || []);
       }
-      
-      console.log("Membership: Data fetch complete");
     } catch (error: any) {
       console.error("Membership: Unexpected error:", error);
       setError(error.message || "An unexpected error occurred");

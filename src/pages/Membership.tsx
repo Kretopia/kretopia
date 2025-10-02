@@ -33,27 +33,36 @@ export default function Membership() {
   const fetchData = async () => {
     try {
       // Fetch profile
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", user?.id)
-        .single();
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Profile error:", profileError);
+        throw profileError;
+      }
 
       setProfile(profileData);
 
       // Fetch locations based on subscription tier
       const userTier = profileData?.subscription_tier || "free";
-      const { data: locationsData } = await supabase
+      const { data: locationsData, error: locationsError } = await supabase
         .from("partner_locations")
         .select("*")
         .in("tier_required", getTierAccess(userTier))
         .eq("is_active", true)
         .order("name");
 
+      if (locationsError) {
+        console.error("Locations error:", locationsError);
+      }
+
       setLocations(locationsData || []);
 
       // Fetch user's check-ins
-      const { data: checkInsData } = await supabase
+      const { data: checkInsData, error: checkInsError } = await supabase
         .from("user_check_ins")
         .select(`
           *,
@@ -62,6 +71,10 @@ export default function Membership() {
         .eq("user_id", user?.id)
         .order("created_at", { ascending: false })
         .limit(10);
+
+      if (checkInsError) {
+        console.error("Check-ins error:", checkInsError);
+      }
 
       setCheckIns(checkInsData || []);
     } catch (error) {

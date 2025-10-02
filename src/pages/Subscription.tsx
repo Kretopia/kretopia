@@ -5,60 +5,78 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap, Crown } from "lucide-react";
 
+// Updated tiers based on Beta Roadmap
 const SUBSCRIPTION_TIERS = [
   {
-    name: "Thriver",
-    price: "$9.99",
+    name: "Free",
+    tier: "free",
+    price: "$0",
+    priceId: null,
+    productId: null,
+    icon: Zap,
+    features: [
+      "10 swipes/day",
+      "Basic profile",
+      "Direct messaging",
+      "1 active project",
+      "Portfolio showcase",
+    ],
+    limits: {
+      swipes: 10,
+      projects: 1,
+    }
+  },
+  {
+    name: "Thrive Pro",
+    tier: "pro",
+    price: "$9",
     priceId: "price_1SD3owJvOS7zG18hXCqHcExm",
     productId: "prod_T9MYOv0ucDM6MT",
-    credits: 50,
-    features: [
-      "50 credits per month",
-      "Basic platform features",
-      "Email support",
-      "Access to ThriveDesk",
-      "Project collaboration",
-    ],
-  },
-  {
-    name: "Creator Pro",
-    price: "$29.99",
-    priceId: "price_1SD3pLJvOS7zG18hyhVHXByZ",
-    productId: "prod_T9MYqqkqTWy1Wm",
-    credits: 200,
+    icon: Sparkles,
     popular: true,
     features: [
-      "200 credits per month",
-      "Priority support",
-      "Advanced features",
-      "Milestone payments",
-      "Analytics dashboard",
-      "Custom branding options",
+      "Unlimited swipes",
+      "AI match recommendations",
+      "Profile verification badge",
+      "Unlimited projects",
+      "Advanced analytics",
+      "Undo swipe feature",
+      "5 partner discounts",
     ],
+    limits: {
+      swipes: -1, // unlimited
+      projects: -1,
+    }
   },
   {
-    name: "Enterprise",
-    price: "$99.99",
-    priceId: "price_1SD3qSJvOS7zG18heInAixg2",
-    productId: "prod_T9MZHcJcHo38wC",
-    credits: 1000,
+    name: "Thrive Studio",
+    tier: "studio",
+    price: "$29",
+    priceId: "price_1SD3pLJvOS7zG18hyhVHXByZ",
+    productId: "prod_T9MYqqkqTWy1Wm",
+    icon: Crown,
     features: [
-      "1000 credits per month",
-      "VIP support 24/7",
-      "All features included",
-      "Unlimited projects",
-      "API access",
-      "Custom integrations",
-      "Dedicated account manager",
+      "Everything in Pro",
+      "Featured profile (2x visibility)",
+      "Priority matching",
+      "Advanced collaboration tools",
+      "15+ partner discounts",
+      "Early access to new features",
+      "Dedicated support",
     ],
+    limits: {
+      swipes: -1,
+      projects: -1,
+      featured: true,
+    }
   },
 ];
 
 export default function Subscription() {
   const [loading, setLoading] = useState<string | null>(null);
-  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [currentTier, setCurrentTier] = useState<string>("free");
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -75,12 +93,15 @@ export default function Subscription() {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      // Check current subscription from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("subscription_tier, subscription_product_id")
+        .eq("user_id", session.user.id)
+        .single();
       
-      if (error) throw error;
-      
-      if (data?.subscribed && data?.product_id) {
-        setCurrentPlan(data.product_id);
+      if (profile?.subscription_tier) {
+        setCurrentTier(profile.subscription_tier);
       }
     } catch (error: any) {
       console.error("Error checking subscription:", error);
@@ -89,7 +110,15 @@ export default function Subscription() {
     }
   };
 
-  const handleSubscribe = async (priceId: string) => {
+  const handleSubscribe = async (priceId: string | null, tier: string) => {
+    if (!priceId) {
+      toast({
+        title: "Free Tier",
+        description: "You're already on the free tier",
+      });
+      return;
+    }
+
     try {
       setLoading(priceId);
 
@@ -155,17 +184,22 @@ export default function Subscription() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 px-4">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-        <p className="text-xl text-muted-foreground">
-          Get credits and unlock premium features to grow your business
+        <h1 className="text-4xl font-bold mb-4">
+          Choose Your{" "}
+          <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            Membership
+          </span>
+        </h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Start free and upgrade as you grow. Unlock powerful features and partner benefits.
         </p>
       </div>
 
-      {currentPlan && (
+      {currentTier !== "free" && (
         <div className="mb-8 text-center">
-          <Button onClick={handleManageSubscription} disabled={loading === "portal"}>
+          <Button onClick={handleManageSubscription} disabled={loading === "portal"} variant="outline">
             {loading === "portal" ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -180,14 +214,15 @@ export default function Subscription() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {SUBSCRIPTION_TIERS.map((tier) => {
-          const isCurrentPlan = currentPlan === tier.productId;
+          const isCurrentPlan = currentTier === tier.tier;
+          const Icon = tier.icon;
           
           return (
             <Card
-              key={tier.priceId}
+              key={tier.tier}
               className={`relative ${
                 tier.popular ? "border-primary shadow-lg scale-105" : ""
-              } ${isCurrentPlan ? "border-green-500" : ""}`}
+              } ${isCurrentPlan ? "border-green-500 shadow-xl" : ""}`}
             >
               {tier.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -203,14 +238,16 @@ export default function Subscription() {
                 </div>
               )}
               <CardHeader>
-                <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                </div>
                 <CardDescription>
                   <span className="text-4xl font-bold">{tier.price}</span>
                   <span className="text-muted-foreground">/month</span>
                 </CardDescription>
-                <p className="text-sm text-muted-foreground">
-                  {tier.credits} credits per month
-                </p>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
@@ -225,7 +262,7 @@ export default function Subscription() {
               <CardFooter>
                 <Button
                   className="w-full"
-                  onClick={() => handleSubscribe(tier.priceId)}
+                  onClick={() => handleSubscribe(tier.priceId, tier.tier)}
                   disabled={loading === tier.priceId || isCurrentPlan}
                   variant={tier.popular ? "default" : "outline"}
                 >
@@ -236,8 +273,10 @@ export default function Subscription() {
                     </>
                   ) : isCurrentPlan ? (
                     "Current Plan"
-                  ) : (
+                  ) : tier.priceId ? (
                     "Subscribe"
+                  ) : (
+                    "Free Forever"
                   )}
                 </Button>
               </CardFooter>
@@ -246,9 +285,10 @@ export default function Subscription() {
         })}
       </div>
 
-      <div className="mt-12 text-center text-sm text-muted-foreground">
-        <p>All plans include access to ThrivePay wallet and ThriveDesk collaboration tools.</p>
-        <p className="mt-2">Cancel anytime. No hidden fees.</p>
+      <div className="mt-12 text-center text-sm text-muted-foreground space-y-2">
+        <p>All paid plans include access to ThriveDesk collaboration tools and milestone payments.</p>
+        <p>Partner discounts from industry-leading platforms coming soon!</p>
+        <p className="font-semibold">Cancel anytime. No hidden fees.</p>
       </div>
     </div>
   );

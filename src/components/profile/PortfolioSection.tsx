@@ -180,8 +180,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
       )}
       </div>
 
-      {/* Filter out Spark posts - they should only appear in Spark feed */}
-      {items.filter(item => item.category !== 'spark').length === 0 && !isOwnProfile ? null : items.filter(item => item.category !== 'spark').length === 0 ? (
+      {items.length === 0 && !isOwnProfile ? null : items.length === 0 ? (
         <div className="rounded-xl md:rounded-2xl border border-border bg-card p-8 md:p-12 text-center">
           <Upload className="mx-auto mb-3 md:mb-4 h-12 w-12 md:h-16 md:w-16 text-muted-foreground" />
           <h3 className="mb-1 md:mb-2 text-lg md:text-xl font-semibold">No portfolio items yet</h3>
@@ -189,7 +188,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-          {items.filter(item => item.category !== 'spark').map((item) => {
+          {items.map((item) => {
             const thumbnail = getMediaThumbnail(item);
             const mediaInfo = parseMediaUrl(item.media_url);
             const isPlayable = mediaInfo || ['video', 'audio'].includes(item.media_type);

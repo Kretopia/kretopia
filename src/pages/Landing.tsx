@@ -65,22 +65,10 @@ const Landing = () => {
               gradient="from-accent to-primary"
             />
             <FeatureCard
-              icon={<Zap className="h-8 w-8" />}
-              title="ThriveStudio"
-              description="Generate content, bios, and creatives with AI tools"
-              gradient="from-primary to-secondary"
-            />
-            <FeatureCard
               icon={<Lightbulb className="h-8 w-8" />}
               title="ThriveDesk"
               description="Manage projects, milestones, and client communications seamlessly"
               gradient="from-secondary to-accent"
-            />
-            <FeatureCard
-              icon={<Sparkles className="h-8 w-8" />}
-              title="Spark Feed"
-              description="Share updates, connect with creators, and build your community"
-              gradient="from-accent to-primary"
             />
             <FeatureCard
               icon={<Rocket className="h-8 w-8" />}

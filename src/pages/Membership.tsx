@@ -5,12 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QrCode, MapPin, Award, TrendingUp } from "lucide-react";
+import { QrCode, MapPin, Award, TrendingUp, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { MembershipMap } from "@/components/membership/MembershipMap";
 import { LocationCard } from "@/components/membership/LocationCard";
 import { QRScanner } from "@/components/membership/QRScanner";
+import { TierComparison } from "@/components/membership/TierComparison";
 
 export default function Membership() {
   const { user } = useAuth();
@@ -176,8 +177,12 @@ export default function Membership() {
       </Card>
 
       {/* Tabs */}
-      <Tabs defaultValue="locations" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="benefits" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="benefits">
+            <Crown className="mr-2 h-4 w-4" />
+            Benefits
+          </TabsTrigger>
           <TabsTrigger value="locations">
             <MapPin className="mr-2 h-4 w-4" />
             Locations
@@ -191,6 +196,16 @@ export default function Membership() {
             Activity
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="benefits" className="mt-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2">Membership Tiers</h2>
+            <p className="text-muted-foreground">
+              Compare features and upgrade to unlock more capabilities
+            </p>
+          </div>
+          <TierComparison currentTier={profile?.subscription_tier || "free"} />
+        </TabsContent>
 
         <TabsContent value="locations" className="space-y-4 mt-4">
           {locations.length === 0 ? (

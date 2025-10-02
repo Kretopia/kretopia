@@ -24,12 +24,13 @@ export default function Membership() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("Membership: Component mounted, user:", user?.id);
     if (!user) {
-      navigate("/auth");
+      console.log("Membership: No user found");
       return;
     }
     fetchData();
-  }, [user, navigate]);
+  }, [user]);
 
   const fetchData = async () => {
     console.log("Membership: Starting to fetch data...");

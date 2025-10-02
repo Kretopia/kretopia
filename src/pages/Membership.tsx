@@ -21,6 +21,7 @@ export default function Membership() {
   const [checkIns, setCheckIns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showScanner, setShowScanner] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -28,11 +29,16 @@ export default function Membership() {
       return;
     }
     fetchData();
-  }, [user]);
+  }, [user, navigate]);
 
   const fetchData = async () => {
+    console.log("Membership: Starting to fetch data...");
+    setLoading(true);
+    setError(null);
+    
     try {
       // Fetch profile
+      console.log("Membership: Fetching profile for user:", user?.id);
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
@@ -40,14 +46,17 @@ export default function Membership() {
         .maybeSingle();
 
       if (profileError) {
-        console.error("Profile error:", profileError);
-        throw profileError;
+        console.error("Membership: Profile error:", profileError);
+        setError("Failed to load profile");
+      } else {
+        console.log("Membership: Profile loaded:", profileData);
+        setProfile(profileData);
       }
-
-      setProfile(profileData);
 
       // Fetch locations based on subscription tier
       const userTier = profileData?.subscription_tier || "free";
+      console.log("Membership: User tier:", userTier);
+      
       const { data: locationsData, error: locationsError } = await supabase
         .from("partner_locations")
         .select("*")
@@ -56,12 +65,14 @@ export default function Membership() {
         .order("name");
 
       if (locationsError) {
-        console.error("Locations error:", locationsError);
+        console.error("Membership: Locations error:", locationsError);
+      } else {
+        console.log("Membership: Loaded locations:", locationsData?.length || 0);
+        setLocations(locationsData || []);
       }
 
-      setLocations(locationsData || []);
-
       // Fetch user's check-ins
+      console.log("Membership: Fetching check-ins...");
       const { data: checkInsData, error: checkInsError } = await supabase
         .from("user_check_ins")
         .select(`
@@ -73,12 +84,16 @@ export default function Membership() {
         .limit(10);
 
       if (checkInsError) {
-        console.error("Check-ins error:", checkInsError);
+        console.error("Membership: Check-ins error:", checkInsError);
+      } else {
+        console.log("Membership: Loaded check-ins:", checkInsData?.length || 0);
+        setCheckIns(checkInsData || []);
       }
-
-      setCheckIns(checkInsData || []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+      
+      console.log("Membership: Data fetch complete");
+    } catch (error: any) {
+      console.error("Membership: Unexpected error:", error);
+      setError(error.message || "An unexpected error occurred");
       toast({
         title: "Error",
         description: "Failed to load membership data",
@@ -103,7 +118,22 @@ export default function Membership() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading membership...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !profile) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-24">
+        <Card className="p-6 text-center">
+          <h2 className="text-xl font-bold mb-2">Unable to Load Membership</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={fetchData}>Try Again</Button>
+        </Card>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Menu, Settings, Zap, MessageCircle } from "lucide-react";
+import { User, LogOut, Menu, Settings, Zap, MessageCircle, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
@@ -14,7 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NavbarProps {
   user?: { email?: string } | null;
@@ -25,7 +25,28 @@ const Navbar = ({ user }: NavbarProps) => {
   const location = useLocation();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const isLandingPage = location.pathname === "/";
+
+  useEffect(() => {
+    if (user) {
+      checkAdminStatus();
+    }
+  }, [user]);
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      setIsAdmin(!!data);
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -104,6 +125,19 @@ const Navbar = ({ user }: NavbarProps) => {
                       <Settings className="h-5 w-5" />
                       Settings
                     </Button>
+                    
+                    {isAdmin && (
+                      <>
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12"
+                          onClick={() => handleNavigation("/admin")}
+                        >
+                          <Shield className="h-5 w-5" />
+                          Admin Panel
+                        </Button>
+                      </>
+                    )}
                     
                     <Separator className="my-3" />
                     

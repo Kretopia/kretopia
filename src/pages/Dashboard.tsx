@@ -165,9 +165,14 @@ const Dashboard = () => {
         description: "Your subscription is now active",
       });
       
-      // Trigger subscription check
-      supabase.functions.invoke("check-subscription");
-      navigate("/dashboard", { replace: true });
+      // Handle subscription activation
+      const handleSubscriptionSuccess = async () => {
+        await supabase.functions.invoke("check-subscription");
+        fetchProfile(); // Refresh profile to show updated subscription
+        navigate("/dashboard", { replace: true });
+      };
+      
+      handleSubscriptionSuccess();
     }
   }, [toast, searchParams, navigate]);
 

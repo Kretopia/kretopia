@@ -32,8 +32,8 @@ const SUBSCRIPTION_TIERS = [
     name: "Thriver",
     tier: "thriver",
     price: "$9",
-    priceId: "price_1SDlRFJvOS7zG18hxOG2pJw3",
-    productId: "prod_TA5c8GtL6ioS2h",
+    priceId: "price_1SDmofJvOS7zG18hIQ8v9pHA",
+    productId: "prod_TA72LxYWp18g5A",
     icon: Sparkles,
     popular: true,
     features: [
@@ -54,8 +54,8 @@ const SUBSCRIPTION_TIERS = [
     name: "Creator Pro",
     tier: "creator_pro",
     price: "$29",
-    priceId: "price_1SDlX2JvOS7zG18hSx5frKzP",
-    productId: "prod_TA5ihoppNqeijE",
+    priceId: "price_1SDmouJvOS7zG18hHZgIbITt",
+    productId: "prod_TA73Hatv66ZqLu",
     icon: Crown,
     features: [
       "Everything in Thriver",

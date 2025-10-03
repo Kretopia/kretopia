@@ -39,9 +39,19 @@ export const useAuth = () => {
   };
 
   useEffect(() => {
+    console.log('[useAuth] Initializing auth...');
+    
+    // Safety timeout - ensure loading doesn't hang forever
+    const timeoutId = setTimeout(() => {
+      console.warn('[useAuth] Auth initialization timeout - forcing loading to false');
+      setLoading(false);
+    }, 5000);
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('[useAuth] Auth state changed:', event, !!session);
+        clearTimeout(timeoutId);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -54,18 +64,31 @@ export const useAuth = () => {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      // Check subscription if user is already logged in
-      if (session?.user) {
-        await checkSubscription();
-      }
-    });
+    console.log('[useAuth] Checking for existing session...');
+    supabase.auth.getSession()
+      .then(async ({ data: { session }, error }) => {
+        console.log('[useAuth] Got session:', !!session, error);
+        clearTimeout(timeoutId);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        // Check subscription if user is already logged in
+        if (session?.user) {
+          await checkSubscription();
+        }
+      })
+      .catch((error) => {
+        console.error('[useAuth] Error getting session:', error);
+        clearTimeout(timeoutId);
+        setLoading(false);
+      });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('[useAuth] Cleaning up auth subscription');
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   return { user, session, loading, subscriptionInfo, checkSubscription };

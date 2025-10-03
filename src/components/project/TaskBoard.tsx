@@ -138,7 +138,7 @@ function DroppableColumn({ status, tasks, onUpdate }: { status: typeof STATUSES[
   const { setNodeRef } = useDroppable({ id: status.value });
 
   return (
-    <div ref={setNodeRef} className={`rounded-lg p-3 md:p-4 ${status.color} min-h-[300px] md:min-h-[400px]`}>
+    <div ref={setNodeRef} className={`rounded-lg p-2.5 md:p-4 ${status.color} min-h-[200px] md:min-h-[400px]`}>
       <div className="mb-3 md:mb-4 flex items-center justify-between">
         <h4 className="font-semibold text-sm">{status.label}</h4>
         <Badge variant="secondary" className="text-xs">{tasks.length}</Badge>
@@ -223,9 +223,9 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-3 md:p-4 space-y-3 md:space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Task Board</h3>
+        <h3 className="text-base md:text-lg font-semibold">Task Board</h3>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">

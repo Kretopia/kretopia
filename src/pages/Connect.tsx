@@ -115,7 +115,11 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
       let query = supabase
         .from('profiles')
         .select('*')
-        .neq('user_id', user.id);
+        .neq('user_id', user.id)
+        .not('full_name', 'is', null)
+        .not('bio', 'is', null)
+        .not('avatar_url', 'is', null)
+        .not('location', 'is', null);
 
       // Apply filters
       if (searchQuery) {
@@ -142,8 +146,18 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         .select('*')
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
 
+      // Filter profiles similar to Discover (only complete profiles)
+      const completeProfiles = data?.filter(profile => {
+        return profile.full_name && 
+               profile.full_name !== 'New User' && 
+               profile.role && 
+               profile.role !== 'Creator' && 
+               profile.avatar_url &&
+               profile.bio;
+      }) || [];
+
       // Map connection statuses
-      const profilesWithStatus = data?.map(profile => {
+      const profilesWithStatus = completeProfiles.map(profile => {
         const connection = connections?.find(
           c => (c.user_id === user.id && c.connected_user_id === profile.user_id) ||
                (c.connected_user_id === user.id && c.user_id === profile.user_id)
@@ -422,7 +436,7 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
                 className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
               >
                 <div 
-                  onClick={() => navigate(`/profile/${profile.user_id}`)}
+                  onClick={() => navigate(`/profile/${profile.user_id}`, { state: { from: 'connect' } })}
                   className="p-6"
                 >
                   <div className="flex items-start gap-4 mb-4">

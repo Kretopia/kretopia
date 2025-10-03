@@ -254,13 +254,17 @@ const PublicProfile = () => {
         <Button
           variant="ghost"
           onClick={() => {
-            const state = location.state as { cardIndex?: number };
-            navigate('/discover', { state: { cardIndex: state?.cardIndex } });
+            const state = location.state as { from?: string; cardIndex?: number };
+            if (state?.from === 'connect') {
+              navigate('/connect');
+            } else {
+              navigate('/discover', { state: { cardIndex: state?.cardIndex } });
+            }
           }}
           className="mb-4 gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Discover
+          {location.state && (location.state as any).from === 'connect' ? 'Back to Connect' : 'Back to Discover'}
         </Button>
 
         {/* Profile Header */}
@@ -308,7 +312,31 @@ const PublicProfile = () => {
               </div>
               
               {/* Action buttons */}
-              {!isLoggedIn && (
+              {isLoggedIn ? (
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  {connectionStatus === 'accepted' ? (
+                    <Button variant="outline" disabled className="gap-2">
+                      <UserCheck className="h-4 w-4" />
+                      Connected
+                    </Button>
+                  ) : connectionStatus === 'pending' ? (
+                    <Button variant="outline" disabled className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Pending
+                    </Button>
+                  ) : (
+                    <Button onClick={handleConnect} variant="gradient" className="gap-2">
+                      <UserPlus className="h-4 w-4" />
+                      Connect
+                    </Button>
+                  )}
+                  <Button onClick={handleMessage} variant="outline" className="gap-2">
+                    <MessageCircle className="h-4 w-4" />
+                    Message
+                  </Button>
+                  <PostOpportunityDialog />
+                </div>
+              ) : (
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                   <Button onClick={() => navigate('/auth')} variant="gradient" className="gap-2">
                     <UserPlus className="h-4 w-4" />

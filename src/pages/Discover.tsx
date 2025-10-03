@@ -173,12 +173,15 @@ const Discover = () => {
         
         console.log('[Discover] Fetched profiles:', profiles?.length || 0);
 
-        // Filter out already swiped profiles and incomplete data
+        // Filter out already swiped profiles - only require basics (name, role, avatar, bio exists)
         const completeProfiles = (profiles || []).filter(profile => {
           return !swipedIds.has(profile.id) &&
+                 profile.full_name && 
                  profile.full_name !== 'New User' && 
+                 profile.role && 
                  profile.role !== 'Creator' && 
-                 profile.bio && profile.bio.length > 20;
+                 profile.avatar_url &&
+                 profile.bio; // Just needs to exist, no length requirement
         });
 
         const profileIds = completeProfiles.map(p => p.user_id);

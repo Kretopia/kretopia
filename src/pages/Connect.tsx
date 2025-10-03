@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MapPin, Sparkles, Check, Clock, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { SEO } from "@/components/SEO";
@@ -32,14 +31,81 @@ export default function Connect() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchProfiles();
     }
-  }, [user, searchQuery, roleFilter, locationFilter]);
+  }, [user, searchQuery, locationFilter]);
+
+  useEffect(() => {
+    if (user && !searchQuery && !loadingSuggestions) {
+      generateSearchSuggestions();
+    }
+  }, [user]);
+
+  const generateSearchSuggestions = async () => {
+    if (!user) return;
+
+    setLoadingSuggestions(true);
+    try {
+      const { data: myProfile } = await supabase
+        .from('profiles')
+        .select('role, professional_skills, passion_skills, bio')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!myProfile) return;
+
+      const professionalSkills = Array.isArray(myProfile.professional_skills) 
+        ? myProfile.professional_skills 
+        : [];
+      const passionSkills = Array.isArray(myProfile.passion_skills) 
+        ? myProfile.passion_skills 
+        : [];
+
+      const skills = [...professionalSkills, ...passionSkills]
+        .map((s: any) => s.name)
+        .filter(Boolean)
+        .slice(0, 5);
+
+      const { data, error } = await supabase.functions.invoke('generate-content', {
+        body: {
+          messages: [
+            {
+              role: 'user',
+              content: `Based on this creator profile, suggest 5 short search terms (2-3 words max) they should use to find collaborators. Return ONLY the terms separated by commas, no explanations.
+
+Profile:
+Role: ${myProfile.role}
+Skills: ${skills.join(', ')}
+Bio: ${myProfile.bio || 'N/A'}
+
+Examples: #vocalist, #producer, #videographer, music producer, beat maker`
+            }
+          ]
+        }
+      });
+
+      if (error) throw error;
+
+      const suggestions = data?.content
+        ?.split(',')
+        .map((s: string) => s.trim())
+        .filter((s: string) => s.length > 0)
+        .slice(0, 5) || [];
+
+      setSearchSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
 
   const fetchProfiles = async () => {
     if (!user) return;
@@ -54,10 +120,6 @@ export default function Connect() {
       // Apply filters
       if (searchQuery) {
         query = query.or(`full_name.ilike.%${searchQuery}%,role.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%`);
-      }
-
-      if (roleFilter !== "all") {
-        query = query.eq('role', roleFilter);
       }
 
       if (locationFilter) {
@@ -293,34 +355,44 @@ export default function Connect() {
 
       <div className="container mx-auto px-4 py-6">
         {/* Search and Filters */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <div className="relative md:col-span-1">
+        <div className="grid gap-4 md:grid-cols-2 mb-8">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name or skills..."
+              placeholder="Search by name, role, skills, or use #hashtags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               className="pl-10"
             />
+            
+            {/* AI Suggestions Dropdown */}
+            {showSuggestions && searchSuggestions.length > 0 && !searchQuery && (
+              <Card className="absolute top-full mt-2 w-full z-50 p-2">
+                <div className="flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground mb-2">
+                  <Sparkles className="h-3 w-3" />
+                  AI-suggested searches for you
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {searchSuggestions.map((suggestion, idx) => (
+                    <Button
+                      key={idx}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        setSearchQuery(suggestion);
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              </Card>
+            )}
           </div>
-          
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Roles" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="Singer">Singer</SelectItem>
-              <SelectItem value="DJ">DJ</SelectItem>
-              <SelectItem value="Producer">Producer</SelectItem>
-              <SelectItem value="Photographer">Photographer</SelectItem>
-              <SelectItem value="Videographer">Videographer</SelectItem>
-              <SelectItem value="Director">Director</SelectItem>
-              <SelectItem value="Actor">Actor</SelectItem>
-              <SelectItem value="Designer">Designer</SelectItem>
-              <SelectItem value="Developer">Developer</SelectItem>
-            </SelectContent>
-          </Select>
 
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

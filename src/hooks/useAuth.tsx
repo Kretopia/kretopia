@@ -39,12 +39,9 @@ export const useAuth = () => {
   };
 
   useEffect(() => {
-    console.log('[useAuth] Initializing auth...');
-    
     // Set up auth state listener FIRST - MUST be synchronous
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('[useAuth] Auth state changed:', event, !!session);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -59,10 +56,8 @@ export const useAuth = () => {
     );
 
     // THEN check for existing session
-    console.log('[useAuth] Checking for existing session...');
     supabase.auth.getSession()
       .then(({ data: { session }, error }) => {
-        console.log('[useAuth] Got session:', !!session, error);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -80,7 +75,6 @@ export const useAuth = () => {
       });
 
     return () => {
-      console.log('[useAuth] Cleaning up auth subscription');
       subscription.unsubscribe();
     };
   }, []);

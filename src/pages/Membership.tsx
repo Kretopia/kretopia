@@ -26,11 +26,9 @@ export default function Membership() {
 
   useEffect(() => {
     if (!user) {
-      console.log('[Membership] No user, not fetching data');
       setLoading(false);
       return;
     }
-    console.log('[Membership] User found, fetching data');
     fetchData();
   }, [user]);
 

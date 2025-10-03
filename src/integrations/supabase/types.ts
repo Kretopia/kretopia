@@ -1927,6 +1927,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      send_opportunity_alerts: {
+        Args: { opportunity_id_param: string }
+        Returns: undefined
+      }
       use_invite_code: {
         Args: { code: string; user_email: string }
         Returns: boolean

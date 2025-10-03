@@ -409,10 +409,7 @@ const ThriveDesk = () => {
             </div>
           </div>
           <InvoiceGenerator 
-            projectTitle={project.title}
             projectId={projectId || ''}
-            milestones={milestones}
-            userProfile={userProfile}
           />
         </div>
       </div>
@@ -587,10 +584,7 @@ const ThriveDesk = () => {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Badge variant="secondary" className="text-xs">{project.status}</Badge>
                 <InvoiceGenerator 
-                  projectTitle={project.title}
                   projectId={projectId || ''}
-                  milestones={milestones}
-                  userProfile={userProfile}
                 />
                 <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
                 {isEditingProject ? (
@@ -755,7 +749,7 @@ const ThriveDesk = () => {
           <ScrollArea className="h-full">
             <div className="p-3 space-y-3">
               {/* Time Tracker */}
-              <TimeTracker projectId={projectId!} tasks={tasks} />
+              <TimeTracker projectId={projectId!} />
 
               {/* AI Task Assistant */}
               <AIAutomation 

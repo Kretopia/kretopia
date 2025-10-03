@@ -1,268 +1,307 @@
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Play, Pause, Square, Clock, Calendar } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Clock, Play, Square, DollarSign, Calendar } from "lucide-react";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface TimeEntry {
   id: string;
+  description: string;
+  start_time: string;
+  end_time: string | null;
+  duration_minutes: number | null;
+  is_billable: boolean;
+  hourly_rate: number | null;
   task_id: string | null;
-  task_title: string;
-  duration_seconds: number;
-  started_at: string;
-  ended_at: string | null;
-  created_by: string;
+  tasks?: {
+    title: string;
+  };
 }
 
 interface TimeTrackerProps {
   projectId: string;
-  tasks: any[];
 }
 
-export const TimeTracker = ({ projectId, tasks }: TimeTrackerProps) => {
-  const [tracking, setTracking] = useState(false);
-  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [timeEntries, setTimeEntries] = useState<any[]>([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<Date | null>(null);
-  const { toast } = useToast();
+export function TimeTracker({ projectId }: TimeTrackerProps) {
+  const { user } = useAuth();
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [activeEntry, setActiveEntry] = useState<TimeEntry | null>(null);
+  const [description, setDescription] = useState("");
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [hourlyRate, setHourlyRate] = useState<number>(0);
+  const [isBillable, setIsBillable] = useState(true);
 
   useEffect(() => {
     fetchTimeEntries();
-    
-    // Check if there's an active session
-    checkActiveSession();
+    fetchTasks();
+    checkActiveEntry();
   }, [projectId]);
 
-  useEffect(() => {
-    if (tracking && startTimeRef.current) {
-      intervalRef.current = setInterval(() => {
-        const now = new Date();
-        const diff = Math.floor((now.getTime() - startTimeRef.current!.getTime()) / 1000);
-        setElapsedSeconds(diff);
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [tracking]);
-
-  const checkActiveSession = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Check localStorage for active session
-    const activeSession = localStorage.getItem(`active_time_session_${projectId}`);
-    if (activeSession) {
-      const session = JSON.parse(activeSession);
-      startTimeRef.current = new Date(session.startTime);
-      setCurrentTaskId(session.taskId);
-      setTracking(true);
-    }
-  };
-
   const fetchTimeEntries = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("time_entries")
+        .select(`
+          *,
+          tasks:project_tasks(title)
+        `)
+        .eq("project_id", projectId)
+        .eq("user_id", user?.id)
+        .order("start_time", { ascending: false });
 
-    // Fetch time entries from project_tasks metadata or create a simple calculation
-    const { data: tasksWithTime } = await supabase
-      .from('project_tasks')
-      .select('*')
-      .eq('project_id', projectId);
-
-    if (tasksWithTime) {
-      setTimeEntries(tasksWithTime);
+      if (error) throw error;
+      setEntries(data || []);
+    } catch (error) {
+      console.error("Error fetching time entries:", error);
     }
   };
 
-  const handleStartTracking = (taskId: string) => {
-    startTimeRef.current = new Date();
-    setCurrentTaskId(taskId);
-    setElapsedSeconds(0);
-    setTracking(true);
+  const fetchTasks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("project_tasks")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: false });
 
-    // Save to localStorage
-    localStorage.setItem(`active_time_session_${projectId}`, JSON.stringify({
-      taskId,
-      startTime: startTimeRef.current.toISOString(),
-    }));
-
-    toast({
-      title: "Timer started ⏱️",
-      description: "Tracking time for this task",
-    });
+      if (error) throw error;
+      setTasks(data || []);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
   };
 
-  const handlePauseTracking = () => {
-    setTracking(false);
-    toast({
-      title: "Timer paused",
-      description: `Tracked ${formatDuration(elapsedSeconds)}`,
-    });
+  const checkActiveEntry = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("time_entries")
+        .select("*")
+        .eq("project_id", projectId)
+        .eq("user_id", user?.id)
+        .is("end_time", null)
+        .maybeSingle();
+
+      if (error) throw error;
+      setActiveEntry(data);
+    } catch (error) {
+      console.error("Error checking active entry:", error);
+    }
   };
 
-  const handleStopTracking = async () => {
-    if (!currentTaskId || !startTimeRef.current) return;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const startTimer = async () => {
+    if (!description.trim()) {
+      toast.error("Please add a description");
+      return;
+    }
 
     try {
-      // Save time entry to task notes/description
-      const task = tasks.find(t => t.id === currentTaskId);
-      if (task) {
-        const timeLog = `\n[Time Log] ${formatDuration(elapsedSeconds)} - ${new Date().toLocaleString()}`;
-        const updatedDescription = (task.description || '') + timeLog;
+      const { data, error } = await supabase
+        .from("time_entries")
+        .insert({
+          user_id: user?.id,
+          project_id: projectId,
+          task_id: selectedTaskId || null,
+          description,
+          start_time: new Date().toISOString(),
+          is_billable: isBillable,
+          hourly_rate: hourlyRate || null
+        })
+        .select()
+        .single();
 
-        await supabase
-          .from('project_tasks')
-          .update({
-            description: updatedDescription,
-          })
-          .eq('id', currentTaskId);
-      }
+      if (error) throw error;
 
-      toast({
-        title: "Time saved! ✓",
-        description: `Logged ${formatDuration(elapsedSeconds)} to task`,
-      });
-
-      // Clear state
-      localStorage.removeItem(`active_time_session_${projectId}`);
-      setTracking(false);
-      setCurrentTaskId(null);
-      setElapsedSeconds(0);
-      startTimeRef.current = null;
-      fetchTimeEntries();
-    } catch (error: any) {
-      toast({
-        title: "Failed to save time",
-        description: error.message,
-        variant: "destructive",
-      });
+      setActiveEntry(data);
+      toast.success("Timer started!");
+      setDescription("");
+    } catch (error) {
+      console.error("Error starting timer:", error);
+      toast.error("Failed to start timer");
     }
   };
 
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+  const stopTimer = async () => {
+    if (!activeEntry) return;
 
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${secs}s`;
+    try {
+      const { error } = await supabase
+        .from("time_entries")
+        .update({
+          end_time: new Date().toISOString()
+        })
+        .eq("id", activeEntry.id);
+
+      if (error) throw error;
+
+      setActiveEntry(null);
+      fetchTimeEntries();
+      toast.success("Timer stopped!");
+    } catch (error) {
+      console.error("Error stopping timer:", error);
+      toast.error("Failed to stop timer");
     }
-    return `${secs}s`;
+  };
+
+  const formatDuration = (minutes: number | null) => {
+    if (!minutes) return "0h 0m";
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    return `${hours}h ${mins}m`;
   };
 
   const calculateTotalTime = () => {
-    // Calculate from task descriptions (simplified)
-    return "0h 0m";
+    return entries.reduce((sum, entry) => sum + (entry.duration_minutes || 0), 0);
   };
 
-  const currentTask = tasks.find(t => t.id === currentTaskId);
+  const calculateTotalEarnings = () => {
+    return entries
+      .filter(e => e.is_billable && e.hourly_rate)
+      .reduce((sum, entry) => {
+        const hours = (entry.duration_minutes || 0) / 60;
+        return sum + (hours * (entry.hourly_rate || 0));
+      }, 0);
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Clock className="h-5 w-5" />
-          Time Tracker
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Active Timer */}
-        {tracking && currentTask && (
-          <div className="p-4 border rounded-lg bg-primary/5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{currentTask.title}</p>
-                <Badge variant="secondary" className="mt-1">Tracking</Badge>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Time Tracker</CardTitle>
+          <CardDescription>Track time spent on this project</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Timer Controls */}
+          {!activeEntry ? (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="description">What are you working on?</Label>
+                <Input
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe the task..."
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="task">Link to Task (Optional)</Label>
+                  <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select task" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No task</SelectItem>
+                      {tasks.map((task) => (
+                        <SelectItem key={task.id} value={task.id}>
+                          {task.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="rate">Hourly Rate ($)</Label>
+                  <Input
+                    id="rate"
+                    type="number"
+                    value={hourlyRate}
+                    onChange={(e) => setHourlyRate(Number(e.target.value))}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <Button onClick={startTimer} className="w-full">
+                <Play className="mr-2 h-4 w-4" />
+                Start Timer
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-4 bg-accent rounded-lg">
+                <p className="font-medium mb-2">{activeEntry.description}</p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4 animate-pulse text-primary" />
+                  <span>Timer running since {format(new Date(activeEntry.start_time), "p")}</span>
+                </div>
+              </div>
+              <Button onClick={stopTimer} variant="destructive" className="w-full">
+                <Square className="mr-2 h-4 w-4" />
+                Stop Timer
+              </Button>
+            </div>
+          )}
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm text-muted-foreground">Total Time</p>
+                <p className="font-semibold">{formatDuration(calculateTotalTime())}</p>
               </div>
             </div>
-            <div className="text-3xl font-mono font-bold text-center mb-4">
-              {formatDuration(elapsedSeconds)}
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={handlePauseTracking}
-              >
-                <Pause className="h-4 w-4 mr-2" />
-                Pause
-              </Button>
-              <Button 
-                variant="default"
-                className="flex-1"
-                onClick={handleStopTracking}
-              >
-                <Square className="h-4 w-4 mr-2" />
-                Stop & Save
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Task List */}
-        {!tracking && (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground mb-2">Select a task to track time:</p>
-            <ScrollArea className="h-[200px]">
-              <div className="space-y-2 pr-3">
-                {tasks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    No tasks available. Create a task first.
-                  </p>
-                ) : (
-                  tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{task.title}</p>
-                        <Badge variant="secondary" className="text-xs mt-1">
-                          {task.status}
-                        </Badge>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleStartTracking(task.id)}
-                      >
-                        <Play className="h-3.5 w-3.5 mr-1" />
-                        Start
-                      </Button>
-                    </div>
-                  ))
-                )}
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm text-muted-foreground">Total Earnings</p>
+                <p className="font-semibold">${calculateTotalEarnings().toFixed(2)}</p>
               </div>
-            </ScrollArea>
+            </div>
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* Total Time Summary */}
-        <div className="pt-3 border-t">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Total time tracked:</span>
-            <span className="font-semibold">{calculateTotalTime()}</span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Recent Entries */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Time Entries</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {entries.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p>No time entries yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {entries.slice(0, 5).map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex-1">
+                    <p className="font-medium">{entry.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(entry.start_time), "PPp")}
+                      {entry.tasks && ` • ${entry.tasks.title}`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">
+                      {formatDuration(entry.duration_minutes)}
+                    </p>
+                    {entry.is_billable && entry.hourly_rate && (
+                      <p className="text-sm text-muted-foreground">
+                        ${((entry.duration_minutes || 0) / 60 * entry.hourly_rate).toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
-};
+}

@@ -43,6 +43,8 @@ const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
+const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
+const ProjectTemplates = lazy(() => import("./pages/ProjectTemplates"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -122,6 +124,8 @@ const App = () => {
                     <Route path="/partner-submit" element={<PartnerSubmit />} />
                     <Route path="/payment-success" element={<PaymentSuccess />} />
                     <Route path="/payment-canceled" element={<PaymentCanceled />} />
+                    <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
+                    <Route path="/project-templates" element={<ProtectedRoute><ProjectTemplates /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

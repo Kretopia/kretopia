@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Compass, FolderKanban, Users, Crown, UserPlus } from "lucide-react";
+import { LayoutDashboard, Compass, FolderKanban, Users, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BottomNav = () => {

@@ -307,6 +307,84 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issued_by: string
+          issued_to: string
+          line_items: Json | null
+          milestone_id: string | null
+          notes: string | null
+          paid_at: string | null
+          project_id: string
+          status: string
+          tax_amount: number | null
+          tax_rate: number | null
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          issued_by: string
+          issued_to: string
+          line_items?: Json | null
+          milestone_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          project_id: string
+          status?: string
+          tax_amount?: number | null
+          tax_rate?: number | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issued_by?: string
+          issued_to?: string
+          line_items?: Json | null
+          milestone_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          project_id?: string
+          status?: string
+          tax_amount?: number | null
+          tax_rate?: number | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           created_at: string | null
@@ -810,6 +888,76 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_history: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string
+          description: string | null
+          id: string
+          invoice_id: string | null
+          metadata: Json | null
+          milestone_id: string | null
+          payment_intent_id: string | null
+          project_id: string | null
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          id?: string
+          invoice_id?: string | null
+          metadata?: Json | null
+          milestone_id?: string | null
+          payment_intent_id?: string | null
+          project_id?: string | null
+          status?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          id?: string
+          invoice_id?: string | null
+          metadata?: Json | null
+          milestone_id?: string | null
+          payment_intent_id?: string | null
+          project_id?: string | null
+          status?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_history_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_history_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_history_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_items: {
         Row: {
           category: string | null
@@ -1299,6 +1447,60 @@ export type Database = {
           },
         ]
       }
+      project_templates: {
+        Row: {
+          category: string
+          complexity: string | null
+          created_at: string | null
+          created_by: string
+          description: string | null
+          estimated_duration: string | null
+          id: string
+          is_public: boolean | null
+          milestones: Json | null
+          name: string
+          structure: Json
+          tasks: Json | null
+          thumbnail_url: string | null
+          updated_at: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          category: string
+          complexity?: string | null
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          estimated_duration?: string | null
+          id?: string
+          is_public?: boolean | null
+          milestones?: Json | null
+          name: string
+          structure: Json
+          tasks?: Json | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          category?: string
+          complexity?: string | null
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          estimated_duration?: string | null
+          id?: string
+          is_public?: boolean | null
+          milestones?: Json | null
+          name?: string
+          structure?: Json
+          tasks?: Json | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           budget: string | null
@@ -1633,6 +1835,66 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      time_entries: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration_minutes: number | null
+          end_time: string | null
+          hourly_rate: number | null
+          id: string
+          is_billable: boolean | null
+          project_id: string
+          start_time: string
+          task_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          hourly_rate?: number | null
+          id?: string
+          is_billable?: boolean | null
+          project_id: string
+          start_time: string
+          task_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          hourly_rate?: number | null
+          id?: string
+          is_billable?: boolean | null
+          project_id?: string
+          start_time?: string
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
@@ -2041,6 +2303,10 @@ export type Database = {
       generate_invite_codes: {
         Args: { num_codes?: number; user_id_param: string }
         Returns: undefined
+      }
+      generate_invoice_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       generate_membership_number: {
         Args: Record<PropertyKey, never>

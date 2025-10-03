@@ -23,6 +23,7 @@ import { AwardsSection } from "@/components/profile/AwardsSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
+import { SettingsTab } from "@/components/profile/SettingsTab";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -546,6 +547,7 @@ const Profile = () => {
             <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
             <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-lg md:rounded-xl text-xs md:text-sm">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 md:space-y-6">
@@ -667,6 +669,10 @@ const Profile = () => {
               isOwnProfile={true}
               onRefresh={fetchData}
             />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <SettingsTab />
           </TabsContent>
         </Tabs>
       </div>

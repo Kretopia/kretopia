@@ -120,6 +120,14 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/membership")}
+                    >
+                      <Zap className="h-5 w-5" />
+                      Membership
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
                       onClick={() => handleNavigation("/profile?tab=settings")}
                     >
                       <Settings className="h-5 w-5" />

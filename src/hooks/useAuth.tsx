@@ -41,24 +41,19 @@ export const useAuth = () => {
   useEffect(() => {
     console.log('[useAuth] Initializing auth...');
     
-    // Safety timeout - ensure loading doesn't hang forever
-    const timeoutId = setTimeout(() => {
-      console.warn('[useAuth] Auth initialization timeout - forcing loading to false');
-      setLoading(false);
-    }, 5000);
-    
-    // Set up auth state listener FIRST
+    // Set up auth state listener FIRST - MUST be synchronous
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('[useAuth] Auth state changed:', event, !!session);
-        clearTimeout(timeoutId);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Check subscription when user logs in or session changes
+        // Defer subscription check to avoid deadlock
         if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-          await checkSubscription();
+          setTimeout(() => {
+            checkSubscription();
+          }, 0);
         }
       }
     );
@@ -66,27 +61,26 @@ export const useAuth = () => {
     // THEN check for existing session
     console.log('[useAuth] Checking for existing session...');
     supabase.auth.getSession()
-      .then(async ({ data: { session }, error }) => {
+      .then(({ data: { session }, error }) => {
         console.log('[useAuth] Got session:', !!session, error);
-        clearTimeout(timeoutId);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Check subscription if user is already logged in
+        // Defer subscription check
         if (session?.user) {
-          await checkSubscription();
+          setTimeout(() => {
+            checkSubscription();
+          }, 0);
         }
       })
       .catch((error) => {
         console.error('[useAuth] Error getting session:', error);
-        clearTimeout(timeoutId);
         setLoading(false);
       });
 
     return () => {
       console.log('[useAuth] Cleaning up auth subscription');
-      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);

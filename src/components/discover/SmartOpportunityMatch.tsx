@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,9 +65,9 @@ Return ONLY a number 0-100.`
   };
 
   // Auto-calculate on mount
-  useState(() => {
+  useEffect(() => {
     calculateMatch();
-  });
+  }, []);
 
   if (!matchScore || matchScore < 60) return null;
 

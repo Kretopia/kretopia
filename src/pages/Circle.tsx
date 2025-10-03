@@ -36,7 +36,7 @@ const Circle = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch connections
+    // Fetch accepted connections
     const { data: myConnections } = await supabase
       .from('connections')
       .select(`
@@ -48,15 +48,74 @@ const Circle = () => {
       .eq('user_id', user.id)
       .eq('status', 'accepted');
 
+    // Fetch connections where user is the connected_user
+    const { data: reverseConnections } = await supabase
+      .from('connections')
+      .select(`
+        id,
+        user_id,
+        status,
+        created_at
+      `)
+      .eq('connected_user_id', user.id)
+      .eq('status', 'accepted');
+
+    // Fetch matches (from swipe feature)
+    const { data: matches } = await supabase
+      .from('matches')
+      .select('*')
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .eq('status', 'active');
+
+    // Combine all connections
+    const allConnections: any[] = [];
+    const userIds = new Set<string>();
+
+    // Add forward connections
     if (myConnections) {
-      // Fetch profiles for each connection
-      const userIds = myConnections.map(c => c.connected_user_id);
+      myConnections.forEach(c => {
+        userIds.add(c.connected_user_id);
+        allConnections.push({
+          id: c.id,
+          connected_user_id: c.connected_user_id,
+          created_at: c.created_at
+        });
+      });
+    }
+
+    // Add reverse connections
+    if (reverseConnections) {
+      reverseConnections.forEach(c => {
+        userIds.add(c.user_id);
+        allConnections.push({
+          id: c.id,
+          connected_user_id: c.user_id,
+          created_at: c.created_at
+        });
+      });
+    }
+
+    // Add matches
+    if (matches) {
+      matches.forEach(m => {
+        const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
+        userIds.add(otherId);
+        allConnections.push({
+          id: m.id,
+          connected_user_id: otherId,
+          created_at: m.created_at
+        });
+      });
+    }
+
+    // Fetch all profiles
+    if (userIds.size > 0) {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, full_name, role, avatar_url, location, bio')
-        .in('user_id', userIds);
+        .in('user_id', Array.from(userIds));
 
-      const connectionsWithProfiles = myConnections.map(connection => ({
+      const connectionsWithProfiles = allConnections.map(connection => ({
         ...connection,
         profile: profiles?.find(p => p.user_id === connection.connected_user_id) || {
           full_name: 'Unknown User',

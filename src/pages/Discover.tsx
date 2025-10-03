@@ -308,7 +308,15 @@ const Discover = () => {
           .eq('direction', 'right')
           .maybeSingle();
 
+        // Get current user's profile for notifications
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url, role')
+          .eq('user_id', user.id)
+          .single();
+
         if (theirSwipe) {
+          // It's a match! Create match and notify both users
           await supabase.from('matches').insert({
             user1_id: user.id,
             user2_id: currentCard.user_id,
@@ -316,13 +324,55 @@ const Discover = () => {
             status: 'active',
           });
 
-          toast({ title: "It's a Match! 🎉", description: `You and ${currentCard.name} connected!` });
+          // Notify both users about the match
+          await supabase.from('notifications').insert([
+            {
+              user_id: currentCard.user_id,
+              title: "⚡ Connection Made!",
+              message: `You and ${senderProfile?.full_name || 'someone'} are now connected!`,
+              type: 'match',
+              category: 'collaboration',
+              priority: 'high',
+              link: '/circle',
+              action_url: '/circle',
+              action_text: 'View Connection',
+              image_url: senderProfile?.avatar_url,
+            },
+            {
+              user_id: user.id,
+              title: "⚡ Connection Made!",
+              message: `You and ${currentCard.name} are now connected!`,
+              type: 'match',
+              category: 'collaboration',
+              priority: 'high',
+              link: '/circle',
+              action_url: '/circle',
+              action_text: 'View Connection',
+              image_url: currentCard.image,
+            }
+          ]);
+
+          toast({ title: "⚡ Connection Made!", description: `You and ${currentCard.name} are now connected!` });
           setTimeout(() => navigate('/circle'), 2000);
           return;
+        } else {
+          // No match yet, but notify the other person you're interested
+          await supabase.from('notifications').insert({
+            user_id: currentCard.user_id,
+            title: "💫 Someone's Interested!",
+            message: `${senderProfile?.full_name || 'A creator'} (${senderProfile?.role || 'Professional'}) wants to connect with you`,
+            type: 'interest',
+            category: 'collaboration',
+            priority: 'high',
+            link: '/discover',
+            action_url: '/discover',
+            action_text: 'Check Them Out',
+            image_url: senderProfile?.avatar_url,
+          });
         }
       }
 
-      toast({ title: "Liked! 💫", description: `You liked ${currentCard.name}` });
+      toast({ title: "Interest Sent! 💫", description: `${currentCard.name} will be notified` });
     }
     
     // Remove the swiped card from the array

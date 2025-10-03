@@ -79,7 +79,7 @@ const Profile = () => {
   const [credits, setCredits] = useState([]);
   const [awards, setAwards] = useState([]);
   const [pressLinks, setPressLinks] = useState([]);
-  const [userBadge, setUserBadge] = useState<'og' | 'beta' | 'official' | null>(null);
+  const [userBadge, setUserBadge] = useState<'og' | 'beta' | 'official' | 'founder' | null>(null);
   const [stats, setStats] = useState({
     circle: 0,
     projects: 0,
@@ -403,10 +403,10 @@ const Profile = () => {
                     <h1 className="text-xl md:text-3xl font-bold leading-tight">{profile.full_name}</h1>
                     {userBadge && (
                       <Badge 
-                        variant={userBadge === 'og' ? 'default' : 'secondary'}
+                        variant={userBadge === 'og' || userBadge === 'founder' ? 'default' : 'secondary'}
                         className="text-xs"
                       >
-                        {userBadge === 'og' ? '⭐ OG Thriver' : '🚀 Beta'}
+                        {userBadge === 'founder' ? '👑 Founder' : userBadge === 'og' ? '⭐ OG Thriver' : '🚀 Beta'}
                       </Badge>
                     )}
                   </div>

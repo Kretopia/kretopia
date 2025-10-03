@@ -5,13 +5,14 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QrCode, MapPin, Award, TrendingUp, Crown } from "lucide-react";
+import { QrCode, MapPin, Award, TrendingUp, Crown, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { MembershipMap } from "@/components/membership/MembershipMap";
 import { LocationCard } from "@/components/membership/LocationCard";
 import { QRScanner } from "@/components/membership/QRScanner";
 import { TierComparison } from "@/components/membership/TierComparison";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Membership() {
   const { user } = useAuth();
@@ -130,47 +131,94 @@ export default function Membership() {
     );
   }
 
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case "creator_pro":
+        return "from-yellow-500/20 via-yellow-400/10 to-amber-500/20";
+      case "thriver":
+        return "from-blue-500/20 via-blue-400/10 to-indigo-500/20";
+      default:
+        return "from-gray-500/20 via-gray-400/10 to-slate-500/20";
+    }
+  };
+
+  const getTierLabel = (tier: string) => {
+    switch (tier) {
+      case "creator_pro":
+        return "Creator Pro";
+      case "thriver":
+        return "Thriver";
+      default:
+        return "Free";
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 pb-24">
-      {/* Membership Card */}
-      <Card className="mb-6 overflow-hidden bg-gradient-to-br from-primary/10 via-background to-primary/5">
-        <div className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold mb-1">{profile?.full_name}</h1>
-              <Badge variant="outline" className="capitalize">
-                {profile?.subscription_tier || "Free"} Member
-              </Badge>
+      {/* Premium Membership Card - Emirates Skywards Style */}
+      <Card className={`mb-6 overflow-hidden bg-gradient-to-br ${getTierColor(profile?.subscription_tier || "free")} border-2`}>
+        <div className="p-6 relative">
+          {/* Background Pattern */}
+          <div className="absolute top-0 right-0 opacity-5">
+            <Star className="h-40 w-40" />
+          </div>
+          
+          {/* Header with Avatar and Badge */}
+          <div className="flex items-start justify-between mb-6 relative z-10">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
+                <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
+                <AvatarFallback className="text-2xl font-bold bg-primary/10">
+                  {profile?.full_name?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-2xl font-bold mb-1">{profile?.full_name}</h1>
+                <Badge variant="outline" className="capitalize bg-background/80 backdrop-blur-sm">
+                  <Crown className="h-3 w-3 mr-1" />
+                  {getTierLabel(profile?.subscription_tier || "free")}
+                </Badge>
+              </div>
             </div>
-            <Badge className="text-lg px-3 py-1">
-              {profile?.badge || "Beta"}
+            <Badge className="text-sm px-3 py-2 uppercase tracking-wider font-bold bg-background/80 backdrop-blur-sm">
+              {profile?.badge === "founder" ? "👑 Founder" : profile?.badge || "Beta"}
             </Badge>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">
+          {/* Membership Number */}
+          {profile?.membership_number && (
+            <div className="mb-6 p-3 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
+              <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Member Number</p>
+              <p className="text-xl font-mono font-bold tracking-wider">{profile.membership_number}</p>
+            </div>
+          )}
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="text-center p-3 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
+              <div className="text-2xl font-bold text-primary mb-1">
                 {profile?.xp || 0}
               </div>
-              <div className="text-xs text-muted-foreground">Credits</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">Points</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">
-                {profile?.level || 1}
+            <div className="text-center p-3 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
+              <div className="text-2xl font-bold text-primary mb-1">
+                Level {profile?.level || 1}
               </div>
-              <div className="text-xs text-muted-foreground">Level</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">Status</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">
+            <div className="text-center p-3 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
+              <div className="text-2xl font-bold text-primary mb-1">
                 {checkIns.length}
               </div>
-              <div className="text-xs text-muted-foreground">Check-ins</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">Check-ins</div>
             </div>
           </div>
 
+          {/* QR Scan Button */}
           <Button 
             onClick={() => setShowScanner(true)} 
-            className="w-full"
+            className="w-full shadow-lg"
             size="lg"
           >
             <QrCode className="mr-2 h-5 w-5" />

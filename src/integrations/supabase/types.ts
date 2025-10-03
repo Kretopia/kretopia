@@ -618,6 +618,60 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_discounts: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          discount_type: string
+          discount_value: string
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          partner_logo_url: string | null
+          partner_name: string
+          redemption_code: string | null
+          redemption_url: string | null
+          terms: string | null
+          tier_required: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          discount_type: string
+          discount_value: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          partner_logo_url?: string | null
+          partner_name: string
+          redemption_code?: string | null
+          redemption_url?: string | null
+          terms?: string | null
+          tier_required?: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          discount_type?: string
+          discount_value?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          partner_logo_url?: string | null
+          partner_name?: string
+          redemption_code?: string | null
+          redemption_url?: string | null
+          terms?: string | null
+          tier_required?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       partner_locations: {
         Row: {
           address: string
@@ -1484,6 +1538,7 @@ export type Database = {
           direction: string
           id: string
           is_super_like: boolean | null
+          is_undo: boolean | null
           target_id: string
           target_type: string
           user_id: string
@@ -1493,6 +1548,7 @@ export type Database = {
           direction: string
           id?: string
           is_super_like?: boolean | null
+          is_undo?: boolean | null
           target_id: string
           target_type: string
           user_id: string
@@ -1502,6 +1558,7 @@ export type Database = {
           direction?: string
           id?: string
           is_super_like?: boolean | null
+          is_undo?: boolean | null
           target_id?: string
           target_type?: string
           user_id?: string

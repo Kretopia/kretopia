@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle, Crown, Zap } from "lucide-react";
+import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle, Crown, Zap, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -11,6 +11,10 @@ import { CreatorFilters, type CreatorFilterState } from "@/components/discover/C
 import { OpportunityFiltersComponent, type OpportunityFilterState } from "@/components/discover/OpportunityFiltersComponent";
 import { CreditPromptDialog } from "@/components/discover/CreditPromptDialog";
 import { QuickCreateOpportunityDialog } from "@/components/discover/QuickCreateOpportunityDialog";
+import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
+import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
+import { useUndoSwipe } from "@/hooks/useUndoSwipe";
+import { scoreProfilesWithAI } from "@/components/discover/AIMatchScoring";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { getRemainingSwipes, TIER_LIMITS, type SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -37,6 +41,8 @@ interface Card {
   user_id?: string;
   created_by?: string;
   portfolio?: PortfolioItem[];
+  ai_match_score?: number;
+  match_reasons?: string[];
   socialStats?: {
     instagram_followers?: number;
     youtube_subscribers?: number;
@@ -62,10 +68,13 @@ const Discover = () => {
   const [showCreditPrompt, setShowCreditPrompt] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [profileCompletionPercent, setProfileCompletionPercent] = useState(0);
+  const [showMatchExplanation, setShowMatchExplanation] = useState(false);
+  const [aiScoringEnabled, setAiScoringEnabled] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const { undosRemaining, trackSwipe, undoLastSwipe, checkUndosRemaining } = useUndoSwipe(subscriptionTier);
 
   const [creatorFilters, setCreatorFilters] = useState<CreatorFilterState>({
     role: 'all',
@@ -192,7 +201,7 @@ const Discover = () => {
           .eq('featured', true)
           .limit(3);
 
-        const creatorCards: Card[] = completeProfiles.map(profile => {
+        let creatorCards: Card[] = completeProfiles.map(profile => {
           const userPortfolio = (portfolioItems || []).filter(item => item.user_id === profile.user_id);
           return {
             id: profile.id,
@@ -215,6 +224,36 @@ const Discover = () => {
             },
           };
         });
+
+        // Apply AI scoring if enabled
+        if (aiScoringEnabled && userProfile) {
+          console.log('[Discover] Applying AI match scoring...');
+          try {
+            const scoredProfiles = await scoreProfilesWithAI(
+              userProfile,
+              completeProfiles.map(p => ({
+                user_id: p.user_id || '',
+                full_name: p.full_name || '',
+                role: p.role || '',
+                bio: p.bio,
+                professional_skills: [],
+                passion_skills: [],
+                location: p.location
+              }))
+            );
+
+            creatorCards = creatorCards.map((card, index) => ({
+              ...card,
+              ai_match_score: scoredProfiles[index]?.ai_match_score,
+              match_reasons: scoredProfiles[index]?.match_reasons
+            }));
+
+            // Sort by AI match score (highest first)
+            creatorCards.sort((a, b) => (b.ai_match_score || 0) - (a.ai_match_score || 0));
+          } catch (error) {
+            console.error('[Discover] AI scoring failed, continuing without scores:', error);
+          }
+        }
 
         console.log('[Discover] Created creator cards:', creatorCards.length);
         setCards(creatorCards);
@@ -290,13 +329,18 @@ const Discover = () => {
     
     setDailySwipesLeft(prev => prev - 1);
 
-    await supabase.from('swipes').insert({
+    const { data: swipeData } = await supabase.from('swipes').insert({
       user_id: user.id,
       target_id: currentCard.id,
       target_type: currentCard.type,
       direction,
       is_super_like: isSuperLike,
-    });
+    }).select().single();
+
+    // Track swipe for undo functionality
+    if (swipeData) {
+      trackSwipe(swipeData as any);
+    }
 
     if (direction === "right") {
       if (currentCard.type === 'creator' && currentCard.user_id) {
@@ -591,7 +635,7 @@ const Discover = () => {
                 <img src={currentCard.image} alt={currentCard.name} className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                 
-                <div className="absolute right-3 sm:right-4 top-3 sm:top-4">
+                <div className="absolute right-3 sm:right-4 top-3 sm:top-4 flex flex-col gap-2 items-end">
                   <div className={`rounded-full px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-medium ${
                     currentCard.type === "creator" 
                       ? "bg-primary/90 text-primary-foreground" 
@@ -599,6 +643,13 @@ const Discover = () => {
                   }`}>
                     {currentCard.type === "creator" ? "Creator" : "Opportunity"}
                   </div>
+                  
+                  {currentCard.type === 'creator' && currentCard.ai_match_score && currentCard.ai_match_score >= 60 && (
+                    <div className="bg-gradient-to-r from-primary to-accent text-white rounded-full px-3 py-1 text-xs sm:text-sm font-bold flex items-center gap-1 shadow-lg">
+                      <Sparkles className="h-3 w-3" />
+                      {currentCard.ai_match_score}% Match
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -652,7 +703,19 @@ const Discover = () => {
 
             {cards.length > 0 && (
               <>
-                <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <UndoSwipeButton
+                onClick={async () => {
+                  const undoneSwipe = await undoLastSwipe();
+                  if (undoneSwipe) {
+                    setDailySwipesLeft(prev => prev + 1);
+                    await checkUndosRemaining();
+                  }
+                }}
+                disabled={isDragging}
+                userTier={subscriptionTier}
+                undosRemaining={undosRemaining}
+              />
               <Button 
                 variant="outline" 
                 size="icon" 
@@ -662,6 +725,16 @@ const Discover = () => {
               >
                 <X className="h-6 w-6 sm:h-8 sm:w-8" />
               </Button>
+              {currentCard?.type === 'creator' && currentCard.ai_match_score && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-12 w-12 rounded-full"
+                  onClick={() => setShowMatchExplanation(true)}
+                >
+                  <HelpCircle className="h-5 w-5" />
+                </Button>
+              )}
               <Button 
                 variant="default" 
                 size="icon" 
@@ -684,7 +757,7 @@ const Discover = () => {
 
             <div className="text-center text-xs sm:text-sm text-muted-foreground">
               <p>🔥 Like • ⭐ Super Like • ❌ Pass</p>
-              <p className="mt-1 text-xs">Drag or tap buttons</p>
+              <p className="mt-1 text-xs">Drag or tap buttons • {subscriptionTier !== 'free' && '↩️ Undo'}</p>
             </div>
               </>
             )}
@@ -693,6 +766,16 @@ const Discover = () => {
       </div>
 
       <CreditPromptDialog open={showCreditPrompt} onOpenChange={setShowCreditPrompt} />
+      
+      {currentCard && currentCard.type === 'creator' && (
+        <MatchExplanationDialog
+          open={showMatchExplanation}
+          onOpenChange={setShowMatchExplanation}
+          match={currentCard}
+          onConnect={() => handleSwipe("right")}
+          onPass={() => handleSwipe("left")}
+        />
+      )}
     </div>
   );
 };

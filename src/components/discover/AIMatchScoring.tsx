@@ -35,14 +35,14 @@ export const scoreProfilesWithAI = async (
         messages: [
           {
             role: 'user',
-            content: `Score potential collaboration matches for this user:
+            content: `Score potential collaboration matches for this user. Be generous with scores (60+ is good, 70+ is great, 80+ is perfect).
 
 MY PROFILE:
 Name: ${currentUserProfile.full_name}
 Role: ${currentUserProfile.role}
 Location: ${currentUserProfile.location || 'Not specified'}
 Bio: ${currentUserProfile.bio || 'No bio'}
-Skills: ${mySkills.join(', ')}
+Skills: ${mySkills.join(', ') || 'None listed'}
 
 POTENTIAL MATCHES:
 ${potentialMatches.map((p, i) => {
@@ -53,22 +53,16 @@ ${potentialMatches.map((p, i) => {
   return `${i}. ${p.full_name} - ${p.role}
    Location: ${p.location || 'Not specified'}
    Bio: ${p.bio || 'No bio'}
-   Skills: ${theirSkills.join(', ')}`;
+   Skills: ${theirSkills.join(', ') || 'None listed'}`;
 }).join('\n\n')}
 
 For each match, provide:
-1. Match score (0-100) based on collaboration potential
-2. 2-3 specific reasons why they'd be a good match
-
-Consider:
-- Complementary skills (not identical)
-- Similar creative vision
-- Location compatibility
-- Role synergy
-- Bio alignment
+1. Match score (0-100) - Be generous! Most should be 60+
+2. 3 specific, actionable reasons for the match
+3. Focus on: complementary skills, collaboration potential, shared vision, location compatibility
 
 Return ONLY valid JSON array:
-[{"index": 0, "score": 85, "reasons": ["reason1", "reason2"]}]`
+[{"index": 0, "score": 85, "reasons": ["Complementary design skills could enhance your music production", "Both focused on creative storytelling", "Same city - easy to meet and collaborate"]}]`
           }
         ],
         type: 'suggest'

@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { MembershipMap } from "@/components/membership/MembershipMap";
 import { LocationCard } from "@/components/membership/LocationCard";
 import { QRScanner } from "@/components/membership/QRScanner";
+import { NFCScanner } from "@/components/membership/NFCScanner";
+import { CheckInMethodDialog } from "@/components/membership/CheckInMethodDialog";
 import { TierComparison } from "@/components/membership/TierComparison";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -23,6 +25,8 @@ export default function Membership() {
   const [checkIns, setCheckIns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showScanner, setShowScanner] = useState(false);
+  const [showNFCScanner, setShowNFCScanner] = useState(false);
+  const [showMethodDialog, setShowMethodDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -215,14 +219,14 @@ export default function Membership() {
             </div>
           </div>
 
-          {/* QR Scan Button */}
+          {/* Check-In Button */}
           <Button 
-            onClick={() => setShowScanner(true)} 
+            onClick={() => setShowMethodDialog(true)} 
             className="w-full shadow-lg"
             size="lg"
           >
             <QrCode className="mr-2 h-5 w-5" />
-            Scan QR to Check In
+            Check In
           </Button>
         </div>
       </Card>
@@ -319,10 +323,30 @@ export default function Membership() {
         </TabsContent>
       </Tabs>
 
+      <CheckInMethodDialog
+        open={showMethodDialog}
+        onOpenChange={setShowMethodDialog}
+        onSelectQR={() => setShowScanner(true)}
+        onSelectNFC={() => setShowNFCScanner(true)}
+      />
+
       {showScanner && (
         <QRScanner 
           onClose={() => setShowScanner(false)}
-          onSuccess={fetchData}
+          onSuccess={() => {
+            fetchData();
+            setShowScanner(false);
+          }}
+        />
+      )}
+
+      {showNFCScanner && (
+        <NFCScanner
+          onClose={() => setShowNFCScanner(false)}
+          onSuccess={() => {
+            fetchData();
+            setShowNFCScanner(false);
+          }}
         />
       )}
     </div>

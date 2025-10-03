@@ -228,8 +228,9 @@ const Discover = () => {
           };
         });
 
-        // Apply AI scoring if enabled
-        if (aiScoringEnabled && userProfile) {
+        // Apply AI scoring if enabled AND user has paid tier
+        const hasAIAccess = TIER_LIMITS[subscriptionTier as SubscriptionTier]?.hasAIRecommendations;
+        if (aiScoringEnabled && userProfile && hasAIAccess) {
           console.log('[Discover] Applying AI match scoring...');
           try {
             const scoredProfiles = await scoreProfilesWithAI(
@@ -510,6 +511,16 @@ const Discover = () => {
             </TabsList>
           </Tabs>
 
+          {/* AI Features Banner for Paid Users */}
+          {activeTab === 'creators' && (subscriptionTier === 'thriver' || subscriptionTier === 'creator_pro') && (
+            <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/20">
+              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <p className="text-xs text-muted-foreground">
+                AI-powered matching active • Profiles sorted by compatibility
+              </p>
+            </div>
+          )}
+
           {profileIncomplete && (
             <Alert className="border-accent bg-accent/10">
               <AlertCircle className="h-4 w-4 text-accent" />
@@ -689,6 +700,18 @@ const Discover = () => {
                 
                 <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{currentCard.description}</p>
 
+                {currentCard.type === "creator" && currentCard.ai_match_score && currentCard.ai_match_score >= 70 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-3 text-xs sm:text-sm flex items-center justify-center gap-2"
+                    onClick={() => setShowMatchExplanation(true)}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Why this match?
+                  </Button>
+                )}
+
                 {currentCard.type === "creator" && currentCard.user_id && (
                   <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
                     <Button 
@@ -696,7 +719,7 @@ const Discover = () => {
                       size="sm"
                       className="w-full text-xs sm:text-sm h-8 sm:h-9"
                       onClick={() => navigate(`/profile/${currentCard.user_id}`, { 
-                        state: { cardIndex: currentIndex } 
+                        state: { cardIndex: currentIndex }
                       })}
                     >
                       <UserCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />

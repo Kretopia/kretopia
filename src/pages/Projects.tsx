@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle, DollarSign, Crown, Sparkles } from "lucide-react";
 import { z } from "zod";
 import { canCreateProject, type SubscriptionTier } from "@/lib/subscriptionLimits";
+import { UpgradeDialog } from "@/components/UpgradeDialog";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
@@ -46,7 +47,7 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>("free");
   const [newProject, setNewProject] = useState({
     title: "",
@@ -176,7 +177,7 @@ const Projects = () => {
       // Check project limit before creating
       if (!canCreateProject(subscriptionTier, projects.length)) {
         console.log('[Projects] Project limit reached');
-        setShowUpgradePrompt(true);
+        setShowUpgradeDialog(true);
         return;
       }
 
@@ -451,75 +452,22 @@ const Projects = () => {
         )}
       </div>
 
-      {/* Upgrade Prompt Dialog */}
-      <Dialog open={showUpgradePrompt} onOpenChange={setShowUpgradePrompt}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              <Crown className="h-6 w-6 text-primary" />
-              Project Limit Reached
-            </DialogTitle>
-            <DialogDescription>
-              Free members can have 1 active project. Upgrade to Pro for unlimited projects!
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 py-4">
-            {/* Thrive Pro */}
-            <Card 
-              className="p-4 border-primary bg-gradient-to-br from-primary/5 to-secondary/5 hover:border-primary hover:shadow-md transition-all cursor-pointer" 
-              onClick={() => {
-                setShowUpgradePrompt(false);
-                navigate('/subscription');
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2">
-                  <Sparkles className="h-5 w-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Thrive Pro</h3>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Unlimited projects + advanced collaboration tools
-                  </p>
-                  <div className="text-lg font-bold text-primary">
-                    $9/month
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Thrive Studio */}
-            <Card 
-              className="p-4 hover:border-primary transition-colors cursor-pointer" 
-              onClick={() => {
-                setShowUpgradePrompt(false);
-                navigate('/subscription');
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-gradient-to-br from-primary to-accent p-2">
-                  <Crown className="h-5 w-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Thrive Studio</h3>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    All Pro features + priority support
-                  </p>
-                  <div className="text-lg font-bold text-primary">
-                    $29/month
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          <Button variant="outline" onClick={() => setShowUpgradePrompt(false)} className="w-full">
-            Maybe Later
-          </Button>
-        </DialogContent>
-      </Dialog>
-    </div>
+    <UpgradeDialog
+      open={showUpgradeDialog}
+      onOpenChange={setShowUpgradeDialog}
+      currentTier={subscriptionTier}
+      feature="Unlimited Projects"
+      description="Free tier allows 1 active project. Upgrade to Thriver for unlimited projects and unlock the full power of collaboration!"
+      benefits={[
+        "Unlimited active projects",
+        "Unlimited swipes to find collaborators",
+        "AI match recommendations",
+        "Undo swipe feature",
+        "Profile verification",
+        "5+ partner discounts"
+      ]}
+    />
+  </div>
   );
 };
 

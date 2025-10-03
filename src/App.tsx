@@ -41,6 +41,8 @@ const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const PartnerDiscounts = lazy(() => import("./pages/PartnerDiscounts"));
 const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -118,6 +120,8 @@ const App = () => {
                     <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
                     <Route path="/partner-discounts" element={<ProtectedRoute><PartnerDiscounts /></ProtectedRoute>} />
                     <Route path="/partner-submit" element={<PartnerSubmit />} />
+                    <Route path="/payment-success" element={<PaymentSuccess />} />
+                    <Route path="/payment-canceled" element={<PaymentCanceled />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

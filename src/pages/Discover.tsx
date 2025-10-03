@@ -17,6 +17,7 @@ import { useUndoSwipe } from "@/hooks/useUndoSwipe";
 import { scoreProfilesWithAI } from "@/components/discover/AIMatchScoring";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { getRemainingSwipes, TIER_LIMITS, type SubscriptionTier } from "@/lib/subscriptionLimits";
+import { UpgradeDialog } from "@/components/UpgradeDialog";
 
 type CardType = "creator" | "opportunity";
 
@@ -70,6 +71,8 @@ const Discover = () => {
   const [profileCompletionPercent, setProfileCompletionPercent] = useState(0);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
   const [aiScoringEnabled, setAiScoringEnabled] = useState(true);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState({ name: "", description: "" });
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -313,7 +316,11 @@ const Discover = () => {
 
     if (dailySwipesLeft <= 0) {
       setSwipeDirection(null);
-      setShowCreditPrompt(true);
+      setUpgradeFeature({
+        name: "Unlimited Swipes",
+        description: "You've reached your daily swipe limit. Upgrade to Thriver for unlimited daily swipes and never miss a connection!"
+      });
+      setShowUpgradeDialog(true);
       return;
     }
 
@@ -776,6 +783,14 @@ const Discover = () => {
           onPass={() => handleSwipe("left")}
         />
       )}
+
+      <UpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        currentTier={subscriptionTier as SubscriptionTier}
+        feature={upgradeFeature.name}
+        description={upgradeFeature.description}
+      />
     </div>
   );
 };

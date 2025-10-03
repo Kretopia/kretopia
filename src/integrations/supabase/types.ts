@@ -828,6 +828,7 @@ export type Database = {
           linkedin_connections: number | null
           linkedin_url: string | null
           location: string | null
+          membership_number: string | null
           passion_skills: Json | null
           press_links: Json | null
           professional_skills: Json | null
@@ -880,6 +881,7 @@ export type Database = {
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          membership_number?: string | null
           passion_skills?: Json | null
           press_links?: Json | null
           professional_skills?: Json | null
@@ -932,6 +934,7 @@ export type Database = {
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          membership_number?: string | null
           passion_skills?: Json | null
           press_links?: Json | null
           professional_skills?: Json | null
@@ -1913,6 +1916,10 @@ export type Database = {
         Args: { num_codes?: number; user_id_param: string }
         Returns: undefined
       }
+      generate_membership_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1931,7 +1938,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
-      user_badge: "og" | "beta" | "official"
+      user_badge: "og" | "beta" | "official" | "founder"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2060,7 +2067,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
-      user_badge: ["og", "beta", "official"],
+      user_badge: ["og", "beta", "official", "founder"],
     },
   },
 } as const

@@ -336,6 +336,12 @@ const Dashboard = () => {
               icon={<Trophy className="h-5 w-5" />}
               to="/leaderboard"
             />
+            <QuickActionCard
+              title="Partner Discounts"
+              description="Exclusive deals from our partners"
+              icon={<Sparkles className="h-5 w-5" />}
+              to="/partner-discounts"
+            />
           </div>
         </div>
 

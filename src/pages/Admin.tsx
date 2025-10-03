@@ -10,6 +10,7 @@ import { Shield, MapPin, CheckCircle, Users } from "lucide-react";
 import { LocationsTab } from "@/components/admin/LocationsTab";
 import { CheckInsTab } from "@/components/admin/CheckInsTab";
 import { UsersTab } from "@/components/admin/UsersTab";
+import { PartnerSubmissionsTab } from "@/components/admin/PartnerSubmissionsTab";
 
 export default function Admin() {
   const { user } = useAuth();
@@ -77,7 +78,7 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="locations" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="locations">
             <MapPin className="mr-2 h-4 w-4" />
             Locations
@@ -89,6 +90,10 @@ export default function Admin() {
           <TabsTrigger value="users">
             <Users className="mr-2 h-4 w-4" />
             Users
+          </TabsTrigger>
+          <TabsTrigger value="partners">
+            <Shield className="mr-2 h-4 w-4" />
+            Partners
           </TabsTrigger>
         </TabsList>
 
@@ -102,6 +107,10 @@ export default function Admin() {
 
         <TabsContent value="users" className="mt-6">
           <UsersTab />
+        </TabsContent>
+
+        <TabsContent value="partners" className="mt-6">
+          <PartnerSubmissionsTab />
         </TabsContent>
       </Tabs>
     </div>

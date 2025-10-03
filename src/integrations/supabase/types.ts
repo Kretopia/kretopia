@@ -741,6 +741,75 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_submissions: {
+        Row: {
+          category: string
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          description: string
+          discount_type: string
+          discount_value: string
+          id: string
+          logo_url: string
+          redemption_code: string | null
+          redemption_url: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          submitted_at: string | null
+          terms: string | null
+          tier_required: string
+          website_url: string | null
+        }
+        Insert: {
+          category: string
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          description: string
+          discount_type: string
+          discount_value: string
+          id?: string
+          logo_url: string
+          redemption_code?: string | null
+          redemption_url?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          terms?: string | null
+          tier_required?: string
+          website_url?: string | null
+        }
+        Update: {
+          category?: string
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          description?: string
+          discount_type?: string
+          discount_value?: string
+          id?: string
+          logo_url?: string
+          redemption_code?: string | null
+          redemption_url?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          terms?: string | null
+          tier_required?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       portfolio_items: {
         Row: {
           category: string | null

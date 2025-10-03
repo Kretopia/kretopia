@@ -38,6 +38,8 @@ const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
 const TestRunner = lazy(() => import("./pages/TestRunner"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
+const PartnerDiscounts = lazy(() => import("./pages/PartnerDiscounts"));
+const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -114,6 +116,8 @@ const App = () => {
                     <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
                     <Route path="/admin/waitlist" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
                     <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
+                    <Route path="/partner-discounts" element={<ProtectedRoute><PartnerDiscounts /></ProtectedRoute>} />
+                    <Route path="/partner-submit" element={<PartnerSubmit />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

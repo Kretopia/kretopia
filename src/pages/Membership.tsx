@@ -249,11 +249,16 @@ export default function Membership() {
         </TabsList>
 
         <TabsContent value="benefits" className="mt-6">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Membership Tiers</h2>
-            <p className="text-muted-foreground">
-              Compare features and upgrade to unlock more capabilities
-            </p>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Membership Tiers</h2>
+              <p className="text-muted-foreground">
+                Compare features and upgrade to unlock more capabilities
+              </p>
+            </div>
+            <Button onClick={() => navigate('/partner-discounts')} variant="outline">
+              View Partner Discounts
+            </Button>
           </div>
           <TierComparison currentTier={profile?.subscription_tier || "free"} />
         </TabsContent>

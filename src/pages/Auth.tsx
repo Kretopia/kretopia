@@ -142,18 +142,17 @@ const Auth = () => {
     setInviteError("");
     setLoading(true);
 
-    // Validate invite code first
+    // Validate invite code first (without consuming it)
     const { data: isValid, error: validateError } = await supabase
-      .rpc('use_invite_code', { 
-        code: inviteCode.trim(), 
-        user_email: email.trim() 
+      .rpc('validate_invite_code', { 
+        code: inviteCode.trim()
       });
 
     if (validateError || !isValid) {
       setInviteError("Invalid invite code");
       toast({
         title: "Invalid Invite Code",
-        description: "This invite code is invalid or has already been used.",
+        description: "This invite code is incorrect or has already been fully used. Please check the code and try again.",
         variant: "destructive",
       });
       setLoading(false);

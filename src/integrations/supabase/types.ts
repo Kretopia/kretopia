@@ -2065,6 +2065,10 @@ export type Database = {
         Args: { project_id_param: string; user_id_param: string }
         Returns: boolean
       }
+      validate_invite_code: {
+        Args: { code: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

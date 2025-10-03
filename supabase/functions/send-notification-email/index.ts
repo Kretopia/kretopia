@@ -10,7 +10,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application';
+  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest';
   data: {
     userName?: string;
     opportunityTitle?: string;
@@ -18,6 +18,15 @@ interface EmailRequest {
     matchName?: string;
     applicationStatus?: string;
     projectName?: string;
+    opportunityCount?: number;
+    opportunities?: Array<{
+      title: string;
+      type: string;
+      compensation: string;
+      url: string;
+    }>;
+    newOpportunitiesCount?: number;
+    daysInactive?: number;
   };
 }
 
@@ -105,6 +114,31 @@ const generateEmailContent = (type: string, data: any) => {
             <p>Your application for "${data.projectName}" has been updated to: <strong>${data.applicationStatus}</strong></p>
             <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Details</a>
             <p style="color: #666; margin-top: 30px;">Best of luck!<br>The ThriveIN Team</p>
+          </div>
+        `
+      };
+    
+    case 'weekly-digest':
+      const opportunitiesList = data.opportunities?.map((opp: any) => `
+        <div style="background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 8px;">
+          <h3 style="margin: 0 0 8px 0; color: #333;">${opp.title}</h3>
+          <p style="margin: 5px 0; color: #666;"><strong>Type:</strong> ${opp.type}</p>
+          <p style="margin: 5px 0; color: #666;"><strong>Compensation:</strong> ${opp.compensation}</p>
+          <a href="${opp.url}" style="color: #8B5CF6; text-decoration: none;">View Details →</a>
+        </div>
+      `).join('') || '';
+      
+      return {
+        subject: `This Week's Top Opportunities - ${data.opportunityCount} New Postings 🌟`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8B5CF6;">Your Weekly Opportunity Digest</h1>
+            <p>Hi ${data.userName},</p>
+            <p>Here are <strong>${data.opportunityCount} new opportunities</strong> posted this week that might interest you:</p>
+            ${opportunitiesList}
+            <a href="${baseUrl}/discover" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Browse All Opportunities</a>
+            <p style="color: #666; margin-top: 30px;">Keep creating!<br>The ThriveIN Team</p>
+            <p style="color: #999; font-size: 12px; margin-top: 20px;">Don't want weekly digests? Update your <a href="${baseUrl}/notification-settings" style="color: #8B5CF6;">notification preferences</a>.</p>
           </div>
         `
       };

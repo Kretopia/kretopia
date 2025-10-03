@@ -67,31 +67,35 @@ const Circle = () => {
       .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
       .eq('status', 'active');
 
-    // Combine all connections
-    const allConnections: any[] = [];
+    // Combine all connections with deduplication
+    const connectionsMap = new Map<string, any>();
     const userIds = new Set<string>();
 
     // Add forward connections
     if (myConnections) {
       myConnections.forEach(c => {
-        userIds.add(c.connected_user_id);
-        allConnections.push({
-          id: c.id,
-          connected_user_id: c.connected_user_id,
-          created_at: c.created_at
-        });
+        if (!connectionsMap.has(c.connected_user_id)) {
+          userIds.add(c.connected_user_id);
+          connectionsMap.set(c.connected_user_id, {
+            id: c.id,
+            connected_user_id: c.connected_user_id,
+            created_at: c.created_at
+          });
+        }
       });
     }
 
     // Add reverse connections
     if (reverseConnections) {
       reverseConnections.forEach(c => {
-        userIds.add(c.user_id);
-        allConnections.push({
-          id: c.id,
-          connected_user_id: c.user_id,
-          created_at: c.created_at
-        });
+        if (!connectionsMap.has(c.user_id)) {
+          userIds.add(c.user_id);
+          connectionsMap.set(c.user_id, {
+            id: c.id,
+            connected_user_id: c.user_id,
+            created_at: c.created_at
+          });
+        }
       });
     }
 
@@ -99,14 +103,18 @@ const Circle = () => {
     if (matches) {
       matches.forEach(m => {
         const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
-        userIds.add(otherId);
-        allConnections.push({
-          id: m.id,
-          connected_user_id: otherId,
-          created_at: m.created_at
-        });
+        if (!connectionsMap.has(otherId)) {
+          userIds.add(otherId);
+          connectionsMap.set(otherId, {
+            id: m.id,
+            connected_user_id: otherId,
+            created_at: m.created_at
+          });
+        }
       });
     }
+
+    const allConnections = Array.from(connectionsMap.values());
 
     // Fetch all profiles
     if (userIds.size > 0) {

@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, GripVertical, Calendar, User } from "lucide-react";
+import { Plus, GripVertical, Calendar, User, CheckSquare } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -223,9 +223,12 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   };
 
   return (
-    <div className="p-3 md:p-4 space-y-3 md:space-y-4">
+    <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base md:text-lg font-semibold">Task Board</h3>
+        <div>
+          <h3 className="text-base md:text-lg font-semibold">Task Board</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Drag tasks between columns to update status</p>
+        </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
@@ -285,21 +288,33 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
         </Dialog>
       </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
-          {STATUSES.map(status => {
-            const statusTasks = tasks.filter(t => t.status === status.value);
-            return (
-              <DroppableColumn 
-                key={status.value} 
-                status={status} 
-                tasks={statusTasks} 
-                onUpdate={onUpdate} 
-              />
-            );
-          })}
+      {tasks.length === 0 ? (
+        <div className="text-center py-12 border-2 border-dashed rounded-lg">
+          <CheckSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h4 className="font-semibold mb-2">No tasks yet</h4>
+          <p className="text-sm text-muted-foreground mb-4">Create your first task to get started</p>
+          <Button onClick={() => setCreateDialogOpen(true)} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Task
+          </Button>
         </div>
-      </DndContext>
+      ) : (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+            {STATUSES.map(status => {
+              const statusTasks = tasks.filter(t => t.status === status.value);
+              return (
+                <DroppableColumn 
+                  key={status.value} 
+                  status={status} 
+                  tasks={statusTasks} 
+                  onUpdate={onUpdate} 
+                />
+              );
+            })}
+          </div>
+        </DndContext>
+      )}
     </div>
   );
 }

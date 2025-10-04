@@ -289,6 +289,12 @@ const ThriveDesk = () => {
 
       // Upload file if attached
       if (attachedFile) {
+        // Validate file size (max 50MB for MVP)
+        const maxSize = 50 * 1024 * 1024;
+        if (attachedFile.size > maxSize) {
+          throw new Error(`File size must be less than 50MB`);
+        }
+
         const filePath = `${projectId}/${Date.now()}-${attachedFile.name}`;
         const { error: uploadError } = await supabase.storage
           .from('project-files')
@@ -304,6 +310,16 @@ const ThriveDesk = () => {
         fileName = attachedFile.name;
         fileSize = attachedFile.size;
         fileType = attachedFile.type;
+
+        // Also add to project_files table for tracking
+        await supabase.from('project_files').insert({
+          project_id: projectId,
+          user_id: user?.id,
+          file_name: fileName,
+          file_url: fileUrl,
+          file_size: fileSize,
+          file_type: fileType,
+        });
       }
 
       const { error } = await supabase
@@ -322,20 +338,35 @@ const ThriveDesk = () => {
 
       setNewMessage("");
       setAttachedFile(null);
-      fetchProjectData();
+      
+      // Scroll to bottom after sending
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     } catch (error: any) {
       toast({
         title: "Failed to send",
         description: error.message || "Could not send your message.",
         variant: "destructive",
       });
+    } finally {
+      setSendingMessage(false);
     }
-    setSendingMessage(false);
   };
 
   const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        toast({
+          title: "File too large",
+          description: "Maximum file size is 50MB",
+          variant: "destructive",
+        });
+        return;
+      }
       setAttachedFile(file);
     }
   };
@@ -767,19 +798,24 @@ const ThriveDesk = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex flex-col min-h-screen items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading workspace...</p>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
-        <Card className="p-8 text-center">
-          <h2 className="text-xl font-semibold mb-2">Project not found</h2>
-          <Button onClick={() => navigate('/dashboard')}>Go to Dashboard</Button>
-        </Card>
+      <div className="flex flex-col min-h-screen items-center justify-center gap-4 p-4">
+        <div className="text-center space-y-2">
+          <h2 className="text-xl font-semibold">Project Not Found</h2>
+          <p className="text-muted-foreground">This project doesn't exist or you don't have access to it.</p>
+        </div>
+        <Button onClick={() => navigate('/projects')} size="lg">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Projects
+        </Button>
       </div>
     );
   }
@@ -790,6 +826,7 @@ const ThriveDesk = () => {
     </div>
   );
 };
+
 
 // Task Item Component
 const TaskItem = ({ task, onUpdate, compact = false }: any) => {

@@ -34,15 +34,20 @@ const Landing = () => {
       {/* Features Section */}
       <section className="px-6 py-20">
         <div className="container mx-auto max-w-6xl">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-              Everything You Need to{" "}
+          <div className="mb-20 text-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+              <Zap className="h-4 w-4" />
+              <span>Everything you need in one place</span>
+            </div>
+            <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+              Built for Creators,{" "}
               <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Thrive
+                By Creators
               </span>
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              From discovery to payment, ThriveIN handles it all
+            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
+              From discovering perfect collaborations to getting paid securely, 
+              ThriveIN gives you professional tools without the complexity
             </p>
           </div>
 
@@ -90,15 +95,20 @@ const Landing = () => {
       {/* Pricing Section */}
       <section className="px-6 py-20 bg-muted/30">
         <div className="container mx-auto max-w-6xl">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-              Choose Your{" "}
+          <div className="mb-20 text-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+              <Sparkles className="h-4 w-4" />
+              <span>Flexible pricing for every creator</span>
+            </div>
+            <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+              Start Free,{" "}
               <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Path
+                Grow Unlimited
               </span>
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              Start free and upgrade as you grow. Earn credits through activity or subscribe for unlimited access.
+            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
+              No credit card required to start. Earn credits through activity or upgrade 
+              for unlimited access to premium features
             </p>
           </div>
 
@@ -166,15 +176,20 @@ const Landing = () => {
       {/* How to Earn Credits Section */}
       <section className="px-6 py-20">
         <div className="container mx-auto max-w-6xl">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-              Earn Credits,{" "}
+          <div className="mb-20 text-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+              <Trophy className="h-4 w-4" />
+              <span>Activity-based rewards</span>
+            </div>
+            <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+              Get Rewarded for{" "}
               <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Level Up
+                Being Active
               </span>
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              Stay active on ThriveIN and earn credits without spending a dime
+            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
+              Complete your profile, connect with creators, and finish projects to earn credits. 
+              No subscription needed—just be active and grow
             </p>
           </div>
 
@@ -222,15 +237,20 @@ const Landing = () => {
       {/* Waitlist Section */}
       <section id="waitlist" className="px-6 py-20 bg-muted/30">
         <div className="container mx-auto max-w-2xl">
-          <div className="mb-8 text-center">
-            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-              Join the{" "}
+          <div className="mb-10 text-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+              <Users className="h-4 w-4" />
+              <span>Limited early access</span>
+            </div>
+            <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+              Ready to{" "}
               <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Waitlist
+                Thrive?
               </span>
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              ThriveIN is invite-only. Apply now and if you meet our creator criteria, we'll send you an invite code with 5 invites to share.
+            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
+              We're building an invite-only community of serious creators. Apply for early access, 
+              and if you're a good fit, we'll send you an invite code to join and share with your network
             </p>
           </div>
           <WaitlistForm />

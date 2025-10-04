@@ -9,10 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 
-type OnboardingStep = "profile" | "portfolio" | "social" | "stats" | "invite" | "complete";
+type OnboardingStep = "welcome" | "profile" | "preferences" | "portfolio" | "social" | "stats" | "invite" | "complete";
 
 const Onboarding = () => {
-  const [step, setStep] = useState<OnboardingStep>("profile");
+  const [step, setStep] = useState<OnboardingStep>("welcome");
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
   
@@ -37,6 +37,11 @@ const Onboarding = () => {
   // Stats
   const [statTitle, setStatTitle] = useState("");
   const [statValue, setStatValue] = useState("");
+  
+  // Preferences
+  const [lookingFor, setLookingFor] = useState<string[]>([]);
+  const [skillLevel, setSkillLevel] = useState("");
+  const [availability, setAvailability] = useState("");
   
   // Invite
   const [inviteEmails, setInviteEmails] = useState<string[]>([]);
@@ -245,8 +250,16 @@ const Onboarding = () => {
     }
   };
 
+  const handlePreferencesSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // For now, just store in local state and award XP
+    // In future, you can add a preferences table or use jsonb field
+    await addXP(30, "Preferences set");
+    setStep("portfolio");
+  };
+
   const handleSkipStep = () => {
-    const steps: OnboardingStep[] = ["profile", "portfolio", "social", "stats", "invite", "complete"];
+    const steps: OnboardingStep[] = ["welcome", "profile", "preferences", "portfolio", "social", "stats", "invite", "complete"];
     const currentIndex = steps.indexOf(step);
     if (currentIndex < steps.length - 1) {
       setStep(steps[currentIndex + 1]);
@@ -329,35 +342,79 @@ const Onboarding = () => {
     }
   };
 
-  const stepNumber = ["profile", "portfolio", "social", "stats", "invite", "complete"].indexOf(step) + 1;
-  const totalSteps = 6;
+  const stepNumber = ["welcome", "profile", "preferences", "portfolio", "social", "stats", "invite", "complete"].indexOf(step) + 1;
+  const totalSteps = 8;
   const progressPercent = (stepNumber / totalSteps) * 100;
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
       <div className="w-full max-w-2xl">
-        {/* Level & XP Display */}
-        <div className="mb-6 sm:mb-8 rounded-2xl border border-primary/20 bg-card p-4 sm:p-6 shadow-glow">
-          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-gradient-to-br from-primary to-secondary p-2 sm:p-3">
-                <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
+        {/* Level & XP Display - Hide on welcome */}
+        {step !== "welcome" && (
+          <div className="mb-6 sm:mb-8 rounded-2xl border border-primary/20 bg-card p-4 sm:p-6 shadow-glow transition-smooth animate-slide-up">
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-gradient-to-br from-primary to-secondary p-2 sm:p-3 shadow-card">
+                  <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Level {level}</p>
+                  <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{xp} XP</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Level {level}</p>
-                <p className="text-xl sm:text-2xl font-bold">{xp} XP</p>
+              <div className="text-left sm:text-right">
+                <p className="text-sm text-muted-foreground">Progress</p>
+                <p className="text-lg font-semibold">{Math.round(progressPercent)}%</p>
               </div>
             </div>
-            <div className="text-left sm:text-right">
-              <p className="text-sm text-muted-foreground">Progress</p>
-              <p className="text-lg font-semibold">{Math.round(progressPercent)}%</p>
-            </div>
+            <Progress value={progressPercent} className="h-2 bg-muted" />
           </div>
-          <Progress value={progressPercent} className="h-2" />
-        </div>
+        )}
 
         {/* Step Content */}
-        <div className="rounded-2xl border border-border bg-card p-4 sm:p-8 shadow-card">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-8 shadow-card transition-smooth">
+          {step === "welcome" && (
+            <div className="space-y-8 text-center py-8">
+              <div className="space-y-4">
+                <div className="mx-auto w-fit rounded-full bg-gradient-to-br from-primary to-secondary p-4 shadow-glow">
+                  <Sparkles className="h-12 w-12 text-primary-foreground" />
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold">Welcome to ThriveIN! 🎉</h1>
+                <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+                  Let's set up your creative profile in just a few steps. 
+                  You'll earn XP as you go and unlock features along the way.
+                </p>
+              </div>
+              
+              <div className="grid gap-4 sm:grid-cols-3 max-w-2xl mx-auto text-left">
+                <div className="rounded-xl border border-border p-4 bg-muted/30 transition-smooth hover:border-primary/20">
+                  <div className="mb-2 text-3xl">⚡</div>
+                  <h3 className="font-semibold mb-1">Quick Setup</h3>
+                  <p className="text-sm text-muted-foreground">5 minutes to complete</p>
+                </div>
+                <div className="rounded-xl border border-border p-4 bg-muted/30 transition-smooth hover:border-primary/20">
+                  <div className="mb-2 text-3xl">🎯</div>
+                  <h3 className="font-semibold mb-1">Earn Rewards</h3>
+                  <p className="text-sm text-muted-foreground">Get XP for each step</p>
+                </div>
+                <div className="rounded-xl border border-border p-4 bg-muted/30 transition-smooth hover:border-primary/20">
+                  <div className="mb-2 text-3xl">🚀</div>
+                  <h3 className="font-semibold mb-1">Start Creating</h3>
+                  <p className="text-sm text-muted-foreground">Find collabs instantly</p>
+                </div>
+              </div>
+
+              <Button 
+                onClick={() => setStep("profile")} 
+                variant="gradient" 
+                size="xl"
+                className="shadow-glow transition-smooth hover:-translate-y-1"
+              >
+                Let's Get Started
+              </Button>
+            </div>
+          )}
+
           {step === "profile" && (
             <form onSubmit={handleProfileSubmit} className="space-y-6">
               <div>
@@ -410,6 +467,102 @@ const Onboarding = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button type="submit" variant="gradient" size="lg" className="w-full">
                   Continue & Earn 50 XP
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {step === "preferences" && (
+            <form onSubmit={handlePreferencesSubmit} className="space-y-6">
+              <div>
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2 w-fit">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold">What Are You Looking For?</h2>
+                    <p className="text-sm text-muted-foreground">Step 3 of {totalSteps}</p>
+                  </div>
+                </div>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Help us match you better. Earn <span className="font-semibold text-primary">30 XP</span>
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <Label>I'm interested in (select all that apply)</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {["Paid Gigs", "Collaborations", "Networking", "Learning"].map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => {
+                          if (lookingFor.includes(option)) {
+                            setLookingFor(lookingFor.filter(i => i !== option));
+                          } else {
+                            setLookingFor([...lookingFor, option]);
+                          }
+                        }}
+                        className={`rounded-lg border p-3 text-left transition-smooth ${
+                          lookingFor.includes(option)
+                            ? "border-primary bg-primary/10 text-primary font-medium"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Experience Level</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {["Beginner", "Intermediate", "Expert"].map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setSkillLevel(level)}
+                        className={`rounded-lg border p-3 text-center transition-smooth ${
+                          skillLevel === level
+                            ? "border-primary bg-primary/10 text-primary font-medium"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Availability</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {["Part-time", "Full-time", "Flexible"].map((avail) => (
+                      <button
+                        key={avail}
+                        type="button"
+                        onClick={() => setAvailability(avail)}
+                        className={`rounded-lg border p-3 text-center transition-smooth ${
+                          availability === avail
+                            ? "border-primary bg-primary/10 text-primary font-medium"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        {avail}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="submit" variant="gradient" size="lg" className="w-full">
+                  Continue & Earn 30 XP
+                </Button>
+                <Button type="button" onClick={handleSkipStep} variant="outline" size="lg">
+                  Skip
                 </Button>
               </div>
             </form>

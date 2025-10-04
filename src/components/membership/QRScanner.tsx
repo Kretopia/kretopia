@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,33 +19,65 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
   const [scanning, setScanning] = useState(true);
   const [location, setLocation] = useState<any>(null);
   const [verifying, setVerifying] = useState(false);
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-      },
-      false
-    );
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const element = document.getElementById("qr-reader");
+      if (!element) {
+        console.error("QR reader element not found");
+        toast({
+          title: "Scanner Error",
+          description: "Unable to initialize QR scanner",
+          variant: "destructive",
+        });
+        onClose();
+        return;
+      }
 
-    scanner.render(onScanSuccess, onScanError);
+      try {
+        const scanner = new Html5QrcodeScanner(
+          "qr-reader",
+          { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+          },
+          false
+        );
 
-    async function onScanSuccess(decodedText: string) {
-      setScanning(false);
-      scanner.clear();
-      await verifyAndCheckIn(decodedText);
-    }
+        scannerRef.current = scanner;
 
-    function onScanError(error: any) {
-      // Ignore scan errors, they happen frequently
-    }
+        scanner.render(onScanSuccess, onScanError);
+
+        async function onScanSuccess(decodedText: string) {
+          setScanning(false);
+          if (scannerRef.current) {
+            scannerRef.current.clear().catch(console.error);
+          }
+          await verifyAndCheckIn(decodedText);
+        }
+
+        function onScanError(error: any) {
+          // Ignore scan errors, they happen frequently
+        }
+      } catch (error) {
+        console.error("Scanner initialization error:", error);
+        toast({
+          title: "Scanner Error",
+          description: "Failed to start QR scanner",
+          variant: "destructive",
+        });
+        onClose();
+      }
+    }, 100);
 
     return () => {
-      if (scanning) {
-        scanner.clear();
+      clearTimeout(timer);
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error);
+        scannerRef.current = null;
       }
     };
   }, []);

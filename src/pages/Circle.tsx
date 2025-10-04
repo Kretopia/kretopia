@@ -23,6 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
+import { FeedPost } from "@/components/feed/FeedPost";
 
 interface Connection {
   id: string;
@@ -58,16 +60,19 @@ interface NetworkActivity {
 const Circle = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [activities, setActivities] = useState<NetworkActivity[]>([]);
+  const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConnection, setSelectedConnection] = useState<{ id: string; name: string; avatar?: string } | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [showCreatePost, setShowCreatePost] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchConnections();
     fetchNetworkActivity();
+    fetchFeedPosts();
     
     // Set up real-time presence
     const channel = supabase.channel('circle-presence');
@@ -277,6 +282,19 @@ const Circle = () => {
     setActivities(combinedActivity);
   };
 
+  const fetchFeedPosts = async () => {
+    const { data } = await supabase
+      .from('feed_posts')
+      .select(`
+        *,
+        profiles!feed_posts_user_id_fkey(full_name, avatar_url, role)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    setFeedPosts(data || []);
+  };
+
   const handleMessage = (connectionId: string, userName: string, userAvatar?: string) => {
     setSelectedConnection({ id: connectionId, name: userName, avatar: userAvatar || undefined });
   };
@@ -410,15 +428,30 @@ const Circle = () => {
               </TabsContent>
 
               <TabsContent value="activity" className="space-y-3">
-                {activities.length === 0 ? (
+                {feedPosts.length === 0 && activities.length === 0 ? (
                   <Card className="p-8 text-center">
-                    <Activity className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-muted-foreground">No recent activity from your network</p>
+                    <Sparkles className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-muted-foreground mb-4">
+                      No posts yet. Share your work with your circle!
+                    </p>
+                    <Button onClick={() => setShowCreatePost(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Post
+                    </Button>
                   </Card>
                 ) : (
-                  activities.map((activity) => (
-                    <ActivityCard key={activity.id} activity={activity} />
-                  ))
+                  <>
+                    {feedPosts.map((post) => (
+                      <FeedPost 
+                        key={post.id} 
+                        post={post} 
+                        onDelete={fetchFeedPosts}
+                      />
+                    ))}
+                    {activities.map((activity) => (
+                      <ActivityCard key={activity.id} activity={activity} />
+                    ))}
+                  </>
                 )}
               </TabsContent>
 
@@ -470,15 +503,22 @@ const Circle = () => {
       </div>
 
       {/* Floating Action Button - Mobile */}
-      {isMobile && connections.length > 0 && (
+      {isMobile && (
         <Button
           size="lg"
           className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg"
-          onClick={() => window.location.href = '/discover'}
+          onClick={() => setShowCreatePost(true)}
         >
           <Plus className="h-6 w-6" />
         </Button>
       )}
+
+      {/* Create Post Dialog */}
+      <CreatePostDialog
+        open={showCreatePost}
+        onOpenChange={setShowCreatePost}
+        onPostCreated={fetchFeedPosts}
+      />
     </div>
   );
 };

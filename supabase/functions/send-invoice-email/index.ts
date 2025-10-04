@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,7 +51,10 @@ serve(async (req) => {
       throw new Error("Unauthorized to send this invoice");
     }
 
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY not configured");
+    }
 
     const lineItemsHtml = (invoice.line_items as any[])
       .map(item => `
@@ -143,14 +145,27 @@ serve(async (req) => {
       </html>
     `;
 
-    const { data, error } = await resend.emails.send({
-      from: "ThriveNet <invoices@resend.dev>",
-      to: [recipientEmail],
-      subject: `Invoice ${invoice.invoice_number} from ${invoice.issuer.full_name}`,
-      html: emailHtml,
+    // Send email via Resend API
+    const emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: "ThriveNet <invoices@resend.dev>",
+        to: [recipientEmail],
+        subject: `Invoice ${invoice.invoice_number} from ${invoice.issuer.full_name}`,
+        html: emailHtml,
+      }),
     });
 
-    if (error) throw error;
+    if (!emailResponse.ok) {
+      const errorData = await emailResponse.json();
+      throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
+    }
+
+    const emailData = await emailResponse.json();
 
     // Update invoice status to "sent"
     await supabaseClient
@@ -159,7 +174,7 @@ serve(async (req) => {
       .eq("id", invoiceId);
 
     return new Response(
-      JSON.stringify({ success: true, messageId: data.id }),
+      JSON.stringify({ success: true, messageId: emailData.id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error: any) {

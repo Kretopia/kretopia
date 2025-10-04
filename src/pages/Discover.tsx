@@ -206,7 +206,7 @@ const Discover = () => {
                  profile.full_name && 
                  profile.full_name !== 'New User' && 
                  profile.role && 
-                 profile.role !== 'Creator' && 
+                 profile.role.trim() !== '' && 
                  profile.avatar_url &&
                  profile.bio; // Just needs to exist, no length requirement
         });

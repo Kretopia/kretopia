@@ -113,13 +113,40 @@ serve(async (req) => {
       const trackMatch = url.match(/track\/([A-Za-z0-9]+)/);
       const playlistMatch = url.match(/playlist\/([A-Za-z0-9]+)/);
       const albumMatch = url.match(/album\/([A-Za-z0-9]+)/);
+      const episodeMatch = url.match(/episode\/([A-Za-z0-9]+)/);
+      const showMatch = url.match(/show\/([A-Za-z0-9]+)/);
       
-      const id = trackMatch?.[1] || playlistMatch?.[1] || albumMatch?.[1];
-      const type = trackMatch ? "track" : playlistMatch ? "playlist" : "album";
+      const id = trackMatch?.[1] || playlistMatch?.[1] || albumMatch?.[1] || episodeMatch?.[1] || showMatch?.[1];
+      const type = trackMatch ? "track" : playlistMatch ? "playlist" : albumMatch ? "album" : episodeMatch ? "episode" : "show";
       
       if (id) {
         data.embedCode = `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/${type}/${id}" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
         data.mediaUrl = url;
+        
+        // Fetch Open Graph data for thumbnail and title
+        try {
+          const spotifyResponse = await fetch(url, {
+            headers: {
+              "User-Agent": "Mozilla/5.0 (compatible; ThriveBot/1.0)",
+            },
+          });
+          
+          if (spotifyResponse.ok) {
+            const html = await spotifyResponse.text();
+            
+            // Extract OG image and title
+            const ogImageMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i);
+            const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i);
+            const twitterImageMatch = html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/i);
+            
+            data.thumbnailUrl = ogImageMatch?.[1] || twitterImageMatch?.[1];
+            data.title = ogTitleMatch?.[1];
+            
+            console.log(`Spotify metadata - title: ${data.title}, thumbnail: ${data.thumbnailUrl}`);
+          }
+        } catch (e) {
+          console.error("Error fetching Spotify metadata:", e);
+        }
       }
     }
     

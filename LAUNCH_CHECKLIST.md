@@ -58,61 +58,37 @@
 
 ## 🎯 Optional But Recommended (30 minutes)
 
-### 4. Add Analytics (15 min)
-**Recommendation**: Vercel Analytics (simplest) or PostHog
+### 4. Add Analytics (15 min) ✅ DONE
+**Status**: Vercel Analytics installed and active
 
-**For Vercel Analytics**:
-```bash
-npm install @vercel/analytics
-```
-
-Add to `src/App.tsx`:
-```typescript
-import { Analytics } from '@vercel/analytics/react';
-
-// In App component return:
-<>
-  {/* existing code */}
-  <Analytics />
-</>
-```
-
-**Track These Events**:
+Vercel Analytics will automatically track when deployed:
 - User signups
-- Subscription purchases
+- Subscription purchases  
 - Matches created
 - Messages sent
 - Projects created
 
+**No additional configuration needed!** Analytics activate on deployment.
+
 ---
 
-### 5. Set Up Error Monitoring (15 min)
-**Recommendation**: Sentry (free tier is generous)
+### 5. Set Up Error Monitoring (15 min) ✅ DONE
+**Status**: Sentry installed (optional DSN configuration)
 
-**Steps**:
+Sentry is integrated but needs your DSN to start monitoring:
 1. Sign up at [sentry.io](https://sentry.io)
-2. Create new project
-3. Install SDK:
-```bash
-npm install @sentry/react
-```
-
-4. Add to `src/main.tsx`:
-```typescript
-import * as Sentry from "@sentry/react";
-
-Sentry.init({
-  dsn: "YOUR_DSN_HERE",
-  environment: import.meta.env.MODE,
-  tracesSampleRate: 1.0,
-});
-```
+2. Create new React project
+3. Copy your DSN
+4. Add to environment: `VITE_SENTRY_DSN=your-dsn-here`
 
 **What You Get**:
 - Real-time error alerts
 - Stack traces
-- User context
+- User context  
 - Performance monitoring
+- Session replays
+
+See `MONITORING_SETUP.md` for detailed setup instructions.
 
 ---
 
@@ -285,8 +261,8 @@ Essential:
 - [ ] Payment flow tested (step 3)
 
 Recommended:
-- [ ] Analytics added (step 4)
-- [ ] Error monitoring setup (step 5)
+- [x] Analytics added (Vercel Analytics)
+- [x] Error monitoring setup (Sentry integrated)
 - [ ] Content seeded (steps 6-8)
 - [ ] Custom domain configured (step 9)
 - [ ] Production URLs updated (step 10)

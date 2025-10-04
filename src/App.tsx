@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { useAuth } from "./hooks/useAuth";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
@@ -99,6 +100,7 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <VercelAnalytics />
             <BrowserRouter>
               <PageViewTracker />
               <Navbar user={user} />

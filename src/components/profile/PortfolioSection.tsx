@@ -243,7 +243,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
                 </div>
 
                 {uploadMode === "link" ? (
-                  <>
+                  <div className="space-y-4">
                     {/* Link Input */}
                     <div className="space-y-2">
                       <Label>Paste Link</Label>
@@ -254,97 +254,125 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
                         disabled={fetchingData}
                       />
                       {fetchingData && (
-                        <p className="text-xs text-muted-foreground">Analyzing link...</p>
+                        <p className="text-xs text-muted-foreground animate-fade-in">Analyzing link...</p>
                       )}
                     </div>
 
-                    {/* Preview Card */}
-                    {previewData && (
-                      <div className="rounded-lg border bg-card p-4 space-y-3">
-                        <div className="flex items-start gap-3">
-                          {previewData.thumbnailUrl && (
-                            <img
-                              src={previewData.thumbnailUrl}
-                              alt="Preview"
-                              className="w-24 h-24 object-cover rounded"
-                            />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-muted-foreground capitalize mb-1">
-                              {previewData.platform} • {previewData.mediaType}
-                            </p>
-                            {previewData.title && (
-                              <p className="font-medium text-sm line-clamp-2">{previewData.title}</p>
+                    {/* Preview Card - Fixed height container to prevent jumping */}
+                    <div className="min-h-[140px]">
+                      {previewData && (
+                        <div className="rounded-lg border bg-card p-4 animate-fade-in">
+                          <div className="flex items-start gap-3">
+                            {previewData.thumbnailUrl && (
+                              <img
+                                src={previewData.thumbnailUrl}
+                                alt="Preview"
+                                className="w-20 h-20 object-cover rounded flex-shrink-0"
+                              />
                             )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-muted-foreground capitalize mb-1">
+                                {previewData.platform} • {previewData.mediaType}
+                              </p>
+                              {previewData.title && (
+                                <p className="font-medium text-sm line-clamp-2">{previewData.title}</p>
+                              )}
+                            </div>
                           </div>
                         </div>
+                      )}
+                    </div>
+
+                    {/* Compact metadata fields */}
+                    {previewData && (
+                      <div className="space-y-3 animate-fade-in">
+                        <Input
+                          value={newItem.title}
+                          onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                          placeholder="Title (optional - auto-detected)"
+                          className="text-sm"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            value={newItem.category}
+                            onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                            placeholder="Category"
+                            className="text-sm"
+                          />
+                          <Input
+                            value={newItem.tags}
+                            onChange={(e) => setNewItem({ ...newItem, tags: e.target.value })}
+                            placeholder="Tags"
+                            className="text-sm"
+                          />
+                        </div>
+                        <Button
+                          onClick={handleAdd}
+                          className="w-full"
+                          variant="gradient"
+                          disabled={!newItem.media_url}
+                        >
+                          Add to Portfolio
+                        </Button>
                       </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="space-y-2">
-                    <Label>Upload File</Label>
-                    <Input
-                      type="file"
-                      onChange={handleFileUpload}
-                      disabled={uploading}
-                      accept="image/*,video/*,audio/*"
-                    />
-                    {uploading && (
-                      <p className="text-xs text-muted-foreground">Uploading...</p>
                     )}
                   </div>
-                )}
-
-                {/* Show form fields when we have media */}
-                {(newItem.media_url || previewData) && (
-                  <>
+                ) : (
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>
-                        Title {!newItem.title && <span className="text-destructive">*</span>}
-                      </Label>
+                      <Label>Upload File</Label>
                       <Input
-                        value={newItem.title}
-                        onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                        placeholder="Give your work a title"
+                        type="file"
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                        accept="image/*,video/*,audio/*"
                       />
+                      {uploading && (
+                        <p className="text-xs text-muted-foreground">Uploading...</p>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Description (optional)</Label>
-                      <Textarea
-                        value={newItem.description}
-                        onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-                        rows={2}
-                        placeholder="Describe your work"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-2">
-                        <Label>Category (optional)</Label>
+
+                    {/* Show compact fields after upload */}
+                    {newItem.media_url && (
+                      <div className="space-y-3 animate-fade-in">
                         <Input
-                          value={newItem.category}
-                          onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                          placeholder="e.g., Music"
+                          value={newItem.title}
+                          onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                          placeholder="Title*"
+                          className="text-sm"
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Tags (optional)</Label>
-                        <Input
-                          value={newItem.tags}
-                          onChange={(e) => setNewItem({ ...newItem, tags: e.target.value })}
-                          placeholder="rock, live"
+                        <Textarea
+                          value={newItem.description}
+                          onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                          rows={2}
+                          placeholder="Description (optional)"
+                          className="text-sm"
                         />
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            value={newItem.category}
+                            onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                            placeholder="Category"
+                            className="text-sm"
+                          />
+                          <Input
+                            value={newItem.tags}
+                            onChange={(e) => setNewItem({ ...newItem, tags: e.target.value })}
+                            placeholder="Tags"
+                            className="text-sm"
+                          />
+                        </div>
+                        <Button
+                          onClick={handleAdd}
+                          className="w-full"
+                          variant="gradient"
+                          disabled={!newItem.title}
+                        >
+                          Add to Portfolio
+                        </Button>
                       </div>
-                    </div>
-                    <Button
-                      onClick={handleAdd}
-                      className="w-full"
-                      variant="gradient"
-                      disabled={!newItem.title || !newItem.media_url}
-                    >
-                      Add to Portfolio
-                    </Button>
-                  </>
+                    )}
+                  </div>
                 )}
               </div>
             </DialogContent>

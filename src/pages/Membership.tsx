@@ -103,10 +103,10 @@ export default function Membership() {
 
   const getTierAccess = (tier: string) => {
     switch (tier) {
-      case "premium":
-        return ["free", "standard", "premium"];
-      case "standard":
-        return ["free", "standard"];
+      case "creator_pro":
+        return ["free", "thriver", "creator_pro"];
+      case "thriver":
+        return ["free", "thriver"];
       default:
         return ["free"];
     }

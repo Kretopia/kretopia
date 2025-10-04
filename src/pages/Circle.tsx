@@ -443,7 +443,7 @@ const Circle = () => {
 
   const copyInviteCode = async (code: string) => {
     try {
-      const inviteUrl = `${window.location.origin}/auth?invite=${code}`;
+      const inviteUrl = `https://www.thrivein.io/auth?invite=${code}`;
       const inviteMessage = `🎨 Join my circle on ThriveIN!
 
 Connect with creatives and content creators, discover exciting opportunities, and collaborate on projects together.

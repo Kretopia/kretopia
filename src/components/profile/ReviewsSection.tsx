@@ -33,10 +33,6 @@ interface ReviewsSectionProps {
 export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh }: ReviewsSectionProps) => {
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [requestForm, setRequestForm] = useState({
-    reviewer_name: "",
-    reviewer_email: "",
-    reviewer_role: "",
-    reviewer_company: "",
     project_name: "",
     personal_message: ""
   });
@@ -44,18 +40,13 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
   const { toast } = useToast();
 
   const handleRequestReview = async () => {
-    if (!requestForm.reviewer_name || !requestForm.reviewer_email) {
-      toast({ title: "Error", description: "Name and email are required", variant: "destructive" });
-      return;
-    }
-
     try {
       const { data, error } = await supabase
         .from('review_requests')
         .insert({
           profile_id: profileUserId,
-          reviewer_name: requestForm.reviewer_name,
-          reviewer_email: requestForm.reviewer_email,
+          reviewer_name: '',
+          reviewer_email: '',
           project_name: requestForm.project_name,
           personal_message: requestForm.personal_message
         })
@@ -66,7 +57,7 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
 
       const reviewLink = `${window.location.origin}/review?token=${data.share_token}`;
       
-      const copyMessage = `Hi ${requestForm.reviewer_name},
+      const copyMessage = `Hi there,
 
 ${requestForm.personal_message || "I hope you're doing well! I'm reaching out because your feedback would mean a lot to me."} 
 
@@ -88,7 +79,7 @@ Thank you so much!`;
       setTimeout(() => {
         setIsRequestOpen(false);
         setShowCopyTemplate(false);
-        setRequestForm({ reviewer_name: "", reviewer_email: "", reviewer_role: "", reviewer_company: "", project_name: "", personal_message: "" });
+        setRequestForm({ project_name: "", personal_message: "" });
         onRefresh();
       }, 3000);
     } catch (error) {
@@ -140,25 +131,6 @@ Thank you so much!`;
               
               {!showCopyTemplate ? (
                 <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Client Name *</Label>
-                    <Input 
-                      required
-                      placeholder="Jane Smith"
-                      value={requestForm.reviewer_name} 
-                      onChange={(e) => setRequestForm({ ...requestForm, reviewer_name: e.target.value })} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Client Email *</Label>
-                    <Input 
-                      required
-                      type="email"
-                      placeholder="jane@company.com"
-                      value={requestForm.reviewer_email} 
-                      onChange={(e) => setRequestForm({ ...requestForm, reviewer_email: e.target.value })} 
-                    />
-                  </div>
                   <div className="space-y-2">
                     <Label>Project Name (Optional)</Label>
                     <Input 

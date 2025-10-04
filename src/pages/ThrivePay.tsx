@@ -10,6 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
+import { FeeStructure } from "@/components/FeeStructure";
+import { FeeCalculator } from "@/components/FeeCalculator";
+import { getFeeDisplayText } from "@/lib/platformFees";
 import {
   DollarSign,
   TrendingUp,
@@ -21,6 +24,7 @@ import {
   ArrowUpRight,
   Shield,
   Zap,
+  Percent,
 } from "lucide-react";
 
 export default function ThrivePay() {
@@ -32,6 +36,7 @@ export default function ThrivePay() {
   const [connectStatus, setConnectStatus] = useState<string>("not_connected");
   const [balance, setBalance] = useState({ available: 0, pending: 0, currency: "usd" });
   const [accountId, setAccountId] = useState<string | null>(null);
+  const [subscriptionTier, setSubscriptionTier] = useState<string | null>("free");
 
   useEffect(() => {
     if (!user) {
@@ -59,9 +64,13 @@ export default function ThrivePay() {
       // Get profile data
       const { data: profile } = await supabase
         .from("profiles")
-        .select("stripe_account_id, stripe_account_status")
+        .select("stripe_account_id, stripe_account_status, subscription_tier")
         .eq("user_id", user?.id)
         .single();
+
+      if (profile?.subscription_tier) {
+        setSubscriptionTier(profile.subscription_tier);
+      }
 
       if (profile?.stripe_account_id) {
         setAccountId(profile.stripe_account_id);
@@ -323,6 +332,42 @@ export default function ThrivePay() {
               </CardContent>
             </Card>
 
+            {/* Current Fee Display */}
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Percent className="h-5 w-5 text-primary" />
+                  Your Platform Fee Rate
+                </CardTitle>
+                <CardDescription>
+                  Based on your {subscriptionTier === 'free' ? 'Free' : subscriptionTier === 'thriver' ? 'Thriver' : 'Creator Pro'} membership
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-4xl font-bold text-primary mb-1">
+                      {getFeeDisplayText(subscriptionTier)}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      per transaction
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={() => navigate('/membership')}>
+                    Upgrade to Save
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Fee Structure */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              <FeeStructure currentTier={subscriptionTier} />
+              <FeeCalculator subscriptionTier={subscriptionTier} />
+            </div>
+
+            <div className="mt-8" />
+
             {/* Info Card */}
             <Card>
               <CardHeader>
@@ -349,10 +394,10 @@ export default function ThrivePay() {
                 </div>
                 <Separator />
                 <div className="space-y-2">
-                  <h4 className="font-semibold">Platform Fees</h4>
+                  <h4 className="font-semibold">Transparent Pricing</h4>
                   <p className="text-sm text-muted-foreground">
-                    ThriveIN takes a small platform fee on each transaction. Stripe's processing 
-                    fees are separate and clearly displayed for each payment.
+                    Platform fees are automatically deducted from each transaction. Stripe's processing 
+                    fees (~2.9% + 30¢) are separate. Upgrade your membership to reduce platform fees.
                   </p>
                 </div>
               </CardContent>

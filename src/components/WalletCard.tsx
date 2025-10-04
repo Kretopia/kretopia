@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Wallet, Plus, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
+import { Wallet, Plus, ArrowUpRight, ArrowDownRight, Loader2, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +17,7 @@ export const WalletCard = () => {
   const [topUpType, setTopUpType] = useState<"credits" | "balance">("credits");
   const [topUpAmount, setTopUpAmount] = useState("");
   const [loading, setLoading] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -27,6 +28,17 @@ export const WalletCard = () => {
   const fetchWallet = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Get subscription tier
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile) {
+      setSubscriptionTier(profile.subscription_tier);
+    }
 
     const { data: walletData } = await supabase
       .from('wallets')
@@ -97,15 +109,20 @@ export const WalletCard = () => {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Wallet className="h-5 w-5" />
-          ThrivePay Wallet
+          Wallet
         </CardTitle>
-        <Dialog open={topUpDialogOpen} onOpenChange={setTopUpDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" variant="outline">
-              <Plus className="h-4 w-4 mr-1" />
-              Add Funds
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button size="sm" variant="ghost" onClick={() => navigate('/thrivepay')}>
+            <ExternalLink className="h-4 w-4 mr-1" />
+            ThrivePay
+          </Button>
+          <Dialog open={topUpDialogOpen} onOpenChange={setTopUpDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline">
+                <Plus className="h-4 w-4 mr-1" />
+                Top Up
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Funds to Wallet</DialogTitle>
@@ -168,6 +185,7 @@ export const WalletCard = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -232,6 +250,20 @@ export const WalletCard = () => {
                 ))
               )}
             </div>
+          </div>
+
+          {/* ThrivePay Info */}
+          <div className="pt-2 border-t">
+            <p className="text-xs text-muted-foreground text-center">
+              Connect your payment account in{" "}
+              <button 
+                onClick={() => navigate('/thrivepay')} 
+                className="text-primary hover:underline"
+              >
+                ThrivePay
+              </button>
+              {" "}to start receiving payments
+            </p>
           </div>
         </div>
       </CardContent>

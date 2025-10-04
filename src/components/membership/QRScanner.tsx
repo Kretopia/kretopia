@@ -240,12 +240,6 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
       if (mountedRef.current) {
         setPermissionGranted(true);
         setCameraError(null);
-        // Wait for DOM to be ready
-        setTimeout(() => {
-          if (mountedRef.current) {
-            initScanner();
-          }
-        }, 100);
       }
     } catch (error: any) {
       console.error("Camera permission error:", error);
@@ -270,7 +264,7 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
         });
       }
     }
-  }, [initScanner, toast]);
+  }, [toast]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -284,6 +278,20 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
       }
     };
   }, [requestCameraPermission]);
+
+  // Separate effect to initialize scanner when permission is granted
+  useEffect(() => {
+    if (permissionGranted && !scanning && !scannerRef.current) {
+      // Wait for DOM to render the qr-reader element
+      const timer = setTimeout(() => {
+        if (mountedRef.current) {
+          initScanner();
+        }
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [permissionGranted, scanning, initScanner]);
 
   return (
     <Dialog open onOpenChange={onClose}>

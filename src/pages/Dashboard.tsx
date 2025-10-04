@@ -347,10 +347,10 @@ const Dashboard = () => {
               to="/leaderboard"
             />
             <QuickActionCard
-              title="Partner Discounts"
+              title="Partner Directory"
               description="Exclusive deals from our partners"
               icon={<Sparkles className="h-5 w-5" />}
-              to="/partner-discounts"
+              to="/partner-directory"
             />
           </div>
         </div>

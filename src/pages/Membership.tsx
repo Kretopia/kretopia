@@ -278,10 +278,7 @@ export default function Membership() {
             </div>
             <div className="flex gap-2">
               <Button onClick={() => navigate("/partner-directory")} variant="outline" size="sm">
-                Partners
-              </Button>
-              <Button onClick={() => navigate("/partner-discounts")} variant="outline" size="sm">
-                Discounts
+                View Partners
               </Button>
             </div>
           </div>

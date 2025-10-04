@@ -119,7 +119,7 @@ export const PartnerBenefitsSection = () => {
               <h3 className="text-2xl font-bold mb-2">Featured Locations</h3>
               <p className="text-muted-foreground">Check in and earn XP at partner venues</p>
             </div>
-            <Link to="/partner-discounts">
+            <Link to="/partner-directory">
               <Button variant="outline">
                 View All
               </Button>

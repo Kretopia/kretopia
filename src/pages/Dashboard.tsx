@@ -27,6 +27,9 @@ import { OGPromotionBanner } from "@/components/OGPromotionBanner";
 import { EngagementNudge } from "@/components/dashboard/EngagementNudge";
 import { Database } from "@/integrations/supabase/types";
 import { SkeletonStat } from "@/components/ui/skeleton-card";
+import { StreakCard } from "@/components/dashboard/StreakCard";
+import { LevelBadge } from "@/components/dashboard/LevelBadge";
+import { useStreakUpdate } from "@/hooks/useStreakUpdate";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -45,6 +48,9 @@ const Dashboard = () => {
 
   // Check and activate OG promotion automatically
   useOGPromotion();
+  
+  // Update streak on dashboard visit
+  useStreakUpdate();
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -213,6 +219,21 @@ const Dashboard = () => {
         {profile && checkProfileCompletion(profile).percentage < 100 && (
           <div className="mb-6 sm:mb-8">
             <ProfileCompletionCard completion={checkProfileCompletion(profile)} />
+          </div>
+        )}
+
+        {/* Level & Streak Section */}
+        {profile && (
+          <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 md:grid-cols-2">
+            <Card className="p-6">
+              <LevelBadge level={profile.level || 1} xp={profile.xp || 0} />
+            </Card>
+            <StreakCard 
+              streakCount={profile.streak_count || 0}
+              longestStreak={profile.longest_streak || 0}
+              freezeCount={profile.streak_freeze_count || 0}
+              onUpdate={fetchProfile}
+            />
           </div>
         )}
 

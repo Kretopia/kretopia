@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { SkeletonLeaderboardItem } from "@/components/ui/skeleton-card";
+import { getLevelData, getXPForLevel } from "@/lib/gamification";
 
 interface LeaderboardUser {
   id: string;
@@ -203,8 +204,13 @@ const Leaderboard = () => {
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2 mb-1">
-                          <Trophy className="h-4 w-4 text-primary" />
-                          <span className="font-semibold">Level {user.level}</span>
+                          <span className="text-lg">{getLevelData(user.level).icon}</span>
+                          <div className="text-left">
+                            <p className={`font-bold text-sm bg-gradient-to-r ${getLevelData(user.level).color} bg-clip-text text-transparent`}>
+                              {getLevelData(user.level).name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Level {user.level}</p>
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground">{user.xp.toLocaleString()} XP</p>
                       </div>

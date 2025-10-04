@@ -134,10 +134,12 @@ export const getTierProgress = (currentPoints: number): number => {
   return Math.min(100, (pointsInTier / tierRange) * 100);
 };
 
-// Point earning activities
+// Point earning activities with enhanced referral rewards
 export const POINT_REWARDS = {
   PROFILE_COMPLETE: 100,
   DAILY_LOGIN: 5,
+  DAILY_STREAK_BONUS: 25, // Extra bonus for maintaining streaks
+  WEEKLY_STREAK_BONUS: 100, // Bonus for 7-day streak
   CONNECTION_MADE: 25,
   PROJECT_COMPLETED: 500,
   REVIEW_RECEIVED: 150,
@@ -147,4 +149,9 @@ export const POINT_REWARDS = {
   COLLABORATION_ACCEPTED: 100,
   PORTFOLIO_ITEM_ADDED: 30,
   SKILL_VERIFIED: 75,
+  INVITE_ACCEPTED: 200, // When someone uses your invite code (doubled)
+  REFERRAL_FIRST_MATCH: 100, // When your referral gets their first match
+  REFERRAL_FIRST_PROJECT: 150, // When your referral creates first project
+  REFERRAL_MILESTONE: 50, // For each milestone your referral completes (max 5)
+  OG_PROMOTION_ACTIVATED: 500, // Bonus for activating OG promotion
 } as const;

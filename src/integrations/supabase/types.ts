@@ -1250,11 +1250,13 @@ export type Database = {
           instagram_url: string | null
           invite_code_used: string | null
           job_title: string | null
+          last_active_date: string | null
           last_swipe_reset: string | null
           level: number | null
           linkedin_connections: number | null
           linkedin_url: string | null
           location: string | null
+          longest_streak: number | null
           membership_number: string | null
           og_promotion_expires_at: string | null
           og_promotion_used: boolean | null
@@ -1270,6 +1272,8 @@ export type Database = {
           spotify_url: string | null
           storage_limit_bytes: number | null
           storage_used_bytes: number | null
+          streak_count: number | null
+          streak_freeze_count: number | null
           stripe_account_id: string | null
           stripe_account_status: string | null
           stripe_customer_id: string | null
@@ -1307,11 +1311,13 @@ export type Database = {
           instagram_url?: string | null
           invite_code_used?: string | null
           job_title?: string | null
+          last_active_date?: string | null
           last_swipe_reset?: string | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          longest_streak?: number | null
           membership_number?: string | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
@@ -1327,6 +1333,8 @@ export type Database = {
           spotify_url?: string | null
           storage_limit_bytes?: number | null
           storage_used_bytes?: number | null
+          streak_count?: number | null
+          streak_freeze_count?: number | null
           stripe_account_id?: string | null
           stripe_account_status?: string | null
           stripe_customer_id?: string | null
@@ -1364,11 +1372,13 @@ export type Database = {
           instagram_url?: string | null
           invite_code_used?: string | null
           job_title?: string | null
+          last_active_date?: string | null
           last_swipe_reset?: string | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          longest_streak?: number | null
           membership_number?: string | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
@@ -1384,6 +1394,8 @@ export type Database = {
           spotify_url?: string | null
           storage_limit_bytes?: number | null
           storage_used_bytes?: number | null
+          streak_count?: number | null
+          streak_freeze_count?: number | null
           stripe_account_id?: string | null
           stripe_account_status?: string | null
           stripe_customer_id?: string | null
@@ -1715,6 +1727,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string | null
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       review_requests: {
         Row: {

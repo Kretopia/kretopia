@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone } from "lucide-react";
+import { NotificationSettings } from "@/components/profile/NotificationSettings";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -437,6 +438,13 @@ const Settings = () => {
                   checked={preferences.in_app_all}
                   onCheckedChange={(checked) => updatePreference('in_app_all', checked)}
                 />
+              </div>
+
+              <Separator />
+
+              {/* Push Notifications */}
+              <div className="space-y-4">
+                <NotificationSettings />
               </div>
 
               <Separator />

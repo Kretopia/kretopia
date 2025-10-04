@@ -36,6 +36,7 @@ const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const StorageManagement = lazy(() => import("./pages/StorageManagement"));
 const SupportDashboard = lazy(() => import("./pages/SupportDashboard"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
+const Settings = lazy(() => import("./pages/Settings"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
@@ -130,6 +131,7 @@ const App = () => {
                     <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
                     <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
                     <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                     <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
                     <Route path="/partner-submit" element={<PartnerSubmit />} />
                     <Route path="/payment-success" element={<PaymentSuccess />} />

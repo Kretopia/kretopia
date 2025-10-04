@@ -136,7 +136,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/profile?tab=settings")}
+                      onClick={() => handleNavigation("/settings")}
                     >
                       <Settings className="h-5 w-5" />
                       Settings

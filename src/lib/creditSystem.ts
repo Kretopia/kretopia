@@ -68,6 +68,8 @@ export const checkAndAwardDailyLogin = async (userId: string) => {
       .eq('user_id', userId)
       .eq('activity_type', 'daily_login')
       .gte('created_at', `${today}T00:00:00`)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (checkError) {

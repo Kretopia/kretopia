@@ -173,7 +173,7 @@ export default function Membership() {
       {/* Back Button */}
       <Button
         variant="ghost"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/dashboard")}
         className="gap-2 mb-4"
       >
         <ArrowLeft className="h-4 w-4" />

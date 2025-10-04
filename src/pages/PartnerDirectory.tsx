@@ -113,7 +113,7 @@ export default function PartnerDirectory() {
             {/* Back Button */}
             <Button
               variant="ghost"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/membership")}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />

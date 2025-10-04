@@ -88,6 +88,14 @@ serve(async (req) => {
       if (titleMatch) ogData.title = titleMatch[1];
     }
 
+    // If no description, try standard meta description
+    if (!ogData.description) {
+      const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i);
+      if (descMatch) ogData.description = descMatch[1];
+    }
+
+    console.log("Extracted OG data:", JSON.stringify(ogData, null, 2));
+
     // Verify the domain for basic trust
     const urlObj = new URL(url);
     const domain = urlObj.hostname;

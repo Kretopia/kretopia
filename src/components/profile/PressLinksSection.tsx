@@ -70,14 +70,19 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
 
       if (error) throw error;
       
+      console.log("OG data received:", data);
+      
       if (data.success) {
-        setNewLink(prev => ({
-          ...prev,
-          title: data.data.title || prev.title,
-          publication: data.data.siteName || prev.publication,
-          image_url: data.data.image || prev.image_url,
-          excerpt: data.data.description || prev.excerpt,
-        }));
+        const updatedLink = {
+          ...newLink,
+          title: data.data.title || newLink.title,
+          publication: data.data.siteName || newLink.publication,
+          image_url: data.data.image || newLink.image_url,
+          excerpt: data.data.description || newLink.excerpt,
+        };
+        
+        console.log("Updated link data:", updatedLink);
+        setNewLink(updatedLink);
         toast.success("Article details loaded!");
       }
     } catch (error) {
@@ -110,6 +115,8 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
       if (newLink.published_date) insertData.published_date = newLink.published_date;
       if (newLink.image_url) insertData.thumbnail_url = newLink.image_url;
       if (newLink.excerpt) insertData.excerpt = newLink.excerpt;
+
+      console.log("Inserting press link:", insertData);
 
       const { error } = await supabase.from("press_links").insert(insertData);
 

@@ -158,6 +158,20 @@ const Discover = () => {
 
       const swipedIds = new Set(userSwipes?.map(s => s.target_id) || []);
 
+      // Fetch existing connections to exclude them
+      const { data: existingConnections } = await supabase
+        .from('connections')
+        .select('user_id, connected_user_id')
+        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
+        .eq('status', 'accepted');
+
+      // Create set of connected user IDs
+      const connectedUserIds = new Set(
+        existingConnections?.map(conn => 
+          conn.user_id === user.id ? conn.connected_user_id : conn.user_id
+        ) || []
+      );
+
       if (activeTab === 'creators') {
         console.log('[Discover] Fetching creator profiles...');
         let profilesQuery = supabase
@@ -185,9 +199,10 @@ const Discover = () => {
         
         console.log('[Discover] Fetched profiles:', profiles?.length || 0);
 
-        // Filter out already swiped profiles - only require basics (name, role, avatar, bio exists)
+        // Filter out already swiped profiles and connected users - only require basics (name, role, avatar, bio exists)
         const completeProfiles = (profiles || []).filter(profile => {
           return !swipedIds.has(profile.id) &&
+                 !connectedUserIds.has(profile.user_id) &&
                  profile.full_name && 
                  profile.full_name !== 'New User' && 
                  profile.role && 

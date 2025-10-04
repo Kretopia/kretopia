@@ -408,9 +408,15 @@ const ThriveDesk = () => {
               <span className="text-xs text-muted-foreground">{userRole === 'client' ? 'Client' : 'Creator'}</span>
             </div>
           </div>
-          <InvoiceGenerator 
-            projectId={projectId || ''}
-          />
+          <div className="flex gap-2">
+            <InviteCollaboratorDialog 
+              projectId={projectId || ''} 
+              onInvite={fetchProjectData}
+            />
+            <InvoiceGenerator 
+              projectId={projectId || ''}
+            />
+          </div>
         </div>
       </div>
 

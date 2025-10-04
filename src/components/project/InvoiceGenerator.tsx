@@ -234,15 +234,24 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Invoices</CardTitle>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+    <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <FileText className="h-4 w-4 mr-2" />
+          Invoices {invoices.length > 0 && `(${invoices.length})`}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Invoice Manager</DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex-1 overflow-y-auto">
+          <Dialog>
             <DialogTrigger asChild>
-              <Button size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Create Invoice
+              <Button size="sm" className="w-full mb-4">
+                <Plus className="mr-2 h-4 w-4" />
+                Create New Invoice
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -374,48 +383,56 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
               </div>
             </DialogContent>
           </Dialog>
+
+          {invoices.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>No invoices created yet</p>
+              <p className="text-sm">Create your first invoice to get started</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {invoices.map((inv) => (
+                <div key={inv.id} className="p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-medium">{inv.invoice_number}</p>
+                      <p className="text-sm text-muted-foreground">
+                        To: {inv.profiles?.full_name || "Unknown"}
+                      </p>
+                      {inv.due_date && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Due: {new Date(inv.due_date).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg">${Number(inv.total_amount).toFixed(2)}</p>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        inv.status === "paid" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" :
+                        inv.status === "sent" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" :
+                        "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+                      }`}>
+                        {inv.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(inv)}>
+                      <Download className="h-3 w-3 mr-1" />
+                      PDF
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleSendInvoice(inv)}>
+                      <Mail className="h-3 w-3 mr-1" />
+                      Send
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </CardHeader>
-      <CardContent>
-        {invoices.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No invoices yet</p>
-        ) : (
-          <div className="space-y-3">
-            {invoices.map((inv) => (
-              <div key={inv.id} className="p-4 border rounded-lg">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <p className="font-medium">{inv.invoice_number}</p>
-                    <p className="text-sm text-muted-foreground">
-                      To: {inv.profiles?.full_name || "Unknown"}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">${Number(inv.total_amount).toFixed(2)}</p>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      inv.status === "paid" ? "bg-green-100 text-green-800" :
-                      inv.status === "sent" ? "bg-blue-100 text-blue-800" :
-                      "bg-gray-100 text-gray-800"
-                    }`}>
-                      {inv.status}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(inv)}>
-                    <Download className="h-3 w-3 mr-1" />
-                    PDF
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleSendInvoice(inv)}>
-                    <Mail className="h-3 w-3 mr-1" />
-                    Send
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

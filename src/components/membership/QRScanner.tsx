@@ -240,12 +240,12 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
       if (mountedRef.current) {
         setPermissionGranted(true);
         setCameraError(null);
-        // Wait a bit for DOM to be ready
+        // Wait for DOM to be ready
         setTimeout(() => {
           if (mountedRef.current) {
             initScanner();
           }
-        }, 200);
+        }, 100);
       }
     } catch (error: any) {
       console.error("Camera permission error:", error);
@@ -326,12 +326,14 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
             <h3 className="text-lg font-semibold">{location.name}</h3>
             <p className="text-sm text-muted-foreground">Processing check-in...</p>
           </div>
-        ) : scanning ? (
+        ) : permissionGranted ? (
           <div>
             <div id="qr-reader" className="w-full" />
-            <p className="text-sm text-muted-foreground text-center mt-4">
-              Point your camera at the QR code
-            </p>
+            {scanning && (
+              <p className="text-sm text-muted-foreground text-center mt-4">
+                Point your camera at the QR code
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-8">

@@ -17,3 +17,9 @@ verify_jwt = true
 
 [functions.ai-support]
 verify_jwt = true
+
+[functions.fetch-portfolio-data]
+verify_jwt = false
+
+[functions.fetch-og-data]
+verify_jwt = false

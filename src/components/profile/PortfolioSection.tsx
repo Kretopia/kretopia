@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Upload, ExternalLink, Trash2, Eye, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -32,16 +31,73 @@ interface PortfolioSectionProps {
 export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSectionProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+  const [uploadMode, setUploadMode] = useState<"link" | "upload">("link");
+  const [linkUrl, setLinkUrl] = useState("");
+  const [previewData, setPreviewData] = useState<any>(null);
   const [newItem, setNewItem] = useState({
     title: "",
     description: "",
     media_type: "image",
     media_url: "",
+    thumbnail_url: "",
+    embed_code: "",
     category: "",
     tags: ""
   });
   const { toast } = useToast();
+
+  const fetchPlatformData = async (url: string) => {
+    if (!url.trim()) {
+      setPreviewData(null);
+      return;
+    }
+
+    setFetchingData(true);
+    try {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke(
+        'fetch-portfolio-data',
+        { body: { url } }
+      );
+
+      if (functionError) throw functionError;
+
+      if (functionData?.success && functionData?.data) {
+        const data = functionData.data;
+        setPreviewData(data);
+        setNewItem({
+          ...newItem,
+          media_url: data.mediaUrl || url,
+          media_type: data.mediaType || "link",
+          thumbnail_url: data.thumbnailUrl || "",
+          embed_code: data.embedCode || "",
+          title: data.title || "",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching platform data:", error);
+      toast({
+        title: "Could not analyze link",
+        description: "Please try again or upload directly",
+        variant: "destructive",
+      });
+    } finally {
+      setFetchingData(false);
+    }
+  };
+
+  const handleLinkChange = (value: string) => {
+    setLinkUrl(value);
+    if (value.trim() && value.startsWith("http")) {
+      const debounce = setTimeout(() => {
+        fetchPlatformData(value);
+      }, 500);
+      return () => clearTimeout(debounce);
+    } else {
+      setPreviewData(null);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,7 +125,18 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
     }
 
     const { data } = supabase.storage.from('portfolio').getPublicUrl(fileName);
-    setNewItem({ ...newItem, media_url: data.publicUrl });
+    
+    // Auto-detect media type
+    let mediaType = "image";
+    if (file.type.startsWith("video/")) mediaType = "video";
+    else if (file.type.startsWith("audio/")) mediaType = "audio";
+    
+    setNewItem({ 
+      ...newItem, 
+      media_url: data.publicUrl,
+      thumbnail_url: data.publicUrl,
+      media_type: mediaType
+    });
     setUploading(false);
   };
 
@@ -77,12 +144,23 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    if (!newItem.title || !newItem.media_url) {
+      toast({
+        title: "Missing information",
+        description: "Please add a title and media",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { error } = await supabase.from('portfolio_items').insert({
       user_id: user.id,
       title: newItem.title,
       description: newItem.description,
       media_type: newItem.media_type,
       media_url: newItem.media_url,
+      thumbnail_url: newItem.thumbnail_url,
+      embed_code: newItem.embed_code,
       category: newItem.category,
       tags: newItem.tags.split(',').map(t => t.trim()).filter(Boolean)
     });
@@ -96,9 +174,25 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
     } else {
       toast({ title: "Success", description: "Portfolio item added" });
       setIsAddOpen(false);
-      setNewItem({ title: "", description: "", media_type: "image", media_url: "", category: "", tags: "" });
+      resetForm();
       onRefresh();
     }
+  };
+
+  const resetForm = () => {
+    setLinkUrl("");
+    setPreviewData(null);
+    setUploadMode("link");
+    setNewItem({ 
+      title: "", 
+      description: "", 
+      media_type: "image", 
+      media_url: "", 
+      thumbnail_url: "",
+      embed_code: "",
+      category: "", 
+      tags: "" 
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -126,54 +220,132 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
-                <DialogTitle>Add Portfolio Item</DialogTitle>
-                <DialogDescription>Upload or link your creative work</DialogDescription>
+                <DialogTitle>Add to Portfolio</DialogTitle>
+                <DialogDescription>Paste a link or upload directly</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Media Type</Label>
-                  <Select value={newItem.media_type} onValueChange={(v) => setNewItem({ ...newItem, media_type: v })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="image">Image</SelectItem>
-                      <SelectItem value="video">Video</SelectItem>
-                      <SelectItem value="audio">Audio</SelectItem>
-                      <SelectItem value="document">Document</SelectItem>
-                      <SelectItem value="embed">Embed Link</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Toggle between link and upload */}
+                <div className="flex gap-2">
+                  <Button
+                    variant={uploadMode === "link" ? "default" : "outline"}
+                    onClick={() => setUploadMode("link")}
+                    className="flex-1"
+                  >
+                    Paste Link
+                  </Button>
+                  <Button
+                    variant={uploadMode === "upload" ? "default" : "outline"}
+                    onClick={() => setUploadMode("upload")}
+                    className="flex-1"
+                  >
+                    Upload File
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label>Upload File</Label>
-                  <div className="flex gap-2">
-                    <Input type="file" onChange={handleFileUpload} disabled={uploading} />
-                    {uploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
+
+                {uploadMode === "link" ? (
+                  <>
+                    {/* Link Input */}
+                    <div className="space-y-2">
+                      <Label>Paste Link</Label>
+                      <Input
+                        value={linkUrl}
+                        onChange={(e) => handleLinkChange(e.target.value)}
+                        placeholder="YouTube, Instagram, Vimeo, Spotify..."
+                        disabled={fetchingData}
+                      />
+                      {fetchingData && (
+                        <p className="text-xs text-muted-foreground">Analyzing link...</p>
+                      )}
+                    </div>
+
+                    {/* Preview Card */}
+                    {previewData && (
+                      <div className="rounded-lg border bg-card p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                          {previewData.thumbnailUrl && (
+                            <img
+                              src={previewData.thumbnailUrl}
+                              alt="Preview"
+                              className="w-24 h-24 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground capitalize mb-1">
+                              {previewData.platform} • {previewData.mediaType}
+                            </p>
+                            {previewData.title && (
+                              <p className="font-medium text-sm line-clamp-2">{previewData.title}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>Upload File</Label>
+                    <Input
+                      type="file"
+                      onChange={handleFileUpload}
+                      disabled={uploading}
+                      accept="image/*,video/*,audio/*"
+                    />
+                    {uploading && (
+                      <p className="text-xs text-muted-foreground">Uploading...</p>
+                    )}
                   </div>
-                  <span className="text-xs text-muted-foreground">Or enter URL below</span>
-                </div>
-                <div className="space-y-2">
-                  <Label>Media URL</Label>
-                  <Input value={newItem.media_url} onChange={(e) => setNewItem({ ...newItem, media_url: e.target.value })} placeholder="https://..." />
-                </div>
-                <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input value={newItem.title} onChange={(e) => setNewItem({ ...newItem, title: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea value={newItem.description} onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} rows={3} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Input value={newItem.category} onChange={(e) => setNewItem({ ...newItem, category: e.target.value })} placeholder="e.g., Music, Design, Film" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Tags (comma-separated)</Label>
-                  <Input value={newItem.tags} onChange={(e) => setNewItem({ ...newItem, tags: e.target.value })} placeholder="creative, collaboration, award-winning" />
-                </div>
-                <Button onClick={handleAdd} className="w-full" variant="gradient">Add to Portfolio</Button>
+                )}
+
+                {/* Show form fields when we have media */}
+                {(newItem.media_url || previewData) && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>
+                        Title {!newItem.title && <span className="text-destructive">*</span>}
+                      </Label>
+                      <Input
+                        value={newItem.title}
+                        onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                        placeholder="Give your work a title"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description (optional)</Label>
+                      <Textarea
+                        value={newItem.description}
+                        onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                        rows={2}
+                        placeholder="Describe your work"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-2">
+                        <Label>Category (optional)</Label>
+                        <Input
+                          value={newItem.category}
+                          onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                          placeholder="e.g., Music"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Tags (optional)</Label>
+                        <Input
+                          value={newItem.tags}
+                          onChange={(e) => setNewItem({ ...newItem, tags: e.target.value })}
+                          placeholder="rock, live"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleAdd}
+                      className="w-full"
+                      variant="gradient"
+                      disabled={!newItem.title || !newItem.media_url}
+                    >
+                      Add to Portfolio
+                    </Button>
+                  </>
+                )}
               </div>
             </DialogContent>
           </Dialog>

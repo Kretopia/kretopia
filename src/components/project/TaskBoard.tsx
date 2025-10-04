@@ -71,18 +71,18 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="p-3 mb-2 hover:shadow-md transition-smooth cursor-move border-l-4 border-l-primary/20">
-        <div className="flex items-start gap-2">
+      <Card className="p-2 md:p-3 mb-1.5 md:mb-2 hover:shadow-md transition-smooth cursor-move border-l-2 md:border-l-4 border-l-primary/20">
+        <div className="flex items-start gap-1.5 md:gap-2">
           <div {...attributes} {...listeners} className="mt-0.5">
-            <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
+            <GripVertical className="h-3 w-3 md:h-3.5 md:w-3.5 text-muted-foreground" />
           </div>
-          <div className="flex-1 space-y-1.5">
+          <div className="flex-1 space-y-1">
             <Dialog open={isEditing} onOpenChange={setIsEditing}>
               <DialogTrigger asChild>
                 <div className="cursor-pointer hover:opacity-70 transition-opacity">
-                  <h4 className="font-medium text-sm leading-snug">{task.title}</h4>
+                  <h4 className="font-medium text-[11px] md:text-sm leading-snug">{task.title}</h4>
                   {task.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+                    <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-2 mt-0.5 md:mt-1 leading-relaxed">
                       {task.description}
                     </p>
                   )}
@@ -122,9 +122,10 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
               </DialogContent>
             </Dialog>
             {task.due_date && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3" />
-                {new Date(task.due_date).toLocaleDateString()}
+              <div className="flex items-center gap-1 text-[10px] md:text-xs text-muted-foreground">
+                <Calendar className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                <span className="hidden xs:inline">{new Date(task.due_date).toLocaleDateString()}</span>
+                <span className="xs:hidden">{new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
               </div>
             )}
           </div>
@@ -138,16 +139,16 @@ function DroppableColumn({ status, tasks, onUpdate }: { status: typeof STATUSES[
   const { setNodeRef } = useDroppable({ id: status.value });
 
   return (
-    <div ref={setNodeRef} className={`rounded-xl p-3 md:p-4 ${status.color} min-h-[180px] md:min-h-[400px] border border-border/50`}>
-      <div className="mb-2.5 md:mb-4 flex items-center justify-between">
-        <h4 className="font-semibold text-xs md:text-sm">{status.label}</h4>
-        <Badge variant="secondary" className="text-xs h-5 min-w-[24px] justify-center">{tasks.length}</Badge>
+    <div ref={setNodeRef} className={`rounded-lg md:rounded-xl p-2 md:p-3 ${status.color} min-h-[150px] md:min-h-[180px] xl:min-h-[400px] border border-border/50`}>
+      <div className="mb-2 md:mb-2.5 flex items-center justify-between">
+        <h4 className="font-semibold text-[10px] md:text-xs">{status.label}</h4>
+        <Badge variant="secondary" className="text-[9px] md:text-xs h-4 md:h-5 min-w-[20px] md:min-w-[24px] justify-center px-1 md:px-1.5">{tasks.length}</Badge>
       </div>
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-2">
+        <div className="space-y-1.5 md:space-y-2">
           {tasks.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground">
-              <p className="text-xs">No tasks</p>
+            <div className="text-center py-4 md:py-6 text-muted-foreground">
+              <p className="text-[10px] md:text-xs">No tasks</p>
             </div>
           ) : (
             tasks.map(task => (
@@ -229,18 +230,18 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   };
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-2 md:space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base md:text-lg font-semibold leading-tight">Task Board</h3>
-          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 hidden md:block">Drag tasks between columns to update status</p>
+          <h3 className="text-sm md:text-base font-semibold leading-tight">Task Board</h3>
+          <p className="text-[9px] md:text-xs text-muted-foreground mt-0.5 hidden sm:block">Drag to update status</p>
         </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1.5 h-9 md:h-10 text-xs md:text-sm">
-              <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span className="hidden xs:inline">New Task</span>
-              <span className="xs:hidden">New</span>
+            <Button size="sm" className="gap-1 h-8 md:h-9 text-xs px-2 md:px-3">
+              <Plus className="h-3 w-3 md:h-3.5 md:w-3.5" />
+              <span className="hidden xs:inline text-xs">Task</span>
+              <span className="xs:hidden">+</span>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -296,18 +297,18 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
       </div>
 
       {tasks.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed rounded-lg">
-          <CheckSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h4 className="font-semibold mb-2">No tasks yet</h4>
-          <p className="text-sm text-muted-foreground mb-4">Create your first task to get started</p>
+        <div className="text-center py-8 md:py-12 border-2 border-dashed rounded-lg">
+          <CheckSquare className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-3 md:mb-4 text-muted-foreground" />
+          <h4 className="font-semibold text-sm md:text-base mb-1.5 md:mb-2">No tasks yet</h4>
+          <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4">Create your first task to get started</p>
           <Button onClick={() => setCreateDialogOpen(true)} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
             Create Task
           </Button>
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-3">
             {STATUSES.map(status => {
               const statusTasks = tasks.filter(t => t.status === status.value);
               return (

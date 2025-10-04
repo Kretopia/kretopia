@@ -15,6 +15,7 @@ import { NFCScanner } from "@/components/membership/NFCScanner";
 import { CheckInMethodDialog } from "@/components/membership/CheckInMethodDialog";
 import { TierComparison } from "@/components/membership/TierComparison";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useOGPromotion } from "@/hooks/useOGPromotion";
 
 export default function Membership() {
   const { user } = useAuth();
@@ -28,6 +29,9 @@ export default function Membership() {
   const [showNFCScanner, setShowNFCScanner] = useState(false);
   const [showMethodDialog, setShowMethodDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Activate OG/Founder promotion automatically
+  useOGPromotion();
 
   useEffect(() => {
     if (!user) {

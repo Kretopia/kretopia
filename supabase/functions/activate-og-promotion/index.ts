@@ -50,11 +50,11 @@ serve(async (req) => {
       promotionUsed: profile.og_promotion_used 
     });
 
-    // Check if user is OG and hasn't used promotion
-    if (profile.badge !== 'og') {
+    // Check if user is OG or Founder and hasn't used promotion
+    if (profile.badge !== 'og' && profile.badge !== 'founder') {
       return new Response(JSON.stringify({ 
         success: false,
-        message: "User is not an OG member"
+        message: "User is not an OG or Founder member"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,

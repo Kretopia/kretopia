@@ -43,6 +43,7 @@ const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
 const ProjectTemplates = lazy(() => import("./pages/ProjectTemplates"));
+const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -122,6 +123,7 @@ const App = () => {
                     <Route path="/payment-canceled" element={<PaymentCanceled />} />
                     <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
                     <Route path="/project-templates" element={<ProtectedRoute><ProjectTemplates /></ProtectedRoute>} />
+                    <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

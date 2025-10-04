@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QrCode, MapPin, Award, TrendingUp, Crown, Star } from "lucide-react";
+import { QrCode, MapPin, Award, TrendingUp, Crown, Star, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { MembershipMap } from "@/components/membership/MembershipMap";
@@ -170,6 +170,16 @@ export default function Membership() {
 
   return (
     <div className="container mx-auto px-4 py-6 pb-24">
+      {/* Back Button */}
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="gap-2 mb-4"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+
       {/* Tier Progress Card */}
       <div className="mb-6">
         <TierProgressCard currentPoints={profile?.xp || 0} />

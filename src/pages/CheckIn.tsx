@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Award, CheckCircle } from "lucide-react";
+import { MapPin, Award, CheckCircle, ArrowLeft } from "lucide-react";
 
 export default function CheckIn() {
   const [searchParams] = useSearchParams();
@@ -204,6 +204,16 @@ export default function CheckIn() {
 
   return (
     <div className="container mx-auto px-4 py-6 pb-24">
+      {/* Back Button */}
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="gap-2 mb-4"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+
       <div className="max-w-md mx-auto">
         <Card className="overflow-hidden">
           {location.image_url && (

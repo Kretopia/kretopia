@@ -51,17 +51,24 @@ export const InviteCodesCard = () => {
 
   const copyToClipboard = async (code: string) => {
     try {
-      await navigator.clipboard.writeText(code);
+      const inviteUrl = `${window.location.origin}/auth?invite=${code}`;
+      const inviteMessage = `🎨 Join my circle on ThriveIN!
+
+Connect with creatives and content creators, discover exciting opportunities, and collaborate on projects together.
+
+${inviteUrl}`;
+      
+      await navigator.clipboard.writeText(inviteMessage);
       setCopiedCode(code);
       toast({
         title: "Copied!",
-        description: "Invite code copied to clipboard",
+        description: "Invite link copied to clipboard",
       });
       setTimeout(() => setCopiedCode(null), 2000);
     } catch (err) {
       toast({
         title: "Error",
-        description: "Failed to copy code",
+        description: "Failed to copy invite link",
         variant: "destructive",
       });
     }

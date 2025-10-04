@@ -24,6 +24,7 @@ import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { checkProfileCompletion, PROFILE_COMPLETION_XP } from "@/lib/profileCompletion";
 import { useOGPromotion } from "@/hooks/useOGPromotion";
 import { OGPromotionBanner } from "@/components/OGPromotionBanner";
+import { EngagementNudge } from "@/components/dashboard/EngagementNudge";
 import { Database } from "@/integrations/supabase/types";
 import { SkeletonStat } from "@/components/ui/skeleton-card";
 
@@ -202,6 +203,11 @@ const Dashboard = () => {
 
         {/* OG Promotion Banner */}
         <OGPromotionBanner />
+
+        {/* Engagement Nudge */}
+        <div className="mb-6 sm:mb-8">
+          <EngagementNudge />
+        </div>
 
         {/* Profile Completion Card */}
         {profile && checkProfileCompletion(profile).percentage < 100 && (

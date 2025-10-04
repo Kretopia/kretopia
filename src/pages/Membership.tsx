@@ -264,8 +264,11 @@ export default function Membership() {
                 Compare features and upgrade to unlock more capabilities
               </p>
             </div>
+            <Button onClick={() => navigate('/partner-directory')} variant="outline">
+              View All Partners
+            </Button>
             <Button onClick={() => navigate('/partner-discounts')} variant="outline">
-              View Partner Discounts
+              Discounts
             </Button>
           </div>
           <TierComparison currentTier={profile?.subscription_tier || "free"} />

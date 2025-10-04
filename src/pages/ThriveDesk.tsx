@@ -8,6 +8,9 @@ import { TimeTracker } from "@/components/project/TimeTracker";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
 import { ProjectSettings } from "@/components/project/ProjectSettings";
+import { MessagePanel } from "@/components/project/MessagePanel";
+import { ActivityTimeline } from "@/components/project/ActivityTimeline";
+import { NotificationBell } from "@/components/project/NotificationBell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,7 +27,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
-  Send, 
   Plus,
   ArrowLeft,
   Calendar,
@@ -32,14 +34,11 @@ import {
   Loader2,
   Image as ImageIcon,
   FileText,
-  MoreVertical,
-  Paperclip,
-  Edit,
-  Save,
-  Monitor,
   CheckSquare,
   Clock,
-  Users
+  Users,
+  Monitor,
+  Send
 } from "lucide-react";
 
 const ThriveDesk = () => {
@@ -61,7 +60,6 @@ const ThriveDesk = () => {
   const [editedProject, setEditedProject] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (projectId) {
@@ -342,16 +340,16 @@ const ThriveDesk = () => {
     }
   };
 
+  const isImageFile = (fileType: string) => {
+    return fileType?.startsWith('image/');
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  };
-
-  const isImageFile = (fileType: string) => {
-    return fileType?.startsWith('image/');
   };
 
   const handleSaveProject = async () => {
@@ -450,70 +448,18 @@ const ThriveDesk = () => {
         </div>
 
         <TabsContent value="messages" className="flex-1 flex flex-col m-0 overflow-hidden">
-          <ScrollArea className="flex-1 px-4">
-            <div className="py-4 space-y-4">
-              {messages.map((msg) => (
-                <div key={msg.id} className="flex gap-3">
-                  <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-primary/10">
-                    <AvatarImage src={msg.profiles?.avatar_url} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground">
-                      {msg.profiles?.full_name?.[0] || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 mb-1.5">
-                      <span className="font-semibold text-sm truncate">{msg.profiles?.full_name || 'User'}</span>
-                      <span className="text-xs text-muted-foreground flex-shrink-0">
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div className="bg-secondary/50 rounded-2xl rounded-tl-none p-3">
-                      <p className="text-sm leading-relaxed break-words">{msg.message}</p>
-                      {msg.file_url && (
-                        <div className="mt-2">
-                          {isImageFile(msg.file_type) ? (
-                            <img src={msg.file_url} alt={msg.file_name} className="rounded-lg max-w-full h-auto border border-border" />
-                          ) : (
-                            <a href={msg.file_url} target="_blank" rel="noopener noreferrer" 
-                               className="flex items-center gap-2 p-2.5 bg-background rounded-lg text-sm active:bg-muted border border-border">
-                              <FileText className="h-4 w-4 flex-shrink-0 text-primary" />
-                              <span className="truncate text-xs">{msg.file_name}</span>
-                            </a>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
-          <div className="border-t p-4 bg-background safe-area-bottom shadow-lg">
-            {attachedFile && (
-              <div className="mb-3 p-3 bg-primary/5 rounded-xl flex items-center gap-2.5 text-sm border border-primary/20">
-                <Paperclip className="h-4 w-4 flex-shrink-0 text-primary" />
-                <span className="flex-1 truncate font-medium">{attachedFile.name}</span>
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAttachedFile(null)}>✕</Button>
-              </div>
-            )}
-            <div className="flex gap-2.5">
-              <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileAttach} />
-              <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
-                <Paperclip className="h-5 w-5" />
-              </Button>
-              <Input
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                className="flex-1 h-12 text-base rounded-xl border-2"
-              />
-              <Button onClick={handleSendMessage} disabled={sendingMessage} size="icon" className="h-12 w-12 rounded-xl flex-shrink-0">
-                {sendingMessage ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-              </Button>
-            </div>
-          </div>
+          <MessagePanel
+            messages={messages}
+            newMessage={newMessage}
+            setNewMessage={setNewMessage}
+            attachedFile={attachedFile}
+            setAttachedFile={setAttachedFile}
+            sendingMessage={sendingMessage}
+            onSendMessage={handleSendMessage}
+            onFileAttach={handleFileAttach}
+            messagesEndRef={messagesEndRef}
+            compact={false}
+          />
         </TabsContent>
 
         <TabsContent value="tasks" className="flex-1 m-0 overflow-auto">
@@ -595,6 +541,7 @@ const ThriveDesk = () => {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Badge variant="secondary" className="text-xs">{project.status}</Badge>
+                <NotificationBell projectId={projectId || ''} />
                 <InvoiceGenerator 
                   projectId={projectId || ''}
                 />
@@ -628,71 +575,18 @@ const ThriveDesk = () => {
             </div>
 
             <TabsContent value="messages" className="flex-1 flex flex-col m-0 overflow-hidden">
-              <ScrollArea className="flex-1 px-4">
-                <div className="py-3 space-y-3">
-                  {messages.map((msg) => (
-                    <div key={msg.id} className="flex gap-2.5">
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarImage src={msg.profiles?.avatar_url} />
-                        <AvatarFallback className="text-xs">{msg.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-2 mb-0.5">
-                          <span className="font-semibold text-xs">{msg.profiles?.full_name || 'User'}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-sm leading-relaxed">{msg.message}</p>
-                        {msg.file_url && (
-                          <div className="mt-2">
-                            {isImageFile(msg.file_type) ? (
-                              <div className="rounded-lg overflow-hidden border max-w-sm">
-                                <img src={msg.file_url} alt={msg.file_name} className="w-full h-auto" />
-                              </div>
-                            ) : (
-                              <a href={msg.file_url} target="_blank" rel="noopener noreferrer"
-                                 className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors text-xs max-w-xs">
-                                <FileText className="h-3.5 w-3.5 flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <p className="truncate font-medium">{msg.file_name}</p>
-                                  {msg.file_size && <p className="text-xs text-muted-foreground">{formatFileSize(msg.file_size)}</p>}
-                                </div>
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              </ScrollArea>
-              <div className="border-t p-3 bg-background">
-                {attachedFile && (
-                  <div className="mb-2 p-2 bg-secondary rounded-lg flex items-center gap-2 text-xs">
-                    <Paperclip className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="flex-1 truncate">{attachedFile.name}</span>
-                    <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setAttachedFile(null)}>Remove</Button>
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileAttach} />
-                  <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => fileInputRef.current?.click()}>
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    placeholder="Message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                    className="flex-1 h-9 text-sm"
-                  />
-                  <Button onClick={handleSendMessage} disabled={sendingMessage} size="icon" className="h-9 w-9">
-                    {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
+              <MessagePanel
+                messages={messages}
+                newMessage={newMessage}
+                setNewMessage={setNewMessage}
+                attachedFile={attachedFile}
+                setAttachedFile={setAttachedFile}
+                sendingMessage={sendingMessage}
+                onSendMessage={handleSendMessage}
+                onFileAttach={handleFileAttach}
+                messagesEndRef={messagesEndRef}
+                compact={true}
+              />
             </TabsContent>
 
             <TabsContent value="tasks" className="flex-1 m-0 p-3 overflow-auto">
@@ -753,6 +647,9 @@ const ThriveDesk = () => {
         <div className="h-full overflow-auto">
           <ScrollArea className="h-full">
             <div className="p-3 space-y-3">
+              {/* Activity Timeline */}
+              <ActivityTimeline projectId={projectId!} />
+
               {/* Time Tracker */}
               <TimeTracker projectId={projectId!} />
 

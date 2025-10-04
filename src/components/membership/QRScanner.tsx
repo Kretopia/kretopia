@@ -19,20 +19,57 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
   const [scanning, setScanning] = useState(true);
   const [location, setLocation] = useState<any>(null);
   const [verifying, setVerifying] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
   useEffect(() => {
+    // Request camera permission first
+    const requestCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Stop the stream immediately - we just wanted to check permission
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Now initialize the scanner
+        initScanner();
+      } catch (error: any) {
+        console.error("Camera permission error:", error);
+        let errorMessage = "Camera access denied. Please enable camera permissions in your browser settings.";
+        
+        if (error.name === 'NotAllowedError') {
+          errorMessage = "Camera access denied. Please enable camera permissions in your browser settings.";
+        } else if (error.name === 'NotFoundError') {
+          errorMessage = "No camera found on this device.";
+        } else if (error.name === 'NotReadableError') {
+          errorMessage = "Camera is already in use by another application.";
+        }
+        
+        setCameraError(errorMessage);
+        toast({
+          title: "Camera Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+    };
+
+    requestCameraPermission();
+
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error);
+        scannerRef.current = null;
+      }
+    };
+  }, []);
+
+  const initScanner = () => {
     // Small delay to ensure DOM is ready
-    const timer = setTimeout(() => {
+    setTimeout(() => {
       const element = document.getElementById("qr-reader");
       if (!element) {
         console.error("QR reader element not found");
-        toast({
-          title: "Scanner Error",
-          description: "Unable to initialize QR scanner",
-          variant: "destructive",
-        });
-        onClose();
+        setCameraError("Unable to initialize QR scanner");
         return;
       }
 
@@ -42,7 +79,8 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
           { 
             fps: 10, 
             qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0
+            aspectRatio: 1.0,
+            rememberLastUsedCamera: true,
           },
           false
         );
@@ -64,23 +102,10 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
         }
       } catch (error) {
         console.error("Scanner initialization error:", error);
-        toast({
-          title: "Scanner Error",
-          description: "Failed to start QR scanner",
-          variant: "destructive",
-        });
-        onClose();
+        setCameraError("Failed to start QR scanner");
       }
     }, 100);
-
-    return () => {
-      clearTimeout(timer);
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
-        scannerRef.current = null;
-      }
-    };
-  }, []);
+  };
 
   const verifyAndCheckIn = async (qrCode: string) => {
     setVerifying(true);
@@ -231,7 +256,17 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
           <DialogTitle>Scan Location QR Code</DialogTitle>
         </DialogHeader>
 
-        {scanning ? (
+        {cameraError ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <X className="h-16 w-16 text-destructive mb-4" />
+            <p className="text-sm text-center text-muted-foreground mb-4">
+              {cameraError}
+            </p>
+            <p className="text-xs text-center text-muted-foreground">
+              Make sure you've allowed camera access in your browser/app settings.
+            </p>
+          </div>
+        ) : scanning ? (
           <div>
             <div id="qr-reader" className="w-full" />
             <p className="text-sm text-muted-foreground text-center mt-4">
@@ -252,7 +287,7 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
         ) : null}
 
         <Button variant="outline" onClick={onClose} className="mt-4">
-          Cancel
+          {cameraError ? "Close" : "Cancel"}
         </Button>
       </DialogContent>
     </Dialog>

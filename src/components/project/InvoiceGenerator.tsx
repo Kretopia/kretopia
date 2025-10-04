@@ -142,12 +142,95 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     setLineItems([{ description: "", quantity: 1, rate: 0, amount: 0 }]);
   };
 
-  const handleSendInvoice = async (invoiceId: string) => {
-    toast.info("Email sending functionality coming soon!");
+  const handleSendInvoice = async (invoice: any) => {
+    try {
+      const recipientEmail = invoice.profiles?.email || prompt("Enter recipient email:");
+      if (!recipientEmail) return;
+
+      const { data, error } = await supabase.functions.invoke("send-invoice-email", {
+        body: { invoiceId: invoice.id, recipientEmail }
+      });
+
+      if (error) throw error;
+
+      toast.success("Invoice sent successfully!");
+      fetchInvoices();
+    } catch (error) {
+      console.error("Error sending invoice:", error);
+      toast.error("Failed to send invoice");
+    }
   };
 
   const handleDownloadPDF = async (invoice: any) => {
-    toast.info("PDF generation coming soon!");
+    try {
+      const jsPDF = (await import("jspdf")).default;
+      const autoTable = (await import("jspdf-autotable")).default;
+      
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(24);
+      doc.text("INVOICE", 20, 20);
+      doc.setFontSize(12);
+      doc.text(`#${invoice.invoice_number}`, 20, 28);
+      
+      // From/To
+      doc.setFontSize(10);
+      doc.text("From:", 20, 45);
+      doc.text(invoice.profiles?.full_name || "Unknown", 20, 50);
+      
+      doc.text("To:", 120, 45);
+      doc.text(invoice.profiles?.full_name || "Unknown", 120, 50);
+      
+      // Invoice Details
+      doc.text(`Status: ${invoice.status}`, 20, 60);
+      if (invoice.due_date) {
+        doc.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, 20, 65);
+      }
+      
+      // Line Items Table
+      const lineItems = (invoice.line_items || []).map((item: any) => [
+        item.description,
+        item.quantity.toString(),
+        `$${item.rate.toFixed(2)}`,
+        `$${item.amount.toFixed(2)}`
+      ]);
+      
+      autoTable(doc, {
+        startY: 75,
+        head: [["Description", "Qty", "Rate", "Amount"]],
+        body: lineItems,
+        theme: "striped",
+        headStyles: { fillColor: [59, 130, 246] }
+      });
+      
+      // Totals
+      const finalY = (doc as any).lastAutoTable.finalY || 75;
+      doc.text(`Subtotal: $${Number(invoice.amount).toFixed(2)}`, 140, finalY + 10);
+      
+      if (invoice.tax_rate) {
+        doc.text(`Tax (${invoice.tax_rate}%): $${Number(invoice.tax_amount).toFixed(2)}`, 140, finalY + 16);
+      }
+      
+      doc.setFontSize(14);
+      doc.setFont(undefined, "bold");
+      doc.text(`Total: $${Number(invoice.total_amount).toFixed(2)}`, 140, finalY + 26);
+      
+      // Notes
+      if (invoice.notes) {
+        doc.setFontSize(10);
+        doc.setFont(undefined, "normal");
+        doc.text("Notes:", 20, finalY + 35);
+        const splitNotes = doc.splitTextToSize(invoice.notes, 170);
+        doc.text(splitNotes, 20, finalY + 40);
+      }
+      
+      doc.save(`invoice-${invoice.invoice_number}.pdf`);
+      toast.success("PDF downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF");
+    }
   };
 
   return (
@@ -323,7 +406,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                     <Download className="h-3 w-3 mr-1" />
                     PDF
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleSendInvoice(inv.id)}>
+                  <Button size="sm" variant="outline" onClick={() => handleSendInvoice(inv)}>
                     <Mail className="h-3 w-3 mr-1" />
                     Send
                   </Button>

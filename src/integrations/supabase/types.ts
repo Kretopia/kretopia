@@ -1183,6 +1183,7 @@ export type Database = {
           display_order: number | null
           excerpt: string | null
           id: string
+          image_url: string | null
           is_featured: boolean | null
           og_data: Json | null
           publication: string | null
@@ -1199,6 +1200,7 @@ export type Database = {
           display_order?: number | null
           excerpt?: string | null
           id?: string
+          image_url?: string | null
           is_featured?: boolean | null
           og_data?: Json | null
           publication?: string | null
@@ -1215,6 +1217,7 @@ export type Database = {
           display_order?: number | null
           excerpt?: string | null
           id?: string
+          image_url?: string | null
           is_featured?: boolean | null
           og_data?: Json | null
           publication?: string | null

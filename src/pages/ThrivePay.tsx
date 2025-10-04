@@ -39,11 +39,6 @@ export default function ThrivePay() {
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>("free");
 
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
     // Check for success callback
     if (searchParams.get("success") === "true") {
       toast({
@@ -54,7 +49,9 @@ export default function ThrivePay() {
       navigate("/thrivepay", { replace: true });
     }
 
-    fetchAccountStatus();
+    if (user) {
+      fetchAccountStatus();
+    }
   }, [user, searchParams]);
 
   const fetchAccountStatus = async () => {

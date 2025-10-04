@@ -22,6 +22,8 @@ import { WalletCard } from "@/components/WalletCard";
 import { checkAndAwardDailyLogin } from "@/lib/creditSystem";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { checkProfileCompletion, PROFILE_COMPLETION_XP } from "@/lib/profileCompletion";
+import { useOGPromotion } from "@/hooks/useOGPromotion";
+import { OGPromotionBanner } from "@/components/OGPromotionBanner";
 import { Database } from "@/integrations/supabase/types";
 import { SkeletonStat } from "@/components/ui/skeleton-card";
 
@@ -39,6 +41,9 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  // Check and activate OG promotion automatically
+  useOGPromotion();
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -194,6 +199,9 @@ const Dashboard = () => {
             </Button>
           </Link>
         </div>
+
+        {/* OG Promotion Banner */}
+        <OGPromotionBanner />
 
         {/* Profile Completion Card */}
         {profile && checkProfileCompletion(profile).percentage < 100 && (

@@ -8,6 +8,7 @@ import { FeatureCard } from "@/components/landing/FeatureCard";
 import { PricingCard } from "@/components/landing/PricingCard";
 import { EarnCard } from "@/components/landing/EarnCard";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
+import { PartnerBenefitsSection } from "@/components/landing/PartnerBenefitsSection";
 import { Button } from "@/components/ui/button";
 
 const Landing = () => {
@@ -158,6 +159,9 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* Partner Benefits Section */}
+      <PartnerBenefitsSection />
 
       {/* How to Earn Credits Section */}
       <section className="px-6 py-20">

@@ -1211,6 +1211,8 @@ export type Database = {
           linkedin_url: string | null
           location: string | null
           membership_number: string | null
+          og_promotion_expires_at: string | null
+          og_promotion_used: boolean | null
           passion_skills: Json | null
           press_links: Json | null
           professional_skills: Json | null
@@ -1266,6 +1268,8 @@ export type Database = {
           linkedin_url?: string | null
           location?: string | null
           membership_number?: string | null
+          og_promotion_expires_at?: string | null
+          og_promotion_used?: boolean | null
           passion_skills?: Json | null
           press_links?: Json | null
           professional_skills?: Json | null
@@ -1321,6 +1325,8 @@ export type Database = {
           linkedin_url?: string | null
           location?: string | null
           membership_number?: string | null
+          og_promotion_expires_at?: string | null
+          og_promotion_used?: boolean | null
           passion_skills?: Json | null
           press_links?: Json | null
           professional_skills?: Json | null

@@ -97,10 +97,19 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from("press_links").insert({
+      // Build insert data with only non-empty fields
+      const insertData: any = {
         user_id: user.id,
-        ...newLink,
-      });
+        title: newLink.title,
+        url: newLink.url,
+      };
+
+      // Only add optional fields if they have values
+      if (newLink.publication) insertData.publication = newLink.publication;
+      if (newLink.published_date) insertData.published_date = newLink.published_date;
+      if (newLink.image_url) insertData.thumbnail_url = newLink.image_url;
+
+      const { error } = await supabase.from("press_links").insert(insertData);
 
       if (error) throw error;
 

@@ -3,10 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Newspaper } from "lucide-react";
+import { Plus, Newspaper, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { AchievementCard } from "./AchievementCard";
 
 interface PressLink {
   id: string;
@@ -37,6 +36,7 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
     publication: "",
     published_date: "",
     image_url: "",
+    excerpt: "",
   });
 
   useEffect(() => {
@@ -76,6 +76,7 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
           title: data.data.title || prev.title,
           publication: data.data.siteName || prev.publication,
           image_url: data.data.image || prev.image_url,
+          excerpt: data.data.description || prev.excerpt,
         }));
         toast.success("Article details loaded!");
       }
@@ -108,6 +109,7 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
       if (newLink.publication) insertData.publication = newLink.publication;
       if (newLink.published_date) insertData.published_date = newLink.published_date;
       if (newLink.image_url) insertData.thumbnail_url = newLink.image_url;
+      if (newLink.excerpt) insertData.excerpt = newLink.excerpt;
 
       const { error } = await supabase.from("press_links").insert(insertData);
 
@@ -120,6 +122,7 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
         publication: "",
         published_date: "",
         image_url: "",
+        excerpt: "",
       });
       setIsEditOpen(false);
       fetchPressLinks();
@@ -250,23 +253,67 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
           {pressLinks.map((link) => (
-            <AchievementCard
+            <a
               key={link.id}
-              variant="press"
-              title={link.title}
-              subtitle={link.publication}
-              description={link.excerpt}
-              year={link.published_date}
-              url={link.url}
-              imageUrl={link.thumbnail_url}
-              verificationStatus={link.verification_status}
-              isFeatured={link.is_featured}
-              isOwnProfile={isOwnProfile}
-              onDelete={() => handleDelete(link.id)}
-              icon={<Newspaper className="h-16 w-16" />}
-            />
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block rounded-lg border border-border bg-card hover:bg-accent transition-colors overflow-hidden"
+            >
+              <div className="flex gap-4 p-4">
+                {link.thumbnail_url && (
+                  <div className="flex-shrink-0 w-32 h-32 rounded overflow-hidden bg-muted">
+                    <img
+                      src={link.thumbnail_url}
+                      alt={link.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {link.publication && (
+                        <>
+                          <span className="font-medium">{link.publication}</span>
+                          <span>•</span>
+                        </>
+                      )}
+                      {link.published_date && (
+                        <time>{new Date(link.published_date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}</time>
+                      )}
+                    </div>
+                    {isOwnProfile && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDelete(link.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-semibold text-primary group-hover:underline mb-2 line-clamp-2">
+                    {link.title}
+                  </h3>
+                  {link.excerpt && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {link.excerpt}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </a>
           ))}
         </div>
       )}

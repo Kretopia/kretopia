@@ -76,7 +76,7 @@ serve(async (req) => {
     };
 
     ogData.title = extractMetaContent("og:title") || extractMetaContent("twitter:title");
-    ogData.description = extractMetaContent("og:description") || extractMetaContent("twitter:description");
+    ogData.description = extractMetaContent("og:description") || extractMetaContent("twitter:description") || extractMetaContent("description");
     ogData.image = extractMetaContent("og:image") || extractMetaContent("twitter:image");
     ogData.url = extractMetaContent("og:url") || url;
     ogData.siteName = extractMetaContent("og:site_name");

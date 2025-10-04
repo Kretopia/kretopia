@@ -45,7 +45,7 @@ export const parseMediaUrl = (url: string): MediaInfo | null => {
   }
 
   // Spotify
-  const spotifyRegex = /spotify\.com\/(track|album|playlist|episode)\/([a-zA-Z0-9]+)/;
+  const spotifyRegex = /spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/;
   const spotifyMatch = url.match(spotifyRegex);
   if (spotifyMatch) {
     const [, type, id] = spotifyMatch;
@@ -53,7 +53,7 @@ export const parseMediaUrl = (url: string): MediaInfo | null => {
       platform: 'spotify',
       id,
       embedUrl: `https://open.spotify.com/embed/${type}/${id}`,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=400&h=300&fit=crop' // Spotify placeholder
+      thumbnailUrl: '' // Will be fetched from edge function
     };
   }
 
@@ -87,14 +87,14 @@ export const parseMediaUrl = (url: string): MediaInfo | null => {
 };
 
 export const getMediaThumbnail = (item: { media_type: string; media_url: string; thumbnail_url?: string }): string => {
-  // If custom thumbnail is set, use it
+  // If custom thumbnail is set, use it (this is fetched from the platform)
   if (item.thumbnail_url) return item.thumbnail_url;
 
-  // Try to parse as platform URL
+  // Try to parse as platform URL and extract thumbnail
   const mediaInfo = parseMediaUrl(item.media_url);
-  if (mediaInfo) return mediaInfo.thumbnailUrl;
+  if (mediaInfo?.thumbnailUrl) return mediaInfo.thumbnailUrl;
 
-  // Fallback thumbnails based on media type
+  // Fallback thumbnails based on media type (only if no platform-specific thumbnail found)
   if (item.media_type === 'video') {
     return 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=300&fit=crop';
   }

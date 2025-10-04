@@ -24,10 +24,12 @@ import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
 import { SettingsTab } from "@/components/profile/SettingsTab";
+import { TierProgressCard } from "@/components/membership/TierProgressCard";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from "lucide-react";
+import { getTierByPoints } from "@/lib/tierSystem";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -399,16 +401,28 @@ const Profile = () => {
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-2">
                     <h1 className="text-xl md:text-3xl font-bold leading-tight">{profile.full_name}</h1>
                     {userBadge && (
                       <Badge 
                         variant={userBadge === 'og' || userBadge === 'founder' ? 'default' : 'secondary'}
-                        className="text-xs"
+                        className="text-xs md:text-sm font-semibold"
                       >
                         {userBadge === 'founder' ? '👑 Founder' : userBadge === 'og' ? '⭐ OG Thriver' : '🚀 Beta'}
                       </Badge>
                     )}
+                    {(() => {
+                      const tierData = getTierByPoints(profile?.xp || 0);
+                      return (
+                        <Badge 
+                          variant="outline"
+                          className={`text-xs md:text-sm font-semibold bg-gradient-to-r ${tierData.color} text-white border-0`}
+                        >
+                          <span className="mr-1">{tierData.icon}</span>
+                          {tierData.displayName}
+                        </Badge>
+                      );
+                    })()}
                   </div>
                   <p className="mb-2 text-base md:text-lg text-muted-foreground">
                     {profile.role}
@@ -512,7 +526,7 @@ const Profile = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 md:gap-4 rounded-xl md:rounded-2xl border border-border bg-background p-4 md:p-6">
+            <div className="grid grid-cols-4 gap-2 md:gap-4 rounded-xl md:rounded-2xl border border-border bg-background p-4 md:p-6">
               <div className="text-center">
                 <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-primary">{stats.circle}</div>
                 <div className="text-xs md:text-sm text-muted-foreground">My Circle</div>
@@ -522,20 +536,27 @@ const Profile = () => {
                 <div className="text-xs md:text-sm text-muted-foreground">Projects</div>
               </div>
               <div className="text-center">
+                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-amber-500">{(profile?.xp || 0).toLocaleString()}</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Points</div>
+              </div>
+              <div className="text-center">
                 <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-accent">{stats.responseRate}%</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Response Rate</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Response</div>
               </div>
             </div>
 
             {/* Profile Strength Score */}
             {profile && (
-              <ProfileStrengthScore 
-                profile={profile}
-                portfolioCount={portfolioItems.length}
-                creditsCount={credits.length}
-                awardsCount={awards.length}
-                pressCount={pressLinks.length}
-              />
+              <>
+                <ProfileStrengthScore 
+                  profile={profile}
+                  portfolioCount={portfolioItems.length}
+                  creditsCount={credits.length}
+                  awardsCount={awards.length}
+                  pressCount={pressLinks.length}
+                />
+                <TierProgressCard currentPoints={profile.xp || 0} />
+              </>
             )}
           </div>
         </div>

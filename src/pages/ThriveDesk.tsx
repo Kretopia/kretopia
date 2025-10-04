@@ -394,20 +394,25 @@ const ThriveDesk = () => {
   const renderMobileLayout = () => (
     <div className="flex flex-col h-screen pb-16">
       {/* Mobile Header - Improved touch targets */}
-      <div className="border-b px-3 py-3 bg-background sticky top-0 z-10 shadow-sm">
+      <div className="border-b px-4 py-3 bg-background/95 backdrop-blur sticky top-0 z-10 shadow-sm">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0" onClick={() => navigate('/projects')}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-10 w-10 flex-shrink-0 rounded-full" 
+            onClick={() => navigate('/projects')}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base font-semibold truncate leading-tight mb-1">{project.title}</h1>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">{project.status}</Badge>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="secondary" className="text-xs px-2 py-0.5">{project.status}</Badge>
               <span className="text-xs text-muted-foreground">•</span>
               <span className="text-xs text-muted-foreground">{userRole === 'client' ? 'Client' : 'Creator'}</span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <InviteCollaboratorDialog 
               projectId={projectId || ''} 
               onInvite={fetchProjectData}
@@ -425,24 +430,36 @@ const ThriveDesk = () => {
       </div>
 
       {/* Mobile Tabs - Larger touch targets */}
-      <Tabs defaultValue="messages" className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b bg-background shadow-sm">
-          <TabsList className="w-full justify-around h-16 bg-transparent rounded-none p-0">
-            <TabsTrigger value="messages" className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col">
-              <Send className="h-5 w-5" />
-              <span className="text-xs font-medium">Messages</span>
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden">
+        <div className="border-b bg-background/95 backdrop-blur sticky top-[65px] z-10">
+          <TabsList className="w-full justify-around h-14 bg-transparent rounded-none p-0 gap-0">
+            <TabsTrigger 
+              value="messages" 
+              className="flex-1 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col px-2 rounded-none border-b-2 border-transparent transition-all"
+            >
+              <Send className="h-4 w-4" />
+              <span className="text-[10px] font-medium">Messages</span>
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col">
-              <CheckSquare className="h-5 w-5" />
-              <span className="text-xs font-medium">Tasks</span>
+            <TabsTrigger 
+              value="tasks" 
+              className="flex-1 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col px-2 rounded-none border-b-2 border-transparent transition-all"
+            >
+              <CheckSquare className="h-4 w-4" />
+              <span className="text-[10px] font-medium">Tasks</span>
             </TabsTrigger>
-            <TabsTrigger value="milestones" className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col">
-              <DollarSign className="h-5 w-5" />
-              <span className="text-xs font-medium">Pay</span>
+            <TabsTrigger 
+              value="milestones" 
+              className="flex-1 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col px-2 rounded-none border-b-2 border-transparent transition-all"
+            >
+              <DollarSign className="h-4 w-4" />
+              <span className="text-[10px] font-medium">Pay</span>
             </TabsTrigger>
-            <TabsTrigger value="details" className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col">
-              <FileText className="h-5 w-5" />
-              <span className="text-xs font-medium">Info</span>
+            <TabsTrigger 
+              value="details" 
+              className="flex-1 gap-1 data-[state=active]:bg-primary/10 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col px-2 rounded-none border-b-2 border-transparent transition-all"
+            >
+              <FileText className="h-4 w-4" />
+              <span className="text-[10px] font-medium">Info</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -462,11 +479,11 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto">
+        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-4">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 overflow-auto">
+        <TabsContent value="milestones" className="flex-1 m-0 overflow-auto p-4">
           <MilestoneBoard 
             milestones={milestones} 
             projectId={projectId!} 
@@ -477,7 +494,7 @@ const ThriveDesk = () => {
 
         <TabsContent value="details" className="flex-1 m-0 overflow-auto">
           <ScrollArea className="h-full">
-            <div className="p-3 space-y-3">
+            <div className="p-4 space-y-4">
               <Card className="p-3">
                 <h3 className="font-semibold text-sm mb-2">Project Details</h3>
                 {project.description && <p className="text-sm mb-3 leading-relaxed">{project.description}</p>}

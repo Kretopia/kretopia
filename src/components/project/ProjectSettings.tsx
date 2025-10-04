@@ -149,17 +149,12 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
     }
   };
 
-  // Only project owner can access settings
-  if (userRole !== 'client') {
-    return null;
-  }
-
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Settings className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-10 w-10">
+            <Settings className="h-5 w-5" />
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -172,18 +167,19 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
 
           <div className="space-y-6 py-4">
             {/* General Settings */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold">General Settings</h3>
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="title">Project Title</Label>
-                  <Input
-                    id="title"
-                    value={editedProject.title}
-                    onChange={(e) => setEditedProject({ ...editedProject, title: e.target.value })}
-                    placeholder="My awesome project"
-                  />
-                </div>
+            {userRole === 'client' && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold">General Settings</h3>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="title">Project Title</Label>
+                    <Input
+                      id="title"
+                      value={editedProject.title}
+                      onChange={(e) => setEditedProject({ ...editedProject, title: e.target.value })}
+                      placeholder="My awesome project"
+                    />
+                  </div>
                 <div>
                   <Label htmlFor="description">Description</Label>
                   <Textarea
@@ -229,15 +225,48 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
                   </Select>
                 </div>
               </div>
-              <Button onClick={handleSave} className="w-full">
-                Save Changes
-              </Button>
-            </div>
+                <Button onClick={handleSave} className="w-full">
+                  Save Changes
+                </Button>
+              </div>
+            )}
 
-            <Separator />
+            {/* Project Info - visible to all */}
+            {userRole !== 'client' && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold">Project Information</h3>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <Label className="text-muted-foreground">Title</Label>
+                    <p className="mt-1">{project.title}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Description</Label>
+                    <p className="mt-1">{project.description || 'No description'}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-muted-foreground">Budget</Label>
+                      <p className="mt-1">{project.budget || 'Not set'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">Deadline</Label>
+                      <p className="mt-1">{project.deadline || 'Not set'}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Status</Label>
+                    <p className="mt-1 capitalize">{project.status}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-            {/* Danger Zone */}
-            <div className="space-y-4">
+            {userRole === 'client' && <Separator />}
+
+            {/* Danger Zone - only for owners */}
+            {userRole === 'client' && (
+              <div className="space-y-4">
               <div className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <h3 className="text-sm font-semibold">Danger Zone</h3>
@@ -283,6 +312,7 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
                 </div>
               </div>
             </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

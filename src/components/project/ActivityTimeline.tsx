@@ -81,24 +81,33 @@ export function ActivityTimeline({ projectId }: ActivityTimelineProps) {
       const activities: ActivityEvent[] = [];
 
       // Fetch messages
-      const { data: messages } = await supabase
+      const { data: messagesData } = await supabase
         .from('project_messages')
-        .select('id, message, created_at, user_id, file_name, profiles(full_name, avatar_url)')
+        .select('id, message, created_at, user_id, file_name')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false })
         .limit(20);
 
-      messages?.forEach(msg => {
-        activities.push({
-          id: `msg-${msg.id}`,
-          type: 'message',
-          action: msg.file_name ? `shared ${msg.file_name}` : msg.message.substring(0, 50),
-          user_name: msg.profiles?.full_name || 'Unknown',
-          user_avatar: msg.profiles?.avatar_url,
-          created_at: msg.created_at,
-          metadata: { hasFile: !!msg.file_name }
+      if (messagesData && messagesData.length > 0) {
+        const messageUserIds = [...new Set(messagesData.map(m => m.user_id))];
+        const { data: messageProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', messageUserIds);
+
+        messagesData.forEach(msg => {
+          const profile = messageProfiles?.find(p => p.user_id === msg.user_id);
+          activities.push({
+            id: `msg-${msg.id}`,
+            type: 'message',
+            action: msg.file_name ? `shared ${msg.file_name}` : msg.message.substring(0, 50),
+            user_name: profile?.full_name || 'Unknown',
+            user_avatar: profile?.avatar_url,
+            created_at: msg.created_at,
+            metadata: { hasFile: !!msg.file_name }
+          });
         });
-      });
+      }
 
       // Fetch tasks
       const { data: tasksData } = await supabase
@@ -166,23 +175,32 @@ export function ActivityTimeline({ projectId }: ActivityTimelineProps) {
       }
 
       // Fetch files
-      const { data: files } = await supabase
+      const { data: filesData } = await supabase
         .from('project_files')
-        .select('id, file_name, created_at, user_id, profiles(full_name, avatar_url)')
+        .select('id, file_name, created_at, user_id')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false })
         .limit(10);
 
-      files?.forEach(file => {
-        activities.push({
-          id: `file-${file.id}`,
-          type: 'file',
-          action: `uploaded ${file.file_name}`,
-          user_name: file.profiles?.full_name || 'Unknown',
-          user_avatar: file.profiles?.avatar_url,
-          created_at: file.created_at
+      if (filesData && filesData.length > 0) {
+        const fileUserIds = [...new Set(filesData.map(f => f.user_id))];
+        const { data: fileProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', fileUserIds);
+
+        filesData.forEach(file => {
+          const profile = fileProfiles?.find(p => p.user_id === file.user_id);
+          activities.push({
+            id: `file-${file.id}`,
+            type: 'file',
+            action: `uploaded ${file.file_name}`,
+            user_name: profile?.full_name || 'Unknown',
+            user_avatar: profile?.avatar_url,
+            created_at: file.created_at
+          });
         });
-      });
+      }
 
       // Sort all activities by date
       activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());

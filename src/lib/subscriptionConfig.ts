@@ -6,8 +6,8 @@ export const SUBSCRIPTION_PRODUCTS = {
     name: "Thriver",
     tier: "thriver" as const,
     price: 9,
-    priceId: "price_1SDmofJvOS7zG18hIQ8v9pHA",
-    productId: "prod_TA72LxYWp18g5A",
+    priceId: "price_1SESvnJvOS7zG18hluEK0W9c",
+    productId: "prod_TAoY7TiQaFLU00",
     features: [
       "Unlimited swipes",
       "AI match recommendations",
@@ -22,8 +22,8 @@ export const SUBSCRIPTION_PRODUCTS = {
     name: "Creator Pro",
     tier: "creator_pro" as const,
     price: 29,
-    priceId: "price_1SDmouJvOS7zG18hHZgIbITt",
-    productId: "prod_TA73Hatv66ZqLu",
+    priceId: "price_1SESw4JvOS7zG18h5AG3IZ2V",
+    productId: "prod_TAoZwx40t99jYc",
     features: [
       "Everything in Thriver",
       "Featured profile (2x visibility)",

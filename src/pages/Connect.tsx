@@ -183,7 +183,12 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         return { ...profile, connectionStatus };
       }) || [];
 
-      setProfiles(profilesWithStatus);
+      // Filter out connected users - they should only appear in Circle
+      const unconnectedProfiles = profilesWithStatus.filter(
+        profile => profile.connectionStatus !== 'connected'
+      );
+
+      setProfiles(unconnectedProfiles);
     } catch (error) {
       console.error('Error fetching profiles:', error);
       toast.error('Failed to load profiles');

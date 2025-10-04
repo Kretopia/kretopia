@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string | null
+          event_category: string
+          event_name: string
+          event_properties: Json | null
+          id: string
+          ip_address: string | null
+          page_path: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_category: string
+          event_name: string
+          event_properties?: Json | null
+          id?: string
+          ip_address?: string | null
+          page_path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_category?: string
+          event_name?: string
+          event_properties?: Json | null
+          id?: string
+          ip_address?: string | null
+          page_path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           applicant_id: string
@@ -2238,6 +2280,17 @@ export type Database = {
       }
     }
     Views: {
+      analytics_funnel: {
+        Row: {
+          event_category: string | null
+          event_date: string | null
+          event_name: string | null
+          total_events: number | null
+          unique_sessions: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
       conversation_list: {
         Row: {
           content: string | null

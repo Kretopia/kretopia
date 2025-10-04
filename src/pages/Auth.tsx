@@ -84,6 +84,10 @@ const Auth = () => {
         });
       }
     } else {
+      // Track successful sign in
+      const { analytics } = await import("@/lib/analytics");
+      analytics.signIn('email');
+      
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in",
@@ -187,6 +191,11 @@ const Auth = () => {
         });
       }
     } else {
+      // Track successful sign up
+      const { analytics } = await import("@/lib/analytics");
+      analytics.signUp('email');
+      analytics.onboardingStart();
+      
       toast({
         title: "Success!",
         description: "Your account has been created. Welcome to ThriveIN!",

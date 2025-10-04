@@ -1,14 +1,15 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { useAuth } from "./hooks/useAuth";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
+import { analytics } from "@/lib/analytics";
 
 // Lazy load all page components for better performance
 const Landing = lazy(() => import("./pages/Landing"));
@@ -76,6 +77,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Track page views
+const PageViewTracker = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    analytics.pageView(location.pathname);
+  }, [location.pathname]);
+  
+  return null;
+};
+
 const App = () => {
   const { user } = useAuth();
   
@@ -87,6 +99,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <PageViewTracker />
               <Navbar user={user} />
               {user && <BottomNav />}
               <div className={user ? "pb-20 lg:pb-0" : ""}>

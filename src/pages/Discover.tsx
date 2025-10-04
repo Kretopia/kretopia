@@ -327,6 +327,10 @@ const Discover = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Track swipe
+    const { analytics } = await import("@/lib/analytics");
+    analytics.swipe(direction, currentCard.type === 'creator' ? currentCard.user_id : currentCard.id);
+
     setSwipeDirection(direction);
     await new Promise(resolve => setTimeout(resolve, 300));
 

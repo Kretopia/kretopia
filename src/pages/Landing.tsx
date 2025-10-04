@@ -41,7 +41,7 @@ const Landing = () => {
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               Built for Creators,{" "}
-              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 By Creators
               </span>
             </h2>
@@ -102,7 +102,7 @@ const Landing = () => {
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               Start Free,{" "}
-              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 Grow Unlimited
               </span>
             </h2>
@@ -183,7 +183,7 @@ const Landing = () => {
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               Get Rewarded for{" "}
-              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 Being Active
               </span>
             </h2>
@@ -244,7 +244,7 @@ const Landing = () => {
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               Ready to{" "}
-              <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 Thrive?
               </span>
             </h2>

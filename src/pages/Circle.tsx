@@ -336,17 +336,37 @@ const Circle = () => {
       ...(matches?.map(m => m.user1_id === user.id ? m.user2_id : m.user1_id) || [])
     ];
 
-    const { data } = await supabase
+    // Fetch posts
+    const { data: posts } = await supabase
       .from('feed_posts')
-      .select(`
-        *,
-        profiles!feed_posts_user_id_fkey(full_name, avatar_url, role)
-      `)
+      .select('*')
       .in('user_id', connectionIds)
       .order('created_at', { ascending: false })
       .limit(50);
 
-    setFeedPosts(data || []);
+    if (!posts) {
+      setFeedPosts([]);
+      return;
+    }
+
+    // Fetch profiles for all post authors
+    const authorIds = [...new Set(posts.map(p => p.user_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, avatar_url, role')
+      .in('user_id', authorIds);
+
+    // Combine posts with profile data
+    const postsWithProfiles = posts.map(post => ({
+      ...post,
+      profile: profiles?.find(p => p.user_id === post.user_id) || {
+        full_name: 'Unknown User',
+        avatar_url: null,
+        role: 'Creator'
+      }
+    }));
+
+    setFeedPosts(postsWithProfiles);
   };
 
   const fetchPortfolioItems = async () => {
@@ -372,18 +392,38 @@ const Circle = () => {
       ...(reverseConnections?.map(c => c.user_id) || [])
     ];
 
-    const { data } = await supabase
+    // Fetch portfolio items
+    const { data: items } = await supabase
       .from('portfolio_items')
-      .select(`
-        *,
-        profiles!portfolio_items_user_id_fkey(full_name, avatar_url, role)
-      `)
+      .select('*')
       .in('user_id', connectionIds)
       .eq('featured', true)
       .order('created_at', { ascending: false })
       .limit(20);
 
-    setPortfolioItems(data || []);
+    if (!items) {
+      setPortfolioItems([]);
+      return;
+    }
+
+    // Fetch profiles
+    const authorIds = [...new Set(items.map(i => i.user_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, avatar_url, role')
+      .in('user_id', authorIds);
+
+    // Combine with profile data
+    const itemsWithProfiles = items.map(item => ({
+      ...item,
+      profiles: profiles?.find(p => p.user_id === item.user_id) || {
+        full_name: 'Unknown User',
+        avatar_url: null,
+        role: 'Creator'
+      }
+    }));
+
+    setPortfolioItems(itemsWithProfiles);
   };
 
   const fetchInviteCodes = async () => {

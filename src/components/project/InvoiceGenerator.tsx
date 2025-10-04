@@ -44,14 +44,33 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
 
   const fetchInvoices = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: invoicesData, error } = await supabase
         .from("invoices")
-        .select("*, profiles!invoices_issued_to_fkey(full_name)")
+        .select("*")
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setInvoices(data || []);
+      
+      // Fetch profiles separately to avoid foreign key hint errors
+      if (invoicesData && invoicesData.length > 0) {
+        const userIds = [...new Set([...invoicesData.map(inv => inv.issued_to), ...invoicesData.map(inv => inv.issued_by)])];
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", userIds);
+        
+        // Combine invoices with profile data
+        const invoicesWithProfiles = invoicesData.map(inv => ({
+          ...inv,
+          issued_to_profile: profilesData?.find(p => p.user_id === inv.issued_to),
+          issued_by_profile: profilesData?.find(p => p.user_id === inv.issued_by),
+        }));
+        
+        setInvoices(invoicesWithProfiles);
+      } else {
+        setInvoices([]);
+      }
     } catch (error) {
       console.error("Error fetching invoices:", error);
     }

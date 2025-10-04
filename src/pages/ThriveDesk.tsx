@@ -7,6 +7,7 @@ import { AIAutomation } from "@/components/project/AIAutomation";
 import { TimeTracker } from "@/components/project/TimeTracker";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
+import { ProjectSettings } from "@/components/project/ProjectSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -416,6 +417,11 @@ const ThriveDesk = () => {
             <InvoiceGenerator 
               projectId={projectId || ''}
             />
+            <ProjectSettings 
+              project={project} 
+              onUpdate={fetchProjectData}
+              userRole={userRole}
+            />
           </div>
         </div>
       </div>
@@ -593,18 +599,11 @@ const ThriveDesk = () => {
                   projectId={projectId || ''}
                 />
                 <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
-                {isEditingProject ? (
-                  <>
-                    <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setIsEditingProject(false)}>Cancel</Button>
-                    <Button size="sm" className="h-8 text-xs" onClick={handleSaveProject}>
-                      <Save className="h-3 w-3 mr-1" />Save
-                    </Button>
-                  </>
-                ) : (
-                  <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={startEditing}>
-                    <Edit className="h-3 w-3 mr-1" />Edit
-                  </Button>
-                )}
+                <ProjectSettings 
+                  project={project} 
+                  onUpdate={fetchProjectData}
+                  userRole={userRole}
+                />
               </div>
             </div>
           </div>

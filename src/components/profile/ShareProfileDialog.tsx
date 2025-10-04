@@ -20,7 +20,7 @@ export const ShareProfileDialog = ({ profile }: ShareProfileDialogProps) => {
   const [copiedText, setCopiedText] = useState(false);
   const { toast } = useToast();
 
-  const profileUrl = `${window.location.origin}/profile/${profile.user_id}`;
+  const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
   
   const shareText = `Check out my creative portfolio on ThriveIN! 🎨✨
 

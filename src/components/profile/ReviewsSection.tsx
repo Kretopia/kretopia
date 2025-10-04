@@ -55,7 +55,7 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
 
       if (error) throw error;
 
-      const reviewLink = `${window.location.origin}/review?token=${data.share_token}`;
+      const reviewLink = `https://www.thrivein.io/review?token=${data.share_token}`;
       
       const copyMessage = `Hi there,
 

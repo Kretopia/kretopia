@@ -26,7 +26,7 @@ export function QRCodeDisplay({
 
   if (!location) return null;
 
-  const checkInUrl = `${window.location.origin}/check-in?code=${location.qr_code}`;
+  const checkInUrl = `https://www.thrivein.io/check-in?code=${location.qr_code}`;
 
   const handleDownload = () => {
     const svg = qrRef.current?.querySelector("svg");

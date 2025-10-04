@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from "react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { awardCredits } from "@/lib/creditSystem";
-import { MapPin, Check, X } from "lucide-react";
+import { Check, X, Camera } from "lucide-react";
 
 interface QRScannerProps {
   onClose: () => void;
@@ -16,99 +16,19 @@ interface QRScannerProps {
 export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [scanning, setScanning] = useState(true);
+  const [scanning, setScanning] = useState(false);
   const [location, setLocation] = useState<any>(null);
   const [verifying, setVerifying] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [permissionGranted, setPermissionGranted] = useState(false);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const mountedRef = useRef(true);
 
-  useEffect(() => {
-    // Request camera permission first
-    const requestCameraPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        // Stop the stream immediately - we just wanted to check permission
-        stream.getTracks().forEach(track => track.stop());
-        
-        // Now initialize the scanner
-        initScanner();
-      } catch (error: any) {
-        console.error("Camera permission error:", error);
-        let errorMessage = "Camera access denied. Please enable camera permissions in your browser settings.";
-        
-        if (error.name === 'NotAllowedError') {
-          errorMessage = "Camera access denied. Please enable camera permissions in your browser settings.";
-        } else if (error.name === 'NotFoundError') {
-          errorMessage = "No camera found on this device.";
-        } else if (error.name === 'NotReadableError') {
-          errorMessage = "Camera is already in use by another application.";
-        }
-        
-        setCameraError(errorMessage);
-        toast({
-          title: "Camera Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
-    };
-
-    requestCameraPermission();
-
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
-        scannerRef.current = null;
-      }
-    };
-  }, []);
-
-  const initScanner = () => {
-    // Small delay to ensure DOM is ready
-    setTimeout(() => {
-      const element = document.getElementById("qr-reader");
-      if (!element) {
-        console.error("QR reader element not found");
-        setCameraError("Unable to initialize QR scanner");
-        return;
-      }
-
-      try {
-        const scanner = new Html5QrcodeScanner(
-          "qr-reader",
-          { 
-            fps: 10, 
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-            rememberLastUsedCamera: true,
-          },
-          false
-        );
-
-        scannerRef.current = scanner;
-
-        scanner.render(onScanSuccess, onScanError);
-
-        async function onScanSuccess(decodedText: string) {
-          setScanning(false);
-          if (scannerRef.current) {
-            scannerRef.current.clear().catch(console.error);
-          }
-          await verifyAndCheckIn(decodedText);
-        }
-
-        function onScanError(error: any) {
-          // Ignore scan errors, they happen frequently
-        }
-      } catch (error) {
-        console.error("Scanner initialization error:", error);
-        setCameraError("Failed to start QR scanner");
-      }
-    }, 100);
-  };
-
-  const verifyAndCheckIn = async (qrCode: string) => {
+  const verifyAndCheckIn = useCallback(async (qrCode: string) => {
+    if (!mountedRef.current) return;
+    
     setVerifying(true);
+    setScanning(false);
 
     try {
       // Find location by QR code
@@ -129,6 +49,7 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
         return;
       }
 
+      if (!mountedRef.current) return;
       setLocation(locationData);
 
       // Get user's current location
@@ -144,11 +65,13 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
 
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          if (!mountedRef.current) return;
+          
           const userLat = position.coords.latitude;
           const userLon = position.coords.longitude;
 
           // Calculate distance using SQL function
-          const { data: distanceData, error: distanceError } = await supabase
+          const { data: distanceData } = await supabase
             .rpc("calculate_distance", {
               lat1: userLat,
               lon1: userLon,
@@ -177,7 +100,7 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
             .eq("user_id", user?.id)
             .eq("location_id", locationData.id)
             .eq("check_in_date", today)
-            .single();
+            .maybeSingle();
 
           if (existingCheckIn) {
             toast({
@@ -230,10 +153,15 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
         (error) => {
           toast({
             title: "Location Error",
-            description: "Could not get your location",
+            description: "Could not get your location. Please enable location services.",
             variant: "destructive",
           });
           onClose();
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
     } catch (error) {
@@ -245,9 +173,117 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
       });
       onClose();
     } finally {
-      setVerifying(false);
+      if (mountedRef.current) {
+        setVerifying(false);
+      }
     }
-  };
+  }, [user, toast, onClose, onSuccess]);
+
+  const initScanner = useCallback(() => {
+    const element = document.getElementById("qr-reader");
+    if (!element || !mountedRef.current) {
+      console.error("QR reader element not found or component unmounted");
+      return;
+    }
+
+    try {
+      const scanner = new Html5QrcodeScanner(
+        "qr-reader",
+        { 
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          showTorchButtonIfSupported: true,
+          useBarCodeDetectorIfSupported: true,
+        },
+        false
+      );
+
+      scannerRef.current = scanner;
+
+      const onScanSuccess = (decodedText: string) => {
+        if (!mountedRef.current) return;
+        console.log("QR Code scanned:", decodedText);
+        if (scannerRef.current) {
+          scannerRef.current.clear().catch(console.error);
+          scannerRef.current = null;
+        }
+        verifyAndCheckIn(decodedText);
+      };
+
+      const onScanError = (error: any) => {
+        // Ignore frequent scan errors
+      };
+
+      scanner.render(onScanSuccess, onScanError);
+      
+      if (mountedRef.current) {
+        setScanning(true);
+      }
+    } catch (error) {
+      console.error("Scanner initialization error:", error);
+      setCameraError("Failed to initialize QR scanner");
+    }
+  }, [verifyAndCheckIn]);
+
+  const requestCameraPermission = useCallback(async () => {
+    try {
+      // Request camera access
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" } 
+      });
+      
+      // Stop the stream - we just wanted to check permission
+      stream.getTracks().forEach(track => track.stop());
+      
+      if (mountedRef.current) {
+        setPermissionGranted(true);
+        setCameraError(null);
+        // Wait a bit for DOM to be ready
+        setTimeout(() => {
+          if (mountedRef.current) {
+            initScanner();
+          }
+        }, 200);
+      }
+    } catch (error: any) {
+      console.error("Camera permission error:", error);
+      let errorMessage = "Camera access denied";
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = "Camera access denied. Please enable camera permissions in your settings.";
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = "No camera found on this device.";
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = "Camera is in use by another application.";
+      } else {
+        errorMessage = `Camera error: ${error.message || "Unknown error"}`;
+      }
+      
+      if (mountedRef.current) {
+        setCameraError(errorMessage);
+        toast({
+          title: "Camera Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+    }
+  }, [initScanner, toast]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    requestCameraPermission();
+
+    return () => {
+      mountedRef.current = false;
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error);
+        scannerRef.current = null;
+      }
+    };
+  }, [requestCameraPermission]);
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -262,16 +298,22 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
             <p className="text-sm text-center text-muted-foreground mb-4">
               {cameraError}
             </p>
-            <p className="text-xs text-center text-muted-foreground">
-              Make sure you've allowed camera access in your browser/app settings.
-            </p>
+            <Button 
+              onClick={() => {
+                setCameraError(null);
+                requestCameraPermission();
+              }}
+              variant="outline"
+              className="mt-4"
+            >
+              <Camera className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
           </div>
-        ) : scanning ? (
-          <div>
-            <div id="qr-reader" className="w-full" />
-            <p className="text-sm text-muted-foreground text-center mt-4">
-              Point your camera at the QR code
-            </p>
+        ) : !permissionGranted ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
+            <p className="text-sm text-muted-foreground">Requesting camera access...</p>
           </div>
         ) : verifying ? (
           <div className="flex flex-col items-center justify-center py-8">
@@ -284,7 +326,19 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
             <h3 className="text-lg font-semibold">{location.name}</h3>
             <p className="text-sm text-muted-foreground">Processing check-in...</p>
           </div>
-        ) : null}
+        ) : scanning ? (
+          <div>
+            <div id="qr-reader" className="w-full" />
+            <p className="text-sm text-muted-foreground text-center mt-4">
+              Point your camera at the QR code
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
+            <p className="text-sm text-muted-foreground">Initializing scanner...</p>
+          </div>
+        )}
 
         <Button variant="outline" onClick={onClose} className="mt-4">
           {cameraError ? "Close" : "Cancel"}

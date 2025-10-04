@@ -104,10 +104,8 @@ export default function PartnerDirectory() {
         title="Partner Directory - Exclusive Member Benefits"
         description="Access exclusive discounts and benefits at our partner locations. Earn points with every visit."
       />
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        
-        <main className="container mx-auto px-4 pt-24 pb-32">
+      <div className="min-h-screen bg-background pb-24">
+        <main className="container mx-auto px-4 pt-6">
           <div className="max-w-6xl mx-auto space-y-8">
             {/* Membership Card */}
             {profile && profile.membership_number && (
@@ -116,6 +114,7 @@ export default function PartnerDirectory() {
                 fullName={profile.full_name}
                 tier={profile.subscription_tier}
                 avatarUrl={profile.avatar_url}
+                points={profile.xp || 0}
               />
             )}
 
@@ -160,8 +159,6 @@ export default function PartnerDirectory() {
             </Tabs>
           </div>
         </main>
-
-        <BottomNav />
       </div>
     </>
   );

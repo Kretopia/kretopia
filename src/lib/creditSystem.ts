@@ -1,12 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// Updated to align with tier point system
 export const CREDIT_REWARDS = {
-  PROFILE_COMPLETE: 10,
-  CONNECTION_MADE: 5,
-  PROJECT_COMPLETED: 20,
-  REVIEW_RECEIVED: 15,
-  DAILY_LOGIN: 3,
-  OPPORTUNITY_POSTED: 2,
+  PROFILE_COMPLETE: 100,
+  CONNECTION_MADE: 25,
+  PROJECT_COMPLETED: 500,
+  REVIEW_RECEIVED: 150,
+  DAILY_LOGIN: 5,
+  OPPORTUNITY_POSTED: 50,
+  PARTNER_VISIT: 20,
+  MILESTONE_COMPLETED: 200,
 } as const;
 
 export const awardCredits = async (

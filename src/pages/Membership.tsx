@@ -14,8 +14,11 @@ import { QRScanner } from "@/components/membership/QRScanner";
 import { NFCScanner } from "@/components/membership/NFCScanner";
 import { CheckInMethodDialog } from "@/components/membership/CheckInMethodDialog";
 import { TierComparison } from "@/components/membership/TierComparison";
+import { TierProgressCard } from "@/components/membership/TierProgressCard";
+import { TierBenefitsComparison } from "@/components/membership/TierBenefitsComparison";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useOGPromotion } from "@/hooks/useOGPromotion";
+import { getTierByPoints } from "@/lib/tierSystem";
 
 export default function Membership() {
   const { user } = useAuth();
@@ -152,19 +155,28 @@ export default function Membership() {
 
   const getTierLabel = (tier: string) => {
     switch (tier) {
+      case "elite":
+        return "Elite";
       case "creator_pro":
         return "Creator Pro";
       case "thriver":
         return "Thriver";
       default:
-        return "Free";
+        return "Starter";
     }
   };
 
+  const currentTierData = getTierByPoints(profile?.xp || 0);
+
   return (
     <div className="container mx-auto px-4 py-6 pb-24">
+      {/* Tier Progress Card */}
+      <div className="mb-6">
+        <TierProgressCard currentPoints={profile?.xp || 0} />
+      </div>
+
       {/* Premium Membership Card - Emirates Skywards Style */}
-      <Card className={`mb-6 overflow-hidden bg-gradient-to-br ${getTierColor(profile?.subscription_tier || "free")} border-2`}>
+      <Card className={`mb-6 overflow-hidden bg-gradient-to-br ${currentTierData.gradient} border-2`}>
         <div className="p-6 relative">
           {/* Background Pattern */}
           <div className="absolute top-0 right-0 opacity-5">
@@ -183,8 +195,8 @@ export default function Membership() {
               <div>
                 <h1 className="text-2xl font-bold mb-1">{profile?.full_name}</h1>
                 <Badge variant="outline" className="capitalize bg-background/80 backdrop-blur-sm">
-                  <Crown className="h-3 w-3 mr-1" />
-                  {getTierLabel(profile?.subscription_tier || "free")}
+                  <span className="mr-1">{currentTierData.icon}</span>
+                  {currentTierData.displayName}
                 </Badge>
               </div>
             </div>
@@ -257,21 +269,23 @@ export default function Membership() {
         </TabsList>
 
         <TabsContent value="benefits" className="mt-6">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Membership Tiers</h2>
+              <h2 className="text-2xl font-bold mb-2">Tier Benefits</h2>
               <p className="text-muted-foreground">
-                Compare features and upgrade to unlock more capabilities
+                Earn points to unlock exclusive features and benefits
               </p>
             </div>
-            <Button onClick={() => navigate('/partner-directory')} variant="outline">
-              View All Partners
-            </Button>
-            <Button onClick={() => navigate('/partner-discounts')} variant="outline">
-              Discounts
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => navigate("/partner-directory")} variant="outline" size="sm">
+                Partners
+              </Button>
+              <Button onClick={() => navigate("/partner-discounts")} variant="outline" size="sm">
+                Discounts
+              </Button>
+            </div>
           </div>
-          <TierComparison currentTier={profile?.subscription_tier || "free"} />
+          <TierBenefitsComparison currentPoints={profile?.xp || 0} />
         </TabsContent>
 
         <TabsContent value="locations" className="space-y-4 mt-4">

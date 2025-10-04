@@ -510,7 +510,7 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-4">
+        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-3">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
         </TabsContent>
 

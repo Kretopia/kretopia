@@ -71,18 +71,18 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="p-4 mb-3 hover:shadow-md transition-smooth cursor-move">
+      <Card className="p-3 mb-2 hover:shadow-md transition-smooth cursor-move border-l-4 border-l-primary/20">
         <div className="flex items-start gap-2">
-          <div {...attributes} {...listeners} className="mt-1">
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <div {...attributes} {...listeners} className="mt-0.5">
+            <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-1.5">
             <Dialog open={isEditing} onOpenChange={setIsEditing}>
               <DialogTrigger asChild>
                 <div className="cursor-pointer hover:opacity-70 transition-opacity">
-                  <h4 className="font-semibold text-sm">{task.title}</h4>
+                  <h4 className="font-medium text-sm leading-snug">{task.title}</h4>
                   {task.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
                       {task.description}
                     </p>
                   )}
@@ -138,16 +138,22 @@ function DroppableColumn({ status, tasks, onUpdate }: { status: typeof STATUSES[
   const { setNodeRef } = useDroppable({ id: status.value });
 
   return (
-    <div ref={setNodeRef} className={`rounded-lg p-2.5 md:p-4 ${status.color} min-h-[200px] md:min-h-[400px]`}>
-      <div className="mb-3 md:mb-4 flex items-center justify-between">
-        <h4 className="font-semibold text-sm">{status.label}</h4>
-        <Badge variant="secondary" className="text-xs">{tasks.length}</Badge>
+    <div ref={setNodeRef} className={`rounded-xl p-3 md:p-4 ${status.color} min-h-[180px] md:min-h-[400px] border border-border/50`}>
+      <div className="mb-2.5 md:mb-4 flex items-center justify-between">
+        <h4 className="font-semibold text-xs md:text-sm">{status.label}</h4>
+        <Badge variant="secondary" className="text-xs h-5 min-w-[24px] justify-center">{tasks.length}</Badge>
       </div>
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-2">
-          {tasks.map(task => (
-            <SortableTask key={task.id} task={task} onUpdate={onUpdate} />
-          ))}
+          {tasks.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <p className="text-xs">No tasks</p>
+            </div>
+          ) : (
+            tasks.map(task => (
+              <SortableTask key={task.id} task={task} onUpdate={onUpdate} />
+            ))
+          )}
         </div>
       </SortableContext>
     </div>
@@ -224,16 +230,17 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
 
   return (
     <div className="space-y-3 md:space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-base md:text-lg font-semibold">Task Board</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Drag tasks between columns to update status</p>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base md:text-lg font-semibold leading-tight">Task Board</h3>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 hidden md:block">Drag tasks between columns to update status</p>
         </div>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              New Task
+            <Button size="sm" className="gap-1.5 h-9 md:h-10 text-xs md:text-sm">
+              <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span className="hidden xs:inline">New Task</span>
+              <span className="xs:hidden">New</span>
             </Button>
           </DialogTrigger>
           <DialogContent>

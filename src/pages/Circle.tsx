@@ -391,11 +391,11 @@ const Circle = () => {
                   <span className="text-xs">All</span>
                 </TabsTrigger>
                 <TabsTrigger value="activity" className="flex-col gap-1 py-2">
-                  <Activity className="h-4 w-4" />
-                  <span className="text-xs">Feed</span>
-                  {activities.length > 0 && (
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-xs">Spark</span>
+                  {(feedPosts.length + activities.length) > 0 && (
                     <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                      {activities.length}
+                      {feedPosts.length + activities.length}
                     </Badge>
                   )}
                 </TabsTrigger>

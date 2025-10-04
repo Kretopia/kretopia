@@ -2423,6 +2423,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_mutual_connections: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: {
+          avatar_url: string
+          connection_id: string
+          full_name: string
+          role: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

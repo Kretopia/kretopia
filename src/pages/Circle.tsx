@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import { 
   Users, 
   MessageCircle, 
@@ -17,7 +18,10 @@ import {
   Filter,
   Zap,
   Target,
-  Activity
+  Activity,
+  Share2,
+  Copy,
+  CheckCircle2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +29,7 @@ import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
 import { FeedPost } from "@/components/feed/FeedPost";
+import { PortfolioItemCard } from "@/components/feed/PortfolioItemCard";
 
 interface Connection {
   id: string;
@@ -42,6 +47,7 @@ interface Connection {
   };
   isOnline?: boolean;
   lastActive?: string;
+  mutualConnections?: number;
 }
 
 interface NetworkActivity {
@@ -61,11 +67,14 @@ const Circle = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [activities, setActivities] = useState<NetworkActivity[]>([]);
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
+  const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConnection, setSelectedConnection] = useState<{ id: string; name: string; avatar?: string } | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [inviteCodes, setInviteCodes] = useState<any[]>([]);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -73,6 +82,8 @@ const Circle = () => {
     fetchConnections();
     fetchNetworkActivity();
     fetchFeedPosts();
+    fetchPortfolioItems();
+    fetchInviteCodes();
     
     // Set up real-time presence
     const channel = supabase.channel('circle-presence');
@@ -204,8 +215,21 @@ const Circle = () => {
           avatar_url: null,
           location: null,
           bio: null,
-        }
+        },
+        mutualConnections: 0 // Will be calculated below
       }));
+
+      // Calculate mutual connections for each connection
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        for (const conn of connectionsWithProfiles) {
+          const { data } = await supabase.rpc('get_mutual_connections', {
+            user1_id: user.id,
+            user2_id: conn.connected_user_id
+          });
+          conn.mutualConnections = data?.length || 0;
+        }
+      }
 
       setConnections(connectionsWithProfiles);
     }
@@ -283,16 +307,108 @@ const Circle = () => {
   };
 
   const fetchFeedPosts = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Get connection user IDs
+    const { data: myConnections } = await supabase
+      .from('connections')
+      .select('connected_user_id')
+      .eq('user_id', user.id)
+      .eq('status', 'accepted');
+
+    const { data: reverseConnections } = await supabase
+      .from('connections')
+      .select('user_id')
+      .eq('connected_user_id', user.id)
+      .eq('status', 'accepted');
+
+    const { data: matches } = await supabase
+      .from('matches')
+      .select('user1_id, user2_id')
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      .eq('status', 'active');
+
+    const connectionIds = [
+      user.id, // Include own posts
+      ...(myConnections?.map(c => c.connected_user_id) || []),
+      ...(reverseConnections?.map(c => c.user_id) || []),
+      ...(matches?.map(m => m.user1_id === user.id ? m.user2_id : m.user1_id) || [])
+    ];
+
     const { data } = await supabase
       .from('feed_posts')
       .select(`
         *,
         profiles!feed_posts_user_id_fkey(full_name, avatar_url, role)
       `)
+      .in('user_id', connectionIds)
       .order('created_at', { ascending: false })
       .limit(50);
 
     setFeedPosts(data || []);
+  };
+
+  const fetchPortfolioItems = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Get connection user IDs
+    const { data: myConnections } = await supabase
+      .from('connections')
+      .select('connected_user_id')
+      .eq('user_id', user.id)
+      .eq('status', 'accepted');
+
+    const { data: reverseConnections } = await supabase
+      .from('connections')
+      .select('user_id')
+      .eq('connected_user_id', user.id)
+      .eq('status', 'accepted');
+
+    const connectionIds = [
+      user.id,
+      ...(myConnections?.map(c => c.connected_user_id) || []),
+      ...(reverseConnections?.map(c => c.user_id) || [])
+    ];
+
+    const { data } = await supabase
+      .from('portfolio_items')
+      .select(`
+        *,
+        profiles!portfolio_items_user_id_fkey(full_name, avatar_url, role)
+      `)
+      .in('user_id', connectionIds)
+      .eq('featured', true)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    setPortfolioItems(data || []);
+  };
+
+  const fetchInviteCodes = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('invites')
+      .select('*')
+      .eq('inviter_id', user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    setInviteCodes(data || []);
+  };
+
+  const copyInviteCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    toast({
+      title: "Invite code copied! 🔗",
+      description: "Share with creators to auto-connect"
+    });
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
   const handleMessage = (connectionId: string, userName: string, userAvatar?: string) => {
@@ -374,14 +490,56 @@ const Circle = () => {
           {connections.length === 0 ? (
             <Card className="p-8 sm:p-12 text-center">
               <Users className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
-              <h2 className="mb-2 text-lg sm:text-xl font-semibold">No connections yet</h2>
-              <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                Start swiping on Discover to build your creative network!
+              <h2 className="mb-2 text-lg sm:text-xl font-semibold">Build Your Circle</h2>
+              <p className="text-sm sm:text-base text-muted-foreground mb-6">
+                Start connecting with other creators to collaborate and grow together!
               </p>
-              <Button onClick={() => window.location.href = '/discover'}>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Go to Discover
-              </Button>
+              
+              {/* Invite Section */}
+              {inviteCodes.length > 0 && (
+                <div className="mb-6 p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg">
+                  <h3 className="font-semibold mb-3 flex items-center justify-center gap-2">
+                    <Share2 className="h-4 w-4" />
+                    Invite Creators (Auto-Connect)
+                  </h3>
+                  <div className="space-y-2">
+                    {inviteCodes.slice(0, 3).map((invite) => (
+                      <div key={invite.id} className="flex items-center gap-2 bg-background/50 rounded-lg p-2">
+                        <Input
+                          value={invite.invite_code}
+                          readOnly
+                          className="flex-1 text-sm"
+                        />
+                        <Button
+                          size="sm"
+                          variant={copiedCode === invite.invite_code ? "default" : "outline"}
+                          onClick={() => copyInviteCode(invite.invite_code)}
+                        >
+                          {copiedCode === invite.invite_code ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    When someone signs up with your code, they'll automatically join your circle!
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button onClick={() => window.location.href = '/discover'} size="lg">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Discover Creators
+                </Button>
+                <Button variant="outline" size="lg" onClick={() => window.location.href = '/profile'}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Complete Profile
+                </Button>
+              </div>
             </Card>
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -415,6 +573,39 @@ const Circle = () => {
               </TabsList>
 
               <TabsContent value="all" className="space-y-3">
+                {/* Invite Section for Existing Users */}
+                {inviteCodes.length > 0 && (
+                  <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 mb-4">
+                    <h3 className="font-semibold mb-2 flex items-center gap-2">
+                      <Share2 className="h-4 w-4" />
+                      Grow Your Circle
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Share your invite codes - new creators will auto-connect to your circle!
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {inviteCodes.slice(0, 2).map((invite) => (
+                        <div key={invite.id} className="flex items-center gap-2 bg-background rounded-lg p-2">
+                          <code className="flex-1 text-xs font-mono truncate">
+                            {invite.invite_code}
+                          </code>
+                          <Button
+                            size="sm"
+                            variant={copiedCode === invite.invite_code ? "default" : "ghost"}
+                            onClick={() => copyInviteCode(invite.invite_code)}
+                          >
+                            {copiedCode === invite.invite_code ? (
+                              <CheckCircle2 className="h-3 w-3" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+                
                 <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                   {filteredConnections.map((connection) => (
                     <ConnectionCard
@@ -428,7 +619,7 @@ const Circle = () => {
               </TabsContent>
 
               <TabsContent value="activity" className="space-y-3">
-                {feedPosts.length === 0 && activities.length === 0 ? (
+                {feedPosts.length === 0 && portfolioItems.length === 0 && activities.length === 0 ? (
                   <Card className="p-8 text-center">
                     <Sparkles className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                     <p className="text-muted-foreground mb-4">
@@ -445,8 +636,14 @@ const Circle = () => {
                       <FeedPost 
                         key={post.id} 
                         post={post} 
-                        onDelete={fetchFeedPosts}
+                        onDelete={() => {
+                          fetchFeedPosts();
+                          fetchPortfolioItems();
+                        }}
                       />
+                    ))}
+                    {portfolioItems.map((item) => (
+                      <PortfolioItemCard key={item.id} item={item} />
                     ))}
                     {activities.map((activity) => (
                       <ActivityCard key={activity.id} activity={activity} />
@@ -589,6 +786,16 @@ const ConnectionCard = ({
         <p className="mt-3 text-xs sm:text-sm text-muted-foreground line-clamp-2">
           {connection.profile.bio}
         </p>
+      )}
+
+      {/* Mutual Connections Badge */}
+      {connection.mutualConnections && connection.mutualConnections > 0 && (
+        <div className="mt-3">
+          <Badge variant="outline" className="text-xs">
+            <Users className="h-3 w-3 mr-1" />
+            {connection.mutualConnections} mutual {connection.mutualConnections === 1 ? 'connection' : 'connections'}
+          </Badge>
+        </div>
       )}
 
       <div className="mt-4 flex gap-2">

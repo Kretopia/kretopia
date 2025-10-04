@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
-import { Flame, MessageCircle, Send, MoreVertical, Trash2 } from "lucide-react";
+import { Flame, MessageCircle, Send, MoreVertical, Trash2, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +42,7 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -165,7 +167,7 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
         'grid-cols-2 md:grid-cols-3'
       }`}>
         {post.media_urls.map((media: any, index: number) => (
-          <div key={index} className="relative rounded-lg overflow-hidden bg-muted">
+          <div key={index} className="relative rounded-lg overflow-hidden bg-muted group">
             {media.type === 'image' ? (
               <img
                 src={media.url}
@@ -173,15 +175,22 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
                 className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => window.open(media.url, '_blank')}
               />
-            ) : media.type === 'video' ? (
-              <video
-                src={media.url}
-                controls
-                className="w-full h-48 object-cover"
-              />
-            ) : media.type === 'audio' ? (
-              <div className="flex items-center justify-center h-32 bg-gradient-to-br from-primary/10 to-primary/5">
-                <audio src={media.url} controls className="w-full px-4" />
+            ) : media.type === 'video' || media.type === 'audio' ? (
+              <div 
+                className="relative w-full h-48 cursor-pointer bg-gradient-to-br from-primary/10 to-primary/5"
+                onClick={() => setSelectedMedia({
+                  title: post.content?.substring(0, 50) || 'Media',
+                  description: post.content || '',
+                  media_type: media.type,
+                  media_url: media.url
+                })}
+              >
+                {media.type === 'video' && (
+                  <video src={media.url} className="w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                  <Play className="h-12 w-12 text-white" />
+                </div>
               </div>
             ) : null}
           </div>
@@ -306,6 +315,15 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Media Player Modal */}
+      {selectedMedia && (
+        <MediaPlayerModal
+          isOpen={!!selectedMedia}
+          onClose={() => setSelectedMedia(null)}
+          item={selectedMedia}
+        />
       )}
     </Card>
   );

@@ -36,6 +36,7 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
     url: "",
     publication: "",
     published_date: "",
+    image_url: "",
   });
 
   useEffect(() => {
@@ -72,14 +73,15 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
       if (data.success) {
         setNewLink(prev => ({
           ...prev,
-          title: prev.title || data.data.title || "",
-          publication: prev.publication || data.data.siteName || "",
+          title: data.data.title || prev.title,
+          publication: data.data.siteName || prev.publication,
+          image_url: data.data.image || prev.image_url,
         }));
-        toast.success("Article details fetched");
+        toast.success("Article details loaded!");
       }
     } catch (error) {
       console.error("Error fetching OG data:", error);
-      toast.error("Could not fetch article details");
+      toast.error("Could not auto-fill - please enter details manually");
     } finally {
       setFetchingOG(false);
     }
@@ -108,7 +110,9 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
         url: "",
         publication: "",
         published_date: "",
+        image_url: "",
       });
+      setIsEditOpen(false);
       fetchPressLinks();
       onRefresh();
     } catch (error) {
@@ -160,46 +164,55 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="url">Article URL *</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="url"
-                      type="url"
-                      value={newLink.url}
-                      onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-                      placeholder="https://..."
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => fetchOpenGraphData(newLink.url)}
-                      disabled={!newLink.url || fetchingOG}
-                    >
-                      {fetchingOG ? "Fetching..." : "Auto-fill"}
-                    </Button>
-                  </div>
+                  <Input
+                    id="url"
+                    type="url"
+                    value={newLink.url}
+                    onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+                    onBlur={() => {
+                      if (newLink.url && (newLink.url.startsWith('http://') || newLink.url.startsWith('https://'))) {
+                        fetchOpenGraphData(newLink.url);
+                      }
+                    }}
+                    placeholder="Paste article URL here..."
+                  />
+                  {fetchingOG && (
+                    <p className="text-sm text-muted-foreground animate-pulse">
+                      Fetching article details...
+                    </p>
+                  )}
                 </div>
+
+                {newLink.image_url && (
+                  <div className="rounded-lg overflow-hidden border border-border">
+                    <img 
+                      src={newLink.image_url} 
+                      alt="Article preview"
+                      className="w-full h-48 object-cover"
+                    />
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="title">Title *</Label>
                   <Input
                     id="title"
                     value={newLink.title}
                     onChange={(e) => setNewLink({ ...newLink, title: e.target.value })}
-                    placeholder="Article title"
+                    placeholder="Article title (auto-filled if available)"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="publication">Publication</Label>
+                    <Label htmlFor="publication">Publication (optional)</Label>
                     <Input
                       id="publication"
                       value={newLink.publication}
                       onChange={(e) => setNewLink({ ...newLink, publication: e.target.value })}
-                      placeholder="e.g., Forbes"
+                      placeholder="e.g., Forbes, TechCrunch"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="date">Date</Label>
+                    <Label htmlFor="date">Date (optional)</Label>
                     <Input
                       id="date"
                       type="date"

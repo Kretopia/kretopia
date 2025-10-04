@@ -2326,6 +2326,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           avg_views: number | null
+          awards: Json | null
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
@@ -2333,13 +2334,19 @@ export type Database = {
           full_name: string | null
           id: string | null
           imdb_url: string | null
+          industry: string | null
           instagram_followers: number | null
           instagram_url: string | null
+          job_title: string | null
           level: number | null
           linkedin_connections: number | null
           linkedin_url: string | null
           location: string | null
+          passion_skills: Json | null
+          press_links: Json | null
+          professional_skills: Json | null
           role: string | null
+          section_order: Json | null
           soundcloud_url: string | null
           spotify_listeners: number | null
           spotify_url: string | null
@@ -2357,6 +2364,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           avg_views?: number | null
+          awards?: Json | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
@@ -2364,13 +2372,19 @@ export type Database = {
           full_name?: string | null
           id?: string | null
           imdb_url?: string | null
+          industry?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          job_title?: string | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          passion_skills?: Json | null
+          press_links?: Json | null
+          professional_skills?: Json | null
           role?: string | null
+          section_order?: Json | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
@@ -2388,6 +2402,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           avg_views?: number | null
+          awards?: Json | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
@@ -2395,13 +2410,19 @@ export type Database = {
           full_name?: string | null
           id?: string | null
           imdb_url?: string | null
+          industry?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          job_title?: string | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          passion_skills?: Json | null
+          press_links?: Json | null
+          professional_skills?: Json | null
           role?: string | null
+          section_order?: Json | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null

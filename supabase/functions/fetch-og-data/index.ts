@@ -59,12 +59,21 @@ serve(async (req) => {
     const ogData: OpenGraphData = {};
     
     const extractMetaContent = (property: string): string | undefined => {
-      const regex = new RegExp(
+      // Try property attribute first (og: tags)
+      const propertyRegex = new RegExp(
         `<meta[^>]*property=["']${property}["'][^>]*content=["']([^"']*)["']`,
         "i"
       );
-      const match = html.match(regex);
-      if (match) return match[1];
+      const propertyMatch = html.match(propertyRegex);
+      if (propertyMatch) return propertyMatch[1];
+      
+      // Try reverse order
+      const reverseRegex = new RegExp(
+        `<meta[^>]*content=["']([^"']*)["'][^>]*property=["']${property}["']`,
+        "i"
+      );
+      const reverseMatch = html.match(reverseRegex);
+      if (reverseMatch) return reverseMatch[1];
       
       // Try name attribute as fallback
       const nameRegex = new RegExp(
@@ -72,26 +81,44 @@ serve(async (req) => {
         "i"
       );
       const nameMatch = html.match(nameRegex);
-      return nameMatch ? nameMatch[1] : undefined;
+      if (nameMatch) return nameMatch[1];
+      
+      // Try reverse for name
+      const nameReverseRegex = new RegExp(
+        `<meta[^>]*content=["']([^"']*)["'][^>]*name=["']${property}["']`,
+        "i"
+      );
+      const nameReverseMatch = html.match(nameReverseRegex);
+      return nameReverseMatch ? nameReverseMatch[1] : undefined;
     };
 
     ogData.title = extractMetaContent("og:title") || extractMetaContent("twitter:title");
-    ogData.description = extractMetaContent("og:description") || extractMetaContent("twitter:description") || extractMetaContent("description");
-    ogData.image = extractMetaContent("og:image") || extractMetaContent("twitter:image");
+    ogData.description = extractMetaContent("og:description") || 
+                        extractMetaContent("twitter:description") || 
+                        extractMetaContent("description");
+    ogData.image = extractMetaContent("og:image") || 
+                  extractMetaContent("twitter:image") || 
+                  extractMetaContent("twitter:image:src");
     ogData.url = extractMetaContent("og:url") || url;
-    ogData.siteName = extractMetaContent("og:site_name");
+    ogData.siteName = extractMetaContent("og:site_name") || extractMetaContent("twitter:site");
     ogData.type = extractMetaContent("og:type");
 
     // If no OG title found, try to extract from <title> tag
     if (!ogData.title) {
       const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-      if (titleMatch) ogData.title = titleMatch[1];
+      if (titleMatch) ogData.title = titleMatch[1].trim();
     }
 
     // If no description, try standard meta description
     if (!ogData.description) {
       const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i);
-      if (descMatch) ogData.description = descMatch[1];
+      if (descMatch) ogData.description = descMatch[1].trim();
+    }
+    
+    // Try to find any image if still none
+    if (!ogData.image) {
+      const imgMatch = html.match(/<meta[^>]*content=["'](https?:\/\/[^"']*\.(jpg|jpeg|png|gif|webp)[^"']*)["']/i);
+      if (imgMatch) ogData.image = imgMatch[1];
     }
 
     console.log("Extracted OG data:", JSON.stringify(ogData, null, 2));

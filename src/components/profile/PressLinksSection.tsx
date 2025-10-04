@@ -202,17 +202,42 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
                   )}
                 </div>
 
-                {newLink.image_url && (
-                  <div className="rounded-lg overflow-hidden border border-border">
-                    <img 
-                      src={newLink.image_url} 
-                      alt="Article preview"
-                      className="w-full h-48 object-cover"
-                    />
+                {/* Preview Card */}
+                {(newLink.title || newLink.image_url) && !fetchingOG && (
+                  <div className="border border-border rounded-lg overflow-hidden bg-muted/50">
+                    <div className="p-4">
+                      <p className="text-xs text-muted-foreground mb-3">Preview</p>
+                      <div className="flex gap-4">
+                        {newLink.image_url && (
+                          <div className="flex-shrink-0 w-24 h-24 rounded overflow-hidden bg-background">
+                            <img 
+                              src={newLink.image_url} 
+                              alt="Article preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          {newLink.publication && (
+                            <p className="text-sm font-medium text-muted-foreground mb-1">
+                              {newLink.publication}
+                            </p>
+                          )}
+                          <h4 className="font-semibold text-sm line-clamp-2 mb-1">
+                            {newLink.title}
+                          </h4>
+                          {newLink.excerpt && (
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {newLink.excerpt}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
+                  <Label htmlFor="title">Title {!newLink.title && "*"}</Label>
                   <Input
                     id="title"
                     value={newLink.title}
@@ -241,9 +266,13 @@ export const PressLinksSection = ({ userId, isOwnProfile, onRefresh }: PressLink
                   </div>
                 </div>
                 
-                <Button onClick={addLink} className="w-full">
+                <Button 
+                  onClick={addLink} 
+                  className="w-full"
+                  disabled={!newLink.title || !newLink.url || fetchingOG}
+                >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Press Link
+                  Add to Press Coverage
                 </Button>
               </div>
             </DialogContent>

@@ -37,8 +37,10 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
     reviewer_email: "",
     reviewer_role: "",
     reviewer_company: "",
-    project_name: ""
+    project_name: "",
+    personal_message: ""
   });
+  const [showCopyTemplate, setShowCopyTemplate] = useState(false);
   const { toast } = useToast();
 
   const handleRequestReview = async () => {
@@ -54,7 +56,8 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
           profile_id: profileUserId,
           reviewer_name: requestForm.reviewer_name,
           reviewer_email: requestForm.reviewer_email,
-          project_name: requestForm.project_name
+          project_name: requestForm.project_name,
+          personal_message: requestForm.personal_message
         })
         .select()
         .single();
@@ -63,16 +66,31 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
 
       const reviewLink = `${window.location.origin}/review?token=${data.share_token}`;
       
-      await navigator.clipboard.writeText(reviewLink);
+      const copyMessage = `Hi ${requestForm.reviewer_name},
+
+${requestForm.personal_message || "I hope you're doing well! I'm reaching out because your feedback would mean a lot to me."} 
+
+Would you mind taking a few minutes to leave a review about our collaboration${requestForm.project_name ? ` on ${requestForm.project_name}` : ''}? Your insights help me grow and build trust with future clients.
+
+Simply click the link below:
+${reviewLink}
+
+Thank you so much!`;
+
+      await navigator.clipboard.writeText(copyMessage);
+      setShowCopyTemplate(true);
       
       toast({
-        title: "Review link copied!",
-        description: "Share this link with your client to collect their review",
+        title: "Message copied!",
+        description: "Personalized message with review link is ready to share",
       });
       
-      setIsRequestOpen(false);
-      setRequestForm({ reviewer_name: "", reviewer_email: "", reviewer_role: "", reviewer_company: "", project_name: "" });
-      onRefresh();
+      setTimeout(() => {
+        setIsRequestOpen(false);
+        setShowCopyTemplate(false);
+        setRequestForm({ reviewer_name: "", reviewer_email: "", reviewer_role: "", reviewer_company: "", project_name: "", personal_message: "" });
+        onRefresh();
+      }, 3000);
     } catch (error) {
       toast({ title: "Error", description: "Failed to create review request", variant: "destructive" });
     }
@@ -116,45 +134,67 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
               <DialogHeader>
                 <DialogTitle>Request a Review</DialogTitle>
                 <DialogDescription>
-                  Generate a shareable link for clients to easily submit their review
+                  Generate a shareable message with review link - perfect for email, WhatsApp, or any messaging app
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Client Name *</Label>
-                  <Input 
-                    required
-                    placeholder="Jane Smith"
-                    value={requestForm.reviewer_name} 
-                    onChange={(e) => setRequestForm({ ...requestForm, reviewer_name: e.target.value })} 
-                  />
+              
+              {!showCopyTemplate ? (
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Client Name *</Label>
+                    <Input 
+                      required
+                      placeholder="Jane Smith"
+                      value={requestForm.reviewer_name} 
+                      onChange={(e) => setRequestForm({ ...requestForm, reviewer_name: e.target.value })} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Client Email *</Label>
+                    <Input 
+                      required
+                      type="email"
+                      placeholder="jane@company.com"
+                      value={requestForm.reviewer_email} 
+                      onChange={(e) => setRequestForm({ ...requestForm, reviewer_email: e.target.value })} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Project Name (Optional)</Label>
+                    <Input 
+                      placeholder="Brand Campaign 2024"
+                      value={requestForm.project_name} 
+                      onChange={(e) => setRequestForm({ ...requestForm, project_name: e.target.value })} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Personal Message (Optional)</Label>
+                    <Textarea 
+                      placeholder="Add a personal note about why their feedback matters..."
+                      value={requestForm.personal_message} 
+                      onChange={(e) => setRequestForm({ ...requestForm, personal_message: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                  <Button onClick={handleRequestReview} className="w-full" variant="gradient">
+                    <Copy className="h-4 w-4 mr-2" />
+                    Generate & Copy Message
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    A personalized message with the review link will be copied to your clipboard
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Client Email *</Label>
-                  <Input 
-                    required
-                    type="email"
-                    placeholder="jane@company.com"
-                    value={requestForm.reviewer_email} 
-                    onChange={(e) => setRequestForm({ ...requestForm, reviewer_email: e.target.value })} 
-                  />
+              ) : (
+                <div className="py-6 text-center space-y-4">
+                  <CheckCircle className="h-12 w-12 mx-auto text-primary" />
+                  <div>
+                    <h3 className="font-semibold text-lg mb-1">Message Copied!</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Paste it in email, WhatsApp, or any messaging app
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Project Name (Optional)</Label>
-                  <Input 
-                    placeholder="Brand Campaign 2024"
-                    value={requestForm.project_name} 
-                    onChange={(e) => setRequestForm({ ...requestForm, project_name: e.target.value })} 
-                  />
-                </div>
-                <Button onClick={handleRequestReview} className="w-full" variant="gradient">
-                  <Link2 className="h-4 w-4 mr-2" />
-                  Generate Review Link
-                </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  The link will be automatically copied to your clipboard
-                </p>
-              </div>
+              )}
             </DialogContent>
           </Dialog>
         )}

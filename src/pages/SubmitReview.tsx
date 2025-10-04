@@ -190,6 +190,15 @@ export default function SubmitReview() {
             </div>
           </div>
 
+          {/* Personal Message */}
+          {requestData?.personal_message && (
+            <div className="bg-accent/10 border border-accent/20 rounded-lg p-4">
+              <p className="text-sm italic text-muted-foreground">
+                "{requestData.personal_message}"
+              </p>
+            </div>
+          )}
+
           {/* Review Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">

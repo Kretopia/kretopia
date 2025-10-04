@@ -1722,6 +1722,7 @@ export type Database = {
           created_at: string | null
           expires_at: string | null
           id: string
+          personal_message: string | null
           profile_id: string
           project_name: string | null
           reviewer_email: string
@@ -1734,6 +1735,7 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
+          personal_message?: string | null
           profile_id: string
           project_name?: string | null
           reviewer_email: string
@@ -1746,6 +1748,7 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
+          personal_message?: string | null
           profile_id?: string
           project_name?: string | null
           reviewer_email?: string

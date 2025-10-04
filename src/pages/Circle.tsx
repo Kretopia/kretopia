@@ -441,14 +441,29 @@ const Circle = () => {
     setInviteCodes(data || []);
   };
 
-  const copyInviteCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    toast({
-      title: "Invite code copied! 🔗",
-      description: "Share with creators to auto-connect"
-    });
-    setTimeout(() => setCopiedCode(null), 2000);
+  const copyInviteCode = async (code: string) => {
+    try {
+      const inviteUrl = `${window.location.origin}/auth?invite=${code}`;
+      const inviteMessage = `🎨 Join my circle on ThriveIN!
+
+Connect with creatives and content creators, discover exciting opportunities, and collaborate on projects together.
+
+${inviteUrl}`;
+      
+      await navigator.clipboard.writeText(inviteMessage);
+      setCopiedCode(code);
+      toast({
+        title: "Copied!",
+        description: "Invite link copied to clipboard"
+      });
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to copy invite link",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleMessage = (connectionId: string, userName: string, userAvatar?: string) => {

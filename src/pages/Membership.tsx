@@ -5,20 +5,17 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QrCode, MapPin, Award, TrendingUp, Crown, Star, ArrowLeft } from "lucide-react";
+import { MapPin, Crown, Star, ArrowLeft, Gift, Percent } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { MembershipMap } from "@/components/membership/MembershipMap";
 import { LocationCard } from "@/components/membership/LocationCard";
-import { QRScanner } from "@/components/membership/QRScanner";
-import { NFCScanner } from "@/components/membership/NFCScanner";
-import { CheckInMethodDialog } from "@/components/membership/CheckInMethodDialog";
-import { TierComparison } from "@/components/membership/TierComparison";
 import { TierProgressCard } from "@/components/membership/TierProgressCard";
 import { TierBenefitsComparison } from "@/components/membership/TierBenefitsComparison";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useOGPromotion } from "@/hooks/useOGPromotion";
 import { getTierByPoints } from "@/lib/tierSystem";
+import { PartnerCard } from "@/components/membership/PartnerCard";
 
 export default function Membership() {
   const { user } = useAuth();
@@ -26,11 +23,8 @@ export default function Membership() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [locations, setLocations] = useState<any[]>([]);
-  const [checkIns, setCheckIns] = useState<any[]>([]);
+  const [partners, setPartners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showScanner, setShowScanner] = useState(false);
-  const [showNFCScanner, setShowNFCScanner] = useState(false);
-  const [showMethodDialog, setShowMethodDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Activate OG/Founder promotion automatically
@@ -79,21 +73,17 @@ export default function Membership() {
         setLocations(locationsData || []);
       }
 
-      // Fetch user's check-ins
-      const { data: checkInsData, error: checkInsError } = await supabase
-        .from("user_check_ins")
-        .select(`
-          *,
-          partner_locations (*)
-        `)
-        .eq("user_id", user?.id)
-        .order("created_at", { ascending: false })
-        .limit(10);
+      // Fetch partner discounts
+      const { data: discountsData, error: discountsError } = await supabase
+        .from("partner_discounts")
+        .select("*")
+        .eq("is_active", true)
+        .order("partner_name");
 
-      if (checkInsError) {
-        console.error("Check-ins error:", checkInsError);
+      if (discountsError) {
+        console.error("Discounts error:", discountsError);
       } else {
-        setCheckIns(checkInsData || []);
+        setPartners(discountsData || []);
       }
     } catch (error: any) {
       console.error("Membership: Unexpected error:", error);
@@ -204,13 +194,13 @@ export default function Membership() {
               </Avatar>
               <div>
                 <h1 className="text-2xl font-bold mb-1">{profile?.full_name}</h1>
-                <Badge variant="outline" className="capitalize bg-background/80 backdrop-blur-sm">
+                <Badge variant="outline" className="capitalize bg-background/80 backdrop-blur-sm text-foreground">
                   <span className="mr-1">{currentTierData.icon}</span>
                   {currentTierData.displayName}
                 </Badge>
               </div>
             </div>
-            <Badge className="text-sm px-3 py-2 uppercase tracking-wider font-bold bg-background/80 backdrop-blur-sm">
+            <Badge className="text-sm px-3 py-2 uppercase tracking-wider font-bold bg-background/80 backdrop-blur-sm text-foreground">
               {profile?.badge === "founder" ? "👑 Founder" : profile?.badge || "Beta"}
             </Badge>
           </div>
@@ -224,159 +214,123 @@ export default function Membership() {
           )}
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-3 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
-              <div className="text-2xl font-bold text-primary mb-1">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
+              <div className="text-3xl font-bold text-primary mb-1">
                 {profile?.xp || 0}
               </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">Points</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">Total Points</div>
             </div>
-            <div className="text-center p-3 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
-              <div className="text-2xl font-bold text-primary mb-1">
+            <div className="text-center p-4 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
+              <div className="text-3xl font-bold text-primary mb-1">
                 Level {profile?.level || 1}
               </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">Status</div>
-            </div>
-            <div className="text-center p-3 bg-background/40 backdrop-blur-sm rounded-lg border border-background/20">
-              <div className="text-2xl font-bold text-primary mb-1">
-                {checkIns.length}
-              </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">Check-ins</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">Current Level</div>
             </div>
           </div>
-
-          {/* Check-In Button */}
-          <Button 
-            onClick={() => setShowMethodDialog(true)} 
-            className="w-full shadow-lg"
-            size="lg"
-          >
-            <QrCode className="mr-2 h-5 w-5" />
-            Check In
-          </Button>
         </div>
       </Card>
 
       {/* Tabs */}
       <Tabs defaultValue="benefits" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="benefits">
             <Crown className="mr-2 h-4 w-4" />
             Benefits
+          </TabsTrigger>
+          <TabsTrigger value="partners">
+            <Gift className="mr-2 h-4 w-4" />
+            Partners
           </TabsTrigger>
           <TabsTrigger value="locations">
             <MapPin className="mr-2 h-4 w-4" />
             Locations
           </TabsTrigger>
-          <TabsTrigger value="map">
-            <MapPin className="mr-2 h-4 w-4" />
-            Map
-          </TabsTrigger>
-          <TabsTrigger value="activity">
-            <TrendingUp className="mr-2 h-4 w-4" />
-            Activity
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="benefits" className="mt-6">
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Tier Benefits</h2>
-              <p className="text-muted-foreground">
-                Earn points to unlock exclusive features and benefits
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={() => navigate("/partner-directory")} variant="outline" size="sm">
-                View Partners
-              </Button>
-            </div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2">Membership Tiers</h2>
+            <p className="text-muted-foreground">
+              Earn points to unlock exclusive features and premium partner benefits
+            </p>
           </div>
           <TierBenefitsComparison currentPoints={profile?.xp || 0} />
         </TabsContent>
 
-        <TabsContent value="locations" className="space-y-4 mt-4">
-          {locations.length === 0 ? (
-            <Card className="p-6 text-center">
-              <p className="text-muted-foreground">No partner locations available</p>
-            </Card>
-          ) : (
-            locations.map((location) => (
-              <LocationCard 
-                key={location.id} 
-                location={location}
-                onCheckIn={() => setShowScanner(true)}
-              />
-            ))
-          )}
-        </TabsContent>
-
-        <TabsContent value="map" className="mt-4">
-          <MembershipMap locations={locations} />
-        </TabsContent>
-
-        <TabsContent value="activity" className="space-y-4 mt-4">
-          {checkIns.length === 0 ? (
-            <Card className="p-6 text-center">
-              <Award className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">No check-ins yet</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Visit partner locations to start earning points
+        <TabsContent value="partners" className="mt-6">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Partner Discounts</h2>
+              <p className="text-muted-foreground">
+                Exclusive offers and discounts from our partners
+              </p>
+            </div>
+          </div>
+          
+          {partners.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Percent className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Partner Discounts Yet</h3>
+              <p className="text-muted-foreground">
+                Check back soon for exclusive member discounts
               </p>
             </Card>
           ) : (
-            checkIns.map((checkIn) => (
-              <Card key={checkIn.id} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MapPin className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">
-                        {checkIn.partner_locations?.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(checkIn.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="bg-primary/5">
-                    +{checkIn.points_awarded} pts
-                  </Badge>
-                </div>
-              </Card>
-            ))
+            <div className="grid gap-6 md:grid-cols-2">
+              {partners.map((partner) => (
+                <PartnerCard
+                  key={partner.id}
+                  id={partner.id}
+                  name={partner.partner_name}
+                  type={partner.category}
+                  description={partner.description}
+                  discountValue={partner.discount_value}
+                  discountType={partner.discount_type}
+                  redemptionCode={partner.redemption_code}
+                  redemptionUrl={partner.redemption_url}
+                  logoUrl={partner.partner_logo_url}
+                  tierRequired={partner.tier_required}
+                  userTier={profile?.subscription_tier || "free"}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="locations" className="mt-6">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Partner Locations</h2>
+              <p className="text-muted-foreground">
+                Find partner locations near you
+              </p>
+            </div>
+          </div>
+
+          {locations.length === 0 ? (
+            <Card className="p-12 text-center">
+              <MapPin className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Locations Yet</h3>
+              <p className="text-muted-foreground">
+                Partner locations will appear here soon
+              </p>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              <MembershipMap locations={locations} />
+              <div className="grid gap-4 md:grid-cols-2 mt-6">
+                {locations.map((location) => (
+                  <LocationCard 
+                    key={location.id} 
+                    location={location}
+                  />
+                ))}
+              </div>
+            </div>
           )}
         </TabsContent>
       </Tabs>
-
-      <CheckInMethodDialog
-        open={showMethodDialog}
-        onOpenChange={setShowMethodDialog}
-        onSelectQR={() => setShowScanner(true)}
-        onSelectNFC={() => setShowNFCScanner(true)}
-      />
-
-      {showScanner && (
-        <QRScanner 
-          onClose={() => setShowScanner(false)}
-          onSuccess={() => {
-            fetchData();
-            setShowScanner(false);
-          }}
-        />
-      )}
-
-      {showNFCScanner && (
-        <NFCScanner
-          onClose={() => setShowNFCScanner(false)}
-          onSuccess={() => {
-            fetchData();
-            setShowNFCScanner(false);
-          }}
-        />
-      )}
     </div>
   );
 }

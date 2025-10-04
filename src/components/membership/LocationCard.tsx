@@ -5,7 +5,7 @@ import { MapPin, Star } from "lucide-react";
 
 interface LocationCardProps {
   location: any;
-  onCheckIn: () => void;
+  onCheckIn?: () => void;
 }
 
 export const LocationCard = ({ location, onCheckIn }: LocationCardProps) => {
@@ -45,11 +45,13 @@ export const LocationCard = ({ location, onCheckIn }: LocationCardProps) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-sm">
               <Star className="h-4 w-4 text-primary fill-primary" />
-              <span className="font-semibold">{location.points_per_visit} points</span>
+              <span className="font-semibold">{location.points_per_visit} points per visit</span>
             </div>
-            <Button size="sm" onClick={onCheckIn}>
-              Check In
-            </Button>
+            {onCheckIn && (
+              <Button size="sm" onClick={onCheckIn}>
+                Check In
+              </Button>
+            )}
           </div>
         </div>
       </div>

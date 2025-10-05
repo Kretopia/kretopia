@@ -29,7 +29,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   },
   thriver: {
     swipesPerDay: -1, // unlimited
-    maxProjects: -1, // unlimited
+    maxProjects: 5,
     canUndoSwipe: true,
     canVerifyProfile: true,
     hasFeaturedProfile: false,

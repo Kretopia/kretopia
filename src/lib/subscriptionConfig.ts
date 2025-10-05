@@ -12,7 +12,7 @@ export const SUBSCRIPTION_PRODUCTS = {
       "Unlimited swipes",
       "AI match recommendations",
       "Profile verification badge",
-      "Unlimited projects",
+      "Up to 5 projects",
       "Advanced analytics",
       "Undo swipe feature",
       "5% partner discounts",

@@ -100,11 +100,17 @@ const Messages = () => {
   };
 
   const fetchConnections = async () => {
-    // Fetch accepted connections and matches
-    const { data: connectionsData } = await supabase
+    // Fetch accepted connections in both directions
+    const { data: outgoingConnections } = await supabase
       .from("connections")
       .select("connected_user_id")
       .eq("user_id", currentUserId)
+      .eq("status", "accepted");
+
+    const { data: incomingConnections } = await supabase
+      .from("connections")
+      .select("user_id")
+      .eq("connected_user_id", currentUserId)
       .eq("status", "accepted");
 
     const { data: matches } = await supabase
@@ -114,7 +120,8 @@ const Messages = () => {
       .eq("status", "active");
 
     const connectedIds = new Set<string>();
-    connectionsData?.forEach((c) => connectedIds.add(c.connected_user_id));
+    outgoingConnections?.forEach((c) => connectedIds.add(c.connected_user_id));
+    incomingConnections?.forEach((c) => connectedIds.add(c.user_id));
     matches?.forEach((m) => {
       connectedIds.add(m.user1_id === currentUserId ? m.user2_id : m.user1_id);
     });

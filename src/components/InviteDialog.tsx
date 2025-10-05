@@ -9,9 +9,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Copy, CheckCircle2, Target } from "lucide-react";
+import { Copy, CheckCircle2, Target, QrCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { QRCodeSVG } from "qrcode.react";
 
 interface InviteDialogProps {
   open: boolean;
@@ -21,6 +22,7 @@ interface InviteDialogProps {
 export const InviteDialog = ({ open, onOpenChange }: InviteDialogProps) => {
   const [inviteCodes, setInviteCodes] = useState<any[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showQRCode, setShowQRCode] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,33 +89,62 @@ ${inviteUrl}`;
           ) : (
             inviteCodes.map((invite) => (
               <Card key={invite.id} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <code className="text-lg font-mono font-semibold bg-secondary px-3 py-1 rounded">
-                        {invite.invite_code}
-                      </code>
-                      <Badge variant="outline">
-                        {invite.current_uses}/{invite.max_uses} used
-                      </Badge>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <code className="text-lg font-mono font-semibold bg-secondary px-3 py-1 rounded">
+                          {invite.invite_code}
+                        </code>
+                        <Badge variant="outline">
+                          {invite.current_uses}/{invite.max_uses} used
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Created {new Date(invite.created_at).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Created {new Date(invite.created_at).toLocaleDateString()}
-                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowQRCode(showQRCode === invite.invite_code ? null : invite.invite_code)}
+                        className="gap-2"
+                      >
+                        <QrCode className="h-4 w-4" />
+                        QR
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyInviteCode(invite.invite_code)}
+                        className="gap-2"
+                      >
+                        {copiedCode === invite.invite_code ? (
+                          <CheckCircle2 className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        {copiedCode === invite.invite_code ? 'Copied!' : 'Copy'}
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyInviteCode(invite.invite_code)}
-                    className="gap-2"
-                  >
-                    {copiedCode === invite.invite_code ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                    {copiedCode === invite.invite_code ? 'Copied!' : 'Copy'}
-                  </Button>
+                  
+                  {showQRCode === invite.invite_code && (
+                    <div className="flex flex-col items-center gap-3 pt-3 border-t border-border">
+                      <div className="bg-white p-4 rounded-lg">
+                        <QRCodeSVG
+                          value={`https://www.thrivein.io/auth?invite=${invite.invite_code}`}
+                          size={200}
+                          level="H"
+                          includeMargin
+                        />
+                      </div>
+                      <p className="text-xs text-center text-muted-foreground">
+                        Scan to join ThriveIN with this invite code
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Card>
             ))

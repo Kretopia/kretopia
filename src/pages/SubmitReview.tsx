@@ -43,11 +43,9 @@ export default function SubmitReview() {
 
   const loadRequestData = async () => {
     try {
-      // Fetch review request
+      // Fetch review request using secure function (excludes sensitive fields like reviewer_email)
       const { data: request, error: requestError } = await supabase
-        .from('review_requests')
-        .select('*')
-        .eq('share_token', token)
+        .rpc('get_review_request_by_token', { token_param: token })
         .single();
 
       if (requestError || !request) {
@@ -79,10 +77,10 @@ export default function SubmitReview() {
 
       setRequestData(request);
       setProfileData(profile);
+      // Note: reviewer_email is no longer included in the response for security
       setFormData(prev => ({
         ...prev,
-        reviewer_name: request.reviewer_name || "",
-        reviewer_email: request.reviewer_email || ""
+        reviewer_name: request.reviewer_name || ""
       }));
       setLoading(false);
     } catch (error) {

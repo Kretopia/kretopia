@@ -2595,6 +2595,21 @@ export type Database = {
           role: string
         }[]
       }
+      get_review_request_by_token: {
+        Args: { token_param: string }
+        Returns: {
+          completed_at: string
+          created_at: string
+          expires_at: string
+          id: string
+          personal_message: string
+          profile_id: string
+          project_name: string
+          reviewer_name: string
+          share_token: string
+          status: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

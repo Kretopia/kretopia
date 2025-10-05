@@ -405,20 +405,6 @@ Return ONLY valid JSON array:
             Review and manage applications to your opportunities
           </p>
         </div>
-        <PostOpportunityDialog
-          open={showPostDialog}
-          onOpenChange={setShowPostDialog}
-          onSuccess={() => {
-            fetchOpportunities();
-            setShowPostDialog(false);
-          }}
-          trigger={
-            <Button variant="outline">
-              <Briefcase className="w-4 h-4 mr-2" />
-              Post New
-            </Button>
-          }
-        />
       </div>
 
       <div className="mb-6">

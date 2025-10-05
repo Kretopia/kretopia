@@ -23,7 +23,7 @@ export const TIER_LEVELS: TierLevel[] = [
     icon: "✨",
     benefits: [
       "Welcome badge on profile",
-      "Access to community feed",
+      "Event notifications",
       "Basic leaderboard visibility",
     ],
   },
@@ -38,8 +38,8 @@ export const TIER_LEVELS: TierLevel[] = [
     benefits: [
       "Rising Star badge",
       "Profile flair animation",
-      "Priority in community feed",
-      "Access to exclusive channels",
+      "Priority in discovery",
+      "Early event registration",
     ],
   },
   {
@@ -69,7 +69,7 @@ export const TIER_LEVELS: TierLevel[] = [
       "Maverick badge",
       "Premium profile frame",
       "Priority support response",
-      "Showcase in homepage",
+      "Priority event access",
     ],
   },
   {

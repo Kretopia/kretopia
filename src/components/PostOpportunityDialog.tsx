@@ -69,6 +69,11 @@ export const PostOpportunityDialog = ({
     setLoading(true);
 
     try {
+      // Get authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("You must be logged in to post opportunities");
+      }
       // Call AI moderation function
       const { data: moderationData, error: moderationError } = await supabase.functions.invoke('moderate-opportunity', {
         body: {
@@ -110,7 +115,7 @@ export const PostOpportunityDialog = ({
         imageUrl = publicUrl;
       }
 
-      // Create opportunity without auth
+      // Create opportunity with authenticated user
       const { error: opportunityError } = await supabase
         .from('opportunities')
         .insert({
@@ -126,6 +131,7 @@ export const PostOpportunityDialog = ({
           tags: [formData.company],
           status: 'active',
           image_url: imageUrl,
+          created_by: user.id,
         });
 
       if (opportunityError) throw opportunityError;

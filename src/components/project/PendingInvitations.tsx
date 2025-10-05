@@ -50,8 +50,8 @@ export const PendingInvitations = ({ projectId, showAll = false }: PendingInvita
         .select(`
           *,
           projects!inner(id, title, description),
-          inviter:profiles!project_collaborators_invited_by_fkey(full_name, avatar_url),
-          invitee:profiles!project_collaborators_user_id_fkey(full_name, avatar_url)
+          inviter:profiles!invited_by(full_name, avatar_url),
+          invitee:profiles!user_id(full_name, avatar_url)
         `)
         .eq('status', 'pending');
 

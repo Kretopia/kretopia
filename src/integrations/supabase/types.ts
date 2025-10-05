@@ -796,7 +796,7 @@ export type Database = {
         Row: {
           compensation: string | null
           created_at: string | null
-          created_by: string | null
+          created_by: string
           deliverables: string | null
           description: string
           duration: string | null
@@ -814,7 +814,7 @@ export type Database = {
         Insert: {
           compensation?: string | null
           created_at?: string | null
-          created_by?: string | null
+          created_by: string
           deliverables?: string | null
           description: string
           duration?: string | null
@@ -832,7 +832,7 @@ export type Database = {
         Update: {
           compensation?: string | null
           created_at?: string | null
-          created_by?: string | null
+          created_by?: string
           deliverables?: string | null
           description?: string
           duration?: string | null
@@ -1487,6 +1487,20 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "project_collaborators_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "project_collaborators_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "project_collaborators_project_id_fkey"
             columns: ["project_id"]

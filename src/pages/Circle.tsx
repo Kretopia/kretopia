@@ -210,14 +210,28 @@ const Circle = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Get pending connection requests
     const { data: requests } = await supabase
       .from('connections')
-      .select('*, profiles!connections_user_id_fkey(full_name, avatar_url, role, bio)')
+      .select('id, user_id, connected_user_id, status, created_at')
       .eq('connected_user_id', user.id)
       .eq('status', 'pending');
 
     if (requests) {
-      setPendingRequests(requests);
+      // Fetch profile data for each requester
+      const userIds = requests.map(r => r.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role, bio')
+        .in('user_id', userIds);
+
+      // Merge profile data with requests
+      const enrichedRequests = requests.map(request => ({
+        ...request,
+        profiles: profiles?.find(p => p.user_id === request.user_id)
+      }));
+
+      setPendingRequests(enrichedRequests);
     }
   };
 
@@ -432,16 +446,70 @@ const Circle = () => {
     }
   };
 
-  const handleAcceptConnection = async (connectionId: string) => {
-    const { error } = await supabase
-      .from('connections')
-      .update({ status: 'accepted' })
-      .eq('id', connectionId);
+  const handleAcceptConnection = async (connectionIdOrUserId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    if (!error) {
+    try {
+      // First, try to find the connection by ID
+      let { data: connection } = await supabase
+        .from('connections')
+        .select('*')
+        .eq('id', connectionIdOrUserId)
+        .maybeSingle();
+
+      // If not found by ID, try to find by user_id (when accepting from discover tab)
+      if (!connection) {
+        const { data: foundConnection } = await supabase
+          .from('connections')
+          .select('*')
+          .eq('user_id', connectionIdOrUserId)
+          .eq('connected_user_id', user.id)
+          .eq('status', 'pending')
+          .maybeSingle();
+        
+        connection = foundConnection;
+      }
+
+      if (!connection) {
+        throw new Error('Connection not found');
+      }
+
+      // Accept the connection
+      const { error } = await supabase
+        .from('connections')
+        .update({ status: 'accepted' })
+        .eq('id', connection.id);
+
+      if (error) throw error;
+
+      // Create bidirectional connection
+      await supabase
+        .from('connections')
+        .upsert({
+          user_id: user.id,
+          connected_user_id: connection.user_id,
+          status: 'accepted'
+        }, {
+          onConflict: 'user_id,connected_user_id',
+          ignoreDuplicates: true
+        });
+
       toast({ title: "Connection accepted! 🎉" });
-      fetchPendingRequests();
-      fetchConnections();
+      
+      // Refresh all connection data
+      await Promise.all([
+        fetchPendingRequests(),
+        fetchConnections(),
+        fetchDiscoverProfiles()
+      ]);
+    } catch (error) {
+      console.error('Error accepting connection:', error);
+      toast({ 
+        title: "Failed to accept connection", 
+        description: "Please try again",
+        variant: "destructive" 
+      });
     }
   };
 

@@ -21,23 +21,18 @@ export const Footer = () => {
             <h4 className="font-semibold text-sm">Product</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/discover" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Discover
-                </Link>
-              </li>
-              <li>
                 <Link to="/subscription" className="text-muted-foreground hover:text-foreground transition-colors">
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link to="/membership" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Membership
+                <Link to="/partner-directory" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Partners
                 </Link>
               </li>
               <li>
-                <Link to="/partner-directory" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Partners
+                <Link to="/partner-submit" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Become a Partner
                 </Link>
               </li>
             </ul>
@@ -62,11 +57,6 @@ export const Footer = () => {
                 >
                   Support
                 </a>
-              </li>
-              <li>
-                <Link to="/partner-submit" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Become a Partner
-                </Link>
               </li>
             </ul>
           </div>

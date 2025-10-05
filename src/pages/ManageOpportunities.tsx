@@ -177,11 +177,20 @@ const ManageOpportunities = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">My Applications</h1>
-        <p className="text-muted-foreground">
-          Track and manage your opportunity applications
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">My Applications</h1>
+          <p className="text-muted-foreground">
+            Track and manage your opportunity applications
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => navigate('/opportunity-dashboard')}
+        >
+          <Briefcase className="mr-2 h-4 w-4" />
+          View Posted Opportunities
+        </Button>
       </div>
 
       <Tabs defaultValue="all" className="w-full">

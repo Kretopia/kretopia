@@ -398,13 +398,20 @@ Return ONLY valid JSON array:
 
   return (
     <div className="container mx-auto p-4 md:p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Opportunity Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">My Posted Opportunities</h1>
           <p className="text-muted-foreground">
             Review and manage applications to your opportunities
           </p>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => navigate('/manage-opportunities')}
+        >
+          <User className="mr-2 h-4 w-4" />
+          View My Applications
+        </Button>
       </div>
 
       <div className="mb-6">

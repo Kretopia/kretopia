@@ -11,6 +11,8 @@ import { ProjectSettings } from "@/components/project/ProjectSettings";
 import { MessagePanel } from "@/components/project/MessagePanel";
 import { ActivityTimeline } from "@/components/project/ActivityTimeline";
 import { NotificationBell } from "@/components/project/NotificationBell";
+import { ProjectPresence } from "@/components/project/ProjectPresence";
+import { PostAsOpportunityDialog } from "@/components/project/PostAsOpportunityDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -444,8 +446,14 @@ const ThriveDesk = () => {
           </Button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base font-semibold truncate">{project.title}</h1>
+            <ProjectPresence projectId={projectId || ""} />
           </div>
           <Badge variant="secondary" className="text-xs px-2 py-1 flex-shrink-0">{project.status}</Badge>
+          <PostAsOpportunityDialog 
+            projectId={projectId || ""}
+            projectTitle={project.title}
+            projectDescription={project.description}
+          />
           <ProjectSettings 
             project={project} 
             onUpdate={fetchProjectData}
@@ -754,14 +762,20 @@ const ThriveDesk = () => {
                     placeholder="Project title"
                   />
                 ) : (
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 flex items-center gap-2">
                     <h1 className="text-sm font-semibold truncate">{project.title}</h1>
+                    <ProjectPresence projectId={projectId || ""} />
                   </div>
                 )}
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <Badge variant="secondary" className="text-[10px] h-5 px-2">{project.status}</Badge>
                 <NotificationBell projectId={projectId || ''} />
+                <PostAsOpportunityDialog 
+                  projectId={projectId || ""}
+                  projectTitle={project.title}
+                  projectDescription={project.description}
+                />
                 <InvoiceGenerator 
                   projectId={projectId || ''}
                 />

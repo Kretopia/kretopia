@@ -19,10 +19,18 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
   const [email, setEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<any[]>([]);
+  const [connectedUsers, setConnectedUsers] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [sending, setSending] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+
+  // Load connected users when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadConnectedUsers();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (searchQuery.length > 2) {
@@ -31,6 +39,50 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       setUsers([]);
     }
   }, [searchQuery]);
+
+  const loadConnectedUsers = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get all accepted connections
+      const { data: outgoing } = await supabase
+        .from("connections")
+        .select("connected_user_id")
+        .eq("user_id", user.id)
+        .eq("status", "accepted");
+
+      const { data: incoming } = await supabase
+        .from("connections")
+        .select("user_id")
+        .eq("connected_user_id", user.id)
+        .eq("status", "accepted");
+
+      const { data: matches } = await supabase
+        .from("matches")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active");
+
+      const connectedIds = new Set<string>();
+      outgoing?.forEach((c) => connectedIds.add(c.connected_user_id));
+      incoming?.forEach((c) => connectedIds.add(c.user_id));
+      matches?.forEach((m) => {
+        connectedIds.add(m.user1_id === user.id ? m.user2_id : m.user1_id);
+      });
+
+      if (connectedIds.size > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, avatar_url, role, professional_skills")
+          .in("user_id", Array.from(connectedIds));
+
+        setConnectedUsers(profiles || []);
+      }
+    } catch (error) {
+      console.error("Error loading connected users:", error);
+    }
+  };
 
   const searchUsers = async () => {
     setSearching(true);
@@ -156,6 +208,43 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           </TabsList>
           
           <TabsContent value="search" className="space-y-4">
+            {/* Connected Users Section */}
+            {connectedUsers.length > 0 && searchQuery.length === 0 && (
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                  <UserPlus className="h-3 w-3" />
+                  From Your Circle
+                </Label>
+                <ScrollArea className="h-[200px] rounded-md border p-2 bg-primary/5">
+                  {connectedUsers.map((user) => (
+                    <div
+                      key={user.user_id}
+                      className="flex items-center gap-3 p-3 hover:bg-accent rounded-lg transition-colors mb-1"
+                    >
+                      <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                        <AvatarImage src={user.avatar_url} />
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground">
+                          {user.full_name?.[0] || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{user.full_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user.role}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleInviteUser(user.user_id, user.full_name)}
+                        disabled={sending}
+                        variant="default"
+                      >
+                        Invite
+                      </Button>
+                    </div>
+                  ))}
+                </ScrollArea>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="search">Search by name or role</Label>
               <Input
@@ -166,7 +255,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
               />
             </div>
             
-            <ScrollArea className="h-[300px] rounded-md border p-2">
+            <ScrollArea className="h-[200px] rounded-md border p-2">
               {searching && (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

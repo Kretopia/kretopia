@@ -71,17 +71,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
         return;
       }
 
-      // Create project with explicit user ID
+      // Create project - created_by will be automatically set/verified by database trigger
       const projectData = {
         title: validationResult.data.title,
         description: validationResult.data.description || null,
-        created_by: user.id,
+        created_by: user.id, // Included for TypeScript, but trigger will override this
         status: 'active' as const,
-        match_id: null,
       };
-
-      console.log('Creating project with data:', projectData);
-      console.log('User ID:', user.id);
 
       const { data: project, error: projectError } = await supabase
         .from('projects')
@@ -89,10 +85,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
         .select()
         .single();
 
-      if (projectError) {
-        console.error('Project creation error:', projectError);
-        throw projectError;
-      }
+      if (projectError) throw projectError;
 
       // Send invite if email provided
       if (validationResult.data.inviteEmail) {

@@ -334,7 +334,6 @@ const PublicProfile = () => {
                     <MessageCircle className="h-4 w-4" />
                     Message
                   </Button>
-                  <PostOpportunityDialog />
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -342,7 +341,6 @@ const PublicProfile = () => {
                     <UserPlus className="h-4 w-4" />
                     Sign Up to Connect
                   </Button>
-                  <PostOpportunityDialog />
                 </div>
               )}
             </div>

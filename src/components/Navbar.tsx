@@ -113,7 +113,7 @@ const Navbar = ({ user }: NavbarProps) => {
                       onClick={() => handleNavigation("/projects")}
                     >
                       <FolderKanban className="h-5 w-5" />
-                      Projects
+                      ThriveDesk
                     </Button>
                     
                     <Separator className="my-3" />

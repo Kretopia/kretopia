@@ -184,7 +184,7 @@ export default function Subscription() {
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
         {SUBSCRIPTION_TIERS.map((tier) => {
           const isCurrentPlan = currentTier === tier.tier;
           const Icon = tier.icon;
@@ -209,24 +209,24 @@ export default function Subscription() {
                   <Badge className="bg-green-500">Your Plan</Badge>
                 </div>
               )}
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 rounded-lg bg-primary/10">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2.5 rounded-lg bg-primary/10">
                     <Icon className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                  <CardTitle className="text-xl sm:text-2xl">{tier.name}</CardTitle>
                 </div>
-                <CardDescription>
-                  <span className="text-4xl font-bold">{tier.price}</span>
-                  <span className="text-muted-foreground">/month</span>
+                <CardDescription className="flex items-baseline gap-1">
+                  <span className="text-3xl sm:text-4xl font-bold">{tier.price}</span>
+                  <span className="text-sm text-muted-foreground">/month</span>
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
+              <CardContent className="pt-0">
+                <ul className="space-y-2.5">
                   {tier.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
+                    <li key={index} className="flex items-start gap-2.5">
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm leading-relaxed">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -257,9 +257,11 @@ export default function Subscription() {
         })}
       </div>
 
-      <div className="mt-12 text-center text-sm text-muted-foreground space-y-2">
+      <div className="mt-12 text-center text-sm text-muted-foreground space-y-2 px-4">
         <p>All paid plans include access to ThriveDesk collaboration tools and milestone payments.</p>
-        <p>Partner discounts from industry-leading platforms coming soon!</p>
+        <p>
+          <strong>Partner Perks:</strong> Enjoy exclusive discounts from our partner network based on your tier.
+        </p>
         <p className="font-semibold">Cancel anytime. No hidden fees.</p>
       </div>
     </div>

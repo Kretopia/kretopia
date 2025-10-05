@@ -18,6 +18,7 @@ interface PortfolioItemCardProps {
     media_url: string;
     media_type: string;
     thumbnail_url: string | null;
+    embed_code: string | null;
     tags: string[];
     view_count: number;
     created_at: string;
@@ -100,32 +101,65 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
     }
   };
 
+  const renderMedia = () => {
+    // If there's an embed code, use it
+    if (item.embed_code) {
+      return (
+        <div 
+          className="w-full h-full"
+          dangerouslySetInnerHTML={{ __html: item.embed_code }}
+        />
+      );
+    }
+
+    // If there's a thumbnail, show it
+    if (item.thumbnail_url) {
+      return (
+        <img 
+          src={item.thumbnail_url} 
+          alt={item.title}
+          className="w-full h-full object-cover"
+        />
+      );
+    }
+
+    // If it's an image type, show the media_url
+    if (item.media_type === 'image') {
+      return (
+        <img 
+          src={item.media_url} 
+          alt={item.title}
+          className="w-full h-full object-cover"
+        />
+      );
+    }
+
+    // Default play icon for video/audio
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Play className="h-16 w-16 text-primary/50" />
+      </div>
+    );
+  };
+
   return (
     <>
       <Card className="overflow-hidden hover:shadow-lg transition-all">
         <div 
           className="relative aspect-video bg-gradient-to-br from-primary/10 to-primary/5 cursor-pointer group"
-          onClick={() => isPlayable ? setShowPlayer(true) : window.open(item.media_url, '_blank')}
+          onClick={() => {
+            // Don't open modal if it's an embed
+            if (item.embed_code) return;
+            if (isPlayable) {
+              setShowPlayer(true);
+            } else {
+              window.open(item.media_url, '_blank');
+            }
+          }}
         >
-          {item.thumbnail_url ? (
-            <img 
-              src={item.thumbnail_url} 
-              alt={item.title}
-              className="w-full h-full object-cover"
-            />
-          ) : item.media_type === 'image' ? (
-            <img 
-              src={item.media_url} 
-              alt={item.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Play className="h-16 w-16 text-primary/50" />
-            </div>
-          )}
+          {renderMedia()}
           
-          {isPlayable && (
+          {isPlayable && !item.embed_code && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
               <Play className="h-16 w-16 text-white" />
             </div>

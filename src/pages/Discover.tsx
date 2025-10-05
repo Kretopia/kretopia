@@ -179,8 +179,8 @@ const Discover = () => {
       if (activeTab === 'creators') {
         console.log('[Discover] Fetching creator profiles...');
         let profilesQuery = supabase
-          .from('public_profiles')
-          .select('*')
+          .from('profiles')
+          .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, instagram_followers, youtube_subscribers, tiktok_followers, spotify_listeners, total_engagement_rate, verified_metrics, level, badge')
           .neq('user_id', user.id)
           .not('full_name', 'is', null)
           .not('bio', 'is', null)
@@ -205,8 +205,7 @@ const Discover = () => {
 
         // Filter out already swiped profiles and connected users - only require basics (name, role, avatar, bio exists)
         const completeProfiles = (profiles || []).filter(profile => {
-          return !swipedIds.has(profile.id) &&
-                 !connectedUserIds.has(profile.user_id) &&
+          return !connectedUserIds.has(profile.user_id) &&
                  profile.full_name && 
                  profile.full_name !== 'New User' && 
                  profile.role && 
@@ -226,7 +225,7 @@ const Discover = () => {
         let creatorCards: Card[] = completeProfiles.map(profile => {
           const userPortfolio = (portfolioItems || []).filter(item => item.user_id === profile.user_id);
           return {
-            id: profile.id,
+            id: profile.user_id, // Use user_id as the card id
             type: 'creator' as CardType,
             name: profile.full_name,
             title: profile.role,

@@ -78,11 +78,10 @@ const PublicProfile = () => {
     const { data: { user } } = await supabase.auth.getUser();
     setIsLoggedIn(!!user);
     
-    // Fetch profile using the secure public_profiles view
-    // This view excludes sensitive data like payment info and subscription details
+    // Fetch profile using only public fields from profiles table
     const { data, error } = await supabase
-      .from('public_profiles')
-      .select('*')
+      .from('profiles')
+      .select('user_id, full_name, role, bio, location, avatar_url, job_title, industry, badge, level, professional_skills, passion_skills, section_order, website, linkedin_url, behance_url, imdb_url, instagram_url, twitter_url, spotify_url, soundcloud_url, instagram_followers, youtube_subscribers, tiktok_followers, spotify_listeners, total_engagement_rate, verified_metrics, created_at')
       .eq('user_id', userId)
       .maybeSingle();
 

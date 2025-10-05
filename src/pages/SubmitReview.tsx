@@ -68,10 +68,10 @@ export default function SubmitReview() {
         return;
       }
 
-      // Fetch profile data
+      // Fetch profile data (only public fields)
       const { data: profile } = await supabase
-        .from('public_profiles')
-        .select('*')
+        .from('profiles')
+        .select('user_id, full_name, role, bio, avatar_url, location, job_title')
         .eq('user_id', request.profile_id)
         .single();
 

@@ -52,10 +52,10 @@ export const AIMatchRecommendations = () => {
         return;
       }
 
-      // Get all other users' profiles
+      // Get all other users' profiles (only public fields)
       const { data: otherProfiles } = await supabase
-        .from('public_profiles')
-        .select('*')
+        .from('profiles')
+        .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills')
         .neq('user_id', user.id)
         .limit(20);
 
@@ -121,8 +121,8 @@ Format as JSON array:
       console.error('Error analyzing matches:', error);
       // Fallback to simple matching without AI
       const { data: fallbackProfiles } = await supabase
-        .from('public_profiles')
-        .select('*')
+        .from('profiles')
+        .select('user_id, full_name, role, bio, avatar_url')
         .neq('user_id', user.id)
         .limit(5);
 

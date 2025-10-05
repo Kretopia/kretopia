@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, GripVertical, Calendar, User, CheckSquare } from "lucide-react";
+import { Plus, GripVertical, Calendar, CheckSquare } from "lucide-react";
 import { 
   DndContext, 
   closestCenter, 
@@ -18,11 +18,14 @@ import {
   TouchSensor,
   useSensor, 
   useSensors, 
-  DragEndEvent, 
+  DragEndEvent,
+  DragStartEvent,
   DragOverlay,
-  useDroppable 
+  useDroppable,
+  defaultDropAnimation,
+  DragOverEvent
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -49,8 +52,14 @@ const STATUSES = [
   { value: 'done', label: 'Done', color: 'bg-accent/20' }
 ];
 
-function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+function SortableTask({ task, onUpdate, isDraggingAny }: { task: Task; onUpdate: () => void; isDraggingAny: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
+    id: task.id,
+    transition: {
+      duration: 200,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    }
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
   const { toast } = useToast();
@@ -58,7 +67,8 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0 : 1,
+    zIndex: isDragging ? 999 : 'auto',
   };
 
   const handleSave = async () => {
@@ -82,13 +92,18 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className={`p-2 md:p-3 mb-1.5 md:mb-2 hover:shadow-md transition-smooth border-l-2 md:border-l-4 border-l-primary/20 ${
-        isDragging ? 'opacity-40 shadow-lg scale-105' : 'cursor-grab active:cursor-grabbing'
-      }`}>
+      <Card className={`p-2 md:p-3 mb-1.5 md:mb-2 border-l-2 md:border-l-4 border-l-primary/20 transition-all duration-200 ${
+        isDragging ? 'shadow-2xl scale-105 opacity-0' : 'hover:shadow-md'
+      } ${isDraggingAny && !isDragging ? 'opacity-60' : ''}`}>
         <div className="flex items-start gap-1.5 md:gap-2">
-          <div {...attributes} {...listeners} className="mt-0.5 touch-none">
-            <GripVertical className="h-3 w-3 md:h-3.5 md:w-3.5 text-muted-foreground" />
-          </div>
+          <button
+            {...attributes}
+            {...listeners}
+            className="mt-0.5 touch-none cursor-grab active:cursor-grabbing p-1 rounded hover:bg-primary/10 active:bg-primary/20 transition-all active:scale-110"
+            aria-label="Drag to move task"
+          >
+            <GripVertical className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
+          </button>
           <div className="flex-1 space-y-1">
             <Dialog open={isEditing} onOpenChange={setIsEditing}>
               <DialogTrigger asChild>
@@ -148,29 +163,50 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
   );
 }
 
-function DroppableColumn({ status, tasks, onUpdate }: { status: typeof STATUSES[0], tasks: Task[], onUpdate: () => void }) {
-  const { setNodeRef, isOver } = useDroppable({ id: status.value });
+function DroppableColumn({ status, tasks, onUpdate, isOver, isDraggingAny }: { 
+  status: typeof STATUSES[0]; 
+  tasks: Task[]; 
+  onUpdate: () => void;
+  isOver: boolean;
+  isDraggingAny: boolean;
+}) {
+  const { setNodeRef } = useDroppable({ id: status.value });
 
   return (
     <div 
       ref={setNodeRef} 
-      className={`rounded-lg md:rounded-xl p-2 md:p-3 ${status.color} min-h-[150px] md:min-h-[180px] xl:min-h-[400px] border transition-all ${
-        isOver ? 'border-primary border-2 ring-2 ring-primary/20' : 'border-border/50'
+      className={`rounded-lg md:rounded-xl p-2 md:p-3 min-h-[200px] md:min-h-[250px] xl:min-h-[400px] border-2 transition-all duration-200 ${status.color} ${
+        isOver 
+          ? 'border-primary ring-4 ring-primary/30 scale-[1.02] shadow-lg' 
+          : isDraggingAny
+          ? 'border-dashed border-border/80'
+          : 'border-border/50'
       }`}
     >
       <div className="mb-2 md:mb-2.5 flex items-center justify-between">
-        <h4 className="font-semibold text-[10px] md:text-xs">{status.label}</h4>
-        <Badge variant="secondary" className="text-[9px] md:text-xs h-4 md:h-5 min-w-[20px] md:min-w-[24px] justify-center px-1 md:px-1.5">{tasks.length}</Badge>
+        <h4 className="font-semibold text-[11px] md:text-xs uppercase tracking-wide">{status.label}</h4>
+        <Badge 
+          variant="secondary" 
+          className={`text-[9px] md:text-xs h-4 md:h-5 min-w-[20px] md:min-w-[24px] justify-center px-1 md:px-1.5 transition-all ${
+            isOver ? 'scale-110 bg-primary text-primary-foreground' : ''
+          }`}
+        >
+          {tasks.length}
+        </Badge>
       </div>
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-1.5 md:space-y-2">
           {tasks.length === 0 ? (
-            <div className="text-center py-4 md:py-6 text-muted-foreground">
-              <p className="text-[10px] md:text-xs">No tasks</p>
+            <div className={`text-center py-6 md:py-8 text-muted-foreground transition-all ${
+              isOver ? 'text-primary scale-105' : ''
+            }`}>
+              <p className="text-[10px] md:text-xs font-medium">
+                {isOver ? 'Drop here' : 'No tasks'}
+              </p>
             </div>
           ) : (
             tasks.map(task => (
-              <SortableTask key={task.id} task={task} onUpdate={onUpdate} />
+              <SortableTask key={task.id} task={task} onUpdate={onUpdate} isDraggingAny={isDraggingAny} />
             ))
           )}
         </div>
@@ -181,6 +217,8 @@ function DroppableColumn({ status, tasks, onUpdate }: { status: typeof STATUSES[
 
 export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -189,22 +227,75 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   });
   const { toast } = useToast();
 
+  const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Reduced from 8px for easier activation
+        distance: 3,
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 150, // Reduced from 200ms
-        tolerance: 8, // Increased from 5px for more forgiving touch
+        delay: 100,
+        tolerance: 10,
       },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    setOverId(over?.id as string || null);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    setActiveId(null);
+    setOverId(null);
+    
+    if (!over) return;
+
+    const activeTask = tasks.find(t => t.id === active.id);
+    
+    // Determine target status
+    let targetStatus = over.id as string;
+    const overTask = tasks.find(t => t.id === over.id);
+    if (overTask) {
+      targetStatus = overTask.status;
+    }
+
+    if (activeTask && STATUSES.some(s => s.value === targetStatus) && activeTask.status !== targetStatus) {
+      // Optimistic update
+      const { error } = await supabase
+        .from('project_tasks')
+        .update({ status: targetStatus })
+        .eq('id', activeTask.id);
+
+      if (error) {
+        console.error('Task update error:', error);
+        toast({ title: "Error moving task", description: error.message, variant: "destructive" });
+      } else {
+        toast({ 
+          title: "Task moved! ✅",
+          description: `Moved to ${STATUSES.find(s => s.value === targetStatus)?.label}`
+        });
+        onUpdate();
+      }
+    }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setOverId(null);
+  };
 
   const handleCreateTask = async () => {
     if (!newTask.title.trim()) {
@@ -237,38 +328,6 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
       setNewTask({ title: '', description: '', due_date: '', status: 'todo' });
       setCreateDialogOpen(false);
       onUpdate();
-    }
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (!over) return;
-
-    const activeTask = tasks.find(t => t.id === active.id);
-    
-    // Check if we dropped on a column (status value) or on another task
-    let targetStatus = over.id as string;
-    
-    // If we dropped on a task, get that task's status (column)
-    const overTask = tasks.find(t => t.id === over.id);
-    if (overTask) {
-      targetStatus = overTask.status;
-    }
-
-    if (activeTask && STATUSES.some(s => s.value === targetStatus) && activeTask.status !== targetStatus) {
-      const { error } = await supabase
-        .from('project_tasks')
-        .update({ status: targetStatus })
-        .eq('id', activeTask.id);
-
-      if (error) {
-        console.error('Task update error:', error);
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Task moved! ✅" });
-        onUpdate();
-      }
     }
   };
 
@@ -350,20 +409,48 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
           </Button>
         </div>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext 
+          sensors={sensors} 
+          collisionDetection={closestCenter} 
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
           <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-3">
             {STATUSES.map(status => {
               const statusTasks = tasks.filter(t => t.status === status.value);
+              const isOver = overId === status.value || statusTasks.some(t => t.id === overId);
               return (
                 <DroppableColumn 
                   key={status.value} 
                   status={status} 
                   tasks={statusTasks} 
-                  onUpdate={onUpdate} 
+                  onUpdate={onUpdate}
+                  isOver={isOver}
+                  isDraggingAny={!!activeId}
                 />
               );
             })}
           </div>
+          
+          <DragOverlay dropAnimation={defaultDropAnimation}>
+            {activeTask ? (
+              <Card className="p-2 md:p-3 border-l-4 border-l-primary shadow-2xl rotate-2 scale-105 bg-background">
+                <div className="flex items-start gap-2">
+                  <GripVertical className="h-4 w-4 text-primary animate-pulse" />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-sm">{activeTask.title}</h4>
+                    {activeTask.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                        {activeTask.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       )}
     </div>

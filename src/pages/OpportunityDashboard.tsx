@@ -45,19 +45,26 @@ const OpportunityDashboard = () => {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzingAI, setAnalyzingAI] = useState(false);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('[OpportunityDashboard] Component mounted, user:', user?.id);
+    console.log('[OpportunityDashboard] Auth state - loading:', authLoading, 'user:', user?.id);
+    
+    if (authLoading) {
+      console.log('[OpportunityDashboard] Still loading auth...');
+      return;
+    }
+    
     if (!user) {
-      console.log('[OpportunityDashboard] No user, redirecting to auth');
+      console.log('[OpportunityDashboard] No user after auth loaded, redirecting to auth');
       navigate('/auth');
       return;
     }
+    
     console.log('[OpportunityDashboard] Fetching opportunities');
     fetchOpportunities();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (selectedOppId) {
@@ -344,7 +351,7 @@ Return ONLY valid JSON array:
     </Card>
   );
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="container mx-auto p-4 md:p-6">
         <Skeleton className="h-10 w-64 mb-4" />

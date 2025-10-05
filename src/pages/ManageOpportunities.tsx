@@ -27,19 +27,26 @@ interface Application {
 const ManageOpportunities = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('[ManageOpportunities] Component mounted, user:', user?.id);
+    console.log('[ManageOpportunities] Auth state - loading:', authLoading, 'user:', user?.id);
+    
+    if (authLoading) {
+      console.log('[ManageOpportunities] Still loading auth...');
+      return;
+    }
+    
     if (!user) {
-      console.log('[ManageOpportunities] No user, redirecting to auth');
+      console.log('[ManageOpportunities] No user after auth loaded, redirecting to auth');
       navigate('/auth');
       return;
     }
+    
     console.log('[ManageOpportunities] Fetching applications');
     fetchApplications();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchApplications = async () => {
     if (!user) return;
@@ -152,7 +159,7 @@ const ManageOpportunities = () => {
     </Card>
   );
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="container mx-auto p-4 md:p-6">
         <div className="mb-6">

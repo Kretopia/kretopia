@@ -69,6 +69,7 @@ const PublicProfile = () => {
   });
   const [isConnected, setIsConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'none' | 'pending' | 'accepted'>('none');
+  const [isPendingReceived, setIsPendingReceived] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
 
@@ -113,7 +114,7 @@ const PublicProfile = () => {
       // Check both directions for connection
       const { data: connections } = await supabase
         .from('connections')
-        .select('status')
+        .select('status, user_id, connected_user_id')
         .or(`and(user_id.eq.${user.id},connected_user_id.eq.${userId}),and(user_id.eq.${userId},connected_user_id.eq.${user.id})`);
 
       // Also check for matches
@@ -128,8 +129,14 @@ const PublicProfile = () => {
         setConnectionStatus('accepted');
         setIsConnected(true);
       } else if (connections && connections.length > 0) {
-        setConnectionStatus(connections[0].status as 'none' | 'pending' | 'accepted');
-        setIsConnected(connections[0].status === 'accepted');
+        const connection = connections[0];
+        setConnectionStatus(connection.status as 'none' | 'pending' | 'accepted');
+        setIsConnected(connection.status === 'accepted');
+        
+        // Check if this is a received request (they sent to you)
+        if (connection.status === 'pending' && connection.user_id === userId) {
+          setIsPendingReceived(true);
+        }
       }
     }
 
@@ -229,7 +236,7 @@ const PublicProfile = () => {
       return;
     }
 
-    if (connectionStatus === 'pending') {
+    if (connectionStatus === 'pending' && !isPendingReceived) {
       toast({
         title: "Connection Pending",
         description: "Your connection request is already pending",
@@ -256,6 +263,33 @@ const PublicProfile = () => {
       toast({
         title: "Connection Request Sent!",
         description: "They'll be notified of your request",
+      });
+    }
+  };
+
+  const handleAcceptConnection = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('connections')
+      .update({ status: 'accepted' })
+      .eq('user_id', userId)
+      .eq('connected_user_id', user.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to accept connection",
+        variant: "destructive",
+      });
+    } else {
+      setConnectionStatus('accepted');
+      setIsConnected(true);
+      setIsPendingReceived(false);
+      toast({
+        title: "Connection Accepted!",
+        description: `You're now connected with ${profile?.full_name}`,
       });
     }
   };
@@ -302,7 +336,11 @@ const PublicProfile = () => {
           className="mb-4 gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          {location.state && (location.state as any).from === 'connect' ? 'Back to Connect' : 'Back to Discover'}
+          {location.state && (location.state as any).from === 'circle' 
+            ? 'Back to My Circle' 
+            : location.state && (location.state as any).from === 'connect' 
+            ? 'Back to Connect' 
+            : 'Back to Discover'}
         </Button>
 
         {/* Profile Header */}
@@ -356,6 +394,11 @@ const PublicProfile = () => {
                     <Button variant="outline" disabled className="gap-2">
                       <UserCheck className="h-4 w-4" />
                       Connected
+                    </Button>
+                  ) : isPendingReceived ? (
+                    <Button onClick={handleAcceptConnection} variant="gradient" className="gap-2">
+                      <UserCheck className="h-4 w-4" />
+                      Accept Request
                     </Button>
                   ) : connectionStatus === 'pending' ? (
                     <Button variant="outline" disabled className="gap-2">

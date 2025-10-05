@@ -1,5 +1,6 @@
 import { Briefcase, Sparkles } from "lucide-react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { Button } from "@/components/ui/button";
 
 interface PostOpportunitySectionProps {
   opportunitiesCount: number;
@@ -23,7 +24,14 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
             <span>{opportunitiesCount} Active Opportunities Available</span>
           </div>
         </div>
-        <PostOpportunityDialog variant="hero" size="xl" />
+        <PostOpportunityDialog 
+          trigger={
+            <Button variant="default" size="xl" className="bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
+              <Briefcase className="mr-2 h-5 w-5" />
+              Post an Opportunity
+            </Button>
+          }
+        />
         <p className="mt-4 text-sm text-muted-foreground">
           AI-moderated to keep our community safe
         </p>

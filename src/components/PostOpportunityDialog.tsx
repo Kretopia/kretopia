@@ -170,16 +170,9 @@ export const PostOpportunityDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {trigger ? (
+      {trigger && (
         <DialogTrigger asChild>
           {trigger}
-        </DialogTrigger>
-      ) : (
-        <DialogTrigger asChild>
-          <Button variant={variant} size={size} className={className}>
-            <Briefcase className="mr-2 h-5 w-5" />
-            Post an Opportunity
-          </Button>
         </DialogTrigger>
       )}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">

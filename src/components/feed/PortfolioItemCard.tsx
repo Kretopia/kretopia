@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
-import { Play, Eye, Sparkles } from "lucide-react";
+import { Play, Eye, Sparkles, Flame } from "lucide-react";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface PortfolioItemCardProps {
   item: {
@@ -28,8 +31,74 @@ interface PortfolioItemCardProps {
 
 export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
   const [showPlayer, setShowPlayer] = useState(false);
+  const [reactionCount, setReactionCount] = useState(0);
+  const [hasReacted, setHasReacted] = useState(false);
+  const { toast } = useToast();
 
   const isPlayable = item.media_type === 'video' || item.media_type === 'audio';
+
+  useEffect(() => {
+    fetchReactions();
+  }, [item.id]);
+
+  const fetchReactions = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Get reaction count
+    const { count } = await supabase
+      .from('portfolio_reactions')
+      .select('*', { count: 'exact', head: true })
+      .eq('portfolio_item_id', item.id);
+
+    setReactionCount(count || 0);
+
+    // Check if current user has reacted
+    if (user) {
+      const { data } = await supabase
+        .from('portfolio_reactions')
+        .select('id')
+        .eq('portfolio_item_id', item.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      setHasReacted(!!data);
+    }
+  };
+
+  const handleReaction = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Sign in to react", variant: "destructive" });
+      return;
+    }
+
+    try {
+      if (hasReacted) {
+        // Remove reaction
+        await supabase
+          .from('portfolio_reactions')
+          .delete()
+          .eq('portfolio_item_id', item.id)
+          .eq('user_id', user.id);
+
+        setHasReacted(false);
+        setReactionCount(prev => Math.max(0, prev - 1));
+      } else {
+        // Add reaction
+        await supabase
+          .from('portfolio_reactions')
+          .insert({
+            portfolio_item_id: item.id,
+            user_id: user.id
+          });
+
+        setHasReacted(true);
+        setReactionCount(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error toggling reaction:', error);
+    }
+  };
 
   return (
     <>
@@ -102,9 +171,20 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
 
           {/* Footer */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Eye className="h-3 w-3" />
-              {item.view_count}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Eye className="h-3 w-3" />
+                {item.view_count}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReaction}
+                className={`h-7 px-2 gap-1 ${hasReacted ? 'text-orange-500' : ''}`}
+              >
+                <Flame className={`h-4 w-4 ${hasReacted ? 'fill-orange-500' : ''}`} />
+                <span className="font-semibold">{reactionCount}</span>
+              </Button>
             </div>
             <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
           </div>

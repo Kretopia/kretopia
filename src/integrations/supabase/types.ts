@@ -1177,6 +1177,35 @@ export type Database = {
           },
         ]
       }
+      portfolio_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          portfolio_item_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          portfolio_item_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          portfolio_item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_reactions_portfolio_item_id_fkey"
+            columns: ["portfolio_item_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       press_links: {
         Row: {
           created_at: string

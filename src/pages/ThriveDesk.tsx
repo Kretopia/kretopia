@@ -455,9 +455,9 @@ const ThriveDesk = () => {
       </div>
 
       {/* Tablet Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0">
         <div className="border-b bg-background flex-shrink-0">
-          <TabsList className="w-full justify-around h-12 bg-transparent rounded-none p-0">
+          <TabsList className="w-full justify-around h-11 bg-transparent rounded-none p-0">
             <TabsTrigger 
               value="messages" 
               className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
@@ -504,7 +504,7 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-3 min-h-0">
+        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-2 pt-3 min-h-0">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
         </TabsContent>
 
@@ -604,7 +604,7 @@ const ThriveDesk = () => {
       </div>
 
       {/* Compact Mobile Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0">
         <div className="border-b bg-background flex-shrink-0">
           <TabsList className="w-full justify-around h-10 bg-transparent rounded-none p-0">
             <TabsTrigger 
@@ -653,7 +653,7 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-2 min-h-0">
+        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-2 pt-2 min-h-0">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
         </TabsContent>
 
@@ -768,7 +768,7 @@ const ThriveDesk = () => {
           </div>
 
           {/* Streamlined Tabs */}
-          <Tabs defaultValue="messages" className="flex-1 flex flex-col overflow-hidden">
+          <Tabs defaultValue="messages" className="flex-1 flex flex-col overflow-hidden mt-0">
             <div className="border-b px-2 bg-background">
               <TabsList className="h-9 bg-transparent">
                 <TabsTrigger value="messages" className="gap-1 text-[11px] px-2.5 h-7">
@@ -801,7 +801,7 @@ const ThriveDesk = () => {
               />
             </TabsContent>
 
-            <TabsContent value="tasks" className="flex-1 m-0 p-2 overflow-auto">
+            <TabsContent value="tasks" className="flex-1 m-0 p-2 pt-3 overflow-auto">
               <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
             </TabsContent>
 

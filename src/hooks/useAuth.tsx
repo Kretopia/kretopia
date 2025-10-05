@@ -22,15 +22,24 @@ export const useAuth = () => {
 
   const checkSubscription = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch subscription info directly from profiles table
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('subscription_tier, subscription_status, subscription_product_id, subscription_end_date')
+        .eq('user_id', user.id)
+        .single();
+
       if (error) throw error;
       
-      if (data) {
+      if (profile) {
         setSubscriptionInfo({
-          tier: data.tier || 'free',
-          subscribed: data.subscribed || false,
-          product_id: data.product_id || null,
-          subscription_end: data.subscription_end || null,
+          tier: profile.subscription_tier || 'free',
+          subscribed: profile.subscription_status === 'active',
+          product_id: profile.subscription_product_id || null,
+          subscription_end: profile.subscription_end_date || null,
         });
       }
     } catch (error) {

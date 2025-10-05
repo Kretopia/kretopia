@@ -210,7 +210,7 @@ const Projects = () => {
       <div className="mx-auto max-w-6xl">
         {/* Header - Mobile optimized */}
         <div className="mb-5 sm:mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="mb-1.5 text-2xl sm:text-3xl font-bold flex items-center gap-2.5">
               <FolderKanban className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
               ThriveDesk
@@ -219,12 +219,12 @@ const Projects = () => {
               Manage projects & collaborations
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto md:shrink-0">
             <ProjectTemplates onSelect={fetchProjects} />
             <Button
               variant="gradient"
               size="lg"
-              className="gap-2 w-full md:flex-none h-12 rounded-xl font-semibold"
+              className="gap-2 w-full sm:w-auto whitespace-nowrap h-12 rounded-xl font-semibold"
               onClick={handleOpenCreateDialog}
             >
               <Plus className="h-5 w-5" />

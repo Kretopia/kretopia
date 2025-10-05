@@ -3,25 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ProjectTemplates } from "@/components/project/ProjectTemplates";
+import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle, DollarSign, Crown, Sparkles } from "lucide-react";
-import { z } from "zod";
+import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle, DollarSign } from "lucide-react";
 import { canCreateProject, type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { UpgradeDialog } from "@/components/UpgradeDialog";
-
-const projectSchema = z.object({
-  title: z.string().trim().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
-  description: z.string().trim().max(500, "Description must be less than 500 characters").optional(),
-  budget: z.string().trim().max(50, "Budget must be less than 50 characters").optional(),
-  deadline: z.string().optional(),
-});
 
 interface Project {
   id: string;
@@ -49,12 +38,6 @@ const Projects = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>("free");
-  const [newProject, setNewProject] = useState({
-    title: "",
-    description: "",
-    budget: "",
-    deadline: "",
-  });
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -171,90 +154,13 @@ const Projects = () => {
     }
   };
 
-  const handleCreateProject = async () => {
-    try {
-      console.log('[Projects] Starting project creation...');
-      // Check project limit before creating
-      if (!canCreateProject(subscriptionTier, projects.length)) {
-        console.log('[Projects] Project limit reached');
-        setShowUpgradeDialog(true);
-        return;
-      }
-
-      // Validate input
-      console.log('[Projects] Validating project data:', newProject);
-      const validationResult = projectSchema.safeParse(newProject);
-      
-      if (!validationResult.success) {
-        const firstError = validationResult.error.errors[0];
-        toast({
-          title: "Validation Error",
-          description: firstError.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('[Projects] Getting authenticated user');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('[Projects] No authenticated user found');
-        toast({
-          title: "Authentication Error",
-          description: "Please sign in to create a project",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('[Projects] User authenticated, creating project for user:', user.id);
-      // Create solo project without a match (match_id can be null for solo projects)
-      const projectData = {
-        match_id: null,
-        created_by: user.id,
-        title: validationResult.data.title,
-        description: validationResult.data.description || null,
-        budget: validationResult.data.budget || null,
-        deadline: validationResult.data.deadline || null,
-        status: 'active',
-      };
-      console.log('[Projects] Inserting project data:', projectData);
-      
-      const { data: project, error: projectError } = await supabase
-        .from('projects')
-        .insert(projectData)
-        .select()
-        .single();
-
-      if (projectError) {
-        console.error('[Projects] Project creation error:', projectError);
-        console.error('[Projects] Error details:', JSON.stringify(projectError, null, 2));
-        toast({
-          title: "Error",
-          description: `Failed to create project: ${projectError.message}`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('[Projects] Project created successfully:', project);
-
-      toast({
-        title: "Success! 🎉",
-        description: "Project created successfully",
-      });
-      setCreateDialogOpen(false);
-      setNewProject({ title: "", description: "", budget: "", deadline: "" });
-      fetchProjects(); // Refresh the list
-      navigate(`/desk/${project.id}`);
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+  const handleOpenCreateDialog = () => {
+    // Check project limit before opening dialog
+    if (!canCreateProject(subscriptionTier, projects.length)) {
+      setShowUpgradeDialog(true);
+      return;
     }
+    setCreateDialogOpen(true);
   };
 
   const getStatusIcon = (status: string) => {
@@ -315,61 +221,15 @@ const Projects = () => {
           </div>
           <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
             <ProjectTemplates onSelect={fetchProjects} />
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="gradient" size="lg" className="gap-2 w-full md:flex-none h-12 rounded-xl font-semibold">
-                  <Plus className="h-5 w-5" />
-                  New Project
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="w-[95vw] sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>Create Blank Project</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Project Title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="My Awesome Project"
-                      value={newProject.title}
-                      onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="What is this project about?"
-                      value={newProject.description}
-                      onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="budget">Budget (Optional)</Label>
-                    <Input
-                      id="budget"
-                      placeholder="$1,000 - $5,000"
-                      value={newProject.budget}
-                      onChange={(e) => setNewProject({ ...newProject, budget: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="deadline">Deadline (Optional)</Label>
-                    <Input
-                      id="deadline"
-                      type="date"
-                      value={newProject.deadline}
-                      onChange={(e) => setNewProject({ ...newProject, deadline: e.target.value })}
-                    />
-                  </div>
-                  <Button onClick={handleCreateProject} className="w-full" variant="gradient">
-                    Create Project
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button
+              variant="gradient"
+              size="lg"
+              className="gap-2 w-full md:flex-none h-12 rounded-xl font-semibold"
+              onClick={handleOpenCreateDialog}
+            >
+              <Plus className="h-5 w-5" />
+              New Project
+            </Button>
           </div>
         </div>
 
@@ -397,7 +257,7 @@ const Projects = () => {
                 : "Create your first project to get started"}
             </p>
             {!searchQuery && (
-              <Button onClick={() => setCreateDialogOpen(true)} variant="gradient" size="lg" className="h-12 px-8 rounded-xl">
+              <Button onClick={handleOpenCreateDialog} variant="gradient" size="lg" className="h-12 px-8 rounded-xl">
                 <Plus className="mr-2 h-5 w-5" />
                 Create Project
               </Button>
@@ -452,22 +312,28 @@ const Projects = () => {
         )}
       </div>
 
-    <UpgradeDialog
-      open={showUpgradeDialog}
-      onOpenChange={setShowUpgradeDialog}
-      currentTier={subscriptionTier}
-      feature="Unlimited Projects"
-      description="Free tier allows 1 active project. Upgrade to Thriver for unlimited projects and unlock the full power of collaboration!"
-      benefits={[
-        "Unlimited active projects",
-        "Unlimited swipes to find collaborators",
-        "AI match recommendations",
-        "Undo swipe feature",
-        "Profile verification",
-        "5+ partner discounts"
-      ]}
-    />
-  </div>
+      <CreateProjectDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={fetchProjects}
+      />
+
+      <UpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        currentTier={subscriptionTier}
+        feature="Unlimited Projects"
+        description="Free tier allows 1 active project. Upgrade to Thriver for unlimited projects and unlock the full power of collaboration!"
+        benefits={[
+          "Unlimited active projects",
+          "Unlimited swipes to find collaborators",
+          "AI match recommendations",
+          "Undo swipe feature",
+          "Profile verification",
+          "5+ partner discounts"
+        ]}
+      />
+    </div>
   );
 };
 

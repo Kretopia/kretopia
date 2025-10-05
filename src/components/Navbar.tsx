@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Menu, Settings, Zap, MessageCircle, Shield, Wallet, Briefcase, FileText } from "lucide-react";
+import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
@@ -102,22 +102,21 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/messages")}
+                      onClick={() => handleNavigation("/circle")}
                     >
-                      <MessageCircle className="h-5 w-5" />
-                      Messages
+                      <Users className="h-5 w-5" />
+                      Circle
                     </Button>
-                    
-                    <Separator className="my-3" />
-                    
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/profile")}
+                      onClick={() => handleNavigation("/projects")}
                     >
-                      <User className="h-5 w-5" />
-                      Profile
+                      <FolderKanban className="h-5 w-5" />
+                      Projects
                     </Button>
+                    
+                    <Separator className="my-3" />
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"

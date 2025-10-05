@@ -10,7 +10,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest';
+  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest' | 'activity-digest' | 'streak-warning';
   data: {
     userName?: string;
     opportunityTitle?: string;
@@ -27,6 +27,14 @@ interface EmailRequest {
     }>;
     newOpportunitiesCount?: number;
     daysInactive?: number;
+    totalUnread?: number;
+    matches?: number;
+    messages?: number;
+    connections?: number;
+    opportunityNotifications?: number;
+    streakCount?: number;
+    hasFreezes?: boolean;
+    freezesAvailable?: number;
   };
 }
 
@@ -139,6 +147,56 @@ const generateEmailContent = (type: string, data: any) => {
             <a href="${baseUrl}/discover" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Browse All Opportunities</a>
             <p style="color: #666; margin-top: 30px;">Keep creating!<br>The ThriveIN Team</p>
             <p style="color: #999; font-size: 12px; margin-top: 20px;">Don't want weekly digests? Update your <a href="${baseUrl}/notification-settings" style="color: #8B5CF6;">notification preferences</a>.</p>
+          </div>
+        `
+      };
+    
+    case 'activity-digest':
+      const activityItems = [];
+      if (data.matches && data.matches > 0) {
+        activityItems.push(`<li><strong>${data.matches}</strong> new ${data.matches === 1 ? 'match' : 'matches'} 💫</li>`);
+      }
+      if (data.messages && data.messages > 0) {
+        activityItems.push(`<li><strong>${data.messages}</strong> unread ${data.messages === 1 ? 'message' : 'messages'} 💬</li>`);
+      }
+      if (data.connections && data.connections > 0) {
+        activityItems.push(`<li><strong>${data.connections}</strong> new ${data.connections === 1 ? 'connection' : 'connections'} 🤝</li>`);
+      }
+      if (data.opportunityNotifications && data.opportunityNotifications > 0) {
+        activityItems.push(`<li><strong>${data.opportunityNotifications}</strong> opportunity ${data.opportunityNotifications === 1 ? 'update' : 'updates'} 🚀</li>`);
+      }
+      
+      return {
+        subject: `You have ${data.totalUnread} unread notifications! 🔔`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8B5CF6;">You've Been Missed! 🌟</h1>
+            <p>Hi ${data.userName},</p>
+            <p>A lot has been happening while you were away! Here's what you missed:</p>
+            <ul style="line-height: 1.8; margin: 20px 0;">
+              ${activityItems.join('')}
+            </ul>
+            <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Check Your Notifications</a>
+            <p style="color: #666; margin-top: 30px;">Don't miss out on opportunities!<br>The ThriveIN Team</p>
+          </div>
+        `
+      };
+    
+    case 'streak-warning':
+      const freezeMessage = data.hasFreezes 
+        ? `Good news - you have <strong>${data.freezesAvailable} streak ${data.freezesAvailable === 1 ? 'freeze' : 'freezes'}</strong> available that will automatically protect your streak if you can't visit today.`
+        : `You don't have any streak freezes available, so your streak will reset if you don't visit today.`;
+      
+      return {
+        subject: `🔥 Your ${data.streakCount}-day streak is about to break!`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8B5CF6;">Don't Break Your Streak! 🔥</h1>
+            <p>Hi ${data.userName},</p>
+            <p>You've maintained an impressive <strong>${data.streakCount}-day streak</strong>, but it's about to break!</p>
+            <p>${freezeMessage}</p>
+            <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Visit ThriveIN Now</a>
+            <p style="color: #666; margin-top: 30px;">Keep the momentum going!<br>The ThriveIN Team</p>
           </div>
         `
       };

@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, MapPin, Sparkles, Check, Clock, UserPlus } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Search, MapPin, Sparkles, Check, Clock, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { SEO } from "@/components/SEO";
 
@@ -435,11 +436,14 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
           </div>
-        ) : profiles.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No creators found matching your filters</p>
-          </div>
-        ) : (
+              ) : profiles.length === 0 ? (
+                <EmptyState
+                  icon={Users}
+                  title="No Creators Found"
+                  description="Try adjusting your filters or check back later for new creators to connect with."
+                  className="py-16"
+                />
+              ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {profiles.map((profile) => (
               <Card 

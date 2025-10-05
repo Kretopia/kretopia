@@ -243,17 +243,7 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     
-    console.log('Drag ended:', { 
-      activeId: active.id, 
-      overId: over?.id,
-      activeTask: tasks.find(t => t.id === active.id),
-      over: over 
-    });
-    
-    if (!over) {
-      console.log('No drop target');
-      return;
-    }
+    if (!over) return;
 
     const activeTask = tasks.find(t => t.id === active.id);
     
@@ -264,36 +254,21 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
     const overTask = tasks.find(t => t.id === over.id);
     if (overTask) {
       targetStatus = overTask.status;
-      console.log('Dropped on task, using its status:', targetStatus);
-    } else {
-      console.log('Dropped on column:', targetStatus);
     }
 
-    console.log('Processing drag:', {
-      activeTask,
-      targetStatus,
-      isValidStatus: STATUSES.some(s => s.value === targetStatus),
-      currentStatus: activeTask?.status,
-      wouldUpdate: activeTask?.status !== targetStatus
-    });
-
     if (activeTask && STATUSES.some(s => s.value === targetStatus) && activeTask.status !== targetStatus) {
-      console.log('Updating task status from', activeTask.status, 'to', targetStatus);
       const { error } = await supabase
         .from('project_tasks')
         .update({ status: targetStatus })
         .eq('id', activeTask.id);
 
       if (error) {
-        console.error('Update error:', error);
+        console.error('Task update error:', error);
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
-        console.log('Task updated successfully');
         toast({ title: "Task moved! ✅" });
         onUpdate();
       }
-    } else {
-      console.log('No update needed or invalid drop');
     }
   };
 

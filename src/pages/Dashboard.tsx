@@ -240,16 +240,14 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Daily Goals */}
-        <div className="mb-6 sm:mb-8">
-          <DailyGoals />
-        </div>
+        {/* Daily Goals - Mobile optimized */}
+        <DailyGoals />
 
-        {/* Stats Cards & Wallet */}
-        <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Stats Cards - Mobile optimized grid */}
+        <div className="grid gap-3 sm:gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {loading ? (
             <>
-              <div className="md:col-span-2 lg:col-span-2 grid gap-4 sm:gap-6 grid-cols-2">
+              <div className="md:col-span-2 lg:col-span-2 grid gap-3 sm:gap-4 grid-cols-2">
                 <SkeletonStat />
                 <SkeletonStat />
                 <SkeletonStat />
@@ -298,10 +296,10 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Active Projects */}
+        {/* Active Projects - Mobile optimized */}
         {activeProjects.length > 0 && (
-          <div className="mb-6 sm:mb-8">
-            <h2 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-bold">Active Projects</h2>
+          <div>
+            <h2 className="mb-3 text-lg sm:text-xl font-semibold">Active Projects</h2>
             <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
               {activeProjects.map((project) => (
                 <Card 

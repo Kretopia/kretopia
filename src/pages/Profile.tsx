@@ -366,13 +366,13 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
       <div className="container mx-auto max-w-4xl">
         {/* Profile Header */}
-        <div className="mb-6 md:mb-8 overflow-hidden rounded-2xl md:rounded-3xl border border-border bg-card shadow-card">
-          <div className="relative h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
+        <div className="mb-4 sm:mb-6 md:mb-8 overflow-hidden rounded-xl md:rounded-2xl lg:rounded-3xl border border-border bg-card shadow-card">
+          <div className="relative h-24 sm:h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
           
-          <div className="relative px-4 md:px-8 pb-6 md:pb-8">
+          <div className="relative px-3 sm:px-4 md:px-8 pb-4 sm:pb-6 md:pb-8">
             <div className="mb-4 md:mb-6 -mt-12 md:-mt-16 flex flex-col items-start gap-3 md:gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 md:gap-4 w-full sm:w-auto">
                 <div className="relative group">

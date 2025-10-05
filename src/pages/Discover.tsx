@@ -481,7 +481,7 @@ const Discover = () => {
     <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-24 sm:pb-20">
       <div className="mx-auto max-w-6xl">
         <div className="mb-4 sm:mb-6">
-          <div className="mb-3 sm:mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-3 sm:mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl sm:text-3xl font-bold">Discover</h1>
             <div className="flex items-center gap-2 flex-wrap">
               <QuickCreateOpportunityDialog />

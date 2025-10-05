@@ -294,9 +294,9 @@ const Messages = () => {
           selectedConversation ? "hidden md:flex" : "flex"
         } w-full md:w-96 flex-col border-r border-border bg-card`}
       >
-        <div className="p-4 border-b border-border space-y-4">
+        <div className="p-3 sm:p-4 border-b border-border space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Messages</h2>
+            <h2 className="text-xl sm:text-2xl font-bold">Messages</h2>
           </div>
           
           <div className="relative">

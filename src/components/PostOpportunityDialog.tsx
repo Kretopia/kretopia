@@ -13,10 +13,25 @@ interface PostOpportunityDialogProps {
   variant?: "default" | "outline" | "hero";
   size?: "default" | "xl";
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-export const PostOpportunityDialog = ({ variant = "default", size = "default", className }: PostOpportunityDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const PostOpportunityDialog = ({ 
+  variant = "default", 
+  size = "default", 
+  className,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  trigger,
+  onSuccess
+}: PostOpportunityDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -136,6 +151,11 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
       setImageFile(null);
       setImagePreview("");
       setOpen(false);
+      
+      // Call success callback to refresh the list
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Error posting opportunity:', error);
       toast({
@@ -150,12 +170,18 @@ export const PostOpportunityDialog = ({ variant = "default", size = "default", c
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant={variant} size={size} className={className}>
-          <Briefcase className="mr-2 h-5 w-5" />
-          Post an Opportunity
-        </Button>
-      </DialogTrigger>
+      {trigger ? (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger asChild>
+          <Button variant={variant} size={size} className={className}>
+            <Briefcase className="mr-2 h-5 w-5" />
+            Post an Opportunity
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Post a Job or Collaboration</DialogTitle>

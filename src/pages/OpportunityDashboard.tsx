@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 
 interface Applicant {
   id: string;
@@ -45,6 +46,7 @@ const OpportunityDashboard = () => {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzingAI, setAnalyzingAI] = useState(false);
+  const [showPostDialog, setShowPostDialog] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -372,9 +374,20 @@ Return ONLY valid JSON array:
             <p className="text-muted-foreground mb-4">
               Create your first opportunity to start receiving applications
             </p>
-            <Button onClick={() => navigate('/discover')}>
-              Post Opportunity
-            </Button>
+            <PostOpportunityDialog
+              open={showPostDialog}
+              onOpenChange={setShowPostDialog}
+              onSuccess={() => {
+                fetchOpportunities();
+                setShowPostDialog(false);
+              }}
+              trigger={
+                <Button>
+                  <Briefcase className="mr-2 h-4 w-4" />
+                  Post Opportunity
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       </div>
@@ -392,10 +405,20 @@ Return ONLY valid JSON array:
             Review and manage applications to your opportunities
           </p>
         </div>
-        <Button onClick={() => navigate('/discover')} variant="outline">
-          <Briefcase className="w-4 h-4 mr-2" />
-          Post New
-        </Button>
+        <PostOpportunityDialog
+          open={showPostDialog}
+          onOpenChange={setShowPostDialog}
+          onSuccess={() => {
+            fetchOpportunities();
+            setShowPostDialog(false);
+          }}
+          trigger={
+            <Button variant="outline">
+              <Briefcase className="w-4 h-4 mr-2" />
+              Post New
+            </Button>
+          }
+        />
       </div>
 
       <div className="mb-6">

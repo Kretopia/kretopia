@@ -452,12 +452,16 @@ const ThriveDesk = () => {
             </h1>
             <p className="text-sm text-muted-foreground truncate">{project.description || "Workspace"}</p>
           </div>
-          <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-            <AvatarImage src={userProfile?.avatar_url} />
-            <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">
-              {userProfile?.full_name?.[0] || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-3">
+            <ProjectPresence projectId={projectId || ''} />
+            <NotificationBell projectId={projectId || ''} />
+            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+              <AvatarImage src={userProfile?.avatar_url} />
+              <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">
+                {userProfile?.full_name?.[0] || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -623,12 +627,15 @@ const ThriveDesk = () => {
               {project.title}
             </h1>
           </div>
-          <Avatar className="h-9 w-9 ring-2 ring-primary/20">
-            <AvatarImage src={userProfile?.avatar_url} />
-            <AvatarFallback className="text-xs bg-gradient-primary text-primary-foreground">
-              {userProfile?.full_name?.[0] || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-2">
+            <NotificationBell projectId={projectId || ''} />
+            <Avatar className="h-9 w-9 ring-2 ring-primary/20">
+              <AvatarImage src={userProfile?.avatar_url} />
+              <AvatarFallback className="text-xs bg-gradient-primary text-primary-foreground">
+                {userProfile?.full_name?.[0] || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -709,6 +716,17 @@ const ThriveDesk = () => {
         <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
           <ScrollArea className="h-full">
             <div className="p-4 space-y-4">
+              {/* Active Collaborators */}
+              <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <Monitor className="h-4 w-4 text-primary" />
+                  </div>
+                  Active Now
+                </h3>
+                <ProjectPresence projectId={projectId || ''} />
+              </Card>
+
               {/* Quick Actions */}
               <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
                 <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
@@ -727,6 +745,9 @@ const ThriveDesk = () => {
                   />
                 </div>
               </Card>
+
+              {/* Pending Invitations */}
+              <PendingInvitations projectId={projectId} />
 
               {/* Project Info */}
               <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
@@ -813,9 +834,14 @@ const ThriveDesk = () => {
             {/* Project Header */}
             <div className="px-8 py-6 border-b border-border/50 bg-card/50 backdrop-blur">
               <div className="flex items-center justify-between mb-3">
-                <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  {project.title}
-                </h1>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    {project.title}
+                  </h1>
+                  <div className="flex items-center gap-4 mt-2">
+                    <ProjectPresence projectId={projectId || ''} />
+                  </div>
+                </div>
                 <div className="flex items-center gap-3">
                   <Button
                     variant="outline"

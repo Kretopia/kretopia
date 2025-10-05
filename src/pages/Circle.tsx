@@ -24,6 +24,9 @@ import { useToast } from "@/hooks/use-toast";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PortfolioItemCard } from "@/components/feed/PortfolioItemCard";
+import { AwardActivityCard } from "@/components/feed/AwardActivityCard";
+import { PressActivityCard } from "@/components/feed/PressActivityCard";
+import { CreditActivityCard } from "@/components/feed/CreditActivityCard";
 import { useNavigate } from "react-router-dom";
 
 interface Connection {
@@ -249,22 +252,74 @@ const Circle = () => {
       ...(matches?.map(m => m.user1_id === user.id ? m.user2_id : m.user1_id) || [])
     ];
 
-    // Fetch portfolio items only
-    const { data: items } = await supabase
-      .from('portfolio_items')
-      .select(`
-        *,
-        profiles:user_id (
-          full_name,
-          avatar_url,
-          role
-        )
-      `)
-      .in('user_id', connectionIds)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    // Fetch all activity types in parallel
+    const [portfolioData, awardsData, pressData, creditsData] = await Promise.all([
+      supabase
+        .from('portfolio_items')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            avatar_url,
+            role
+          )
+        `)
+        .in('user_id', connectionIds)
+        .order('created_at', { ascending: false })
+        .limit(15),
+      
+      supabase
+        .from('awards')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            avatar_url,
+            role
+          )
+        `)
+        .in('user_id', connectionIds)
+        .order('created_at', { ascending: false })
+        .limit(10),
+      
+      supabase
+        .from('press_links')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            avatar_url,
+            role
+          )
+        `)
+        .in('user_id', connectionIds)
+        .order('created_at', { ascending: false })
+        .limit(10),
+      
+      supabase
+        .from('credits')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            avatar_url,
+            role
+          )
+        `)
+        .in('user_id', connectionIds)
+        .order('created_at', { ascending: false })
+        .limit(10)
+    ]);
 
-    setActivityFeed(items || []);
+    // Combine all activities with type tags
+    const allActivities = [
+      ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
+      ...(awardsData.data || []).map(item => ({ ...item, activity_type: 'award' })),
+      ...(pressData.data || []).map(item => ({ ...item, activity_type: 'press' })),
+      ...(creditsData.data || []).map(item => ({ ...item, activity_type: 'credit' }))
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    setActivityFeed(allActivities);
   };
 
   const fetchDiscoverProfiles = async () => {
@@ -564,9 +619,21 @@ ${inviteUrl}`;
                     <p className="text-sm text-muted-foreground mt-1">Connect with creators to see their portfolio work</p>
                   </Card>
                 ) : (
-                  activityFeed.map(item => (
-                    <PortfolioItemCard key={item.id} item={item} />
-                  ))
+                  activityFeed.map(item => {
+                    const key = `${item.activity_type}-${item.id}`;
+                    switch (item.activity_type) {
+                      case 'portfolio':
+                        return <PortfolioItemCard key={key} item={item} />;
+                      case 'award':
+                        return <AwardActivityCard key={key} item={item} />;
+                      case 'press':
+                        return <PressActivityCard key={key} item={item} />;
+                      case 'credit':
+                        return <CreditActivityCard key={key} item={item} />;
+                      default:
+                        return null;
+                    }
+                  })
                 )}
               </div>
             </ScrollArea>

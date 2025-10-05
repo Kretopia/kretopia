@@ -1,13 +1,21 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Compass, Plus, MessageCircle, User } from "lucide-react";
+import { LayoutDashboard, Compass, Plus, MessageCircle, User, Briefcase, Image } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { AddPortfolioDialog } from "@/components/AddPortfolioDialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const BottomNav = () => {
   const location = useLocation();
   const [showPostDialog, setShowPostDialog] = useState(false);
+  const [showPortfolioDialog, setShowPortfolioDialog] = useState(false);
   
   // Hide bottom nav on landing page
   if (location.pathname === "/") {
@@ -47,14 +55,27 @@ const BottomNav = () => {
             );
           })}
           
-          {/* Center Post Button */}
-          <Button
-            onClick={() => setShowPostDialog(true)}
-            className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg -mt-6"
-            aria-label="Post Opportunity"
-          >
-            <Plus className="h-6 w-6 text-primary-foreground" />
-          </Button>
+          {/* Center Plus Button with Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg -mt-6"
+                aria-label="Create new content"
+              >
+                <Plus className="h-6 w-6 text-primary-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-56 mb-2">
+              <DropdownMenuItem onClick={() => setShowPostDialog(true)}>
+                <Briefcase className="mr-2 h-4 w-4" />
+                <span>Post Opportunity</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowPortfolioDialog(true)}>
+                <Image className="mr-2 h-4 w-4" />
+                <span>Add Portfolio Item</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           {/* Last two items */}
           {navItems.slice(2).map(({ path, icon: Icon, label }) => {
@@ -84,6 +105,12 @@ const BottomNav = () => {
         open={showPostDialog}
         onOpenChange={setShowPostDialog}
         onSuccess={() => setShowPostDialog(false)}
+      />
+
+      <AddPortfolioDialog
+        open={showPortfolioDialog}
+        onOpenChange={setShowPortfolioDialog}
+        onSuccess={() => setShowPortfolioDialog(false)}
       />
     </>
   );

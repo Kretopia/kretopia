@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -50,6 +50,21 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
     deadline: project?.deadline || '',
     status: project?.status || 'active',
   });
+
+  // Update form when project prop changes
+  useEffect(() => {
+    if (project) {
+      setEditedProject({
+        title: project.title || '',
+        description: project.description || '',
+        budget: project.budget || '',
+        deadline: project.deadline || '',
+        status: project.status || 'active',
+      });
+    }
+  }, [project]);
+
+  if (!project) return null;
 
   const handleSave = async () => {
     try {

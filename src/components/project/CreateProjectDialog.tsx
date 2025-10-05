@@ -116,13 +116,15 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
         });
       }
 
-      // Reset form
+      // Reset form and close dialog FIRST
       setFormData({ title: "", description: "", inviteEmail: "" });
-      onOpenChange(false);
       onSuccess();
+      onOpenChange(false);
       
-      // Navigate to project
-      navigate(`/desk/${project.id}`);
+      // Navigate after a brief delay to ensure dialog closes
+      setTimeout(() => {
+        navigate(`/desk/${project.id}`);
+      }, 100);
     } catch (error: any) {
       console.error('Project creation error:', error);
       toast({

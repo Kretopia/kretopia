@@ -13,6 +13,7 @@ import { CreditPromptDialog } from "@/components/discover/CreditPromptDialog";
 import { QuickCreateOpportunityDialog } from "@/components/discover/QuickCreateOpportunityDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
+import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { useUndoSwipe } from "@/hooks/useUndoSwipe";
 import { scoreProfilesWithAI } from "@/components/discover/AIMatchScoring";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
@@ -73,6 +74,8 @@ const Discover = () => {
   const [aiScoringEnabled, setAiScoringEnabled] = useState(true);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState({ name: "", description: "" });
+  const [showMatchCelebration, setShowMatchCelebration] = useState(false);
+  const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -387,7 +390,7 @@ const Discover = () => {
           .single();
 
         if (theirSwipe) {
-          // It's a match! Create match and notify both users
+          // It's a match! Create match (trigger will handle notifications)
           await supabase.from('matches').insert({
             user1_id: user.id,
             user2_id: currentCard.user_id,
@@ -395,36 +398,16 @@ const Discover = () => {
             status: 'active',
           });
 
-          // Notify both users about the match
-          await supabase.from('notifications').insert([
-            {
-              user_id: currentCard.user_id,
-              title: "⚡ Connection Made!",
-              message: `You and ${senderProfile?.full_name || 'someone'} are now connected!`,
-              type: 'match',
-              category: 'collaboration',
-              priority: 'high',
-              link: '/circle',
-              action_url: '/circle',
-              action_text: 'View Connection',
-              image_url: senderProfile?.avatar_url,
-            },
-            {
-              user_id: user.id,
-              title: "⚡ Connection Made!",
-              message: `You and ${currentCard.name} are now connected!`,
-              type: 'match',
-              category: 'collaboration',
-              priority: 'high',
-              link: '/circle',
-              action_url: '/circle',
-              action_text: 'View Connection',
-              image_url: currentCard.image,
-            }
-          ]);
-
-          toast({ title: "⚡ Connection Made!", description: `You and ${currentCard.name} are now connected!` });
-          setTimeout(() => navigate('/circle'), 2000);
+          // Show celebration dialog
+          setMatchedUser({
+            name: currentCard.name,
+            avatar: currentCard.image,
+            role: currentCard.title,
+            userId: currentCard.user_id,
+          });
+          setShowMatchCelebration(true);
+          
+          setSwipeDirection(null);
           return;
         } else {
           // No match yet, but notify the other person you're interested
@@ -833,6 +816,17 @@ const Discover = () => {
         feature={upgradeFeature.name}
         description={upgradeFeature.description}
       />
+
+      {matchedUser && (
+        <MatchCelebrationDialog
+          open={showMatchCelebration}
+          onOpenChange={setShowMatchCelebration}
+          matchedUser={matchedUser}
+          onSendMessage={() => {
+            navigate('/messages', { state: { userId: matchedUser.userId } });
+          }}
+        />
+      )}
     </div>
   );
 };

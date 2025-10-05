@@ -99,40 +99,43 @@ const Navbar = ({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/dashboard")}
-                    >
-                      <LayoutDashboard className="h-5 w-5" />
-                      Home
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/discover")}
-                    >
-                      <Compass className="h-5 w-5" />
-                      Discover
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/messages")}
-                    >
-                      <MessageCircle className="h-5 w-5" />
-                      Messages
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/profile")}
-                    >
-                      <User className="h-5 w-5" />
-                      Profile
-                    </Button>
-                    
-                    <Separator className="my-3" />
+                    {/* Main nav items - only show on desktop (hidden on mobile where bottom nav exists) */}
+                    <div className="hidden lg:flex lg:flex-col lg:gap-1">
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12"
+                        onClick={() => handleNavigation("/dashboard")}
+                      >
+                        <LayoutDashboard className="h-5 w-5" />
+                        Home
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12"
+                        onClick={() => handleNavigation("/discover")}
+                      >
+                        <Compass className="h-5 w-5" />
+                        Discover
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12"
+                        onClick={() => handleNavigation("/messages")}
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                        Messages
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12"
+                        onClick={() => handleNavigation("/profile")}
+                      >
+                        <User className="h-5 w-5" />
+                        Profile
+                      </Button>
+                      
+                      <Separator className="my-3" />
+                    </div>
                     
                     <Button 
                       variant="ghost" 

@@ -15,7 +15,7 @@ import { z } from "zod";
 const projectSchema = z.object({
   title: z.string().trim().min(1, "Project name is required").max(100),
   description: z.string().trim().max(500).optional(),
-  inviteEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+  inviteEmail: z.string().optional().or(z.literal("")),
 });
 
 interface CreateProjectDialogProps {
@@ -106,12 +106,25 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
     try {
       setCreating(true);
 
-      // Validate
-      const validationResult = projectSchema.safeParse(formData);
+      // Validate email only if not using selected user from circle
+      const emailToValidate = selectedUser ? "" : formData.inviteEmail;
+      const validationData = { ...formData, inviteEmail: emailToValidate };
+      
+      const validationResult = projectSchema.safeParse(validationData);
       if (!validationResult.success) {
         toast({
           title: "Invalid input",
           description: validationResult.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Additional email validation only if email provided and no user selected
+      if (!selectedUser && emailToValidate && !emailToValidate.includes("@")) {
+        toast({
+          title: "Invalid email",
+          description: "Please enter a valid email address",
           variant: "destructive",
         });
         return;
@@ -337,7 +350,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
                               key={user.user_id}
                               onClick={() => {
                                 setSelectedUser(user);
-                                setFormData({ ...formData, inviteEmail: user.full_name });
+                                setFormData({ ...formData, inviteEmail: "" }); // Clear email when selecting from circle
                                 setShowInviteDropdown(false);
                               }}
                               className="w-full flex items-center gap-3 p-2 hover:bg-accent rounded-lg transition-colors text-left"

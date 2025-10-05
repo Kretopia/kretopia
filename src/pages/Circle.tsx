@@ -17,15 +17,12 @@ import {
   CheckCircle2,
   UserPlus,
   Search,
-  Plus,
   MapPin
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
-import { FeedPost } from "@/components/feed/FeedPost";
 import { PortfolioItemCard } from "@/components/feed/PortfolioItemCard";
 import { useNavigate } from "react-router-dom";
 
@@ -50,12 +47,11 @@ interface Connection {
 const Circle = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
-  const [sparkContent, setSparkContent] = useState<any[]>([]);
+  const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConnection, setSelectedConnection] = useState<{ id: string; name: string; avatar?: string } | null>(null);
-  const [activeTab, setActiveTab] = useState("spark");
+  const [activeTab, setActiveTab] = useState("activity");
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
-  const [showCreatePost, setShowCreatePost] = useState(false);
   const [inviteCodes, setInviteCodes] = useState<any[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,7 +64,7 @@ const Circle = () => {
   useEffect(() => {
     fetchConnections();
     fetchPendingRequests();
-    fetchSparkContent();
+    fetchActivityFeed();
     fetchInviteCodes();
     
     // Set up real-time presence
@@ -224,7 +220,7 @@ const Circle = () => {
     }
   };
 
-  const fetchSparkContent = async () => {
+  const fetchActivityFeed = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -253,60 +249,22 @@ const Circle = () => {
       ...(matches?.map(m => m.user1_id === user.id ? m.user2_id : m.user1_id) || [])
     ];
 
-    // Fetch posts
-    const { data: posts } = await supabase
-      .from('feed_posts')
-      .select('*')
-      .in('user_id', connectionIds)
-      .order('created_at', { ascending: false })
-      .limit(25);
-
-    // Fetch portfolio items
+    // Fetch portfolio items only
     const { data: items } = await supabase
       .from('portfolio_items')
-      .select('*')
+      .select(`
+        *,
+        profiles:user_id (
+          full_name,
+          avatar_url,
+          role
+        )
+      `)
       .in('user_id', connectionIds)
-      .eq('featured', true)
       .order('created_at', { ascending: false })
-      .limit(15);
+      .limit(20);
 
-    const allContentIds = [
-      ...new Set([
-        ...(posts?.map(p => p.user_id) || []),
-        ...(items?.map(i => i.user_id) || [])
-      ])
-    ];
-
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, avatar_url, role')
-      .in('user_id', allContentIds);
-
-    const postsWithProfiles = (posts || []).map(post => ({
-      ...post,
-      type: 'post',
-      profile: profiles?.find(p => p.user_id === post.user_id) || {
-        full_name: 'Unknown User',
-        avatar_url: null,
-        role: 'Creator'
-      }
-    }));
-
-    const itemsWithProfiles = (items || []).map(item => ({
-      ...item,
-      type: 'portfolio',
-      profiles: profiles?.find(p => p.user_id === item.user_id) || {
-        full_name: 'Unknown User',
-        avatar_url: null,
-        role: 'Creator'
-      }
-    }));
-
-    // Merge and sort by created_at
-    const allContent = [...postsWithProfiles, ...itemsWithProfiles]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    setSparkContent(allContent);
+    setActivityFeed(items || []);
   };
 
   const fetchDiscoverProfiles = async () => {
@@ -580,46 +538,34 @@ ${inviteUrl}`;
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="spark">Spark</TabsTrigger>
-            <TabsTrigger value="connect">Connect</TabsTrigger>
-            <TabsTrigger value="connections">Connections</TabsTrigger>
-            <TabsTrigger value="invite">Invite</TabsTrigger>
-          </TabsList>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="connect">Connect</TabsTrigger>
+          <TabsTrigger value="connections">Connections</TabsTrigger>
+          <TabsTrigger value="invite">Invite</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="spark" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
+          <TabsContent value="activity" className="space-y-4">
+            <div className="mb-4">
               <div>
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-yellow-500" />
-                  Spark
+                  Activity Feed
                 </h2>
-                <p className="text-sm text-muted-foreground">Inspiration from your circle</p>
+                <p className="text-sm text-muted-foreground">See what your circle is creating</p>
               </div>
-              <Button onClick={() => setShowCreatePost(true)} size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
-                Share Win
-              </Button>
             </div>
             <ScrollArea className="h-[600px]">
               <div className="space-y-4">
-                {sparkContent.length === 0 ? (
+                {activityFeed.length === 0 ? (
                   <Card className="p-8 text-center">
                     <Sparkles className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-muted-foreground">No content yet from your circle</p>
-                    <p className="text-sm text-muted-foreground mt-1">Connect with creators to see their wins and projects</p>
+                    <p className="text-muted-foreground">No activity yet from your circle</p>
+                    <p className="text-sm text-muted-foreground mt-1">Connect with creators to see their portfolio work</p>
                   </Card>
                 ) : (
-                  sparkContent.map(item => (
-                    item.type === 'post' ? (
-                      <FeedPost 
-                        key={item.id} 
-                        post={item}
-                        onDelete={fetchSparkContent}
-                      />
-                    ) : (
-                      <PortfolioItemCard key={item.id} item={item} />
-                    )
+                  activityFeed.map(item => (
+                    <PortfolioItemCard key={item.id} item={item} />
                   ))
                 )}
               </div>
@@ -800,14 +746,6 @@ ${inviteUrl}`;
           recipientId={selectedConnection.id}
           recipientName={selectedConnection.name}
           recipientAvatar={selectedConnection.avatar}
-        />
-      )}
-
-      {showCreatePost && (
-        <CreatePostDialog
-          open={showCreatePost}
-          onOpenChange={setShowCreatePost}
-          onPostCreated={fetchSparkContent}
         />
       )}
     </div>

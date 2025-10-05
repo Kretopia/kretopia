@@ -434,66 +434,71 @@ const ThriveDesk = () => {
 
   // Responsive rendering
   const renderTabletLayout = () => (
-    <div className="flex flex-col h-screen overflow-hidden bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-gradient-accent">
       {/* Modern Tablet Header */}
-      <div className="border-b px-6 py-4 bg-card/50 backdrop-blur flex-shrink-0">
+      <div className="border-b border-border/50 px-6 py-4 bg-card/80 backdrop-blur-xl flex-shrink-0 shadow-card">
         <div className="flex items-center gap-4 mb-4">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-9 w-9 hover:bg-muted" 
+            className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-smooth" 
             onClick={() => navigate('/projects')}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold truncate">{project.title}</h1>
+            <h1 className="text-2xl font-bold truncate bg-gradient-primary bg-clip-text text-transparent">
+              {project.title}
+            </h1>
             <p className="text-sm text-muted-foreground truncate">{project.description || "Workspace"}</p>
           </div>
-          <Avatar className="h-9 w-9">
+          <Avatar className="h-10 w-10 ring-2 ring-primary/20">
             <AvatarImage src={userProfile?.avatar_url} />
-            <AvatarFallback className="text-sm bg-primary text-primary-foreground">
+            <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">
               {userProfile?.full_name?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
         </div>
-        <Input 
-          placeholder="Search..."
-          className="bg-muted/50 border-0 h-10"
-        />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search messages, tasks, files..."
+            className="pl-10 bg-muted/30 border-border/50 h-11 rounded-xl focus-visible:ring-primary/50"
+          />
+        </div>
       </div>
 
       {/* Modern Tablet Tabs */}
       <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
-        <div className="border-b bg-background flex-shrink-0 px-6">
-          <TabsList className="w-full justify-start h-12 bg-transparent rounded-none p-0 gap-6">
+        <div className="border-b border-border/50 bg-card/50 backdrop-blur flex-shrink-0 px-6">
+          <TabsList className="w-full justify-start h-14 bg-transparent rounded-none p-0 gap-8">
             <TabsTrigger 
               value="messages" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 gap-2"
+              className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
             >
               <Send className="h-4 w-4" />
-              <span className="font-medium">Messages</span>
+              <span className="font-semibold">Messages</span>
             </TabsTrigger>
             <TabsTrigger 
               value="tasks" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 gap-2"
+              className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
             >
               <CheckSquare className="h-4 w-4" />
-              <span className="font-medium">Tasks</span>
+              <span className="font-semibold">Tasks</span>
             </TabsTrigger>
             <TabsTrigger 
               value="milestones" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 gap-2"
+              className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
             >
               <DollarSign className="h-4 w-4" />
-              <span className="font-medium">Milestones</span>
+              <span className="font-semibold">Milestones</span>
             </TabsTrigger>
             <TabsTrigger 
               value="details" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 gap-2"
+              className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
             >
               <FileText className="h-4 w-4" />
-              <span className="font-medium">Details</span>
+              <span className="font-semibold">Details</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -513,14 +518,14 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto min-h-0">
-          <div className="p-2">
+        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
+          <div className="p-6">
             <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
           </div>
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto min-h-0">
-          <div className="p-2">
+        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
+          <div className="p-6">
             <MilestoneBoard 
               milestones={milestones} 
               projectId={projectId!} 
@@ -530,16 +535,18 @@ const ThriveDesk = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto min-h-0">
+        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
           <ScrollArea className="h-full">
-            <div className="p-4 space-y-4">
+            <div className="p-6 space-y-6">
               {/* Quick Actions */}
-              <Card className="p-4">
-                <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+              <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-base mb-4 flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
                   Quick Actions
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <InviteCollaboratorDialog 
                     projectId={projectId || ''} 
                     onInvite={fetchProjectData}
@@ -554,36 +561,40 @@ const ThriveDesk = () => {
               <PendingInvitations projectId={projectId} />
 
               {/* Project Info */}
-              <Card className="p-4">
-                <h3 className="font-semibold text-sm mb-3">About Project</h3>
-                {project.description && <p className="text-sm mb-3 leading-relaxed text-muted-foreground">{project.description}</p>}
-                <div className="space-y-2">
+              <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-base mb-4">About Project</h3>
+                {project.description && <p className="text-sm mb-4 leading-relaxed text-muted-foreground">{project.description}</p>}
+                <div className="space-y-3">
                   {project.budget && (
-                    <div className="flex items-center gap-2 text-sm p-2 bg-secondary/30 rounded">
-                      <DollarSign className="h-4 w-4" />
-                      <span>{project.budget}</span>
+                    <div className="flex items-center gap-3 text-sm p-3 bg-secondary/10 border border-secondary/20 rounded-xl">
+                      <div className="p-2 rounded-lg bg-secondary/20">
+                        <DollarSign className="h-4 w-4 text-secondary" />
+                      </div>
+                      <span className="font-medium">{project.budget}</span>
                     </div>
                   )}
                   {project.deadline && (
-                    <div className="flex items-center gap-2 text-sm p-2 bg-secondary/30 rounded">
-                      <Calendar className="h-4 w-4" />
-                      <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-3 text-sm p-3 bg-accent/10 border border-accent/20 rounded-xl">
+                      <div className="p-2 rounded-lg bg-accent/20">
+                        <Calendar className="h-4 w-4 text-accent" />
+                      </div>
+                      <span className="font-medium">Due {new Date(project.deadline).toLocaleDateString()}</span>
                     </div>
                   )}
                 </div>
               </Card>
 
               {/* Stats */}
-              <Card className="p-4">
-                <h3 className="font-semibold text-sm mb-3">Progress</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-3 bg-secondary/30 rounded">
-                    <p className="text-2xl font-bold">{tasks.length}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Tasks</p>
+              <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-base mb-4">Progress Overview</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-6 bg-gradient-primary rounded-xl shadow-glow transition-smooth hover:scale-105">
+                    <p className="text-3xl font-bold text-white">{tasks.length}</p>
+                    <p className="text-xs text-white/80 mt-2 font-medium">Active Tasks</p>
                   </div>
-                  <div className="text-center p-3 bg-secondary/30 rounded">
-                    <p className="text-2xl font-bold">{milestones.length}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Milestones</p>
+                  <div className="text-center p-6 bg-gradient-secondary rounded-xl shadow-glow transition-smooth hover:scale-105">
+                    <p className="text-3xl font-bold text-white">{milestones.length}</p>
+                    <p className="text-xs text-white/80 mt-2 font-medium">Milestones</p>
                   </div>
                 </div>
               </Card>
@@ -595,65 +606,70 @@ const ThriveDesk = () => {
   );
 
   const renderMobileLayout = () => (
-    <div className="flex flex-col h-[100dvh] overflow-hidden bg-background">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-gradient-accent">
       {/* Modern Mobile Header */}
-      <div className="border-b px-4 py-3 bg-card/50 backdrop-blur flex-shrink-0">
+      <div className="border-b border-border/50 px-4 py-3 bg-card/80 backdrop-blur-xl flex-shrink-0 shadow-card">
         <div className="flex items-center gap-3 mb-3">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-9 w-9 hover:bg-muted" 
+            className="h-9 w-9 rounded-xl hover:bg-primary/10 transition-smooth" 
             onClick={() => navigate('/projects')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-bold truncate">{project.title}</h1>
+            <h1 className="text-base font-bold truncate bg-gradient-primary bg-clip-text text-transparent">
+              {project.title}
+            </h1>
           </div>
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-9 w-9 ring-2 ring-primary/20">
             <AvatarImage src={userProfile?.avatar_url} />
-            <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+            <AvatarFallback className="text-xs bg-gradient-primary text-primary-foreground">
               {userProfile?.full_name?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
         </div>
-        <Input 
-          placeholder="Search..."
-          className="bg-muted/50 border-0 h-9 text-sm"
-        />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input 
+            placeholder="Search..."
+            className="pl-9 bg-muted/30 border-border/50 h-9 text-sm rounded-xl focus-visible:ring-primary/50"
+          />
+        </div>
       </div>
 
       {/* Modern Mobile Tabs */}
       <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
-        <div className="border-b bg-background flex-shrink-0">
-          <TabsList className="w-full justify-around h-12 bg-transparent rounded-none p-0">
+        <div className="border-b border-border/50 bg-card/50 backdrop-blur flex-shrink-0">
+          <TabsList className="w-full justify-around h-14 bg-transparent rounded-none p-0">
             <TabsTrigger 
               value="messages" 
-              className="flex-1 gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
+              className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
             >
               <Send className="h-4 w-4" />
-              <span className="text-xs font-medium">Chat</span>
+              <span className="text-[11px] font-semibold">Chat</span>
             </TabsTrigger>
             <TabsTrigger 
               value="tasks" 
-              className="flex-1 gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
+              className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
             >
               <CheckSquare className="h-4 w-4" />
-              <span className="text-xs font-medium">Tasks</span>
+              <span className="text-[11px] font-semibold">Tasks</span>
             </TabsTrigger>
             <TabsTrigger 
               value="milestones" 
-              className="flex-1 gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
+              className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
             >
               <DollarSign className="h-4 w-4" />
-              <span className="text-xs font-medium">Pay</span>
+              <span className="text-[11px] font-semibold">Pay</span>
             </TabsTrigger>
             <TabsTrigger 
               value="details" 
-              className="flex-1 gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
+              className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
             >
               <FileText className="h-4 w-4" />
-              <span className="text-xs font-medium">More</span>
+              <span className="text-[11px] font-semibold">More</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -673,14 +689,14 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto min-h-0">
-          <div className="p-2">
+        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
+          <div className="p-4">
             <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
           </div>
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto min-h-0">
-          <div className="p-2">
+        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
+          <div className="p-4">
             <MilestoneBoard 
               milestones={milestones} 
               projectId={projectId!} 
@@ -690,16 +706,18 @@ const ThriveDesk = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto min-h-0">
+        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
           <ScrollArea className="h-full">
-            <div className="p-3 space-y-3">
+            <div className="p-4 space-y-4">
               {/* Quick Actions */}
-              <Card className="p-3">
-                <h3 className="font-semibold text-xs mb-2.5 flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5" />
+              <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <Users className="h-4 w-4 text-primary" />
+                  </div>
                   Quick Actions
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <InviteCollaboratorDialog 
                     projectId={projectId || ''} 
                     onInvite={fetchProjectData}
@@ -711,36 +729,40 @@ const ThriveDesk = () => {
               </Card>
 
               {/* Project Info */}
-              <Card className="p-3">
-                <h3 className="font-semibold text-xs mb-2">About Project</h3>
-                {project.description && <p className="text-xs mb-2.5 leading-relaxed text-muted-foreground">{project.description}</p>}
-                <div className="space-y-1.5">
+              <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-sm mb-3">About Project</h3>
+                {project.description && <p className="text-xs mb-3 leading-relaxed text-muted-foreground">{project.description}</p>}
+                <div className="space-y-2">
                   {project.budget && (
-                    <div className="flex items-center gap-2 text-xs p-1.5 bg-secondary/30 rounded">
-                      <DollarSign className="h-3.5 w-3.5" />
-                      <span>{project.budget}</span>
+                    <div className="flex items-center gap-2 text-xs p-2.5 bg-secondary/10 border border-secondary/20 rounded-xl">
+                      <div className="p-1.5 rounded-lg bg-secondary/20">
+                        <DollarSign className="h-3.5 w-3.5 text-secondary" />
+                      </div>
+                      <span className="font-medium">{project.budget}</span>
                     </div>
                   )}
                   {project.deadline && (
-                    <div className="flex items-center gap-2 text-xs p-1.5 bg-secondary/30 rounded">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2 text-xs p-2.5 bg-accent/10 border border-accent/20 rounded-xl">
+                      <div className="p-1.5 rounded-lg bg-accent/20">
+                        <Calendar className="h-3.5 w-3.5 text-accent" />
+                      </div>
+                      <span className="font-medium">Due {new Date(project.deadline).toLocaleDateString()}</span>
                     </div>
                   )}
                 </div>
               </Card>
 
               {/* Stats */}
-              <Card className="p-3">
-                <h3 className="font-semibold text-xs mb-2.5">Progress</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="text-center p-2.5 bg-secondary/30 rounded">
-                    <p className="text-xl font-bold">{tasks.length}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Tasks</p>
+              <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                <h3 className="font-bold text-sm mb-3">Progress Overview</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-4 bg-gradient-primary rounded-xl shadow-glow transition-smooth hover:scale-105">
+                    <p className="text-2xl font-bold text-white">{tasks.length}</p>
+                    <p className="text-[10px] text-white/80 mt-1 font-medium">Active Tasks</p>
                   </div>
-                  <div className="text-center p-2.5 bg-secondary/30 rounded">
-                    <p className="text-xl font-bold">{milestones.length}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Milestones</p>
+                  <div className="text-center p-4 bg-gradient-secondary rounded-xl shadow-glow transition-smooth hover:scale-105">
+                    <p className="text-2xl font-bold text-white">{milestones.length}</p>
+                    <p className="text-[10px] text-white/80 mt-1 font-medium">Milestones</p>
                   </div>
                 </div>
               </Card>
@@ -752,31 +774,32 @@ const ThriveDesk = () => {
   );
 
   const renderDesktopLayout = () => (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-screen flex flex-col bg-gradient-accent">
       {/* Modern Header */}
-      <div className="border-b bg-card/50 backdrop-blur px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
+      <div className="border-b border-border/50 bg-card/80 backdrop-blur-xl px-8 py-5 flex-shrink-0 shadow-card">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-6 flex-1 min-w-0">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 hover:bg-muted" 
+              className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-smooth" 
               onClick={() => navigate('/projects')}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex-1 max-w-md">
+            <div className="flex-1 max-w-xl relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Search..."
-                className="bg-muted/50 border-0 h-9"
+                placeholder="Search messages, tasks, files..."
+                className="pl-11 bg-muted/30 border-border/50 h-11 rounded-xl focus-visible:ring-primary/50"
               />
             </div>
           </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-4 flex-shrink-0">
             <NotificationBell projectId={projectId || ''} />
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
               <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+              <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">
                 {userProfile?.full_name?.[0] || "U"}
               </AvatarFallback>
             </Avatar>
@@ -788,14 +811,16 @@ const ThriveDesk = () => {
         <ResizablePanel defaultSize={70} minSize={50}>
           <div className="flex flex-col h-full">
             {/* Project Header */}
-            <div className="px-6 py-4 border-b">
-              <div className="flex items-center justify-between mb-2">
-                <h1 className="text-2xl font-bold">{project.title}</h1>
-                <div className="flex items-center gap-2">
+            <div className="px-8 py-6 border-b border-border/50 bg-card/50 backdrop-blur">
+              <div className="flex items-center justify-between mb-3">
+                <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  {project.title}
+                </h1>
+                <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-2"
+                    className="gap-2 rounded-xl border-border/50 hover:bg-primary/10 hover:border-primary/50 transition-smooth"
                   >
                     <Plus className="h-4 w-4" />
                     New
@@ -807,31 +832,31 @@ const ThriveDesk = () => {
                   />
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mb-4">{project.description || "Workspace for collaboration"}</p>
+              <p className="text-sm text-muted-foreground mb-6">{project.description || "Workspace for collaboration"}</p>
               
               <Tabs defaultValue="messages" className="w-full">
-                <TabsList className="bg-transparent border-b w-full justify-start rounded-none h-auto p-0 gap-6">
+                <TabsList className="bg-transparent border-b border-border/50 w-full justify-start rounded-none h-auto p-0 gap-8">
                   <TabsTrigger 
                     value="messages" 
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 transition-smooth data-[state=active]:text-primary font-semibold"
                   >
                     Messages
                   </TabsTrigger>
                   <TabsTrigger 
                     value="tasks" 
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 transition-smooth data-[state=active]:text-primary font-semibold"
                   >
                     Tasks
                   </TabsTrigger>
                   <TabsTrigger 
                     value="files" 
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 transition-smooth data-[state=active]:text-primary font-semibold"
                   >
                     Files
                   </TabsTrigger>
                   <TabsTrigger 
                     value="board" 
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 transition-smooth data-[state=active]:text-primary font-semibold"
                   >
                     Board
                   </TabsTrigger>
@@ -853,36 +878,39 @@ const ThriveDesk = () => {
                     />
                   </TabsContent>
 
-                  <TabsContent value="tasks" className="m-0 mt-4">
-                    <ScrollArea className="h-[calc(100vh-280px)]">
-                      <div className="px-6">
+                  <TabsContent value="tasks" className="m-0 mt-6">
+                    <ScrollArea className="h-[calc(100vh-320px)]">
+                      <div className="px-8">
                         <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
                       </div>
                     </ScrollArea>
                   </TabsContent>
 
-                  <TabsContent value="files" className="m-0 mt-4">
-                    <ScrollArea className="h-[calc(100vh-280px)]">
-                      <div className="px-6 space-y-3">
+                  <TabsContent value="files" className="m-0 mt-6">
+                    <ScrollArea className="h-[calc(100vh-320px)]">
+                      <div className="px-8 space-y-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-semibold">Files</h3>
+                          <h3 className="font-bold text-lg">Files</h3>
                           <FileUploadDialog projectId={projectId} onSuccess={fetchProjectData} />
                         </div>
                         {files.length === 0 ? (
-                          <div className="text-center py-12 text-muted-foreground">
-                            <FileText className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                            <p className="text-sm">No files yet</p>
+                          <div className="text-center py-16 text-muted-foreground">
+                            <div className="p-6 rounded-2xl bg-muted/30 w-fit mx-auto mb-4">
+                              <FileText className="h-16 w-16 mx-auto opacity-30" />
+                            </div>
+                            <p className="text-base font-medium mb-2">No files yet</p>
+                            <p className="text-sm">Upload files to share with your team</p>
                           </div>
                         ) : (
-                          <div className="space-y-2">
+                          <div className="grid gap-3">
                             {files.map((file) => (
-                              <Card key={file.id} className="p-4 hover:bg-muted/50 transition-colors border-muted">
-                                <div className="flex items-center gap-3">
-                                  <div className="p-2 rounded bg-muted">
+                              <Card key={file.id} className="p-5 hover:shadow-card transition-smooth border-border/50 bg-card/80 backdrop-blur hover-lift">
+                                <div className="flex items-center gap-4">
+                                  <div className="p-3 rounded-xl bg-primary/10">
                                     {isImageFile(file.file_type) ? (
-                                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                      <ImageIcon className="h-6 w-6 text-primary" />
                                     ) : (
-                                      <FileText className="h-5 w-5 text-muted-foreground" />
+                                      <FileText className="h-6 w-6 text-primary" />
                                     )}
                                   </div>
                                   <div className="flex-1 min-w-0">
@@ -890,13 +918,17 @@ const ThriveDesk = () => {
                                       href={file.file_url} 
                                       target="_blank" 
                                       rel="noopener noreferrer" 
-                                      className="font-medium text-sm hover:underline truncate block"
+                                      className="font-semibold text-sm hover:text-primary transition-smooth truncate block"
                                     >
                                       {file.file_name}
                                     </a>
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                      {formatFileSize(file.file_size || 0)}
-                                    </p>
+                                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                                      <span>{formatFileSize(file.file_size)}</span>
+                                      <span>•</span>
+                                      <span>by {file.profiles?.full_name || 'Unknown'}</span>
+                                      <span>•</span>
+                                      <span>{new Date(file.created_at).toLocaleDateString()}</span>
+                                    </div>
                                   </div>
                                 </div>
                               </Card>
@@ -907,9 +939,9 @@ const ThriveDesk = () => {
                     </ScrollArea>
                   </TabsContent>
 
-                  <TabsContent value="board" className="m-0 mt-4">
-                    <ScrollArea className="h-[calc(100vh-280px)]">
-                      <div className="px-6">
+                  <TabsContent value="board" className="m-0 mt-6">
+                    <ScrollArea className="h-[calc(100vh-320px)]">
+                      <div className="px-8">
                         <MilestoneBoard 
                           milestones={milestones} 
                           projectId={projectId!} 
@@ -925,84 +957,92 @@ const ThriveDesk = () => {
           </div>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle className="bg-border/50" />
 
-        <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
-          <div className="h-full border-l bg-card/30">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-4">
-                {/* Quick Actions */}
-                <Card className="border-muted bg-card">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                      <span>Tasks</span>
-                      <CreateTaskDialog projectId={projectId} onSuccess={fetchProjectData} />
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {tasks.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">No tasks yet</p>
-                    ) : (
-                      tasks.slice(0, 5).map((task: any) => (
-                        <TaskItem key={task.id} task={task} onUpdate={fetchProjectData} compact={true} />
-                      ))
-                    )}
-                  </CardContent>
+        <ResizablePanel defaultSize={30} minSize={25}>
+          <div className="h-full flex flex-col bg-card/30 backdrop-blur">
+            <ScrollArea className="flex-1">
+              <div className="p-6 space-y-6">
+                {/* Project Stats */}
+                <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                  <h3 className="font-bold text-base mb-4 flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Monitor className="h-5 w-5 text-primary" />
+                    </div>
+                    Progress Overview
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gradient-primary rounded-xl shadow-glow">
+                      <p className="text-3xl font-bold text-white">{tasks.length}</p>
+                      <p className="text-sm text-white/80 mt-1 font-medium">Active Tasks</p>
+                    </div>
+                    <div className="p-4 bg-gradient-secondary rounded-xl shadow-glow">
+                      <p className="text-3xl font-bold text-white">{milestones.length}</p>
+                      <p className="text-sm text-white/80 mt-1 font-medium">Milestones</p>
+                    </div>
+                    <div className="p-4 bg-accent/10 border border-accent/20 rounded-xl">
+                      <p className="text-3xl font-bold text-accent">{files.length}</p>
+                      <p className="text-sm text-muted-foreground mt-1 font-medium">Files Shared</p>
+                    </div>
+                  </div>
                 </Card>
 
-                {/* Files Quick View */}
-                <Card className="border-muted bg-card">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                      <span>Files</span>
-                      <FileUploadDialog projectId={projectId} onSuccess={fetchProjectData} />
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {files.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">No files yet</p>
-                    ) : (
-                      files.slice(0, 3).map((file: any) => (
-                        <a 
-                          key={file.id}
-                          href={file.file_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 p-2 rounded hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="p-1.5 rounded bg-muted">
-                            {isImageFile(file.file_type) ? (
-                              <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                            ) : (
-                              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate">{file.file_name}</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {formatFileSize(file.file_size || 0)}
-                            </p>
-                          </div>
-                        </a>
-                      ))
+                {/* Project Info */}
+                <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                  <h3 className="font-bold text-base mb-4">Project Details</h3>
+                  {project.description && (
+                    <p className="text-sm mb-4 leading-relaxed text-muted-foreground">{project.description}</p>
+                  )}
+                  <div className="space-y-3">
+                    {project.budget && (
+                      <div className="flex items-center gap-3 text-sm p-3 bg-secondary/10 border border-secondary/20 rounded-xl">
+                        <div className="p-2 rounded-lg bg-secondary/20">
+                          <DollarSign className="h-4 w-4 text-secondary" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Budget</p>
+                          <p className="font-semibold">{project.budget}</p>
+                        </div>
+                      </div>
                     )}
-                  </CardContent>
+                    {project.deadline && (
+                      <div className="flex items-center gap-3 text-sm p-3 bg-accent/10 border border-accent/20 rounded-xl">
+                        <div className="p-2 rounded-lg bg-accent/20">
+                          <Calendar className="h-4 w-4 text-accent" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Deadline</p>
+                          <p className="font-semibold">{new Date(project.deadline).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </Card>
-
-                {/* Pending Invitations */}
-                <PendingInvitations projectId={projectId} />
 
                 {/* Activity Timeline */}
-                <ActivityTimeline projectId={projectId!} />
+                <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                  <h3 className="font-bold text-base mb-4 flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Clock className="h-5 w-5 text-primary" />
+                    </div>
+                    Activity
+                  </h3>
+                  <ActivityTimeline projectId={projectId!} />
+                </Card>
 
-                {/* Time Tracker */}
-                <TimeTracker projectId={projectId!} />
-
-                {/* Quick Invite */}
-                <Card className="border-muted bg-card">
-                  <CardContent className="pt-4">
+                {/* Quick Actions */}
+                <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
+                  <h3 className="font-bold text-base mb-4 flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    Quick Actions
+                  </h3>
+                  <div className="space-y-3">
                     <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
-                  </CardContent>
+                    <InvoiceGenerator projectId={projectId || ''} />
+                    <PostAsOpportunityDialog projectId={projectId || ''} projectTitle={project.title} />
+                  </div>
                 </Card>
               </div>
             </ScrollArea>

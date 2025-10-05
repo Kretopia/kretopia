@@ -12,6 +12,7 @@ import { MembershipMap } from "@/components/membership/MembershipMap";
 import { LocationCard } from "@/components/membership/LocationCard";
 import { TierProgressCard } from "@/components/membership/TierProgressCard";
 import { TierBenefitsComparison } from "@/components/membership/TierBenefitsComparison";
+import { SubscriptionComparison } from "@/components/membership/SubscriptionComparison";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useOGPromotion } from "@/hooks/useOGPromotion";
 import { getTierByPoints } from "@/lib/tierSystem";
@@ -230,11 +231,15 @@ export default function Membership() {
       </Card>
 
       {/* Tabs */}
-      <Tabs defaultValue="benefits" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="benefits">
+      <Tabs defaultValue="levels" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="levels">
+            <Star className="mr-2 h-4 w-4" />
+            Levels
+          </TabsTrigger>
+          <TabsTrigger value="subscription">
             <Crown className="mr-2 h-4 w-4" />
-            Benefits
+            Subscription
           </TabsTrigger>
           <TabsTrigger value="partners">
             <Gift className="mr-2 h-4 w-4" />
@@ -246,14 +251,24 @@ export default function Membership() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="benefits" className="mt-6">
+        <TabsContent value="levels" className="mt-6">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Membership Tiers</h2>
+            <h2 className="text-2xl font-bold mb-2">Level Progression</h2>
             <p className="text-muted-foreground">
-              Earn points to unlock exclusive features and premium partner benefits
+              Earn points through activity to unlock status badges and community recognition
             </p>
           </div>
           <TierBenefitsComparison currentPoints={profile?.xp || 0} />
+        </TabsContent>
+
+        <TabsContent value="subscription" className="mt-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2">Subscription Plans</h2>
+            <p className="text-muted-foreground">
+              Upgrade to unlock powerful tools and premium features
+            </p>
+          </div>
+          <SubscriptionComparison currentTier={profile?.subscription_tier || "free"} />
         </TabsContent>
 
         <TabsContent value="partners" className="mt-6">

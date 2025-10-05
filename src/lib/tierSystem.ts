@@ -1,4 +1,5 @@
-// Unified tier/level system for ThriveIN - Duolingo-inspired progression
+// Pure XP-based level system for ThriveIN - Achievement & Status focused
+// Completely separate from subscription tiers (Free/Thriver/Creator Pro)
 
 export interface TierLevel {
   name: string;
@@ -8,63 +9,129 @@ export interface TierLevel {
   color: string;
   gradient: string;
   icon: string;
-  benefits: string[];
-  subscriptionTier?: string; // Maps to subscription_tier in profiles
+  benefits: string[]; // Status/recognition benefits only
 }
 
 export const TIER_LEVELS: TierLevel[] = [
   {
-    name: "starter",
+    name: "spark",
     displayName: "Spark",
     minPoints: 0,
-    maxPoints: 999,
+    maxPoints: 499,
     color: "from-yellow-400 to-orange-500",
     gradient: "from-yellow-400/20 via-orange-400/10 to-orange-500/20",
     icon: "✨",
     benefits: [
-      "Basic profile features",
-      "10 swipes per day",
-      "Access to free partner locations",
-      "Community access",
+      "Welcome badge on profile",
+      "Access to community feed",
+      "Basic leaderboard visibility",
     ],
-    subscriptionTier: "free",
   },
   {
-    name: "thriver",
+    name: "rising_star",
     displayName: "Rising Star",
-    minPoints: 1000,
-    maxPoints: 4999,
+    minPoints: 500,
+    maxPoints: 1499,
     color: "from-orange-500 to-pink-500",
     gradient: "from-orange-500/20 via-pink-400/10 to-pink-500/20",
     icon: "⭐",
     benefits: [
-      "Unlimited swipes",
-      "AI match recommendations",
-      "Profile verification badge",
-      "Undo swipe feature",
-      "5% partner discounts",
-      "Advanced analytics",
+      "Rising Star badge",
+      "Profile flair animation",
+      "Priority in community feed",
+      "Access to exclusive channels",
     ],
-    subscriptionTier: "thriver",
   },
   {
-    name: "creator_pro",
+    name: "creator",
     displayName: "Creator",
-    minPoints: 5000,
-    maxPoints: null,
+    minPoints: 1500,
+    maxPoints: 2999,
     color: "from-pink-500 to-purple-500",
     gradient: "from-pink-500/20 via-purple-400/10 to-purple-500/20",
     icon: "🎨",
     benefits: [
-      "Everything in Rising Star",
-      "Featured profile (2x visibility)",
-      "Priority matching",
-      "Advanced collaboration tools",
-      "15% partner discounts",
-      "Early access to features",
-      "Dedicated support",
+      "Creator badge",
+      "Custom profile themes",
+      "Featured in Discover section",
+      "Early event access",
     ],
-    subscriptionTier: "creator_pro",
+  },
+  {
+    name: "maverick",
+    displayName: "Maverick",
+    minPoints: 3000,
+    maxPoints: 4999,
+    color: "from-purple-500 to-blue-500",
+    gradient: "from-purple-500/20 via-blue-400/10 to-blue-500/20",
+    icon: "🚀",
+    benefits: [
+      "Maverick badge",
+      "Premium profile frame",
+      "Priority support response",
+      "Showcase in homepage",
+    ],
+  },
+  {
+    name: "visionary",
+    displayName: "Visionary",
+    minPoints: 5000,
+    maxPoints: 7999,
+    color: "from-blue-500 to-cyan-500",
+    gradient: "from-blue-500/20 via-cyan-400/10 to-cyan-500/20",
+    icon: "👁️",
+    benefits: [
+      "Visionary badge",
+      "Golden profile glow",
+      "Top 1% leaderboard",
+      "VIP event invitations",
+    ],
+  },
+  {
+    name: "legend",
+    displayName: "Legend",
+    minPoints: 8000,
+    maxPoints: 14999,
+    color: "from-cyan-500 to-green-500",
+    gradient: "from-cyan-500/20 via-green-400/10 to-green-500/20",
+    icon: "🏆",
+    benefits: [
+      "Legend badge",
+      "Diamond profile frame",
+      "Featured success story",
+      "Industry networking events",
+    ],
+  },
+  {
+    name: "icon",
+    displayName: "Icon",
+    minPoints: 15000,
+    maxPoints: 24999,
+    color: "from-green-500 to-emerald-500",
+    gradient: "from-green-500/20 via-emerald-400/10 to-emerald-500/20",
+    icon: "👑",
+    benefits: [
+      "Icon badge",
+      "Platinum profile effects",
+      "Hall of Fame inclusion",
+      "Ambassador opportunities",
+    ],
+  },
+  {
+    name: "elite",
+    displayName: "Elite",
+    minPoints: 25000,
+    maxPoints: null,
+    color: "from-emerald-500 to-teal-500",
+    gradient: "from-emerald-500/20 via-teal-400/10 to-teal-500/20",
+    icon: "💎",
+    benefits: [
+      "Elite badge",
+      "Ultimate profile prestige",
+      "Top of all leaderboards",
+      "Advisory board consideration",
+      "Lifetime recognition",
+    ],
   },
 ];
 

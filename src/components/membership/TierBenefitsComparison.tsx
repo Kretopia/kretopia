@@ -15,15 +15,8 @@ export const TierBenefitsComparison = ({ currentPoints }: TierBenefitsComparison
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">Membership Tiers</h2>
-        <p className="text-muted-foreground">
-          Earn points to unlock exclusive benefits and reach Elite status
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {TIER_LEVELS.map((tier, index) => {
+        {TIER_LEVELS.map((tier) => {
           const isCurrentTier = tier.name === currentTier.name;
           const isUnlocked = currentPoints >= tier.minPoints;
 
@@ -49,7 +42,7 @@ export const TierBenefitsComparison = ({ currentPoints }: TierBenefitsComparison
 
               <div className="p-6">
                 {isCurrentTier && (
-                  <Badge className="mb-4 w-full justify-center">Current Tier</Badge>
+                  <Badge className="mb-4 w-full justify-center">Your Level</Badge>
                 )}
 
                 <div className="space-y-3 mb-6">
@@ -68,22 +61,12 @@ export const TierBenefitsComparison = ({ currentPoints }: TierBenefitsComparison
                 </div>
 
                 {!isUnlocked && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Lock className="h-4 w-4" />
                     <span>
                       {(tier.minPoints - currentPoints).toLocaleString()} points to unlock
                     </span>
                   </div>
-                )}
-
-                {tier.subscriptionTier && tier.subscriptionTier !== "free" && !isCurrentTier && (
-                  <Button
-                    className="w-full"
-                    variant={isCurrentTier ? "default" : "outline"}
-                    onClick={() => navigate("/subscription")}
-                  >
-                    {isUnlocked ? "Current Plan" : "Upgrade Now"}
-                  </Button>
                 )}
               </div>
             </Card>

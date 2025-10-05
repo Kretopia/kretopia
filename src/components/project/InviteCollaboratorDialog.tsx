@@ -151,16 +151,6 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Get invitee's email
-      const { data: inviteeProfile } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('user_id', userId)
-        .single();
-
-      const { data: inviteeAuth } = await supabase.auth.admin.getUserById(userId);
-      const inviteeEmail = inviteeAuth?.user?.email;
-
       // Get user profile for inviter name
       const { data: profile } = await supabase
         .from('profiles')
@@ -181,7 +171,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         .insert({
           project_id: projectId,
           user_id: userId,
-          email: inviteeEmail || `user-${userId}@platform.invite`, // Use real email if available
+          email: `user-${userId}@platform.invite`,
           invited_by: user.id,
           role: 'member',
           status: 'pending'
@@ -189,18 +179,16 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
 
       if (error) throw error;
 
-      // Send invitation email and notification
-      if (inviteeEmail) {
-        await supabase.functions.invoke('send-project-invitation', {
-          body: {
-            email: inviteeEmail,
-            projectTitle: project?.title || 'Untitled Project',
-            projectId,
-            inviterName: profile?.full_name || 'A ThriveIN user',
-            inviteeUserId: userId, // This triggers in-app notification
-          }
-        });
-      }
+      // Always send invitation notification for existing users
+      await supabase.functions.invoke('send-project-invitation', {
+        body: {
+          email: `user-${userId}@platform.invite`,
+          projectTitle: project?.title || 'Untitled Project',
+          projectId,
+          inviterName: profile?.full_name || 'A ThriveIN user',
+          inviteeUserId: userId, // This triggers in-app notification
+        }
+      });
 
       toast({
         title: "Invite sent! 🎉",

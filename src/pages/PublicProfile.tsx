@@ -111,24 +111,53 @@ const PublicProfile = () => {
 
     // Check connection status if logged in
     if (user) {
-      const { data: connectionData } = await supabase
+      // Check both directions for connection
+      const { data: connections } = await supabase
         .from('connections')
         .select('status')
-        .or(`and(user_id.eq.${user.id},connected_user_id.eq.${userId}),and(user_id.eq.${userId},connected_user_id.eq.${user.id})`)
+        .or(`and(user_id.eq.${user.id},connected_user_id.eq.${userId}),and(user_id.eq.${userId},connected_user_id.eq.${user.id})`);
+
+      // Also check for matches
+      const { data: match } = await supabase
+        .from('matches')
+        .select('status')
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`)
+        .eq('status', 'active')
         .maybeSingle();
 
-      if (connectionData) {
-        setConnectionStatus(connectionData.status as 'none' | 'pending' | 'accepted');
-        setIsConnected(connectionData.status === 'accepted');
+      if (match || (connections && connections.length > 0 && connections[0].status === 'accepted')) {
+        setConnectionStatus('accepted');
+        setIsConnected(true);
+      } else if (connections && connections.length > 0) {
+        setConnectionStatus(connections[0].status as 'none' | 'pending' | 'accepted');
+        setIsConnected(connections[0].status === 'accepted');
       }
     }
 
-    // Fetch connections count
-    const { count: connectionsCount } = await supabase
-      .from('connections')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('status', 'accepted');
+    // Fetch connections count (both directions + matches)
+    const [
+      { count: outgoingCount },
+      { count: incomingCount },
+      { count: matchesCount }
+    ] = await Promise.all([
+      supabase
+        .from('connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('status', 'accepted'),
+      supabase
+        .from('connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('connected_user_id', userId)
+        .eq('status', 'accepted'),
+      supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+        .eq('status', 'active')
+    ]);
+
+    const totalConnections = (outgoingCount || 0) + (incomingCount || 0) + (matchesCount || 0);
 
     // Fetch portfolio items
     const { data: portfolioData } = await supabase
@@ -175,7 +204,7 @@ const PublicProfile = () => {
 
     setStats(prev => ({
       ...prev,
-      circle: connectionsCount || 0,
+      circle: totalConnections,
       projects: portfolioData?.length || 0,
     }));
     setPortfolioItems(portfolioData || []);

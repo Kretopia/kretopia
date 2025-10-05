@@ -25,25 +25,34 @@ export const useAuth = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      console.log('[useAuth] Checking subscription for user:', user.id);
+
       // Fetch subscription info directly from profiles table
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('subscription_tier, subscription_status, subscription_product_id, subscription_end_date')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid errors if no row found
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useAuth] Error fetching profile:', error);
+        throw error;
+      }
       
+      console.log('[useAuth] Profile data:', profile);
+
       if (profile) {
-        setSubscriptionInfo({
+        const newSubscriptionInfo = {
           tier: profile.subscription_tier || 'free',
           subscribed: profile.subscription_status === 'active',
           product_id: profile.subscription_product_id || null,
           subscription_end: profile.subscription_end_date || null,
-        });
+        };
+        console.log('[useAuth] Setting subscription info:', newSubscriptionInfo);
+        setSubscriptionInfo(newSubscriptionInfo);
       }
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      console.error('[useAuth] Error checking subscription:', error);
     }
   };
 

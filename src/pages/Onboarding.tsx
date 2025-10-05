@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 const STEPS = [
   { id: 1, title: "Welcome", icon: Sparkles },
@@ -70,8 +71,9 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
   
   const [avatarUrl, setAvatarUrl] = useState<string>("");
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [tempImageUrl, setTempImageUrl] = useState<string>("");
   
   const [profile, setProfile] = useState({
     full_name: "",
@@ -112,10 +114,7 @@ export default function Onboarding() {
   const handleNext = async () => {
     // Validate current step before proceeding
     if (currentStep === 2) {
-      // Avatar upload step - optional
-      if (avatarFile) {
-        await uploadAvatar();
-      }
+      // Avatar upload step - optional, no validation needed
     }
 
     if (currentStep === 3) {
@@ -187,21 +186,18 @@ export default function Onboarding() {
     }
   };
 
-  const uploadAvatar = async () => {
-    if (!avatarFile) return;
-    
+  const uploadAvatar = async (croppedImage: Blob) => {
     setUploadingAvatar(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const fileExt = avatarFile.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const fileName = `${user.id}-${Math.random()}.jpg`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, avatarFile);
+        .upload(filePath, croppedImage);
 
       if (uploadError) throw uploadError;
 
@@ -215,6 +211,8 @@ export default function Onboarding() {
         .eq('user_id', user.id);
 
       setAvatarUrl(publicUrl);
+      setShowCropDialog(false);
+      setTempImageUrl("");
       
       toast({
         title: "📸 Photo Uploaded!",
@@ -230,6 +228,12 @@ export default function Onboarding() {
     } finally {
       setUploadingAvatar(false);
     }
+  };
+
+  const handleFileSelect = (file: File) => {
+    const imageUrl = URL.createObjectURL(file);
+    setTempImageUrl(imageUrl);
+    setShowCropDialog(true);
   };
 
   const addSkill = () => {
@@ -401,8 +405,11 @@ export default function Onboarding() {
             
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
-                <Avatar className="h-32 w-32">
-                  <AvatarImage src={avatarUrl || (avatarFile ? URL.createObjectURL(avatarFile) : "")} />
+                <Avatar className="h-32 w-32 ring-4 ring-primary/10">
+                  <AvatarImage 
+                    src={avatarUrl} 
+                    className="object-cover"
+                  />
                   <AvatarFallback>
                     <Camera className="h-12 w-12 text-muted-foreground" />
                   </AvatarFallback>
@@ -415,34 +422,32 @@ export default function Onboarding() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      setAvatarFile(file);
-                      setAvatarUrl("");
+                      handleFileSelect(file);
                     }
                   }}
                 />
               </div>
               
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => document.getElementById('avatar-upload')?.click()}
-                  disabled={uploadingAvatar}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Choose Photo
-                </Button>
-                {avatarFile && (
-                  <Button
-                    onClick={uploadAvatar}
-                    disabled={uploadingAvatar}
-                    variant="gradient"
-                  >
-                    {uploadingAvatar ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                    {uploadingAvatar ? "Uploading..." : "Upload"}
-                  </Button>
-                )}
-              </div>
+              <Button
+                variant="outline"
+                onClick={() => document.getElementById('avatar-upload')?.click()}
+                disabled={uploadingAvatar}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {avatarUrl ? "Change Photo" : "Choose Photo"}
+              </Button>
             </div>
+            
+            <ImageCropDialog
+              imageUrl={tempImageUrl}
+              open={showCropDialog}
+              onClose={() => {
+                setShowCropDialog(false);
+                setTempImageUrl("");
+              }}
+              onCropComplete={uploadAvatar}
+              loading={uploadingAvatar}
+            />
             
             <p className="text-xs text-muted-foreground">
               You can skip this step and add a photo later

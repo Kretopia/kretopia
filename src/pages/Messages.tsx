@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -50,12 +50,16 @@ interface Connection {
 
 const Messages = () => {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  
+  // Check for receiverId from navigation state first, then search params
+  const navigationState = location.state as { receiverId?: string; receiverName?: string } | null;
   const [selectedConversation, setSelectedConversation] = useState<string | null>(
-    searchParams.get("userId")
+    navigationState?.receiverId || searchParams.get("userId")
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");

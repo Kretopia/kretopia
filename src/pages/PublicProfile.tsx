@@ -232,11 +232,19 @@ const PublicProfile = () => {
     }
   };
 
-  const handleMessage = () => {
-    toast({
-      title: "Coming Soon! 💬",
-      description: "Direct messaging will be available soon",
-    });
+  const handleMessage = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Not authenticated",
+        description: "Please log in to send messages",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Navigate to messages page with the receiver ID
+    navigate('/messages', { state: { receiverId: userId, receiverName: profile.full_name } });
   };
 
   if (!profile) {

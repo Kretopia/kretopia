@@ -168,15 +168,26 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
 
       if (projectError) throw projectError;
 
+      // Get user profile for inviter name
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+
       // Send invite if user selected or email provided
       if (selectedUser) {
+        // Get invitee's email for notification
+        const { data: { user: inviteeUser } } = await supabase.auth.admin.getUserById(selectedUser.user_id);
+        const inviteeEmail = inviteeUser?.email;
+
         // Invite by user_id (from circle)
         const { error: inviteError } = await supabase
           .from('project_collaborators')
           .insert({
             project_id: project.id,
             user_id: selectedUser.user_id,
-            email: `user-${selectedUser.user_id}@platform.invite`, // Placeholder for direct user invites
+            email: inviteeEmail || `user-${selectedUser.user_id}@platform.invite`,
             invited_by: user.id,
             role: 'member',
             status: 'pending',
@@ -189,6 +200,19 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
             description: "But failed to send invitation. You can invite them later.",
           });
         } else {
+          // Send email and notification
+          if (inviteeEmail) {
+            await supabase.functions.invoke('send-project-invitation', {
+              body: {
+                email: inviteeEmail,
+                projectTitle: validationResult.data.title,
+                projectId: project.id,
+                inviterName: userProfile?.full_name || 'A ThriveIN user',
+                inviteeUserId: selectedUser.user_id,
+              }
+            });
+          }
+          
           toast({
             title: "Project created! 🎉",
             description: `Invitation sent to ${selectedUser.full_name}`,
@@ -213,6 +237,16 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
             description: "But failed to send invitation. You can invite them later.",
           });
         } else {
+          // Send email notification
+          await supabase.functions.invoke('send-project-invitation', {
+            body: {
+              email: validationResult.data.inviteEmail.toLowerCase(),
+              projectTitle: validationResult.data.title,
+              projectId: project.id,
+              inviterName: userProfile?.full_name || 'A ThriveIN user',
+            }
+          });
+
           toast({
             title: "Project created! 🎉",
             description: "Invitation sent successfully.",

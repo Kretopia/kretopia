@@ -13,6 +13,7 @@ import { ActivityTimeline } from "@/components/project/ActivityTimeline";
 import { NotificationBell } from "@/components/project/NotificationBell";
 import { ProjectPresence } from "@/components/project/ProjectPresence";
 import { PostAsOpportunityDialog } from "@/components/project/PostAsOpportunityDialog";
+import { PendingInvitations } from "@/components/project/PendingInvitations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -549,6 +550,9 @@ const ThriveDesk = () => {
                 </div>
               </Card>
 
+              {/* Pending Invitations */}
+              <PendingInvitations projectId={projectId} />
+
               {/* Project Info */}
               <Card className="p-4">
                 <h3 className="font-semibold text-sm mb-3">About Project</h3>
@@ -887,6 +891,9 @@ const ThriveDesk = () => {
             <div className="p-3 space-y-3">
               {/* Activity Timeline */}
               <ActivityTimeline projectId={projectId!} />
+
+              {/* Pending Invitations */}
+              <PendingInvitations projectId={projectId} />
 
               {/* Time Tracker */}
               <TimeTracker projectId={projectId!} />

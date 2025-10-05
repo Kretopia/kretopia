@@ -90,6 +90,20 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Get user profile for inviter name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+
+      // Get project details
+      const { data: project } = await supabase
+        .from('projects')
+        .select('title')
+        .eq('id', projectId)
+        .single();
+
       const { error } = await supabase
         .from('project_collaborators')
         .insert({
@@ -101,6 +115,16 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         });
 
       if (error) throw error;
+
+      // Send invitation email
+      await supabase.functions.invoke('send-project-invitation', {
+        body: {
+          email: emailToInvite.toLowerCase(),
+          projectTitle: project?.title || 'Untitled Project',
+          projectId,
+          inviterName: profile?.full_name || 'A ThriveIN user',
+        }
+      });
 
       toast({
         title: "Invite sent! 📧",
@@ -127,19 +151,56 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Get invitee's email
+      const { data: inviteeProfile } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+
+      const { data: inviteeAuth } = await supabase.auth.admin.getUserById(userId);
+      const inviteeEmail = inviteeAuth?.user?.email;
+
+      // Get user profile for inviter name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+
+      // Get project details
+      const { data: project } = await supabase
+        .from('projects')
+        .select('title')
+        .eq('id', projectId)
+        .single();
+
       // For existing users, use a placeholder email since we have their user_id
       const { error } = await supabase
         .from('project_collaborators')
         .insert({
           project_id: projectId,
           user_id: userId,
-          email: `user-${userId}@platform.invite`, // Placeholder for direct user invites
+          email: inviteeEmail || `user-${userId}@platform.invite`, // Use real email if available
           invited_by: user.id,
           role: 'member',
           status: 'pending'
         });
 
       if (error) throw error;
+
+      // Send invitation email and notification
+      if (inviteeEmail) {
+        await supabase.functions.invoke('send-project-invitation', {
+          body: {
+            email: inviteeEmail,
+            projectTitle: project?.title || 'Untitled Project',
+            projectId,
+            inviterName: profile?.full_name || 'A ThriveIN user',
+            inviteeUserId: userId, // This triggers in-app notification
+          }
+        });
+      }
 
       toast({
         title: "Invite sent! 🎉",

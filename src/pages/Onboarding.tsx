@@ -69,6 +69,26 @@ export default function Onboarding() {
         });
         return;
       }
+      
+      // Award XP for completing profile
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: currentProfile } = await supabase
+          .from("profiles")
+          .select("xp")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        await supabase
+          .from("profiles")
+          .update({ xp: (currentProfile?.xp || 0) + 30 })
+          .eq("user_id", user.id);
+
+        toast({
+          title: "✨ Profile Complete! +30 XP",
+          description: "Keep going to unlock better visibility in Discover",
+        });
+      }
     }
 
     if (currentStep === 3) {
@@ -79,6 +99,26 @@ export default function Onboarding() {
           variant: "destructive",
         });
         return;
+      }
+      
+      // Award XP for adding skills
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: currentProfile } = await supabase
+          .from("profiles")
+          .select("xp")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        await supabase
+          .from("profiles")
+          .update({ xp: (currentProfile?.xp || 0) + 20 })
+          .eq("user_id", user.id);
+
+        toast({
+          title: "🎯 Skills Added! +20 XP",
+          description: "Skills help you get matched with perfect opportunities",
+        });
       }
     }
 
@@ -113,12 +153,16 @@ export default function Onboarding() {
 
       await supabase
         .from("profiles")
-        .update({ xp: (currentProfile?.xp || 0) + 100 })
+        .update({ xp: (currentProfile?.xp || 0) + 50 })
         .eq("user_id", user.id);
 
+      // Track onboarding completion
+      const { analytics } = await import("@/lib/analytics");
+      analytics.onboardingComplete();
+
       toast({
-        title: "Welcome to ThriveIN! 🎉",
-        description: "You've earned 100 XP for completing onboarding!",
+        title: "🎉 Welcome to ThriveIN! +50 XP",
+        description: "You've earned 100 total XP! Higher levels = better visibility in Discover",
       });
 
       navigate("/discover");
@@ -172,6 +216,15 @@ export default function Onboarding() {
               The ultimate platform for creatives and content creators.
               Let's get you set up in just 3 quick steps.
             </p>
+            <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg">
+              <p className="text-sm font-semibold mb-2 flex items-center justify-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Earn 100 XP to boost your visibility!
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Complete your profile to level up and appear higher in Discover 🚀
+              </p>
+            </div>
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg text-left">
               <p className="text-sm font-medium mb-2">What you'll get:</p>
               <ul className="text-sm text-muted-foreground space-y-1">
@@ -199,8 +252,16 @@ export default function Onboarding() {
 
         {currentStep === 2 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Tell us about yourself</h2>
-            <p className="text-sm text-muted-foreground">This information helps others find and connect with you</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Tell us about yourself</h2>
+                <p className="text-sm text-muted-foreground">This information helps others find and connect with you</p>
+              </div>
+              <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">+30 XP</span>
+              </div>
+            </div>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="full_name">Full Name *</Label>
@@ -251,10 +312,18 @@ export default function Onboarding() {
 
         {currentStep === 3 && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">What are your skills?</h2>
-            <p className="text-muted-foreground">
-              Add skills to help others find you and discover relevant opportunities
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">What are your skills?</h2>
+                <p className="text-muted-foreground">
+                  Add skills to help others find you and discover relevant opportunities
+                </p>
+              </div>
+              <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">+20 XP</span>
+              </div>
+            </div>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="professional">Professional Skills</Label>
@@ -325,6 +394,15 @@ export default function Onboarding() {
             <p className="text-lg text-muted-foreground">
               Ready to discover amazing opportunities and connect with creators?
             </p>
+            <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg mb-4">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <span className="text-2xl font-bold text-primary">+50 XP</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Complete onboarding to get started!
+              </p>
+            </div>
             <div className="grid grid-cols-3 gap-4 pt-4 text-left">
               <div className="p-4 rounded-lg bg-accent/10">
                 <p className="text-2xl font-bold text-primary">10</p>
@@ -332,7 +410,7 @@ export default function Onboarding() {
               </div>
               <div className="p-4 rounded-lg bg-accent/10">
                 <p className="text-2xl font-bold text-primary">100 XP</p>
-                <p className="text-sm">Welcome Bonus</p>
+                <p className="text-sm">Total Earned</p>
               </div>
               <div className="p-4 rounded-lg bg-accent/10">
                 <p className="text-2xl font-bold text-primary">∞</p>

@@ -723,12 +723,23 @@ const Circle = () => {
                           Pending
                         </Button>
                       ) : profile.connectionStatus === 'pending_received' ? (
-                        <Button size="sm" onClick={() => handleAcceptConnection(profile.user_id)} className="w-full gap-2">
-                          <CheckCircle2 className="h-4 w-4" />
-                          Accept Request
-                        </Button>
+                        <div className="space-y-2">
+                          <Button 
+                            size="sm" 
+                            onClick={() => navigate(`/profile/${profile.user_id}`, { state: { from: 'circle' } })} 
+                            variant="outline" 
+                            className="w-full gap-2"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            View Profile
+                          </Button>
+                          <Button size="sm" onClick={() => handleAcceptConnection(profile.user_id)} className="w-full gap-2">
+                            <CheckCircle2 className="h-4 w-4" />
+                            Accept Request
+                          </Button>
+                        </div>
                       ) : (
-                        <Button size="sm" onClick={() => navigate(`/profile/${profile.user_id}`)} variant="outline" className="w-full gap-2">
+                        <Button size="sm" onClick={() => navigate(`/profile/${profile.user_id}`, { state: { from: 'circle' } })} variant="outline" className="w-full gap-2">
                           <ExternalLink className="h-4 w-4" />
                           View Profile
                         </Button>

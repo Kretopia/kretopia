@@ -24,6 +24,7 @@ import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
 import { TierProgressCard } from "@/components/membership/TierProgressCard";
+import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -325,6 +326,8 @@ const Profile = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    console.log('[Profile] Saving profile updates:', editForm);
+    
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -337,12 +340,14 @@ const Profile = () => {
       .eq('user_id', user.id);
 
     if (error) {
+      console.error('[Profile] Error updating profile:', error);
       toast({
         title: "Error",
-        description: "Failed to update profile",
+        description: `Failed to update profile: ${error.message}`,
         variant: "destructive",
       });
     } else {
+      console.log('[Profile] Profile updated successfully');
       setProfile({ ...profile!, ...editForm });
       setIsEditOpen(false);
       toast({
@@ -559,6 +564,18 @@ const Profile = () => {
             )}
           </div>
         </div>
+
+        {/* Profile Visibility Banner */}
+        {profile && (
+          <ProfileVisibilityBanner
+            isVisible={!!(profile.full_name && profile.role && profile.avatar_url && profile.bio)}
+            missingFields={[
+              ...(!profile.avatar_url ? ['Profile Picture'] : []),
+              ...(!profile.bio ? ['Bio'] : []),
+              ...(!profile.location ? ['Location'] : []),
+            ]}
+          />
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="w-full">

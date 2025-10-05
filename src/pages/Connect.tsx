@@ -118,7 +118,8 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         .from('profiles')
         .select('*')
         .neq('user_id', user.id)
-        .not('full_name', 'is', null);
+        .not('full_name', 'is', null)
+        .not('avatar_url', 'is', null);
 
       // Apply filters
       if (searchQuery) {
@@ -147,11 +148,13 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         .select('*')
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
 
-      // Filter profiles - only require name and role
+      // Filter profiles - require complete profile to be discoverable
       const completeProfiles = data?.filter(profile => {
         return profile.full_name && 
                profile.full_name !== 'New User' && 
-               profile.role;
+               profile.role &&
+               profile.avatar_url &&
+               profile.bio;
       }) || [];
       
       console.log('[Connect] After filtering complete profiles:', completeProfiles.length);

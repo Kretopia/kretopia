@@ -71,17 +71,15 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
         return;
       }
 
-      // Create project - created_by will be automatically set/verified by database trigger
-      const projectData = {
-        title: validationResult.data.title,
-        description: validationResult.data.description || null,
-        created_by: user.id, // Included for TypeScript, but trigger will override this
-        status: 'active' as const,
-      };
-
+      // Create project - created_by is set by database trigger but included for TypeScript
       const { data: project, error: projectError } = await supabase
         .from('projects')
-        .insert(projectData)
+        .insert({
+          title: validationResult.data.title,
+          description: validationResult.data.description || null,
+          created_by: user.id, // Required by TypeScript, trigger ensures correctness
+          status: 'active' as const,
+        })
         .select()
         .single();
 

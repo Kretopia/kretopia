@@ -90,28 +90,12 @@ export const Footer = () => {
           <p>© {currentYear} ThriveIN. All rights reserved.</p>
           <div className="flex gap-4">
             <a 
-              href="https://twitter.com/thrivein" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              Twitter
-            </a>
-            <a 
-              href="https://instagram.com/thrivein" 
+              href="https://instagram.com/thrivein.io" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"
             >
               Instagram
-            </a>
-            <a 
-              href="https://linkedin.com/company/thrivein" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              LinkedIn
             </a>
           </div>
         </div>

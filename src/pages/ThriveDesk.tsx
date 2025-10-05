@@ -430,9 +430,9 @@ const ThriveDesk = () => {
 
   // Responsive rendering
   const renderMobileLayout = () => (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[100dvh] overflow-hidden">
       {/* Minimal Mobile Header */}
-      <div className="border-b px-3 py-2 bg-background/95 backdrop-blur sticky top-0 z-10">
+      <div className="border-b px-3 py-2 bg-background/95 backdrop-blur flex-shrink-0">
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
@@ -455,9 +455,9 @@ const ThriveDesk = () => {
       </div>
 
       {/* Compact Mobile Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b bg-background">
-          <TabsList className="w-full justify-around h-11 bg-transparent rounded-none p-0">
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <div className="border-b bg-background flex-shrink-0">
+          <TabsList className="w-full justify-around h-10 bg-transparent rounded-none p-0">
             <TabsTrigger 
               value="messages" 
               className="flex-1 gap-0.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-1 rounded-none border-b-2 border-transparent"
@@ -489,7 +489,7 @@ const ThriveDesk = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="messages" className="flex-1 flex flex-col m-0 overflow-hidden">
+        <TabsContent value="messages" className="flex-1 m-0 overflow-hidden flex flex-col min-h-0">
           <MessagePanel
             messages={messages}
             newMessage={newMessage}
@@ -504,11 +504,11 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-2">
+        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-2 min-h-0">
           <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 overflow-auto p-3">
+        <TabsContent value="milestones" className="flex-1 m-0 overflow-auto p-2 min-h-0">
           <MilestoneBoard 
             milestones={milestones} 
             projectId={projectId!} 
@@ -517,7 +517,7 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="details" className="flex-1 m-0 overflow-auto">
+        <TabsContent value="details" className="flex-1 m-0 overflow-auto min-h-0">
           <ScrollArea className="h-full">
             <div className="p-3 space-y-3">
               {/* Quick Actions */}

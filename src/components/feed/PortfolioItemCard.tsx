@@ -8,6 +8,7 @@ import { Play, Eye, Sparkles, Flame } from "lucide-react";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getMediaThumbnail } from "@/lib/mediaUtils";
 
 interface PortfolioItemCardProps {
   item: {
@@ -112,22 +113,13 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
       );
     }
 
-    // If there's a thumbnail, show it
-    if (item.thumbnail_url) {
+    // Get thumbnail using utility function
+    const thumbnailUrl = getMediaThumbnail(item);
+    
+    if (thumbnailUrl) {
       return (
         <img 
-          src={item.thumbnail_url} 
-          alt={item.title}
-          className="w-full h-full object-cover"
-        />
-      );
-    }
-
-    // If it's an image type, show the media_url
-    if (item.media_type === 'image') {
-      return (
-        <img 
-          src={item.media_url} 
+          src={thumbnailUrl} 
           alt={item.title}
           className="w-full h-full object-cover"
         />
@@ -136,7 +128,7 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
 
     // Default play icon for video/audio
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
         <Play className="h-16 w-16 text-primary/50" />
       </div>
     );

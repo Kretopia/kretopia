@@ -55,6 +55,7 @@ export const TIER_LEVELS: TierLevel[] = [
       "Custom profile themes",
       "Featured in Discover section",
       "Early event access",
+      "5% partner discounts",
     ],
   },
   {
@@ -70,6 +71,7 @@ export const TIER_LEVELS: TierLevel[] = [
       "Premium profile frame",
       "Priority support response",
       "Priority event access",
+      "10% partner discounts",
     ],
   },
   {
@@ -85,6 +87,7 @@ export const TIER_LEVELS: TierLevel[] = [
       "Golden profile glow",
       "Top 1% leaderboard",
       "VIP event invitations",
+      "15% partner discounts",
     ],
   },
   {
@@ -100,6 +103,7 @@ export const TIER_LEVELS: TierLevel[] = [
       "Diamond profile frame",
       "Featured success story",
       "Industry networking events",
+      "20% partner discounts",
     ],
   },
   {
@@ -115,6 +119,8 @@ export const TIER_LEVELS: TierLevel[] = [
       "Platinum profile effects",
       "Hall of Fame inclusion",
       "Ambassador opportunities",
+      "25% partner discounts",
+      "Exclusive partner deals",
     ],
   },
   {
@@ -131,6 +137,8 @@ export const TIER_LEVELS: TierLevel[] = [
       "Top of all leaderboards",
       "Advisory board consideration",
       "Lifetime recognition",
+      "30% partner discounts",
+      "VIP-only partner deals",
     ],
   },
 ];

@@ -192,13 +192,13 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // 8px movement required before drag starts
+        distance: 5, // Reduced from 8px for easier activation
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 200, // 200ms press required
-        tolerance: 5, // 5px movement tolerance
+        delay: 150, // Reduced from 200ms
+        tolerance: 8, // Increased from 5px for more forgiving touch
       },
     }),
     useSensor(KeyboardSensor, {
@@ -243,23 +243,57 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (!over) return;
+    console.log('Drag ended:', { 
+      activeId: active.id, 
+      overId: over?.id,
+      activeTask: tasks.find(t => t.id === active.id),
+      over: over 
+    });
+    
+    if (!over) {
+      console.log('No drop target');
+      return;
+    }
 
     const activeTask = tasks.find(t => t.id === active.id);
-    const overStatus = over.id as string;
+    
+    // Check if we dropped on a column (status value) or on another task
+    let targetStatus = over.id as string;
+    
+    // If we dropped on a task, get that task's status (column)
+    const overTask = tasks.find(t => t.id === over.id);
+    if (overTask) {
+      targetStatus = overTask.status;
+      console.log('Dropped on task, using its status:', targetStatus);
+    } else {
+      console.log('Dropped on column:', targetStatus);
+    }
 
-    if (activeTask && STATUSES.some(s => s.value === overStatus) && activeTask.status !== overStatus) {
+    console.log('Processing drag:', {
+      activeTask,
+      targetStatus,
+      isValidStatus: STATUSES.some(s => s.value === targetStatus),
+      currentStatus: activeTask?.status,
+      wouldUpdate: activeTask?.status !== targetStatus
+    });
+
+    if (activeTask && STATUSES.some(s => s.value === targetStatus) && activeTask.status !== targetStatus) {
+      console.log('Updating task status from', activeTask.status, 'to', targetStatus);
       const { error } = await supabase
         .from('project_tasks')
-        .update({ status: overStatus })
+        .update({ status: targetStatus })
         .eq('id', activeTask.id);
 
       if (error) {
+        console.error('Update error:', error);
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
+        console.log('Task updated successfully');
         toast({ title: "Task moved! ✅" });
         onUpdate();
       }
+    } else {
+      console.log('No update needed or invalid drop');
     }
   };
 

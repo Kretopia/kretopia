@@ -3,12 +3,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserPlus, Mail, Search, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Loader2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface InviteCollaboratorDialogProps {
   projectId: string;
@@ -16,14 +16,20 @@ interface InviteCollaboratorDialogProps {
 }
 
 export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollaboratorDialogProps) => {
-  const [email, setEmail] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState<any[]>([]);
+  const [searchInput, setSearchInput] = useState("");
   const [connectedUsers, setConnectedUsers] = useState<any[]>([]);
-  const [searching, setSearching] = useState(false);
   const [sending, setSending] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+
+  // Filter connected users based on search
+  const filteredConnections = connectedUsers.filter((user) =>
+    user.full_name.toLowerCase().includes(searchInput.toLowerCase()) ||
+    user.role?.toLowerCase().includes(searchInput.toLowerCase())
+  );
+
+  // Check if input looks like an email
+  const isEmailFormat = searchInput.includes("@") && searchInput.includes(".");
 
   // Load connected users when dialog opens
   useEffect(() => {
@@ -31,14 +37,6 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       loadConnectedUsers();
     }
   }, [open]);
-
-  useEffect(() => {
-    if (searchQuery.length > 2) {
-      searchUsers();
-    } else {
-      setUsers([]);
-    }
-  }, [searchQuery]);
 
   const loadConnectedUsers = async () => {
     try {
@@ -84,26 +82,8 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
     }
   };
 
-  const searchUsers = async () => {
-    setSearching(true);
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, role')
-        .or(`full_name.ilike.%${searchQuery}%,role.ilike.%${searchQuery}%`)
-        .limit(10);
-
-      if (error) throw error;
-      setUsers(data || []);
-    } catch (error) {
-      console.error('Error searching users:', error);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const handleInviteByEmail = async () => {
-    if (!email) return;
+  const handleInviteByEmail = async (emailToInvite: string) => {
+    if (!emailToInvite) return;
     
     setSending(true);
     try {
@@ -114,7 +94,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         .from('project_collaborators')
         .insert({
           project_id: projectId,
-          email: email.toLowerCase(),
+          email: emailToInvite.toLowerCase(),
           invited_by: user.id,
           role: 'member',
           status: 'pending'
@@ -124,9 +104,9 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
 
       toast({
         title: "Invite sent! 📧",
-        description: `Invitation sent to ${email}`,
+        description: `Invitation sent to ${emailToInvite}`,
       });
-      setEmail("");
+      setSearchInput("");
       setOpen(false);
       onInvite();
     } catch (error: any) {
@@ -165,8 +145,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         title: "Invite sent! 🎉",
         description: `${userName} has been invited to the project`,
       });
-      setSearchQuery("");
-      setUsers([]);
+      setSearchInput("");
       setOpen(false);
       onInvite();
     } catch (error: any) {
@@ -192,132 +171,151 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Invite Collaborator</DialogTitle>
-          <DialogDescription>Search for users on the platform or invite by email</DialogDescription>
+          <DialogDescription>
+            Start typing to search your circle or enter an email address
+          </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="search" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="search">
-              <Search className="h-4 w-4 mr-2" />
-              Search Users
-            </TabsTrigger>
-            <TabsTrigger value="email">
-              <Mail className="h-4 w-4 mr-2" />
-              By Email
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="search" className="space-y-4">
-            {/* Connected Users Section */}
-            {connectedUsers.length > 0 && searchQuery.length === 0 && (
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground flex items-center gap-2">
-                  <UserPlus className="h-3 w-3" />
-                  From Your Circle
-                </Label>
-                <ScrollArea className="h-[200px] rounded-md border p-2 bg-primary/5">
-                  {connectedUsers.map((user) => (
-                    <div
-                      key={user.user_id}
-                      className="flex items-center gap-3 p-3 hover:bg-accent rounded-lg transition-colors mb-1"
-                    >
-                      <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                        <AvatarImage src={user.avatar_url} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground">
-                          {user.full_name?.[0] || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{user.full_name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user.role}</p>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleInviteUser(user.user_id, user.full_name)}
-                        disabled={sending}
-                        variant="default"
-                      >
-                        Invite
-                      </Button>
-                    </div>
-                  ))}
-                </ScrollArea>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="search">Search by name or role</Label>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="search">Search or Enter Email</Label>
+            <div className="relative">
               <Input
                 id="search"
-                placeholder="Type to search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Type name, role, or email..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="pr-10"
               />
-            </div>
-            
-            <ScrollArea className="h-[200px] rounded-md border p-2">
-              {searching && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              )}
-              
-              {!searching && users.length === 0 && searchQuery.length > 2 && (
-                <p className="text-center text-sm text-muted-foreground py-8">No users found</p>
-              )}
-              
-              {!searching && users.length === 0 && searchQuery.length <= 2 && (
-                <p className="text-center text-sm text-muted-foreground py-8">
-                  Type at least 3 characters to search
-                </p>
-              )}
-              
-              {!searching && users.map((user) => (
-                <div
-                  key={user.user_id}
-                  className="flex items-center gap-3 p-3 hover:bg-accent rounded-lg transition-colors"
+              {searchInput && (
+                <button
+                  onClick={() => setSearchInput("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.avatar_url} />
-                    <AvatarFallback>{user.full_name?.[0] || 'U'}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{user.full_name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user.role}</p>
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+
+          <ScrollArea className="h-[300px] rounded-md border">
+            {/* Show filtered circle connections */}
+            {filteredConnections.length > 0 && (
+              <div className="p-2 space-y-1">
+                <div className="px-2 py-1 flex items-center gap-2">
+                  <Users className="h-3 w-3 text-primary" />
+                  <span className="text-xs font-medium text-muted-foreground">
+                    From Your Circle
+                  </span>
+                </div>
+                {filteredConnections.map((user) => (
+                  <div
+                    key={user.user_id}
+                    className="flex items-center gap-3 p-3 hover:bg-accent rounded-lg transition-colors group"
+                  >
+                    <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                      <AvatarImage src={user.avatar_url} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground">
+                        {user.full_name?.[0] || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{user.full_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.role}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleInviteUser(user.user_id, user.full_name)}
+                      disabled={sending}
+                      variant="default"
+                    >
+                      {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Invite"}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Show email invite option if email format detected */}
+            {isEmailFormat && filteredConnections.length === 0 && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span className="text-sm">Invite by email</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 border-2 border-dashed rounded-lg">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{searchInput}</p>
+                    <p className="text-xs text-muted-foreground">Send invitation email</p>
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => handleInviteUser(user.user_id, user.full_name)}
+                    onClick={() => handleInviteByEmail(searchInput)}
                     disabled={sending}
                   >
-                    Invite
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
                   </Button>
                 </div>
-              ))}
-            </ScrollArea>
-          </TabsContent>
-          
-          <TabsContent value="email" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="collaborator@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <Button 
-              onClick={handleInviteByEmail} 
-              disabled={sending || !email} 
-              className="w-full"
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              {sending ? "Sending..." : "Send Invite"}
-            </Button>
-          </TabsContent>
-        </Tabs>
+              </div>
+            )}
+
+            {/* Empty states */}
+            {!searchInput && connectedUsers.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Users className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                <p className="text-sm text-muted-foreground">No connections yet</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enter an email to invite someone
+                </p>
+              </div>
+            )}
+
+            {!searchInput && connectedUsers.length > 0 && (
+              <div className="p-2 space-y-1">
+                <div className="px-2 py-1 flex items-center gap-2">
+                  <Users className="h-3 w-3 text-primary" />
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Your Circle ({connectedUsers.length})
+                  </span>
+                </div>
+                {connectedUsers.map((user) => (
+                  <div
+                    key={user.user_id}
+                    className="flex items-center gap-3 p-3 hover:bg-accent rounded-lg transition-colors"
+                  >
+                    <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                      <AvatarImage src={user.avatar_url} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground">
+                        {user.full_name?.[0] || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{user.full_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.role}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleInviteUser(user.user_id, user.full_name)}
+                      disabled={sending}
+                      variant="default"
+                    >
+                      Invite
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {searchInput && filteredConnections.length === 0 && !isEmailFormat && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-sm text-muted-foreground">No matches found</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Try entering an email address to invite them
+                </p>
+              </div>
+            )}
+          </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );

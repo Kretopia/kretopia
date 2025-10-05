@@ -9,6 +9,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { useAuth } from "./hooks/useAuth";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
+import { Footer } from "./components/Footer";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { analytics } from "@/lib/analytics";
 
@@ -48,6 +49,9 @@ const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
 const ProjectTemplates = lazy(() => import("./pages/ProjectTemplates"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -141,10 +145,14 @@ const AppContent = () => {
             <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
             <Route path="/project-templates" element={<ProtectedRoute><ProjectTemplates /></ProtectedRoute>} />
             <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/community-guidelines" element={<CommunityGuidelines />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </div>
+      <Footer />
     </div>
   );
 };

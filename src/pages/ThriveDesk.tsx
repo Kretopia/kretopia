@@ -429,6 +429,155 @@ const ThriveDesk = () => {
 
 
   // Responsive rendering
+  const renderTabletLayout = () => (
+    <div className="flex flex-col h-screen overflow-hidden">
+      {/* Tablet Header */}
+      <div className="border-b px-4 py-3 bg-background/95 backdrop-blur flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9 flex-shrink-0" 
+            onClick={() => navigate('/projects')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-semibold truncate">{project.title}</h1>
+          </div>
+          <Badge variant="secondary" className="text-xs px-2 py-1 flex-shrink-0">{project.status}</Badge>
+          <ProjectSettings 
+            project={project} 
+            onUpdate={fetchProjectData}
+            userRole={userRole}
+          />
+        </div>
+      </div>
+
+      {/* Tablet Tabs */}
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <div className="border-b bg-background flex-shrink-0">
+          <TabsList className="w-full justify-around h-12 bg-transparent rounded-none p-0">
+            <TabsTrigger 
+              value="messages" 
+              className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
+            >
+              <Send className="h-4 w-4" />
+              <span className="text-xs font-medium">Messages</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="tasks" 
+              className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
+            >
+              <CheckSquare className="h-4 w-4" />
+              <span className="text-xs font-medium">Tasks</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="milestones" 
+              className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
+            >
+              <DollarSign className="h-4 w-4" />
+              <span className="text-xs font-medium">Milestones</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="details" 
+              className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
+            >
+              <FileText className="h-4 w-4" />
+              <span className="text-xs font-medium">Details</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="messages" className="flex-1 m-0 overflow-hidden flex flex-col min-h-0">
+          <MessagePanel
+            messages={messages}
+            newMessage={newMessage}
+            setNewMessage={setNewMessage}
+            attachedFile={attachedFile}
+            setAttachedFile={setAttachedFile}
+            sendingMessage={sendingMessage}
+            onSendMessage={handleSendMessage}
+            onFileAttach={handleFileAttach}
+            messagesEndRef={messagesEndRef}
+            compact={false}
+          />
+        </TabsContent>
+
+        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-3 min-h-0">
+          <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+        </TabsContent>
+
+        <TabsContent value="milestones" className="flex-1 m-0 overflow-auto p-3 min-h-0">
+          <MilestoneBoard 
+            milestones={milestones} 
+            projectId={projectId!} 
+            onUpdate={fetchProjectData}
+            userRole={userRole}
+          />
+        </TabsContent>
+
+        <TabsContent value="details" className="flex-1 m-0 overflow-auto min-h-0">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-4">
+              {/* Quick Actions */}
+              <Card className="p-4">
+                <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Quick Actions
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <InviteCollaboratorDialog 
+                    projectId={projectId || ''} 
+                    onInvite={fetchProjectData}
+                  />
+                  <InvoiceGenerator 
+                    projectId={projectId || ''}
+                  />
+                </div>
+              </Card>
+
+              {/* Project Info */}
+              <Card className="p-4">
+                <h3 className="font-semibold text-sm mb-3">About Project</h3>
+                {project.description && <p className="text-sm mb-3 leading-relaxed text-muted-foreground">{project.description}</p>}
+                <div className="space-y-2">
+                  {project.budget && (
+                    <div className="flex items-center gap-2 text-sm p-2 bg-secondary/30 rounded">
+                      <DollarSign className="h-4 w-4" />
+                      <span>{project.budget}</span>
+                    </div>
+                  )}
+                  {project.deadline && (
+                    <div className="flex items-center gap-2 text-sm p-2 bg-secondary/30 rounded">
+                      <Calendar className="h-4 w-4" />
+                      <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Stats */}
+              <Card className="p-4">
+                <h3 className="font-semibold text-sm mb-3">Progress</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-3 bg-secondary/30 rounded">
+                    <p className="text-2xl font-bold">{tasks.length}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Tasks</p>
+                  </div>
+                  <div className="text-center p-3 bg-secondary/30 rounded">
+                    <p className="text-2xl font-bold">{milestones.length}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Milestones</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+
   const renderMobileLayout = () => (
     <div className="flex flex-col h-[100dvh] overflow-hidden">
       {/* Minimal Mobile Header */}
@@ -835,9 +984,12 @@ const ThriveDesk = () => {
     );
   }
 
+  // Improved responsive logic for tablets
+  const isTablet = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth < 1024;
+  
   return (
     <div className="min-h-screen bg-background pb-16 lg:pb-0">
-      {isMobile ? renderMobileLayout() : renderDesktopLayout()}
+      {isMobile ? renderMobileLayout() : isTablet ? renderTabletLayout() : renderDesktopLayout()}
     </div>
   );
 };

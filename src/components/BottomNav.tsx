@@ -1,19 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Compass, FolderKanban, Users, UserPlus } from "lucide-react";
+import { LayoutDashboard, Compass, FolderKanban, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BottomNav = () => {
   const location = useLocation();
   
-  // Hide BottomNav when viewing individual project details
-  if (location.pathname.startsWith('/desk/')) {
-    return null;
-  }
-  
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Home" },
     { path: "/discover", icon: Compass, label: "Discover" },
-    { path: "/connect", icon: UserPlus, label: "Connect" },
     { path: "/circle", icon: Users, label: "Circle" },
     { path: "/projects", icon: FolderKanban, label: "Desk" },
   ];

@@ -489,7 +489,7 @@ const ThriveDesk = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="messages" className="flex-1 m-0 overflow-hidden flex flex-col min-h-0">
+        <TabsContent value="messages" className="flex-1 m-0 p-0 overflow-hidden flex flex-col min-h-0">
           <MessagePanel
             messages={messages}
             newMessage={newMessage}
@@ -504,20 +504,24 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-2 pt-3 min-h-0">
-          <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto min-h-0">
+          <div className="p-2">
+            <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+          </div>
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 overflow-auto p-3 min-h-0">
-          <MilestoneBoard 
-            milestones={milestones} 
-            projectId={projectId!} 
-            onUpdate={fetchProjectData}
-            userRole={userRole}
-          />
+        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto min-h-0">
+          <div className="p-2">
+            <MilestoneBoard 
+              milestones={milestones} 
+              projectId={projectId!} 
+              onUpdate={fetchProjectData}
+              userRole={userRole}
+            />
+          </div>
         </TabsContent>
 
-        <TabsContent value="details" className="flex-1 m-0 overflow-auto min-h-0">
+        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto min-h-0">
           <ScrollArea className="h-full">
             <div className="p-4 space-y-4">
               {/* Quick Actions */}
@@ -638,7 +642,7 @@ const ThriveDesk = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="messages" className="flex-1 m-0 overflow-hidden flex flex-col min-h-0">
+        <TabsContent value="messages" className="flex-1 m-0 p-0 overflow-hidden flex flex-col min-h-0">
           <MessagePanel
             messages={messages}
             newMessage={newMessage}
@@ -653,20 +657,24 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 overflow-auto p-2 pt-2 min-h-0">
-          <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto min-h-0">
+          <div className="p-2">
+            <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+          </div>
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 overflow-auto p-2 min-h-0">
-          <MilestoneBoard 
-            milestones={milestones} 
-            projectId={projectId!} 
-            onUpdate={fetchProjectData}
-            userRole={userRole}
-          />
+        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto min-h-0">
+          <div className="p-2">
+            <MilestoneBoard 
+              milestones={milestones} 
+              projectId={projectId!} 
+              onUpdate={fetchProjectData}
+              userRole={userRole}
+            />
+          </div>
         </TabsContent>
 
-        <TabsContent value="details" className="flex-1 m-0 overflow-auto min-h-0">
+        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto min-h-0">
           <ScrollArea className="h-full">
             <div className="p-3 space-y-3">
               {/* Quick Actions */}
@@ -786,7 +794,7 @@ const ThriveDesk = () => {
               </TabsList>
             </div>
 
-            <TabsContent value="messages" className="flex-1 flex flex-col m-0 overflow-hidden">
+            <TabsContent value="messages" className="flex-1 flex flex-col m-0 p-0 overflow-hidden">
               <MessagePanel
                 messages={messages}
                 newMessage={newMessage}
@@ -801,17 +809,21 @@ const ThriveDesk = () => {
               />
             </TabsContent>
 
-            <TabsContent value="tasks" className="flex-1 m-0 p-2 pt-3 overflow-auto">
-              <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+            <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto">
+              <div className="p-2">
+                <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+              </div>
             </TabsContent>
 
-            <TabsContent value="milestones" className="flex-1 m-0 p-2 overflow-auto">
-              <MilestoneBoard 
-                milestones={milestones} 
-                projectId={projectId!} 
-                onUpdate={fetchProjectData}
-                userRole={userRole}
-              />
+            <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto">
+              <div className="p-2">
+                <MilestoneBoard 
+                  milestones={milestones} 
+                  projectId={projectId!} 
+                  onUpdate={fetchProjectData}
+                  userRole={userRole}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="files" className="flex-1 m-0 overflow-auto">

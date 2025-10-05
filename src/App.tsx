@@ -34,6 +34,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
+const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const StorageManagement = lazy(() => import("./pages/StorageManagement"));
 const SupportDashboard = lazy(() => import("./pages/SupportDashboard"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
@@ -129,6 +130,7 @@ const AppContent = () => {
             <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+            <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
             <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
             <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

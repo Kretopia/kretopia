@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Menu, Settings, Zap, MessageCircle, Shield, Wallet } from "lucide-react";
+import { User, LogOut, Menu, Settings, Zap, MessageCircle, Shield, Wallet, Briefcase, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
@@ -124,6 +124,22 @@ const Navbar = ({ user }: NavbarProps) => {
                     >
                       <Wallet className="h-5 w-5" />
                       ThrivePay
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/opportunity-dashboard")}
+                    >
+                      <Briefcase className="h-5 w-5" />
+                      My Opportunities
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/manage-opportunities")}
+                    >
+                      <FileText className="h-5 w-5" />
+                      My Applications
                     </Button>
                     <Button 
                       variant="ghost" 

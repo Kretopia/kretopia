@@ -1,0 +1,457 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+
+interface Applicant {
+  id: string;
+  applicant_id: string;
+  full_name: string;
+  avatar_url?: string;
+  role: string;
+  cover_letter: string;
+  portfolio_links?: string[];
+  status: string;
+  created_at: string;
+  expected_rate?: string;
+  availability?: string;
+  ai_match_score?: number;
+  match_reasons?: string[];
+  professional_skills?: string[];
+}
+
+interface Opportunity {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  created_at: string;
+  applications_count: number;
+  new_applications: number;
+}
+
+const OpportunityDashboard = () => {
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [selectedOppId, setSelectedOppId] = useState<string | null>(null);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [analyzingAI, setAnalyzingAI] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    fetchOpportunities();
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (selectedOppId) {
+      fetchApplicants(selectedOppId);
+    }
+  }, [selectedOppId]);
+
+  const fetchOpportunities = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('opportunities')
+      .select(`
+        id,
+        title,
+        type,
+        status,
+        created_at,
+        applications:applications(count)
+      `)
+      .eq('created_by', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching opportunities:', error);
+      toast.error('Failed to load opportunities');
+    } else {
+      const formatted = (data || []).map((opp: any) => ({
+        id: opp.id,
+        title: opp.title,
+        type: opp.type,
+        status: opp.status,
+        created_at: opp.created_at,
+        applications_count: opp.applications?.[0]?.count || 0,
+        new_applications: 0, // Could be calculated from unread applications
+      }));
+      setOpportunities(formatted);
+      if (formatted.length > 0) {
+        setSelectedOppId(formatted[0].id);
+      }
+    }
+    setLoading(false);
+  };
+
+  const fetchApplicants = async (opportunityId: string) => {
+    setLoading(true);
+    
+    const { data, error } = await supabase
+      .from('applications')
+      .select(`
+        id,
+        applicant_id,
+        cover_letter,
+        portfolio_links,
+        status,
+        created_at,
+        expected_rate,
+        availability,
+        profiles:applicant_id(
+          full_name,
+          avatar_url,
+          role,
+          professional_skills
+        )
+      `)
+      .eq('opportunity_id', opportunityId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching applicants:', error);
+      toast.error('Failed to load applications');
+    } else {
+      const formatted = (data || []).map((app: any) => ({
+        id: app.id,
+        applicant_id: app.applicant_id,
+        full_name: app.profiles?.full_name || 'Unknown',
+        avatar_url: app.profiles?.avatar_url,
+        role: app.profiles?.role || 'Creator',
+        cover_letter: app.cover_letter,
+        portfolio_links: app.portfolio_links,
+        status: app.status,
+        created_at: app.created_at,
+        expected_rate: app.expected_rate,
+        availability: app.availability,
+        professional_skills: app.profiles?.professional_skills || [],
+      }));
+      setApplicants(formatted);
+    }
+    setLoading(false);
+  };
+
+  const analyzeWithAI = async () => {
+    if (!selectedOppId || applicants.length === 0) return;
+
+    setAnalyzingAI(true);
+    try {
+      // Get opportunity details
+      const { data: oppData } = await supabase
+        .from('opportunities')
+        .select('title, description, skills, requirements')
+        .eq('id', selectedOppId)
+        .single();
+
+      if (!oppData) throw new Error('Opportunity not found');
+
+      // Call AI to score applicants
+      const { data, error } = await supabase.functions.invoke('generate-content', {
+        body: {
+          messages: [
+            {
+              role: 'user',
+              content: `Score these applicants for the opportunity. Be generous with scores (60+ is good match).
+
+OPPORTUNITY:
+Title: ${oppData.title}
+Description: ${oppData.description}
+Required Skills: ${oppData.skills?.join(', ') || 'Not specified'}
+Requirements: ${oppData.requirements || 'Not specified'}
+
+APPLICANTS:
+${applicants.map((a, i) => `${i}. ${a.full_name} - ${a.role}
+Skills: ${a.professional_skills?.join(', ') || 'None listed'}
+Cover Letter: ${a.cover_letter?.substring(0, 200)}...
+Rate: ${a.expected_rate || 'Not specified'}
+Availability: ${a.availability || 'Not specified'}`).join('\n\n')}
+
+For each applicant, provide:
+1. Match score (0-100) - Be generous, most should be 60+
+2. 3 specific reasons why they're a good match
+3. Focus on: skills alignment, experience, availability, cultural fit
+
+Return ONLY valid JSON array:
+[{"index": 0, "score": 85, "reasons": ["Strong skill match in required areas", "Relevant portfolio work", "Available for project timeline"]}]`
+            }
+          ],
+          type: 'suggest'
+        }
+      });
+
+      if (error) throw error;
+
+      const scores = data?.content ? JSON.parse(data.content) : [];
+      
+      // Update applicants with AI scores
+      const scoredApplicants = applicants.map((applicant, index) => {
+        const scoreData = scores.find((s: any) => s.index === index);
+        return {
+          ...applicant,
+          ai_match_score: scoreData?.score || 50,
+          match_reasons: scoreData?.reasons || []
+        };
+      });
+
+      // Sort by score descending
+      scoredApplicants.sort((a, b) => (b.ai_match_score || 0) - (a.ai_match_score || 0));
+      setApplicants(scoredApplicants);
+      toast.success('AI analysis complete!');
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      toast.error('AI analysis failed');
+    } finally {
+      setAnalyzingAI(false);
+    }
+  };
+
+  const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
+    const { error } = await supabase
+      .from('applications')
+      .update({ status: newStatus })
+      .eq('id', applicationId);
+
+    if (error) {
+      toast.error('Failed to update status');
+    } else {
+      setApplicants(prev => prev.map(a => 
+        a.id === applicationId ? { ...a, status: newStatus } : a
+      ));
+      toast.success(`Application ${newStatus}`);
+    }
+  };
+
+  const getMatchBadge = (score?: number) => {
+    if (!score) return null;
+    if (score >= 80) return <Badge className="bg-green-500"><Star className="w-3 h-3 mr-1" />Perfect Match</Badge>;
+    if (score >= 70) return <Badge className="bg-blue-500">Great Match</Badge>;
+    if (score >= 60) return <Badge className="bg-yellow-500">Good Match</Badge>;
+    return <Badge variant="secondary">Fair Match</Badge>;
+  };
+
+  const renderApplicantCard = (applicant: Applicant) => (
+    <Card key={applicant.id} className="hover:shadow-lg transition-all">
+      <CardHeader>
+        <div className="flex items-start gap-4">
+          <Avatar className="h-16 w-16">
+            <AvatarImage src={applicant.avatar_url} />
+            <AvatarFallback>{applicant.full_name[0]}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <CardTitle className="text-lg">{applicant.full_name}</CardTitle>
+                <p className="text-sm text-muted-foreground">{applicant.role}</p>
+              </div>
+              <div className="flex gap-2">
+                {getMatchBadge(applicant.ai_match_score)}
+                <Badge variant={
+                  applicant.status === 'accepted' ? 'default' :
+                  applicant.status === 'rejected' ? 'destructive' : 'secondary'
+                }>
+                  {applicant.status}
+                </Badge>
+              </div>
+            </div>
+            
+            {applicant.ai_match_score && (
+              <div className="mb-2 p-2 bg-muted/50 rounded-md">
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">AI Match: {applicant.ai_match_score}%</span>
+                </div>
+                {applicant.match_reasons && (
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    {applicant.match_reasons.map((reason, i) => (
+                      <li key={i}>• {reason}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-medium mb-1">Cover Letter</p>
+            <p className="text-sm text-muted-foreground line-clamp-3">{applicant.cover_letter}</p>
+          </div>
+          
+          {applicant.expected_rate && (
+            <div className="flex items-center gap-2 text-sm">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <span>{applicant.expected_rate}</span>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate(`/profile/${applicant.applicant_id}`)}
+            >
+              <Eye className="w-3 h-3 mr-1" />
+              View Profile
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate(`/circle?user=${applicant.applicant_id}`)}
+            >
+              <Mail className="w-3 h-3 mr-1" />
+              Message
+            </Button>
+            {applicant.status === 'pending' && (
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => updateApplicationStatus(applicant.id, 'accepted')}
+                >
+                  Accept
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => updateApplicationStatus(applicant.id, 'rejected')}
+                >
+                  Reject
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4 md:p-6">
+        <Skeleton className="h-10 w-64 mb-4" />
+        <div className="grid gap-4">
+          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-48" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (opportunities.length === 0) {
+    return (
+      <div className="container mx-auto p-4 md:p-6">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Briefcase className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Opportunities Posted</h3>
+            <p className="text-muted-foreground mb-4">
+              Create your first opportunity to start receiving applications
+            </p>
+            <Button onClick={() => navigate('/discover')}>
+              Post Opportunity
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const selectedOpp = opportunities.find(o => o.id === selectedOppId);
+
+  return (
+    <div className="container mx-auto p-4 md:p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Opportunity Dashboard</h1>
+          <p className="text-muted-foreground">
+            Review and manage applications to your opportunities
+          </p>
+        </div>
+        <Button onClick={() => navigate('/discover')} variant="outline">
+          <Briefcase className="w-4 h-4 mr-2" />
+          Post New
+        </Button>
+      </div>
+
+      <div className="mb-6">
+        <Select value={selectedOppId || undefined} onValueChange={setSelectedOppId}>
+          <SelectTrigger className="w-full md:w-96">
+            <SelectValue placeholder="Select opportunity" />
+          </SelectTrigger>
+          <SelectContent>
+            {opportunities.map(opp => (
+              <SelectItem key={opp.id} value={opp.id}>
+                {opp.title} ({opp.applications_count} applications)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {selectedOpp && (
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">{selectedOpp.title}</h2>
+            <p className="text-sm text-muted-foreground">
+              {applicants.length} total applications
+            </p>
+          </div>
+          <Button
+            onClick={analyzeWithAI}
+            disabled={analyzingAI || applicants.length === 0}
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {analyzingAI ? 'Analyzing...' : 'AI Match Score'}
+          </Button>
+        </div>
+      )}
+
+      <Tabs defaultValue="all">
+        <TabsList>
+          <TabsTrigger value="all">All ({applicants.length})</TabsTrigger>
+          <TabsTrigger value="pending">
+            Pending ({applicants.filter(a => a.status === 'pending').length})
+          </TabsTrigger>
+          <TabsTrigger value="accepted">
+            Accepted ({applicants.filter(a => a.status === 'accepted').length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="mt-6">
+          <div className="grid gap-4">
+            {applicants.map(renderApplicantCard)}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="pending" className="mt-6">
+          <div className="grid gap-4">
+            {applicants.filter(a => a.status === 'pending').map(renderApplicantCard)}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="accepted" className="mt-6">
+          <div className="grid gap-4">
+            {applicants.filter(a => a.status === 'accepted').map(renderApplicantCard)}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default OpportunityDashboard;

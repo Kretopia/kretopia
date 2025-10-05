@@ -604,16 +604,18 @@ const Profile = () => {
                       </p>
                     </div>
                   )}
-                  {sectionOrder.map((sectionId) => {
+                  
+                  {/* Bio section - always first */}
+                  <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
+                    <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">Bio</h3>
+                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                      {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
+                    </p>
+                  </div>
+                  
+                  {/* Other sections - sortable */}
+                  {sectionOrder.filter(id => id !== 'bio').map((sectionId) => {
                     const sections: Record<string, React.ReactNode> = {
-                      bio: (
-                        <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-                          <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">About</h3>
-                          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                            {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
-                          </p>
-                        </div>
-                      ),
                       social_stats: (
                         <SocialStatsSection
                           youtubeSubscribers={profile.youtube_subscribers}

@@ -728,9 +728,9 @@ const Circle = () => {
                           Accept Request
                         </Button>
                       ) : (
-                        <Button size="sm" onClick={() => handleConnect(profile)} className="w-full gap-2">
-                          <UserPlus className="h-4 w-4" />
-                          Connect
+                        <Button size="sm" onClick={() => navigate(`/profile/${profile.user_id}`)} variant="outline" className="w-full gap-2">
+                          <ExternalLink className="h-4 w-4" />
+                          View Profile
                         </Button>
                       )}
                     </Card>

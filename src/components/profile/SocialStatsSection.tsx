@@ -74,7 +74,7 @@ export const SocialStatsSection = ({
   return (
     <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg md:text-xl font-semibold">Social Reach</h3>
+        <h3 className="text-lg md:text-xl font-semibold">Social</h3>
         {verifiedMetrics && (
           <Badge variant="secondary" className="text-xs">
             ✓ Verified

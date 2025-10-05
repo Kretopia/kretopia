@@ -12,16 +12,16 @@ import {
   Sparkles, 
   TrendingUp,
   Clock,
-  Target,
-  Copy,
   CheckCircle2,
   UserPlus,
   Search,
-  MapPin
+  MapPin,
+  Share2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
+import { InviteDialog } from "@/components/InviteDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PortfolioItemCard } from "@/components/feed/PortfolioItemCard";
 import { AwardActivityCard } from "@/components/feed/AwardActivityCard";
@@ -55,8 +55,7 @@ const Circle = () => {
   const [selectedConnection, setSelectedConnection] = useState<{ id: string; name: string; avatar?: string } | null>(null);
   const [activeTab, setActiveTab] = useState("activity");
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
-  const [inviteCodes, setInviteCodes] = useState<any[]>([]);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [discoverProfiles, setDiscoverProfiles] = useState<any[]>([]);
   const [discoverLoading, setDiscoverLoading] = useState(false);
@@ -68,7 +67,6 @@ const Circle = () => {
     fetchConnections();
     fetchPendingRequests();
     fetchActivityFeed();
-    fetchInviteCodes();
     
     // Set up real-time presence
     const channel = supabase.channel('circle-presence');
@@ -434,21 +432,6 @@ const Circle = () => {
     }
   };
 
-  const fetchInviteCodes = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from('invites')
-      .select('*')
-      .eq('inviter_id', user.id)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    setInviteCodes(data || []);
-  };
-
   const handleAcceptConnection = async (connectionId: string) => {
     const { error } = await supabase
       .from('connections')
@@ -459,31 +442,6 @@ const Circle = () => {
       toast({ title: "Connection accepted! 🎉" });
       fetchPendingRequests();
       fetchConnections();
-    }
-  };
-
-  const copyInviteCode = async (code: string) => {
-    try {
-      const inviteUrl = `https://www.thrivein.io/auth?invite=${code}`;
-      const inviteMessage = `🎨 Join my circle on ThriveIN!
-
-Connect with creatives and content creators, discover exciting opportunities, and collaborate on projects together.
-
-${inviteUrl}`;
-      
-      await navigator.clipboard.writeText(inviteMessage);
-      setCopiedCode(code);
-      toast({
-        title: "Copied!",
-        description: "Invite link copied to clipboard"
-      });
-      setTimeout(() => setCopiedCode(null), 2000);
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to copy invite link",
-        variant: "destructive"
-      });
     }
   };
 
@@ -523,6 +481,14 @@ ${inviteUrl}`;
               <h1 className="text-2xl lg:text-3xl font-bold">My Circle</h1>
               <p className="text-sm text-muted-foreground">Your creative network hub</p>
             </div>
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => setShowInviteDialog(true)}
+            >
+              <Share2 className="h-4 w-4" />
+              Invite
+            </Button>
           </div>
 
           {/* Stats Bar */}
@@ -592,13 +558,12 @@ ${inviteUrl}`;
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="connect">Connect</TabsTrigger>
-          <TabsTrigger value="connections">Connections</TabsTrigger>
-          <TabsTrigger value="invite">Invite</TabsTrigger>
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 h-12">
+            <TabsTrigger value="activity" className="text-base">Activity</TabsTrigger>
+            <TabsTrigger value="connect" className="text-base">Connect</TabsTrigger>
+            <TabsTrigger value="connections" className="text-base">Connections</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="activity" className="space-y-4">
             <div className="mb-4">
@@ -754,55 +719,6 @@ ${inviteUrl}`;
               </div>
             </ScrollArea>
           </TabsContent>
-
-          <TabsContent value="invite" className="space-y-4">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold">Invite Codes</h2>
-              <p className="text-sm text-muted-foreground">Share these codes to invite people to ThriveIN</p>
-            </div>
-
-            <div className="grid gap-4">
-              {inviteCodes.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <Target className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-muted-foreground">No invite codes available</p>
-                </Card>
-              ) : (
-                inviteCodes.map((invite) => (
-                  <Card key={invite.id} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <code className="text-lg font-mono font-semibold bg-secondary px-3 py-1 rounded">
-                            {invite.invite_code}
-                          </code>
-                          <Badge variant="outline">
-                            {invite.current_uses}/{invite.max_uses} used
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Created {new Date(invite.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyInviteCode(invite.invite_code)}
-                        className="gap-2"
-                      >
-                        {copiedCode === invite.invite_code ? (
-                          <CheckCircle2 className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                        {copiedCode === invite.invite_code ? 'Copied!' : 'Copy'}
-                      </Button>
-                    </div>
-                  </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
         </Tabs>
       </div>
 
@@ -815,6 +731,11 @@ ${inviteUrl}`;
           recipientAvatar={selectedConnection.avatar}
         />
       )}
+
+      <InviteDialog 
+        open={showInviteDialog} 
+        onOpenChange={setShowInviteDialog}
+      />
     </div>
   );
 };

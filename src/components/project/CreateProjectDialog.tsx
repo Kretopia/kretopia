@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Plus, UserPlus, Loader2 } from "lucide-react";
+import { Plus, UserPlus, Loader2, Users, Mail } from "lucide-react";
 import { z } from "zod";
 
 const projectSchema = z.object({
@@ -31,6 +33,74 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
     description: "",
     inviteEmail: "",
   });
+  const [connectedUsers, setConnectedUsers] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showInviteDropdown, setShowInviteDropdown] = useState(false);
+
+  // Filter connected users based on search
+  const filteredConnections = connectedUsers.filter((user) =>
+    user.full_name.toLowerCase().includes(formData.inviteEmail.toLowerCase()) ||
+    user.role?.toLowerCase().includes(formData.inviteEmail.toLowerCase())
+  );
+
+  // Check if input looks like an email
+  const isEmailFormat = formData.inviteEmail.includes("@") && formData.inviteEmail.includes(".");
+
+  // Load connected users when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadConnectedUsers();
+    } else {
+      // Reset state when dialog closes
+      setFormData({ title: "", description: "", inviteEmail: "" });
+      setSelectedUser(null);
+      setShowInviteDropdown(false);
+    }
+  }, [open]);
+
+  const loadConnectedUsers = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get all accepted connections
+      const { data: outgoing } = await supabase
+        .from("connections")
+        .select("connected_user_id")
+        .eq("user_id", user.id)
+        .eq("status", "accepted");
+
+      const { data: incoming } = await supabase
+        .from("connections")
+        .select("user_id")
+        .eq("connected_user_id", user.id)
+        .eq("status", "accepted");
+
+      const { data: matches } = await supabase
+        .from("matches")
+        .select("user1_id, user2_id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        .eq("status", "active");
+
+      const connectedIds = new Set<string>();
+      outgoing?.forEach((c) => connectedIds.add(c.connected_user_id));
+      incoming?.forEach((c) => connectedIds.add(c.user_id));
+      matches?.forEach((m) => {
+        connectedIds.add(m.user1_id === user.id ? m.user2_id : m.user1_id);
+      });
+
+      if (connectedIds.size > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, avatar_url, role")
+          .in("user_id", Array.from(connectedIds));
+
+        setConnectedUsers(profiles || []);
+      }
+    } catch (error) {
+      console.error("Error loading connected users:", error);
+    }
+  };
 
   const handleCreate = async () => {
     try {
@@ -85,13 +155,39 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
 
       if (projectError) throw projectError;
 
-      // Send invite if email provided
-      if (validationResult.data.inviteEmail) {
+      // Send invite if user selected or email provided
+      if (selectedUser) {
+        // Invite by user_id (from circle)
         const { error: inviteError } = await supabase
           .from('project_collaborators')
           .insert({
             project_id: project.id,
-            email: validationResult.data.inviteEmail,
+            user_id: selectedUser.user_id,
+            email: `user-${selectedUser.user_id}@platform.invite`, // Placeholder for direct user invites
+            invited_by: user.id,
+            role: 'member',
+            status: 'pending',
+          });
+
+        if (inviteError) {
+          console.error('Failed to send invite:', inviteError);
+          toast({
+            title: "Project created!",
+            description: "But failed to send invitation. You can invite them later.",
+          });
+        } else {
+          toast({
+            title: "Project created! 🎉",
+            description: `Invitation sent to ${selectedUser.full_name}`,
+          });
+        }
+      } else if (validationResult.data.inviteEmail) {
+        // Invite by email
+        const { error: inviteError } = await supabase
+          .from('project_collaborators')
+          .insert({
+            project_id: project.id,
+            email: validationResult.data.inviteEmail.toLowerCase(),
             invited_by: user.id,
             role: 'member',
             status: 'pending',
@@ -118,6 +214,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
 
       // Reset form and close dialog FIRST
       setFormData({ title: "", description: "", inviteEmail: "" });
+      setSelectedUser(null);
+      setShowInviteDropdown(false);
       onSuccess();
       onOpenChange(false);
       
@@ -184,16 +282,114 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
               <UserPlus className="h-4 w-4" />
               Invite Team Member <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
-            <Input
-              id="inviteEmail"
-              type="email"
-              placeholder="colleague@example.com"
-              value={formData.inviteEmail}
-              onChange={(e) => setFormData({ ...formData, inviteEmail: e.target.value })}
-              className="h-12 text-base"
-            />
+            
+            {selectedUser ? (
+              <div className="flex items-center gap-3 p-3 border-2 border-primary rounded-lg bg-primary/5">
+                <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                  <AvatarImage src={selectedUser.avatar_url} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground">
+                    {selectedUser.full_name?.[0] || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{selectedUser.full_name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedUser.role}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setFormData({ ...formData, inviteEmail: "" });
+                  }}
+                >
+                  Change
+                </Button>
+              </div>
+            ) : (
+              <div className="relative">
+                <Input
+                  id="inviteEmail"
+                  placeholder="Search your circle or enter email..."
+                  value={formData.inviteEmail}
+                  onChange={(e) => {
+                    setFormData({ ...formData, inviteEmail: e.target.value });
+                    setShowInviteDropdown(true);
+                  }}
+                  onFocus={() => setShowInviteDropdown(true)}
+                  className="h-12 text-base"
+                />
+                
+                {showInviteDropdown && formData.inviteEmail && (
+                  <div className="absolute z-50 w-full mt-1 bg-popover border rounded-lg shadow-lg">
+                    <ScrollArea className="max-h-[250px]">
+                      {/* Show filtered circle connections */}
+                      {filteredConnections.length > 0 && (
+                        <div className="p-2 space-y-1">
+                          <div className="px-2 py-1 flex items-center gap-2">
+                            <Users className="h-3 w-3 text-primary" />
+                            <span className="text-xs font-medium text-muted-foreground">
+                              From Your Circle
+                            </span>
+                          </div>
+                          {filteredConnections.map((user) => (
+                            <button
+                              key={user.user_id}
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setFormData({ ...formData, inviteEmail: user.full_name });
+                                setShowInviteDropdown(false);
+                              }}
+                              className="w-full flex items-center gap-3 p-2 hover:bg-accent rounded-lg transition-colors text-left"
+                            >
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={user.avatar_url} />
+                                <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground text-xs">
+                                  {user.full_name?.[0] || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate">{user.full_name}</p>
+                                <p className="text-xs text-muted-foreground truncate">{user.role}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Show email invite option if email format detected */}
+                      {isEmailFormat && filteredConnections.length === 0 && (
+                        <div className="p-3 space-y-2">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Mail className="h-4 w-4" />
+                            <span className="text-xs">Invite by email</span>
+                          </div>
+                          <button
+                            onClick={() => setShowInviteDropdown(false)}
+                            className="w-full flex items-center gap-3 p-2 border-2 border-dashed rounded-lg hover:bg-accent transition-colors text-left"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{formData.inviteEmail}</p>
+                              <p className="text-xs text-muted-foreground">Send invitation email</p>
+                            </div>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* No matches */}
+                      {formData.inviteEmail && filteredConnections.length === 0 && !isEmailFormat && (
+                        <div className="p-4 text-center text-sm text-muted-foreground">
+                          No matches found. Enter an email to invite them.
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
+                )}
+              </div>
+            )}
+            
             <p className="text-xs text-muted-foreground">
-              Invite a client or collaborator. They'll get an email to join this project.
+              Search your connections or invite by email
             </p>
           </div>
 

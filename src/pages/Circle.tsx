@@ -497,12 +497,15 @@ const Circle = () => {
 
       toast({ title: "Connection accepted! 🎉" });
       
-      // Refresh all connection data
+      // Refresh all connection data and switch to Circle tab to show the new connection
       await Promise.all([
         fetchPendingRequests(),
         fetchConnections(),
         fetchDiscoverProfiles()
       ]);
+      
+      // Switch to Circle tab to see the accepted connection
+      setActiveTab('connections');
     } catch (error) {
       console.error('Error accepting connection:', error);
       toast({ 
@@ -630,7 +633,7 @@ const Circle = () => {
           <TabsList className="grid w-full grid-cols-3 h-12">
             <TabsTrigger value="activity" className="text-base">Activity</TabsTrigger>
             <TabsTrigger value="connect" className="text-base">Connect</TabsTrigger>
-            <TabsTrigger value="connections" className="text-base">Connections</TabsTrigger>
+            <TabsTrigger value="connections" className="text-base">Circle</TabsTrigger>
           </TabsList>
 
           <TabsContent value="activity" className="space-y-4">

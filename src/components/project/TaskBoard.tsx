@@ -10,7 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, GripVertical, Calendar, User, CheckSquare } from "lucide-react";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
+import { 
+  DndContext, 
+  closestCenter, 
+  KeyboardSensor, 
+  PointerSensor, 
+  TouchSensor,
+  useSensor, 
+  useSensors, 
+  DragEndEvent, 
+  DragOverlay,
+  useDroppable 
+} from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -71,9 +82,11 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className="p-2 md:p-3 mb-1.5 md:mb-2 hover:shadow-md transition-smooth cursor-move border-l-2 md:border-l-4 border-l-primary/20">
+      <Card className={`p-2 md:p-3 mb-1.5 md:mb-2 hover:shadow-md transition-smooth border-l-2 md:border-l-4 border-l-primary/20 ${
+        isDragging ? 'opacity-40 shadow-lg scale-105' : 'cursor-grab active:cursor-grabbing'
+      }`}>
         <div className="flex items-start gap-1.5 md:gap-2">
-          <div {...attributes} {...listeners} className="mt-0.5">
+          <div {...attributes} {...listeners} className="mt-0.5 touch-none">
             <GripVertical className="h-3 w-3 md:h-3.5 md:w-3.5 text-muted-foreground" />
           </div>
           <div className="flex-1 space-y-1">
@@ -136,10 +149,15 @@ function SortableTask({ task, onUpdate }: { task: Task; onUpdate: () => void }) 
 }
 
 function DroppableColumn({ status, tasks, onUpdate }: { status: typeof STATUSES[0], tasks: Task[], onUpdate: () => void }) {
-  const { setNodeRef } = useDroppable({ id: status.value });
+  const { setNodeRef, isOver } = useDroppable({ id: status.value });
 
   return (
-    <div ref={setNodeRef} className={`rounded-lg md:rounded-xl p-2 md:p-3 ${status.color} min-h-[150px] md:min-h-[180px] xl:min-h-[400px] border border-border/50`}>
+    <div 
+      ref={setNodeRef} 
+      className={`rounded-lg md:rounded-xl p-2 md:p-3 ${status.color} min-h-[150px] md:min-h-[180px] xl:min-h-[400px] border transition-all ${
+        isOver ? 'border-primary border-2 ring-2 ring-primary/20' : 'border-border/50'
+      }`}
+    >
       <div className="mb-2 md:mb-2.5 flex items-center justify-between">
         <h4 className="font-semibold text-[10px] md:text-xs">{status.label}</h4>
         <Badge variant="secondary" className="text-[9px] md:text-xs h-4 md:h-5 min-w-[20px] md:min-w-[24px] justify-center px-1 md:px-1.5">{tasks.length}</Badge>
@@ -172,7 +190,17 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
   const { toast } = useToast();
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms press required
+        tolerance: 5, // 5px movement tolerance
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })

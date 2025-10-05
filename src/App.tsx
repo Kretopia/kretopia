@@ -99,7 +99,7 @@ const AppContent = () => {
   const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk/');
   
   return (
-    <>
+    <div className="h-full overflow-auto">
       <PageViewTracker />
       <Navbar user={user} />
       {user && <BottomNav />}
@@ -143,7 +143,7 @@ const AppContent = () => {
           </Routes>
         </Suspense>
       </div>
-    </>
+    </div>
   );
 };
 

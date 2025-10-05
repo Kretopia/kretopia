@@ -245,13 +245,20 @@ const ThriveDesk = () => {
       if (messagesData) setMessages(messagesData);
 
       // Fetch tasks
-      const { data: tasksData } = await supabase
+      const { data: tasksData, error: tasksError } = await supabase
         .from('project_tasks')
         .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
-      if (tasksData) setTasks(tasksData);
+      if (tasksError) {
+        console.error('Error fetching tasks:', tasksError);
+        toast({ title: "Error loading tasks", description: tasksError.message, variant: "destructive" });
+      }
+      if (tasksData) {
+        console.log('Fetched tasks:', tasksData);
+        setTasks(tasksData);
+      }
 
       // Fetch milestones
       const { data: milestonesData } = await supabase

@@ -20,8 +20,6 @@ import {
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
@@ -104,24 +102,6 @@ const Auth = () => {
     const emailValidation = validateEmail(email);
     const passwordValidation = validatePassword(password);
     
-    if (!fullName.trim() || fullName.length < 2) {
-      toast({
-        title: "Validation Error",
-        description: "Name must be at least 2 characters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!role.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter your role",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!inviteCode.trim()) {
       setInviteError("Invite code is required");
       toast({
@@ -169,8 +149,6 @@ const Auth = () => {
       options: {
         emailRedirectTo: `${window.location.origin}${redirectTo}`,
         data: {
-          full_name: fullName.trim(),
-          role: role.trim(),
           invite_code: inviteCode.trim(),
         },
       },
@@ -366,31 +344,6 @@ const Auth = () => {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="signup-name">Full Name</Label>
-                <Input
-                  id="signup-name"
-                  type="text"
-                  placeholder="John Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  minLength={2}
-                  maxLength={100}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-role">Your Role</Label>
-                <Input
-                  id="signup-role"
-                  type="text"
-                  placeholder="Musician, Designer, Filmmaker..."
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  required
-                  maxLength={100}
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
                 <Input

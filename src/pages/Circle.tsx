@@ -6,18 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { 
-  Users, 
-  MessageCircle, 
-  Sparkles, 
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  UserPlus,
-  Search,
-  MapPin,
-  Share2
-} from "lucide-react";
+import { Search, Users, MessageCircle, Calendar, Trash2, UserX, MoreVertical, ExternalLink, Mail, Sparkles, ArrowRight, Share2, TrendingUp, UserPlus, MapPin, Clock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
@@ -771,11 +760,30 @@ const Circle = () => {
             <ScrollArea className="h-[600px]">
               <div className="grid gap-4 md:grid-cols-2">
                 {filteredConnections.length === 0 ? (
-                  <Card className="p-8 text-center col-span-2">
-                    <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-muted-foreground">No connections yet</p>
-                    <p className="text-sm text-muted-foreground mt-1">Start connecting with creators</p>
-                  </Card>
+                  <div className="col-span-2 text-center py-16">
+                    <div className="mb-6 mx-auto w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="h-12 w-12 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">
+                      {searchQuery ? "No matching connections" : "No Connections Yet"}
+                    </h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      {searchQuery 
+                        ? "Try adjusting your search or browse all connections"
+                        : "Your circle is where your collaborators live. Start discovering creators to build your network!"}
+                    </p>
+                    {!searchQuery && (
+                      <div className="flex gap-3 justify-center">
+                        <Button onClick={() => setActiveTab("connect")} size="lg" className="gap-2">
+                          <Sparkles className="h-4 w-4" />
+                          Discover Creators
+                        </Button>
+                        <Button onClick={() => navigate("/discover")} variant="outline" size="lg">
+                          Browse All
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   filteredConnections.map((connection) => (
                     <ConnectionCard

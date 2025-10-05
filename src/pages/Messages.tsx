@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Info, Trash2, Archive } from "lucide-react";
+import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Info, Trash2, Archive, MessageCircle, ArrowRight } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -342,15 +342,26 @@ const Messages = () => {
           )}
           
           {filteredConversations.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              <p className="text-lg mb-2">
-                {activeTab === "primary" ? "No messages yet" : "No requests"}
+            <div className="p-8 text-center">
+              <div className="mb-4 mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <MessageCircle className="h-8 w-8 text-primary" />
+              </div>
+              <p className="text-lg font-semibold mb-2">
+                {searchQuery ? "No messages found" : activeTab === "primary" ? "No messages yet" : "No requests"}
               </p>
-              <p className="text-sm">
-                {activeTab === "primary" 
-                  ? "Connect with creators to start messaging!"
-                  : "Message requests will appear here"}
+              <p className="text-sm text-muted-foreground mb-4">
+                {searchQuery 
+                  ? "Try adjusting your search"
+                  : activeTab === "primary" 
+                  ? "Start by discovering and connecting with other creators!"
+                  : "Message requests from non-connections will appear here"}
               </p>
+              {!searchQuery && activeTab === "primary" && (
+                <Button onClick={() => navigate("/discover")} size="sm" className="gap-2">
+                  Discover Creators
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           ) : (
             <div className="divide-y divide-border">

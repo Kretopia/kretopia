@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Target, Flame } from "lucide-react";
+import { Target, Users, MessageCircle, Briefcase, Check, Flame, CheckCircle2, Circle } from "lucide-react";
+import { TooltipHint } from "@/components/ui/tooltip-hint";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -130,6 +131,7 @@ export function DailyGoals() {
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" />
             Daily Goals
+            <TooltipHint content="Complete daily goals to earn XP and maintain your streak. Goals reset every day at midnight!" />
           </h3>
           <p className="text-sm text-muted-foreground">
             {completedGoals}/{goals.length} completed • {totalXP} XP earned

@@ -4,6 +4,7 @@ import { Flame, Snowflake, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
+import { TooltipHint } from "@/components/ui/tooltip-hint";
 
 interface StreakCardProps {
   streakCount: number;
@@ -73,7 +74,10 @@ export function StreakCard({ streakCount, longestStreak, freezeCount, onUpdate }
             <Flame className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold">{streakCount} Day Streak</h3>
+            <h3 className="text-2xl font-bold flex items-center gap-2">
+              {streakCount} Day Streak
+              <TooltipHint content="Log in daily to maintain your streak! Use a streak freeze to protect your progress if you miss a day. Earn freezes through achievements and milestones." />
+            </h3>
             <p className="text-sm text-muted-foreground">
               Keep it going! 🔥
             </p>

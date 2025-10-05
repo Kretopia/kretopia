@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Wallet, Plus, ArrowUpRight, ArrowDownRight, Loader2, ExternalLink } from "lucide-react";
+import { TooltipHint } from "@/components/ui/tooltip-hint";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -110,6 +111,7 @@ export const WalletCard = () => {
         <CardTitle className="flex items-center gap-2">
           <Wallet className="h-5 w-5" />
           Wallet
+          <TooltipHint content="Credits are used for premium features like undoing swipes. Cash can be used for ThrivePay transactions and collaborations." />
         </CardTitle>
         <div className="flex gap-2">
           <Button size="sm" variant="ghost" onClick={() => navigate('/thrivepay')}>

@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, ArrowLeft, Search } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Info } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Card } from "@/components/ui/card";
 
 interface Conversation {
   conversation_id: string;
@@ -22,6 +24,7 @@ interface Conversation {
   sender_avatar: string;
   receiver_name: string;
   receiver_avatar: string;
+  match_id: string | null;
 }
 
 interface Message {
@@ -31,6 +34,12 @@ interface Message {
   content: string;
   created_at: string;
   read: boolean;
+  match_id: string | null;
+}
+
+interface Connection {
+  id: string;
+  status: string;
 }
 
 const Messages = () => {
@@ -45,10 +54,13 @@ const Messages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("primary");
+  const [connections, setConnections] = useState<Set<string>>(new Set());
   const [otherUser, setOtherUser] = useState<{
     id: string;
     name: string;
     avatar: string;
+    role?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -57,6 +69,7 @@ const Messages = () => {
 
   useEffect(() => {
     if (currentUserId) {
+      fetchConnections();
       fetchConversations();
       subscribeToMessages();
     }
@@ -74,6 +87,29 @@ const Messages = () => {
     if (user) {
       setCurrentUserId(user.id);
     }
+  };
+
+  const fetchConnections = async () => {
+    // Fetch accepted connections and matches
+    const { data: connectionsData } = await supabase
+      .from("connections")
+      .select("connected_user_id")
+      .eq("user_id", currentUserId)
+      .eq("status", "accepted");
+
+    const { data: matches } = await supabase
+      .from("matches")
+      .select("user1_id, user2_id")
+      .or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`)
+      .eq("status", "active");
+
+    const connectedIds = new Set<string>();
+    connectionsData?.forEach((c) => connectedIds.add(c.connected_user_id));
+    matches?.forEach((m) => {
+      connectedIds.add(m.user1_id === currentUserId ? m.user2_id : m.user1_id);
+    });
+
+    setConnections(connectedIds);
   };
 
   const fetchConversations = async () => {
@@ -110,7 +146,7 @@ const Messages = () => {
     // Fetch other user's profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name, avatar_url")
+      .select("full_name, avatar_url, role")
       .eq("user_id", userId)
       .single();
 
@@ -119,6 +155,7 @@ const Messages = () => {
         id: userId,
         name: profile.full_name,
         avatar: profile.avatar_url,
+        role: profile.role,
       });
     }
   };
@@ -217,91 +254,177 @@ const Messages = () => {
     ).length;
   };
 
+  const isConnectionAccepted = (userId: string) => connections.has(userId);
+
   const filteredConversations = conversations.filter((conv) => {
     const partner = getConversationPartner(conv);
-    return partner.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = partner.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const isConnected = isConnectionAccepted(partner.id);
+    
+    if (activeTab === "primary") {
+      return matchesSearch && isConnected;
+    } else {
+      return matchesSearch && !isConnected;
+    }
   });
 
+  const primaryCount = conversations.filter(c => 
+    isConnectionAccepted(getConversationPartner(c).id)
+  ).length;
+
+  const requestsCount = conversations.filter(c => 
+    !isConnectionAccepted(getConversationPartner(c).id)
+  ).length;
+
   return (
-    <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto border border-border rounded-lg overflow-hidden bg-card">
+    <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto overflow-hidden">
       {/* Conversations List */}
       <div
         className={`${
           selectedConversation ? "hidden md:flex" : "flex"
-        } w-full md:w-80 flex-col border-r border-border`}
+        } w-full md:w-96 flex-col border-r border-border bg-card`}
       >
-        <div className="p-4 border-b border-border">
-          <h2 className="text-xl font-bold mb-3">Messages</h2>
+        <div className="p-4 border-b border-border space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Messages</h2>
+            <Button variant="ghost" size="icon">
+              <MoreVertical className="h-5 w-5" />
+            </Button>
+          </div>
+          
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search conversations..."
+              placeholder="Search messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 rounded-full"
             />
           </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="primary" className="relative">
+                Primary
+                {primaryCount > 0 && (
+                  <Badge variant="secondary" className="ml-2 h-5 min-w-5 px-1.5">
+                    {primaryCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="relative">
+                Requests
+                {requestsCount > 0 && (
+                  <Badge variant="secondary" className="ml-2 h-5 min-w-5 px-1.5">
+                    {requestsCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         <ScrollArea className="flex-1">
+          {activeTab === "requests" && requestsCount > 0 && (
+            <div className="p-4 bg-accent/50 border-b border-border">
+              <div className="flex gap-2 text-sm text-muted-foreground">
+                <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <p>Message requests from people you haven't connected with yet.</p>
+              </div>
+            </div>
+          )}
+          
           {filteredConversations.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              <p>No conversations yet</p>
-              <p className="text-sm mt-2">
-                Start matching with creators to begin messaging!
+              <p className="text-lg mb-2">
+                {activeTab === "primary" ? "No messages yet" : "No requests"}
+              </p>
+              <p className="text-sm">
+                {activeTab === "primary" 
+                  ? "Connect with creators to start messaging!"
+                  : "Message requests will appear here"}
               </p>
             </div>
           ) : (
-            filteredConversations.map((conv) => {
-              const partner = getConversationPartner(conv);
-              const unreadCount = getUnreadCount(partner.id);
-              return (
-                <div
-                  key={conv.conversation_id}
-                  onClick={() => setSelectedConversation(partner.id)}
-                  className={`flex items-start gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
-                    selectedConversation === partner.id ? "bg-muted" : ""
-                  }`}
-                >
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={partner.avatar} />
-                    <AvatarFallback>
-                      {partner.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="font-semibold truncate">{partner.name}</p>
+            <div className="divide-y divide-border">
+              {filteredConversations.map((conv) => {
+                const partner = getConversationPartner(conv);
+                const unreadCount = getUnreadCount(partner.id);
+                const isRequest = activeTab === "requests";
+                
+                return (
+                  <div
+                    key={conv.conversation_id}
+                    onClick={() => setSelectedConversation(partner.id)}
+                    className={`flex items-start gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors ${
+                      selectedConversation === partner.id ? "bg-accent" : ""
+                    }`}
+                  >
+                    <div className="relative">
+                      <Avatar className="h-14 w-14 border-2 border-background">
+                        <AvatarImage src={partner.avatar} />
+                        <AvatarFallback className="text-lg">
+                          {partner.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
                       {unreadCount > 0 && (
-                        <Badge variant="default" className="ml-2">
-                          {unreadCount}
-                        </Badge>
+                        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                          <span className="text-xs font-bold text-primary-foreground">
+                            {unreadCount}
+                          </span>
+                        </div>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {conv.content}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(conv.created_at), {
-                        addSuffix: true,
-                      })}
-                    </p>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <p className="font-semibold truncate">{partner.name}</p>
+                        <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                          {formatDistanceToNow(new Date(conv.created_at), {
+                            addSuffix: true,
+                          }).replace('about ', '')}
+                        </span>
+                      </div>
+                      
+                      <p className={`text-sm truncate ${
+                        unreadCount > 0 ? "font-medium text-foreground" : "text-muted-foreground"
+                      }`}>
+                        {conv.sender_id === currentUserId ? (
+                          <span className="inline-flex items-center gap-1">
+                            {conv.read ? (
+                              <CheckCheck className="h-3 w-3 text-primary" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )}
+                            {conv.content}
+                          </span>
+                        ) : (
+                          conv.content
+                        )}
+                      </p>
+                      
+                      {isRequest && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Message request
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
         </ScrollArea>
       </div>
 
       {/* Chat Area */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-background">
           {/* Chat Header */}
-          <div className="p-4 border-b border-border flex items-center gap-3">
+          <div className="p-4 border-b border-border flex items-center gap-3 bg-card">
             <Button
               variant="ghost"
               size="icon"
@@ -313,65 +436,132 @@ const Messages = () => {
             {otherUser && (
               <>
                 <Avatar
-                  className="h-10 w-10 cursor-pointer"
+                  className="h-11 w-11 cursor-pointer border-2 border-background"
                   onClick={() => navigate(`/profile/${otherUser.id}`)}
                 >
                   <AvatarImage src={otherUser.avatar} />
-                  <AvatarFallback>
+                  <AvatarFallback className="text-lg">
                     {otherUser.name
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <h3
-                    className="font-semibold cursor-pointer hover:underline"
-                    onClick={() => navigate(`/profile/${otherUser.id}`)}
-                  >
+                <div className="flex-1 cursor-pointer" onClick={() => navigate(`/profile/${otherUser.id}`)}>
+                  <h3 className="font-semibold hover:underline">
                     {otherUser.name}
                   </h3>
+                  {otherUser.role && (
+                    <p className="text-sm text-muted-foreground">{otherUser.role}</p>
+                  )}
                 </div>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
               </>
             )}
           </div>
 
+          {/* Connection Request Banner */}
+          {otherUser && !isConnectionAccepted(otherUser.id) && (
+            <Card className="m-4 p-4 bg-accent/50 border-accent">
+              <div className="flex items-start gap-3">
+                <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1 space-y-2">
+                  <p className="text-sm font-medium">Message Request</p>
+                  <p className="text-sm text-muted-foreground">
+                    {otherUser.name} isn't in your connections yet. Be careful about what you share.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="default">Accept Request</Button>
+                    <Button size="sm" variant="outline">Delete</Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {/* Messages */}
           <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
-              {messages.map((msg) => {
-                const isOwn = msg.sender_id === currentUserId;
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+            <div className="space-y-3">
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                  <Avatar className="h-20 w-20 mb-4">
+                    <AvatarImage src={otherUser?.avatar} />
+                    <AvatarFallback className="text-2xl">
+                      {otherUser?.name.split(" ").map((n) => n[0]).join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <h3 className="text-lg font-semibold mb-1">{otherUser?.name}</h3>
+                  {otherUser?.role && (
+                    <p className="text-sm text-muted-foreground mb-4">{otherUser.role}</p>
+                  )}
+                  <Button
+                    onClick={() => navigate(`/profile/${otherUser?.id}`)}
+                    variant="outline"
+                    size="sm"
                   >
+                    View Profile
+                  </Button>
+                  <p className="text-sm text-muted-foreground mt-6">
+                    Send a message to start the conversation
+                  </p>
+                </div>
+              ) : (
+                messages.map((msg, index) => {
+                  const isOwn = msg.sender_id === currentUserId;
+                  const showAvatar = index === messages.length - 1 || 
+                    messages[index + 1]?.sender_id !== msg.sender_id;
+                  
+                  return (
                     <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                        isOwn
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      }`}
+                      key={msg.id}
+                      className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"}`}
                     >
-                      <p className="text-sm break-words">{msg.content}</p>
-                      <p
-                        className={`text-xs mt-1 ${
-                          isOwn ? "text-primary-foreground/70" : "text-muted-foreground"
-                        }`}
-                      >
-                        {formatDistanceToNow(new Date(msg.created_at), {
-                          addSuffix: true,
-                        })}
-                      </p>
+                      {!isOwn && showAvatar && (
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={otherUser?.avatar} />
+                          <AvatarFallback className="text-xs">
+                            {otherUser?.name.split(" ").map((n) => n[0]).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      {!isOwn && !showAvatar && <div className="w-8" />}
+                      
+                      <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
+                        <div
+                          className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                            isOwn
+                              ? "bg-primary text-primary-foreground rounded-br-sm"
+                              : "bg-muted rounded-bl-sm"
+                          }`}
+                        >
+                          <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
+                        </div>
+                        <div className="flex items-center gap-1 mt-1 px-1">
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(msg.created_at), {
+                              addSuffix: true,
+                            }).replace('about ', '')}
+                          </span>
+                          {isOwn && (
+                            msg.read ? (
+                              <CheckCheck className="h-3 w-3 text-primary" />
+                            ) : (
+                              <Check className="h-3 w-3 text-muted-foreground" />
+                            )
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </ScrollArea>
 
           {/* Message Input */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border bg-card">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -382,20 +572,27 @@ const Messages = () => {
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1"
+                placeholder="Message..."
+                className="flex-1 rounded-full"
+                disabled={otherUser && !isConnectionAccepted(otherUser.id)}
               />
-              <Button type="submit" size="icon" disabled={!newMessage.trim()}>
+              <Button 
+                type="submit" 
+                size="icon" 
+                disabled={!newMessage.trim() || (otherUser && !isConnectionAccepted(otherUser.id))}
+                className="rounded-full"
+              >
                 <Send className="h-4 w-4" />
               </Button>
             </form>
           </div>
         </div>
       ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground">
-          <div className="text-center">
-            <p className="text-lg font-medium mb-2">Select a conversation</p>
-            <p className="text-sm">Choose a conversation to start messaging</p>
+        <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground bg-background">
+          <div className="text-center space-y-2">
+            <div className="text-4xl mb-4">💬</div>
+            <p className="text-xl font-semibold">Your Messages</p>
+            <p className="text-sm">Send messages to creators you've connected with</p>
           </div>
         </div>
       )}

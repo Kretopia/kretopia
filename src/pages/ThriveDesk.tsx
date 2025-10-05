@@ -41,7 +41,8 @@ import {
   Clock,
   Users,
   Monitor,
-  Send
+  Send,
+  Search
 } from "lucide-react";
 
 const ThriveDesk = () => {
@@ -748,249 +749,264 @@ const ThriveDesk = () => {
   );
 
   const renderDesktopLayout = () => (
-    <ResizablePanelGroup direction="horizontal" className="h-screen">
-      <ResizablePanel defaultSize={70} minSize={55}>
-        <div className="flex flex-col h-full">
-          {/* Streamlined Header */}
-          <div className="border-b px-3 py-2 bg-background">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate('/projects')}>
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                </Button>
-                {isEditingProject ? (
-                  <Input
-                    value={editedProject?.title || ""}
-                    onChange={(e) => setEditedProject({ ...editedProject, title: e.target.value })}
-                    className="text-sm font-semibold h-7"
-                    placeholder="Project title"
-                  />
-                ) : (
-                  <div className="flex-1 min-w-0 flex items-center gap-2">
-                    <h1 className="text-sm font-semibold truncate">{project.title}</h1>
-                    <ProjectPresence projectId={projectId || ""} />
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <Badge variant="secondary" className="text-[10px] h-5 px-2">{project.status}</Badge>
-                <NotificationBell projectId={projectId || ''} />
-                <PostAsOpportunityDialog 
-                  projectId={projectId || ""}
-                  projectTitle={project.title}
-                  projectDescription={project.description}
-                />
-                <InvoiceGenerator 
-                  projectId={projectId || ''}
-                />
-                <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
-                <ProjectSettings 
-                  project={project} 
-                  onUpdate={fetchProjectData}
-                  userRole={userRole}
-                />
-              </div>
+    <div className="h-screen flex flex-col bg-background">
+      {/* Modern Header */}
+      <div className="border-b bg-card/50 backdrop-blur px-6 py-4 flex-shrink-0">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9 hover:bg-muted" 
+              onClick={() => navigate('/projects')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex-1 max-w-md">
+              <Input 
+                placeholder="Search..."
+                className="bg-muted/50 border-0 h-9"
+              />
             </div>
           </div>
-
-          {/* Streamlined Tabs */}
-          <Tabs defaultValue="messages" className="flex-1 flex flex-col overflow-hidden mt-0">
-            <div className="border-b px-2 bg-background">
-              <TabsList className="h-9 bg-transparent">
-                <TabsTrigger value="messages" className="gap-1 text-[11px] px-2.5 h-7">
-                  <Send className="h-3 w-3" />Messages
-                </TabsTrigger>
-                <TabsTrigger value="tasks" className="gap-1 text-[11px] px-2.5 h-7">
-                  <CheckSquare className="h-3 w-3" />Tasks
-                </TabsTrigger>
-                <TabsTrigger value="milestones" className="gap-1 text-[11px] px-2.5 h-7">
-                  <DollarSign className="h-3 w-3" />Milestones
-                </TabsTrigger>
-                <TabsTrigger value="files" className="gap-1 text-[11px] px-2.5 h-7">
-                  <FileText className="h-3 w-3" />Files
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="messages" className="flex-1 flex flex-col m-0 p-0 overflow-hidden">
-              <MessagePanel
-                messages={messages}
-                newMessage={newMessage}
-                setNewMessage={setNewMessage}
-                attachedFile={attachedFile}
-                setAttachedFile={setAttachedFile}
-                sendingMessage={sendingMessage}
-                onSendMessage={handleSendMessage}
-                onFileAttach={handleFileAttach}
-                messagesEndRef={messagesEndRef}
-                compact={true}
-              />
-            </TabsContent>
-
-            <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto">
-              <div className="p-2">
-                <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto">
-              <div className="p-2">
-                <MilestoneBoard 
-                  milestones={milestones} 
-                  projectId={projectId!} 
-                  onUpdate={fetchProjectData}
-                  userRole={userRole}
-                />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="files" className="flex-1 m-0 overflow-auto">
-              <ScrollArea className="h-full">
-                <div className="p-3">
-                  {files.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <FileText className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                      <p className="text-sm">No files yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {files.map((file) => (
-                        <Card key={file.id} className="p-3 hover:bg-accent/50 transition-colors">
-                          <div className="flex items-start gap-2">
-                            {isImageFile(file.file_type) ? (
-                              <ImageIcon className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                            ) : (
-                              <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <a href={file.file_url} target="_blank" rel="noopener noreferrer" 
-                                 className="font-medium text-xs hover:underline truncate block">
-                                {file.file_name}
-                              </a>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {file.profiles?.full_name} • {formatFileSize(file.file_size || 0)}
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <NotificationBell projectId={projectId || ''} />
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={userProfile?.avatar_url} />
+              <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                {userProfile?.full_name?.[0] || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
-      </ResizablePanel>
+      </div>
 
-      <ResizableHandle withHandle />
-
-      <ResizablePanel defaultSize={30} minSize={25}>
-        <div className="h-full overflow-auto">
-          <ScrollArea className="h-full">
-            <div className="p-3 space-y-3">
-              {/* Activity Timeline */}
-              <ActivityTimeline projectId={projectId!} />
-
-              {/* Pending Invitations */}
-              <PendingInvitations projectId={projectId} />
-
-              {/* Time Tracker */}
-              <TimeTracker projectId={projectId!} />
-
-              {/* AI Task Assistant */}
-              <AIAutomation 
-                projectId={projectId!}
-                projectTitle={project.title}
-                projectDescription={project.description}
-                onUpdate={fetchProjectData}
-              />
-
-              {/* Quick Tasks */}
-              <Card className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-semibold flex items-center gap-1.5">
-                    <CheckSquare className="h-3.5 w-3.5" />
-                    Quick Tasks
-                  </h3>
-                  <CreateTaskDialog projectId={projectId!} onSuccess={fetchProjectData} />
+      <ResizablePanelGroup direction="horizontal" className="flex-1">
+        <ResizablePanel defaultSize={70} minSize={50}>
+          <div className="flex flex-col h-full">
+            {/* Project Header */}
+            <div className="px-6 py-4 border-b">
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-2xl font-bold">{project.title}</h1>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    New
+                  </Button>
+                  <ProjectSettings 
+                    project={project} 
+                    onUpdate={fetchProjectData}
+                    userRole={userRole}
+                  />
                 </div>
-                {tasks.slice(0, 4).length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-2">No tasks yet</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {tasks.slice(0, 4).map((task) => (
-                      <TaskItem key={task.id} task={task} onUpdate={fetchProjectData} compact />
-                    ))}
-                  </div>
-                )}
-              </Card>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">{project.description || "Workspace for collaboration"}</p>
+              
+              <Tabs defaultValue="messages" className="w-full">
+                <TabsList className="bg-transparent border-b w-full justify-start rounded-none h-auto p-0 gap-6">
+                  <TabsTrigger 
+                    value="messages" 
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3"
+                  >
+                    Messages
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="tasks" 
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3"
+                  >
+                    Tasks
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="files" 
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3"
+                  >
+                    Files
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="board" 
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3"
+                  >
+                    Board
+                  </TabsTrigger>
+                </TabsList>
 
-              {/* Recent Files */}
-              <Card className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-semibold flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5" />
-                    Recent Files
-                  </h3>
-                  <FileUploadDialog projectId={projectId!} onSuccess={fetchProjectData} />
-                </div>
-                {files.slice(0, 3).length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-2">No files yet</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {files.slice(0, 3).map((file) => (
-                      <a key={file.id} href={file.file_url} target="_blank" rel="noopener noreferrer"
-                         className="flex items-center gap-2 p-1.5 rounded hover:bg-secondary/50 transition-colors">
-                        <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs truncate font-medium">{file.file_name}</p>
-                          <p className="text-xs text-muted-foreground">{formatFileSize(file.file_size || 0)}</p>
+                <div className="flex-1 overflow-hidden">
+                  <TabsContent value="messages" className="m-0 h-full">
+                    <MessagePanel
+                      messages={messages}
+                      newMessage={newMessage}
+                      setNewMessage={setNewMessage}
+                      attachedFile={attachedFile}
+                      setAttachedFile={setAttachedFile}
+                      sendingMessage={sendingMessage}
+                      onSendMessage={handleSendMessage}
+                      onFileAttach={handleFileAttach}
+                      messagesEndRef={messagesEndRef}
+                      compact={false}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="tasks" className="m-0 mt-4">
+                    <ScrollArea className="h-[calc(100vh-280px)]">
+                      <div className="px-6">
+                        <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
+
+                  <TabsContent value="files" className="m-0 mt-4">
+                    <ScrollArea className="h-[calc(100vh-280px)]">
+                      <div className="px-6 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold">Files</h3>
+                          <FileUploadDialog projectId={projectId} onSuccess={fetchProjectData} />
                         </div>
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </Card>
+                        {files.length === 0 ? (
+                          <div className="text-center py-12 text-muted-foreground">
+                            <FileText className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                            <p className="text-sm">No files yet</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {files.map((file) => (
+                              <Card key={file.id} className="p-4 hover:bg-muted/50 transition-colors border-muted">
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 rounded bg-muted">
+                                    {isImageFile(file.file_type) ? (
+                                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                    ) : (
+                                      <FileText className="h-5 w-5 text-muted-foreground" />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <a 
+                                      href={file.file_url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="font-medium text-sm hover:underline truncate block"
+                                    >
+                                      {file.file_name}
+                                    </a>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      {formatFileSize(file.file_size || 0)}
+                                    </p>
+                                  </div>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
 
-              {/* Project Details */}
-              {!isEditingProject && (
-                <Card className="p-3">
-                  <h3 className="text-xs font-semibold mb-2 flex items-center gap-1.5">
-                    <Monitor className="h-3.5 w-3.5" />
-                    Project Details
-                  </h3>
-                  <div className="space-y-2 text-xs">
-                    {project.budget && (
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span>{project.budget}</span>
+                  <TabsContent value="board" className="m-0 mt-4">
+                    <ScrollArea className="h-[calc(100vh-280px)]">
+                      <div className="px-6">
+                        <MilestoneBoard 
+                          milestones={milestones} 
+                          projectId={projectId!} 
+                          onUpdate={fetchProjectData}
+                          userRole={userRole}
+                        />
                       </div>
-                    )}
-                    {project.deadline && (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span>Due {new Date(project.deadline).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                    <div className="pt-2 grid grid-cols-2 gap-2 text-center border-t">
-                      <div>
-                        <p className="text-lg font-semibold">{tasks.length}</p>
-                        <p className="text-muted-foreground">Tasks</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-semibold">{milestones.length}</p>
-                        <p className="text-muted-foreground">Milestones</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
+                    </ScrollArea>
+                  </TabsContent>
+                </div>
+              </Tabs>
             </div>
-          </ScrollArea>
-        </div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+          </div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
+          <div className="h-full border-l bg-card/30">
+            <ScrollArea className="h-full">
+              <div className="p-4 space-y-4">
+                {/* Quick Actions */}
+                <Card className="border-muted bg-card">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                      <span>Tasks</span>
+                      <CreateTaskDialog projectId={projectId} onSuccess={fetchProjectData} />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {tasks.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">No tasks yet</p>
+                    ) : (
+                      tasks.slice(0, 5).map((task: any) => (
+                        <TaskItem key={task.id} task={task} onUpdate={fetchProjectData} compact={true} />
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Files Quick View */}
+                <Card className="border-muted bg-card">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                      <span>Files</span>
+                      <FileUploadDialog projectId={projectId} onSuccess={fetchProjectData} />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {files.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">No files yet</p>
+                    ) : (
+                      files.slice(0, 3).map((file: any) => (
+                        <a 
+                          key={file.id}
+                          href={file.file_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 p-2 rounded hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="p-1.5 rounded bg-muted">
+                            {isImageFile(file.file_type) ? (
+                              <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                            ) : (
+                              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium truncate">{file.file_name}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {formatFileSize(file.file_size || 0)}
+                            </p>
+                          </div>
+                        </a>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Pending Invitations */}
+                <PendingInvitations projectId={projectId} />
+
+                {/* Activity Timeline */}
+                <ActivityTimeline projectId={projectId!} />
+
+                {/* Time Tracker */}
+                <TimeTracker projectId={projectId!} />
+
+                {/* Quick Invite */}
+                <Card className="border-muted bg-card">
+                  <CardContent className="pt-4">
+                    <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
+                  </CardContent>
+                </Card>
+              </div>
+            </ScrollArea>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   );
 
   if (loading) {

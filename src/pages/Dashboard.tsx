@@ -30,6 +30,8 @@ import { SkeletonStat } from "@/components/ui/skeleton-card";
 import { StreakCard } from "@/components/dashboard/StreakCard";
 import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { useStreakUpdate } from "@/hooks/useStreakUpdate";
+import { LeaderboardWidget } from "@/components/dashboard/LeaderboardWidget";
+import { DailyGoals } from "@/components/dashboard/DailyGoals";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -222,9 +224,9 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Level & Streak Section */}
+        {/* Level, Streak & Gamification Section */}
         {profile && (
-          <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 md:grid-cols-2">
+          <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 lg:grid-cols-3">
             <Card className="p-6">
               <LevelBadge level={profile.level || 1} xp={profile.xp || 0} />
             </Card>
@@ -234,8 +236,14 @@ const Dashboard = () => {
               freezeCount={profile.streak_freeze_count || 0}
               onUpdate={fetchProfile}
             />
+            <LeaderboardWidget />
           </div>
         )}
+
+        {/* Daily Goals */}
+        <div className="mb-6 sm:mb-8">
+          <DailyGoals />
+        </div>
 
         {/* Stats Cards & Wallet */}
         <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -366,12 +374,6 @@ const Dashboard = () => {
               description="Complete tasks and earn more credits"
               icon={<Coins className="h-5 w-5" />}
               to="/earn-credits"
-            />
-            <QuickActionCard
-              title="Leaderboard"
-              description="See top creators and your ranking"
-              icon={<Trophy className="h-5 w-5" />}
-              to="/leaderboard"
             />
             <QuickActionCard
               title="Partner Directory"

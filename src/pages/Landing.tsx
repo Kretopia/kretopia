@@ -112,7 +112,7 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-4">
+          <div className="grid gap-8 md:grid-cols-3">
             <PricingCard
               name="Free"
               price="$0"
@@ -131,10 +131,10 @@ const Landing = () => {
               price="$9.99"
               period="/month"
               features={[
-                "50 credits/month",
-                "Basic features",
-                "Email support",
-                "ThriveDesk access",
+                "Unlimited swipes",
+                "AI recommendations",
+                "Profile verification",
+                "5% partner discounts",
               ]}
               cta="Subscribe"
               ctaLink="/subscription"
@@ -145,23 +145,10 @@ const Landing = () => {
               period="/month"
               popular
               features={[
-                "200 credits/month",
-                "Priority support",
-                "Advanced features",
-                "Milestone payments",
-              ]}
-              cta="Subscribe"
-              ctaLink="/subscription"
-            />
-            <PricingCard
-              name="Enterprise"
-              price="$99.99"
-              period="/month"
-              features={[
-                "1000 credits/month",
-                "VIP support 24/7",
-                "All features",
-                "Custom integrations",
+                "Everything in Thriver",
+                "Featured profile",
+                "Priority matching",
+                "15% partner discounts",
               ]}
               cta="Subscribe"
               ctaLink="/subscription"

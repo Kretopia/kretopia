@@ -145,14 +145,12 @@ export default function Membership() {
 
   const getTierLabel = (tier: string) => {
     switch (tier) {
-      case "elite":
-        return "Elite";
       case "creator_pro":
-        return "Creator Pro";
+        return "Creator";
       case "thriver":
-        return "Thriver";
+        return "Rising Star";
       default:
-        return "Starter";
+        return "Spark";
     }
   };
 

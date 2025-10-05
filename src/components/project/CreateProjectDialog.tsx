@@ -47,6 +47,18 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
         return;
       }
 
+      // Check session first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        toast({
+          title: "Session expired",
+          description: "Please sign in again",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+
       // Get user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -55,22 +67,32 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
           description: "Please sign in to create a project",
           variant: "destructive",
         });
+        navigate('/auth');
         return;
       }
 
-      // Create project
+      // Create project with explicit user ID
+      const projectData = {
+        title: validationResult.data.title,
+        description: validationResult.data.description || null,
+        created_by: user.id,
+        status: 'active' as const,
+        match_id: null,
+      };
+
+      console.log('Creating project with data:', projectData);
+      console.log('User ID:', user.id);
+
       const { data: project, error: projectError } = await supabase
         .from('projects')
-        .insert({
-          title: validationResult.data.title,
-          description: validationResult.data.description || null,
-          created_by: user.id,
-          status: 'active',
-        })
+        .insert(projectData)
         .select()
         .single();
 
-      if (projectError) throw projectError;
+      if (projectError) {
+        console.error('Project creation error:', projectError);
+        throw projectError;
+      }
 
       // Send invite if email provided
       if (validationResult.data.inviteEmail) {

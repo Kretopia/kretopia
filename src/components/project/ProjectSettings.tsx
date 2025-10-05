@@ -51,9 +51,9 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
     status: project?.status || 'active',
   });
 
-  // Update form when project prop changes
+  // Update form when project prop changes OR when dialog opens
   useEffect(() => {
-    if (project) {
+    if (project && open) {
       setEditedProject({
         title: project.title || '',
         description: project.description || '',
@@ -62,9 +62,17 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
         status: project.status || 'active',
       });
     }
-  }, [project]);
+  }, [project, open]);
 
   if (!project) return null;
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      // Reset confirmation text when closing
+      setConfirmText("");
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -85,7 +93,7 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
         title: "Settings saved! ✓",
         description: "Your project has been updated.",
       });
-      setOpen(false);
+      handleOpenChange(false);
       onUpdate();
     } catch (error: any) {
       toast({
@@ -110,7 +118,7 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
         description: "You can restore it later from your projects list.",
       });
       setArchiveDialogOpen(false);
-      setOpen(false);
+      handleOpenChange(false);
       navigate('/projects');
     } catch (error: any) {
       toast({
@@ -166,7 +174,7 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button variant="ghost" size="icon" className="h-10 w-10">
             <Settings className="h-5 w-5" />
@@ -176,7 +184,7 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
           <DialogHeader>
             <DialogTitle>Project Settings</DialogTitle>
             <DialogDescription>
-              Manage your project settings, team, and danger zone
+              Managing: <span className="font-semibold text-foreground">{project.title}</span>
             </DialogDescription>
           </DialogHeader>
 

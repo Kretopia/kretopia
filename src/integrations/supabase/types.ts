@@ -1685,7 +1685,7 @@ export type Database = {
         Row: {
           budget: string | null
           created_at: string | null
-          created_by: string | null
+          created_by: string
           deadline: string | null
           description: string | null
           id: string
@@ -1697,7 +1697,7 @@ export type Database = {
         Insert: {
           budget?: string | null
           created_at?: string | null
-          created_by?: string | null
+          created_by: string
           deadline?: string | null
           description?: string | null
           id?: string
@@ -1709,7 +1709,7 @@ export type Database = {
         Update: {
           budget?: string | null
           created_at?: string | null
-          created_by?: string | null
+          created_by?: string
           deadline?: string | null
           description?: string | null
           id?: string

@@ -9,7 +9,6 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { useAuth } from "./hooks/useAuth";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
-import { Footer } from "./components/Footer";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { analytics } from "@/lib/analytics";
 
@@ -152,7 +151,6 @@ const AppContent = () => {
           </Routes>
         </Suspense>
       </div>
-      <Footer />
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Users, Briefcase, Award } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 const STEPS = [
   { id: 1, title: "Welcome", icon: Sparkles },
@@ -58,6 +59,29 @@ export default function Onboarding() {
   };
 
   const handleNext = async () => {
+    // Validate current step before proceeding
+    if (currentStep === 2) {
+      if (!profile.full_name || !profile.role || !profile.bio) {
+        toast({
+          title: "Missing information",
+          description: "Please fill in all required fields to continue",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    if (currentStep === 3) {
+      if (skills.professional_skills.length === 0 && skills.passion_skills.length === 0) {
+        toast({
+          title: "Add at least one skill",
+          description: "Help others discover you by adding your skills",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -113,7 +137,12 @@ export default function Onboarding() {
   const progress = (currentStep / 4) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex items-center justify-center p-4">
+    <>
+      <SEO
+        title="Welcome to ThriveIN - Complete Your Profile"
+        description="Set up your creator profile on ThriveIN. Connect with fellow creators, discover opportunities, and start collaborating on amazing projects."
+      />
+      <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl p-8">
         <div className="mb-8">
           <Progress value={progress} className="h-2 mb-4" />
@@ -141,8 +170,18 @@ export default function Onboarding() {
             <h1 className="text-3xl font-bold">Welcome to ThriveIN!</h1>
             <p className="text-lg text-muted-foreground">
               The ultimate platform for creatives and content creators.
-              Let's get you set up in just a few steps.
+              Let's get you set up in just 3 quick steps.
             </p>
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg text-left">
+              <p className="text-sm font-medium mb-2">What you'll get:</p>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>✓ Connect with fellow creators</li>
+                <li>✓ Discover paid opportunities</li>
+                <li>✓ Collaborate on projects</li>
+                <li>✓ Build your portfolio</li>
+                <li>✓ Earn rewards and level up</li>
+              </ul>
+            </div>
             <div className="grid grid-cols-2 gap-4 pt-4">
               <div className="p-4 rounded-lg bg-accent/10">
                 <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
@@ -161,27 +200,30 @@ export default function Onboarding() {
         {currentStep === 2 && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Tell us about yourself</h2>
+            <p className="text-sm text-muted-foreground">This information helps others find and connect with you</p>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="full_name">Full Name</Label>
+                <Label htmlFor="full_name">Full Name *</Label>
                 <Input
                   id="full_name"
                   value={profile.full_name}
                   onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                   placeholder="Your name"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="role">Your Role</Label>
+                <Label htmlFor="role">Your Role *</Label>
                 <Input
                   id="role"
                   value={profile.role}
                   onChange={(e) => setProfile({ ...profile, role: e.target.value })}
                   placeholder="e.g., Content Creator, Producer, Artist"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location">Location (Optional)</Label>
                 <Input
                   id="location"
                   value={profile.location}
@@ -190,14 +232,18 @@ export default function Onboarding() {
                 />
               </div>
               <div>
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">Bio *</Label>
                 <Textarea
                   id="bio"
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  placeholder="Tell us about yourself and what you do..."
+                  placeholder="Tell us about yourself, your experience, and what you're looking for..."
                   rows={4}
+                  required
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tip: Mention your experience, interests, and what type of collaborations you're seeking
+                </p>
               </div>
             </div>
           </div>
@@ -316,5 +362,6 @@ export default function Onboarding() {
         </div>
       </Card>
     </div>
+    </>
   );
 }

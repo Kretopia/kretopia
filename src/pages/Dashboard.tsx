@@ -32,6 +32,9 @@ import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { useStreakUpdate } from "@/hooks/useStreakUpdate";
 import { LeaderboardWidget } from "@/components/dashboard/LeaderboardWidget";
 import { DailyGoals } from "@/components/dashboard/DailyGoals";
+import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
+import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
+import { SEO } from "@/components/SEO";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -47,6 +50,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isFirstTime, loading: firstTimeLoading } = useFirstTimeUser();
 
   // Check and activate OG promotion automatically
   useOGPromotion();
@@ -191,7 +195,12 @@ const Dashboard = () => {
   }, [toast, searchParams, navigate]);
 
   return (
-    <div className="min-h-screen p-4 sm:p-6">
+    <>
+      <SEO
+        title="Dashboard - ThriveIN"
+        description="Your creative hub. Track your progress, connect with creators, and discover new opportunities on ThriveIN."
+      />
+      <div className="min-h-screen p-4 sm:p-6">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-6 sm:mb-8 flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-center">
@@ -216,6 +225,23 @@ const Dashboard = () => {
         <div className="mb-6 sm:mb-8">
           <EngagementNudge />
         </div>
+
+        {/* First-Time User Guide */}
+        {!firstTimeLoading && isFirstTime && (
+          <div className="mb-6 sm:mb-8">
+            <FirstTimeUserGuide
+              title="Welcome to ThriveIN! 🎉"
+              description="Here's how to get started and make the most of your account"
+              tips={[
+                "Complete your profile to unlock features and earn 50 XP",
+                "Visit Discover to swipe on creators and opportunities",
+                "Earn credits by logging in daily, completing challenges, and engaging",
+                "Connect with other creators to start collaborating on projects",
+                "Check your Daily Goals to track progress and earn rewards"
+              ]}
+            />
+          </div>
+        )}
 
         {/* Profile Completion Card */}
         {profile && checkProfileCompletion(profile).percentage < 100 && (
@@ -425,6 +451,7 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

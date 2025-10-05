@@ -9,7 +9,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info } from "lucide-react";
+import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 
 interface NotificationPreferences {
@@ -644,6 +645,107 @@ const Settings = () => {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            </CardContent>
+          </Card>
+
+          {/* About & Links */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                About & Links
+              </CardTitle>
+              <CardDescription>
+                Important links and information about ThriveIN
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Link 
+                  to="/subscription" 
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Pricing</span>
+                </Link>
+                
+                <Link 
+                  to="/partner-directory" 
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Partners</span>
+                </Link>
+                
+                <Link 
+                  to="/partner-submit" 
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Become a Partner</span>
+                </Link>
+                
+                <a 
+                  href="mailto:info@thrivein.io" 
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <Mail className="h-4 w-4" />
+                  <span>Contact Us</span>
+                </a>
+                
+                <a 
+                  href="mailto:support@thrivein.io" 
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <Mail className="h-4 w-4" />
+                  <span>Support</span>
+                </a>
+                
+                <Link 
+                  to="/terms" 
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Terms of Service</span>
+                </Link>
+                
+                <Link 
+                  to="/privacy" 
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Privacy Policy</span>
+                </Link>
+                
+                <Link 
+                  to="/community-guidelines" 
+                  className="flex items-center gap-2 p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Community Guidelines</span>
+                </Link>
+              </div>
+
+              <Separator />
+              
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">Follow us:</p>
+                <a 
+                  href="https://instagram.com/thrivein.io" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-foreground transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Instagram
+                </a>
+              </div>
+
+              <Separator />
+              
+              <p className="text-xs text-muted-foreground text-center">
+                © {new Date().getFullYear()} ThriveIN. All rights reserved.
+              </p>
             </CardContent>
           </Card>
         </div>

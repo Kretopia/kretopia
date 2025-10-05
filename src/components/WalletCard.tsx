@@ -35,7 +35,7 @@ export const WalletCard = () => {
       .from('profiles')
       .select('subscription_tier')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profile) {
       setSubscriptionTier(profile.subscription_tier);
@@ -45,7 +45,7 @@ export const WalletCard = () => {
       .from('wallets')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (walletData) {
       setWallet(walletData);
@@ -54,7 +54,7 @@ export const WalletCard = () => {
         .from('wallets')
         .insert({ user_id: user.id, credits: 10 })
         .select()
-        .single();
+        .maybeSingle();
       setWallet(newWallet);
     }
 

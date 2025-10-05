@@ -20,7 +20,7 @@ export const OGPromotionBanner = () => {
         .from("profiles")
         .select("badge, og_promotion_used, og_promotion_expires_at, subscription_tier")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (data?.badge === 'og' && data.og_promotion_used && data.og_promotion_expires_at) {
         const expiresAt = new Date(data.og_promotion_expires_at);

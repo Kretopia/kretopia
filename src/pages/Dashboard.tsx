@@ -76,14 +76,23 @@ const Dashboard = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
+        console.error('[Dashboard] Error fetching profile:', error);
         toast({
           title: "Error",
           description: "Failed to load profile",
           variant: "destructive",
         });
+      } else if (!data) {
+        console.warn('[Dashboard] Profile not found for user:', user.id);
+        toast({
+          title: "Profile Missing",
+          description: "Please complete your profile setup",
+          variant: "destructive",
+        });
+        navigate("/onboarding");
       } else {
         setProfile(data);
       }
@@ -148,7 +157,7 @@ const Dashboard = () => {
           .from('wallets')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
           
         if (currentWallet) {
           const updateData = type === "credits" 

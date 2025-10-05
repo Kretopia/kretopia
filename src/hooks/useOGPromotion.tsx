@@ -23,7 +23,7 @@ export const useOGPromotion = () => {
           .from("profiles")
           .select("badge, subscription_tier, og_promotion_used, og_promotion_expires_at")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (!profile || profile.badge !== 'og') {
           setHasChecked(true);

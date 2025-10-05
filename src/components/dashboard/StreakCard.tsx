@@ -28,7 +28,7 @@ export function StreakCard({ streakCount, longestStreak, freezeCount, onUpdate }
         .from('profiles')
         .select('xp')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!profile || profile.xp < 500) {
         toast({

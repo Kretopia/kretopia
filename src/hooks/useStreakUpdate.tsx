@@ -15,9 +15,10 @@ export function useStreakUpdate() {
           .from('profiles')
           .select('last_active_date, streak_count')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (fetchError) throw fetchError;
+        if (!profile) return;
 
         const today = new Date().toISOString().split('T')[0];
         const lastActive = profile?.last_active_date;
@@ -36,7 +37,7 @@ export function useStreakUpdate() {
             .from('profiles')
             .select('streak_count')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
 
           if (updatedProfile && updatedProfile.streak_count > (profile?.streak_count || 0)) {
             toast({

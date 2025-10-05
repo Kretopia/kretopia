@@ -40,7 +40,9 @@ export function DailyGoals() {
         .from("profiles")
         .select("last_active_date, daily_swipes")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
+
+      if (!profile) return;
 
       // Get today's activities
       const { data: todayPosts } = await supabase

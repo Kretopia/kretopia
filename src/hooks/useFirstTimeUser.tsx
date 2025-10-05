@@ -18,7 +18,7 @@ export const useFirstTimeUser = () => {
         .from("profiles")
         .select("created_at, xp")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (profile) {
         const accountAge = Date.now() - new Date(profile.created_at).getTime();

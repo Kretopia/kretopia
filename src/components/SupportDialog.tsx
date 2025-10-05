@@ -157,6 +157,16 @@ export const SupportDialog = () => {
         setCategory(data.category);
       }
 
+      // Add AI response to messages
+      if (data.message) {
+        setMessages(prev => [...prev, {
+          id: crypto.randomUUID(),
+          sender_type: 'ai',
+          content: data.message,
+          created_at: new Date().toISOString()
+        }]);
+      }
+
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({

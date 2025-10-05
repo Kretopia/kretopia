@@ -59,6 +59,7 @@ const Navbar = ({ user }: NavbarProps) => {
   };
 
   const handleNavigation = (path: string) => {
+    console.log('[Navbar] Navigating to:', path);
     setIsOpen(false);
     navigate(path);
   };

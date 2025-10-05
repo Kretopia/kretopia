@@ -31,11 +31,13 @@ const ManageOpportunities = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('[ManageOpportunities] Component mounted, user:', user?.id);
     if (!user) {
+      console.log('[ManageOpportunities] No user, redirecting to auth');
       navigate('/auth');
       return;
     }
-
+    console.log('[ManageOpportunities] Fetching applications');
     fetchApplications();
   }, [user, navigate]);
 

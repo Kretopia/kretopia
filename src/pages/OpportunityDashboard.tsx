@@ -49,10 +49,13 @@ const OpportunityDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('[OpportunityDashboard] Component mounted, user:', user?.id);
     if (!user) {
+      console.log('[OpportunityDashboard] No user, redirecting to auth');
       navigate('/auth');
       return;
     }
+    console.log('[OpportunityDashboard] Fetching opportunities');
     fetchOpportunities();
   }, [user, navigate]);
 

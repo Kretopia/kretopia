@@ -9,6 +9,11 @@ const BottomNav = () => {
   const location = useLocation();
   const [showPostDialog, setShowPostDialog] = useState(false);
   
+  // Hide bottom nav on landing page
+  if (location.pathname === "/") {
+    return null;
+  }
+  
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Home" },
     { path: "/discover", icon: Compass, label: "Discover" },

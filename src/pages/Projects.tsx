@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ProjectTemplates } from "@/components/project/ProjectTemplates";
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle, DollarSign } from "lucide-react";
@@ -32,38 +33,21 @@ interface Project {
 }
 
 const Projects = () => {
+  const { subscriptionInfo } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>("free");
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Use subscription tier from auth context
+  const subscriptionTier = subscriptionInfo.tier as SubscriptionTier;
 
   useEffect(() => {
     fetchProjects();
-    fetchUserTier();
   }, []);
-
-  const fetchUserTier = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("subscription_tier")
-        .eq("user_id", user.id)
-        .single();
-
-      if (profile) {
-        setSubscriptionTier((profile.subscription_tier || "free") as SubscriptionTier);
-      }
-    } catch (error) {
-      console.error("Error fetching user tier:", error);
-    }
-  };
 
   const fetchProjects = async () => {
     setLoading(true);

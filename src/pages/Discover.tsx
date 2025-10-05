@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle, Crown, Zap, HelpCircle, ArrowRight } from "lucide-react";
 import { TooltipHint } from "@/components/ui/tooltip-hint";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { CreatorFilters, type CreatorFilterState } from "@/components/discover/CreatorFilters";
@@ -57,11 +58,11 @@ interface Card {
 }
 
 const Discover = () => {
+  const { subscriptionInfo } = useAuth();
   const [cards, setCards] = useState<Card[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"creators" | "opportunities">("creators");
-  const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const [userLevel, setUserLevel] = useState<number>(1);
   const [userCredits, setUserCredits] = useState<number>(0);
   const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
@@ -77,6 +78,9 @@ const Discover = () => {
   const [upgradeFeature, setUpgradeFeature] = useState({ name: "", description: "" });
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
+  
+  // Use subscription tier from auth context
+  const subscriptionTier = subscriptionInfo.tier as SubscriptionTier;
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -137,10 +141,8 @@ const Discover = () => {
       }
       
       if (userProfile) {
-        const tier = (userProfile.subscription_tier || 'free') as SubscriptionTier;
-        setSubscriptionTier(tier);
         setUserLevel(userProfile.level || 1);
-        const remaining = getRemainingSwipes(tier, userProfile.daily_swipes || 0);
+        const remaining = getRemainingSwipes(subscriptionTier, userProfile.daily_swipes || 0);
         setDailySwipesLeft(remaining === -1 ? 999 : remaining);
       }
 

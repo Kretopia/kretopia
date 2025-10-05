@@ -434,67 +434,66 @@ const ThriveDesk = () => {
 
   // Responsive rendering
   const renderTabletLayout = () => (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {/* Tablet Header */}
-      <div className="border-b px-4 py-3 bg-background/95 backdrop-blur flex-shrink-0">
-        <div className="flex items-center gap-3">
+    <div className="flex flex-col h-screen overflow-hidden bg-background">
+      {/* Modern Tablet Header */}
+      <div className="border-b px-6 py-4 bg-card/50 backdrop-blur flex-shrink-0">
+        <div className="flex items-center gap-4 mb-4">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-9 w-9 flex-shrink-0" 
+            className="h-9 w-9 hover:bg-muted" 
             onClick={() => navigate('/projects')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-semibold truncate">{project.title}</h1>
-            <ProjectPresence projectId={projectId || ""} />
+            <h1 className="text-xl font-bold truncate">{project.title}</h1>
+            <p className="text-sm text-muted-foreground truncate">{project.description || "Workspace"}</p>
           </div>
-          <Badge variant="secondary" className="text-xs px-2 py-1 flex-shrink-0">{project.status}</Badge>
-          <PostAsOpportunityDialog 
-            projectId={projectId || ""}
-            projectTitle={project.title}
-            projectDescription={project.description}
-          />
-          <ProjectSettings 
-            project={project} 
-            onUpdate={fetchProjectData}
-            userRole={userRole}
-          />
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={userProfile?.avatar_url} />
+            <AvatarFallback className="text-sm bg-primary text-primary-foreground">
+              {userProfile?.full_name?.[0] || "U"}
+            </AvatarFallback>
+          </Avatar>
         </div>
+        <Input 
+          placeholder="Search..."
+          className="bg-muted/50 border-0 h-10"
+        />
       </div>
 
-      {/* Tablet Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0">
-        <div className="border-b bg-background flex-shrink-0">
-          <TabsList className="w-full justify-around h-11 bg-transparent rounded-none p-0">
+      {/* Modern Tablet Tabs */}
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <div className="border-b bg-background flex-shrink-0 px-6">
+          <TabsList className="w-full justify-start h-12 bg-transparent rounded-none p-0 gap-6">
             <TabsTrigger 
               value="messages" 
-              className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 gap-2"
             >
               <Send className="h-4 w-4" />
-              <span className="text-xs font-medium">Messages</span>
+              <span className="font-medium">Messages</span>
             </TabsTrigger>
             <TabsTrigger 
               value="tasks" 
-              className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 gap-2"
             >
               <CheckSquare className="h-4 w-4" />
-              <span className="text-xs font-medium">Tasks</span>
+              <span className="font-medium">Tasks</span>
             </TabsTrigger>
             <TabsTrigger 
               value="milestones" 
-              className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 gap-2"
             >
               <DollarSign className="h-4 w-4" />
-              <span className="text-xs font-medium">Milestones</span>
+              <span className="font-medium">Milestones</span>
             </TabsTrigger>
             <TabsTrigger 
               value="details" 
-              className="flex-1 gap-1.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 gap-2"
             >
               <FileText className="h-4 w-4" />
-              <span className="text-xs font-medium">Details</span>
+              <span className="font-medium">Details</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -596,61 +595,65 @@ const ThriveDesk = () => {
   );
 
   const renderMobileLayout = () => (
-    <div className="flex flex-col h-[100dvh] overflow-hidden">
-      {/* Minimal Mobile Header */}
-      <div className="border-b px-3 py-2 bg-background/95 backdrop-blur flex-shrink-0">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-background">
+      {/* Modern Mobile Header */}
+      <div className="border-b px-4 py-3 bg-card/50 backdrop-blur flex-shrink-0">
+        <div className="flex items-center gap-3 mb-3">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8 flex-shrink-0" 
+            className="h-9 w-9 hover:bg-muted" 
             onClick={() => navigate('/projects')}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-semibold truncate">{project.title}</h1>
+            <h1 className="text-base font-bold truncate">{project.title}</h1>
           </div>
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 flex-shrink-0">{project.status}</Badge>
-          <ProjectSettings 
-            project={project} 
-            onUpdate={fetchProjectData}
-            userRole={userRole}
-          />
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={userProfile?.avatar_url} />
+            <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+              {userProfile?.full_name?.[0] || "U"}
+            </AvatarFallback>
+          </Avatar>
         </div>
+        <Input 
+          placeholder="Search..."
+          className="bg-muted/50 border-0 h-9 text-sm"
+        />
       </div>
 
-      {/* Compact Mobile Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0">
+      {/* Modern Mobile Tabs */}
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
         <div className="border-b bg-background flex-shrink-0">
-          <TabsList className="w-full justify-around h-10 bg-transparent rounded-none p-0">
+          <TabsList className="w-full justify-around h-12 bg-transparent rounded-none p-0">
             <TabsTrigger 
               value="messages" 
-              className="flex-1 gap-0.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-1 rounded-none border-b-2 border-transparent"
+              className="flex-1 gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
             >
-              <Send className="h-3.5 w-3.5" />
-              <span className="text-[9px] font-medium">Chat</span>
+              <Send className="h-4 w-4" />
+              <span className="text-xs font-medium">Chat</span>
             </TabsTrigger>
             <TabsTrigger 
               value="tasks" 
-              className="flex-1 gap-0.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-1 rounded-none border-b-2 border-transparent"
+              className="flex-1 gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
             >
-              <CheckSquare className="h-3.5 w-3.5" />
-              <span className="text-[9px] font-medium">Board</span>
+              <CheckSquare className="h-4 w-4" />
+              <span className="text-xs font-medium">Tasks</span>
             </TabsTrigger>
             <TabsTrigger 
               value="milestones" 
-              className="flex-1 gap-0.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-1 rounded-none border-b-2 border-transparent"
+              className="flex-1 gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
             >
-              <DollarSign className="h-3.5 w-3.5" />
-              <span className="text-[9px] font-medium">Pay</span>
+              <DollarSign className="h-4 w-4" />
+              <span className="text-xs font-medium">Pay</span>
             </TabsTrigger>
             <TabsTrigger 
               value="details" 
-              className="flex-1 gap-0.5 data-[state=active]:bg-primary/5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-1 rounded-none border-b-2 border-transparent"
+              className="flex-1 gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent"
             >
-              <FileText className="h-3.5 w-3.5" />
-              <span className="text-[9px] font-medium">More</span>
+              <FileText className="h-4 w-4" />
+              <span className="text-xs font-medium">More</span>
             </TabsTrigger>
           </TabsList>
         </div>

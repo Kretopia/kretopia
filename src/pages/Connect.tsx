@@ -117,9 +117,7 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         .select('*')
         .neq('user_id', user.id)
         .not('full_name', 'is', null)
-        .not('bio', 'is', null)
-        .not('avatar_url', 'is', null)
-        .not('location', 'is', null);
+        .not('avatar_url', 'is', null);
 
       // Apply filters
       if (searchQuery) {
@@ -146,14 +144,12 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         .select('*')
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
 
-      // Filter profiles similar to Discover (only complete profiles)
+      // Filter profiles - only require basic info
       const completeProfiles = data?.filter(profile => {
         return profile.full_name && 
                profile.full_name !== 'New User' && 
-               profile.role && 
-               profile.role !== 'Creator' && 
-               profile.avatar_url &&
-               profile.bio;
+               profile.role &&
+               profile.avatar_url;
       }) || [];
 
       // Map connection statuses

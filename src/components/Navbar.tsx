@@ -166,18 +166,10 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/opportunity-dashboard")}
-                    >
-                      <Briefcase className="h-5 w-5" />
-                      My Opportunities
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
                       onClick={() => handleNavigation("/manage-opportunities")}
                     >
-                      <FileText className="h-5 w-5" />
-                      My Applications
+                      <Briefcase className="h-5 w-5" />
+                      Manage Opportunities
                     </Button>
                     <Button 
                       variant="ghost" 

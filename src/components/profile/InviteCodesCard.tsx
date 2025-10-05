@@ -3,8 +3,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, CheckCircle, Users, Gift } from "lucide-react";
+import { Copy, CheckCircle, Users, Gift, QrCode } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { QRCodeSVG } from "qrcode.react";
 
 interface InviteCode {
   id: string;
@@ -21,6 +22,7 @@ export const InviteCodesCard = () => {
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showQRCode, setShowQRCode] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -136,24 +138,35 @@ ${inviteUrl}`;
                     {invite.invite_code}
                   </code>
                   {(invite.current_uses || 0) < (invite.max_uses || 1) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(invite.invite_code)}
-                      className="gap-1.5 flex-shrink-0"
-                    >
-                      {copiedCode === invite.invite_code ? (
-                        <>
-                          <CheckCircle className="h-4 w-4" />
-                          <span className="hidden sm:inline">Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4" />
-                          <span className="hidden sm:inline">Copy</span>
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowQRCode(showQRCode === invite.invite_code ? null : invite.invite_code)}
+                        className="gap-1.5"
+                      >
+                        <QrCode className="h-4 w-4" />
+                        <span className="hidden sm:inline">QR</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(invite.invite_code)}
+                        className="gap-1.5"
+                      >
+                        {copiedCode === invite.invite_code ? (
+                          <>
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="hidden sm:inline">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4" />
+                            <span className="hidden sm:inline">Copy</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   )}
                 </div>
                 
@@ -183,6 +196,22 @@ ${inviteUrl}`;
                         )}
                       </>
                     )}
+                  </div>
+                )}
+
+                {showQRCode === invite.invite_code && (
+                  <div className="flex flex-col items-center gap-3 pt-3 border-t border-border">
+                    <div className="bg-white p-4 rounded-lg">
+                      <QRCodeSVG
+                        value={`https://www.thrivein.io/auth?invite=${invite.invite_code}`}
+                        size={200}
+                        level="H"
+                        includeMargin
+                      />
+                    </div>
+                    <p className="text-xs text-center text-muted-foreground">
+                      Scan to join ThriveIN with this invite code
+                    </p>
                   </div>
                 )}
               </div>

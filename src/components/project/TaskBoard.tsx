@@ -185,11 +185,16 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
     }
 
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Error", description: "Please log in to create tasks", variant: "destructive" });
+      return;
+    }
+
     const { error } = await supabase
       .from('project_tasks')
       .insert({
         project_id: projectId,
-        created_by: user?.id,
+        created_by: user.id, // Included for TypeScript, trigger ensures correctness
         title: newTask.title,
         description: newTask.description || null,
         due_date: newTask.due_date || null,
@@ -197,6 +202,7 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
       });
 
     if (error) {
+      console.error('Task creation error:', error);
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Task created! ✅" });

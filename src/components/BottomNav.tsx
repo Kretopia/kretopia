@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 const BottomNav = () => {
   const location = useLocation();
   
+  // Hide BottomNav when viewing individual project details
+  if (location.pathname.startsWith('/desk/')) {
+    return null;
+  }
+  
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Home" },
     { path: "/discover", icon: Compass, label: "Discover" },

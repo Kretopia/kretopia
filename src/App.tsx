@@ -90,9 +90,64 @@ const PageViewTracker = () => {
   return null;
 };
 
-const App = () => {
+// Content wrapper that conditionally applies padding
+const AppContent = () => {
+  const location = useLocation();
   const { user } = useAuth();
   
+  // Don't add bottom padding when on individual project pages
+  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk/');
+  
+  return (
+    <>
+      <PageViewTracker />
+      <Navbar user={user} />
+      {user && <BottomNav />}
+      <div className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/opportunity/:id" element={<OpportunityDetail />} />
+            <Route path="/review" element={<SubmitReview />} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/profile/:userId" element={<PublicProfile />} />
+            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+            <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+            <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+            <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
+            <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
+            <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
+            <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+            <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
+            <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
+            <Route path="/partner-submit" element={<PartnerSubmit />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-canceled" element={<PaymentCanceled />} />
+            <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
+            <Route path="/project-templates" element={<ProtectedRoute><ProjectTemplates /></ProtectedRoute>} />
+            <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </div>
+    </>
+  );
+};
+
+const App = () => {
   return (
     <GlobalErrorBoundary>
       <HelmetProvider>
@@ -102,49 +157,7 @@ const App = () => {
             <Sonner />
             <VercelAnalytics />
             <BrowserRouter>
-              <PageViewTracker />
-              <Navbar user={user} />
-              {user && <BottomNav />}
-              <div className={user ? "pb-20 lg:pb-0" : ""}>
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
-                    <Route path="/" element={<Landing />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/opportunity/:id" element={<OpportunityDetail />} />
-                    <Route path="/review" element={<SubmitReview />} />
-                    <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                    <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
-                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                    <Route path="/profile/:userId" element={<PublicProfile />} />
-                    <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-                    <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
-                    <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
-                    <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-                    <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-                    <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
-                    <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                    <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-                    <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
-                    <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
-                    <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
-                    <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-                    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-                    <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
-                    <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
-                    <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
-                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                    <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
-                    <Route path="/partner-submit" element={<PartnerSubmit />} />
-                    <Route path="/payment-success" element={<PaymentSuccess />} />
-                    <Route path="/payment-canceled" element={<PaymentCanceled />} />
-                    <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
-                    <Route path="/project-templates" element={<ProtectedRoute><ProjectTemplates /></ProtectedRoute>} />
-                    <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </div>
+              <AppContent />
             </BrowserRouter>
           </TooltipProvider>
         </QueryClientProvider>

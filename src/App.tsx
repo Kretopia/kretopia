@@ -51,6 +51,7 @@ const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
+const TestEmails = lazy(() => import("./pages/TestEmails"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -147,6 +148,7 @@ const AppContent = () => {
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+            <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

@@ -64,7 +64,7 @@ export default function PartnerSubmit() {
       // Upload logo
       const fileExt = logoFile.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('partner-logos')
         .upload(fileName, logoFile);
 
@@ -74,25 +74,26 @@ export default function PartnerSubmit() {
         .from('partner-logos')
         .getPublicUrl(fileName);
 
-      // Submit application
-      const { error: submitError } = await supabase
-        .from('partner_submissions')
-        .insert({
+      // Process submission with AI categorization and auto-approval
+      const { data, error } = await supabase.functions.invoke('process-partner-submission', {
+        body: {
           ...formData,
           logo_url: publicUrl
-        });
+        }
+      });
 
-      if (submitError) throw submitError;
+      if (error) throw error;
 
       setSubmitted(true);
       toast({
-        title: "Application submitted! 🎉",
-        description: "We'll review your partnership application and get back to you soon."
+        title: "Partnership activated! 🎉",
+        description: "Your discount is now live on the platform and visible to all members."
       });
     } catch (error: any) {
+      console.error('Submission error:', error);
       toast({
         title: "Submission failed",
-        description: error.message,
+        description: error.message || "Please check your connection and try again",
         variant: "destructive"
       });
     } finally {
@@ -108,7 +109,7 @@ export default function PartnerSubmit() {
             <CheckCircle className="h-16 w-16 mx-auto mb-4 text-primary" />
             <h2 className="text-2xl font-bold mb-2">Application Submitted!</h2>
             <p className="text-muted-foreground mb-6">
-              Thank you for your interest in partnering with Thrive. We'll review your application and contact you at {formData.contact_email} within 2-3 business days.
+              Your partnership discount is now live! Thrive members can now access your exclusive offer on the platform.
             </p>
             <Button onClick={() => navigate('/')} variant="outline">
               Return to Home
@@ -136,7 +137,7 @@ export default function PartnerSubmit() {
           <CardHeader>
             <CardTitle>Partner Application</CardTitle>
             <CardDescription>
-              Fill out this form to offer your services to Thrive members. All submissions are reviewed before going live.
+              Fill out this form to offer your services to Thrive members. Your discount will go live immediately upon submission.
             </CardDescription>
           </CardHeader>
           <CardContent>

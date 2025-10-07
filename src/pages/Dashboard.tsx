@@ -239,14 +239,14 @@ const Dashboard = () => {
         {!firstTimeLoading && isFirstTime && (
           <div className="mb-6 sm:mb-8">
             <FirstTimeUserGuide
-              title="Welcome to ThriveIN! 🎉"
-              description="Here's how to get started and make the most of your account"
+              title="🚀 Quick Start Guide"
+              description="Get the most out of ThriveIN in 5 simple steps"
               tips={[
-                "Complete your profile to unlock features and earn 50 XP",
-                "Visit Discover to swipe on creators and opportunities",
-                "Earn credits by logging in daily, completing challenges, and engaging",
-                "Connect with other creators to start collaborating on projects",
-                "Check your Daily Goals to track progress and earn rewards"
+                "Complete your profile (adds photo, bio, skills) to unlock Discovery and earn 50 XP",
+                "Visit Discover and swipe on 5+ creators or opportunities to start building connections",
+                "Post an opportunity or apply to one to get your first collaboration started",
+                "Connect with creators daily to maintain your streak and earn bonus credits",
+                "Check Daily Goals to earn XP, credits, and climb the leaderboard"
               ]}
             />
           </div>

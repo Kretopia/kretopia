@@ -355,42 +355,34 @@ export default function Onboarding() {
 
         {currentStep === 1 && (
           <div className="space-y-6 text-center">
-            <Sparkles className="h-16 w-16 mx-auto text-primary" />
+            <Sparkles className="h-16 w-16 mx-auto text-primary animate-pulse" />
             <h1 className="text-3xl font-bold">Welcome to ThriveIN!</h1>
             <p className="text-lg text-muted-foreground">
-              The ultimate platform for creatives and content creators.
-              Let's get you set up in just 3 quick steps.
+              Set up your profile in under 3 minutes and start connecting!
             </p>
-            <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg">
-              <p className="text-sm font-semibold mb-2 flex items-center justify-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Earn 100 XP to boost your visibility!
+            <div className="p-5 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 border-2 border-primary/30 rounded-xl shadow-glow">
+              <p className="text-base font-bold mb-3 flex items-center justify-center gap-2 text-primary">
+                <Sparkles className="h-5 w-5" />
+                Complete Setup = 100 XP + Level Up! 🎯
               </p>
-              <p className="text-xs text-muted-foreground">
-                Complete your profile to level up and appear higher in Discover 🚀
+              <p className="text-sm">
+                Higher levels mean better visibility in Discover and more matches
               </p>
             </div>
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg text-left">
-              <p className="text-sm font-medium mb-2">What you'll get:</p>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>✓ Connect with fellow creators</li>
-                <li>✓ Discover paid opportunities</li>
-                <li>✓ Collaborate on projects</li>
-                <li>✓ Build your portfolio</li>
-                <li>✓ Earn rewards and level up</li>
-              </ul>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                <Users className="h-10 w-10 mx-auto mb-2 text-primary" />
+                <p className="font-bold text-primary">1000+</p>
+                <p className="text-xs text-muted-foreground">Active Creators</p>
+              </div>
+              <div className="p-4 rounded-xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20">
+                <Briefcase className="h-10 w-10 mx-auto mb-2 text-secondary" />
+                <p className="font-bold text-secondary">50+</p>
+                <p className="text-xs text-muted-foreground">Live Opportunities</p>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              <div className="p-4 rounded-lg bg-accent/10">
-                <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold">Connect</p>
-                <p className="text-sm text-muted-foreground">Find collaborators</p>
-              </div>
-              <div className="p-4 rounded-lg bg-accent/10">
-                <Briefcase className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold">Opportunities</p>
-                <p className="text-sm text-muted-foreground">Discover projects</p>
-              </div>
+            <div className="text-xs text-muted-foreground pt-2">
+              ⚡ Takes less than 3 minutes
             </div>
           </div>
         )}
@@ -400,7 +392,7 @@ export default function Onboarding() {
             <Camera className="h-16 w-16 mx-auto text-primary" />
             <h2 className="text-2xl font-bold">Add your profile photo</h2>
             <p className="text-muted-foreground">
-              Make a great first impression with a professional photo
+              Profiles with photos get 3x more connections!
             </p>
             
             <div className="flex flex-col items-center gap-4">
@@ -430,6 +422,7 @@ export default function Onboarding() {
               
               <Button
                 variant="outline"
+                size="lg"
                 onClick={() => document.getElementById('avatar-upload')?.click()}
                 disabled={uploadingAvatar}
               >
@@ -449,8 +442,8 @@ export default function Onboarding() {
               loading={uploadingAvatar}
             />
             
-            <p className="text-xs text-muted-foreground">
-              You can skip this step and add a photo later
+            <p className="text-sm text-muted-foreground bg-primary/5 px-4 py-2 rounded-lg">
+              💡 You can skip this and add a photo later from your profile
             </p>
           </div>
         )}

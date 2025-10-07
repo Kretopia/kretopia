@@ -687,6 +687,16 @@ export default function Onboarding() {
               Back
             </Button>
           )}
+          {currentStep === 2 && !avatarUrl ? (
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentStep(currentStep + 1)}
+              disabled={loading}
+              className="ml-auto mr-2"
+            >
+              Skip for now
+            </Button>
+          ) : null}
           <Button
             onClick={handleNext}
             disabled={loading}

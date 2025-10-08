@@ -263,8 +263,8 @@ const Circle = () => {
       ...(matches?.map(m => m.user1_id === user.id ? m.user2_id : m.user1_id) || [])
     ];
 
-    // Fetch all activity types in parallel
-    const [portfolioData, awardsData, pressData, creditsData] = await Promise.all([
+    // Fetch all activity types in parallel with independent error handling
+    const [portfolioData, awardsData, pressData, creditsData] = await Promise.allSettled([
       supabase
         .from('portfolio_items')
         .select(`
@@ -322,12 +322,12 @@ const Circle = () => {
         .limit(10)
     ]);
 
-    // Combine all activities with type tags
+    // Combine all activities with type tags, handling any failed queries
     const allActivities = [
-      ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
-      ...(awardsData.data || []).map(item => ({ ...item, activity_type: 'award' })),
-      ...(pressData.data || []).map(item => ({ ...item, activity_type: 'press' })),
-      ...(creditsData.data || []).map(item => ({ ...item, activity_type: 'credit' }))
+      ...(portfolioData.status === 'fulfilled' && portfolioData.value.data ? portfolioData.value.data.map(item => ({ ...item, activity_type: 'portfolio' })) : []),
+      ...(awardsData.status === 'fulfilled' && awardsData.value.data ? awardsData.value.data.map(item => ({ ...item, activity_type: 'award' })) : []),
+      ...(pressData.status === 'fulfilled' && pressData.value.data ? pressData.value.data.map(item => ({ ...item, activity_type: 'press' })) : []),
+      ...(creditsData.status === 'fulfilled' && creditsData.value.data ? creditsData.value.data.map(item => ({ ...item, activity_type: 'credit' })) : [])
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     setActivityFeed(allActivities);

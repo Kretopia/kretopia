@@ -24,6 +24,7 @@ import { getRemainingSwipes, TIER_LIMITS, type SubscriptionTier } from "@/lib/su
 import { UpgradeDialog } from "@/components/UpgradeDialog";
 import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
 import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
+import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 
 type CardType = "creator" | "opportunity";
 
@@ -75,6 +76,7 @@ const Discover = () => {
   const [showCreditPrompt, setShowCreditPrompt] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [profileCompletionPercent, setProfileCompletionPercent] = useState(0);
+  const [profileCompletionStatus, setProfileCompletionStatus] = useState<any>(null);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
   const [aiScoringEnabled, setAiScoringEnabled] = useState(true);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
@@ -149,6 +151,7 @@ const Discover = () => {
         const completionStatus = checkProfileCompletion(userProfile, portfolioItems?.length || 0);
         setProfileIncomplete(!completionStatus.isComplete);
         setProfileCompletionPercent(completionStatus.completionPercentage);
+        setProfileCompletionStatus(completionStatus);
       }
       
       if (userProfile) {
@@ -564,22 +567,12 @@ const Discover = () => {
             </div>
           )}
 
-          {profileIncomplete && (
-            <Alert className="border-accent bg-accent/10">
-              <AlertCircle className="h-4 w-4 text-accent" />
-              <AlertDescription className="text-sm">
-                <span className="font-semibold">Complete your profile to be discovered!</span>
-                <br />
-                Your profile is {profileCompletionPercent}% complete. Add bio, skills, portfolio & more to appear in others' discovery feed.
-                <Button 
-                  variant="link" 
-                  className="h-auto p-0 ml-1 text-accent font-semibold"
-                  onClick={() => navigate('/profile')}
-                >
-                  Complete Profile →
-                </Button>
-              </AlertDescription>
-            </Alert>
+          {/* Profile Completion Banner */}
+          {profileCompletionStatus && profileCompletionStatus.percentage < 70 && (
+            <ProfileCompletionBanner 
+              completion={profileCompletionStatus} 
+              page={activeTab === 'creators' ? 'discover' : 'opportunities'} 
+            />
           )}
         </div>
 

@@ -18,6 +18,8 @@ import { PressActivityCard } from "@/components/feed/PressActivityCard";
 import { CreditActivityCard } from "@/components/feed/CreditActivityCard";
 import { useNavigate } from "react-router-dom";
 import { trackEvent, EventCategory } from "@/lib/analytics";
+import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
+import { checkProfileCompletion } from "@/lib/profileCompletion";
 
 interface Connection {
   id: string;
@@ -49,6 +51,7 @@ const Circle = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [discoverProfiles, setDiscoverProfiles] = useState<any[]>([]);
   const [discoverLoading, setDiscoverLoading] = useState(false);
+  const [profileCompletionStatus, setProfileCompletionStatus] = useState<any>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -57,6 +60,7 @@ const Circle = () => {
     fetchConnections();
     fetchPendingRequests();
     fetchActivityFeed();
+    fetchProfileCompletion();
     
     // Track page view
     import("@/lib/analytics").then(({ analytics }) => {
@@ -327,6 +331,27 @@ const Circle = () => {
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     setActivityFeed(allActivities);
+  };
+
+  const fetchProfileCompletion = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (userProfile) {
+      const { data: portfolioItems } = await supabase
+        .from('portfolio_items')
+        .select('id')
+        .eq('user_id', user.id);
+
+      const completionStatus = checkProfileCompletion(userProfile, portfolioItems?.length || 0);
+      setProfileCompletionStatus(completionStatus);
+    }
   };
 
   const fetchDiscoverProfiles = async () => {
@@ -661,6 +686,14 @@ const Circle = () => {
             </Card>
           )}
         </div>
+
+        {/* Profile Completion Banner */}
+        {profileCompletionStatus && profileCompletionStatus.percentage < 70 && (
+          <ProfileCompletionBanner 
+            completion={profileCompletionStatus} 
+            page="circle" 
+          />
+        )}
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

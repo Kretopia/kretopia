@@ -76,7 +76,7 @@ export default function CompanyOnboarding() {
     // Check if already completed onboarding
     const { data: profile } = await supabase
       .from("profiles")
-      .select("onboarding_completed, account_type")
+      .select("onboarding_completed, account_type, role")
       .eq("user_id", user.id)
       .single();
 

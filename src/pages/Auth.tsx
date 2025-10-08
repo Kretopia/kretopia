@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Github } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import {
   Dialog,
@@ -21,6 +22,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -34,7 +36,6 @@ const Auth = () => {
   const { user } = useAuth();
   
   const redirectTo = searchParams.get("redirect") || "/dashboard";
-  const accountType = searchParams.get("type") as "individual" | "company" || "individual";
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -328,6 +329,32 @@ const Auth = () => {
                     Join the waitlist
                   </a>
                 </p>
+              </div>
+
+              <div className="space-y-3">
+                <Label>I am a... *</Label>
+                <RadioGroup value={accountType} onValueChange={(value) => setAccountType(value as "individual" | "company")}>
+                  <div className="flex items-center space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-accent transition-colors">
+                    <RadioGroupItem value="individual" id="individual" />
+                    <Label htmlFor="individual" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <User className="h-5 w-5 text-primary" />
+                      <div>
+                        <div className="font-semibold">Creator / Creative</div>
+                        <div className="text-xs text-muted-foreground">Individual professional</div>
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-accent transition-colors">
+                    <RadioGroupItem value="company" id="company" />
+                    <Label htmlFor="company" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <Briefcase className="h-5 w-5 text-primary" />
+                      <div>
+                        <div className="font-semibold">Brand / Venue / Company</div>
+                        <div className="text-xs text-muted-foreground">Business or organization</div>
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
               
               <div className="space-y-2">

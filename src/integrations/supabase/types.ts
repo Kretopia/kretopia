@@ -410,6 +410,13 @@ export type Database = {
             foreignKeyName: "industry_stats_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "industry_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -670,6 +677,13 @@ export type Database = {
             foreignKeyName: "milestones_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -678,6 +692,13 @@ export type Database = {
             columns: ["paid_to"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_paid_to_fkey"
+            columns: ["paid_to"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -1172,6 +1193,13 @@ export type Database = {
             foreignKeyName: "portfolio_items_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "portfolio_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -1504,6 +1532,13 @@ export type Database = {
             foreignKeyName: "project_collaborators_invited_by_fkey"
             columns: ["invited_by"]
             isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "project_collaborators_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -1566,6 +1601,13 @@ export type Database = {
             foreignKeyName: "project_files_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "project_files_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -1618,6 +1660,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "project_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -1859,6 +1908,13 @@ export type Database = {
             foreignKeyName: "review_requests_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "review_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -1937,6 +1993,13 @@ export type Database = {
             foreignKeyName: "reviews_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
           },
@@ -1945,6 +2008,13 @@ export type Database = {
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -2412,6 +2482,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          badge: Database["public"]["Enums"]["user_badge"] | null
+          behance_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          imdb_url: string | null
+          industry: string | null
+          instagram_url: string | null
+          job_title: string | null
+          level: number | null
+          linkedin_url: string | null
+          location: string | null
+          passion_skills: Json | null
+          professional_skills: Json | null
+          role: string | null
+          soundcloud_url: string | null
+          spotify_url: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
+          user_id: string | null
+          verified_metrics: boolean | null
+          website: string | null
+          xp: number | null
+          youtube_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          badge?: Database["public"]["Enums"]["user_badge"] | null
+          behance_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          imdb_url?: string | null
+          industry?: string | null
+          instagram_url?: string | null
+          job_title?: string | null
+          level?: number | null
+          linkedin_url?: string | null
+          location?: string | null
+          passion_skills?: Json | null
+          professional_skills?: Json | null
+          role?: string | null
+          soundcloud_url?: string | null
+          spotify_url?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          user_id?: string | null
+          verified_metrics?: boolean | null
+          website?: string | null
+          xp?: number | null
+          youtube_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          badge?: Database["public"]["Enums"]["user_badge"] | null
+          behance_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          imdb_url?: string | null
+          industry?: string | null
+          instagram_url?: string | null
+          job_title?: string | null
+          level?: number | null
+          linkedin_url?: string | null
+          location?: string | null
+          passion_skills?: Json | null
+          professional_skills?: Json | null
+          role?: string | null
+          soundcloud_url?: string | null
+          spotify_url?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          user_id?: string | null
+          verified_metrics?: boolean | null
+          website?: string | null
+          xp?: number | null
+          youtube_url?: string | null
+        }
+        Relationships: []
       }
       public_profiles_view: {
         Row: {

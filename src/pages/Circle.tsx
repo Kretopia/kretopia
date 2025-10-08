@@ -17,6 +17,7 @@ import { AwardActivityCard } from "@/components/feed/AwardActivityCard";
 import { PressActivityCard } from "@/components/feed/PressActivityCard";
 import { CreditActivityCard } from "@/components/feed/CreditActivityCard";
 import { useNavigate } from "react-router-dom";
+import { trackEvent, EventCategory } from "@/lib/analytics";
 
 interface Connection {
   id: string;
@@ -56,6 +57,11 @@ const Circle = () => {
     fetchConnections();
     fetchPendingRequests();
     fetchActivityFeed();
+    
+    // Track page view
+    import("@/lib/analytics").then(({ analytics }) => {
+      analytics.pageView("circle");
+    });
     
     // Set up real-time presence
     const channel = supabase.channel('circle-presence');
@@ -427,6 +433,13 @@ const Circle = () => {
         link: '/circle',
       });
 
+      // Track connection engagement
+      trackEvent({
+        eventName: 'connection_request_sent',
+        eventCategory: EventCategory.ENGAGEMENT,
+        properties: { target_user_id: profile.user_id }
+      });
+
       toast({ title: `Request sent to ${profile.full_name}` });
       fetchDiscoverProfiles();
     } catch (error) {
@@ -485,6 +498,13 @@ const Circle = () => {
         });
 
       toast({ title: "Connection accepted! 🎉" });
+      
+      // Track connection acceptance
+      trackEvent({
+        eventName: 'connection_accepted',
+        eventCategory: EventCategory.ENGAGEMENT,
+        properties: { connection_id: connection.id }
+      });
       
       // Refresh all connection data and switch to Circle tab to show the new connection
       await Promise.all([

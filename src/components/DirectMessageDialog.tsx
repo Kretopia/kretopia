@@ -9,6 +9,7 @@ import { Send, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { analytics } from "@/lib/analytics";
 
 interface Message {
   id: string;
@@ -144,6 +145,9 @@ export const DirectMessageDialog = ({
         });
 
       if (error) throw error;
+
+      // Track message sent
+      analytics.messageSent(recipientId);
 
     } catch (error) {
       console.error('Error sending message:', error);

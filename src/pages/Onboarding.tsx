@@ -108,13 +108,21 @@ export default function Onboarding() {
 
     if (profileData?.bio && profileData?.role) {
       navigate("/discover");
+    } else {
+      // Track onboarding start
+      const { analytics } = await import("@/lib/analytics");
+      analytics.onboardingStart();
     }
   };
 
   const handleNext = async () => {
+    // Track step progression
+    const { analytics } = await import("@/lib/analytics");
+    
     // Validate current step before proceeding
     if (currentStep === 2) {
       // Avatar upload step - optional, no validation needed
+      analytics.onboardingStep(2, "photo_upload");
     }
 
     if (currentStep === 3) {
@@ -126,6 +134,9 @@ export default function Onboarding() {
         });
         return;
       }
+      
+      analytics.onboardingStep(3, "profile_details");
+      analytics.profileUpdate("basic_info");
       
       // Award XP for completing profile
       const { data: { user } } = await supabase.auth.getUser();
@@ -158,6 +169,9 @@ export default function Onboarding() {
         return;
       }
       
+      analytics.onboardingStep(4, "skills_added");
+      analytics.profileUpdate("skills");
+      
       // Award XP for adding skills
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -177,6 +191,10 @@ export default function Onboarding() {
           description: "Skills help you get matched with perfect opportunities",
         });
       }
+    }
+
+    if (currentStep === 1) {
+      analytics.onboardingStep(1, "welcome_viewed");
     }
 
     if (currentStep < 5) {
@@ -213,6 +231,10 @@ export default function Onboarding() {
       setAvatarUrl(publicUrl);
       setShowCropDialog(false);
       setTempImageUrl("");
+      
+      // Track profile photo upload
+      const { analytics } = await import("@/lib/analytics");
+      analytics.profileUpdate("avatar");
       
       toast({
         title: "📸 Photo Uploaded!",

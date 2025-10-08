@@ -21,6 +21,8 @@ import { scoreProfilesWithAI } from "@/components/discover/AIMatchScoring";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { getRemainingSwipes, TIER_LIMITS, type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { UpgradeDialog } from "@/components/UpgradeDialog";
+import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
+import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 
 type CardType = "creator" | "opportunity";
 
@@ -78,7 +80,7 @@ const Discover = () => {
   const [upgradeFeature, setUpgradeFeature] = useState({ name: "", description: "" });
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
-  const [showFirstTimeGuide, setShowFirstTimeGuide] = useState(true);
+  const { isFirstTime, loading: firstTimeLoading } = useFirstTimeUser();
   
   // Use subscription tier from auth context
   const subscriptionTier = subscriptionInfo.tier as SubscriptionTier;
@@ -111,6 +113,13 @@ const Discover = () => {
     if (state?.cardIndex !== undefined) {
       setCurrentIndex(state.cardIndex);
     }
+    
+    // Track page view
+    const trackPageView = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.pageView("discover");
+    };
+    trackPageView();
   }, [location.state]);
 
   useEffect(() => {
@@ -405,6 +414,9 @@ const Discover = () => {
             status: 'active',
           });
 
+          // Track match creation
+          analytics.match(currentCard.user_id);
+
           // Remove the swiped card first
           const updatedCards = cards.filter((_, index) => index !== currentIndex);
           setCards(updatedCards);
@@ -571,37 +583,19 @@ const Discover = () => {
         </div>
 
         {/* First-Time User Guide */}
-        {showFirstTimeGuide && dailySwipesLeft > 15 && (
+        {!firstTimeLoading && isFirstTime && (
           <div className="mb-4">
-            <Alert className="border-primary/30 bg-gradient-to-r from-primary/5 to-secondary/5">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <AlertDescription>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-semibold mb-2 text-foreground">👋 New to Discovery?</p>
-                    <ul className="text-sm space-y-1 text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">→</span> Swipe right to connect, left to pass
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">★</span> Super Likes show serious interest
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-primary">✓</span> Match when both swipe right!
-                      </li>
-                    </ul>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setShowFirstTimeGuide(false)}
-                    className="text-xs"
-                  >
-                    Got it
-                  </Button>
-                </div>
-              </AlertDescription>
-            </Alert>
+            <FirstTimeUserGuide
+              title="👋 Welcome to Discovery!"
+              description="Your gateway to finding perfect collaborations"
+              tips={[
+                "Swipe right (→) on creators you want to connect with",
+                "Swipe left (←) to pass and see the next profile",
+                "Use Super Likes (★) to show serious interest",
+                "When both swipe right, it's a match! Start chatting",
+                "Higher XP profiles appear more in Discovery"
+              ]}
+            />
           </div>
         )}
 

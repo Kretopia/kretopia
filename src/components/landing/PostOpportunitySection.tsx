@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Briefcase, Sparkles } from "lucide-react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 interface PostOpportunitySectionProps {
   opportunitiesCount: number;
@@ -12,19 +9,6 @@ interface PostOpportunitySectionProps {
 
 export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySectionProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const navigate = useNavigate();
-
-  const handlePostOpportunity = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast("Please sign in to post an opportunity");
-      navigate("/auth");
-      return;
-    }
-    
-    setDialogOpen(true);
-  };
 
   return (
     <section className="px-6 py-16 bg-muted/30">
@@ -47,7 +31,7 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
           variant="default" 
           size="xl" 
           className="bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-          onClick={handlePostOpportunity}
+          onClick={() => setDialogOpen(true)}
         >
           <Briefcase className="mr-2 h-5 w-5" />
           Post an Opportunity

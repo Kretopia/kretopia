@@ -32,12 +32,21 @@ const Leaderboard = () => {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Get top 51 users (extra to account for filtering owner)
+    // Hardcoded owner email to filter from public leaderboard
+    const OWNER_EMAIL = 'thriveuae@gmail.com';
+    let ownerUserId: string | null = null;
+    
+    // If current user is the owner, use their ID for filtering
+    if (user?.email === OWNER_EMAIL) {
+      ownerUserId = user.id;
+    }
+    
+    // Get top 60 users (extra to account for filtering)
     const { data: leaders, error } = await supabase
       .from('profiles')
       .select('id, user_id, full_name, avatar_url, xp, level, role')
       .order('xp', { ascending: false })
-      .limit(51);
+      .limit(60);
 
     if (error) {
       console.error('Error fetching leaderboard:', error);
@@ -45,23 +54,15 @@ const Leaderboard = () => {
       return;
     }
 
-    // Filter out owner (thriveuae@gmail.com) - get their user_id first
-    const { data: ownerProfile } = await supabase.auth.getUser();
-    
-    // Hardcode: Filter out thriveuae@gmail.com by checking against known email
-    // In a real scenario, you'd store this as an admin flag in the database
-    const filteredLeaders = (leaders || []).filter(leader => {
-      // Exclude owner by user_id if current user is owner
-      if (user?.email === 'thriveuae@gmail.com') {
-        return leader.user_id !== user.id;
-      }
-      return true;
-    }).slice(0, 50);
+    // Filter out platform owner from public leaderboard, then take top 50
+    const filteredLeaders = (leaders || [])
+      .filter(leader => !ownerUserId || leader.user_id !== ownerUserId)
+      .slice(0, 50);
 
     setTopUsers(filteredLeaders);
 
     // Get current user's rank (if not owner)
-    if (user && user.email !== 'thriveuae@gmail.com') {
+    if (user && user.email !== OWNER_EMAIL) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url, xp, level, role')
@@ -71,13 +72,27 @@ const Leaderboard = () => {
       if (profile) {
         setCurrentUser(profile as LeaderboardUser);
         
-        // Calculate rank
+        // Calculate rank excluding owner
         const { count } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact', head: true })
+          .select('user_id, xp', { count: 'exact', head: true })
           .gt('xp', profile.xp);
         
-        setUserRank((count || 0) + 1);
+        // Adjust rank if owner would be ranked higher
+        let adjustedCount = count || 0;
+        if (ownerUserId) {
+          const { data: ownerProfile } = await supabase
+            .from('profiles')
+            .select('xp')
+            .eq('user_id', ownerUserId)
+            .single();
+          
+          if (ownerProfile && ownerProfile.xp > profile.xp) {
+            adjustedCount = Math.max(0, adjustedCount - 1);
+          }
+        }
+        
+        setUserRank(adjustedCount + 1);
       }
     }
     setLoading(false);

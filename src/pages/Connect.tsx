@@ -282,6 +282,31 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
 
       if (matchError) throw matchError;
 
+      // Award 20 XP to both users for the new connection
+      const { data: accepterXPProfile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('user_id', user.id)
+        .single();
+
+      const { data: requesterXPProfile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('user_id', profile.user_id)
+        .single();
+
+      // Award XP to both users
+      await Promise.all([
+        supabase
+          .from('profiles')
+          .update({ xp: (accepterXPProfile?.xp || 0) + 20 })
+          .eq('user_id', user.id),
+        supabase
+          .from('profiles')
+          .update({ xp: (requesterXPProfile?.xp || 0) + 20 })
+          .eq('user_id', profile.user_id)
+      ]);
+
       // Get current user's profile for notification
       const { data: accepterProfile } = await supabase
         .from('profiles')
@@ -303,7 +328,7 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         image_url: accepterProfile?.avatar_url,
       });
 
-      toast.success(`You're now connected with ${profile.full_name}!`);
+      toast.success(`You're now connected with ${profile.full_name}! +20 XP`);
       fetchProfiles();
     } catch (error) {
       console.error('Error accepting connection:', error);

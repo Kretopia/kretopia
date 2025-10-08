@@ -497,7 +497,32 @@ const Circle = () => {
           ignoreDuplicates: true
         });
 
-      toast({ title: "Connection accepted! 🎉" });
+      // Award 20 XP to both users for the new connection
+      const { data: accepterProfile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('user_id', user.id)
+        .single();
+
+      const { data: requesterProfile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('user_id', connection.user_id)
+        .single();
+
+      // Award XP to both users
+      await Promise.all([
+        supabase
+          .from('profiles')
+          .update({ xp: (accepterProfile?.xp || 0) + 20 })
+          .eq('user_id', user.id),
+        supabase
+          .from('profiles')
+          .update({ xp: (requesterProfile?.xp || 0) + 20 })
+          .eq('user_id', connection.user_id)
+      ]);
+
+      toast({ title: "Connection accepted! 🎉 +20 XP" });
       
       // Track connection acceptance
       trackEvent({

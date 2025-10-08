@@ -29,27 +29,41 @@ export function LeaderboardWidget() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Get top 5 users
+      // Hardcoded owner email to filter from leaderboard
+      const OWNER_EMAIL = 'thriveuae@gmail.com';
+      let ownerUserId: string | null = null;
+      
+      // If current user is the owner, use their ID for filtering
+      if (user?.email === OWNER_EMAIL) {
+        ownerUserId = user.id;
+      }
+      
+      // Get top 10 users (extra to account for potential filtering)
       const { data: users, error } = await supabase
         .from("profiles")
         .select("id, user_id, full_name, avatar_url, xp, level")
         .order("xp", { ascending: false })
-        .limit(5);
+        .limit(10);
 
       if (error) throw error;
 
-      const filteredUsers = users?.filter(u => u.user_id !== "e29e39b0-a884-4e8d-b9ca-c4a7a5e2d1f8") || [];
+      // Filter out platform owner if we know their ID, then take top 5
+      const filteredUsers = (users || [])
+        .filter(u => !ownerUserId || u.user_id !== ownerUserId)
+        .slice(0, 5);
       setTopUsers(filteredUsers as LeaderboardUser[]);
 
-      // Get current user's rank
-      if (user) {
+      // Get current user's rank (exclude owner from rankings)
+      if (user && user.email !== OWNER_EMAIL) {
         const { data: allUsers } = await supabase
           .from("profiles")
           .select("user_id, xp")
           .order("xp", { ascending: false });
 
         if (allUsers) {
-          const filtered = allUsers.filter(u => u.user_id !== "e29e39b0-a884-4e8d-b9ca-c4a7a5e2d1f8");
+          const filtered = ownerUserId 
+            ? allUsers.filter(u => u.user_id !== ownerUserId)
+            : allUsers;
           const rank = filtered.findIndex(u => u.user_id === user.id) + 1;
           setCurrentUserRank(rank > 0 ? rank : null);
         }

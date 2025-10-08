@@ -284,11 +284,36 @@ const PublicProfile = () => {
         variant: "destructive",
       });
     } else {
+      // Award 20 XP to both users for the new connection
+      const { data: accepterProfile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('user_id', user.id)
+        .single();
+
+      const { data: requesterProfile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('user_id', userId)
+        .single();
+
+      // Award XP to both users
+      await Promise.all([
+        supabase
+          .from('profiles')
+          .update({ xp: (accepterProfile?.xp || 0) + 20 })
+          .eq('user_id', user.id),
+        supabase
+          .from('profiles')
+          .update({ xp: (requesterProfile?.xp || 0) + 20 })
+          .eq('user_id', userId)
+      ]);
+
       setConnectionStatus('accepted');
       setIsConnected(true);
       setIsPendingReceived(false);
       toast({
-        title: "Connection Accepted!",
+        title: "Connection Accepted! +20 XP",
         description: `You're now connected with ${profile?.full_name}`,
       });
     }

@@ -17,6 +17,8 @@ import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { CreditsSection } from "@/components/profile/CreditsSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
 
+import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
+
 interface Profile {
   full_name: string;
   role: string;
@@ -48,6 +50,16 @@ interface Profile {
   total_engagement_rate?: number;
   avg_views?: number;
   verified_metrics?: boolean;
+  account_type?: 'individual' | 'company';
+  company_name?: string;
+  company_logo_url?: string;
+  company_about?: string;
+  company_address?: string;
+  company_size?: string;
+  company_industry?: string;
+  average_rating?: number;
+  total_reviews?: number;
+  badge?: 'og' | 'beta' | 'official' | 'founder';
 }
 
 const PublicProfile = () => {
@@ -82,7 +94,7 @@ const PublicProfile = () => {
     // Fetch profile using only public fields from profiles table
     const { data, error } = await supabase
       .from('profiles')
-      .select('user_id, full_name, role, bio, location, avatar_url, job_title, industry, badge, level, professional_skills, passion_skills, section_order, website, linkedin_url, behance_url, imdb_url, instagram_url, twitter_url, spotify_url, soundcloud_url, instagram_followers, youtube_subscribers, tiktok_followers, spotify_listeners, total_engagement_rate, verified_metrics, created_at')
+      .select('user_id, full_name, role, bio, location, avatar_url, job_title, industry, badge, level, professional_skills, passion_skills, section_order, website, linkedin_url, behance_url, imdb_url, instagram_url, twitter_url, spotify_url, soundcloud_url, instagram_followers, youtube_subscribers, tiktok_followers, spotify_listeners, total_engagement_rate, verified_metrics, created_at, account_type, company_name, company_logo_url, company_about, company_address, company_size, company_industry, average_rating, total_reviews')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -355,20 +367,29 @@ const PublicProfile = () => {
             } else if (state?.from === 'circle') {
               navigate('/circle');
             } else {
-              navigate('/discover', { state: { cardIndex: state?.cardIndex } });
-            }
-          }}
-          className="mb-4 gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {location.state && (location.state as any).from === 'circle' 
-            ? 'Back to My Circle' 
-            : location.state && (location.state as any).from === 'connect' 
-            ? 'Back to Connect' 
-            : 'Back to Discover'}
-        </Button>
+      navigate('/discover', { state: { cardIndex: state?.cardIndex } });
+    }
+  }}
+  className="mb-4 gap-2"
+>
+  <ArrowLeft className="h-4 w-4" />
+  {location.state && (location.state as any).from === 'circle' 
+    ? 'Back to My Circle' 
+    : location.state && (location.state as any).from === 'connect' 
+    ? 'Back to Connect' 
+    : 'Back to Discover'}
+</Button>
 
-        {/* Profile Header */}
+{/* Render company view for company accounts */}
+{profile.account_type === 'company' ? (
+  <CompanyProfileView
+    profile={profile}
+    reviews={reviews}
+    isOwnProfile={false}
+  />
+) : (
+<>
+{/* Profile Header */}
         <div className="mb-6 md:mb-8 overflow-hidden rounded-2xl md:rounded-3xl border border-border bg-card shadow-card">
           <div className="relative h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
           
@@ -588,6 +609,8 @@ const PublicProfile = () => {
         </Tabs>
       </div>
     </div>
+  </>
+  )}
   );
 };
 

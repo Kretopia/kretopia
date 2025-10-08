@@ -17,6 +17,8 @@ import { analytics } from "@/lib/analytics";
 const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));
+const AccountTypeSelection = lazy(() => import("./pages/AccountTypeSelection"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Discover = lazy(() => import("./pages/Discover"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -114,9 +116,11 @@ const AppContent = () => {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/account-type" element={<AccountTypeSelection />} />
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
             <Route path="/review" element={<SubmitReview />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/company-onboarding" element={<ProtectedRoute><CompanyOnboarding /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

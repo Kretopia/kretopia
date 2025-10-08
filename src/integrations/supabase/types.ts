@@ -160,6 +160,111 @@ export type Database = {
         }
         Relationships: []
       }
+      company_reviews: {
+        Row: {
+          company_id: string
+          created_at: string
+          helpful_count: number | null
+          id: string
+          opportunity_id: string | null
+          project_id: string | null
+          rating: number
+          response_date: string | null
+          response_text: string | null
+          review_text: string | null
+          reviewer_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          opportunity_id?: string | null
+          project_id?: string | null
+          rating: number
+          response_date?: string | null
+          response_text?: string | null
+          review_text?: string | null
+          reviewer_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          opportunity_id?: string | null
+          project_id?: string | null
+          rating?: number
+          response_date?: string | null
+          response_text?: string | null
+          review_text?: string | null
+          reviewer_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_reviews_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_reviews_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_reviews_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_reviews_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_reviews_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           connected_user_id: string
@@ -1290,16 +1395,27 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
           available_invites: number | null
           avatar_url: string | null
+          average_rating: number | null
           avg_views: number | null
           awards: Json | null
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
+          company_about: string | null
+          company_address: string | null
+          company_industry: string | null
+          company_location_lat: number | null
+          company_location_lng: number | null
+          company_logo_url: string | null
+          company_name: string | null
+          company_size: string | null
           created_at: string | null
           daily_swipes: number | null
           full_name: string
+          google_maps_place_id: string | null
           id: string
           imdb_url: string | null
           industry: string | null
@@ -1318,6 +1434,7 @@ export type Database = {
           og_promotion_expires_at: string | null
           og_promotion_used: boolean | null
           onboarding_completed: boolean
+          partner_location_id: string | null
           passion_skills: Json | null
           press_links: Json | null
           professional_skills: Json | null
@@ -1343,6 +1460,7 @@ export type Database = {
           tiktok_followers: number | null
           tiktok_url: string | null
           total_engagement_rate: number | null
+          total_reviews: number | null
           twitter_followers: number | null
           twitter_url: string | null
           updated_at: string | null
@@ -1354,16 +1472,27 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           available_invites?: number | null
           avatar_url?: string | null
+          average_rating?: number | null
           avg_views?: number | null
           awards?: Json | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          company_about?: string | null
+          company_address?: string | null
+          company_industry?: string | null
+          company_location_lat?: number | null
+          company_location_lng?: number | null
+          company_logo_url?: string | null
+          company_name?: string | null
+          company_size?: string | null
           created_at?: string | null
           daily_swipes?: number | null
           full_name: string
+          google_maps_place_id?: string | null
           id?: string
           imdb_url?: string | null
           industry?: string | null
@@ -1382,6 +1511,7 @@ export type Database = {
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
           onboarding_completed?: boolean
+          partner_location_id?: string | null
           passion_skills?: Json | null
           press_links?: Json | null
           professional_skills?: Json | null
@@ -1407,6 +1537,7 @@ export type Database = {
           tiktok_followers?: number | null
           tiktok_url?: string | null
           total_engagement_rate?: number | null
+          total_reviews?: number | null
           twitter_followers?: number | null
           twitter_url?: string | null
           updated_at?: string | null
@@ -1418,16 +1549,27 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           available_invites?: number | null
           avatar_url?: string | null
+          average_rating?: number | null
           avg_views?: number | null
           awards?: Json | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          company_about?: string | null
+          company_address?: string | null
+          company_industry?: string | null
+          company_location_lat?: number | null
+          company_location_lng?: number | null
+          company_logo_url?: string | null
+          company_name?: string | null
+          company_size?: string | null
           created_at?: string | null
           daily_swipes?: number | null
           full_name?: string
+          google_maps_place_id?: string | null
           id?: string
           imdb_url?: string | null
           industry?: string | null
@@ -1446,6 +1588,7 @@ export type Database = {
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
           onboarding_completed?: boolean
+          partner_location_id?: string | null
           passion_skills?: Json | null
           press_links?: Json | null
           professional_skills?: Json | null
@@ -1471,6 +1614,7 @@ export type Database = {
           tiktok_followers?: number | null
           tiktok_url?: string | null
           total_engagement_rate?: number | null
+          total_reviews?: number | null
           twitter_followers?: number | null
           twitter_url?: string | null
           updated_at?: string | null
@@ -1481,7 +1625,15 @@ export type Database = {
           youtube_subscribers?: number | null
           youtube_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_partner_location_id_fkey"
+            columns: ["partner_location_id"]
+            isOneToOne: false
+            referencedRelation: "partner_locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_collaborators: {
         Row: {
@@ -2770,6 +2922,7 @@ export type Database = {
       }
     }
     Enums: {
+      account_type: "individual" | "company"
       app_role: "admin" | "moderator" | "user"
       user_badge: "og" | "beta" | "official" | "founder"
     }
@@ -2899,6 +3052,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["individual", "company"],
       app_role: ["admin", "moderator", "user"],
       user_badge: ["og", "beta", "official", "founder"],
     },

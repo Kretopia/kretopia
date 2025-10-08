@@ -34,6 +34,7 @@ const Auth = () => {
   const { user } = useAuth();
   
   const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const accountType = searchParams.get("type") as "individual" | "company" || "individual";
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -150,6 +151,7 @@ const Auth = () => {
         emailRedirectTo: `${window.location.origin}${redirectTo}`,
         data: {
           invite_code: inviteCode.trim(),
+          account_type: accountType,
         },
       },
     });
@@ -178,7 +180,13 @@ const Auth = () => {
         title: "Success!",
         description: "Your account has been created. Welcome to ThriveIN!",
       });
-      navigate("/onboarding");
+      
+      // Redirect based on account type
+      if (accountType === "company") {
+        navigate("/company-onboarding");
+      } else {
+        navigate("/onboarding");
+      }
     }
     setLoading(false);
   };

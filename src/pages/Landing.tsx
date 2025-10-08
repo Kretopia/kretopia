@@ -126,7 +126,7 @@ const Landing = () => {
                 "Community access",
               ]}
               cta="Get Started"
-              ctaLink="/auth"
+              ctaLink="/account-type"
             />
             <PricingCard
               name="Thriver"
@@ -258,7 +258,7 @@ const Landing = () => {
               <p className="mb-8 text-lg opacity-90">
                 Join thousands of creators building their careers on ThriveIN
               </p>
-              <Link to="/auth">
+              <Link to="/account-type">
                 <Button 
                   variant="outline" 
                   size="xl"

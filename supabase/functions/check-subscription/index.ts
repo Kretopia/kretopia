@@ -92,15 +92,16 @@ serve(async (req) => {
       productId = subscription.items.data[0].price.product as string;
       
       // Map product ID to tier
-      if (productId === 'prod_TA72LxYWp18g5A') {
+      // Current product IDs (from subscriptionConfig.ts)
+      if (productId === 'prod_TAoY7TiQaFLU00') {
         tier = 'thriver';
-      } else if (productId === 'prod_TA73Hatv66ZqLu') {
+      } else if (productId === 'prod_TAoZwx40t99jYc') {
         tier = 'creator_pro';
-      } else if (productId === 'prod_TA5c8GtL6ioS2h') {
-        // Legacy Thrive Pro mapping
+      }
+      // Legacy product IDs
+      else if (productId === 'prod_TA72LxYWp18g5A' || productId === 'prod_TA5c8GtL6ioS2h') {
         tier = 'thriver';
-      } else if (productId === 'prod_TA5ihoppNqeijE') {
-        // Legacy Thrive Studio mapping
+      } else if (productId === 'prod_TA73Hatv66ZqLu' || productId === 'prod_TA5ihoppNqeijE') {
         tier = 'creator_pro';
       }
       

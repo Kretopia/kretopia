@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ interface Profile {
   twitter_url?: string;
   spotify_url?: string;
   soundcloud_url?: string;
+  youtube_url?: string;
+  tiktok_url?: string;
   youtube_subscribers?: number;
   instagram_followers?: number;
   tiktok_followers?: number;
@@ -59,14 +61,30 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
     } else {
       toast({ title: "Success", description: "Social data updated" });
       setIsEditOpen(false);
+      setHasUnsavedChanges(false);
       onRefresh();
     }
   };
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && isEditOpen) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges, isEditOpen]);
+
   const socialPlatforms = [
     { 
       key: 'youtube', 
-      urlKey: 'website',
+      urlKey: 'youtube_url',
       label: 'YouTube', 
       icon: Music,
       statKey: 'youtube_subscribers',
@@ -82,7 +100,7 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
     },
     { 
       key: 'tiktok', 
-      urlKey: 'website',
+      urlKey: 'tiktok_url',
       label: 'TikTok', 
       icon: Music,
       statKey: 'tiktok_followers',
@@ -144,14 +162,20 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
                     <div className="space-y-2">
                       <Input
                         value={(editData as any)[urlKey] || ""}
-                        onChange={(e) => setEditData({ ...editData, [urlKey]: e.target.value })}
+                        onChange={(e) => {
+                          setEditData({ ...editData, [urlKey]: e.target.value });
+                          setHasUnsavedChanges(true);
+                        }}
                         placeholder={`${label} URL`}
                       />
                       {statKey && (
                         <Input
                           type="number"
                           value={(editData as any)[statKey] || ""}
-                          onChange={(e) => setEditData({ ...editData, [statKey]: parseInt(e.target.value) || 0 })}
+                          onChange={(e) => {
+                            setEditData({ ...editData, [statKey]: parseInt(e.target.value) || 0 });
+                            setHasUnsavedChanges(true);
+                          }}
                           placeholder={`Number of ${statLabel}`}
                         />
                       )}
@@ -164,13 +188,19 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
                     type="number"
                     step="0.01"
                     value={editData.total_engagement_rate || ""}
-                    onChange={(e) => setEditData({ ...editData, total_engagement_rate: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) => {
+                      setEditData({ ...editData, total_engagement_rate: parseFloat(e.target.value) || 0 });
+                      setHasUnsavedChanges(true);
+                    }}
                     placeholder="Engagement rate (%)"
                   />
                   <Input
                     type="number"
                     value={editData.avg_views || ""}
-                    onChange={(e) => setEditData({ ...editData, avg_views: parseInt(e.target.value) || 0 })}
+                    onChange={(e) => {
+                      setEditData({ ...editData, avg_views: parseInt(e.target.value) || 0 });
+                      setHasUnsavedChanges(true);
+                    }}
                     placeholder="Average views per post"
                   />
                 </div>

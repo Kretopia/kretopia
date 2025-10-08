@@ -380,6 +380,7 @@ const Profile = () => {
                     <AvatarImage 
                       src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
                       alt={profile.full_name}
+                      className="object-cover"
                     />
                     <AvatarFallback className="text-2xl md:text-4xl">
                       {profile.full_name.split(' ').map(n => n[0]).join('')}
@@ -577,13 +578,28 @@ const Profile = () => {
           />
         )}
 
+        {/* Portfolio and Reviews - Outside Tabs */}
+        <div className="space-y-4 md:space-y-6 mb-4 md:mb-6">
+          <PortfolioSection
+            items={portfolioItems}
+            isOwnProfile={true}
+            onRefresh={fetchData}
+          />
+          <ReviewsSection
+            reviews={reviews}
+            isOwnProfile={true}
+            profileUserId={profile.user_id}
+            onRefresh={fetchData}
+          />
+        </div>
+
         {/* Tabs */}
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
             <TabsTrigger value="overview" className="rounded-lg md:rounded-xl text-xs md:text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
-            <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
+            <TabsTrigger value="credits" className="rounded-lg md:rounded-xl text-xs md:text-sm">Credits</TabsTrigger>
+            <TabsTrigger value="awards" className="rounded-lg md:rounded-xl text-xs md:text-sm">Awards</TabsTrigger>
+            <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Industry Stats</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 md:space-y-6">
@@ -639,20 +655,6 @@ const Profile = () => {
                           />
                         </div>
                       ),
-                      credits: (
-                        <CreditsSection 
-                          userId={profile.user_id}
-                          isOwnProfile={true}
-                          onRefresh={fetchData}
-                        />
-                      ),
-                      awards: (
-                        <AwardsSection 
-                          userId={profile.user_id}
-                          isOwnProfile={true}
-                          onRefresh={fetchData}
-                        />
-                      ),
                       press: (
                         <PressLinksSection 
                           userId={profile.user_id}
@@ -684,19 +686,18 @@ const Profile = () => {
             </DndContext>
           </TabsContent>
 
-          <TabsContent value="portfolio" className="space-y-3 md:space-y-4">
-            <PortfolioSection 
-              items={portfolioItems} 
+          <TabsContent value="credits">
+            <CreditsSection 
+              userId={profile.user_id}
               isOwnProfile={true}
               onRefresh={fetchData}
             />
           </TabsContent>
 
-          <TabsContent value="reviews" className="space-y-3 md:space-y-4">
-            <ReviewsSection 
-              reviews={reviews} 
+          <TabsContent value="awards">
+            <AwardsSection 
+              userId={profile.user_id}
               isOwnProfile={true}
-              profileUserId={profile.user_id}
               onRefresh={fetchData}
             />
           </TabsContent>

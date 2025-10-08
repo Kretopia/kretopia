@@ -56,7 +56,7 @@ const SKILL_OPTIONS: Record<string, string[]> = {
   ],
   "Technical": [
     "Web Development", "Mobile Development", "3D Modeling", "Game Design",
-    "Virtual Reality", "Augmented Reality", "Technical Direction"
+    "Virtual Reality", "Augmented Reality", "Technical Direction", "Drones"
   ]
 };
 

@@ -31,35 +31,6 @@ const Landing = () => {
     <div className="min-h-screen">
       <HeroSection />
       
-      {/* Quick Actions for Opportunities */}
-      <section className="px-6 py-12 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            Looking to Hire or Collaborate?
-          </h2>
-          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Post opportunities in seconds. Whether it's a paid job, creative collaboration, 
-            or barter—our AI helps match you with the right creators.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/discover">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                <Users className="mr-2 h-5 w-5" />
-                Browse Creators
-              </Button>
-            </Link>
-            <PostOpportunityDialog 
-              trigger={
-                <Button size="lg" variant="gradient" className="w-full sm:w-auto">
-                  <Briefcase className="mr-2 h-5 w-5" />
-                  Post Opportunity
-                </Button>
-              }
-            />
-          </div>
-        </div>
-      </section>
-      
       <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
 
       {/* Features Section */}

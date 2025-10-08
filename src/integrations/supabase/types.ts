@@ -1312,6 +1312,7 @@ export type Database = {
           subscription_status: string | null
           subscription_tier: string | null
           tiktok_followers: number | null
+          tiktok_url: string | null
           total_engagement_rate: number | null
           twitter_followers: number | null
           twitter_url: string | null
@@ -1321,6 +1322,7 @@ export type Database = {
           website: string | null
           xp: number | null
           youtube_subscribers: number | null
+          youtube_url: string | null
         }
         Insert: {
           available_invites?: number | null
@@ -1373,6 +1375,7 @@ export type Database = {
           subscription_status?: string | null
           subscription_tier?: string | null
           tiktok_followers?: number | null
+          tiktok_url?: string | null
           total_engagement_rate?: number | null
           twitter_followers?: number | null
           twitter_url?: string | null
@@ -1382,6 +1385,7 @@ export type Database = {
           website?: string | null
           xp?: number | null
           youtube_subscribers?: number | null
+          youtube_url?: string | null
         }
         Update: {
           available_invites?: number | null
@@ -1434,6 +1438,7 @@ export type Database = {
           subscription_status?: string | null
           subscription_tier?: string | null
           tiktok_followers?: number | null
+          tiktok_url?: string | null
           total_engagement_rate?: number | null
           twitter_followers?: number | null
           twitter_url?: string | null
@@ -1443,6 +1448,7 @@ export type Database = {
           website?: string | null
           xp?: number | null
           youtube_subscribers?: number | null
+          youtube_url?: string | null
         }
         Relationships: []
       }

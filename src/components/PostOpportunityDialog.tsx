@@ -66,12 +66,16 @@ export const PostOpportunityDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[PostOpportunity] Form submitted');
     setLoading(true);
 
     try {
+      console.log('[PostOpportunity] Getting user...');
       // Get authenticated user
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('[PostOpportunity] User:', user?.id);
       if (!user) {
+        console.error('[PostOpportunity] No user found');
         throw new Error("You must be logged in to post opportunities");
       }
       // Call AI moderation function

@@ -35,6 +35,7 @@ import { DailyGoals } from "@/components/dashboard/DailyGoals";
 import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
 import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 import { SEO } from "@/components/SEO";
+import { SuccessMetrics } from "@/components/dashboard/SuccessMetrics";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -276,7 +277,16 @@ const Dashboard = () => {
         )}
 
         {/* Daily Goals - Mobile optimized */}
-        <DailyGoals />
+        <div className="mb-6 sm:mb-8">
+          <DailyGoals />
+        </div>
+
+        {/* Success Metrics - Admin view */}
+        {profile && profile.badge === 'og' && (
+          <div className="mb-6 sm:mb-8">
+            <SuccessMetrics />
+          </div>
+        )}
 
         {/* Stats Cards - Mobile optimized grid */}
         <div className="grid gap-3 sm:gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">

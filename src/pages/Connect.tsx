@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Search, MapPin, Sparkles, Check, Clock, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { SEO } from "@/components/SEO";
+import { CreatorFilters, CreatorFilterState } from "@/components/discover/CreatorFilters";
 
 interface Profile {
   user_id: string;
@@ -32,16 +33,41 @@ export default function Connect() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [userLevel, setUserLevel] = useState(1);
+  const [isPremium, setIsPremium] = useState(false);
+  const [filters, setFilters] = useState<CreatorFilterState>({
+    role: 'all',
+    location: 'all',
+    minFollowers: 0,
+    verified: false,
+    level: 'all',
+    badge: 'all'
+  });
 
   useEffect(() => {
     if (user) {
+      fetchUserProfile();
       fetchProfiles();
     }
-  }, [user, searchQuery, locationFilter]);
+  }, [user, searchQuery, filters]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('profiles')
+      .select('level, subscription_tier')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (data) {
+      setUserLevel(data.level || 1);
+      setIsPremium(data.subscription_tier === 'creator_pro' || data.subscription_tier === 'thriver');
+    }
+  };
 
   useEffect(() => {
     if (user && !searchQuery && !loadingSuggestions) {
@@ -122,13 +148,36 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         .not('full_name', 'is', null)
         .not('avatar_url', 'is', null);
 
-      // Apply filters
+      // Apply search
       if (searchQuery) {
         query = query.or(`full_name.ilike.%${searchQuery}%,role.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%`);
       }
 
-      if (locationFilter) {
-        query = query.ilike('location', `%${locationFilter}%`);
+      // Apply filters
+      if (filters.role !== 'all') {
+        query = query.eq('role', filters.role);
+      }
+
+      if (filters.location !== 'all') {
+        query = query.ilike('location', `%${filters.location}%`);
+      }
+
+      if (filters.badge !== 'all') {
+        query = query.eq('badge', filters.badge as 'og' | 'beta');
+      }
+
+      if (filters.level !== 'all') {
+        if (filters.level === '1-5') {
+          query = query.gte('level', 1).lte('level', 5);
+        } else if (filters.level === '6-10') {
+          query = query.gte('level', 6).lte('level', 10);
+        } else if (filters.level === '11+') {
+          query = query.gte('level', 11);
+        }
+      }
+
+      if (filters.verified) {
+        query = query.eq('verified_metrics', true);
       }
 
       const { data, error } = await query.limit(50);
@@ -151,11 +200,23 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
 
       // Filter profiles - require complete profile to be discoverable
       const completeProfiles = data?.filter(profile => {
-        return profile.full_name && 
-               profile.full_name !== 'New User' && 
-               profile.role &&
-               profile.avatar_url &&
-               profile.bio;
+        // Basic completeness check
+        if (!profile.full_name || profile.full_name === 'New User' || !profile.role || !profile.avatar_url || !profile.bio) {
+          return false;
+        }
+
+        // Apply follower filter (premium only)
+        if (filters.minFollowers > 0 && isPremium) {
+          const totalFollowers = (profile.instagram_followers || 0) + 
+                                 (profile.twitter_followers || 0) + 
+                                 (profile.youtube_subscribers || 0) + 
+                                 (profile.tiktok_followers || 0);
+          if (totalFollowers < filters.minFollowers) {
+            return false;
+          }
+        }
+
+        return true;
       }) || [];
       
       console.log('[Connect] After filtering complete profiles:', completeProfiles.length);
@@ -405,72 +466,75 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        {/* Search and Filters */}
-        <div className="grid gap-4 md:grid-cols-2 mb-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, role, skills, or use #hashtags..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              className="pl-10"
+        <div className="grid lg:grid-cols-[300px_1fr] gap-6">
+          {/* Filters Sidebar */}
+          <aside className="lg:sticky lg:top-24 lg:h-fit">
+            <CreatorFilters
+              filters={filters}
+              onFilterChange={setFilters}
+              isPremium={isPremium}
+              userLevel={userLevel}
             />
-            
-            {/* AI Suggestions Dropdown */}
-            {showSuggestions && searchSuggestions.length > 0 && !searchQuery && (
-              <Card className="absolute top-full mt-2 w-full z-50 p-2">
-                <div className="flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground mb-2">
-                  <Sparkles className="h-3 w-3" />
-                  AI-suggested searches for you
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {searchSuggestions.map((suggestion, idx) => (
-                    <Button
-                      key={idx}
-                      variant="outline"
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => {
-                        setSearchQuery(suggestion);
-                        setShowSuggestions(false);
-                      }}
-                    >
-                      {suggestion}
-                    </Button>
-                  ))}
-                </div>
-              </Card>
-            )}
-          </div>
+          </aside>
 
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Filter by location..."
-              value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
-        {/* Results */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-          </div>
-              ) : profiles.length === 0 ? (
-                <EmptyState
-                  icon={Users}
-                  title="No Creators Found"
-                  description="Try adjusting your filters or check back later for new creators to connect with."
-                  className="py-16"
+          {/* Main Content */}
+          <div>
+            {/* Search Bar */}
+            <div className="mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, role, skills, or use #hashtags..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  className="pl-10"
                 />
-              ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {profiles.map((profile) => (
+                
+                {/* AI Suggestions Dropdown */}
+                {showSuggestions && searchSuggestions.length > 0 && !searchQuery && (
+                  <Card className="absolute top-full mt-2 w-full z-50 p-2">
+                    <div className="flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground mb-2">
+                      <Sparkles className="h-3 w-3" />
+                      AI-suggested searches for you
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {searchSuggestions.map((suggestion, idx) => (
+                        <Button
+                          key={idx}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => {
+                            setSearchQuery(suggestion);
+                            setShowSuggestions(false);
+                          }}
+                        >
+                          {suggestion}
+                        </Button>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+              </div>
+            </div>
+
+            {/* Results */}
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+              </div>
+            ) : profiles.length === 0 ? (
+              <EmptyState
+                icon={Users}
+                title="No Creators Found"
+                description="Try adjusting your filters or check back later for new creators to connect with."
+                className="py-16"
+              />
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {profiles.map((profile) => (
               <Card 
                 key={profile.user_id}
                 className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
@@ -526,9 +590,11 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
                   {getConnectionButton(profile)}
                 </div>
               </Card>
-            ))}
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

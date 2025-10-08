@@ -451,7 +451,8 @@ const Profile = () => {
                   )}
                   
                   {/* Skills Highlights */}
-                  {(profile.professional_skills || profile.passion_skills) && (
+                  {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
+                    (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
                     <div className="mt-3 md:mt-4">
                       <div className="flex flex-wrap gap-1.5 md:gap-2">
                         {Array.isArray(profile.professional_skills) && profile.professional_skills.slice(0, 5).map((skill: any, index: number) => (
@@ -460,7 +461,7 @@ const Profile = () => {
                             variant="secondary"
                             className="text-xs md:text-sm px-2 md:px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                           >
-                            {typeof skill === 'string' ? skill : skill.name}
+                            {typeof skill === 'string' ? skill : skill.skill || skill.name}
                           </Badge>
                         ))}
                         {Array.isArray(profile.passion_skills) && profile.passion_skills.slice(0, 3).map((skill: any, index: number) => (
@@ -469,7 +470,7 @@ const Profile = () => {
                             variant="outline"
                             className="text-xs md:text-sm px-2 md:px-3 py-1 border-secondary text-secondary hover:bg-secondary/10 transition-colors"
                           >
-                            {typeof skill === 'string' ? skill : skill.name}
+                            {typeof skill === 'string' ? skill : skill.skill || skill.name}
                           </Badge>
                         ))}
                       </div>

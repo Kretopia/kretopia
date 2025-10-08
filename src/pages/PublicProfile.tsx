@@ -607,10 +607,10 @@ const PublicProfile = () => {
             </TabsContent>
           )}
         </Tabs>
+      </>
+      )}
       </div>
     </div>
-  </>
-  )}
   );
 };
 

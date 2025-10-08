@@ -101,12 +101,17 @@ export const PostOpportunityDialog = ({
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
+        
+        console.log('[PostOpportunity] Uploading to:', filePath, 'User ID:', user.id);
 
         const { error: uploadError } = await supabase.storage
           .from('portfolio')
           .upload(filePath, imageFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('[PostOpportunity] Upload error:', uploadError);
+          throw uploadError;
+        }
 
         const { data: { publicUrl } } = supabase.storage
           .from('portfolio')

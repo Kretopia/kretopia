@@ -80,7 +80,17 @@ export default function CompanyOnboarding() {
       .eq("user_id", user.id)
       .single();
 
-    if (profile?.onboarding_completed || profile?.account_type !== "company") {
+    // If user reached this page but account_type is not company, fix it
+    if (profile?.account_type !== "company") {
+      await supabase
+        .from("profiles")
+        .update({ account_type: "company" })
+        .eq("user_id", user.id);
+      
+      toast.success("Account type updated to Company");
+    }
+
+    if (profile?.onboarding_completed) {
       navigate("/dashboard");
     }
   };

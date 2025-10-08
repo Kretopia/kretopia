@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye, Edit } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 
 interface Applicant {
   id: string;
@@ -47,6 +48,7 @@ const OpportunityDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [analyzingAI, setAnalyzingAI] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
+  const [editingOpportunityId, setEditingOpportunityId] = useState<string | null>(null);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -414,7 +416,7 @@ Return ONLY valid JSON array:
         </Button>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 flex flex-col sm:flex-row gap-2">
         <Select value={selectedOppId || undefined} onValueChange={setSelectedOppId}>
           <SelectTrigger className="w-full md:w-96">
             <SelectValue placeholder="Select opportunity" />
@@ -427,6 +429,15 @@ Return ONLY valid JSON array:
             ))}
           </SelectContent>
         </Select>
+        {selectedOppId && (
+          <Button
+            variant="outline"
+            onClick={() => setEditingOpportunityId(selectedOppId)}
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Edit
+          </Button>
+        )}
       </div>
 
       {selectedOpp && (
@@ -476,6 +487,18 @@ Return ONLY valid JSON array:
           </div>
         </TabsContent>
       </Tabs>
+
+      {editingOpportunityId && (
+        <EditOpportunityDialog
+          opportunityId={editingOpportunityId}
+          open={!!editingOpportunityId}
+          onOpenChange={(open) => !open && setEditingOpportunityId(null)}
+          onSuccess={() => {
+            fetchOpportunities();
+            setEditingOpportunityId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -99,7 +99,7 @@ export const PostOpportunityDialog = ({
         return;
       }
 
-      // Upload image if provided
+      // Upload image if provided, otherwise generate one with AI
       let imageUrl = null;
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
@@ -122,6 +122,47 @@ export const PostOpportunityDialog = ({
           .getPublicUrl(filePath);
 
         imageUrl = publicUrl;
+      } else {
+        // Generate AI image
+        console.log('[PostOpportunity] Generating AI image...');
+        const { data: aiImageData, error: aiError } = await supabase.functions.invoke('generate-opportunity-image', {
+          body: {
+            title: formData.title,
+            description: formData.description,
+            type: formData.type
+          }
+        });
+
+        if (aiError) {
+          console.error('[PostOpportunity] AI generation error:', aiError);
+          // Continue without image rather than failing
+        } else if (aiImageData?.image) {
+          // Convert base64 to blob and upload
+          const base64Data = aiImageData.image.split(',')[1];
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'image/png' });
+          
+          const fileName = `${Math.random()}.png`;
+          const filePath = `${user.id}/${fileName}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('portfolio')
+            .upload(filePath, blob);
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('portfolio')
+              .getPublicUrl(filePath);
+
+            imageUrl = publicUrl;
+            console.log('[PostOpportunity] AI image uploaded successfully');
+          }
+        }
       }
 
       // Create opportunity with authenticated user

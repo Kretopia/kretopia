@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,32 @@ export const PostOpportunityDialog = ({
   const setOpen = controlledOnOpenChange || setInternalOpen;
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check for pending opportunity data on mount
+  useEffect(() => {
+    const checkPendingOpportunity = async () => {
+      const pendingData = localStorage.getItem('pendingOpportunity');
+      if (pendingData) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // User is now authenticated, restore the form data
+          const savedData = JSON.parse(pendingData);
+          setFormData(savedData.formData);
+          if (savedData.imagePreview) {
+            setImagePreview(savedData.imagePreview);
+          }
+          localStorage.removeItem('pendingOpportunity');
+          setOpen(true);
+          toast({
+            title: "Welcome back!",
+            description: "Your opportunity is ready to post. Please review and submit.",
+          });
+        }
+      }
+    };
+    checkPendingOpportunity();
+  }, []);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -71,12 +98,29 @@ export const PostOpportunityDialog = ({
 
     try {
       console.log('[PostOpportunity] Getting user...');
-      // Get authenticated user
+      // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser();
       console.log('[PostOpportunity] User:', user?.id);
+      
       if (!user) {
-        console.error('[PostOpportunity] No user found');
-        throw new Error("You must be logged in to post opportunities");
+        console.log('[PostOpportunity] No user found, saving data and redirecting to auth');
+        // Save form data to localStorage
+        localStorage.setItem('pendingOpportunity', JSON.stringify({
+          formData,
+          imagePreview
+        }));
+        
+        toast({
+          title: "Almost there!",
+          description: "Please sign up or log in to post your opportunity.",
+        });
+        
+        setLoading(false);
+        setOpen(false);
+        
+        // Redirect to auth page
+        navigate('/auth?return=post-opportunity');
+        return;
       }
       // Call AI moderation function
       const { data: moderationData, error: moderationError } = await supabase.functions.invoke('moderate-opportunity', {

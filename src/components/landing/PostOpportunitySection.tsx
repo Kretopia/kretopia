@@ -1,12 +1,31 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Briefcase, Sparkles } from "lucide-react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface PostOpportunitySectionProps {
   opportunitiesCount: number;
 }
 
 export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySectionProps) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handlePostOpportunity = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast("Please sign in to post an opportunity");
+      navigate("/auth");
+      return;
+    }
+    
+    setDialogOpen(true);
+  };
+
   return (
     <section className="px-6 py-16 bg-muted/30">
       <div className="container mx-auto max-w-4xl text-center">
@@ -17,20 +36,26 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
             Post your job, collaboration, or barter opportunity in seconds. 
-            No account needed to get started.
+            Create a free account to get started.
           </p>
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
             <Sparkles className="h-4 w-4" />
             <span>{opportunitiesCount} Active Opportunities Available</span>
           </div>
         </div>
+        <Button 
+          variant="default" 
+          size="xl" 
+          className="bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+          onClick={handlePostOpportunity}
+        >
+          <Briefcase className="mr-2 h-5 w-5" />
+          Post an Opportunity
+        </Button>
         <PostOpportunityDialog 
-          trigger={
-            <Button variant="default" size="xl" className="bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
-              <Briefcase className="mr-2 h-5 w-5" />
-              Post an Opportunity
-            </Button>
-          }
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSuccess={() => setDialogOpen(false)}
         />
         <p className="mt-4 text-sm text-muted-foreground">
           AI-moderated to keep our community safe

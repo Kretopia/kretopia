@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { awardXP } from "@/lib/xpSystem";
 
 interface AddPortfolioDialogProps {
   open: boolean;
@@ -154,7 +155,13 @@ export const AddPortfolioDialog = ({ open, onOpenChange, onSuccess }: AddPortfol
         variant: "destructive",
       });
     } else {
-      toast({ title: "Success", description: "Portfolio item added" });
+      // Award XP for adding portfolio item
+      await awardXP(user.id, 'PORTFOLIO_ITEM_ADDED', `Added ${newItem.title}`);
+      
+      toast({ 
+        title: "Success! +30 XP", 
+        description: "Portfolio item added" 
+      });
       onOpenChange(false);
       resetForm();
       onSuccess();

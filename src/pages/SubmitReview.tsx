@@ -9,6 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Star, CheckCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { awardXP } from "@/lib/xpSystem";
 
 export default function SubmitReview() {
   const [searchParams] = useSearchParams();
@@ -113,6 +114,13 @@ export default function SubmitReview() {
         });
 
       if (reviewError) throw reviewError;
+
+      // Award XP to the profile owner for receiving a review
+      await awardXP(
+        requestData.profile_id, 
+        'REVIEW_RECEIVED', 
+        `Received ${rating}-star review from ${formData.reviewer_name}`
+      );
 
       // Update request status
       await supabase

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,7 @@ import { Target, Users, MessageCircle, Briefcase, Check, Flame, CheckCircle2, Ci
 import { TooltipHint } from "@/components/ui/tooltip-hint";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { awardXP, hasReceivedXPToday } from "@/lib/xpSystem";
 
 interface DailyGoal {
   id: string;
@@ -22,10 +23,63 @@ export function DailyGoals() {
   const [goals, setGoals] = useState<DailyGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const previousGoalsRef = useRef<DailyGoal[]>([]);
 
   useEffect(() => {
     fetchDailyProgress();
   }, []);
+
+  // Check for newly completed goals and award XP
+  useEffect(() => {
+    if (goals.length === 0 || previousGoalsRef.current.length === 0) {
+      previousGoalsRef.current = goals;
+      return;
+    }
+
+    goals.forEach(async (goal) => {
+      const previousGoal = previousGoalsRef.current.find((g) => g.id === goal.id);
+      
+      // If goal just became completed
+      if (goal.completed && (!previousGoal || !previousGoal.completed)) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Check if XP was already awarded today for this goal
+        const alreadyAwarded = await hasReceivedXPToday(user.id, `daily_goal_${goal.id}`);
+        if (alreadyAwarded) return;
+
+        // Award XP based on goal type
+        let activityType: any;
+        switch (goal.id) {
+          case 'login':
+            // Already handled by useStreakUpdate
+            return;
+          case 'swipes':
+            activityType = 'DAILY_LOGIN'; // Use daily login as base XP
+            break;
+          case 'post':
+            activityType = 'PORTFOLIO_ITEM_ADDED';
+            break;
+          case 'connect':
+            activityType = 'CONNECTION_MADE';
+            break;
+          default:
+            return;
+        }
+
+        const result = await awardXP(user.id, activityType, goal.title);
+        
+        if (result.success) {
+          toast({
+            title: "Daily Goal Complete! 🎯",
+            description: `${goal.title} - +${result.xpAwarded} XP earned!`,
+          });
+        }
+      }
+    });
+
+    previousGoalsRef.current = goals;
+  }, [goals, toast]);
 
   const fetchDailyProgress = async () => {
     setLoading(true);

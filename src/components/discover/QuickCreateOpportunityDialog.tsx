@@ -64,17 +64,17 @@ export const QuickCreateOpportunityDialog = () => {
 
       if (error) throw error;
 
-      // Award XP for creating opportunity
+      // Award XP for creating opportunity (50 XP)
       const { data: profile } = await supabase
         .from('profiles')
         .select('xp')
         .eq('user_id', user.id)
         .single();
-      
+
       if (profile) {
         await supabase
           .from('profiles')
-          .update({ xp: profile.xp + 10 })
+          .update({ xp: (profile.xp || 0) + 50 })
           .eq('user_id', user.id);
         
         await supabase
@@ -82,14 +82,14 @@ export const QuickCreateOpportunityDialog = () => {
           .insert({
             user_id: user.id,
             activity_type: 'opportunity_posted',
-            xp_earned: 10,
+            xp_earned: 50,
             description: `Posted ${formData.title}`
           });
       }
 
       toast({
         title: "Opportunity Created! 🎉",
-        description: `${formData.title} is now live. +10 XP earned!`,
+        description: `${formData.title} is now live. +50 XP earned!`,
       });
 
       setOpen(false);

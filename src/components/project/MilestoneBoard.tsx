@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard } from "lucide-react";
+import { awardXP } from "@/lib/xpSystem";
 
 interface Milestone {
   id: string;
@@ -86,7 +87,17 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Milestone updated! ✅" });
+      // Award XP when milestone is completed
+      if (newStatus === 'completed') {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const milestone = milestones.find(m => m.id === milestoneId);
+          await awardXP(user.id, 'MILESTONE_COMPLETED', `Completed milestone: ${milestone?.title || 'Milestone'}`);
+          toast({ title: "Milestone completed! +200 XP ✅" });
+        }
+      } else {
+        toast({ title: "Milestone updated! ✅" });
+      }
       onUpdate();
     }
   };

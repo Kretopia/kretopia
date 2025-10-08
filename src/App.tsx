@@ -10,6 +10,7 @@ import { useAuth } from "./hooks/useAuth";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
+import { OnboardingTour } from "./components/OnboardingTour";
 import { analytics } from "@/lib/analytics";
 
 // Lazy load all page components for better performance
@@ -167,6 +168,7 @@ const App = () => {
             <Sonner />
             <VercelAnalytics />
             <BrowserRouter>
+              <OnboardingTour />
               <AppContent />
             </BrowserRouter>
           </TooltipProvider>

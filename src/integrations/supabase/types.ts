@@ -1317,6 +1317,7 @@ export type Database = {
           membership_number: string | null
           og_promotion_expires_at: string | null
           og_promotion_used: boolean | null
+          onboarding_completed: boolean
           passion_skills: Json | null
           press_links: Json | null
           professional_skills: Json | null
@@ -1380,6 +1381,7 @@ export type Database = {
           membership_number?: string | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
+          onboarding_completed?: boolean
           passion_skills?: Json | null
           press_links?: Json | null
           professional_skills?: Json | null
@@ -1443,6 +1445,7 @@ export type Database = {
           membership_number?: string | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
+          onboarding_completed?: boolean
           passion_skills?: Json | null
           press_links?: Json | null
           professional_skills?: Json | null

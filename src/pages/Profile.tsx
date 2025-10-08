@@ -365,6 +365,25 @@ const Profile = () => {
     );
   }
 
+  // Redirect company accounts to appropriate view
+  if (profile.account_type === 'company') {
+    return (
+      <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
+        <div className="container mx-auto max-w-4xl">
+          <div className="mb-6 text-center">
+            <h1 className="text-2xl font-bold mb-2">Company Profile</h1>
+            <p className="text-muted-foreground mb-4">
+              This is a company account. To view or edit your public company profile, visit:
+            </p>
+            <Button onClick={() => window.location.href = `/profile/${profile.user_id}`}>
+              View Public Company Profile
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
       <div className="container mx-auto max-w-4xl">

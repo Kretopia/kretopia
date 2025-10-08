@@ -84,10 +84,19 @@ export default function CompanyOnboarding() {
     if (profile?.account_type !== "company") {
       await supabase
         .from("profiles")
-        .update({ account_type: "company" })
+        .update({ 
+          account_type: "company",
+          role: "Company"
+        })
         .eq("user_id", user.id);
       
       toast.success("Account type updated to Company");
+    } else if (profile?.role !== "Company") {
+      // Also fix role if account_type is correct but role isn't
+      await supabase
+        .from("profiles")
+        .update({ role: "Company" })
+        .eq("user_id", user.id);
     }
 
     if (profile?.onboarding_completed) {

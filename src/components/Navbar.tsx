@@ -1,12 +1,11 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User, Bookmark } from "lucide-react";
+import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportunitiesDialog";
 import {
   Sheet,
   SheetContent,
@@ -79,7 +78,6 @@ const Navbar = ({ user }: NavbarProps) => {
         <div className="flex items-center gap-2 sm:gap-4">
           {user && !isLandingPage && (
             <>
-              <SavedOpportunitiesDialog />
               <NotificationCenter />
               <SupportDialog />
             </>

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { getRemainingSwipes } from "@/lib/subscriptionLimits";
 import { 
   Zap, 
   Users, 
@@ -84,13 +85,26 @@ export const EngagementNudge = () => {
       const today = new Date().toDateString();
       const lastReset = new Date(profile.last_swipe_reset).toDateString();
       const dailySwipesUsed = today === lastReset ? profile.daily_swipes : 0;
-      const swipesRemaining = 10 - dailySwipesUsed;
+      const subscriptionTier = (profile.subscription_tier || 'free') as 'free' | 'thriver' | 'creator_pro';
+      const swipesRemaining = getRemainingSwipes(subscriptionTier, dailySwipesUsed);
 
-      if (swipesRemaining > 5) {
+      // Only show swipes nudge if not unlimited and has swipes remaining
+      if (swipesRemaining !== -1 && swipesRemaining > 5) {
         setNudge({
           type: "daily_login",
           title: `${swipesRemaining} swipes left today!`,
           description: "Don't miss out on discovering amazing opportunities",
+          action: "Start Swiping",
+          route: "/discover",
+          icon: Zap,
+        });
+        return;
+      } else if (swipesRemaining === -1) {
+        // For unlimited users, show a different nudge
+        setNudge({
+          type: "daily_login",
+          title: "Unlimited swipes active!",
+          description: "Discover amazing creators and opportunities",
           action: "Start Swiping",
           route: "/discover",
           icon: Zap,

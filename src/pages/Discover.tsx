@@ -48,6 +48,7 @@ interface Card {
   description: string;
   user_id?: string;
   created_by?: string;
+  created_at?: string;
   portfolio?: PortfolioItem[];
   ai_match_score?: number;
   match_reasons?: string[];
@@ -103,12 +104,14 @@ const Discover = () => {
   });
 
   const [opportunityFilters, setOpportunityFilters] = useState<OpportunityFilterState>({
+    search: '',
     type: 'all',
     location: 'all',
     compensation: 'all',
     remote: false,
     skills: [],
-    urgent: false
+    urgent: false,
+    sortBy: 'newest'
   });
 
   useEffect(() => {
@@ -303,11 +306,31 @@ const Discover = () => {
           .eq('status', 'active')
           .neq('created_by', user.id);
 
+        // Apply type filter
         if (opportunityFilters.type !== 'all') {
           opportunitiesQuery = opportunitiesQuery.eq('type', opportunityFilters.type);
         }
 
-        const { data: opportunities, error: opportunitiesError } = await opportunitiesQuery.limit(50);
+        // Apply location filter
+        if (opportunityFilters.location !== 'all') {
+          if (opportunityFilters.location === 'remote') {
+            opportunitiesQuery = opportunitiesQuery.or('location.ilike.%remote%,location.is.null');
+          } else {
+            opportunitiesQuery = opportunitiesQuery.ilike('location', `%${opportunityFilters.location}%`);
+          }
+        }
+
+        // Apply remote filter
+        if (opportunityFilters.remote) {
+          opportunitiesQuery = opportunitiesQuery.or('location.ilike.%remote%,location.is.null');
+        }
+
+        // Apply compensation filter
+        if (opportunityFilters.compensation !== 'all') {
+          opportunitiesQuery = opportunitiesQuery.ilike('compensation', `%${opportunityFilters.compensation}%`);
+        }
+
+        const { data: opportunities, error: opportunitiesError } = await opportunitiesQuery.limit(100);
         
         if (opportunitiesError) {
           console.error('[Discover] Error fetching opportunities:', opportunitiesError);
@@ -317,9 +340,37 @@ const Discover = () => {
         console.log('[Discover] Fetched opportunities:', opportunities?.length || 0);
 
         // Filter out already swiped opportunities
-        const unswipedOpportunities = (opportunities || []).filter(opp => !swipedIds.has(opp.id));
+        let filteredOpportunities = (opportunities || []).filter(opp => !swipedIds.has(opp.id));
 
-        const opportunityCards: Card[] = unswipedOpportunities.map(opp => ({
+        // Apply client-side search filter
+        if (opportunityFilters.search) {
+          const searchLower = opportunityFilters.search.toLowerCase();
+          filteredOpportunities = filteredOpportunities.filter(opp => 
+            opp.title.toLowerCase().includes(searchLower) ||
+            opp.description.toLowerCase().includes(searchLower) ||
+            opp.tags?.some((tag: string) => tag.toLowerCase().includes(searchLower))
+          );
+        }
+
+        // Apply client-side skills filter
+        if (opportunityFilters.skills.length > 0) {
+          filteredOpportunities = filteredOpportunities.filter(opp =>
+            opportunityFilters.skills.some(skill =>
+              opp.skills?.some((oppSkill: string) => 
+                oppSkill.toLowerCase().includes(skill.toLowerCase())
+              )
+            )
+          );
+        }
+
+        // Apply urgent filter (assuming urgent opportunities have a tag or field)
+        if (opportunityFilters.urgent) {
+          filteredOpportunities = filteredOpportunities.filter(opp =>
+            opp.tags?.some((tag: string) => tag.toLowerCase().includes('urgent'))
+          );
+        }
+
+        const opportunityCards: Card[] = filteredOpportunities.map(opp => ({
           id: opp.id,
           type: 'opportunity' as CardType,
           name: opp.title,
@@ -330,7 +381,21 @@ const Discover = () => {
           compensation: opp.compensation,
           description: opp.description,
           created_by: opp.created_by,
+          created_at: opp.created_at,
         }));
+
+        // Apply sorting
+        if (opportunityFilters.sortBy === 'newest') {
+          opportunityCards.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+        } else if (opportunityFilters.sortBy === 'oldest') {
+          opportunityCards.sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+        } else if (opportunityFilters.sortBy === 'urgent') {
+          opportunityCards.sort((a, b) => {
+            const aUrgent = a.tags?.some(tag => tag.toLowerCase().includes('urgent')) ? 1 : 0;
+            const bUrgent = b.tags?.some(tag => tag.toLowerCase().includes('urgent')) ? 1 : 0;
+            return bUrgent - aUrgent;
+          });
+        }
 
         setCards(opportunityCards);
       }

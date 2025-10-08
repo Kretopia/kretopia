@@ -4,15 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import { Filter, Lock, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Filter, Lock, X, Search } from "lucide-react";
 
 export interface OpportunityFilterState {
+  search: string;
   type: string;
   location: string;
   compensation: string;
   remote: boolean;
   skills: string[];
   urgent: boolean;
+  sortBy: string;
 }
 
 interface OpportunityFiltersComponentProps {
@@ -25,22 +28,35 @@ interface OpportunityFiltersComponentProps {
 export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium, userLevel }: OpportunityFiltersComponentProps) => {
   const clearFilters = () => {
     onFilterChange({
+      search: '',
       type: 'all',
       location: 'all',
       compensation: 'all',
       remote: false,
       skills: [],
-      urgent: false
+      urgent: false,
+      sortBy: 'newest'
     });
   };
 
   const hasActiveFilters = 
+    filters.search ||
     filters.type !== 'all' || 
     filters.location !== 'all' || 
     filters.compensation !== 'all' ||
     filters.remote ||
     filters.skills.length > 0 ||
-    filters.urgent;
+    filters.urgent ||
+    filters.sortBy !== 'newest';
+
+  const activeFilterCount = 
+    (filters.search ? 1 : 0) +
+    (filters.type !== 'all' ? 1 : 0) +
+    (filters.location !== 'all' ? 1 : 0) +
+    (filters.compensation !== 'all' ? 1 : 0) +
+    (filters.remote ? 1 : 0) +
+    filters.skills.length +
+    (filters.urgent ? 1 : 0);
 
   const availableSkills = [
     'Photography', 'Videography', 'Music Production', 'Writing', 
@@ -56,10 +72,41 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
 
   const FilterContent = () => (
     <div className="space-y-4">
+      {/* Search */}
+      <div className="space-y-2">
+        <Label>Search</Label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search opportunities..."
+            value={filters.search}
+            onChange={(e) => onFilterChange({ ...filters, search: e.target.value })}
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      {/* Sort By */}
+      <div className="space-y-2">
+        <Label>Sort By</Label>
+        <Select value={filters.sortBy} onValueChange={(value) => onFilterChange({ ...filters, sortBy: value })}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">Newest First</SelectItem>
+            <SelectItem value="oldest">Oldest First</SelectItem>
+            <SelectItem value="urgent">Urgent First</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Free Filters */}
-      <div className="space-y-4">
+      <div className="space-y-4 pt-2 border-t">
+        <Label className="text-xs font-semibold text-muted-foreground uppercase">Basic Filters</Label>
+        
         <div className="space-y-2">
-          <Label>Type (Free)</Label>
+          <Label>Type</Label>
           <Select value={filters.type} onValueChange={(value) => onFilterChange({ ...filters, type: value })}>
             <SelectTrigger>
               <SelectValue placeholder="All Types" />
@@ -75,7 +122,7 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
         </div>
 
         <div className="space-y-2">
-          <Label>Location (Free)</Label>
+          <Label>Location</Label>
           <Select value={filters.location} onValueChange={(value) => onFilterChange({ ...filters, location: value })}>
             <SelectTrigger>
               <SelectValue placeholder="All Locations" />
@@ -90,7 +137,7 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
         </div>
 
         <div className="flex items-center justify-between">
-          <Label>Remote Only (Free)</Label>
+          <Label>Remote Only</Label>
           <Switch
             checked={filters.remote}
             onCheckedChange={(checked) => onFilterChange({ ...filters, remote: checked })}
@@ -99,10 +146,15 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
       </div>
 
       {/* Premium Filters */}
-      <div className={`space-y-4 ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`space-y-4 pt-4 border-t ${!isPremium ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="flex items-center justify-between">
           <Label className="text-xs font-semibold text-muted-foreground uppercase">Premium Filters</Label>
-          {!isPremium && <Lock className="h-3 w-3 text-muted-foreground" />}
+          {!isPremium && (
+            <Badge variant="secondary" className="gap-1">
+              <Lock className="h-3 w-3" />
+              Locked
+            </Badge>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -180,7 +232,9 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
             <Filter className="h-4 w-4" />
             Filters
             {hasActiveFilters && (
-              <Badge variant="secondary" className="ml-auto">Active</Badge>
+              <Badge variant="default" className="ml-auto min-w-6 justify-center">
+                {activeFilterCount}
+              </Badge>
             )}
           </Button>
         </SheetTrigger>

@@ -337,8 +337,12 @@ const Discover = () => {
     const { analytics } = await import("@/lib/analytics");
     analytics.swipe(direction, currentCard.type === 'creator' ? currentCard.user_id : currentCard.id);
 
+    // Animate card off screen
     setSwipeDirection(direction);
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const targetX = direction === "right" ? window.innerWidth : -window.innerWidth;
+    setDragOffset({ x: targetX, y: 0 });
+    
+    await new Promise(resolve => setTimeout(resolve, 400)); // Slightly longer for smooth animation
 
     if (dailySwipesLeft <= 0) {
       setSwipeDirection(null);
@@ -401,7 +405,17 @@ const Discover = () => {
             status: 'active',
           });
 
-          // Show celebration dialog
+          // Remove the swiped card first
+          const updatedCards = cards.filter((_, index) => index !== currentIndex);
+          setCards(updatedCards);
+          if (currentIndex >= updatedCards.length && updatedCards.length > 0) {
+            setCurrentIndex(updatedCards.length - 1);
+          }
+          
+          setSwipeDirection(null);
+          setDragOffset({ x: 0, y: 0 });
+
+          // Show celebration dialog and navigate after user dismisses
           setMatchedUser({
             name: currentCard.name,
             avatar: currentCard.image,
@@ -410,7 +424,6 @@ const Discover = () => {
           });
           setShowMatchCelebration(true);
           
-          setSwipeDirection(null);
           return;
         } else {
           // No match yet, but notify the other person you're interested
@@ -447,22 +460,34 @@ const Discover = () => {
   };
 
   const handleDragStart = () => setIsDragging(true);
+  
   const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDragging) return;
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
-      setDragOffset({ x: (clientX - centerX) * 0.15, y: 0 });
+      const centerY = rect.top + rect.height / 2;
+      
+      // More natural following - card moves with finger/mouse
+      const offsetX = clientX - centerX;
+      const offsetY = (clientY - centerY) * 0.3; // Less vertical movement
+      
+      setDragOffset({ x: offsetX, y: offsetY });
     }
   };
 
   const handleDragEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    if (Math.abs(dragOffset.x) > 100) {
+    
+    // Swipe threshold at 80px for easier swiping
+    if (Math.abs(dragOffset.x) > 80) {
       handleSwipe(dragOffset.x > 0 ? "right" : "left");
     } else {
+      // Spring back to center with animation
       setDragOffset({ x: 0, y: 0 });
     }
   };
@@ -661,10 +686,10 @@ const Discover = () => {
               className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg cursor-grab active:cursor-grabbing select-none"
               style={{
                 transform: swipeDirection 
-                  ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '20deg' : '-20deg'})`
-                  : isDragging ? `translateX(${dragOffset.x}px) rotate(${dragOffset.x * 0.15}deg)` : 'none',
+                  ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '25deg' : '-25deg'})`
+                  : `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.1}deg)`,
                 opacity: swipeDirection ? 0 : 1,
-                transition: isDragging ? 'none' : 'all 0.5s ease'
+                transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
               }}
               onMouseDown={handleDragStart}
               onMouseMove={handleDragMove}
@@ -674,16 +699,16 @@ const Discover = () => {
               onTouchMove={handleDragMove}
               onTouchEnd={handleDragEnd}
             >
-              {isDragging && Math.abs(dragOffset.x) > 30 && (
+              {Math.abs(dragOffset.x) > 30 && (
                 <>
                   {dragOffset.x > 0 && (
-                    <div className="absolute top-4 sm:top-8 right-4 sm:right-8 z-10 px-3 sm:px-6 py-2 sm:py-3 bg-accent/90 text-white font-bold text-base sm:text-xl rounded-lg rotate-12 border-2 sm:border-4 border-white">
+                    <div className="absolute top-4 sm:top-8 right-4 sm:right-8 z-10 px-3 sm:px-6 py-2 sm:py-3 bg-green-500 text-white font-bold text-base sm:text-xl rounded-lg rotate-12 border-2 sm:border-4 border-white shadow-xl">
                       LIKE
                     </div>
                   )}
                   {dragOffset.x < 0 && (
-                    <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-10 px-3 sm:px-6 py-2 sm:py-3 bg-destructive/90 text-white font-bold text-base sm:text-xl rounded-lg -rotate-12 border-2 sm:border-4 border-white">
-                      NOPE
+                    <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-10 px-3 sm:px-6 py-2 sm:py-3 bg-red-500 text-white font-bold text-base sm:text-xl rounded-lg -rotate-12 border-2 sm:border-4 border-white shadow-xl">
+                      PASS
                     </div>
                   )}
                 </>
@@ -858,10 +883,17 @@ const Discover = () => {
       {matchedUser && (
         <MatchCelebrationDialog
           open={showMatchCelebration}
-          onOpenChange={setShowMatchCelebration}
+          onOpenChange={(open) => {
+            setShowMatchCelebration(open);
+            if (!open) {
+              // Navigate to Circle when dialog closes
+              navigate('/circle');
+            }
+          }}
           matchedUser={matchedUser}
           onSendMessage={() => {
-            navigate('/messages', { state: { userId: matchedUser.userId } });
+            setShowMatchCelebration(false);
+            navigate('/circle');
           }}
         />
       )}

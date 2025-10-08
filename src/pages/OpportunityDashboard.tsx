@@ -79,36 +79,43 @@ const OpportunityDashboard = () => {
   const fetchOpportunities = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
+    // First get all opportunities
+    const { data: oppsData, error: oppsError } = await supabase
       .from('opportunities')
-      .select(`
-        id,
-        title,
-        type,
-        status,
-        created_at,
-        applications:applications(count)
-      `)
+      .select('id, title, type, status, created_at')
       .eq('created_by', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching opportunities:', error);
+    if (oppsError) {
+      console.error('Error fetching opportunities:', oppsError);
       toast.error('Failed to load opportunities');
-    } else {
-      const formatted = (data || []).map((opp: any) => ({
-        id: opp.id,
-        title: opp.title,
-        type: opp.type,
-        status: opp.status,
-        created_at: opp.created_at,
-        applications_count: opp.applications?.[0]?.count || 0,
-        new_applications: 0, // Could be calculated from unread applications
-      }));
-      setOpportunities(formatted);
-      if (formatted.length > 0) {
-        setSelectedOppId(formatted[0].id);
-      }
+      setLoading(false);
+      return;
+    }
+
+    // Get application counts for each opportunity
+    const formatted = await Promise.all(
+      (oppsData || []).map(async (opp: any) => {
+        const { count } = await supabase
+          .from('applications')
+          .select('*', { count: 'exact', head: true })
+          .eq('opportunity_id', opp.id);
+
+        return {
+          id: opp.id,
+          title: opp.title,
+          type: opp.type,
+          status: opp.status,
+          created_at: opp.created_at,
+          applications_count: count || 0,
+          new_applications: 0,
+        };
+      })
+    );
+
+    setOpportunities(formatted);
+    if (formatted.length > 0) {
+      setSelectedOppId(formatted[0].id);
     }
     setLoading(false);
   };

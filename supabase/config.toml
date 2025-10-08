@@ -29,3 +29,6 @@ verify_jwt = true
 
 [functions.process-partner-submission]
 verify_jwt = false
+
+[functions.generate-opportunity-image]
+verify_jwt = true

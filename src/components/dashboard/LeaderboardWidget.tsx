@@ -9,6 +9,7 @@ import { getLevelData } from "@/lib/gamification";
 
 interface LeaderboardUser {
   id: string;
+  user_id: string;
   full_name: string;
   avatar_url: string | null;
   xp: number;
@@ -125,7 +126,7 @@ export function LeaderboardWidget() {
           return (
             <div
               key={user.id}
-              onClick={() => navigate(`/profile/${user.id}`)}
+              onClick={() => navigate(`/profile/${user.user_id}`)}
               className="flex items-center gap-3 p-3 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">

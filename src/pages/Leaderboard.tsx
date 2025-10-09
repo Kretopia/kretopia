@@ -11,6 +11,7 @@ import { ImageLoader } from "@/components/ui/image-loader";
 
 interface LeaderboardUser {
   id: string;
+  user_id: string;
   full_name: string;
   avatar_url: string | null;
   xp: number;
@@ -199,7 +200,7 @@ const Leaderboard = () => {
                     className={`p-4 transition-smooth hover:shadow-glow cursor-pointer ${
                       isTopThree ? 'border-primary/30 bg-gradient-to-r from-primary/5 to-transparent' : ''
                     }`}
-                    onClick={() => navigate(`/profile/${user.id}`)}
+                    onClick={() => navigate(`/profile/${user.user_id}`)}
                   >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-3 flex-1">

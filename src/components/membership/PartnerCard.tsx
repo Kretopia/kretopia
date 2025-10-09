@@ -82,8 +82,7 @@ export const PartnerCard = ({
   };
 
   const canAccess = tierRequired === "free" || 
-    (tierRequired === "thriver" && userTier === "thriver") ||
-    (tierRequired === "creator_pro" && (userTier === "creator_pro" || userTier === "thriver"));
+    (tierRequired === "creator_pro" && userTier === "creator_pro");
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -97,7 +96,7 @@ export const PartnerCard = ({
           {!canAccess && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
               <Badge variant="secondary" className="text-lg">
-                {tierRequired === "thriver" ? "Thriver" : "Creator Pro"} Required
+                Creator Pro Required
               </Badge>
             </div>
           )}

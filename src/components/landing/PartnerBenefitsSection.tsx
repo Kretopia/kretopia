@@ -48,7 +48,7 @@ export const PartnerBenefitsSection = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="mb-16 text-center">
           <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-            Thriver Members
+            Member Benefits
           </Badge>
           <h2 className="mb-4 text-4xl font-bold md:text-5xl">
             Exclusive{" "}
@@ -85,7 +85,7 @@ export const PartnerBenefitsSection = () => {
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Show your Thriver membership and save
+                    Show your membership and save
                   </p>
                 </CardContent>
               </Card>
@@ -155,11 +155,11 @@ export const PartnerBenefitsSection = () => {
         {/* Upgrade CTA */}
         <div className="mt-12 text-center">
           <p className="text-muted-foreground mb-4">
-            Unlock all partner benefits with Thriver membership
+            Get even more partner benefits with Creator Pro membership
           </p>
           <Link to="/membership">
             <Button size="lg" className="font-semibold">
-              Upgrade to Thriver
+              Upgrade to Creator Pro
             </Button>
           </Link>
         </div>

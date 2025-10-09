@@ -47,7 +47,7 @@ export const useOGPromotion = () => {
           } else if (data?.success) {
             toast({
               title: "🎉 OG Member Bonus Activated!",
-              description: "You've been upgraded to Thriver for 2 months as a thank you for being an OG member!",
+              description: "You've been upgraded to Creator Pro for 2 months as a thank you for being an OG member!",
               duration: 10000,
             });
 
@@ -67,7 +67,7 @@ export const useOGPromotion = () => {
             : null;
           const now = new Date();
 
-          if (expiresAt && now > expiresAt && profile.subscription_tier === 'thriver') {
+          if (expiresAt && now > expiresAt && profile.subscription_tier === 'creator_pro') {
             // Trigger expiration check
             await supabase.functions.invoke("activate-og-promotion");
           }

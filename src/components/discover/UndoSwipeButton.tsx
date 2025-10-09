@@ -10,7 +10,7 @@ interface UndoSwipeButtonProps {
 }
 
 export const UndoSwipeButton = ({ onClick, disabled, userTier, undosRemaining }: UndoSwipeButtonProps) => {
-  const isPro = userTier === 'creator_pro' || userTier === 'thriver';
+  const isPro = userTier === 'creator_pro';
   
   if (!isPro) {
     return (
@@ -27,7 +27,7 @@ export const UndoSwipeButton = ({ onClick, disabled, userTier, undosRemaining }:
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Upgrade to Pro or Thriver to undo swipes</p>
+          <p>Upgrade to Creator Pro to undo swipes</p>
         </TooltipContent>
       </Tooltip>
     );

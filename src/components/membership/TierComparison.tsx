@@ -7,25 +7,23 @@ import { useNavigate } from "react-router-dom";
 interface Feature {
   name: string;
   free: boolean | string;
-  thriver: boolean | string;
   creator_pro: boolean | string;
 }
 
 const features: Feature[] = [
-  { name: "Daily Swipes", free: "10", thriver: "Unlimited", creator_pro: "Unlimited" },
-  { name: "Active Projects", free: "1", thriver: "Unlimited", creator_pro: "Unlimited" },
-  { name: "Basic Profile", free: true, thriver: true, creator_pro: true },
-  { name: "Direct Messaging", free: true, thriver: true, creator_pro: true },
-  { name: "Portfolio Showcase", free: true, thriver: true, creator_pro: true },
-  { name: "AI Match Recommendations", free: false, thriver: true, creator_pro: true },
-  { name: "Undo Swipe", free: false, thriver: true, creator_pro: true },
-  { name: "Profile Verification Badge", free: false, thriver: true, creator_pro: true },
-  { name: "Advanced Analytics", free: false, thriver: true, creator_pro: true },
-  { name: "Featured Profile (2x visibility)", free: false, thriver: false, creator_pro: true },
-  { name: "Priority Matching", free: false, thriver: false, creator_pro: true },
-  { name: "Partner Discounts", free: "0", thriver: "5%", creator_pro: "15%" },
-  { name: "Early Access to Features", free: false, thriver: false, creator_pro: true },
-  { name: "Dedicated Support", free: false, thriver: false, creator_pro: true },
+  { name: "Daily Swipes", free: "10", creator_pro: "Unlimited" },
+  { name: "Active Projects", free: "1", creator_pro: "Unlimited" },
+  { name: "Basic Profile", free: true, creator_pro: true },
+  { name: "Direct Messaging", free: true, creator_pro: true },
+  { name: "Portfolio Showcase", free: true, creator_pro: true },
+  { name: "AI Match Recommendations", free: "3/day", creator_pro: "Unlimited" },
+  { name: "Undo Swipe", free: false, creator_pro: true },
+  { name: "Profile Verification Badge", free: false, creator_pro: true },
+  { name: "Advanced Analytics", free: false, creator_pro: true },
+  { name: "Featured Profile (3x visibility)", free: false, creator_pro: true },
+  { name: "Priority Matching", free: false, creator_pro: true },
+  { name: "Partner Discounts", free: "5%", creator_pro: "15%" },
+  { name: "Early Access to Features", free: false, creator_pro: true },
 ];
 
 interface TierComparisonProps {
@@ -48,26 +46,23 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
-      case "thriver":
-        return <Sparkles className="h-5 w-5" />;
       case "creator_pro":
         return <Crown className="h-5 w-5" />;
       default:
-        return <Zap className="h-5 w-5" />;
+        return <Sparkles className="h-5 w-5" />;
     }
   };
 
   const tiers = [
-    { key: "free", name: "Free", price: "$0", icon: getTierIcon("free") },
-    { key: "thriver", name: "Thriver", price: "$9/mo", icon: getTierIcon("thriver"), popular: true },
-    { key: "creator_pro", name: "Creator Pro", price: "$29/mo", icon: getTierIcon("creator_pro") },
+    { key: "free", name: "Thriver", price: "$0", icon: getTierIcon("free") },
+    { key: "creator_pro", name: "Creator Pro", price: "$29/mo", icon: getTierIcon("creator_pro"), popular: true },
   ];
 
   return (
     <div className="w-full overflow-x-auto pb-4">
       <div className="min-w-[800px]">
         {/* Header Row */}
-        <div className="grid grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <div className="font-semibold text-muted-foreground">Features</div>
           {tiers.map((tier) => (
             <Card
@@ -113,14 +108,11 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="grid grid-cols-4 gap-4 py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors"
+              className="grid grid-cols-3 gap-4 py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors"
             >
               <div className="font-medium text-sm">{feature.name}</div>
               <div className="flex items-center justify-center">
                 {renderValue(feature.free)}
-              </div>
-              <div className="flex items-center justify-center">
-                {renderValue(feature.thriver)}
               </div>
               <div className="flex items-center justify-center">
                 {renderValue(feature.creator_pro)}

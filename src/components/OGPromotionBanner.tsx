@@ -27,7 +27,7 @@ export const OGPromotionBanner = () => {
         const now = new Date();
         
         // Only show if promotion is still active
-        if (expiresAt > now && data.subscription_tier === 'thriver') {
+        if (expiresAt > now && data.subscription_tier === 'creator_pro') {
           setPromotionInfo({
             isOG: true,
             expiresAt: data.og_promotion_expires_at,
@@ -54,7 +54,7 @@ export const OGPromotionBanner = () => {
             OG Member Bonus
           </Badge>
           <span className="text-sm">
-            You're enjoying free Thriver membership! {daysLeft} days remaining.
+            You're enjoying free Creator Pro membership! {daysLeft} days remaining.
           </span>
         </div>
         <span className="text-xs text-muted-foreground">

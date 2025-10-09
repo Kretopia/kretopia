@@ -15,12 +15,6 @@ interface UpgradeDialogProps {
 }
 
 const TIER_INFO = {
-  thriver: {
-    name: "Thriver",
-    price: "$9",
-    icon: Sparkles,
-    color: "from-purple-500 to-pink-500",
-  },
   creator_pro: {
     name: "Creator Pro",
     price: "$29",
@@ -39,28 +33,21 @@ export function UpgradeDialog({
 }: UpgradeDialogProps) {
   const navigate = useNavigate();
 
-  const recommendedTier = currentTier === "free" ? "thriver" : "creator_pro";
-  const tierInfo = TIER_INFO[recommendedTier];
+  const tierInfo = TIER_INFO.creator_pro;
   const Icon = tierInfo.icon;
 
-  const defaultBenefits = 
-    recommendedTier === "thriver"
-      ? [
-          "Unlimited daily swipes",
-          "AI match recommendations",
-          "Undo swipe feature",
-          "Unlimited projects",
-          "Profile verification badge",
-          "5+ partner discounts",
-        ]
-      : [
-          "Everything in Thriver",
-          "Featured profile (2x visibility)",
-          "Priority matching",
-          "Advanced collaboration tools",
-          "15+ partner discounts",
-          "Dedicated support",
-        ];
+  const defaultBenefits = [
+    "Unlimited daily swipes & matches",
+    "Unlimited AI recommendations",
+    "Unlimited projects",
+    "Featured profile (3x visibility)",
+    "Priority matching algorithm",
+    "Profile verification badge",
+    "Undo swipe feature",
+    "15% partner discounts",
+    "Advanced analytics",
+    "Early access to features",
+  ];
 
   const displayBenefits = benefits.length > 0 ? benefits : defaultBenefits;
 

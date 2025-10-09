@@ -4,8 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const MAX_DAILY_UNDOS: Record<string, number> = {
   free: 0,
-  creator_pro: 5,
-  thriver: 10
+  creator_pro: 10,
 };
 
 interface SwipeRecord {

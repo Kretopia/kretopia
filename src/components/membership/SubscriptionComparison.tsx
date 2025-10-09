@@ -7,22 +7,20 @@ import { useNavigate } from "react-router-dom";
 interface Feature {
   name: string;
   free: boolean | string;
-  thriver: boolean | string;
   creator_pro: boolean | string;
 }
 
 const features: Feature[] = [
-  { name: "Daily Swipes", free: "10", thriver: "Unlimited", creator_pro: "Unlimited" },
-  { name: "Active Projects", free: "1", thriver: "Unlimited", creator_pro: "Unlimited" },
-  { name: "AI Match Recommendations", free: false, thriver: true, creator_pro: true },
-  { name: "Undo Swipe", free: false, thriver: true, creator_pro: true },
-  { name: "Profile Verification Badge", free: false, thriver: true, creator_pro: true },
-  { name: "Advanced Analytics", free: false, thriver: true, creator_pro: true },
-  { name: "Featured Profile (2x visibility)", free: false, thriver: false, creator_pro: true },
-  { name: "Priority Matching", free: false, thriver: false, creator_pro: true },
-  { name: "Partner Perks & Discounts", free: "None", thriver: "5% off", creator_pro: "15% off" },
-  { name: "Early Access to Features", free: false, thriver: false, creator_pro: true },
-  { name: "Dedicated Support", free: false, thriver: false, creator_pro: true },
+  { name: "Daily Swipes", free: "10", creator_pro: "Unlimited" },
+  { name: "Active Projects", free: "1", creator_pro: "Unlimited" },
+  { name: "AI Match Recommendations", free: "3/day", creator_pro: "Unlimited" },
+  { name: "Undo Swipe", free: false, creator_pro: true },
+  { name: "Profile Verification Badge", free: false, creator_pro: true },
+  { name: "Advanced Analytics", free: false, creator_pro: true },
+  { name: "Featured Profile (3x visibility)", free: false, creator_pro: true },
+  { name: "Priority Matching", free: false, creator_pro: true },
+  { name: "Partner Discounts", free: "5%", creator_pro: "15%" },
+  { name: "Early Access to Features", free: false, creator_pro: true },
 ];
 
 interface SubscriptionComparisonProps {
@@ -44,9 +42,8 @@ export function SubscriptionComparison({ currentTier = "free" }: SubscriptionCom
   };
 
   const tiers = [
-    { key: "free", name: "Free", price: "$0", icon: <Sparkles className="h-5 w-5" /> },
-    { key: "thriver", name: "Thriver", price: "$9/mo", icon: <Sparkles className="h-5 w-5" />, popular: true },
-    { key: "creator_pro", name: "Creator Pro", price: "$29/mo", icon: <Crown className="h-5 w-5" /> },
+    { key: "free", name: "Thriver", price: "$0", icon: <Sparkles className="h-5 w-5" /> },
+    { key: "creator_pro", name: "Creator Pro", price: "$29/mo", icon: <Crown className="h-5 w-5" />, popular: true },
   ];
 
   return (
@@ -109,7 +106,7 @@ export function SubscriptionComparison({ currentTier = "free" }: SubscriptionCom
       <div className="hidden md:block w-full overflow-x-auto pb-4">
         <div className="min-w-[800px]">
           {/* Header Row */}
-          <div className="grid grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="font-semibold text-muted-foreground">Features</div>
             {tiers.map((tier) => (
               <Card
@@ -155,14 +152,11 @@ export function SubscriptionComparison({ currentTier = "free" }: SubscriptionCom
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="grid grid-cols-4 gap-4 py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors"
+                className="grid grid-cols-3 gap-4 py-3 px-2 rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="font-medium text-sm">{feature.name}</div>
                 <div className="flex items-center justify-center">
                   {renderValue(feature.free)}
-                </div>
-                <div className="flex items-center justify-center">
-                  {renderValue(feature.thriver)}
                 </div>
                 <div className="flex items-center justify-center">
                   {renderValue(feature.creator_pro)}

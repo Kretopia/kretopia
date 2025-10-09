@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, TrendingUp, Crown, Medal, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getLevelData } from "@/lib/gamification";
 
 interface LeaderboardUser {
@@ -16,6 +16,7 @@ interface LeaderboardUser {
 }
 
 export function LeaderboardWidget() {
+  const navigate = useNavigate();
   const [topUsers, setTopUsers] = useState<LeaderboardUser[]>([]);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,14 +125,17 @@ export function LeaderboardWidget() {
           return (
             <div
               key={user.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-colors"
+              onClick={() => navigate(`/profile/${user.id}`)}
+              className="flex items-center gap-3 p-3 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <div className="flex-shrink-0">
                   {getRankIcon(index + 1)}
                 </div>
                 <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarImage src={user.avatar_url || undefined} alt={user.full_name} />
+                  {user.avatar_url ? (
+                    <AvatarImage src={user.avatar_url} alt={user.full_name} />
+                  ) : null}
                   <AvatarFallback className="text-xs">
                     {user.full_name?.charAt(0) || "?"}
                   </AvatarFallback>

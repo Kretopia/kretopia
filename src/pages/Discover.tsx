@@ -74,6 +74,7 @@ const Discover = () => {
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [showCreditPrompt, setShowCreditPrompt] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [profileCompletionPercent, setProfileCompletionPercent] = useState(0);
@@ -173,11 +174,15 @@ const Discover = () => {
         setUserCredits(wallet.credits || 0);
       }
 
-      // Fetch user's previous swipes to filter them out
+      // Fetch user's previous swipes to filter them out (limit to recent to improve performance)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
       const { data: userSwipes } = await supabase
         .from('swipes')
         .select('target_id, target_type')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .gte('created_at', thirtyDaysAgo.toISOString());
 
       const swipedIds = new Set(userSwipes?.map(s => s.target_id) || []);
 
@@ -233,13 +238,14 @@ const Discover = () => {
                  profile.bio; // Just needs to exist, no length requirement
         });
 
-        const profileIds = completeProfiles.map(p => p.user_id);
+        // Only fetch portfolio for first 20 profiles to improve initial load
+        const profileIdsForPortfolio = completeProfiles.slice(0, 20).map(p => p.user_id);
         const { data: portfolioItems } = await supabase
           .from('portfolio_items')
-          .select('*')
-          .in('user_id', profileIds)
+          .select('id, user_id, title, media_type, media_url, thumbnail_url')
+          .in('user_id', profileIdsForPortfolio)
           .eq('featured', true)
-          .limit(3);
+          .limit(60);
 
         let creatorCards: Card[] = completeProfiles.map(profile => {
           const userPortfolio = (portfolioItems || []).filter(item => item.user_id === profile.user_id);
@@ -540,23 +546,45 @@ const Discover = () => {
     setDragOffset({ x: 0, y: 0 });
   };
 
-  const handleDragStart = () => setIsDragging(true);
-  
-  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging) return;
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (loading || currentIndex >= cards.length) return;
+    
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      // More natural following - card moves with finger/mouse
-      const offsetX = clientX - centerX;
-      const offsetY = (clientY - centerY) * 0.3; // Less vertical movement
-      
-      setDragOffset({ x: offsetX, y: offsetY });
+    setDragStart({ x: clientX, y: clientY });
+    setIsDragging(true);
+  };
+  
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const deltaX = clientX - dragStart.x;
+    const deltaY = clientY - dragStart.y;
+    
+    // Only start dragging if horizontal movement is more significant than vertical
+    // This prevents interfering with scrolling
+    if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaX) < 30) {
+      setIsDragging(false);
+      setDragOffset({ x: 0, y: 0 });
+      return;
+    }
+    
+    // Prevent default to stop scrolling when we're swiping horizontally
+    if (Math.abs(deltaX) > 30) {
+      e.preventDefault();
+    }
+    
+    setDragOffset({ x: deltaX, y: deltaY * 0.1 }); // Reduce vertical movement
+    
+    // Show visual feedback for swipe direction
+    if (Math.abs(deltaX) > 50) {
+      setSwipeDirection(deltaX > 0 ? "right" : "left");
+    } else {
+      setSwipeDirection(null);
     }
   };
 
@@ -564,12 +592,13 @@ const Discover = () => {
     if (!isDragging) return;
     setIsDragging(false);
     
-    // Swipe threshold at 80px for easier swiping
-    if (Math.abs(dragOffset.x) > 80) {
+    // Only trigger swipe if horizontal movement is significant
+    if (Math.abs(dragOffset.x) > 100) {
       handleSwipe(dragOffset.x > 0 ? "right" : "left");
     } else {
-      // Spring back to center with animation
+      // Reset position
       setDragOffset({ x: 0, y: 0 });
+      setSwipeDirection(null);
     }
   };
 

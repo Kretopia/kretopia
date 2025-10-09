@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { SkeletonLeaderboardItem } from "@/components/ui/skeleton-card";
 import { getLevelData, getXPForLevel } from "@/lib/gamification";
+import { useNavigate } from "react-router-dom";
+import { ImageLoader } from "@/components/ui/image-loader";
 
 interface LeaderboardUser {
   id: string;
@@ -17,6 +19,7 @@ interface LeaderboardUser {
 }
 
 const Leaderboard = () => {
+  const navigate = useNavigate();
   const [topUsers, setTopUsers] = useState<LeaderboardUser[]>([]);
   const [currentUser, setCurrentUser] = useState<LeaderboardUser | null>(null);
   const [userRank, setUserRank] = useState<number>(0);
@@ -193,9 +196,10 @@ const Leaderboard = () => {
                 return (
                   <Card 
                     key={user.id} 
-                    className={`p-4 transition-smooth hover:shadow-glow ${
+                    className={`p-4 transition-smooth hover:shadow-glow cursor-pointer ${
                       isTopThree ? 'border-primary/30 bg-gradient-to-r from-primary/5 to-transparent' : ''
                     }`}
+                    onClick={() => navigate(`/profile/${user.id}`)}
                   >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-3 flex-1">
@@ -209,7 +213,9 @@ const Leaderboard = () => {
                           )}
                         </div>
                         <Avatar className={`h-12 w-12 ${isTopThree ? 'border-2 border-primary' : ''}`}>
-                          <AvatarImage src={user.avatar_url || undefined} />
+                          {user.avatar_url ? (
+                            <AvatarImage src={user.avatar_url} alt={user.full_name} />
+                          ) : null}
                           <AvatarFallback>{user.full_name[0]}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">

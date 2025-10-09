@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { LeaveCompanyReviewDialog } from "./LeaveCompanyReviewDialog";
 
 interface CompanyReview {
   id: string;
@@ -29,6 +30,7 @@ interface CompanyProfileViewProps {
   partnerDiscounts?: PartnerDiscount[];
   isOwnProfile: boolean;
   onLeaveReview?: () => void;
+  onRefresh?: () => void;
 }
 
 export const CompanyProfileView = ({
@@ -37,6 +39,7 @@ export const CompanyProfileView = ({
   partnerDiscounts,
   isOwnProfile,
   onLeaveReview,
+  onRefresh,
 }: CompanyProfileViewProps) => {
   return (
     <div className="space-y-6">
@@ -158,10 +161,12 @@ export const CompanyProfileView = ({
               <Award className="h-5 w-5" />
               Reviews & Ratings
             </CardTitle>
-            {!isOwnProfile && onLeaveReview && (
-              <Button onClick={onLeaveReview} variant="outline" size="sm">
-                Leave a Review
-              </Button>
+            {!isOwnProfile && (
+              <LeaveCompanyReviewDialog
+                companyId={profile.user_id}
+                companyName={profile.company_name}
+                onReviewSubmitted={onRefresh}
+              />
             )}
           </div>
         </CardHeader>

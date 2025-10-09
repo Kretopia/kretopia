@@ -25,6 +25,7 @@ import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
 import { TierProgressCard } from "@/components/membership/TierProgressCard";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -77,6 +78,8 @@ const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [companyReviews, setCompanyReviews] = useState([]);
+  const [partnerDiscounts, setPartnerDiscounts] = useState([]);
   const [industryStats, setIndustryStats] = useState([]);
   const [credits, setCredits] = useState([]);
   const [awards, setAwards] = useState([]);
@@ -104,7 +107,8 @@ const Profile = () => {
     role: "",
     bio: "",
     location: "",
-    avatar_url: ""
+    avatar_url: "",
+    company_size: "",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -148,7 +152,8 @@ const Profile = () => {
         role: isCompany ? (data.company_industry || "") : (data.role || ""),
         bio: isCompany ? (data.company_about || "") : (data.bio || ""),
         location: isCompany ? (data.company_address || "") : (data.location || ""),
-        avatar_url: isCompany ? (data.company_logo_url || data.avatar_url || "") : (data.avatar_url || "")
+        avatar_url: isCompany ? (data.company_logo_url || data.avatar_url || "") : (data.avatar_url || ""),
+        company_size: data.company_size || "",
       });
     }
 
@@ -201,6 +206,37 @@ const Profile = () => {
       .eq('user_id', user.id)
       .order('published_date', { ascending: false });
 
+    // Fetch company-specific data if company account
+    let companyReviewsData = null;
+    let discountsData = null;
+    
+    if (data?.account_type === 'company') {
+      const { data: reviewsData } = await supabase
+        .from('company_reviews')
+        .select(`
+          *,
+          reviewer:profiles!company_reviews_reviewer_id_fkey(full_name, avatar_url)
+        `)
+        .eq('company_id', user.id)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+      
+      companyReviewsData = reviewsData?.map(review => ({
+        ...review,
+        reviewer_name: review.reviewer?.full_name || 'Anonymous',
+        reviewer_avatar: review.reviewer?.avatar_url || '',
+      })) || [];
+      
+      // Fetch partner discounts for this company
+      const { data: discounts } = await supabase
+        .from('partner_discounts')
+        .select('*')
+        .eq('partner_name', data.company_name)
+        .eq('is_active', true);
+      
+      discountsData = discounts || [];
+    }
+
     setStats(prev => ({
       ...prev,
       circle: connectionsCount || 0,
@@ -208,6 +244,8 @@ const Profile = () => {
     }));
     setPortfolioItems(portfolioData || []);
     setReviews(reviewsData || []);
+    setCompanyReviews(companyReviewsData || []);
+    setPartnerDiscounts(discountsData || []);
     setIndustryStats(statsData || []);
     setCredits(creditsData || []);
     setAwards(awardsData || []);
@@ -346,6 +384,7 @@ const Profile = () => {
       company_industry: editForm.role,
       company_about: editForm.bio,
       company_address: editForm.location,
+      company_size: editForm.company_size,
       company_logo_url: editForm.avatar_url,
       full_name: editForm.full_name, // Also update full_name for display
     } : {
@@ -387,13 +426,13 @@ const Profile = () => {
     );
   }
 
-  // Company profile editing view
+  // Company profile view with enhanced features
   if (profile.account_type === 'company') {
     return (
       <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
-        <div className="container mx-auto max-w-4xl">
-          {/* Company Profile Header */}
-          <div className="mb-4 sm:mb-6 md:mb-8 overflow-hidden rounded-xl md:rounded-2xl lg:rounded-3xl border border-border bg-card shadow-card">
+        <div className="container mx-auto max-w-4xl space-y-6">
+          {/* Company Profile Header with Edit */}
+          <div className="overflow-hidden rounded-xl md:rounded-2xl lg:rounded-3xl border border-border bg-card shadow-card">
             <div className="relative h-24 sm:h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
             
             <div className="relative px-3 sm:px-4 md:px-8 pb-4 sm:pb-6 md:pb-8">
@@ -452,17 +491,12 @@ const Profile = () => {
                         </div>
                       )}
                     </div>
-                    {profile.company_about && (
-                      <p className="mt-3 md:mt-4 text-sm md:text-base text-foreground/90 leading-relaxed">
-                        {profile.company_about}
-                      </p>
-                    )}
                   </div>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
                   <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="flex-1 sm:flex-none">
+                      <Button variant="gradient" className="flex-1 sm:flex-none">
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Profile
                       </Button>
@@ -492,6 +526,15 @@ const Profile = () => {
                           />
                         </div>
                         <div>
+                          <Label htmlFor="company_size">Company Size</Label>
+                          <Input
+                            id="company_size"
+                            value={editForm.company_size || ''}
+                            onChange={(e) => setEditForm({ ...editForm, company_size: e.target.value })}
+                            placeholder="e.g., 1-10 employees"
+                          />
+                        </div>
+                        <div>
                           <Label htmlFor="company_address">Address</Label>
                           <Input
                             id="company_address"
@@ -508,7 +551,7 @@ const Profile = () => {
                             rows={5}
                           />
                         </div>
-                        <Button onClick={handleEditSave} className="w-full">
+                        <Button onClick={handleEditSave} className="w-full" variant="gradient">
                           Save Changes
                         </Button>
                       </div>
@@ -519,6 +562,32 @@ const Profile = () => {
               </div>
             </div>
           </div>
+
+          {/* Company Profile Content using CompanyProfileView */}
+          <CompanyProfileView 
+            profile={{
+              ...profile,
+              company_name: profile.company_name || profile.full_name,
+              company_logo_url: profile.company_logo_url || profile.avatar_url,
+              company_industry: profile.company_industry || profile.role,
+              company_address: profile.company_address || profile.location,
+              company_about: profile.company_about || profile.bio,
+              company_size: profile.company_size,
+            }}
+            reviews={companyReviews}
+            partnerDiscounts={partnerDiscounts}
+            isOwnProfile={true}
+            onRefresh={fetchData}
+          />
+
+          {/* Photo Gallery Section */}
+          {portfolioItems.length > 0 && (
+            <PortfolioSection
+              items={portfolioItems}
+              isOwnProfile={true}
+              onRefresh={fetchData}
+            />
+          )}
         </div>
       </div>
     );

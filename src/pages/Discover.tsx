@@ -569,9 +569,9 @@ const Discover = () => {
     const horizontalDistance = Math.abs(deltaX);
     const verticalDistance = Math.abs(deltaY);
     
-    // More aggressive horizontal detection: must be 2x more horizontal than vertical
-    // and have meaningful horizontal movement (>20px)
-    const isHorizontalSwipe = horizontalDistance > verticalDistance * 2 && horizontalDistance > 20;
+    // Require much more deliberate horizontal movement to register as swipe
+    // Must be 3x more horizontal than vertical AND minimum 60px horizontal movement
+    const isHorizontalSwipe = horizontalDistance > verticalDistance * 3 && horizontalDistance > 60;
     
     if (isHorizontalSwipe) {
       // This is clearly a swipe, not a scroll
@@ -581,13 +581,13 @@ const Discover = () => {
       e.preventDefault(); // Prevent scroll only during swipe
       setDragOffset({ x: deltaX, y: 0 });
       
-      // Show visual feedback
-      if (Math.abs(deltaX) > 50) {
+      // Show visual feedback only after significant movement
+      if (Math.abs(deltaX) > 80) {
         setSwipeDirection(deltaX > 0 ? "right" : "left");
       } else {
         setSwipeDirection(null);
       }
-    } else if (verticalDistance > 10 && !isDragging) {
+    } else if (verticalDistance > 15 && !isDragging) {
       // User is clearly trying to scroll, not swipe - reset
       setDragStart({ x: 0, y: 0 });
       setDragOffset({ x: 0, y: 0 });
@@ -602,8 +602,8 @@ const Discover = () => {
     
     setIsDragging(false);
     
-    // Swipe if user dragged far enough horizontally
-    if (Math.abs(dragOffset.x) > 100) {
+    // Require even more distance to complete the swipe - 150px minimum
+    if (Math.abs(dragOffset.x) > 150) {
       handleSwipe(dragOffset.x > 0 ? "right" : "left");
     } else {
       // Reset position

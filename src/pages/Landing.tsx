@@ -114,45 +114,34 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
             <PricingCard
-              name="Free"
+              name="Thriver"
               price="$0"
               period="/forever"
               features={[
-                "10 starting credits",
-                "3 AI recommendations/day",
-                "AI profile enhancer",
                 "10 swipes per day",
-                "Basic features",
+                "3 AI recommendations/day",
+                "1 active project",
+                "Direct messaging",
+                "Portfolio showcase",
+                "5% partner discounts",
               ]}
               cta="Get Started"
               ctaLink="/auth"
             />
             <PricingCard
-              name="Thriver"
-              price="$9.99"
-              period="/month"
-              features={[
-                "Unlimited swipes",
-                "Unlimited AI recommendations",
-                "AI profile optimization",
-                "Profile verification",
-                "5% partner discounts",
-              ]}
-              cta="Subscribe"
-              ctaLink="/subscription"
-            />
-            <PricingCard
               name="Creator Pro"
-              price="$29.99"
+              price="$29"
               period="/month"
               popular
               features={[
-                "Everything in Thriver",
-                "Featured profile placement",
-                "Priority AI matching",
-                "Advanced analytics",
+                "Unlimited swipes & matches",
+                "Unlimited AI recommendations",
+                "Unlimited projects",
+                "Featured profile (3x visibility)",
+                "Priority matching algorithm",
+                "Profile verification badge",
                 "15% partner discounts",
               ]}
               cta="Subscribe"

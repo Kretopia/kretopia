@@ -121,6 +121,29 @@ export const CompanyProfileView = ({
         </Card>
       )}
 
+      {/* Gallery Section */}
+      {profile.company_images && Array.isArray(profile.company_images) && profile.company_images.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Gallery</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {(profile.company_images as string[]).map((imageUrl: string, index: number) => (
+                <div key={index} className="aspect-square rounded-lg overflow-hidden bg-muted">
+                  <img
+                    src={imageUrl}
+                    alt={`${profile.company_name} - Image ${index + 1}`}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => window.open(imageUrl, '_blank')}
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Partner Discounts Section */}
       {partnerDiscounts && partnerDiscounts.length > 0 && (
         <Card>

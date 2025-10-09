@@ -1406,6 +1406,7 @@ export type Database = {
           bio: string | null
           company_about: string | null
           company_address: string | null
+          company_images: Json | null
           company_industry: string | null
           company_location_lat: number | null
           company_location_lng: number | null
@@ -1483,6 +1484,7 @@ export type Database = {
           bio?: string | null
           company_about?: string | null
           company_address?: string | null
+          company_images?: Json | null
           company_industry?: string | null
           company_location_lat?: number | null
           company_location_lng?: number | null
@@ -1560,6 +1562,7 @@ export type Database = {
           bio?: string | null
           company_about?: string | null
           company_address?: string | null
+          company_images?: Json | null
           company_industry?: string | null
           company_location_lat?: number | null
           company_location_lng?: number | null

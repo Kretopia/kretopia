@@ -93,6 +93,8 @@ const Profile = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isReorderMode, setIsReorderMode] = useState(false);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [sectionOrder, setSectionOrder] = useState<string[]>([
     "bio",
     "social_stats",
@@ -306,6 +308,26 @@ const Profile = () => {
     });
   };
 
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setGalleryFiles(prev => [...prev, ...files]);
+      
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setGalleryPreviews(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryFiles(prev => prev.filter((_, i) => i !== index));
+    setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -379,7 +401,7 @@ const Profile = () => {
     // Determine if this is a company account
     const isCompany = profile?.account_type === 'company';
     
-    const updateData = isCompany ? {
+    let updateData = isCompany ? {
       company_name: editForm.full_name,
       company_industry: editForm.role,
       company_about: editForm.bio,
@@ -395,6 +417,41 @@ const Profile = () => {
       avatar_url: editForm.avatar_url,
     };
 
+    // Upload gallery images for company accounts
+    if (isCompany && galleryFiles.length > 0) {
+      const existingImages = (profile?.company_images as string[]) || [];
+      const newImageUrls: string[] = [];
+
+      for (const file of galleryFiles) {
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${user.id}-gallery-${Date.now()}-${Math.random()}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error('Gallery upload error:', uploadError);
+            continue;
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+
+          newImageUrls.push(publicUrl);
+        } catch (err) {
+          console.error('Error uploading gallery image:', err);
+        }
+      }
+
+      updateData = {
+        ...updateData,
+        company_images: [...existingImages, ...newImageUrls] as any,
+      } as any;
+    }
+
     const { error } = await supabase
       .from('profiles')
       .update(updateData)
@@ -409,6 +466,8 @@ const Profile = () => {
       });
     } else {
       console.log('[Profile] Profile updated successfully');
+      setGalleryFiles([]);
+      setGalleryPreviews([]);
       await fetchData(); // Refresh all data
       setIsEditOpen(false);
       toast({
@@ -551,6 +610,51 @@ const Profile = () => {
                             rows={5}
                           />
                         </div>
+                        
+                        {/* Gallery Images Upload */}
+                        <div>
+                          <Label>Gallery Images</Label>
+                          <div className="mt-2 space-y-4">
+                            {profile?.company_images && Array.isArray(profile.company_images) && profile.company_images.length > 0 && (
+                              <div className="grid grid-cols-3 gap-2">
+                                {(profile.company_images as string[]).map((imageUrl: string, index: number) => (
+                                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                                    <img src={imageUrl} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {galleryPreviews.length > 0 && (
+                              <div className="grid grid-cols-3 gap-2">
+                                {galleryPreviews.map((preview, index) => (
+                                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                                    <img src={preview} alt={`New ${index + 1}`} className="w-full h-full object-cover" />
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="icon"
+                                      className="absolute top-1 right-1 h-6 w-6"
+                                      onClick={() => removeGalleryImage(index)}
+                                    >
+                                      ×
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={handleGalleryChange}
+                              className="cursor-pointer"
+                            />
+                            <p className="text-sm text-muted-foreground">
+                              Upload multiple images to showcase your company
+                            </p>
+                          </div>
+                        </div>
+
                         <Button onClick={handleEditSave} className="w-full" variant="gradient">
                           Save Changes
                         </Button>

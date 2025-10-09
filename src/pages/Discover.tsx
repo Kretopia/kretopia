@@ -646,8 +646,8 @@ const Discover = () => {
 
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-3 sm:mb-4">
             <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="creators" className="text-sm sm:text-base">Creators</TabsTrigger>
-              <TabsTrigger value="opportunities" className="text-sm sm:text-base">Opportunities</TabsTrigger>
+              <TabsTrigger value="creators" className="text-sm sm:text-base">Content Creators</TabsTrigger>
+              <TabsTrigger value="opportunities" className="text-sm sm:text-base">Paid Jobs & Barters</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -758,9 +758,9 @@ const Discover = () => {
                     <Sparkles className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary animate-pulse" />
                     {activeTab === 'creators' ? (
                       <>
-                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">No more creators right now</h2>
+                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">You've seen all active creators</h2>
                         <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                          Check back soon for new creative professionals
+                          Check back soon for new content creators looking for paid work and barter deals
                         </p>
                         <Button 
                           variant="outline" 
@@ -772,9 +772,9 @@ const Discover = () => {
                       </>
                     ) : (
                       <>
-                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">No opportunities available</h2>
+                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">No paid jobs or barter deals yet</h2>
                         <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                          Be the first to create an opportunity
+                          Post the first opportunity and start collaborating
                         </p>
                         <QuickCreateOpportunityDialog />
                       </>

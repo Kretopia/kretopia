@@ -42,52 +42,52 @@ const Landing = () => {
               <span>Everything you need in one place</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Built for Creators,{" "}
+              Everything Content Creators{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                By Creators
+                Need to Work
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              From discovering perfect collaborations to getting paid securely, 
-              ThriveIN gives you professional tools without the complexity
+              From finding paid gigs to bartering with brands, we connect you with opportunities 
+              that match your niche and help you negotiate the best deals
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <FeatureCard
-              icon={<Users className="h-8 w-8" />}
-              title="Smart Discovery"
-              description="Swipe through creators and opportunities matched to your skills"
+              icon={<Briefcase className="h-8 w-8" />}
+              title="Paid Jobs"
+              description="Browse sponsored content deals, brand partnerships, and paid gigs"
               gradient="from-primary to-secondary"
             />
             <FeatureCard
-              icon={<Briefcase className="h-8 w-8" />}
-              title="Jobs & Collabs"
-              description="Find paid gigs, barters, and creative collaborations"
+              icon={<Users className="h-8 w-8" />}
+              title="Barter Deals"
+              description="Trade content for products, services, or cross-promotion"
               gradient="from-secondary to-accent"
             />
             <FeatureCard
               icon={<Wallet className="h-8 w-8" />}
-              title="ThrivePay"
-              description="Built-in wallet to earn, spend, and withdraw your earnings"
+              title="Secure Payments"
+              description="Get paid safely with built-in escrow and milestone tracking"
               gradient="from-accent to-primary"
             />
             <FeatureCard
               icon={<Lightbulb className="h-8 w-8" />}
-              title="ThriveDesk"
-              description="Manage projects, milestones, and client communications seamlessly"
+              title="Smart Matching"
+              description="AI finds opportunities that fit your niche and audience"
               gradient="from-secondary to-accent"
             />
             <FeatureCard
               icon={<Rocket className="h-8 w-8" />}
-              title="Circle"
-              description="Network with creators, build your circle, and collaborate"
+              title="Easy Collaboration"
+              description="Chat, negotiate terms, and manage deliverables in one place"
               gradient="from-primary to-secondary"
             />
             <FeatureCard
               icon={<Trophy className="h-8 w-8" />}
-              title="Leaderboard"
-              description="Climb the ranks, showcase your achievements, and get recognized"
+              title="Build Your Brand"
+              description="Showcase your work, grow your following, and get discovered"
               gradient="from-secondary to-accent"
             />
           </div>

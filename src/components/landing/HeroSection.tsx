@@ -20,16 +20,16 @@ export const HeroSection = () => {
           </div>
           
           <h1 className="mb-8 text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
-            Where Creators
+            Content Creators:
             <br />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Connect & Thrive
+              Get Paid or Trade
             </span>
           </h1>
           
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            The all-in-one platform for creative collaboration. Find your next project, 
-            connect with talented creators, and get paid—all powered by AI matching technology.
+            Find paid gigs and barter deals tailored for content creators. Match with brands 
+            and fellow creators, negotiate your terms, and collaborate—all in one platform.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -49,11 +49,11 @@ export const HeroSection = () => {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground md:gap-8">
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span>100% Free to Start</span>
+              <span>Paid Jobs & Barter Deals</span>
             </div>
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
-              <span>AI-Powered Matching</span>
+              <span>For Content Creators</span>
             </div>
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />

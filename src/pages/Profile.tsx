@@ -140,12 +140,15 @@ const Profile = () => {
           "social_links",
         ]
       );
+      
+      // Set form data based on account type
+      const isCompany = data.account_type === 'company';
       setEditForm({
-        full_name: data.full_name || "",
-        role: data.role || "",
-        bio: data.bio || "",
-        location: data.location || "",
-        avatar_url: data.avatar_url || ""
+        full_name: isCompany ? (data.company_name || data.full_name || "") : (data.full_name || ""),
+        role: isCompany ? (data.company_industry || "") : (data.role || ""),
+        bio: isCompany ? (data.company_about || "") : (data.bio || ""),
+        location: isCompany ? (data.company_address || "") : (data.location || ""),
+        avatar_url: isCompany ? (data.company_logo_url || data.avatar_url || "") : (data.avatar_url || "")
       });
     }
 
@@ -289,9 +292,16 @@ const Profile = () => {
         .getPublicUrl(fileName);
 
       console.log('[Profile] Updating avatar_url in database:', publicUrl);
+      
+      // Update the correct field based on account type
+      const isCompany = profile?.account_type === 'company';
+      const updateData = isCompany 
+        ? { company_logo_url: publicUrl, avatar_url: publicUrl }
+        : { avatar_url: publicUrl };
+      
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .update(updateData)
         .eq('user_id', user.id);
 
       if (updateError) {
@@ -328,15 +338,27 @@ const Profile = () => {
 
     console.log('[Profile] Saving profile updates:', editForm);
     
+    // Determine if this is a company account
+    const isCompany = profile?.account_type === 'company';
+    
+    const updateData = isCompany ? {
+      company_name: editForm.full_name,
+      company_industry: editForm.role,
+      company_about: editForm.bio,
+      company_address: editForm.location,
+      company_logo_url: editForm.avatar_url,
+      full_name: editForm.full_name, // Also update full_name for display
+    } : {
+      full_name: editForm.full_name,
+      role: editForm.role,
+      bio: editForm.bio,
+      location: editForm.location,
+      avatar_url: editForm.avatar_url,
+    };
+
     const { error } = await supabase
       .from('profiles')
-      .update({
-        full_name: editForm.full_name,
-        role: editForm.role,
-        bio: editForm.bio,
-        location: editForm.location,
-        avatar_url: editForm.avatar_url,
-      })
+      .update(updateData)
       .eq('user_id', user.id);
 
     if (error) {
@@ -348,7 +370,7 @@ const Profile = () => {
       });
     } else {
       console.log('[Profile] Profile updated successfully');
-      setProfile({ ...profile!, ...editForm });
+      await fetchData(); // Refresh all data
       setIsEditOpen(false);
       toast({
         title: "Success",
@@ -365,19 +387,137 @@ const Profile = () => {
     );
   }
 
-  // Redirect company accounts to appropriate view
+  // Company profile editing view
   if (profile.account_type === 'company') {
     return (
       <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
         <div className="container mx-auto max-w-4xl">
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold mb-2">Company Profile</h1>
-            <p className="text-muted-foreground mb-4">
-              This is a company account. To view or edit your public company profile, visit:
-            </p>
-            <Button onClick={() => window.location.href = `/profile/${profile.user_id}`}>
-              View Public Company Profile
-            </Button>
+          {/* Company Profile Header */}
+          <div className="mb-4 sm:mb-6 md:mb-8 overflow-hidden rounded-xl md:rounded-2xl lg:rounded-3xl border border-border bg-card shadow-card">
+            <div className="relative h-24 sm:h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
+            
+            <div className="relative px-3 sm:px-4 md:px-8 pb-4 sm:pb-6 md:pb-8">
+              <div className="mb-4 md:mb-6 -mt-12 md:-mt-16 flex flex-col items-start gap-3 md:gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 md:gap-4 w-full sm:w-auto">
+                  <div className="relative group">
+                    <Avatar className="h-24 w-24 md:h-32 md:w-32 rounded-xl md:rounded-2xl border-4 border-card">
+                      <AvatarImage 
+                        src={profile.company_logo_url || profile.avatar_url}
+                        alt={profile.company_name || profile.full_name}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="text-2xl md:text-4xl">
+                        {(profile.company_name || profile.full_name).substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingAvatar}
+                      className="absolute inset-0 flex items-center justify-center rounded-xl md:rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      {isUploadingAvatar ? (
+                        <Loader2 className="h-6 w-6 md:h-8 md:w-8 text-white animate-spin" />
+                      ) : (
+                        <Camera className="h-6 w-6 md:h-8 md:w-8 text-white" />
+                      )}
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h1 className="text-xl md:text-3xl font-bold mb-2">
+                      {profile.company_name || profile.full_name}
+                    </h1>
+                    {profile.company_industry && (
+                      <p className="mb-2 text-base md:text-lg text-muted-foreground">
+                        {profile.company_industry}
+                      </p>
+                    )}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs md:text-sm text-muted-foreground">
+                      {profile.company_address && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 md:h-4 md:w-4" />
+                          <span className="truncate">{profile.company_address}</span>
+                        </div>
+                      )}
+                      {profile.company_size && (
+                        <div className="flex items-center gap-1">
+                          <Briefcase className="h-3 w-3 md:h-4 md:w-4" />
+                          <span>{profile.company_size}</span>
+                        </div>
+                      )}
+                    </div>
+                    {profile.company_about && (
+                      <p className="mt-3 md:mt-4 text-sm md:text-base text-foreground/90 leading-relaxed">
+                        {profile.company_about}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="flex-1 sm:flex-none">
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Profile
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Edit Company Profile</DialogTitle>
+                        <DialogDescription>
+                          Update your company information
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="company_name">Company Name</Label>
+                          <Input
+                            id="company_name"
+                            value={editForm.full_name}
+                            onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="company_industry">Industry</Label>
+                          <Input
+                            id="company_industry"
+                            value={editForm.role}
+                            onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="company_address">Address</Label>
+                          <Input
+                            id="company_address"
+                            value={editForm.location}
+                            onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="company_about">About</Label>
+                          <Textarea
+                            id="company_about"
+                            value={editForm.bio}
+                            onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                            rows={5}
+                          />
+                        </div>
+                        <Button onClick={handleEditSave} className="w-full">
+                          Save Changes
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  <ShareProfileDialog profile={profile} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

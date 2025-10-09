@@ -667,8 +667,8 @@ const Discover = () => {
 
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-3 sm:mb-4">
             <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="creators" className="text-sm sm:text-base">Content Creators</TabsTrigger>
-              <TabsTrigger value="opportunities" className="text-sm sm:text-base">Paid Jobs & Barters</TabsTrigger>
+              <TabsTrigger value="creators" className="text-sm sm:text-base">Creators to Collab</TabsTrigger>
+              <TabsTrigger value="opportunities" className="text-sm sm:text-base">Opportunities</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -704,11 +704,11 @@ const Discover = () => {
               title="👋 Welcome to Discovery!"
               description="Your gateway to finding perfect collaborations"
               tips={[
-                "Swipe right (→) on creators you want to connect with",
-                "Swipe left (←) to pass and see the next profile",
+                "Browse 'Creators to Collab' for direct partnerships (podcast guests, collab videos, etc.)",
+                "Check 'Opportunities' for paid work, barters, and open calls",
+                "Swipe right (→) to show interest, left (←) to pass",
                 "✨ AI shows you 3 smart recommendations daily (upgrade for unlimited)",
-                "Use Super Likes (★) to show serious interest",
-                "When both swipe right, it's a match! Start collaborating"
+                "When both swipe right on creators, it's a match! Start collaborating"
               ]}
             />
           </div>
@@ -787,7 +787,7 @@ const Discover = () => {
                       <>
                         <h2 className="mb-2 text-xl sm:text-2xl font-bold">You've seen all active creators</h2>
                         <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                          Check back soon for new content creators looking for paid work and barter deals
+                          Check back soon for new creators, or switch to 'Opportunities' tab for paid work and barter deals
                         </p>
                         <Button 
                           variant="outline" 
@@ -799,9 +799,9 @@ const Discover = () => {
                       </>
                     ) : (
                       <>
-                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">No paid jobs or barter deals yet</h2>
+                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">No opportunities yet</h2>
                         <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                          Post the first opportunity and start collaborating
+                          Post the first collaboration opportunity, paid work, or barter deal
                         </p>
                         <QuickCreateOpportunityDialog />
                       </>

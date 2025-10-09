@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { InviteDialog } from "@/components/InviteDialog";
+import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PortfolioItemCard } from "@/components/feed/PortfolioItemCard";
 import { AwardActivityCard } from "@/components/feed/AwardActivityCard";
@@ -52,6 +53,8 @@ const Circle = () => {
   const [discoverProfiles, setDiscoverProfiles] = useState<any[]>([]);
   const [discoverLoading, setDiscoverLoading] = useState(false);
   const [profileCompletionStatus, setProfileCompletionStatus] = useState<any>(null);
+  const [startProjectMatch, setStartProjectMatch] = useState<{ id: string; name: string; role: string; avatar?: string; matchId: string } | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -61,6 +64,7 @@ const Circle = () => {
     fetchPendingRequests();
     fetchActivityFeed();
     fetchProfileCompletion();
+    fetchCurrentUserRole();
     
     // Track page view
     import("@/lib/analytics").then(({ analytics }) => {
@@ -351,6 +355,21 @@ const Circle = () => {
 
       const completionStatus = checkProfileCompletion(userProfile, portfolioItems?.length || 0);
       setProfileCompletionStatus(completionStatus);
+    }
+  };
+
+  const fetchCurrentUserRole = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile) {
+      setCurrentUserRole(profile.role || "");
     }
   };
 
@@ -881,6 +900,22 @@ const Circle = () => {
                       isOnline={onlineUsers.has(connection.connected_user_id)}
                       onMessage={handleMessage}
                       onViewProfile={() => navigate(`/profile/${connection.connected_user_id}`)}
+                      onStartProject={(conn: Connection) => {
+                        // Track match-to-project intent
+                        trackEvent({
+                          eventName: 'start_project_clicked',
+                          eventCategory: EventCategory.COLLABORATION,
+                          properties: { collaborator_id: conn.connected_user_id }
+                        });
+                        
+                        setStartProjectMatch({
+                          id: conn.connected_user_id,
+                          name: conn.profile.full_name,
+                          role: conn.profile.role,
+                          avatar: conn.profile.avatar_url,
+                          matchId: conn.id
+                        });
+                      }}
                     />
                   ))
                 )}
@@ -900,6 +935,16 @@ const Circle = () => {
         />
       )}
 
+      {startProjectMatch && (
+        <StartProjectFromMatchDialog
+          open={!!startProjectMatch}
+          onOpenChange={(open) => !open && setStartProjectMatch(null)}
+          matchedUser={startProjectMatch}
+          matchId={startProjectMatch.matchId}
+          currentUserRole={currentUserRole}
+        />
+      )}
+
       <InviteDialog 
         open={showInviteDialog} 
         onOpenChange={setShowInviteDialog}
@@ -908,7 +953,7 @@ const Circle = () => {
   );
 };
 
-const ConnectionCard = ({ connection, isOnline, onMessage, onViewProfile }: any) => {
+const ConnectionCard = ({ connection, isOnline, onMessage, onViewProfile, onStartProject }: any) => {
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3 mb-3">
@@ -937,22 +982,33 @@ const ConnectionCard = ({ connection, isOnline, onMessage, onViewProfile }: any)
       {connection.profile.bio && (
         <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{connection.profile.bio}</p>
       )}
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <Button 
           size="sm" 
           variant="outline" 
           onClick={onViewProfile}
-          className="flex-1"
+          className="h-9"
         >
-          View Profile
+          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+          Profile
         </Button>
         <Button
           size="sm"
+          variant="outline"
           onClick={() => onMessage(connection.connected_user_id, connection.profile.full_name, connection.profile.avatar_url)}
-          className="flex-1 gap-2"
+          className="h-9"
         >
-          <MessageCircle className="h-4 w-4" />
+          <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
           Message
+        </Button>
+        <Button
+          size="sm"
+          variant="gradient"
+          onClick={() => onStartProject(connection)}
+          className="h-9 col-span-2 gap-1.5 font-semibold"
+        >
+          <ArrowRight className="h-4 w-4" />
+          Start Project Together
         </Button>
       </div>
     </Card>

@@ -60,6 +60,7 @@ export const EventCategory = {
   SUBSCRIPTION: 'subscription',
   ENGAGEMENT: 'engagement',
   ONBOARDING: 'onboarding',
+  COLLABORATION: 'collaboration',
 } as const;
 
 // Common event tracking functions

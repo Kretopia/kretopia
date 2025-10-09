@@ -174,24 +174,20 @@ const Discover = () => {
         setUserCredits(wallet.credits || 0);
       }
 
-      // Fetch user's previous swipes to filter them out (limit to recent to improve performance)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
+      // Fetch ALL user's previous swipes to filter them out permanently
       const { data: userSwipes } = await supabase
         .from('swipes')
         .select('target_id, target_type')
-        .eq('user_id', user.id)
-        .gte('created_at', thirtyDaysAgo.toISOString());
+        .eq('user_id', user.id);
 
       const swipedIds = new Set(userSwipes?.map(s => s.target_id) || []);
+      console.log('[Discover] Fetched swipes to filter:', swipedIds.size);
 
-      // Fetch existing connections to exclude them
+      // Fetch ALL connections (pending, accepted, rejected) to exclude them
       const { data: existingConnections } = await supabase
         .from('connections')
-        .select('user_id, connected_user_id')
-        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
-        .eq('status', 'accepted');
+        .select('user_id, connected_user_id, status')
+        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`);
 
       // Create set of connected user IDs
       const connectedUserIds = new Set(

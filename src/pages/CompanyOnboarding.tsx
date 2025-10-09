@@ -15,9 +15,7 @@ import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 const STEPS = [
-  { title: "Company Info", icon: Building2 },
-  { title: "Location", icon: MapPin },
-  { title: "Details", icon: Users },
+  { title: "Company Setup", icon: Building2 },
 ];
 
 const COMPANY_SIZES = [
@@ -149,20 +147,16 @@ export default function CompanyOnboarding() {
   };
 
   const handleNext = () => {
-    if (currentStep === 0 && !companyName.trim()) {
+    if (!companyName.trim()) {
       toast.error("Please enter your company name");
       return;
     }
-    if (currentStep === 1 && !address.trim()) {
+    if (!address.trim()) {
       toast.error("Please enter your company address");
       return;
     }
     
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      completeOnboarding();
-    }
+    completeOnboarding();
   };
 
   const completeOnboarding = async () => {
@@ -202,56 +196,38 @@ export default function CompanyOnboarding() {
       
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <CardTitle>Set Up Your Company Profile</CardTitle>
-              <CardDescription>
-                Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep].title}
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              {STEPS.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index <= currentStep ? "bg-primary" : "bg-muted"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-          <Progress value={((currentStep + 1) / STEPS.length) * 100} />
+          <CardTitle>Set Up Your Company Profile</CardTitle>
+          <CardDescription>
+            Complete your profile in under 2 minutes to start hiring talent
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {currentStep === 0 && (
-            <div className="space-y-6">
-              <div className="flex flex-col items-center gap-4">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={logoUrl} alt={companyName} />
-                  <AvatarFallback>
-                    <Building2 className="w-12 h-12" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col items-center gap-2">
-                  <Label htmlFor="logo" className="cursor-pointer">
-                    <Button type="button" variant="outline" size="sm" asChild>
-                      <span>Upload Company Logo</span>
-                    </Button>
-                  </Label>
-                  <Input
-                    id="logo"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleLogoChange}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Recommended: Square image, max 5MB
-                  </p>
-                </div>
+          <div className="space-y-6">
+            <div className="flex flex-col items-center gap-3 pb-4 border-b">
+              <Avatar className="w-20 h-20">
+                <AvatarImage src={logoUrl} alt={companyName} />
+                <AvatarFallback>
+                  <Building2 className="w-10 h-10" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col items-center gap-2">
+                <Label htmlFor="logo" className="cursor-pointer">
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <span>{logoUrl ? "Change Logo" : "Upload Logo (Optional)"}</span>
+                  </Button>
+                </Label>
+                <Input
+                  id="logo"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLogoChange}
+                />
               </div>
+            </div>
 
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="companyName">Company Name *</Label>
                 <Input
@@ -263,21 +239,6 @@ export default function CompanyOnboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyAbout">About Your Company</Label>
-                <Textarea
-                  id="companyAbout"
-                  value={companyAbout}
-                  onChange={(e) => setCompanyAbout(e.target.value)}
-                  placeholder="Tell us about your company, what you do, and what makes you unique..."
-                  rows={5}
-                />
-              </div>
-            </div>
-          )}
-
-          {currentStep === 1 && (
-            <div className="space-y-6">
-              <div className="space-y-2">
                 <Label htmlFor="address">Company Address *</Label>
                 <Input
                   id="address"
@@ -285,78 +246,62 @@ export default function CompanyOnboarding() {
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="123 Main St, City, Country"
                 />
-                <p className="text-xs text-muted-foreground">
-                  This will be shown on your company profile and used for location-based features
-                </p>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="companySize">Company Size</Label>
-                <Select value={companySize} onValueChange={setCompanySize}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select company size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COMPANY_SIZES.map((size) => (
-                      <SelectItem key={size} value={size}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="industry">Industry</Label>
-                <Select value={industry} onValueChange={setIndustry}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INDUSTRIES.map((ind) => (
-                      <SelectItem key={ind} value={ind}>
-                        {ind}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="companyAbout">About Your Company</Label>
+                <Textarea
+                  id="companyAbout"
+                  value={companyAbout}
+                  onChange={(e) => setCompanyAbout(e.target.value)}
+                  placeholder="What does your company do? What makes you unique?"
+                  rows={3}
+                />
               </div>
 
-              <div className="p-4 bg-muted/50 rounded-lg space-y-2">
-                <h4 className="font-medium flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                  Ready to launch!
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  Once you complete setup, you can start posting opportunities, 
-                  finding talent, and building your company's reputation on ThriveIN.
-                </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companySize">Company Size (Optional)</Label>
+                  <Select value={companySize} onValueChange={setCompanySize}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMPANY_SIZES.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="industry">Industry (Optional)</Label>
+                  <Select value={industry} onValueChange={setIndustry}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDUSTRIES.map((ind) => (
+                        <SelectItem key={ind} value={ind}>
+                          {ind}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-          )}
-
-          <div className="flex gap-3 pt-4">
-            {currentStep > 0 && (
-              <Button
-                variant="outline"
-                onClick={() => setCurrentStep(currentStep - 1)}
-                disabled={loading}
-              >
-                Back
-              </Button>
-            )}
-            <Button
-              onClick={handleNext}
-              disabled={loading}
-              className="flex-1"
-            >
-              {loading ? "Saving..." : currentStep === STEPS.length - 1 ? "Complete Setup" : "Next"}
-            </Button>
           </div>
+
+          <Button
+            onClick={handleNext}
+            disabled={loading}
+            className="w-full"
+          >
+            {loading ? "Setting up..." : "Complete Setup"}
+          </Button>
         </CardContent>
       </Card>
 

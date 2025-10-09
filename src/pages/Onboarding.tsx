@@ -15,11 +15,8 @@ import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 const STEPS = [
-  { id: 1, title: "Welcome", icon: Sparkles },
-  { id: 2, title: "Photo", icon: Camera },
-  { id: 3, title: "Profile", icon: Users },
-  { id: 4, title: "Skills", icon: Award },
-  { id: 5, title: "Discover", icon: Briefcase },
+  { id: 1, title: "Profile", icon: Users },
+  { id: 2, title: "Skills", icon: Award },
 ];
 
 interface Skill {
@@ -28,41 +25,13 @@ interface Skill {
   category: string;
 }
 
-// Predefined skills by category
-const SKILL_OPTIONS: Record<string, string[]> = {
-  "Photography & Visual": [
-    "Portrait Photography", "Fashion Photography", "Product Photography", "Event Photography",
-    "Landscape Photography", "Food Photography", "Architectural Photography", "Street Photography"
-  ],
-  "Video & Film": [
-    "Videography", "Film Production", "Cinematography", "Video Editing",
-    "Color Grading", "Documentary Filmmaking", "Commercial Production", "Music Videos"
-  ],
-  "Audio & Music": [
-    "Music Production", "Audio Engineering", "Sound Design", "Mixing & Mastering",
-    "Composition", "Beat Making", "Podcast Production", "Voiceover"
-  ],
-  "Design": [
-    "Graphic Design", "UI/UX Design", "Brand Design", "Logo Design",
-    "Illustration", "Typography", "Print Design", "Packaging Design"
-  ],
-  "Motion & Animation": [
-    "Motion Graphics", "2D Animation", "3D Animation", "VFX",
-    "After Effects", "Character Animation", "Stop Motion"
-  ],
-  "Content & Social": [
-    "Content Creation", "Social Media Management", "Copywriting", "Influencer Marketing",
-    "YouTube Content", "TikTok Content", "Instagram Strategy", "Community Management"
-  ],
-  "Creative Direction": [
-    "Creative Direction", "Art Direction", "Brand Strategy", "Campaign Development",
-    "Project Management", "Team Leadership"
-  ],
-  "Technical": [
-    "Web Development", "Mobile Development", "3D Modeling", "Game Design",
-    "Virtual Reality", "Augmented Reality", "Technical Direction"
-  ]
-};
+// Quick skill tags for simplified onboarding
+const QUICK_SKILLS = [
+  "Photography", "Videography", "Music Production", "Graphic Design", "UI/UX Design",
+  "Video Editing", "Audio Engineering", "Content Creation", "Social Media", "Copywriting",
+  "Illustration", "3D Modeling", "Motion Graphics", "Animation", "Web Development",
+  "Film Production", "Sound Design", "Brand Design", "Art Direction", "Creative Direction"
+];
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -82,12 +51,7 @@ export default function Onboarding() {
     location: "",
   });
   
-  const [professionalSkills, setProfessionalSkills] = useState<Skill[]>([]);
-  const [passionSkills, setPassionSkills] = useState<Skill[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(Object.keys(SKILL_OPTIONS)[0]);
-  const [selectedSkill, setSelectedSkill] = useState<string>("");
-  const [selectedLevel, setSelectedLevel] = useState<number>(3);
-  const [skillType, setSkillType] = useState<"professional" | "passion">("professional");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -116,92 +80,35 @@ export default function Onboarding() {
   };
 
   const handleNext = async () => {
-    // Track step progression
     const { analytics } = await import("@/lib/analytics");
     
-    // Validate current step before proceeding
-    if (currentStep === 2) {
-      // Avatar upload step - optional, no validation needed
-      analytics.onboardingStep(2, "photo_upload");
-    }
-
-    if (currentStep === 3) {
+    if (currentStep === 1) {
       if (!profile.full_name || !profile.role || !profile.bio) {
         toast({
           title: "Missing information",
-          description: "Please fill in all required fields to continue",
+          description: "Please fill in all required fields",
           variant: "destructive",
         });
         return;
       }
-      
-      analytics.onboardingStep(3, "profile_details");
-      analytics.profileUpdate("basic_info");
-      
-      // Award XP for completing profile
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: currentProfile } = await supabase
-          .from("profiles")
-          .select("xp")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        await supabase
-          .from("profiles")
-          .update({ xp: (currentProfile?.xp || 0) + 30 })
-          .eq("user_id", user.id);
-
-        toast({
-          title: "✨ Profile Complete! +30 XP",
-          description: "Keep going to unlock better visibility in Discover",
-        });
-      }
+      analytics.onboardingStep(1, "profile_complete");
     }
 
-    if (currentStep === 4) {
-      if (professionalSkills.length === 0 && passionSkills.length === 0) {
+    if (currentStep === 2) {
+      if (selectedSkills.length === 0) {
         toast({
-          title: "Add at least one skill",
-          description: "Help others discover you by adding your skills",
+          title: "Select at least one skill",
+          description: "This helps us match you with the right people",
           variant: "destructive",
         });
         return;
       }
-      
-      analytics.onboardingStep(4, "skills_added");
-      analytics.profileUpdate("skills");
-      
-      // Award XP for adding skills
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: currentProfile } = await supabase
-          .from("profiles")
-          .select("xp")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        await supabase
-          .from("profiles")
-          .update({ xp: (currentProfile?.xp || 0) + 20 })
-          .eq("user_id", user.id);
-
-        toast({
-          title: "🎯 Skills Added! +20 XP",
-          description: "Skills help you get matched with perfect opportunities",
-        });
-      }
-    }
-
-    if (currentStep === 1) {
-      analytics.onboardingStep(1, "welcome_viewed");
-    }
-
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    } else {
+      analytics.onboardingStep(2, "skills_added");
       await completeOnboarding();
+      return;
     }
+
+    setCurrentStep(currentStep + 1);
   };
 
   const uploadAvatar = async (croppedImage: Blob) => {
@@ -258,42 +165,12 @@ export default function Onboarding() {
     setShowCropDialog(true);
   };
 
-  const addSkill = () => {
-    if (!selectedSkill.trim()) {
-      toast({ title: "Please select a skill", variant: "destructive" });
-      return;
-    }
-    
-    const newSkillObj: Skill = { 
-      skill: selectedSkill, 
-      level: selectedLevel, 
-      category: selectedCategory 
-    };
-    
-    if (skillType === "professional") {
-      if (professionalSkills.some(s => s.skill === selectedSkill)) {
-        toast({ title: "Skill already added", variant: "destructive" });
-        return;
-      }
-      setProfessionalSkills([...professionalSkills, newSkillObj]);
-    } else {
-      if (passionSkills.some(s => s.skill === selectedSkill)) {
-        toast({ title: "Skill already added", variant: "destructive" });
-        return;
-      }
-      setPassionSkills([...passionSkills, newSkillObj]);
-    }
-    
-    setSelectedSkill("");
-    setSelectedLevel(3);
-  };
-
-  const removeSkill = (type: "professional" | "passion", index: number) => {
-    if (type === "professional") {
-      setProfessionalSkills(professionalSkills.filter((_, i) => i !== index));
-    } else {
-      setPassionSkills(passionSkills.filter((_, i) => i !== index));
-    }
+  const toggleSkill = (skill: string) => {
+    setSelectedSkills(prev => 
+      prev.includes(skill) 
+        ? prev.filter(s => s !== skill)
+        : [...prev, skill]
+    );
   };
 
   const completeOnboarding = async () => {
@@ -302,34 +179,29 @@ export default function Onboarding() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Convert simple skill strings to the format expected by the database
+      const skillObjects = selectedSkills.map(skill => ({
+        skill,
+        level: 3,
+        category: "General"
+      }));
+
       await supabase
         .from("profiles")
         .update({
           ...profile,
-          professional_skills: professionalSkills as any,
-          passion_skills: passionSkills as any,
+          professional_skills: skillObjects as any,
+          onboarding_completed: true,
+          xp: 100, // Award all XP at once
         })
         .eq("user_id", user.id);
 
-      // Award onboarding XP
-      const { data: currentProfile } = await supabase
-        .from("profiles")
-        .select("xp")
-        .eq("user_id", user.id)
-        .single();
-
-      await supabase
-        .from("profiles")
-        .update({ xp: (currentProfile?.xp || 0) + 50 })
-        .eq("user_id", user.id);
-
-      // Track onboarding completion
       const { analytics } = await import("@/lib/analytics");
       analytics.onboardingComplete();
 
       toast({
-        title: "🎉 Welcome to ThriveIN! +50 XP",
-        description: "You've earned 100 total XP! Higher levels = better visibility in Discover",
+        title: "🎉 Welcome to ThriveIN!",
+        description: "Your profile is ready. Let's find you some matches!",
       });
 
       navigate("/discover");
@@ -345,7 +217,7 @@ export default function Onboarding() {
     }
   };
 
-  const progress = (currentStep / 5) * 100;
+  const progress = (currentStep / 2) * 100;
 
   return (
     <>
@@ -376,112 +248,41 @@ export default function Onboarding() {
         </div>
 
         {currentStep === 1 && (
-          <div className="space-y-6 text-center">
-            <Sparkles className="h-16 w-16 mx-auto text-primary animate-pulse" />
-            <h1 className="text-3xl font-bold">Welcome to ThriveIN!</h1>
-            <p className="text-lg text-muted-foreground">
-              Set up your profile in under 3 minutes and start connecting!
-            </p>
-            <div className="p-5 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 border-2 border-primary/30 rounded-xl shadow-glow">
-              <p className="text-base font-bold mb-3 flex items-center justify-center gap-2 text-primary">
-                <Sparkles className="h-5 w-5" />
-                Complete Setup = 100 XP + Level Up! 🎯
-              </p>
-              <p className="text-sm">
-                Higher levels mean better visibility in Discover and more matches
-              </p>
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-2">Welcome to ThriveIN!</h2>
+              <p className="text-muted-foreground">Set up your profile in under 2 minutes</p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
-                <Users className="h-10 w-10 mx-auto mb-2 text-primary" />
-                <p className="font-bold text-primary">1000+</p>
-                <p className="text-xs text-muted-foreground">Active Creators</p>
-              </div>
-              <div className="p-4 rounded-xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20">
-                <Briefcase className="h-10 w-10 mx-auto mb-2 text-secondary" />
-                <p className="font-bold text-secondary">50+</p>
-                <p className="text-xs text-muted-foreground">Live Opportunities</p>
-              </div>
-            </div>
-            <div className="text-xs text-muted-foreground pt-2">
-              ⚡ Takes less than 3 minutes
-            </div>
-          </div>
-        )}
 
-        {currentStep === 2 && (
-          <div className="space-y-6 text-center">
-            <Camera className="h-16 w-16 mx-auto text-primary" />
-            <h2 className="text-2xl font-bold">Add your profile photo</h2>
-            <p className="text-muted-foreground">
-              Profiles with photos get 3x more connections!
-            </p>
-            
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <Avatar className="h-32 w-32 ring-4 ring-primary/10">
-                  <AvatarImage 
-                    src={avatarUrl} 
-                    className="object-cover"
-                  />
-                  <AvatarFallback>
-                    <Camera className="h-12 w-12 text-muted-foreground" />
-                  </AvatarFallback>
-                </Avatar>
-                <input
-                  type="file"
-                  id="avatar-upload"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      handleFileSelect(file);
-                    }
-                  }}
-                />
-              </div>
-              
+            {/* Optional Photo Upload - Inline */}
+            <div className="flex flex-col items-center gap-3 py-4 border-y">
+              <Avatar className="h-24 w-24 ring-2 ring-primary/20">
+                <AvatarImage src={avatarUrl} className="object-cover" />
+                <AvatarFallback>
+                  <Camera className="h-10 w-10 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <input
+                type="file"
+                id="avatar-upload"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(file);
+                }}
+              />
               <Button
                 variant="outline"
-                size="lg"
+                size="sm"
                 onClick={() => document.getElementById('avatar-upload')?.click()}
                 disabled={uploadingAvatar}
               >
                 <Upload className="h-4 w-4 mr-2" />
-                {avatarUrl ? "Change Photo" : "Choose Photo"}
+                {avatarUrl ? "Change Photo" : "Add Photo (Optional)"}
               </Button>
             </div>
-            
-            <ImageCropDialog
-              imageUrl={tempImageUrl}
-              open={showCropDialog}
-              onClose={() => {
-                setShowCropDialog(false);
-                setTempImageUrl("");
-              }}
-              onCropComplete={uploadAvatar}
-              loading={uploadingAvatar}
-            />
-            
-            <p className="text-sm text-muted-foreground bg-primary/5 px-4 py-2 rounded-lg">
-              💡 You can skip this and add a photo later from your profile
-            </p>
-          </div>
-        )}
 
-        {currentStep === 3 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">Tell us about yourself</h2>
-                <p className="text-sm text-muted-foreground">This information helps others find and connect with you</p>
-              </div>
-              <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">+30 XP</span>
-              </div>
-            </div>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="full_name">Full Name *</Label>
@@ -490,7 +291,6 @@ export default function Onboarding() {
                   value={profile.full_name}
                   onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                   placeholder="Your name"
-                  required
                 />
               </div>
               <div>
@@ -499,8 +299,17 @@ export default function Onboarding() {
                   id="role"
                   value={profile.role}
                   onChange={(e) => setProfile({ ...profile, role: e.target.value })}
-                  placeholder="e.g., Content Creator, Producer, Artist"
-                  required
+                  placeholder="e.g., Content Creator, Videographer, Designer"
+                />
+              </div>
+              <div>
+                <Label htmlFor="bio">About You *</Label>
+                <Textarea
+                  id="bio"
+                  value={profile.bio}
+                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  placeholder="Quick intro: What you do and what you're looking for..."
+                  rows={3}
                 />
               </div>
               <div>
@@ -512,194 +321,44 @@ export default function Onboarding() {
                   placeholder="City, Country"
                 />
               </div>
-              <div>
-                <Label htmlFor="bio">Bio *</Label>
-                <Textarea
-                  id="bio"
-                  value={profile.bio}
-                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  placeholder="Tell us about yourself, your experience, and what you're looking for..."
-                  rows={4}
-                  required
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Tip: Mention your experience, interests, and what type of collaborations you're seeking
-                </p>
-              </div>
             </div>
           </div>
         )}
 
-        {currentStep === 4 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">What are your skills?</h2>
-                <p className="text-muted-foreground">
-                  Add skills to help others find you and discover relevant opportunities
-                </p>
-              </div>
-              <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">+20 XP</span>
-              </div>
+        {currentStep === 2 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2">Pick your skills</h2>
+              <p className="text-muted-foreground">Select all that apply (you can add more later)</p>
             </div>
-            
-            <div className="space-y-4">
-              <div className="grid gap-3">
-                <Select value={skillType} onValueChange={(v: "professional" | "passion") => setSkillType(v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="professional">Professional Skill</SelectItem>
-                    <SelectItem value="passion">Passion / Hobby</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(SKILL_OPTIONS).map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={selectedSkill} onValueChange={setSelectedSkill}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select skill" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SKILL_OPTIONS[selectedCategory]?.map(skill => (
-                      <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={String(selectedLevel)} onValueChange={(v) => setSelectedLevel(Number(v))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">⭐ Beginner</SelectItem>
-                    <SelectItem value="2">⭐⭐ Intermediate</SelectItem>
-                    <SelectItem value="3">⭐⭐⭐ Proficient</SelectItem>
-                    <SelectItem value="4">⭐⭐⭐⭐ Advanced</SelectItem>
-                    <SelectItem value="5">⭐⭐⭐⭐⭐ Expert</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Button onClick={addSkill} variant="gradient" size="sm">
-                  <Plus className="h-4 w-4 mr-2" /> Add {skillType === "professional" ? "Professional" : "Passion"} Skill
+
+            <div className="flex flex-wrap gap-2">
+              {QUICK_SKILLS.map((skill) => (
+                <Button
+                  key={skill}
+                  variant={selectedSkills.includes(skill) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleSkill(skill)}
+                  className="rounded-full"
+                >
+                  {skill}
+                  {selectedSkills.includes(skill) && <X className="ml-1 h-3 w-3" />}
                 </Button>
-              </div>
-              
-              <div className="space-y-3 pt-4 border-t">
-                <h4 className="font-semibold flex items-center gap-2 text-sm">
-                  <Briefcase className="h-4 w-4 text-primary" />
-                  Professional Skills Added
-                </h4>
-                <div className="space-y-2">
-                  {professionalSkills.map((skill, idx) => (
-                    <div key={idx} className="flex items-center gap-2 rounded-lg border p-2">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{skill.skill}</p>
-                        <p className="text-xs text-muted-foreground">{skill.category}</p>
-                      </div>
-                      <div className="flex gap-0.5">
-                        {[...Array(skill.level)].map((_, i) => (
-                          <Star key={i} className="h-3 w-3 fill-primary text-primary" />
-                        ))}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => removeSkill("professional", idx)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {professionalSkills.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-2">No professional skills added yet</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-4 border-t">
-                <h4 className="font-semibold flex items-center gap-2 text-sm">
-                  <Sparkles className="h-4 w-4 text-secondary" />
-                  Passion Skills Added
-                </h4>
-                <div className="space-y-2">
-                  {passionSkills.map((skill, idx) => (
-                    <div key={idx} className="flex items-center gap-2 rounded-lg border p-2">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{skill.skill}</p>
-                        <p className="text-xs text-muted-foreground">{skill.category}</p>
-                      </div>
-                      <div className="flex gap-0.5">
-                        {[...Array(skill.level)].map((_, i) => (
-                          <Star key={i} className="h-3 w-3 fill-secondary text-secondary" />
-                        ))}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => removeSkill("passion", idx)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {passionSkills.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-2">No passion skills added yet</p>
-                  )}
-                </div>
-              </div>
+              ))}
             </div>
+
+            {selectedSkills.length > 0 && (
+              <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                <p className="text-sm font-medium mb-1">Selected ({selectedSkills.length})</p>
+                <p className="text-xs text-muted-foreground">
+                  {selectedSkills.join(", ")}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {currentStep === 5 && (
-          <div className="space-y-6 text-center">
-            <Award className="h-16 w-16 mx-auto text-primary" />
-            <h2 className="text-2xl font-bold">You're all set!</h2>
-            <p className="text-lg text-muted-foreground">
-              Ready to discover amazing opportunities and connect with creators?
-            </p>
-            <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg mb-4">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <span className="text-2xl font-bold text-primary">+50 XP</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Complete onboarding to get started!
-              </p>
-            </div>
-            <div className="grid grid-cols-3 gap-4 pt-4 text-left">
-              <div className="p-4 rounded-lg bg-accent/10">
-                <p className="text-2xl font-bold text-primary">10</p>
-                <p className="text-sm">Daily Swipes</p>
-              </div>
-              <div className="p-4 rounded-lg bg-accent/10">
-                <p className="text-2xl font-bold text-primary">100 XP</p>
-                <p className="text-sm">Total Earned</p>
-              </div>
-              <div className="p-4 rounded-lg bg-accent/10">
-                <p className="text-2xl font-bold text-primary">∞</p>
-                <p className="text-sm">Possibilities</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-between mt-8">
+        <div className="flex gap-3 mt-8">
           {currentStep > 1 && (
             <Button
               variant="outline"
@@ -709,24 +368,34 @@ export default function Onboarding() {
               Back
             </Button>
           )}
-          {currentStep === 2 && !avatarUrl ? (
-            <Button
-              variant="ghost"
-              onClick={() => setCurrentStep(currentStep + 1)}
-              disabled={loading}
-              className="ml-auto mr-2"
-            >
-              Skip for now
-            </Button>
-          ) : null}
           <Button
             onClick={handleNext}
             disabled={loading}
-            className="ml-auto"
+            className="flex-1"
           >
-            {currentStep === 5 ? "Get Started" : "Continue"}
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Setting up...
+              </>
+            ) : currentStep === 2 ? (
+              "Complete & Start Matching"
+            ) : (
+              "Continue"
+            )}
           </Button>
         </div>
+        
+        <ImageCropDialog
+          imageUrl={tempImageUrl}
+          open={showCropDialog}
+          onClose={() => {
+            setShowCropDialog(false);
+            setTempImageUrl("");
+          }}
+          onCropComplete={uploadAvatar}
+          loading={uploadingAvatar}
+        />
       </Card>
     </div>
     </>

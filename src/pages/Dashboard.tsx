@@ -62,7 +62,7 @@ const Dashboard = () => {
   const fetchProfile = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    if (!user) return;
 
       // Check and award daily login credits
       const dailyResult = await checkAndAwardDailyLogin(user.id);

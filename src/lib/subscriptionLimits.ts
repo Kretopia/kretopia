@@ -3,7 +3,7 @@
  * Based on Beta Roadmap requirements
  */
 
-export type SubscriptionTier = "free" | "thriver" | "creator_pro";
+export type SubscriptionTier = "free" | "creator_pro";
 
 export interface TierLimits {
   swipesPerDay: number; // -1 = unlimited
@@ -24,25 +24,14 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     canUndoSwipe: false,
     canVerifyProfile: false,
     hasFeaturedProfile: false,
-    hasAIRecommendations: true, // Basic AI features for free
-    aiRecommendationsPerDay: 3, // Limited to 3 AI insights per day
-    hasPriorityMatching: false,
-    partnerDiscounts: 0,
-  },
-  thriver: {
-    swipesPerDay: -1, // unlimited
-    maxProjects: 5,
-    canUndoSwipe: true,
-    canVerifyProfile: true,
-    hasFeaturedProfile: false,
     hasAIRecommendations: true,
-    aiRecommendationsPerDay: -1, // Unlimited AI recommendations
+    aiRecommendationsPerDay: 3, // Limited to 3 AI insights per day
     hasPriorityMatching: false,
     partnerDiscounts: 5,
   },
   creator_pro: {
-    swipesPerDay: -1,
-    maxProjects: -1,
+    swipesPerDay: -1, // unlimited
+    maxProjects: -1, // unlimited
     canUndoSwipe: true,
     canVerifyProfile: true,
     hasFeaturedProfile: true,
@@ -93,8 +82,7 @@ export const canCreateProject = (
  */
 export const getTierDisplayName = (tier: SubscriptionTier): string => {
   const names: Record<SubscriptionTier, string> = {
-    free: "Free",
-    thriver: "Thriver",
+    free: "Thriver",
     creator_pro: "Creator Pro",
   };
   return names[tier];
@@ -120,15 +108,15 @@ export const getUpgradeMessage = (
   currentTier: SubscriptionTier
 ): string => {
   const messages: Record<keyof TierLimits, string> = {
-    swipesPerDay: "Upgrade to Thriver for unlimited daily swipes",
-    maxProjects: "Upgrade to Thriver for unlimited projects",
-    canUndoSwipe: "Upgrade to Thriver to undo swipes",
-    canVerifyProfile: "Upgrade to Thriver to get verified",
-    hasFeaturedProfile: "Upgrade to Creator Pro for a featured profile",
-    hasAIRecommendations: "All tiers have AI features! Upgrade for unlimited AI recommendations",
-    aiRecommendationsPerDay: "Upgrade to Thriver for unlimited AI match insights",
-    hasPriorityMatching: "Upgrade to Creator Pro for priority matching",
-    partnerDiscounts: "Upgrade for exclusive partner discounts",
+    swipesPerDay: "Upgrade to Creator Pro for unlimited daily swipes",
+    maxProjects: "Upgrade to Creator Pro for unlimited projects",
+    canUndoSwipe: "Upgrade to Creator Pro to undo swipes",
+    canVerifyProfile: "Upgrade to Creator Pro to get verified",
+    hasFeaturedProfile: "Upgrade to Creator Pro for a featured profile with 3x visibility",
+    hasAIRecommendations: "All tiers have AI features! Upgrade to Creator Pro for unlimited",
+    aiRecommendationsPerDay: "Upgrade to Creator Pro for unlimited AI match insights",
+    hasPriorityMatching: "Upgrade to Creator Pro for priority matching algorithm",
+    partnerDiscounts: "Upgrade to Creator Pro for 15% partner discounts",
   };
-  return messages[feature] || "Upgrade to unlock this feature";
+  return messages[feature] || "Upgrade to Creator Pro to unlock this feature";
 };

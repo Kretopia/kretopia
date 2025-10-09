@@ -1,7 +1,6 @@
 // Platform fee structure based on subscription tier
 export const PLATFORM_FEES = {
   free: 0.15,        // 15%
-  thriver: 0.10,     // 10%
   creator_pro: 0.05, // 5%
 } as const;
 
@@ -9,7 +8,6 @@ export type SubscriptionTier = keyof typeof PLATFORM_FEES;
 
 export const getPlatformFeePercentage = (tier: string | null): number => {
   if (!tier || tier === 'free') return PLATFORM_FEES.free;
-  if (tier === 'thriver') return PLATFORM_FEES.thriver;
   if (tier === 'creator_pro') return PLATFORM_FEES.creator_pro;
   return PLATFORM_FEES.free; // Default to free tier
 };

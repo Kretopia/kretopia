@@ -11,7 +11,7 @@ import { SUBSCRIPTION_PRODUCTS } from "@/lib/subscriptionConfig";
 // Subscription tiers configuration
 const SUBSCRIPTION_TIERS = [
   {
-    name: "Free",
+    name: "Thriver",
     tier: "free",
     price: "$0",
     priceId: null,
@@ -19,21 +19,12 @@ const SUBSCRIPTION_TIERS = [
     icon: Zap,
     features: [
       "10 swipes/day",
-      "Basic profile",
-      "Direct messaging",
+      "3 AI recommendations/day",
       "1 active project",
+      "Direct messaging",
       "Portfolio showcase",
+      "5% partner discounts",
     ],
-  },
-  {
-    name: SUBSCRIPTION_PRODUCTS.thriver.name,
-    tier: SUBSCRIPTION_PRODUCTS.thriver.tier,
-    price: `$${SUBSCRIPTION_PRODUCTS.thriver.price}`,
-    priceId: SUBSCRIPTION_PRODUCTS.thriver.priceId,
-    productId: SUBSCRIPTION_PRODUCTS.thriver.productId,
-    icon: Sparkles,
-    popular: true,
-    features: SUBSCRIPTION_PRODUCTS.thriver.features,
   },
   {
     name: SUBSCRIPTION_PRODUCTS.creator_pro.name,
@@ -42,6 +33,7 @@ const SUBSCRIPTION_TIERS = [
     priceId: SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
     productId: SUBSCRIPTION_PRODUCTS.creator_pro.productId,
     icon: Crown,
+    popular: true,
     features: SUBSCRIPTION_PRODUCTS.creator_pro.features,
   },
 ];
@@ -184,7 +176,7 @@ export default function Subscription() {
         </div>
       )}
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+      <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
         {SUBSCRIPTION_TIERS.map((tier) => {
           const isCurrentPlan = currentTier === tier.tier;
           const Icon = tier.icon;

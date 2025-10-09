@@ -11,21 +11,12 @@ interface FeeStructureProps {
 export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
   const tiers = [
     {
-      name: "Free",
+      name: "Thriver",
       tier: "free",
       icon: CheckCircle,
       fee: PLATFORM_FEES.free,
       color: "bg-gray-500",
-      features: ["Basic payment processing", "Standard support"],
-    },
-    {
-      name: "Thriver",
-      tier: "thriver",
-      icon: Zap,
-      fee: PLATFORM_FEES.thriver,
-      color: "bg-primary",
-      price: "$9/mo",
-      features: ["Lower platform fees", "Priority support", "Advanced analytics"],
+      features: ["Limited swipes & AI", "Basic payment processing", "Standard support", "5% partner discounts"],
     },
     {
       name: "Creator Pro",
@@ -34,7 +25,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
       fee: PLATFORM_FEES.creator_pro,
       color: "bg-gradient-to-r from-primary to-purple-500",
       price: "$29/mo",
-      features: ["Lowest platform fees", "VIP support", "All features included"],
+      features: ["Lowest platform fees", "VIP support", "All features unlimited", "15% partner discounts"],
     },
   ];
 
@@ -47,7 +38,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 max-w-4xl mx-auto">
           {tiers.map((tier) => {
             const Icon = tier.icon;
             const isCurrentTier = currentTier === tier.tier;

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Star, Briefcase, Share2, Edit, Camera, Loader2 } from "lucide-react";
+import { MapPin, Star, Briefcase, Share2, Edit, Camera, Loader2, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
@@ -490,208 +490,153 @@ const Profile = () => {
     return (
       <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
         <div className="container mx-auto max-w-4xl space-y-6">
-          {/* Company Profile Header with Edit */}
-          <div className="overflow-hidden rounded-xl md:rounded-2xl lg:rounded-3xl border border-border bg-card shadow-card">
-            <div className="relative h-24 sm:h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
-            
-            <div className="relative px-3 sm:px-4 md:px-8 pb-4 sm:pb-6 md:pb-8">
-              <div className="mb-4 md:mb-6 -mt-12 md:-mt-16 flex flex-col items-start gap-3 md:gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 md:gap-4 w-full sm:w-auto">
-                  <div className="relative group">
-                    <Avatar className="h-24 w-24 md:h-32 md:w-32 rounded-xl md:rounded-2xl border-4 border-card">
-                      <AvatarImage 
-                        src={profile.company_logo_url || profile.avatar_url}
-                        alt={profile.company_name || profile.full_name}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="text-2xl md:text-4xl">
-                        {(profile.company_name || profile.full_name).substring(0, 2).toUpperCase()}
+          {/* Edit Profile Dialog */}
+          <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Company Profile</DialogTitle>
+                <DialogDescription>
+                  Update your company information
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="companyLogo">Company Logo</Label>
+                  <div className="flex items-center gap-4 mt-2">
+                    <Avatar className="h-20 w-20 rounded-lg">
+                      <AvatarImage src={editForm.avatar_url} />
+                      <AvatarFallback>
+                        <Building2 className="h-10 w-10" />
                       </AvatarFallback>
                     </Avatar>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploadingAvatar}
-                      className="absolute inset-0 flex items-center justify-center rounded-xl md:rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
-                    >
-                      {isUploadingAvatar ? (
-                        <Loader2 className="h-6 w-6 md:h-8 md:w-8 text-white animate-spin" />
-                      ) : (
-                        <Camera className="h-6 w-6 md:h-8 md:w-8 text-white" />
-                      )}
-                    </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarUpload}
-                      className="hidden"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h1 className="text-xl md:text-3xl font-bold mb-2">
-                      {profile.company_name || profile.full_name}
-                    </h1>
-                    {profile.company_industry && (
-                      <p className="mb-2 text-base md:text-lg text-muted-foreground">
-                        {profile.company_industry}
-                      </p>
-                    )}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs md:text-sm text-muted-foreground">
-                      {profile.company_address && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-                          <span className="truncate">{profile.company_address}</span>
-                        </div>
-                      )}
-                      {profile.company_size && (
-                        <div className="flex items-center gap-1">
-                          <Briefcase className="h-3 w-3 md:h-4 md:w-4" />
-                          <span>{profile.company_size}</span>
-                        </div>
-                      )}
+                    <div className="flex-1">
+                      <Input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                      />
+                      <Button 
+                        variant="outline" 
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingAvatar}
+                        size="sm"
+                      >
+                        {isUploadingAvatar ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="mr-2 h-4 w-4" />
+                            Change Logo
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="gradient" className="flex-1 sm:flex-none">
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit Profile
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Edit Company Profile</DialogTitle>
-                        <DialogDescription>
-                          Update your company information
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="company_name">Company Name</Label>
-                          <Input
-                            id="company_name"
-                            value={editForm.full_name}
-                            onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                          />
+                <div>
+                  <Label htmlFor="full_name">Company Name</Label>
+                  <Input
+                    id="full_name"
+                    value={editForm.full_name}
+                    onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="role">Industry</Label>
+                  <Input
+                    id="role"
+                    value={editForm.role}
+                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                    placeholder="e.g., Technology, Marketing, Entertainment"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="company_size">Company Size</Label>
+                  <Input
+                    id="company_size"
+                    value={editForm.company_size}
+                    onChange={(e) => setEditForm({ ...editForm, company_size: e.target.value })}
+                    placeholder="e.g., 1-10 employees"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="location">Address</Label>
+                  <Input
+                    id="location"
+                    value={editForm.location}
+                    onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                    placeholder="Company address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="bio">About</Label>
+                  <Textarea
+                    id="bio"
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                    placeholder="Tell us about your company..."
+                    rows={5}
+                  />
+                </div>
+                <div>
+                  <Label>Gallery Images</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleGalleryChange}
+                    className="mt-2"
+                  />
+                  {galleryPreviews.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      {galleryPreviews.map((preview, index) => (
+                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                          <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="absolute top-1 right-1 h-6 w-6 p-0"
+                            onClick={() => removeGalleryImage(index)}
+                          >
+                            ×
+                          </Button>
                         </div>
-                        <div>
-                          <Label htmlFor="company_industry">Industry</Label>
-                          <Input
-                            id="company_industry"
-                            value={editForm.role}
-                            onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="company_size">Company Size</Label>
-                          <Input
-                            id="company_size"
-                            value={editForm.company_size || ''}
-                            onChange={(e) => setEditForm({ ...editForm, company_size: e.target.value })}
-                            placeholder="e.g., 1-10 employees"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="company_address">Address</Label>
-                          <Input
-                            id="company_address"
-                            value={editForm.location}
-                            onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="company_about">About</Label>
-                          <Textarea
-                            id="company_about"
-                            value={editForm.bio}
-                            onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                            rows={5}
-                          />
-                        </div>
-                        
-                        {/* Gallery Images Upload */}
-                        <div>
-                          <Label>Gallery Images</Label>
-                          <div className="mt-2 space-y-4">
-                            {profile?.company_images && Array.isArray(profile.company_images) && profile.company_images.length > 0 && (
-                              <div className="grid grid-cols-3 gap-2">
-                                {(profile.company_images as string[]).map((imageUrl: string, index: number) => (
-                                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
-                                    <img src={imageUrl} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            {galleryPreviews.length > 0 && (
-                              <div className="grid grid-cols-3 gap-2">
-                                {galleryPreviews.map((preview, index) => (
-                                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
-                                    <img src={preview} alt={`New ${index + 1}`} className="w-full h-full object-cover" />
-                                    <Button
-                                      type="button"
-                                      variant="destructive"
-                                      size="icon"
-                                      className="absolute top-1 right-1 h-6 w-6"
-                                      onClick={() => removeGalleryImage(index)}
-                                    >
-                                      ×
-                                    </Button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={handleGalleryChange}
-                              className="cursor-pointer"
-                            />
-                            <p className="text-sm text-muted-foreground">
-                              Upload multiple images to showcase your company
-                            </p>
-                          </div>
-                        </div>
-
-                        <Button onClick={handleEditSave} className="w-full" variant="gradient">
-                          Save Changes
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                  <ShareProfileDialog profile={profile} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
+              <div className="flex gap-2 justify-end mt-4">
+                <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                <Button onClick={handleEditSave}>Save Changes</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
-          {/* Company Profile Content using CompanyProfileView */}
-          <CompanyProfileView 
-            profile={{
-              ...profile,
-              company_name: profile.company_name || profile.full_name,
-              company_logo_url: profile.company_logo_url || profile.avatar_url,
-              company_industry: profile.company_industry || profile.role,
-              company_address: profile.company_address || profile.location,
-              company_about: profile.company_about || profile.bio,
-              company_size: profile.company_size,
-            }}
-            reviews={companyReviews}
-            partnerDiscounts={partnerDiscounts}
-            isOwnProfile={true}
-            onRefresh={fetchData}
-          />
-
-          {/* Photo Gallery Section */}
-          {portfolioItems.length > 0 && (
-            <PortfolioSection
-              items={portfolioItems}
+          {/* Company Profile View with Edit Button */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditOpen(true)}
+              className="absolute top-4 right-4 z-10 gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              Edit Profile
+            </Button>
+            <CompanyProfileView
+              profile={profile}
+              reviews={companyReviews}
+              partnerDiscounts={partnerDiscounts}
               isOwnProfile={true}
               onRefresh={fetchData}
             />
-          )}
+          </div>
         </div>
       </div>
     );

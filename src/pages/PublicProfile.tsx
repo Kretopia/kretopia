@@ -382,11 +382,15 @@ const PublicProfile = () => {
 
 {/* Render company view for company accounts */}
 {profile.account_type === 'company' ? (
-  <CompanyProfileView
-    profile={profile}
-    reviews={reviews}
-    isOwnProfile={false}
-  />
+  <div className="space-y-6">
+    {/* Back to top button for company view */}
+    <CompanyProfileView
+      profile={profile}
+      reviews={reviews}
+      isOwnProfile={false}
+      onRefresh={fetchData}
+    />
+  </div>
 ) : (
 <>
 {/* Profile Header */}

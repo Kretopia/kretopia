@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,24 +8,46 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { validateApplication, sanitizeInput, isValidUrl, handleSupabaseError } from "@/lib/errorHandling";
+import { AIOpportunityInsights } from "@/components/discover/AIOpportunityInsights";
 
 interface ApplyToOpportunityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   opportunityId: string;
   opportunityTitle: string;
+  opportunityDescription?: string;
 }
 
 export const ApplyToOpportunityDialog = ({ 
   open, 
   onOpenChange, 
   opportunityId,
-  opportunityTitle 
+  opportunityTitle,
+  opportunityDescription 
 }: ApplyToOpportunityDialogProps) => {
   const [coverLetter, setCoverLetter] = useState("");
   const [portfolioLink, setPortfolioLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ role?: string; bio?: string } | null>(null);
   const { toast } = useToast();
+
+  // Fetch user profile for AI insights
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('role, bio')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data) setUserProfile(data);
+    };
+    
+    if (open) fetchProfile();
+  }, [open]);
 
   const handleSubmit = async () => {
     // Validate inputs
@@ -100,13 +122,26 @@ export const ApplyToOpportunityDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Apply to {opportunityTitle}</DialogTitle>
           <DialogDescription>
             Tell them why you're the perfect fit for this opportunity
           </DialogDescription>
         </DialogHeader>
+
+        {/* AI Insights Section */}
+        {opportunityDescription && (
+          <div className="mb-4">
+            <AIOpportunityInsights
+              opportunityId={opportunityId}
+              opportunityTitle={opportunityTitle}
+              opportunityDescription={opportunityDescription}
+              userRole={userProfile?.role}
+              userBio={userProfile?.bio}
+            />
+          </div>
+        )}
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">

@@ -268,14 +268,21 @@ const Discover = () => {
           };
         });
 
-        // Apply AI scoring if enabled AND user has paid tier
+        // Apply AI scoring for ALL users (with limits for free tier)
         const hasAIAccess = TIER_LIMITS[subscriptionTier as SubscriptionTier]?.hasAIRecommendations;
+        const aiLimit = TIER_LIMITS[subscriptionTier as SubscriptionTier]?.aiRecommendationsPerDay;
+        
         if (aiScoringEnabled && userProfile && hasAIAccess) {
           console.log('[Discover] Applying AI match scoring...');
           try {
+            // For free users, only score the first few profiles (limited AI usage)
+            const profilesToScore = aiLimit > 0 && aiLimit !== -1 
+              ? completeProfiles.slice(0, aiLimit) 
+              : completeProfiles;
+            
             const scoredProfiles = await scoreProfilesWithAI(
               userProfile,
-              completeProfiles.map(p => ({
+              profilesToScore.map(p => ({
                 user_id: p.user_id || '',
                 full_name: p.full_name || '',
                 role: p.role || '',
@@ -286,14 +293,28 @@ const Discover = () => {
               }))
             );
 
-            creatorCards = creatorCards.map((card, index) => ({
-              ...card,
-              ai_match_score: scoredProfiles[index]?.ai_match_score,
-              match_reasons: scoredProfiles[index]?.match_reasons
-            }));
+            // Map scores back to cards
+            creatorCards = creatorCards.map((card, index) => {
+              // Only add score if within the AI limit
+              if (aiLimit === -1 || index < aiLimit) {
+                return {
+                  ...card,
+                  ai_match_score: scoredProfiles[index]?.ai_match_score,
+                  match_reasons: scoredProfiles[index]?.match_reasons
+                };
+              }
+              return card;
+            });
 
-            // Sort by AI match score (highest first)
-            creatorCards.sort((a, b) => (b.ai_match_score || 0) - (a.ai_match_score || 0));
+            // Sort by AI match score (highest first), then put non-scored at the end
+            creatorCards.sort((a, b) => {
+              const scoreA = a.ai_match_score || 0;
+              const scoreB = b.ai_match_score || 0;
+              if (scoreA === 0 && scoreB === 0) return 0;
+              if (scoreA === 0) return 1;
+              if (scoreB === 0) return -1;
+              return scoreB - scoreA;
+            });
           } catch (error) {
             console.error('[Discover] AI scoring failed, continuing without scores:', error);
           }
@@ -651,13 +672,19 @@ const Discover = () => {
             </TabsList>
           </Tabs>
 
-          {/* AI Features Banner for Paid Users */}
-          {activeTab === 'creators' && (subscriptionTier === 'thriver' || subscriptionTier === 'creator_pro') && (
+          {/* AI Features Banner - Updated for all users */}
+          {activeTab === 'creators' && (
             <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/20">
               <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-              <p className="text-xs text-muted-foreground">
-                AI-powered matching active • Profiles sorted by compatibility
-              </p>
+              {subscriptionTier === 'free' ? (
+                <p className="text-xs text-muted-foreground">
+                  AI matching active • 3 smart recommendations per day
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  AI-powered matching active • Unlimited smart recommendations
+                </p>
+              )}
             </div>
           )}
 
@@ -679,9 +706,9 @@ const Discover = () => {
               tips={[
                 "Swipe right (→) on creators you want to connect with",
                 "Swipe left (←) to pass and see the next profile",
+                "✨ AI shows you 3 smart recommendations daily (upgrade for unlimited)",
                 "Use Super Likes (★) to show serious interest",
-                "When both swipe right, it's a match! Start chatting",
-                "Higher XP profiles appear more in Discovery"
+                "When both swipe right, it's a match! Start collaborating"
               ]}
             />
           </div>

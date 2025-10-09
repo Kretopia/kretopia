@@ -299,6 +299,7 @@ const OpportunityDetail = () => {
           onOpenChange={setShowApplyDialog}
           opportunityId={opportunity.id}
           opportunityTitle={opportunity.title}
+          opportunityDescription={opportunity.description}
         />
       )}
     </div>

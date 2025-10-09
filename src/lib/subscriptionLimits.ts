@@ -12,6 +12,7 @@ export interface TierLimits {
   canVerifyProfile: boolean;
   hasFeaturedProfile: boolean;
   hasAIRecommendations: boolean;
+  aiRecommendationsPerDay: number; // -1 = unlimited, 0 = none
   hasPriorityMatching: boolean;
   partnerDiscounts: number;
 }
@@ -23,7 +24,8 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     canUndoSwipe: false,
     canVerifyProfile: false,
     hasFeaturedProfile: false,
-    hasAIRecommendations: false,
+    hasAIRecommendations: true, // Basic AI features for free
+    aiRecommendationsPerDay: 3, // Limited to 3 AI insights per day
     hasPriorityMatching: false,
     partnerDiscounts: 0,
   },
@@ -34,6 +36,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     canVerifyProfile: true,
     hasFeaturedProfile: false,
     hasAIRecommendations: true,
+    aiRecommendationsPerDay: -1, // Unlimited AI recommendations
     hasPriorityMatching: false,
     partnerDiscounts: 5,
   },
@@ -44,6 +47,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     canVerifyProfile: true,
     hasFeaturedProfile: true,
     hasAIRecommendations: true,
+    aiRecommendationsPerDay: -1, // Unlimited AI recommendations
     hasPriorityMatching: true,
     partnerDiscounts: 15,
   },
@@ -97,6 +101,18 @@ export const getTierDisplayName = (tier: SubscriptionTier): string => {
 };
 
 /**
+ * Get remaining AI recommendations for today
+ */
+export const getRemainingAIRecommendations = (
+  userTier: SubscriptionTier,
+  dailyAIUsage: number
+): number => {
+  const limit = TIER_LIMITS[userTier].aiRecommendationsPerDay;
+  if (limit === -1) return -1; // unlimited
+  return Math.max(0, limit - dailyAIUsage);
+};
+
+/**
  * Get upgrade message for a feature
  */
 export const getUpgradeMessage = (
@@ -109,7 +125,8 @@ export const getUpgradeMessage = (
     canUndoSwipe: "Upgrade to Thriver to undo swipes",
     canVerifyProfile: "Upgrade to Thriver to get verified",
     hasFeaturedProfile: "Upgrade to Creator Pro for a featured profile",
-    hasAIRecommendations: "Upgrade to Thriver for AI match recommendations",
+    hasAIRecommendations: "All tiers have AI features! Upgrade for unlimited AI recommendations",
+    aiRecommendationsPerDay: "Upgrade to Thriver for unlimited AI match insights",
     hasPriorityMatching: "Upgrade to Creator Pro for priority matching",
     partnerDiscounts: "Upgrade for exclusive partner discounts",
   };

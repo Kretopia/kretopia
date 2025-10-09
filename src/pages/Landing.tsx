@@ -121,9 +121,10 @@ const Landing = () => {
               period="/forever"
               features={[
                 "10 starting credits",
-                "Earn credits by activity",
+                "3 AI recommendations/day",
+                "AI profile enhancer",
+                "10 swipes per day",
                 "Basic features",
-                "Community access",
               ]}
               cta="Get Started"
               ctaLink="/auth"
@@ -134,7 +135,8 @@ const Landing = () => {
               period="/month"
               features={[
                 "Unlimited swipes",
-                "AI recommendations",
+                "Unlimited AI recommendations",
+                "AI profile optimization",
                 "Profile verification",
                 "5% partner discounts",
               ]}
@@ -148,8 +150,9 @@ const Landing = () => {
               popular
               features={[
                 "Everything in Thriver",
-                "Featured profile",
-                "Priority matching",
+                "Featured profile placement",
+                "Priority AI matching",
+                "Advanced analytics",
                 "15% partner discounts",
               ]}
               cta="Subscribe"

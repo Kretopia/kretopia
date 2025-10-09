@@ -49,7 +49,7 @@ export const HeroSection = () => {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground md:gap-8">
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span>Paid Jobs & Barter Deals</span>
+              <span>AI-Powered for All Users</span>
             </div>
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />

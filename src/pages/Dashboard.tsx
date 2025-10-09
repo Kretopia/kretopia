@@ -377,8 +377,8 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* AI Match Recommendations - Only for paid tiers */}
-        {profile && (profile.subscription_tier === 'thriver' || profile.subscription_tier === 'creator_pro') && (
+        {/* AI Match Recommendations - Only for Creator Pro */}
+        {profile && profile.subscription_tier === 'creator_pro' && (
           <div className="mb-6 sm:mb-8">
             <AIMatchRecommendations />
           </div>

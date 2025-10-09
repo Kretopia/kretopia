@@ -65,7 +65,7 @@ export default function Connect() {
     
     if (data) {
       setUserLevel(data.level || 1);
-      setIsPremium(data.subscription_tier === 'creator_pro' || data.subscription_tier === 'thriver');
+      setIsPremium(data.subscription_tier === 'creator_pro');
     }
   };
 

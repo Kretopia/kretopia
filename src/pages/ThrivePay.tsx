@@ -337,7 +337,7 @@ export default function ThrivePay() {
                   Your Platform Fee Rate
                 </CardTitle>
                 <CardDescription>
-                  Based on your {subscriptionTier === 'free' ? 'Free' : subscriptionTier === 'thriver' ? 'Thriver' : 'Creator Pro'} membership
+                  Based on your {subscriptionTier === 'free' ? 'Thriver (Free)' : 'Creator Pro'} membership
                 </CardDescription>
               </CardHeader>
               <CardContent>

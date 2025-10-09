@@ -230,6 +230,7 @@ const Discover = () => {
         // Filter out already swiped profiles and connected users - only require basics (name, role, avatar, bio exists)
         const completeProfiles = (profiles || []).filter(profile => {
           return !connectedUserIds.has(profile.user_id) &&
+                 !swipedIds.has(profile.user_id) && // Don't show already swiped profiles
                  profile.full_name && 
                  profile.full_name !== 'New User' && 
                  profile.role && 
@@ -553,11 +554,11 @@ const Discover = () => {
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     
     setDragStart({ x: clientX, y: clientY });
-    setIsDragging(true);
+    // Don't set isDragging yet - wait to see if it's actually a horizontal gesture
   };
   
   const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging) return;
+    if (dragStart.x === 0 && dragStart.y === 0) return;
     
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -565,34 +566,43 @@ const Discover = () => {
     const deltaX = clientX - dragStart.x;
     const deltaY = clientY - dragStart.y;
     
-    // Only start dragging if horizontal movement is more significant than vertical
-    // This prevents interfering with scrolling
-    if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaX) < 30) {
-      setIsDragging(false);
+    const horizontalDistance = Math.abs(deltaX);
+    const verticalDistance = Math.abs(deltaY);
+    
+    // More aggressive horizontal detection: must be 2x more horizontal than vertical
+    // and have meaningful horizontal movement (>20px)
+    const isHorizontalSwipe = horizontalDistance > verticalDistance * 2 && horizontalDistance > 20;
+    
+    if (isHorizontalSwipe) {
+      // This is clearly a swipe, not a scroll
+      if (!isDragging) {
+        setIsDragging(true);
+      }
+      e.preventDefault(); // Prevent scroll only during swipe
+      setDragOffset({ x: deltaX, y: 0 });
+      
+      // Show visual feedback
+      if (Math.abs(deltaX) > 50) {
+        setSwipeDirection(deltaX > 0 ? "right" : "left");
+      } else {
+        setSwipeDirection(null);
+      }
+    } else if (verticalDistance > 10 && !isDragging) {
+      // User is clearly trying to scroll, not swipe - reset
+      setDragStart({ x: 0, y: 0 });
       setDragOffset({ x: 0, y: 0 });
-      return;
-    }
-    
-    // Prevent default to stop scrolling when we're swiping horizontally
-    if (Math.abs(deltaX) > 30) {
-      e.preventDefault();
-    }
-    
-    setDragOffset({ x: deltaX, y: deltaY * 0.1 }); // Reduce vertical movement
-    
-    // Show visual feedback for swipe direction
-    if (Math.abs(deltaX) > 50) {
-      setSwipeDirection(deltaX > 0 ? "right" : "left");
-    } else {
-      setSwipeDirection(null);
     }
   };
 
   const handleDragEnd = () => {
-    if (!isDragging) return;
+    if (!isDragging) {
+      setDragStart({ x: 0, y: 0 });
+      return;
+    }
+    
     setIsDragging(false);
     
-    // Only trigger swipe if horizontal movement is significant
+    // Swipe if user dragged far enough horizontally
     if (Math.abs(dragOffset.x) > 100) {
       handleSwipe(dragOffset.x > 0 ? "right" : "left");
     } else {
@@ -600,6 +610,8 @@ const Discover = () => {
       setDragOffset({ x: 0, y: 0 });
       setSwipeDirection(null);
     }
+    
+    setDragStart({ x: 0, y: 0 });
   };
 
   if (loading) {
@@ -726,9 +738,29 @@ const Discover = () => {
             </div>
 
             {cards.length > 0 && (
-              <div className="mb-3 sm:mb-4 text-center text-xs sm:text-sm text-muted-foreground">
-                {currentIndex + 1} / {cards.length}
-              </div>
+              <>
+                <div className="mb-3 sm:mb-4 text-center text-xs sm:text-sm text-muted-foreground">
+                  {currentIndex + 1} / {cards.length}
+                </div>
+                
+                {/* Swipe Instructions Banner */}
+                <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 animate-fade-in">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="flex items-center gap-1 text-sm font-medium">
+                      <ArrowRight className="h-4 w-4 text-green-500 animate-pulse" />
+                      <span>Swipe Right to Like</span>
+                    </div>
+                    <span className="text-muted-foreground">•</span>
+                    <div className="flex items-center gap-1 text-sm font-medium">
+                      <X className="h-4 w-4 text-red-500" />
+                      <span>Swipe Left to Pass</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Or use the buttons below
+                  </p>
+                </div>
+              </>
             )}
 
             {cards.length === 0 ? (

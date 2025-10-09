@@ -422,12 +422,13 @@ const Discover = () => {
     const { analytics } = await import("@/lib/analytics");
     analytics.swipe(direction, currentCard.type === 'creator' ? currentCard.user_id : currentCard.id);
 
-    // Animate card off screen
+    // Start animation - card flies off screen
     setSwipeDirection(direction);
-    const targetX = direction === "right" ? window.innerWidth : -window.innerWidth;
+    const targetX = direction === "right" ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
     setDragOffset({ x: targetX, y: 0 });
     
-    await new Promise(resolve => setTimeout(resolve, 400)); // Slightly longer for smooth animation
+    // Wait for animation to complete before processing backend logic
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     if (dailySwipesLeft <= 0) {
       setSwipeDirection(null);
@@ -493,13 +494,8 @@ const Discover = () => {
           // Track match creation
           analytics.match(currentCard.user_id);
 
-          // Remove the swiped card first
-          const updatedCards = cards.filter((_, index) => index !== currentIndex);
-          setCards(updatedCards);
-          if (currentIndex >= updatedCards.length && updatedCards.length > 0) {
-            setCurrentIndex(updatedCards.length - 1);
-          }
-          
+          // Move to next card and reset animation
+          setCurrentIndex(prev => prev + 1);
           setSwipeDirection(null);
           setDragOffset({ x: 0, y: 0 });
 
@@ -533,16 +529,10 @@ const Discover = () => {
       toast({ title: "Interest Sent! 💫", description: `${currentCard.name} will be notified` });
     }
     
-    // Remove the swiped card from the array
-    const updatedCards = cards.filter((_, index) => index !== currentIndex);
-    setCards(updatedCards);
+    // Immediately show next card by moving to next index
+    setCurrentIndex(prev => prev + 1);
     
-    // Keep the same index (which now shows the next card)
-    // If we're at the end, stay at the current index
-    if (currentIndex >= updatedCards.length && updatedCards.length > 0) {
-      setCurrentIndex(updatedCards.length - 1);
-    }
-    
+    // Reset animation state immediately so next card appears smoothly
     setSwipeDirection(null);
     setDragOffset({ x: 0, y: 0 });
   };
@@ -625,7 +615,9 @@ const Discover = () => {
     );
   }
 
-  const currentCard = cards.length > 0 ? cards[currentIndex] : null;
+  const currentCard = currentIndex < cards.length ? cards[currentIndex] : null;
+  const nextCard = currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
+  const hasMoreCards = currentIndex < cards.length;
 
   return (
     <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-24 sm:pb-20">
@@ -737,7 +729,7 @@ const Discover = () => {
               )}
             </div>
 
-            {cards.length > 0 && (
+            {hasMoreCards && (
               <>
                 <div className="mb-3 sm:mb-4 text-center text-xs sm:text-sm text-muted-foreground">
                   {currentIndex + 1} / {cards.length}
@@ -763,7 +755,7 @@ const Discover = () => {
               </>
             )}
 
-            {cards.length === 0 ? (
+            {!hasMoreCards ? (
               <div className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg">
                 <div className="relative h-72 sm:h-80 md:h-96 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10">
                   <div className="text-center p-6">
@@ -795,38 +787,70 @@ const Discover = () => {
                 </div>
               </div>
             ) : (
-              <div
-              ref={cardRef}
-              className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg cursor-grab active:cursor-grabbing select-none"
-              style={{
-                transform: swipeDirection 
-                  ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '25deg' : '-25deg'})`
-                  : `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.1}deg)`,
-                opacity: swipeDirection ? 0 : 1,
-                transition: isDragging ? 'none' : 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-              }}
-              onMouseDown={handleDragStart}
-              onMouseMove={handleDragMove}
-              onMouseUp={handleDragEnd}
-              onMouseLeave={handleDragEnd}
-              onTouchStart={handleDragStart}
-              onTouchMove={handleDragMove}
-              onTouchEnd={handleDragEnd}
-            >
-              {Math.abs(dragOffset.x) > 30 && (
-                <>
-                  {dragOffset.x > 0 && (
-                    <div className="absolute top-4 sm:top-8 right-4 sm:right-8 z-10 px-3 sm:px-6 py-2 sm:py-3 bg-green-500 text-white font-bold text-base sm:text-xl rounded-lg rotate-12 border-2 sm:border-4 border-white shadow-xl">
-                      LIKE
+              <div className="relative mb-4 sm:mb-6">
+                {/* Card Stack - Next card visible behind */}
+                {nextCard && (
+                  <div 
+                    className="absolute inset-0 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg"
+                    style={{
+                      transform: 'scale(0.95) translateY(10px)',
+                      opacity: 0.5,
+                      zIndex: 0,
+                      transition: 'all 0.3s ease-out'
+                    }}
+                  >
+                    <div className="relative h-72 sm:h-80 md:h-96">
+                      <img src={nextCard.image} alt={nextCard.name} className="h-full w-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                     </div>
-                  )}
-                  {dragOffset.x < 0 && (
-                    <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-10 px-3 sm:px-6 py-2 sm:py-3 bg-red-500 text-white font-bold text-base sm:text-xl rounded-lg -rotate-12 border-2 sm:border-4 border-white shadow-xl">
-                      PASS
-                    </div>
-                  )}
-                </>
-              )}
+                  </div>
+                )}
+
+                {/* Current Card */}
+                {currentCard && (
+                  <div
+                    ref={cardRef}
+                    className="relative overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-2xl cursor-grab active:cursor-grabbing select-none"
+                    style={{
+                      transform: swipeDirection 
+                        ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '30deg' : '-30deg'})`
+                        : `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.15}deg)`,
+                      opacity: swipeDirection ? 0 : 1,
+                      zIndex: 10,
+                      transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}
+                    onMouseDown={handleDragStart}
+                    onMouseMove={handleDragMove}
+                    onMouseUp={handleDragEnd}
+                    onMouseLeave={handleDragEnd}
+                    onTouchStart={handleDragStart}
+                    onTouchMove={handleDragMove}
+                    onTouchEnd={handleDragEnd}
+                  >
+                    {/* Visual feedback overlays - appear during drag */}
+                    {Math.abs(dragOffset.x) > 30 && (
+                      <>
+                        <div 
+                          className="absolute inset-0 z-20 transition-opacity duration-200"
+                          style={{
+                            background: dragOffset.x > 0 
+                              ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.2), transparent)' 
+                              : 'linear-gradient(-90deg, rgba(239, 68, 68, 0.2), transparent)',
+                            opacity: Math.min(Math.abs(dragOffset.x) / 150, 0.8)
+                          }}
+                        />
+                        {dragOffset.x > 0 && (
+                          <div className="absolute top-4 sm:top-8 right-4 sm:right-8 z-30 px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white font-bold text-lg sm:text-2xl rounded-xl rotate-12 border-3 sm:border-4 border-white shadow-2xl animate-scale-in">
+                            ❤️ LIKE
+                          </div>
+                        )}
+                        {dragOffset.x < 0 && (
+                          <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-30 px-4 sm:px-6 py-2 sm:py-3 bg-red-500 text-white font-bold text-lg sm:text-2xl rounded-xl -rotate-12 border-3 sm:border-4 border-white shadow-2xl animate-scale-in">
+                            ✕ PASS
+                          </div>
+                        )}
+                      </>
+                    )}
 
               <div className="relative h-72 sm:h-80 md:h-96">
                 <img src={currentCard.image} alt={currentCard.name} className="h-full w-full object-cover" />
@@ -918,10 +942,12 @@ const Discover = () => {
                   </div>
                 )}
               </div>
+                </div>
+              )}
             </div>
             )}
 
-            {cards.length > 0 && (
+            {hasMoreCards && (
               <>
                 <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
               <UndoSwipeButton

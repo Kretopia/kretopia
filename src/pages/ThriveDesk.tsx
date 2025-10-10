@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { TaskBoard } from "@/components/project/TaskBoard";
+import { TaskCalendar } from "@/components/project/TaskCalendar";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { AIAutomation } from "@/components/project/AIAutomation";
 import { TimeTracker } from "@/components/project/TimeTracker";
@@ -13,6 +14,7 @@ import { NotificationBell } from "@/components/project/NotificationBell";
 import { ProjectPresence } from "@/components/project/ProjectPresence";
 import { PostAsOpportunityDialog } from "@/components/project/PostAsOpportunityDialog";
 import { PendingInvitations } from "@/components/project/PendingInvitations";
+import { ProjectNotes } from "@/components/project/ProjectNotes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,7 +26,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Plus,
   ArrowLeft,
-  Calendar,
+  Calendar as CalendarIcon,
   DollarSign,
   Loader2,
   FileText,
@@ -40,7 +42,9 @@ import {
   BarChart3,
   Sparkles,
   Menu,
-  X
+  X,
+  Upload,
+  Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +65,7 @@ const ThriveDesk = () => {
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activeView, setActiveView] = useState('overview');
+  const [taskView, setTaskView] = useState<'board' | 'calendar'>('board');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -429,6 +434,7 @@ const ThriveDesk = () => {
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
     { id: 'milestones', label: 'Milestones', icon: DollarSign, count: milestones.length },
     { id: 'files', label: 'Files', icon: FileText, count: files.length },
+    { id: 'notes', label: 'Notes', icon: FileText },
     { id: 'time', label: 'Time Tracking', icon: Clock },
     { id: 'activity', label: 'Activity', icon: BarChart3 },
     { id: 'automation', label: 'AI Automation', icon: Sparkles },
@@ -552,7 +558,30 @@ const ThriveDesk = () => {
               )}
               
               {activeView === 'tasks' && (
-                <TaskBoard tasks={tasks} projectId={projectId || ''} onUpdate={fetchProjectData} />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Button
+                      size="sm"
+                      variant={taskView === 'board' ? 'default' : 'outline'}
+                      onClick={() => setTaskView('board')}
+                    >
+                      Board
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={taskView === 'calendar' ? 'default' : 'outline'}
+                      onClick={() => setTaskView('calendar')}
+                    >
+                      <CalendarIcon className="h-4 w-4 mr-1" />
+                      Calendar
+                    </Button>
+                  </div>
+                  {taskView === 'board' ? (
+                    <TaskBoard tasks={tasks} projectId={projectId || ''} onUpdate={fetchProjectData} />
+                  ) : (
+                    <TaskCalendar tasks={tasks} />
+                  )}
+                </div>
               )}
               
               {activeView === 'milestones' && (
@@ -614,6 +643,10 @@ const ThriveDesk = () => {
                     ))
                   )}
                 </div>
+              )}
+              
+              {activeView === 'notes' && (
+                <ProjectNotes projectId={projectId || ''} />
               )}
               
               {activeView === 'time' && <TimeTracker projectId={projectId || ''} />}
@@ -819,11 +852,34 @@ const ThriveDesk = () => {
               
               {activeView === 'tasks' && (
                 <div className="max-w-7xl mx-auto">
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold mb-1">Tasks</h2>
-                    <p className="text-muted-foreground">Manage and track your project tasks</p>
+                  <div className="mb-6 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-1">Tasks</h2>
+                      <p className="text-muted-foreground">Manage and track your project tasks</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={taskView === 'board' ? 'default' : 'outline'}
+                        onClick={() => setTaskView('board')}
+                      >
+                        Board
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={taskView === 'calendar' ? 'default' : 'outline'}
+                        onClick={() => setTaskView('calendar')}
+                      >
+                        <CalendarIcon className="h-4 w-4 mr-1" />
+                        Calendar
+                      </Button>
+                    </div>
                   </div>
-                  <TaskBoard tasks={tasks} projectId={projectId || ''} onUpdate={fetchProjectData} />
+                  {taskView === 'board' ? (
+                    <TaskBoard tasks={tasks} projectId={projectId || ''} onUpdate={fetchProjectData} />
+                  ) : (
+                    <TaskCalendar tasks={tasks} />
+                  )}
                 </div>
               )}
               
@@ -907,6 +963,16 @@ const ThriveDesk = () => {
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+              
+              {activeView === 'notes' && (
+                <div className="max-w-7xl mx-auto h-full">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold mb-1">Notes</h2>
+                    <p className="text-muted-foreground">Project documentation and notes</p>
+                  </div>
+                  <ProjectNotes projectId={projectId || ''} />
                 </div>
               )}
               

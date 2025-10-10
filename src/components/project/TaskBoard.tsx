@@ -46,6 +46,7 @@ interface TaskBoardProps {
 }
 
 const STATUSES = [
+  { value: 'backlog', label: 'Backlog', color: 'bg-slate-100 dark:bg-slate-800' },
   { value: 'todo', label: 'To Do', color: 'bg-muted' },
   { value: 'in_progress', label: 'In Progress', color: 'bg-primary/10' },
   { value: 'review', label: 'Review', color: 'bg-accent/10' },

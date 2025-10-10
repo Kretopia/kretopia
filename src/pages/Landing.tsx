@@ -42,14 +42,14 @@ const Landing = () => {
               <span>Everything you need in one place</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Everything Content Creators{" "}
+              Everything Creatives{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Need to Work
+                Need to Thrive
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              From finding paid gigs to bartering with brands, we connect you with opportunities 
-              that match your niche and help you negotiate the best deals
+              Whether you're a creator, designer, filmmaker, photographer, or musician—find paid gigs, 
+              barter opportunities, and collaborations that match your craft and help you succeed
             </p>
           </div>
 
@@ -63,7 +63,7 @@ const Landing = () => {
             <FeatureCard
               icon={<Users className="h-8 w-8" />}
               title="Barter Deals"
-              description="Trade content for products, services, or cross-promotion"
+              description="Trade your creative services for products, services, or cross-promotion"
               gradient="from-secondary to-accent"
             />
             <FeatureCard
@@ -100,7 +100,7 @@ const Landing = () => {
           <div className="mb-20 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
               <Sparkles className="h-4 w-4" />
-              <span>Flexible pricing for every creator</span>
+              <span>Flexible pricing for every creative</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               Start Free,{" "}
@@ -169,7 +169,7 @@ const Landing = () => {
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              Complete your profile, connect with creators, and finish projects to earn credits. 
+              Complete your profile, connect with fellow creatives, and finish projects to earn credits. 
               No subscription needed—just be active and grow
             </p>
           </div>
@@ -230,7 +230,7 @@ const Landing = () => {
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              We're building an invite-only community of serious creators. Apply for early access, 
+              We're building an invite-only community of serious creatives and professionals. Apply for early access, 
               and if you're a good fit, we'll send you an invite code to join and share with your network
             </p>
           </div>
@@ -248,7 +248,7 @@ const Landing = () => {
                 Have an Invite Code?
               </h2>
               <p className="mb-8 text-lg opacity-90">
-                Join thousands of creators building their careers on ThriveIN
+                Join thousands of creatives building their careers on ThriveIN
               </p>
               <Link to="/auth">
                 <Button

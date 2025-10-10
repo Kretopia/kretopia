@@ -20,7 +20,7 @@ export const HeroSection = () => {
           </div>
           
           <h1 className="mb-8 text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
-            Content Creators:
+            Where Creatives:
             <br />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               Get Paid or Trade
@@ -28,8 +28,8 @@ export const HeroSection = () => {
           </h1>
           
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Find paid gigs and barter deals tailored for content creators. Match with brands 
-            and fellow creators, negotiate your terms, and collaborate—all in one platform.
+            Find paid gigs and barter deals for creators, designers, filmmakers, musicians, and all creative professionals. Match with brands 
+            and collaborators, negotiate your terms, and bring projects to life—all in one platform.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -53,7 +53,7 @@ export const HeroSection = () => {
             </div>
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
-              <span>For Content Creators</span>
+              <span>Built for All Creatives</span>
             </div>
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />

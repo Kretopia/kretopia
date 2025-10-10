@@ -12,20 +12,24 @@ interface ProfileCompletionBannerProps {
 
 const pageMessages = {
   discover: {
-    title: "Boost Your Visibility! 👀",
-    description: "Complete your profile to appear in more discovery feeds and get better matches.",
+    title: "Unlock Better Matches! 👀",
+    description: "Complete profiles get 10x more visibility and AI-powered match suggestions.",
+    stat: "Users with complete profiles receive 5x more opportunities",
   },
   opportunities: {
     title: "Stand Out to Clients! 💼",
-    description: "A complete profile increases your chances of landing opportunities by 3x.",
+    description: "A complete profile increases your chances of landing opportunities by 300%.",
+    stat: "92% of opportunities go to profiles with portfolio items",
   },
   circle: {
-    title: "Make Better Connections! 🤝",
-    description: "Show your best self! Complete profiles get 5x more connection requests.",
+    title: "Maximize Connections! 🤝",
+    description: "Complete profiles receive 5x more connection requests from other creators.",
+    stat: "Complete profiles get 8x more profile views",
   },
   messages: {
     title: "Start More Conversations! 💬",
-    description: "A complete profile makes people more likely to message you first.",
+    description: "People are 3x more likely to message you when your profile is complete.",
+    stat: "Complete profiles have 90% response rates",
   },
 };
 
@@ -62,7 +66,7 @@ export const ProfileCompletionBanner = ({ completion, page = "discover" }: Profi
   const topMissing = completion.missingFields.slice(0, 2);
 
   return (
-    <Alert className="border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 mb-4 relative">
+    <Alert className="border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 mb-4 relative shadow-lg">
       <AlertCircle className="h-4 w-4 text-primary" />
       <AlertDescription className="flex items-center justify-between gap-4">
         <div className="flex-1">
@@ -70,9 +74,13 @@ export const ProfileCompletionBanner = ({ completion, page = "discover" }: Profi
           <p className="text-xs text-muted-foreground mb-2">
             {message.description}
           </p>
+          <div className="flex items-start gap-2 mb-2 text-xs bg-background/80 rounded p-2">
+            <Sparkles className="h-3 w-3 text-primary mt-0.5 flex-shrink-0" />
+            <span className="font-medium">{message.stat}</span>
+          </div>
           <div className="flex flex-wrap gap-1">
             {topMissing.map((field) => (
-              <span key={field} className="text-xs bg-background/80 px-2 py-0.5 rounded-full border">
+              <span key={field} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20 font-medium">
                 Add {field}
               </span>
             ))}

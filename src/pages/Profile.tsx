@@ -25,6 +25,8 @@ import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
 import { TierProgressCard } from "@/components/membership/TierProgressCard";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
+import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -872,6 +874,10 @@ const Profile = () => {
                   pressCount={pressLinks.length}
                 />
                 <TierProgressCard currentPoints={profile.xp || 0} />
+                <ProfileCompletionProgress 
+                  completion={checkProfileCompletion(profile, portfolioItems.length)}
+                  showDetails={true}
+                />
               </>
             )}
           </div>
@@ -880,12 +886,8 @@ const Profile = () => {
         {/* Profile Visibility Banner */}
         {profile && (
           <ProfileVisibilityBanner
-            isVisible={!!(profile.full_name && profile.role && profile.avatar_url && profile.bio)}
-            missingFields={[
-              ...(!profile.avatar_url ? ['Profile Picture'] : []),
-              ...(!profile.bio ? ['Bio'] : []),
-              ...(!profile.location ? ['Location'] : []),
-            ]}
+            isVisible={checkProfileCompletion(profile, portfolioItems.length).percentage === 100}
+            missingFields={checkProfileCompletion(profile, portfolioItems.length).missingFields}
           />
         )}
 

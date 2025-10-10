@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { WalletCard } from "@/components/WalletCard";
 import { checkAndAwardDailyLogin } from "@/lib/creditSystem";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
+import { ProfileOptimizationHub } from "@/components/profile/ProfileOptimizationHub";
 import { checkProfileCompletion, PROFILE_COMPLETION_XP } from "@/lib/profileCompletion";
 import { useOGPromotion } from "@/hooks/useOGPromotion";
 import { OGPromotionBanner } from "@/components/OGPromotionBanner";
@@ -253,10 +254,14 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Profile Completion Card */}
+        {/* Profile Optimization Hub */}
         {profile && checkProfileCompletion(profile).percentage < 100 && (
           <div className="mb-6 sm:mb-8">
-            <ProfileCompletionCard completion={checkProfileCompletion(profile)} />
+            <ProfileOptimizationHub 
+              completion={checkProfileCompletion(profile)}
+              profileViews={stats.profileViews}
+              matchRate={0}
+            />
           </div>
         )}
 

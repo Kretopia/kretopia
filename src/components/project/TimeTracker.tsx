@@ -34,7 +34,7 @@ export function TimeTracker({ projectId }: TimeTrackerProps) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [activeEntry, setActiveEntry] = useState<TimeEntry | null>(null);
   const [description, setDescription] = useState("");
-  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("none");
   const [hourlyRate, setHourlyRate] = useState<number>(0);
   const [isBillable, setIsBillable] = useState(true);
 
@@ -107,7 +107,7 @@ export function TimeTracker({ projectId }: TimeTrackerProps) {
         .insert({
           user_id: user?.id,
           project_id: projectId,
-          task_id: selectedTaskId || null,
+          task_id: selectedTaskId === "none" ? null : selectedTaskId,
           description,
           start_time: new Date().toISOString(),
           is_billable: isBillable,
@@ -198,7 +198,7 @@ export function TimeTracker({ projectId }: TimeTrackerProps) {
                       <SelectValue placeholder="Select task" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No task</SelectItem>
+                      <SelectItem value="none">No task</SelectItem>
                       {tasks.map((task) => (
                         <SelectItem key={task.id} value={task.id}>
                           {task.title}

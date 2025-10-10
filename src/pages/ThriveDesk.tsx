@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskBoard } from "@/components/project/TaskBoard";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { AIAutomation } from "@/components/project/AIAutomation";
@@ -16,16 +15,9 @@ import { PostAsOpportunityDialog } from "@/components/project/PostAsOpportunityD
 import { PendingInvitations } from "@/components/project/PendingInvitations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -35,15 +27,22 @@ import {
   Calendar,
   DollarSign,
   Loader2,
-  Image as ImageIcon,
   FileText,
   CheckSquare,
   Clock,
   Users,
-  Monitor,
   Send,
-  Search
+  Search,
+  Settings,
+  LayoutDashboard,
+  MessageSquare,
+  FolderKanban,
+  BarChart3,
+  Sparkles,
+  Menu,
+  X
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const ThriveDesk = () => {
   const { projectId } = useParams();
@@ -60,9 +59,9 @@ const ThriveDesk = () => {
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [isEditingProject, setIsEditingProject] = useState(false);
-  const [editedProject, setEditedProject] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [activeView, setActiveView] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,27 +69,23 @@ const ThriveDesk = () => {
       fetchProjectData();
     }
 
-    // Check for payment success/failure in URL
+    // Payment handling
     const params = new URLSearchParams(window.location.search);
     const paymentStatus = params.get('payment');
     const milestoneId = params.get('milestone');
     const useEscrow = params.get('escrow') === 'true';
 
     if (paymentStatus === 'success' && milestoneId) {
-      // Fetch the payment intent from the milestone
       const updateMilestonePayment = async () => {
         try {
-          // First get the checkout session to retrieve payment intent
           const checkoutSessionId = params.get('session_id');
           
           if (useEscrow) {
-            // For escrow, we need to get the payment intent ID
             const { data: sessionData, error: sessionError } = await supabase.functions.invoke('get-payment-intent', {
               body: { sessionId: checkoutSessionId },
             });
 
             if (!sessionError && sessionData?.paymentIntentId) {
-              // Update milestone with payment intent for escrow
               const { error } = await supabase
                 .from('milestones')
                 .update({ 
@@ -107,7 +102,6 @@ const ThriveDesk = () => {
               });
             }
           } else {
-            // Regular payment - mark as paid immediately
             const { data: { user } } = await supabase.auth.getUser();
             const { error } = await supabase
               .from('milestones')
@@ -137,8 +131,6 @@ const ThriveDesk = () => {
         }
       };
       updateMilestonePayment();
-
-      // Clean URL
       window.history.replaceState({}, '', `/desk/${projectId}`);
     } else if (paymentStatus === 'cancelled') {
       toast({
@@ -217,7 +209,6 @@ const ThriveDesk = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch user profile
     const { data: profileData } = await supabase
       .from('profiles')
       .select('*')
@@ -226,7 +217,6 @@ const ThriveDesk = () => {
     
     if (profileData) setUserProfile(profileData);
 
-    // Fetch project
     const { data: projectData } = await supabase
       .from('projects')
       .select('*')
@@ -235,11 +225,8 @@ const ThriveDesk = () => {
 
     if (projectData) {
       setProject(projectData);
-
-      // Determine user role (creator is client who pays, others are creators/freelancers)
       setUserRole(projectData.created_by === user.id ? 'client' : 'creator');
 
-      // Fetch messages with file info
       const { data: messagesData } = await supabase
         .from('project_messages')
         .select('*, profiles(full_name, avatar_url)')
@@ -248,23 +235,14 @@ const ThriveDesk = () => {
 
       if (messagesData) setMessages(messagesData);
 
-      // Fetch tasks
-      const { data: tasksData, error: tasksError } = await supabase
+      const { data: tasksData } = await supabase
         .from('project_tasks')
         .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
-      if (tasksError) {
-        console.error('Error fetching tasks:', tasksError);
-        toast({ title: "Error loading tasks", description: tasksError.message, variant: "destructive" });
-      }
-      if (tasksData) {
-        console.log('Fetched tasks:', tasksData);
-        setTasks(tasksData);
-      }
+      if (tasksData) setTasks(tasksData);
 
-      // Fetch milestones
       const { data: milestonesData } = await supabase
         .from('milestones')
         .select('*')
@@ -273,7 +251,6 @@ const ThriveDesk = () => {
 
       if (milestonesData) setMilestones(milestonesData);
 
-      // Fetch files
       const { data: filesData } = await supabase
         .from('project_files')
         .select('*, profiles(full_name)')
@@ -298,9 +275,7 @@ const ThriveDesk = () => {
       let fileSize = null;
       let fileType = null;
 
-      // Upload file if attached
       if (attachedFile) {
-        // Validate file size (max 50MB for MVP)
         const maxSize = 50 * 1024 * 1024;
         if (attachedFile.size > maxSize) {
           throw new Error(`File size must be less than 50MB`);
@@ -322,7 +297,6 @@ const ThriveDesk = () => {
         fileSize = attachedFile.size;
         fileType = attachedFile.type;
 
-        // Also add to project_files table for tracking
         await supabase.from('project_files').insert({
           project_id: projectId,
           user_id: user?.id,
@@ -350,7 +324,6 @@ const ThriveDesk = () => {
       setNewMessage("");
       setAttachedFile(null);
       
-      // Scroll to bottom after sending
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -368,8 +341,7 @@ const ThriveDesk = () => {
   const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file size
-      const maxSize = 50 * 1024 * 1024; // 50MB
+      const maxSize = 50 * 1024 * 1024;
       if (file.size > maxSize) {
         toast({
           title: "File too large",
@@ -382,508 +354,349 @@ const ThriveDesk = () => {
     }
   };
 
-  const isImageFile = (fileType: string) => {
-    return fileType?.startsWith('image/');
-  };
+  const navItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'messages', label: 'Messages', icon: MessageSquare, count: messages.length },
+    { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
+    { id: 'milestones', label: 'Milestones', icon: DollarSign, count: milestones.length },
+    { id: 'files', label: 'Files', icon: FileText, count: files.length },
+    { id: 'time', label: 'Time Tracking', icon: Clock },
+    { id: 'activity', label: 'Activity', icon: BarChart3 },
+    { id: 'automation', label: 'AI Automation', icon: Sparkles },
+  ];
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  };
-
-  const handleSaveProject = async () => {
-    if (!editedProject) return;
-    
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({
-          title: editedProject.title,
-          description: editedProject.description,
-          budget: editedProject.budget,
-          deadline: editedProject.deadline,
-          status: editedProject.status,
-        })
-        .eq('id', projectId);
-
-      if (error) throw error;
-
-      setProject(editedProject);
-      setIsEditingProject(false);
-      toast({
-        title: "Project saved! 🎉",
-        description: "Your changes have been saved successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Failed to save",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const startEditing = () => {
-    setEditedProject({ ...project });
-    setIsEditingProject(true);
-  };
-
-
-  // Responsive rendering
-  const renderTabletLayout = () => (
-    <div className="flex flex-col h-screen overflow-hidden bg-gradient-accent">
-      {/* Modern Tablet Header */}
-      <div className="border-b border-border/50 px-6 py-4 bg-card/80 backdrop-blur-xl flex-shrink-0 shadow-card">
-        <div className="flex items-center gap-4 mb-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-smooth" 
-            onClick={() => navigate('/projects')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold truncate bg-gradient-primary bg-clip-text text-transparent">
-              {project.title}
-            </h1>
-            <p className="text-sm text-muted-foreground truncate">{project.description || "Workspace"}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <ProjectPresence projectId={projectId || ''} />
-            <NotificationBell projectId={projectId || ''} />
-            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-              <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">
-                {userProfile?.full_name?.[0] || "U"}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search messages, tasks, files..."
-            className="pl-10 bg-muted/30 border-border/50 h-11 rounded-xl focus-visible:ring-primary/50"
-          />
-        </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
 
-      {/* Modern Tablet Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden">
-        <TabsList className="w-full justify-start h-14 bg-transparent rounded-none p-0 gap-8 border-b border-border/50 px-6 flex-shrink-0">
-          <TabsTrigger 
-            value="messages" 
-            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
-          >
-            <Send className="h-4 w-4" />
-            <span className="font-semibold">Messages</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="tasks" 
-            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
-          >
-            <CheckSquare className="h-4 w-4" />
-            <span className="font-semibold">Tasks</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="milestones" 
-            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
-          >
-            <DollarSign className="h-4 w-4" />
-            <span className="font-semibold">Milestones</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="details" 
-            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
-          >
-            <FileText className="h-4 w-4" />
-            <span className="font-semibold">Details</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="messages" className="flex-1 m-0 p-0 overflow-hidden flex flex-col">
-          <MessagePanel
-            messages={messages}
-            newMessage={newMessage}
-            setNewMessage={setNewMessage}
-            attachedFile={attachedFile}
-            setAttachedFile={setAttachedFile}
-            sendingMessage={sendingMessage}
-            onSendMessage={handleSendMessage}
-            onFileAttach={handleFileAttach}
-            messagesEndRef={messagesEndRef}
-            compact={false}
-          />
-        </TabsContent>
-
-        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
-          <div className="p-6">
-            <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
-          <div className="p-6">
-            <MilestoneBoard 
-              milestones={milestones} 
-              projectId={projectId!} 
-              onUpdate={fetchProjectData}
-              userRole={userRole}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
-          <ScrollArea className="h-full">
-            <div className="p-6 space-y-6">
-              {/* Quick Actions */}
-              <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                <h3 className="font-bold text-base mb-4 flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  Quick Actions
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <InviteCollaboratorDialog 
-                    projectId={projectId || ''} 
-                    onInvite={fetchProjectData}
-                  />
-                  <InvoiceGenerator 
-                    projectId={projectId || ''}
-                  />
-                </div>
-              </Card>
-
-              {/* Pending Invitations */}
-              <PendingInvitations projectId={projectId} />
-
-              {/* Project Info */}
-              <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                <h3 className="font-bold text-base mb-4">About Project</h3>
-                {project.description && <p className="text-sm mb-4 leading-relaxed text-muted-foreground">{project.description}</p>}
-                <div className="space-y-3">
-                  {project.budget && (
-                    <div className="flex items-center gap-3 text-sm p-3 bg-secondary/10 border border-secondary/20 rounded-xl">
-                      <div className="p-2 rounded-lg bg-secondary/20">
-                        <DollarSign className="h-4 w-4 text-secondary" />
-                      </div>
-                      <span className="font-medium">{project.budget}</span>
-                    </div>
-                  )}
-                  {project.deadline && (
-                    <div className="flex items-center gap-3 text-sm p-3 bg-accent/10 border border-accent/20 rounded-xl">
-                      <div className="p-2 rounded-lg bg-accent/20">
-                        <Calendar className="h-4 w-4 text-accent" />
-                      </div>
-                      <span className="font-medium">Due {new Date(project.deadline).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                </div>
-              </Card>
-
-              {/* Stats */}
-              <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                <h3 className="font-bold text-base mb-4">Progress Overview</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-6 bg-gradient-primary rounded-xl shadow-glow transition-smooth hover:scale-105">
-                    <p className="text-3xl font-bold text-white">{tasks.length}</p>
-                    <p className="text-xs text-white/80 mt-2 font-medium">Active Tasks</p>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-secondary rounded-xl shadow-glow transition-smooth hover:scale-105">
-                    <p className="text-3xl font-bold text-white">{milestones.length}</p>
-                    <p className="text-xs text-white/80 mt-2 font-medium">Milestones</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-
-  const renderMobileLayout = () => (
-    <div className="flex flex-col h-[100dvh] overflow-hidden bg-gradient-accent">
-      {/* Modern Mobile Header */}
-      <div className="border-b border-border/50 px-4 py-3 bg-card/80 backdrop-blur-xl flex-shrink-0 shadow-card">
-        <div className="flex items-center gap-3 mb-3">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-9 w-9 rounded-xl hover:bg-primary/10 transition-smooth" 
-            onClick={() => navigate('/projects')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base font-bold truncate bg-gradient-primary bg-clip-text text-transparent">
-              {project.title}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <NotificationBell projectId={projectId || ''} />
-            <Avatar className="h-9 w-9 ring-2 ring-primary/20">
-              <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="text-xs bg-gradient-primary text-primary-foreground">
-                {userProfile?.full_name?.[0] || "U"}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input 
-            placeholder="Search..."
-            className="pl-9 bg-muted/30 border-border/50 h-9 text-sm rounded-xl focus-visible:ring-primary/50"
-          />
-        </div>
-      </div>
-
-      {/* Modern Mobile Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden">
-        <TabsList className="w-full justify-around h-12 bg-transparent rounded-none p-0 border-b border-border/50 flex-shrink-0">
-          <TabsTrigger 
-            value="messages" 
-            className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
-          >
-            <Send className="h-4 w-4" />
-            <span className="text-[11px] font-semibold">Chat</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="tasks" 
-            className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
-          >
-            <CheckSquare className="h-4 w-4" />
-            <span className="text-[11px] font-semibold">Tasks</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="milestones" 
-            className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
-          >
-            <DollarSign className="h-4 w-4" />
-            <span className="text-[11px] font-semibold">Pay</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="details" 
-            className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
-          >
-            <FileText className="h-4 w-4" />
-            <span className="text-[11px] font-semibold">More</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="messages" className="flex-1 m-0 p-0 overflow-hidden flex flex-col">
-          <MessagePanel
-            messages={messages}
-            newMessage={newMessage}
-            setNewMessage={setNewMessage}
-            attachedFile={attachedFile}
-            setAttachedFile={setAttachedFile}
-            sendingMessage={sendingMessage}
-            onSendMessage={handleSendMessage}
-            onFileAttach={handleFileAttach}
-            messagesEndRef={messagesEndRef}
-            compact={false}
-          />
-        </TabsContent>
-
-        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
-          <div className="p-4 pb-24">
-            <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
-          <div className="p-4 pb-24">
-            <MilestoneBoard 
-              milestones={milestones} 
-              projectId={projectId!} 
-              onUpdate={fetchProjectData}
-              userRole={userRole}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
-          <div className="p-4 space-y-3 pb-24">
-            {/* Active Collaborators */}
-            <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
-              <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Monitor className="h-4 w-4 text-primary" />
-                </div>
-                Active Now
-              </h3>
-              <ProjectPresence projectId={projectId || ''} />
-            </Card>
-
-            {/* Quick Actions */}
-            <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
-              <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Users className="h-4 w-4 text-primary" />
-                </div>
-                Quick Actions
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                <InviteCollaboratorDialog 
-                  projectId={projectId || ''} 
-                  onInvite={fetchProjectData}
-                />
-                <InvoiceGenerator 
-                  projectId={projectId || ''}
-                />
-              </div>
-            </Card>
-
-            {/* Pending Invitations */}
-            <PendingInvitations projectId={projectId} />
-
-            {/* Project Info */}
-            <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
-              <h3 className="font-bold text-sm mb-3">About Project</h3>
-              {project.description && <p className="text-xs mb-3 leading-relaxed text-muted-foreground">{project.description}</p>}
-              <div className="space-y-2">
-                {project.budget && (
-                  <div className="flex items-center gap-2 text-xs p-2.5 bg-secondary/10 border border-secondary/20 rounded-xl">
-                    <div className="p-1.5 rounded-lg bg-secondary/20">
-                      <DollarSign className="h-3.5 w-3.5 text-secondary" />
-                    </div>
-                    <span className="font-medium">{project.budget}</span>
-                  </div>
-                )}
-                {project.deadline && (
-                  <div className="flex items-center gap-2 text-xs p-2.5 bg-accent/10 border border-accent/20 rounded-xl">
-                    <div className="p-1.5 rounded-lg bg-accent/20">
-                      <Calendar className="h-3.5 w-3.5 text-accent" />
-                    </div>
-                    <span className="font-medium">Due {new Date(project.deadline).toLocaleDateString()}</span>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {/* Stats */}
-            <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
-              <h3 className="font-bold text-sm mb-3">Progress Overview</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-4 bg-gradient-primary rounded-xl shadow-glow transition-smooth hover:scale-105">
-                  <p className="text-2xl font-bold text-white">{tasks.length}</p>
-                  <p className="text-[10px] text-white/80 mt-1 font-medium">Active Tasks</p>
-                </div>
-                <div className="text-center p-4 bg-gradient-secondary rounded-xl shadow-glow transition-smooth hover:scale-105">
-                  <p className="text-2xl font-bold text-white">{milestones.length}</p>
-                  <p className="text-[10px] text-white/80 mt-1 font-medium">Milestones</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-
-  const renderDesktopLayout = () => (
-    <div className="h-screen flex flex-col bg-gradient-accent">
-      {/* Modern Header */}
-      <div className="border-b border-border/50 bg-card/80 backdrop-blur-xl px-8 py-5 flex-shrink-0 shadow-card">
-        <div className="flex items-center justify-between gap-6">
-          <div className="flex items-center gap-6 flex-1 min-w-0">
+  // Mobile Layout
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-screen bg-background">
+        {/* Mobile Header */}
+        <div className="flex-shrink-0 bg-card border-b px-4 py-3">
+          <div className="flex items-center gap-3 mb-3">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-smooth" 
               onClick={() => navigate('/projects')}
+              className="h-9 w-9"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex-1 max-w-xl relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search messages, tasks, files..."
-                className="pl-11 bg-muted/30 border-border/50 h-11 rounded-xl focus-visible:ring-primary/50"
-              />
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-bold truncate">{project.title}</h1>
+              <p className="text-xs text-muted-foreground truncate">{project.description || "Project workspace"}</p>
             </div>
-          </div>
-          <div className="flex items-center gap-4 flex-shrink-0">
             <NotificationBell projectId={projectId || ''} />
-            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="h-9 w-9"
+            >
+              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {sidebarOpen && (
+          <div className="flex-shrink-0 bg-card border-b">
+            <ScrollArea className="h-64">
+              <div className="p-2">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Button
+                      key={item.id}
+                      variant={activeView === item.id ? "secondary" : "ghost"}
+                      className={cn(
+                        "w-full justify-start mb-1",
+                        activeView === item.id && "bg-primary/10 text-primary hover:bg-primary/20"
+                      )}
+                      onClick={() => {
+                        setActiveView(item.id);
+                        setSidebarOpen(false);
+                      }}
+                    >
+                      <Icon className="h-4 w-4 mr-3" />
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {item.count !== undefined && item.count > 0 && (
+                        <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full">
+                          {item.count}
+                        </span>
+                      )}
+                    </Button>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+
+        {/* Mobile Content */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              {activeView === 'overview' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-card rounded-lg p-4 border">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CheckSquare className="h-4 w-4 text-primary" />
+                        <p className="text-xs text-muted-foreground">Tasks</p>
+                      </div>
+                      <p className="text-2xl font-bold">{tasks.length}</p>
+                    </div>
+                    <div className="bg-card rounded-lg p-4 border">
+                      <div className="flex items-center gap-2 mb-1">
+                        <DollarSign className="h-4 w-4 text-primary" />
+                        <p className="text-xs text-muted-foreground">Milestones</p>
+                      </div>
+                      <p className="text-2xl font-bold">{milestones.length}</p>
+                    </div>
+                  </div>
+                  <PendingInvitations projectId={projectId || ''} />
+                  <ProjectPresence projectId={projectId || ''} />
+                  <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
+                  <PostAsOpportunityDialog projectId={projectId || ''} projectTitle={project.title} />
+                </div>
+              )}
+              
+              {activeView === 'messages' && (
+                <MessagePanel
+                  messages={messages}
+                  newMessage={newMessage}
+                  setNewMessage={setNewMessage}
+                  attachedFile={attachedFile}
+                  setAttachedFile={setAttachedFile}
+                  sendingMessage={sendingMessage}
+                  onSendMessage={handleSendMessage}
+                  onFileAttach={handleFileAttach}
+                  messagesEndRef={messagesEndRef}
+                />
+              )}
+              
+              {activeView === 'tasks' && (
+                <TaskBoard tasks={tasks} projectId={projectId || ''} onUpdate={fetchProjectData} />
+              )}
+              
+              {activeView === 'milestones' && (
+                <MilestoneBoard milestones={milestones} projectId={projectId || ''} userRole={userRole} onUpdate={fetchProjectData} />
+              )}
+              
+              {activeView === 'files' && (
+                <div className="space-y-3">
+                  {files.map((file) => (
+                    <a
+                      key={file.id}
+                      href={file.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-card rounded-lg border hover:bg-accent transition-colors"
+                    >
+                      <FileText className="h-5 w-5 text-primary" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{file.file_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(file.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+              
+              {activeView === 'time' && <TimeTracker projectId={projectId || ''} />}
+              {activeView === 'activity' && <ActivityTimeline projectId={projectId || ''} />}
+              {activeView === 'automation' && <AIAutomation projectId={projectId || ''} projectTitle={project.title} onUpdate={fetchProjectData} />}
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop Layout
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-64 flex-shrink-0 bg-card border-r flex flex-col">
+        {/* Sidebar Header */}
+        <div className="p-4 border-b">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start mb-3 h-9"
+            onClick={() => navigate('/projects')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Projects
+          </Button>
+          <div className="flex items-center gap-3 mb-2">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="text-sm bg-gradient-primary text-primary-foreground">
+              <AvatarFallback className="bg-primary text-primary-foreground">
                 {userProfile?.full_name?.[0] || "U"}
               </AvatarFallback>
             </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate">{project.title}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {userRole === 'client' ? 'Client' : 'Creator'}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={70} minSize={50}>
-          <div className="flex flex-col h-full">
-            {/* Project Header */}
-            <div className="px-8 py-6 border-b border-border/50 bg-card/50 backdrop-blur">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                    {project.title}
-                  </h1>
-                  <div className="flex items-center gap-4 mt-2">
-                    <ProjectPresence projectId={projectId || ''} />
+        {/* Navigation */}
+        <ScrollArea className="flex-1">
+          <div className="p-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Button
+                  key={item.id}
+                  variant={activeView === item.id ? "secondary" : "ghost"}
+                  className={cn(
+                    "w-full justify-start mb-1 transition-all",
+                    activeView === item.id && "bg-primary/10 text-primary hover:bg-primary/20"
+                  )}
+                  onClick={() => setActiveView(item.id)}
+                >
+                  <Icon className="h-4 w-4 mr-3" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {item.count !== undefined && item.count > 0 && (
+                    <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full font-medium">
+                      {item.count}
+                    </span>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </ScrollArea>
+
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t">
+          <ProjectSettings project={project} onUpdate={fetchProjectData} userRole={userRole} />
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Bar */}
+        <header className="flex-shrink-0 h-14 border-b bg-card/50 backdrop-blur-sm flex items-center px-6 gap-4">
+          <div className="flex-1 flex items-center gap-3">
+            <div className="relative w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search anything..."
+                className="pl-10 h-9 bg-background/50 border-border/50"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <ProjectPresence projectId={projectId || ''} />
+            <NotificationBell projectId={projectId || ''} />
+            <Separator orientation="vertical" className="h-6" />
+            <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-6">
+              {activeView === 'overview' && (
+                <div className="space-y-6 max-w-7xl mx-auto">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-1">Project Overview</h2>
+                    <p className="text-muted-foreground">{project.description || "Manage your project workspace"}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="bg-card rounded-xl p-5 border hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <CheckSquare className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">{tasks.length}</p>
+                          <p className="text-xs text-muted-foreground">Active Tasks</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-card rounded-xl p-5 border hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <DollarSign className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">{milestones.length}</p>
+                          <p className="text-xs text-muted-foreground">Milestones</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-card rounded-xl p-5 border hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <MessageSquare className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">{messages.length}</p>
+                          <p className="text-xs text-muted-foreground">Messages</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-card rounded-xl p-5 border hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">{files.length}</p>
+                          <p className="text-xs text-muted-foreground">Files</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="col-span-2 space-y-4">
+                      <div className="bg-card rounded-xl border p-5">
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <CheckSquare className="h-4 w-4 text-primary" />
+                          Recent Tasks
+                        </h3>
+                        <TaskBoard tasks={tasks.slice(0, 5)} projectId={projectId || ''} onUpdate={fetchProjectData} />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <PendingInvitations projectId={projectId || ''} />
+                      <PostAsOpportunityDialog projectId={projectId || ''} projectTitle={project.title} />
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 rounded-xl border-border/50 hover:bg-primary/10 hover:border-primary/50 transition-smooth"
-                  >
-                    <Plus className="h-4 w-4" />
-                    New
-                  </Button>
-                  <ProjectSettings 
-                    project={project} 
-                    onUpdate={fetchProjectData}
-                    userRole={userRole}
-                  />
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-6">{project.description || "Workspace for collaboration"}</p>
+              )}
               
-              <Tabs defaultValue="messages" className="w-full">
-                <TabsList className="bg-transparent border-b border-border/50 w-full justify-start rounded-none h-auto p-0 gap-8">
-                  <TabsTrigger 
-                    value="messages" 
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 transition-smooth data-[state=active]:text-primary font-semibold"
-                  >
-                    Messages
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="tasks" 
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 transition-smooth data-[state=active]:text-primary font-semibold"
-                  >
-                    Tasks
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="files" 
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 transition-smooth data-[state=active]:text-primary font-semibold"
-                  >
-                    Files
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="board" 
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 transition-smooth data-[state=active]:text-primary font-semibold"
-                  >
-                    Board
-                  </TabsTrigger>
-                </TabsList>
-
-                <div className="flex-1 overflow-hidden">
-                  <TabsContent value="messages" className="m-0 h-full">
+              {activeView === 'messages' && (
+                <div className="h-[calc(100vh-12rem)] max-w-5xl mx-auto">
+                  <div className="bg-card rounded-xl border h-full flex flex-col">
+                    <div className="p-4 border-b">
+                      <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-primary" />
+                        Messages
+                      </h2>
+                    </div>
                     <MessagePanel
                       messages={messages}
                       newMessage={newMessage}
@@ -894,585 +707,98 @@ const ThriveDesk = () => {
                       onSendMessage={handleSendMessage}
                       onFileAttach={handleFileAttach}
                       messagesEndRef={messagesEndRef}
-                      compact={false}
+                      compact={true}
                     />
-                  </TabsContent>
-
-                  <TabsContent value="tasks" className="m-0 mt-6">
-                    <ScrollArea className="h-[calc(100vh-320px)]">
-                      <div className="px-8">
-                        <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
-                      </div>
-                    </ScrollArea>
-                  </TabsContent>
-
-                  <TabsContent value="files" className="m-0 mt-6">
-                    <ScrollArea className="h-[calc(100vh-320px)]">
-                      <div className="px-8 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-bold text-lg">Files</h3>
-                          <FileUploadDialog projectId={projectId} onSuccess={fetchProjectData} />
-                        </div>
-                        {files.length === 0 ? (
-                          <div className="text-center py-16 text-muted-foreground">
-                            <div className="p-6 rounded-2xl bg-muted/30 w-fit mx-auto mb-4">
-                              <FileText className="h-16 w-16 mx-auto opacity-30" />
-                            </div>
-                            <p className="text-base font-medium mb-2">No files yet</p>
-                            <p className="text-sm">Upload files to share with your team</p>
-                          </div>
-                        ) : (
-                          <div className="grid gap-3">
-                            {files.map((file) => (
-                              <Card key={file.id} className="p-5 hover:shadow-card transition-smooth border-border/50 bg-card/80 backdrop-blur hover-lift">
-                                <div className="flex items-center gap-4">
-                                  <div className="p-3 rounded-xl bg-primary/10">
-                                    {isImageFile(file.file_type) ? (
-                                      <ImageIcon className="h-6 w-6 text-primary" />
-                                    ) : (
-                                      <FileText className="h-6 w-6 text-primary" />
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <a 
-                                      href={file.file_url} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      className="font-semibold text-sm hover:text-primary transition-smooth truncate block"
-                                    >
-                                      {file.file_name}
-                                    </a>
-                                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                                      <span>{formatFileSize(file.file_size)}</span>
-                                      <span>•</span>
-                                      <span>by {file.profiles?.full_name || 'Unknown'}</span>
-                                      <span>•</span>
-                                      <span>{new Date(file.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </Card>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
-                  </TabsContent>
-
-                  <TabsContent value="board" className="m-0 mt-6">
-                    <ScrollArea className="h-[calc(100vh-320px)]">
-                      <div className="px-8">
-                        <MilestoneBoard 
-                          milestones={milestones} 
-                          projectId={projectId!} 
-                          onUpdate={fetchProjectData}
-                          userRole={userRole}
-                        />
-                      </div>
-                    </ScrollArea>
-                  </TabsContent>
+                  </div>
                 </div>
-              </Tabs>
-            </div>
-          </div>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle className="bg-border/50" />
-
-        <ResizablePanel defaultSize={30} minSize={25}>
-          <div className="h-full flex flex-col bg-card/30 backdrop-blur">
-            <ScrollArea className="flex-1">
-              <div className="p-6 space-y-6">
-                {/* Project Stats */}
-                <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                  <h3 className="font-bold text-base mb-4 flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Monitor className="h-5 w-5 text-primary" />
-                    </div>
-                    Progress Overview
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="p-4 bg-gradient-primary rounded-xl shadow-glow">
-                      <p className="text-3xl font-bold text-white">{tasks.length}</p>
-                      <p className="text-sm text-white/80 mt-1 font-medium">Active Tasks</p>
-                    </div>
-                    <div className="p-4 bg-gradient-secondary rounded-xl shadow-glow">
-                      <p className="text-3xl font-bold text-white">{milestones.length}</p>
-                      <p className="text-sm text-white/80 mt-1 font-medium">Milestones</p>
-                    </div>
-                    <div className="p-4 bg-accent/10 border border-accent/20 rounded-xl">
-                      <p className="text-3xl font-bold text-accent">{files.length}</p>
-                      <p className="text-sm text-muted-foreground mt-1 font-medium">Files Shared</p>
-                    </div>
+              )}
+              
+              {activeView === 'tasks' && (
+                <div className="max-w-7xl mx-auto">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold mb-1">Tasks</h2>
+                    <p className="text-muted-foreground">Manage and track your project tasks</p>
                   </div>
-                </Card>
-
-                {/* Project Info */}
-                <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                  <h3 className="font-bold text-base mb-4">Project Details</h3>
-                  {project.description && (
-                    <p className="text-sm mb-4 leading-relaxed text-muted-foreground">{project.description}</p>
-                  )}
-                  <div className="space-y-3">
-                    {project.budget && (
-                      <div className="flex items-center gap-3 text-sm p-3 bg-secondary/10 border border-secondary/20 rounded-xl">
-                        <div className="p-2 rounded-lg bg-secondary/20">
-                          <DollarSign className="h-4 w-4 text-secondary" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Budget</p>
-                          <p className="font-semibold">{project.budget}</p>
-                        </div>
-                      </div>
-                    )}
-                    {project.deadline && (
-                      <div className="flex items-center gap-3 text-sm p-3 bg-accent/10 border border-accent/20 rounded-xl">
-                        <div className="p-2 rounded-lg bg-accent/20">
-                          <Calendar className="h-4 w-4 text-accent" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Deadline</p>
-                          <p className="font-semibold">{new Date(project.deadline).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                    )}
+                  <TaskBoard tasks={tasks} projectId={projectId || ''} onUpdate={fetchProjectData} />
+                </div>
+              )}
+              
+              {activeView === 'milestones' && (
+                <div className="max-w-7xl mx-auto">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold mb-1">Milestones & Payments</h2>
+                    <p className="text-muted-foreground">Track project milestones and manage payments</p>
                   </div>
-                </Card>
-
-                {/* Activity Timeline */}
-                <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                  <h3 className="font-bold text-base mb-4 flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    Activity
-                  </h3>
-                  <ActivityTimeline projectId={projectId!} />
-                </Card>
-
-                {/* Quick Actions */}
-                <Card className="p-6 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                  <h3 className="font-bold text-base mb-4 flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Users className="h-5 w-5 text-primary" />
-                    </div>
-                    Quick Actions
-                  </h3>
-                  <div className="space-y-3">
-                    <InviteCollaboratorDialog projectId={projectId || ''} onInvite={fetchProjectData} />
-                    <InvoiceGenerator projectId={projectId || ''} />
-                    <PostAsOpportunityDialog projectId={projectId || ''} projectTitle={project.title} />
+                  <MilestoneBoard milestones={milestones} projectId={projectId || ''} userRole={userRole} onUpdate={fetchProjectData} />
+                </div>
+              )}
+              
+              {activeView === 'files' && (
+                <div className="max-w-5xl mx-auto">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold mb-1">Files</h2>
+                    <p className="text-muted-foreground">All project files and documents</p>
                   </div>
-                </Card>
-              </div>
-            </ScrollArea>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
-  );
-
-  if (loading) {
-    return (
-      <div className="flex flex-col min-h-screen items-center justify-center gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading workspace...</p>
-      </div>
-    );
-  }
-
-  if (!project) {
-    return (
-      <div className="flex flex-col min-h-screen items-center justify-center gap-4 p-4">
-        <div className="text-center space-y-2">
-          <h2 className="text-xl font-semibold">Project Not Found</h2>
-          <p className="text-muted-foreground">This project doesn't exist or you don't have access to it.</p>
-        </div>
-        <Button onClick={() => navigate('/projects')} size="lg">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Projects
-        </Button>
-      </div>
-    );
-  }
-
-  // Improved responsive logic for tablets
-  const isTablet = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth < 1024;
-  
-  return (
-    <div className="min-h-screen bg-background pb-16 lg:pb-0">
-      {isMobile ? renderMobileLayout() : isTablet ? renderTabletLayout() : renderDesktopLayout()}
-    </div>
-  );
-};
-
-
-// Task Item Component
-const TaskItem = ({ task, onUpdate, compact = false }: any) => {
-  const { toast } = useToast();
-
-  const updateTaskStatus = async (newStatus: string) => {
-    const { error } = await supabase
-      .from('project_tasks')
-      .update({ status: newStatus })
-      .eq('id', task.id);
-
-    if (error) {
-      toast({
-        title: "Failed to update",
-        variant: "destructive",
-      });
-    } else {
-      onUpdate();
-    }
-  };
-
-  if (compact) {
-    return (
-      <div className="flex items-start gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
-        <input
-          type="checkbox"
-          checked={task.status === 'completed'}
-          onChange={(e) => updateTaskStatus(e.target.checked ? 'completed' : 'todo')}
-          className="mt-1 h-4 w-4 rounded border-border"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{task.title}</p>
-          {task.due_date && (
-            <p className="text-xs text-muted-foreground">
-              {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-between p-3 border rounded-lg">
-      <div className="flex-1">
-        <p className="font-medium">{task.title}</p>
-        {task.description && (
-          <p className="text-sm text-muted-foreground">{task.description}</p>
-        )}
-        {task.due_date && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Due: {new Date(task.due_date).toLocaleDateString()}
-          </p>
-        )}
-      </div>
-      <Select value={task.status} onValueChange={updateTaskStatus}>
-        <SelectTrigger className="w-32">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="todo">To Do</SelectItem>
-          <SelectItem value="in_progress">In Progress</SelectItem>
-          <SelectItem value="completed">Completed</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-  );
-};
-
-// Create Task Dialog
-const CreateTaskDialog = ({ projectId, onSuccess }: any) => {
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const { toast } = useToast();
-
-  const handleCreate = async () => {
-    if (!title.trim()) return;
-
-    const { data: { user } } = await supabase.auth.getUser();
-
-    const { error } = await supabase
-      .from('project_tasks')
-      .insert({
-        project_id: projectId,
-        title,
-        description,
-        due_date: dueDate || null,
-        created_by: user?.id,
-      });
-
-    if (error) {
-      toast({
-        title: "Failed to create task",
-        variant: "destructive",
-      });
-    } else {
-      setTitle("");
-      setDescription("");
-      setDueDate("");
-      setOpen(false);
-      onSuccess();
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="ghost">
-          <Plus className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task title" />
-          </div>
-          <div>
-            <Label>Description (optional)</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Add details..." />
-          </div>
-          <div>
-            <Label>Due Date (optional)</Label>
-            <Input 
-              type="date" 
-              value={dueDate} 
-              onChange={(e) => setDueDate(e.target.value)} 
-            />
-          </div>
-          <Button onClick={handleCreate} className="w-full">Create Task</Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-// File Upload Dialog
-const FileUploadDialog = ({ projectId, onSuccess }: any) => {
-  const [open, setOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [storageInfo, setStorageInfo] = useState<{used: number, limit: number} | null>(null);
-  const { toast } = useToast();
-
-  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB per file limit
-
-  useEffect(() => {
-    if (open) {
-      fetchStorageInfo();
-    }
-  }, [open]);
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  };
-
-  const fetchStorageInfo = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('storage_used_bytes, storage_limit_bytes')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profile) {
-      setStorageInfo({
-        used: profile.storage_used_bytes || 0,
-        limit: profile.storage_limit_bytes || 1073741824
-      });
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      setSelectedFile(null);
-      return;
-    }
-
-    // Check file size
-    if (file.size > MAX_FILE_SIZE) {
-      toast({
-        title: "File too large",
-        description: `Maximum file size is ${formatFileSize(MAX_FILE_SIZE)}. Your file is ${formatFileSize(file.size)}.`,
-        variant: "destructive",
-      });
-      e.target.value = '';
-      setSelectedFile(null);
-      return;
-    }
-
-    // Check storage availability
-    if (storageInfo && (storageInfo.used + file.size) > storageInfo.limit) {
-      const availableSpace = storageInfo.limit - storageInfo.used;
-      toast({
-        title: "Not enough storage",
-        description: `You need ${formatFileSize(file.size)} but only have ${formatFileSize(availableSpace)} available. Upgrade your plan for more storage.`,
-        variant: "destructive",
-      });
-      e.target.value = '';
-      setSelectedFile(null);
-      return;
-    }
-
-    setSelectedFile(file);
-  };
-
-  const handleFileUpload = async () => {
-    if (!selectedFile) return;
-
-    setUploading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast({
-        title: "Authentication error",
-        description: "You must be logged in to upload files.",
-        variant: "destructive",
-      });
-      setUploading(false);
-      return;
-    }
-
-    const filePath = `${projectId}/${Date.now()}-${selectedFile.name}`;
-
-    try {
-      // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from('project-files')
-        .upload(filePath, selectedFile);
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        toast({
-          title: "Upload failed",
-          description: uploadError.message || "Failed to upload file to storage.",
-          variant: "destructive",
-        });
-        setUploading(false);
-        return;
-      }
-
-      // Get public URL
-      const { data } = supabase.storage
-        .from('project-files')
-        .getPublicUrl(filePath);
-
-      // Save to database
-      const { error: dbError } = await supabase
-        .from('project_files')
-        .insert({
-          project_id: projectId,
-          user_id: user.id,
-          file_name: selectedFile.name,
-          file_url: data.publicUrl,
-          file_size: selectedFile.size,
-          file_type: selectedFile.type,
-        });
-
-      if (dbError) {
-        console.error('Database error:', dbError);
-        toast({
-          title: "Failed to save file",
-          description: dbError.message || "File uploaded but could not be saved to database.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success! 🎉",
-          description: `${selectedFile.name} (${formatFileSize(selectedFile.size)}) uploaded successfully.`,
-        });
-        setSelectedFile(null);
-        setOpen(false);
-        onSuccess();
-      }
-    } catch (error: any) {
-      console.error('Unexpected error:', error);
-      toast({
-        title: "Unexpected error",
-        description: error.message || "An unexpected error occurred during upload.",
-        variant: "destructive",
-      });
-    }
-    
-    setUploading(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      setOpen(isOpen);
-      if (!isOpen) {
-        setSelectedFile(null);
-      }
-    }}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="ghost">
-          <Plus className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Upload File</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          {storageInfo && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Storage Used</span>
-                <span className="font-medium">
-                  {formatFileSize(storageInfo.used)} / {formatFileSize(storageInfo.limit)}
-                </span>
-              </div>
-              <div className="w-full bg-secondary rounded-full h-2">
-                <div 
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${Math.min((storageInfo.used / storageInfo.limit) * 100, 100)}%` }}
-                />
-              </div>
-              {(storageInfo.used / storageInfo.limit) > 0.8 && (
-                <p className="text-sm text-amber-600">
-                  ⚠️ You're running low on storage. Consider upgrading your plan.
-                </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {files.map((file) => (
+                      <a
+                        key={file.id}
+                        href={file.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-card rounded-xl p-4 border hover:shadow-md transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                            <FileText className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{file.file_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(file.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {activeView === 'time' && (
+                <div className="max-w-5xl mx-auto">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold mb-1">Time Tracking</h2>
+                    <p className="text-muted-foreground">Track time spent on project tasks</p>
+                  </div>
+                  <TimeTracker projectId={projectId || ''} />
+                </div>
+              )}
+              
+              {activeView === 'activity' && (
+                <div className="max-w-5xl mx-auto">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold mb-1">Activity Timeline</h2>
+                    <p className="text-muted-foreground">Recent project activity and updates</p>
+                  </div>
+                  <ActivityTimeline projectId={projectId || ''} />
+                </div>
+              )}
+              
+              {activeView === 'automation' && (
+                <div className="max-w-5xl mx-auto">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold mb-1">AI Automation</h2>
+                    <p className="text-muted-foreground">Automate tasks with AI assistance</p>
+                  </div>
+                  <AIAutomation projectId={projectId || ''} projectTitle={project.title} onUpdate={fetchProjectData} />
+                </div>
               )}
             </div>
-          )}
-          <div>
-            <Label>Select File (Max {formatFileSize(MAX_FILE_SIZE)})</Label>
-            <Input
-              type="file"
-              onChange={handleFileSelect}
-              disabled={uploading}
-            />
-          </div>
-          {selectedFile && (
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p><strong>File:</strong> {selectedFile.name}</p>
-              <p><strong>Size:</strong> {formatFileSize(selectedFile.size)}</p>
-              <p><strong>Type:</strong> {selectedFile.type || 'Unknown'}</p>
-            </div>
-          )}
-          {uploading && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Uploading...</span>
-            </div>
-          )}
-          <Button 
-            onClick={handleFileUpload} 
-            disabled={!selectedFile || uploading}
-            className="w-full"
-          >
-            {uploading ? "Uploading..." : "Upload File"}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+          </ScrollArea>
+        </main>
+      </div>
+    </div>
   );
 };
 

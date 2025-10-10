@@ -39,7 +39,7 @@ interface EmailRequest {
 }
 
 const generateEmailContent = (type: string, data: any) => {
-  const baseUrl = 'https://ThriveIN.io';
+  const baseUrl = 'https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com';
   
   switch (type) {
     case 'welcome':

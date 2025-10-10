@@ -77,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
               title: opp.title,
               type: opp.type,
               compensation: opp.compensation,
-              url: `https://ThriveIN.io/opportunity/${opp.id}`
+              url: `https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com/opportunity/${opp.id}`
             }))
           }
         }

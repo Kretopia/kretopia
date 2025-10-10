@@ -54,6 +54,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const TestEmails = lazy(() => import("./pages/TestEmails"));
+const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -115,6 +116,7 @@ const AppContent = () => {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/accept-invite/:projectId" element={<AcceptInvite />} />
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
             <Route path="/review" element={<SubmitReview />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />

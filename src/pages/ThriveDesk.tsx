@@ -473,39 +473,37 @@ const ThriveDesk = () => {
       </div>
 
       {/* Modern Tablet Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
-        <div className="border-b border-border/50 bg-card/50 backdrop-blur flex-shrink-0 px-6">
-          <TabsList className="w-full justify-start h-14 bg-transparent rounded-none p-0 gap-8">
-            <TabsTrigger 
-              value="messages" 
-              className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
-            >
-              <Send className="h-4 w-4" />
-              <span className="font-semibold">Messages</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="tasks" 
-              className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
-            >
-              <CheckSquare className="h-4 w-4" />
-              <span className="font-semibold">Tasks</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="milestones" 
-              className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
-            >
-              <DollarSign className="h-4 w-4" />
-              <span className="font-semibold">Milestones</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="details" 
-              className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
-            >
-              <FileText className="h-4 w-4" />
-              <span className="font-semibold">Details</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden">
+        <TabsList className="w-full justify-start h-14 bg-transparent rounded-none p-0 gap-8 border-b border-border/50 px-6 flex-shrink-0">
+          <TabsTrigger 
+            value="messages" 
+            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
+          >
+            <Send className="h-4 w-4" />
+            <span className="font-semibold">Messages</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="tasks" 
+            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
+          >
+            <CheckSquare className="h-4 w-4" />
+            <span className="font-semibold">Tasks</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="milestones" 
+            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
+          >
+            <DollarSign className="h-4 w-4" />
+            <span className="font-semibold">Milestones</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="details" 
+            className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 gap-2 transition-smooth data-[state=active]:text-primary"
+          >
+            <FileText className="h-4 w-4" />
+            <span className="font-semibold">Details</span>
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="messages" className="flex-1 m-0 p-0 overflow-hidden flex flex-col">
           <MessagePanel
@@ -648,38 +646,36 @@ const ThriveDesk = () => {
 
       {/* Modern Mobile Tabs */}
       <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b border-border/50 bg-card/50 backdrop-blur flex-shrink-0">
-          <TabsList className="w-full justify-around h-12 bg-transparent rounded-none p-0">
-            <TabsTrigger 
-              value="messages" 
-              className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
-            >
-              <Send className="h-4 w-4" />
-              <span className="text-[11px] font-semibold">Chat</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="tasks" 
-              className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
-            >
-              <CheckSquare className="h-4 w-4" />
-              <span className="text-[11px] font-semibold">Tasks</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="milestones" 
-              className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
-            >
-              <DollarSign className="h-4 w-4" />
-              <span className="text-[11px] font-semibold">Pay</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="details" 
-              className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
-            >
-              <FileText className="h-4 w-4" />
-              <span className="text-[11px] font-semibold">More</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList className="w-full justify-around h-12 bg-transparent rounded-none p-0 border-b border-border/50 flex-shrink-0">
+          <TabsTrigger 
+            value="messages" 
+            className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
+          >
+            <Send className="h-4 w-4" />
+            <span className="text-[11px] font-semibold">Chat</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="tasks" 
+            className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
+          >
+            <CheckSquare className="h-4 w-4" />
+            <span className="text-[11px] font-semibold">Tasks</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="milestones" 
+            className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
+          >
+            <DollarSign className="h-4 w-4" />
+            <span className="text-[11px] font-semibold">Pay</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="details" 
+            className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
+          >
+            <FileText className="h-4 w-4" />
+            <span className="text-[11px] font-semibold">More</span>
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="messages" className="flex-1 m-0 p-0 overflow-hidden flex flex-col">
           <MessagePanel

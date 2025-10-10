@@ -31,16 +31,18 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing required fields");
     }
 
-    const baseUrl = supabaseUrl.replace('https://', 'https://').replace('.supabase.co', '.lovableproject.com');
-    const projectUrl = `${baseUrl}/desk/${projectId}`;
+    // Get the proper project URL
+    const projectUrl = `${supabaseUrl.replace('.supabase.co', '.lovableproject.com')}/desk/${projectId}`;
 
     console.log(`Sending project invitation to ${email} for project ${projectTitle}`);
+    console.log(`Project URL: ${projectUrl}`);
 
     // If invitee is an existing user, also create an in-app notification
     if (inviteeUserId) {
       const supabase = createClient(supabaseUrl, supabaseKey);
       
-      await supabase.from('notifications').insert({
+      console.log(`Creating in-app notification for user ${inviteeUserId}`);
+      const { error: notifError } = await supabase.from('notifications').insert({
         user_id: inviteeUserId,
         title: 'Project Invitation 🎯',
         message: `${inviterName} invited you to collaborate on "${projectTitle}"`,
@@ -51,8 +53,15 @@ const handler = async (req: Request): Promise<Response> => {
         priority: 'high',
         category: 'project'
       });
+      
+      if (notifError) {
+        console.error('Error creating notification:', notifError);
+      } else {
+        console.log('In-app notification created successfully');
+      }
     }
 
+    console.log('Attempting to send email via Resend...');
     const emailResponse = await resend.emails.send({
       from: "ThriveIN <onboarding@resend.dev>",
       to: [email],
@@ -86,16 +95,34 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
+    if (emailResponse.error) {
+      console.error("Resend API error:", emailResponse.error);
+      throw new Error(`Resend API error: ${JSON.stringify(emailResponse.error)}`);
+    }
+
     console.log("Invitation email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data: emailResponse,
+      message: 'Invitation sent successfully'
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
-    console.error("Error sending invitation email:", error);
+    console.error("Error in send-project-invitation function:", error);
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Failed to send invitation',
+        details: error.toString()
+      }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

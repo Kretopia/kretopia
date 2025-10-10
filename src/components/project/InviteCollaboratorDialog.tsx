@@ -117,7 +117,8 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       if (error) throw error;
 
       // Send invitation email
-      await supabase.functions.invoke('send-project-invitation', {
+      console.log('Invoking send-project-invitation function for:', emailToInvite);
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-project-invitation', {
         body: {
           email: emailToInvite.toLowerCase(),
           projectTitle: project?.title || 'Untitled Project',
@@ -125,6 +126,13 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           inviterName: profile?.full_name || 'A ThriveIN user',
         }
       });
+
+      if (emailError) {
+        console.error('Edge function error:', emailError);
+        throw new Error(`Failed to send email: ${emailError.message}`);
+      }
+
+      console.log('Email sent successfully:', emailData);
 
       toast({
         title: "Invite sent! 📧",
@@ -180,7 +188,8 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       if (error) throw error;
 
       // Always send invitation notification for existing users
-      await supabase.functions.invoke('send-project-invitation', {
+      console.log('Invoking send-project-invitation function for user:', userId);
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-project-invitation', {
         body: {
           email: `user-${userId}@platform.invite`,
           projectTitle: project?.title || 'Untitled Project',
@@ -189,6 +198,14 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           inviteeUserId: userId, // This triggers in-app notification
         }
       });
+
+      if (emailError) {
+        console.error('Edge function error:', emailError);
+        // Don't throw for existing users - they got the in-app notification
+        console.warn('Email notification failed but in-app notification was sent');
+      } else {
+        console.log('Notification sent successfully:', emailData);
+      }
 
       toast({
         title: "Invite sent! 🎉",

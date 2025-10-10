@@ -39,7 +39,7 @@ interface EmailRequest {
 }
 
 const generateEmailContent = (type: string, data: any) => {
-  const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('https://', 'https://').replace('.supabase.co', '.lovableproject.com') || '';
+  const baseUrl = 'https://ThriveIN.io';
   
   switch (type) {
     case 'welcome':

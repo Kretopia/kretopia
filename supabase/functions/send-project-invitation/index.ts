@@ -31,8 +31,8 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing required fields");
     }
 
-    // Get the proper project URL
-    const projectUrl = `${supabaseUrl.replace('.supabase.co', '.lovableproject.com')}/desk/${projectId}`;
+    // Get the proper project URL - always use ThriveIN.io domain
+    const projectUrl = `https://ThriveIN.io/desk/${projectId}`;
 
     console.log(`Sending project invitation to ${email} for project ${projectTitle}`);
     console.log(`Project URL: ${projectUrl}`);

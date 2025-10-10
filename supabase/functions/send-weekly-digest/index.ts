@@ -77,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
               title: opp.title,
               type: opp.type,
               compensation: opp.compensation,
-              url: `${supabaseUrl.replace('.supabase.co', '.lovableproject.com')}/opportunity/${opp.id}`
+              url: `https://ThriveIN.io/opportunity/${opp.id}`
             }))
           }
         }

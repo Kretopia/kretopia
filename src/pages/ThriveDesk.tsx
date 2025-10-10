@@ -62,7 +62,9 @@ const ThriveDesk = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activeView, setActiveView] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (projectId) {
@@ -354,6 +356,73 @@ const ThriveDesk = () => {
     }
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !projectId) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "File size must be less than 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${file.name}`;
+      const filePath = `${projectId}/${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('project-files')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-files')
+        .getPublicUrl(filePath);
+
+      const { error: dbError } = await supabase
+        .from('project_files')
+        .insert({
+          project_id: projectId,
+          file_name: file.name,
+          file_url: publicUrl,
+          file_size: file.size,
+          user_id: user.id,
+        });
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "File uploaded",
+        description: "File has been uploaded successfully",
+      });
+
+      fetchProjectData();
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'messages', label: 'Messages', icon: MessageSquare, count: messages.length },
@@ -492,7 +561,41 @@ const ThriveDesk = () => {
               
               {activeView === 'files' && (
                 <div className="space-y-3">
-                  {files.map((file) => (
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground">Project Files</h3>
+                    <div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingFile}
+                      >
+                        {uploadingFile ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Upload File
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  {files.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p>No files uploaded yet</p>
+                    </div>
+                  ) : (
+                    files.map((file) => (
                     <a
                       key={file.id}
                       href={file.file_url}
@@ -508,7 +611,8 @@ const ThriveDesk = () => {
                         </p>
                       </div>
                     </a>
-                  ))}
+                    ))
+                  )}
                 </div>
               )}
               
@@ -735,12 +839,52 @@ const ThriveDesk = () => {
               
               {activeView === 'files' && (
                 <div className="max-w-5xl mx-auto">
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold mb-1">Files</h2>
-                    <p className="text-muted-foreground">All project files and documents</p>
+                  <div className="mb-6 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-1">Files</h2>
+                      <p className="text-muted-foreground">All project files and documents</p>
+                    </div>
+                    <div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingFile}
+                      >
+                        {uploadingFile ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Upload File
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {files.map((file) => (
+                  {files.length === 0 ? (
+                    <div className="bg-card rounded-xl p-12 border text-center">
+                      <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                      <h3 className="text-lg font-semibold mb-2">No files uploaded yet</h3>
+                      <p className="text-muted-foreground mb-4">Upload your first file to get started</p>
+                      <Button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingFile}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Upload File
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      {files.map((file) => (
                       <a
                         key={file.id}
                         href={file.file_url}
@@ -760,8 +904,9 @@ const ThriveDesk = () => {
                           </div>
                         </div>
                       </a>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               

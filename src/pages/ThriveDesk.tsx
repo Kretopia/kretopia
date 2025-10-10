@@ -647,9 +647,9 @@ const ThriveDesk = () => {
       </div>
 
       {/* Modern Mobile Tabs */}
-      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <Tabs defaultValue="tasks" className="flex-1 flex flex-col overflow-hidden">
         <div className="border-b border-border/50 bg-card/50 backdrop-blur flex-shrink-0">
-          <TabsList className="w-full justify-around h-14 bg-transparent rounded-none p-0">
+          <TabsList className="w-full justify-around h-12 bg-transparent rounded-none p-0">
             <TabsTrigger 
               value="messages" 
               className="flex-1 gap-1.5 data-[state=active]:border-b-2 data-[state=active]:border-primary h-full flex-col py-2 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent transition-smooth data-[state=active]:text-primary"
@@ -681,7 +681,7 @@ const ThriveDesk = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="messages" className="flex-1 m-0 p-0 overflow-hidden flex flex-col min-h-0">
+        <TabsContent value="messages" className="flex-1 m-0 p-0 overflow-hidden flex flex-col">
           <MessagePanel
             messages={messages}
             newMessage={newMessage}
@@ -696,14 +696,14 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
-          <div className="p-4">
+        <TabsContent value="tasks" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
+          <div className="p-4 pb-24">
             <TaskBoard tasks={tasks} projectId={projectId!} onUpdate={fetchProjectData} />
           </div>
         </TabsContent>
 
-        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
-          <div className="p-4">
+        <TabsContent value="milestones" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
+          <div className="p-4 pb-24">
             <MilestoneBoard 
               milestones={milestones} 
               projectId={projectId!} 
@@ -713,82 +713,80 @@ const ThriveDesk = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto min-h-0 bg-gradient-accent">
-          <ScrollArea className="h-full">
-            <div className="p-4 space-y-4">
-              {/* Active Collaborators */}
-              <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-primary/10">
-                    <Monitor className="h-4 w-4 text-primary" />
-                  </div>
-                  Active Now
-                </h3>
-                <ProjectPresence projectId={projectId || ''} />
-              </Card>
-
-              {/* Quick Actions */}
-              <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-primary/10">
-                    <Users className="h-4 w-4 text-primary" />
-                  </div>
-                  Quick Actions
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <InviteCollaboratorDialog 
-                    projectId={projectId || ''} 
-                    onInvite={fetchProjectData}
-                  />
-                  <InvoiceGenerator 
-                    projectId={projectId || ''}
-                  />
+        <TabsContent value="details" className="flex-1 m-0 p-0 overflow-auto bg-gradient-accent">
+          <div className="p-4 space-y-3 pb-24">
+            {/* Active Collaborators */}
+            <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
+              <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Monitor className="h-4 w-4 text-primary" />
                 </div>
-              </Card>
+                Active Now
+              </h3>
+              <ProjectPresence projectId={projectId || ''} />
+            </Card>
 
-              {/* Pending Invitations */}
-              <PendingInvitations projectId={projectId} />
+            {/* Quick Actions */}
+            <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
+              <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                Quick Actions
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <InviteCollaboratorDialog 
+                  projectId={projectId || ''} 
+                  onInvite={fetchProjectData}
+                />
+                <InvoiceGenerator 
+                  projectId={projectId || ''}
+                />
+              </div>
+            </Card>
 
-              {/* Project Info */}
-              <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                <h3 className="font-bold text-sm mb-3">About Project</h3>
-                {project.description && <p className="text-xs mb-3 leading-relaxed text-muted-foreground">{project.description}</p>}
-                <div className="space-y-2">
-                  {project.budget && (
-                    <div className="flex items-center gap-2 text-xs p-2.5 bg-secondary/10 border border-secondary/20 rounded-xl">
-                      <div className="p-1.5 rounded-lg bg-secondary/20">
-                        <DollarSign className="h-3.5 w-3.5 text-secondary" />
-                      </div>
-                      <span className="font-medium">{project.budget}</span>
+            {/* Pending Invitations */}
+            <PendingInvitations projectId={projectId} />
+
+            {/* Project Info */}
+            <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
+              <h3 className="font-bold text-sm mb-3">About Project</h3>
+              {project.description && <p className="text-xs mb-3 leading-relaxed text-muted-foreground">{project.description}</p>}
+              <div className="space-y-2">
+                {project.budget && (
+                  <div className="flex items-center gap-2 text-xs p-2.5 bg-secondary/10 border border-secondary/20 rounded-xl">
+                    <div className="p-1.5 rounded-lg bg-secondary/20">
+                      <DollarSign className="h-3.5 w-3.5 text-secondary" />
                     </div>
-                  )}
-                  {project.deadline && (
-                    <div className="flex items-center gap-2 text-xs p-2.5 bg-accent/10 border border-accent/20 rounded-xl">
-                      <div className="p-1.5 rounded-lg bg-accent/20">
-                        <Calendar className="h-3.5 w-3.5 text-accent" />
-                      </div>
-                      <span className="font-medium">Due {new Date(project.deadline).toLocaleDateString()}</span>
+                    <span className="font-medium">{project.budget}</span>
+                  </div>
+                )}
+                {project.deadline && (
+                  <div className="flex items-center gap-2 text-xs p-2.5 bg-accent/10 border border-accent/20 rounded-xl">
+                    <div className="p-1.5 rounded-lg bg-accent/20">
+                      <Calendar className="h-3.5 w-3.5 text-accent" />
                     </div>
-                  )}
-                </div>
-              </Card>
+                    <span className="font-medium">Due {new Date(project.deadline).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
 
-              {/* Stats */}
-              <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
-                <h3 className="font-bold text-sm mb-3">Progress Overview</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-4 bg-gradient-primary rounded-xl shadow-glow transition-smooth hover:scale-105">
-                    <p className="text-2xl font-bold text-white">{tasks.length}</p>
-                    <p className="text-[10px] text-white/80 mt-1 font-medium">Active Tasks</p>
-                  </div>
-                  <div className="text-center p-4 bg-gradient-secondary rounded-xl shadow-glow transition-smooth hover:scale-105">
-                    <p className="text-2xl font-bold text-white">{milestones.length}</p>
-                    <p className="text-[10px] text-white/80 mt-1 font-medium">Milestones</p>
-                  </div>
+            {/* Stats */}
+            <Card className="p-4 shadow-card border-border/50 bg-card/80 backdrop-blur">
+              <h3 className="font-bold text-sm mb-3">Progress Overview</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center p-4 bg-gradient-primary rounded-xl shadow-glow transition-smooth hover:scale-105">
+                  <p className="text-2xl font-bold text-white">{tasks.length}</p>
+                  <p className="text-[10px] text-white/80 mt-1 font-medium">Active Tasks</p>
                 </div>
-              </Card>
-            </div>
-          </ScrollArea>
+                <div className="text-center p-4 bg-gradient-secondary rounded-xl shadow-glow transition-smooth hover:scale-105">
+                  <p className="text-2xl font-bold text-white">{milestones.length}</p>
+                  <p className="text-[10px] text-white/80 mt-1 font-medium">Milestones</p>
+                </div>
+              </div>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

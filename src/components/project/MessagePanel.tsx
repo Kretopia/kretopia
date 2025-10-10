@@ -136,7 +136,7 @@ export function MessagePanel({
   return (
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 px-4">
-        <div className="py-4 space-y-4">
+        <div className="py-3 space-y-3 pb-4">
           {messages.map((msg) => (
             <div key={msg.id} className="flex gap-3">
               <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-primary/10">
@@ -174,28 +174,28 @@ export function MessagePanel({
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
-      <div className="border-t p-4 bg-background safe-area-bottom shadow-lg">
+      <div className="border-t p-3 bg-background shadow-lg">
         {attachedFile && (
-          <div className="mb-3 p-3 bg-primary/5 rounded-xl flex items-center gap-2.5 text-sm border border-primary/20">
-            <Paperclip className="h-4 w-4 flex-shrink-0 text-primary" />
-            <span className="flex-1 truncate font-medium">{attachedFile.name}</span>
-            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAttachedFile(null)}>✕</Button>
+          <div className="mb-2 p-2.5 bg-primary/5 rounded-xl flex items-center gap-2 text-sm border border-primary/20">
+            <Paperclip className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+            <span className="flex-1 truncate font-medium text-xs">{attachedFile.name}</span>
+            <Button variant="ghost" size="sm" className="h-6 w-6 text-xs p-0" onClick={() => setAttachedFile(null)}>✕</Button>
           </div>
         )}
-        <div className="flex gap-2.5">
+        <div className="flex gap-2">
           <input ref={fileInputRef} type="file" className="hidden" onChange={onFileAttach} />
-          <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
-            <Paperclip className="h-5 w-5" />
+          <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
+            <Paperclip className="h-4 w-4" />
           </Button>
           <Input
             placeholder="Type a message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && onSendMessage()}
-            className="flex-1 h-12 text-base rounded-xl border-2"
+            className="flex-1 h-10 text-sm rounded-xl"
           />
-          <Button onClick={onSendMessage} disabled={sendingMessage} size="icon" className="h-12 w-12 rounded-xl flex-shrink-0">
-            {sendingMessage ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+          <Button onClick={onSendMessage} disabled={sendingMessage} size="icon" className="h-10 w-10 rounded-xl flex-shrink-0">
+            {sendingMessage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
       </div>

@@ -395,227 +395,231 @@ const PublicProfile = () => {
             />
           </div>
         ) : (
-          <>
-            {/* Header Section */}
-            <div className="bg-card rounded-2xl border border-border shadow-sm p-6 mb-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                {/* Avatar */}
-                <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-lg">
-                  <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
-                  <AvatarFallback className="text-2xl md:text-3xl">{profile.full_name.charAt(0)}</AvatarFallback>
-                </Avatar>
+          <div className="space-y-6">
+            {/* TOP SECTION: Hero with all key info */}
+            <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+              {/* Cover Image */}
+              <div className="h-32 md:h-48 bg-gradient-to-r from-primary/20 via-primary/10 to-background" />
+              
+              <div className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Avatar */}
+                  <Avatar className="h-24 w-24 md:h-32 md:w-32 -mt-16 md:-mt-20 border-4 border-card shadow-lg">
+                    <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
+                    <AvatarFallback className="text-2xl md:text-3xl">{profile.full_name.charAt(0)}</AvatarFallback>
+                  </Avatar>
 
-                {/* Profile Info */}
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <div className="flex items-start gap-3 mb-2">
-                      <h1 className="text-2xl md:text-3xl font-bold">{profile.full_name}</h1>
-                      {userBadge && (
-                        <Badge variant={userBadge === 'og' ? 'default' : 'secondary'} className="mt-1">
-                          {userBadge.toUpperCase()}
-                        </Badge>
-                      )}
-                    </div>
-                    {profile.job_title && (
-                      <p className="text-lg text-muted-foreground">{profile.job_title}</p>
-                    )}
-                    {profile.location && (
-                      <div className="flex items-center gap-2 mt-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>{profile.location}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Stats Row */}
-                  <div className="flex gap-6 text-sm">
-                    <div>
-                      <div className="font-bold text-lg">{stats.circle}</div>
-                      <div className="text-muted-foreground">Connections</div>
-                    </div>
-                    <div>
-                      <div className="font-bold text-lg">{stats.projects}</div>
-                      <div className="text-muted-foreground">Projects</div>
-                    </div>
-                    {profile.average_rating && (
+                  {/* Profile Header Info */}
+                  <div className="flex-1">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                       <div>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-bold text-lg">{profile.average_rating.toFixed(1)}</span>
+                        <div className="flex items-start gap-3 mb-2">
+                          <h1 className="text-3xl md:text-4xl font-bold">{profile.full_name}</h1>
+                          {userBadge && (
+                            <Badge variant={userBadge === 'og' ? 'default' : 'secondary'} className="mt-1">
+                              {userBadge.toUpperCase()}
+                            </Badge>
+                          )}
                         </div>
-                        <div className="text-muted-foreground">{profile.total_reviews || 0} reviews</div>
+                        {profile.job_title && (
+                          <p className="text-xl text-muted-foreground mb-1">{profile.job_title}</p>
+                        )}
+                        {profile.industry && (
+                          <p className="text-sm text-muted-foreground mb-2">{profile.industry}</p>
+                        )}
+                        {profile.location && (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            <span>{profile.location}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      {isLoggedIn && (
+                        <div className="flex flex-wrap gap-2">
+                          {connectionStatus === 'accepted' ? (
+                            <>
+                              <Button onClick={handleMessage} size="lg" className="gap-2">
+                                <MessageCircle className="h-4 w-4" />
+                                Message
+                              </Button>
+                              <Badge variant="secondary" className="gap-1 px-3 py-2">
+                                <UserCheck className="h-4 w-4" />
+                                Connected
+                              </Badge>
+                            </>
+                          ) : isPendingReceived ? (
+                            <Button onClick={handleAcceptConnection} size="lg" className="gap-2">
+                              <UserCheck className="h-4 w-4" />
+                              Accept Connection
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={handleConnect}
+                              size="lg"
+                              variant={connectionStatus === 'pending' ? 'secondary' : 'default'}
+                              disabled={connectionStatus === 'pending'}
+                              className="gap-2"
+                            >
+                              <UserPlus className="h-4 w-4" />
+                              {connectionStatus === 'pending' ? 'Request Sent' : 'Connect'}
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Stats Row */}
+                    <div className="flex gap-6 mt-6 text-sm">
+                      <div>
+                        <div className="font-bold text-xl">{stats.circle}</div>
+                        <div className="text-muted-foreground">Connections</div>
+                      </div>
+                      <div>
+                        <div className="font-bold text-xl">{stats.projects}</div>
+                        <div className="text-muted-foreground">Projects</div>
+                      </div>
+                      {profile.average_rating && (
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                            <span className="font-bold text-xl">{profile.average_rating.toFixed(1)}</span>
+                          </div>
+                          <div className="text-muted-foreground">{profile.total_reviews || 0} reviews</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bio */}
+                    {profile.bio && (
+                      <div className="mt-6">
+                        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">About</h3>
+                        <p className="text-base leading-relaxed">
+                          {profile.bio}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Skills */}
+                    {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
+                      (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
+                      <div className="mt-6">
+                        <SkillsSection
+                          professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
+                          passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
+                          jobTitle={profile.job_title}
+                          industry={profile.industry}
+                          isOwnProfile={false}
+                          onRefresh={fetchData}
+                        />
                       </div>
                     )}
                   </div>
-
-                  {/* Action Buttons */}
-                  {isLoggedIn && (
-                    <div className="flex flex-wrap gap-2">
-                      {connectionStatus === 'accepted' ? (
-                        <>
-                          <Button onClick={handleMessage} className="gap-2">
-                            <MessageCircle className="h-4 w-4" />
-                            Message
-                          </Button>
-                          <Badge variant="secondary" className="gap-1 px-3 py-1">
-                            <UserCheck className="h-3 w-3" />
-                            Connected
-                          </Badge>
-                        </>
-                      ) : isPendingReceived ? (
-                        <Button onClick={handleAcceptConnection} className="gap-2">
-                          <UserCheck className="h-4 w-4" />
-                          Accept Connection
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={handleConnect}
-                          variant={connectionStatus === 'pending' ? 'secondary' : 'default'}
-                          disabled={connectionStatus === 'pending'}
-                          className="gap-2"
-                        >
-                          <UserPlus className="h-4 w-4" />
-                          {connectionStatus === 'pending' ? 'Request Sent' : 'Connect'}
-                        </Button>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
 
-            {/* Tabs */}
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="mb-6 w-full justify-start bg-card border border-border rounded-xl p-1 overflow-x-auto">
-                <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
-                {portfolioItems.length > 0 && (
-                  <TabsTrigger value="portfolio" className="rounded-lg">Portfolio</TabsTrigger>
-                )}
-                {reviews.length > 0 && (
-                  <TabsTrigger value="reviews" className="rounded-lg">Reviews</TabsTrigger>
-                )}
-                {pressLinks.length > 0 && (
-                  <TabsTrigger value="press" className="rounded-lg">Press</TabsTrigger>
-                )}
-                {industryStats.length > 0 && (
-                  <TabsTrigger value="stats" className="rounded-lg">Achievements</TabsTrigger>
-                )}
-              </TabsList>
+            {/* MID SECTION: Portfolio (Visual First) */}
+            {portfolioItems.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
+                <PortfolioSection 
+                  items={portfolioItems} 
+                  isOwnProfile={false}
+                  onRefresh={fetchData}
+                />
+              </div>
+            )}
 
-              <TabsContent value="overview" className="grid gap-4 md:grid-cols-2">
-                {/* Bio Widget */}
-                {profile.bio && (
-                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm md:col-span-2">
-                    <h3 className="mb-3 text-lg font-semibold flex items-center gap-2">
-                      <Briefcase className="h-5 w-5" />
-                      About
-                    </h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {profile.bio}
-                    </p>
-                  </div>
-                )}
-
-                {/* Skills Widget */}
-                {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
-                  (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
-                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                    <SkillsSection
-                      professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
-                      passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
-                      jobTitle={profile.job_title}
-                      industry={profile.industry}
-                      isOwnProfile={false}
-                      onRefresh={fetchData}
-                    />
-                  </div>
-                )}
-
-                {/* Social Links Widget */}
-                {(profile.instagram_url || profile.twitter_url || profile.linkedin_url || 
-                  profile.spotify_url || profile.soundcloud_url || profile.behance_url || 
-                  profile.imdb_url || profile.website ||
-                  (profile.instagram_followers && profile.instagram_followers > 0) ||
-                  (profile.youtube_subscribers && profile.youtube_subscribers > 0) ||
-                  (profile.tiktok_followers && profile.tiktok_followers > 0) ||
-                  (profile.spotify_listeners && profile.spotify_listeners > 0) ||
-                  (profile.twitter_followers && profile.twitter_followers > 0) ||
-                  (profile.linkedin_connections && profile.linkedin_connections > 0)) && (
-                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                    <SocialLinksSection 
-                      profile={profile}
-                      isOwnProfile={false}
-                      onRefresh={fetchData}
-                    />
-                  </div>
-                )}
-
-                {/* Credits Widget */}
-                {credits.length > 0 && (
-                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm md:col-span-2">
-                    <CreditsSection 
-                      userId={userId}
-                      isOwnProfile={false}
-                      onRefresh={fetchData}
-                    />
-                  </div>
-                )}
-
-                {/* Awards Widget */}
-                {awards.length > 0 && (
-                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm md:col-span-2">
-                    <AwardsSection 
-                      userId={userId}
-                      isOwnProfile={false}
-                      onRefresh={fetchData}
-                    />
-                  </div>
-                )}
-              </TabsContent>
-
-              {portfolioItems.length > 0 && (
-                <TabsContent value="portfolio">
-                  <PortfolioSection 
-                    items={portfolioItems} 
-                    isOwnProfile={false}
-                    onRefresh={fetchData}
-                  />
-                </TabsContent>
-              )}
-
+            {/* MID SECTION: Reviews & Social Stats Grid */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Reviews */}
               {reviews.length > 0 && (
-                <TabsContent value="reviews">
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-6">Reviews</h2>
                   <ReviewsSection 
                     reviews={reviews} 
                     isOwnProfile={false}
                     profileUserId={profile.user_id}
                     onRefresh={fetchData}
                   />
-                </TabsContent>
+                </div>
               )}
 
-              {pressLinks.length > 0 && (
-                <TabsContent value="press">
-                  <PressLinksSection 
-                    userId={userId}
+              {/* Social Stats */}
+              {(profile.instagram_url || profile.twitter_url || profile.linkedin_url || 
+                profile.spotify_url || profile.soundcloud_url || profile.behance_url || 
+                profile.imdb_url || profile.website ||
+                (profile.instagram_followers && profile.instagram_followers > 0) ||
+                (profile.youtube_subscribers && profile.youtube_subscribers > 0) ||
+                (profile.tiktok_followers && profile.tiktok_followers > 0) ||
+                (profile.spotify_listeners && profile.spotify_listeners > 0) ||
+                (profile.twitter_followers && profile.twitter_followers > 0) ||
+                (profile.linkedin_connections && profile.linkedin_connections > 0)) && (
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-6">Social & Links</h2>
+                  <SocialLinksSection 
+                    profile={profile}
                     isOwnProfile={false}
                     onRefresh={fetchData}
                   />
-                </TabsContent>
+                </div>
               )}
 
+              {/* Industry Stats */}
               {industryStats.length > 0 && (
-                <TabsContent value="stats">
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm md:col-span-2">
+                  <h2 className="text-2xl font-bold mb-6">Industry Stats</h2>
                   <IndustryStatsSection 
                     stats={industryStats}
                     isOwnProfile={false}
                     onRefresh={fetchData}
                   />
-                </TabsContent>
+                </div>
               )}
-            </Tabs>
-      </>
-      )}
+            </div>
+
+            {/* BOTTOM SECTION: Experience/Credits */}
+            {credits.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Experience & Credits</h2>
+                <CreditsSection 
+                  userId={userId}
+                  isOwnProfile={false}
+                  onRefresh={fetchData}
+                />
+              </div>
+            )}
+
+            {/* BOTTOM SECTION: Press & Awards Grid */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Press */}
+              {pressLinks.length > 0 && (
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-6">Press & Media</h2>
+                  <PressLinksSection 
+                    userId={userId}
+                    isOwnProfile={false}
+                    onRefresh={fetchData}
+                  />
+                </div>
+              )}
+
+              {/* Awards */}
+              {awards.length > 0 && (
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-6">Awards & Recognition</h2>
+                  <AwardsSection 
+                    userId={userId}
+                    isOwnProfile={false}
+                    onRefresh={fetchData}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

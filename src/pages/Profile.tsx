@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,53 +27,9 @@ import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from "lucide-react";
 import { getTierByPoints } from "@/lib/tierSystem";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
-
-interface SortableItemProps {
-  id: string;
-  children: React.ReactNode;
-  isEditMode: boolean;
-}
-
-const SortableItem = ({ id, children, isEditMode }: SortableItemProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.8 : 1,
-    cursor: isEditMode ? 'grab' : 'default',
-  };
-
-  return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
-      className={`relative ${isEditMode ? 'ring-2 ring-primary/20 rounded-2xl' : ''}`}
-      {...(isEditMode ? { ...attributes, ...listeners } : {})}
-    >
-      {isEditMode && (
-        <div className="absolute left-2 top-2 z-10 pointer-events-none">
-          <GripVertical className="h-5 w-5 text-primary" />
-        </div>
-      )}
-      {children}
-    </div>
-  );
-}
 
 const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -94,18 +49,8 @@ const Profile = () => {
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [isReorderMode, setIsReorderMode] = useState(false);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
-  const [sectionOrder, setSectionOrder] = useState<string[]>([
-    "bio",
-    "social_stats",
-    "skills",
-    "credits",
-    "awards",
-    "press",
-    "social_links",
-  ]);
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -134,20 +79,8 @@ const Profile = () => {
         variant: "destructive",
       });
     } else {
-      const order = data.section_order as string[] | null;
-      setProfile({ ...data, section_order: order });
+      setProfile({ ...data, section_order: data.section_order });
       setUserBadge(data.badge || 'beta');
-      setSectionOrder(
-        order || [
-          "bio",
-          "social_stats",
-          "skills",
-          "credits",
-          "awards",
-          "press",
-          "social_links",
-        ]
-      );
       
       // Set form data based on account type
       const isCompany = data.account_type === 'company';
@@ -259,49 +192,6 @@ const Profile = () => {
   useEffect(() => {
     fetchData();
   }, [toast]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      setSectionOrder((items) => {
-        const oldIndex = items.indexOf(active.id as string);
-        const newIndex = items.indexOf(over.id as string);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
-
-  const handleSaveSectionOrder = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ section_order: sectionOrder })
-      .eq('user_id', user.id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save section order",
-        variant: "destructive",
-      });
-    } else {
-      setIsReorderMode(false);
-      toast({
-        title: "Success",
-        description: "Section order saved successfully",
-      });
-    }
-  };
 
   const handleShare = () => {
     toast({
@@ -797,7 +687,7 @@ const Profile = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Content Area with Tabs */}
+        {/* Content Area */}
         <div className="px-3 sm:px-4 md:px-6 space-y-6 mt-6">
           {/* Profile Completion & Progress Cards */}
           {profile && (
@@ -820,142 +710,143 @@ const Profile = () => {
             />
           )}
 
-          {/* Tabs */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="mb-6 w-full justify-start rounded-xl bg-card p-1 overflow-x-auto">
-              <TabsTrigger value="overview" className="rounded-lg text-sm">Overview</TabsTrigger>
-              <TabsTrigger value="portfolio" className="rounded-lg text-sm">Portfolio</TabsTrigger>
-              <TabsTrigger value="reviews" className="rounded-lg text-sm">Reviews</TabsTrigger>
-              <TabsTrigger value="credits" className="rounded-lg text-sm">Credits</TabsTrigger>
-              <TabsTrigger value="awards" className="rounded-lg text-sm">Awards</TabsTrigger>
-              <TabsTrigger value="stats" className="rounded-lg text-sm">Stats</TabsTrigger>
-            </TabsList>
+          {/* TOP SECTION: Bio & Skills */}
+          <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card">
+            <div className="space-y-6">
+              {/* Bio */}
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">About</h3>
+                <p className="text-base leading-relaxed">
+                  {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
+                </p>
+              </div>
 
-            <TabsContent value="overview" className="space-y-4 md:space-y-6">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={sectionOrder}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-4 md:space-y-6">
-                  {isReorderMode && (
-                    <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 mb-4 animate-fade-in">
-                      <p className="text-sm text-foreground font-medium">
-                        🎯 Drag and drop cards to reorder them, then click "Save Order"
-                      </p>
-                    </div>
-                  )}
-                  
-                  {/* Bio section - always first */}
-                  <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-                    <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">Bio</h3>
-                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                      {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
-                    </p>
-                  </div>
-                  
-                  {/* Other sections - sortable */}
-                  {sectionOrder.filter(id => id !== 'bio').map((sectionId) => {
-                    const sections: Record<string, React.ReactNode> = {
-                      social_stats: (
-                        <SocialStatsSection
-                          youtubeSubscribers={profile.youtube_subscribers}
-                          instagramFollowers={profile.instagram_followers}
-                          tiktokFollowers={profile.tiktok_followers}
-                          spotifyListeners={profile.spotify_listeners}
-                          twitterFollowers={profile.twitter_followers}
-                          linkedinConnections={profile.linkedin_connections}
-                          verifiedMetrics={profile.verified_metrics}
-                        />
-                      ),
-                      skills: (
-                        <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-                          <SkillsSection
-                            professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
-                            passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
-                            jobTitle={profile.job_title}
-                            industry={profile.industry}
-                            isOwnProfile={true}
-                            onRefresh={fetchData}
-                          />
-                        </div>
-                      ),
-                      press: (
-                        <PressLinksSection 
-                          userId={profile.user_id}
-                          isOwnProfile={true}
-                          onRefresh={fetchData}
-                        />
-                      ),
-                      social_links: (
-                        <SocialLinksSection 
-                          profile={profile}
-                          isOwnProfile={true}
-                          onRefresh={fetchData}
-                        />
-                      ),
-                    };
-
-                    const section = sections[sectionId];
-                    if (!section) return null;
-
-                    return (
-                      <SortableItem key={sectionId} id={sectionId} isEditMode={isReorderMode}>
-                        {section}
-                      </SortableItem>
-                    );
-                  })}
-                  {!isReorderMode && <InviteCodesCard />}
+              {/* Skills */}
+              {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
+                (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
+                <div>
+                  <SkillsSection
+                    professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+                    passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
+                    jobTitle={profile.job_title}
+                    industry={profile.industry}
+                    isOwnProfile={true}
+                    onRefresh={fetchData}
+                  />
                 </div>
-              </SortableContext>
-            </DndContext>
-            </TabsContent>
+              )}
+            </div>
+          </div>
 
-            <TabsContent value="portfolio">
+          {/* MID SECTION: Portfolio */}
+          {portfolioItems.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card">
+              <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
               <PortfolioSection
                 items={portfolioItems}
                 isOwnProfile={true}
                 onRefresh={fetchData}
               />
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="reviews">
-              <ReviewsSection
-                reviews={reviews}
+          {/* MID SECTION: Reviews & Social Stats Grid */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Reviews */}
+            {reviews.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <h2 className="text-2xl font-bold mb-6">Reviews</h2>
+                <ReviewsSection
+                  reviews={reviews}
+                  isOwnProfile={true}
+                  profileUserId={profile.user_id}
+                  onRefresh={fetchData}
+                />
+              </div>
+            )}
+
+            {/* Social Stats */}
+            {(profile.youtube_subscribers || profile.instagram_followers || 
+              profile.tiktok_followers || profile.spotify_listeners || 
+              profile.twitter_followers || profile.linkedin_connections) && (
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <h2 className="text-2xl font-bold mb-6">Social Reach</h2>
+                <SocialStatsSection
+                  youtubeSubscribers={profile.youtube_subscribers}
+                  instagramFollowers={profile.instagram_followers}
+                  tiktokFollowers={profile.tiktok_followers}
+                  spotifyListeners={profile.spotify_listeners}
+                  twitterFollowers={profile.twitter_followers}
+                  linkedinConnections={profile.linkedin_connections}
+                  verifiedMetrics={profile.verified_metrics}
+                />
+              </div>
+            )}
+
+            {/* Social Links */}
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+              <h2 className="text-2xl font-bold mb-6">Links</h2>
+              <SocialLinksSection 
+                profile={profile}
                 isOwnProfile={true}
-                profileUserId={profile.user_id}
                 onRefresh={fetchData}
               />
-            </TabsContent>
+            </div>
 
-            <TabsContent value="credits">
+            {/* Industry Stats */}
+            {industryStats.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <h2 className="text-2xl font-bold mb-6">Industry Stats</h2>
+                <IndustryStatsSection 
+                  stats={industryStats}
+                  isOwnProfile={true}
+                  onRefresh={fetchData}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* BOTTOM SECTION: Experience/Credits */}
+          {credits.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card">
+              <h2 className="text-2xl font-bold mb-6">Experience & Credits</h2>
               <CreditsSection 
                 userId={profile.user_id}
                 isOwnProfile={true}
                 onRefresh={fetchData}
               />
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="awards">
-              <AwardsSection 
-                userId={profile.user_id}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            </TabsContent>
+          {/* BOTTOM SECTION: Press & Awards Grid */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Press */}
+            {pressLinks.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <h2 className="text-2xl font-bold mb-6">Press & Media</h2>
+                <PressLinksSection 
+                  userId={profile.user_id}
+                  isOwnProfile={true}
+                  onRefresh={fetchData}
+                />
+              </div>
+            )}
 
-            <TabsContent value="stats" className="space-y-3 md:space-y-4">
-              <IndustryStatsSection 
-                stats={industryStats}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            </TabsContent>
-          </Tabs>
+            {/* Awards */}
+            {awards.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+                <h2 className="text-2xl font-bold mb-6">Awards & Recognition</h2>
+                <AwardsSection 
+                  userId={profile.user_id}
+                  isOwnProfile={true}
+                  onRefresh={fetchData}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Invite Codes Card */}
+          <InviteCodesCard />
         </div>
       </div>
     </div>

@@ -272,7 +272,7 @@ export default function Membership() {
         </TabsContent>
 
         <TabsContent value="partners" className="mt-6">
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Partner Discounts
             </h2>
@@ -294,106 +294,86 @@ export default function Membership() {
               </div>
             </Card>
           ) : (
-            <div className="space-y-10">
-              {(() => {
-                // Group partners by category
-                const groupedPartners = partners.reduce((acc, partner) => {
-                  const category = partner.category || 'other';
-                  if (!acc[category]) acc[category] = [];
-                  acc[category].push(partner);
-                  return acc;
-                }, {} as Record<string, any[]>);
+            (() => {
+              // Group partners by category
+              const groupedPartners = partners.reduce((acc, partner) => {
+                const category = partner.category || 'other';
+                if (!acc[category]) acc[category] = [];
+                acc[category].push(partner);
+                return acc;
+              }, {} as Record<string, any[]>);
 
-                // Category metadata with icons and descriptions
-                const categoryMeta: Record<string, { icon: string; title: string; description: string; gradient: string }> = {
-                  wellness: {
-                    icon: '🧘',
-                    title: 'Wellness & Health',
-                    description: 'Self-care, fitness, and mental health partners',
-                    gradient: 'from-green-500/10 via-emerald-500/5 to-teal-500/10'
-                  },
-                  software: {
-                    icon: '💻',
-                    title: 'Software & Tools',
-                    description: 'Digital tools and platforms for creators',
-                    gradient: 'from-blue-500/10 via-indigo-500/5 to-purple-500/10'
-                  },
-                  services: {
-                    icon: '🎯',
-                    title: 'Professional Services',
-                    description: 'Business and creative services',
-                    gradient: 'from-orange-500/10 via-amber-500/5 to-yellow-500/10'
-                  },
-                  education: {
-                    icon: '📚',
-                    title: 'Education & Learning',
-                    description: 'Courses, workshops, and training',
-                    gradient: 'from-pink-500/10 via-rose-500/5 to-red-500/10'
-                  },
-                  equipment: {
-                    icon: '🎬',
-                    title: 'Equipment & Gear',
-                    description: 'Production equipment and creative tools',
-                    gradient: 'from-violet-500/10 via-purple-500/5 to-fuchsia-500/10'
-                  },
-                  other: {
-                    icon: '✨',
-                    title: 'More Benefits',
-                    description: 'Additional partner offers',
-                    gradient: 'from-gray-500/10 via-slate-500/5 to-zinc-500/10'
-                  }
-                };
+              // Category metadata with icons and descriptions
+              const categoryMeta: Record<string, { icon: string; title: string; description: string }> = {
+                wellness: { icon: '🧘', title: 'Wellness', description: 'Self-care & fitness' },
+                software: { icon: '💻', title: 'Software', description: 'Digital tools' },
+                services: { icon: '🎯', title: 'Services', description: 'Professional services' },
+                education: { icon: '📚', title: 'Education', description: 'Learning & courses' },
+                equipment: { icon: '🎬', title: 'Equipment', description: 'Creative gear' },
+                other: { icon: '✨', title: 'More', description: 'Other benefits' }
+              };
 
-                return Object.entries(groupedPartners).map(([category, categoryPartners]: [string, any[]]) => {
-                  const meta = categoryMeta[category] || categoryMeta.other;
-                  
-                  return (
-                    <div key={category} className="space-y-4">
-                      {/* Category Header */}
-                      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${meta.gradient} border border-border/50 p-6 backdrop-blur-sm`}>
-                        <div className="relative z-10">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="text-4xl">{meta.icon}</span>
+              const categories = Object.keys(groupedPartners);
+              const firstCategory = categories[0];
+
+              return (
+                <Tabs defaultValue={firstCategory} className="w-full">
+                  <TabsList className="grid w-full mb-6" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
+                    {categories.map((category) => {
+                      const meta = categoryMeta[category] || categoryMeta.other;
+                      const count = groupedPartners[category].length;
+                      return (
+                        <TabsTrigger key={category} value={category} className="flex items-center gap-2">
+                          <span>{meta.icon}</span>
+                          <span className="hidden sm:inline">{meta.title}</span>
+                          <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
+                            {count}
+                          </Badge>
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+
+                  {categories.map((category) => {
+                    const meta = categoryMeta[category] || categoryMeta.other;
+                    const categoryPartners = groupedPartners[category];
+                    
+                    return (
+                      <TabsContent key={category} value={category} className="space-y-4">
+                        <div className="mb-6 p-4 rounded-lg bg-muted/50 border border-border">
+                          <div className="flex items-center gap-3">
+                            <span className="text-3xl">{meta.icon}</span>
                             <div>
-                              <h3 className="text-2xl font-bold">{meta.title}</h3>
+                              <h3 className="text-xl font-bold">{meta.title}</h3>
                               <p className="text-sm text-muted-foreground">{meta.description}</p>
                             </div>
                           </div>
-                          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background/60 backdrop-blur-sm border border-border/50">
-                            <Gift className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium">{categoryPartners.length} {categoryPartners.length === 1 ? 'offer' : 'offers'} available</span>
-                          </div>
                         </div>
-                        {/* Decorative element */}
-                        <div className="absolute -right-8 -bottom-8 opacity-10">
-                          <div className="text-[120px]">{meta.icon}</div>
-                        </div>
-                      </div>
 
-                      {/* Partners Grid */}
-                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {categoryPartners.map((partner) => (
-                          <PartnerCard
-                            key={partner.id}
-                            id={partner.id}
-                            name={partner.partner_name}
-                            type={partner.category}
-                            description={partner.description}
-                            discountValue={partner.discount_value}
-                            discountType={partner.discount_type}
-                            redemptionCode={partner.redemption_code}
-                            redemptionUrl={partner.redemption_url}
-                            logoUrl={partner.partner_logo_url}
-                            tierRequired={partner.tier_required}
-                            userTier={profile?.subscription_tier || "free"}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                          {categoryPartners.map((partner) => (
+                            <PartnerCard
+                              key={partner.id}
+                              id={partner.id}
+                              name={partner.partner_name}
+                              type={partner.category}
+                              description={partner.description}
+                              discountValue={partner.discount_value}
+                              discountType={partner.discount_type}
+                              redemptionCode={partner.redemption_code}
+                              redemptionUrl={partner.redemption_url}
+                              logoUrl={partner.partner_logo_url}
+                              tierRequired={partner.tier_required}
+                              userTier={profile?.subscription_tier || "free"}
+                            />
+                          ))}
+                        </div>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
+              );
+            })()
           )}
         </TabsContent>
 

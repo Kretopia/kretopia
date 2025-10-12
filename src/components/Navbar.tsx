@@ -82,6 +82,15 @@ const Navbar = ({ user }: NavbarProps) => {
         <div className="flex items-center gap-2 sm:gap-4">
           {user && !isLandingPage && (
             <>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-10 w-10 relative"
+                onClick={() => navigate("/messages")}
+                aria-label="Messages"
+              >
+                <MessageCircle className="h-5 w-5" />
+              </Button>
               <NotificationCenter />
               <SupportDialog />
             </>
@@ -103,69 +112,21 @@ const Navbar = ({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
-                    {/* Main nav items - only show on desktop (hidden on mobile where bottom nav exists) */}
-                    <div className="hidden lg:flex lg:flex-col lg:gap-1">
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12"
-                        onClick={() => handleNavigation("/dashboard")}
-                      >
-                        <LayoutDashboard className="h-5 w-5" />
-                        Home
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12"
-                        onClick={() => handleNavigation("/discover")}
-                      >
-                        <Compass className="h-5 w-5" />
-                        Discover
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12"
-                        onClick={() => handleNavigation("/messages")}
-                      >
-                        <MessageCircle className="h-5 w-5" />
-                        Messages
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12"
-                        onClick={() => handleNavigation("/profile")}
-                      >
-                        <User className="h-5 w-5" />
-                        Profile
-                      </Button>
-                      
-                      <Separator className="my-3" />
-                    </div>
-                    
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/circle")}
+                      onClick={() => handleNavigation("/profile")}
                     >
-                      <Users className="h-5 w-5" />
-                      My Circle
+                      <User className="h-5 w-5" />
+                      Profile
                     </Button>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/projects")}
+                      onClick={() => handleNavigation("/ai-assistant")}
                     >
-                      <FolderKanban className="h-5 w-5" />
-                      ThriveDesk
-                    </Button>
-                    
-                    <Separator className="my-3" />
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/thrivepay")}
-                    >
-                      <Wallet className="h-5 w-5" />
-                      ThrivePay
+                      <Zap className="h-5 w-5" />
+                      AI Assistant
                     </Button>
                     <Button 
                       variant="ghost" 
@@ -178,18 +139,29 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/membership")}
-                    >
-                      <Zap className="h-5 w-5" />
-                      Membership
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
                       onClick={() => handleNavigation("/settings")}
                     >
                       <Settings className="h-5 w-5" />
                       Settings
+                    </Button>
+                    
+                    <Separator className="my-3" />
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/thrivepay")}
+                    >
+                      <Wallet className="h-5 w-5" />
+                      ThrivePay
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/membership")}
+                    >
+                      <Zap className="h-5 w-5" />
+                      Membership
                     </Button>
                     
                     {isAdmin && (

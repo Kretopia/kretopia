@@ -64,8 +64,9 @@ const Navbar = ({ user }: NavbarProps) => {
 
   const handleNavigation = (path: string) => {
     console.log('[Navbar] Navigating to:', path);
-    setIsOpen(false);
     navigate(path);
+    // Close sheet after navigation starts
+    setTimeout(() => setIsOpen(false), 0);
   };
 
   return (

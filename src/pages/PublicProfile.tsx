@@ -359,8 +359,8 @@ const PublicProfile = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
-      <div className="container mx-auto max-w-6xl space-y-6">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto max-w-7xl px-4 py-6">
         {/* Back Button */}
         <Button
           variant="ghost"
@@ -396,138 +396,224 @@ const PublicProfile = () => {
           </div>
         ) : (
           <>
-            {/* Profile Hero */}
-            <ProfileHero
-              profile={profile}
-              stats={stats}
-              isOwnProfile={false}
-              isConnected={isConnected}
-              connectionStatus={connectionStatus}
-              onConnect={handleConnect}
-              onMessage={handleMessage}
-              onShare={() => {
-                navigator.clipboard.writeText(window.location.href);
-                toast({ title: "Link copied!" });
-              }}
-            />
+            {/* Header Section */}
+            <div className="bg-card rounded-2xl border border-border shadow-sm p-6 mb-6">
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Avatar */}
+                <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-background shadow-lg">
+                  <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
+                  <AvatarFallback className="text-2xl md:text-3xl">{profile.full_name.charAt(0)}</AvatarFallback>
+                </Avatar>
+
+                {/* Profile Info */}
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <div className="flex items-start gap-3 mb-2">
+                      <h1 className="text-2xl md:text-3xl font-bold">{profile.full_name}</h1>
+                      {userBadge && (
+                        <Badge variant={userBadge === 'og' ? 'default' : 'secondary'} className="mt-1">
+                          {userBadge.toUpperCase()}
+                        </Badge>
+                      )}
+                    </div>
+                    {profile.job_title && (
+                      <p className="text-lg text-muted-foreground">{profile.job_title}</p>
+                    )}
+                    {profile.location && (
+                      <div className="flex items-center gap-2 mt-2 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span>{profile.location}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Stats Row */}
+                  <div className="flex gap-6 text-sm">
+                    <div>
+                      <div className="font-bold text-lg">{stats.circle}</div>
+                      <div className="text-muted-foreground">Connections</div>
+                    </div>
+                    <div>
+                      <div className="font-bold text-lg">{stats.projects}</div>
+                      <div className="text-muted-foreground">Projects</div>
+                    </div>
+                    {profile.average_rating && (
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-bold text-lg">{profile.average_rating.toFixed(1)}</span>
+                        </div>
+                        <div className="text-muted-foreground">{profile.total_reviews || 0} reviews</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  {isLoggedIn && (
+                    <div className="flex flex-wrap gap-2">
+                      {connectionStatus === 'accepted' ? (
+                        <>
+                          <Button onClick={handleMessage} className="gap-2">
+                            <MessageCircle className="h-4 w-4" />
+                            Message
+                          </Button>
+                          <Badge variant="secondary" className="gap-1 px-3 py-1">
+                            <UserCheck className="h-3 w-3" />
+                            Connected
+                          </Badge>
+                        </>
+                      ) : isPendingReceived ? (
+                        <Button onClick={handleAcceptConnection} className="gap-2">
+                          <UserCheck className="h-4 w-4" />
+                          Accept Connection
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleConnect}
+                          variant={connectionStatus === 'pending' ? 'secondary' : 'default'}
+                          disabled={connectionStatus === 'pending'}
+                          className="gap-2"
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          {connectionStatus === 'pending' ? 'Request Sent' : 'Connect'}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
 
             {/* Tabs */}
             <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
-            <TabsTrigger value="overview" className="rounded-lg md:rounded-xl text-xs md:text-sm">Overview</TabsTrigger>
-            {portfolioItems.length > 0 && (
-              <TabsTrigger value="portfolio" className="rounded-lg md:rounded-xl text-xs md:text-sm">Portfolio</TabsTrigger>
-            )}
-            {reviews.length > 0 && (
-              <TabsTrigger value="reviews" className="rounded-lg md:rounded-xl text-xs md:text-sm">Reviews</TabsTrigger>
-            )}
-            {pressLinks.length > 0 && (
-              <TabsTrigger value="press" className="rounded-lg md:rounded-xl text-xs md:text-sm">Press</TabsTrigger>
-            )}
-            {industryStats.length > 0 && (
-              <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Achievements</TabsTrigger>
-            )}
-          </TabsList>
+              <TabsList className="mb-6 w-full justify-start bg-card border border-border rounded-xl p-1 overflow-x-auto">
+                <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
+                {portfolioItems.length > 0 && (
+                  <TabsTrigger value="portfolio" className="rounded-lg">Portfolio</TabsTrigger>
+                )}
+                {reviews.length > 0 && (
+                  <TabsTrigger value="reviews" className="rounded-lg">Reviews</TabsTrigger>
+                )}
+                {pressLinks.length > 0 && (
+                  <TabsTrigger value="press" className="rounded-lg">Press</TabsTrigger>
+                )}
+                {industryStats.length > 0 && (
+                  <TabsTrigger value="stats" className="rounded-lg">Achievements</TabsTrigger>
+                )}
+              </TabsList>
 
-          <TabsContent value="overview" className="space-y-4 md:space-y-6">
-            {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
-              (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0) ||
-              profile.job_title || profile.industry) && (
-              <div className="rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-                <SkillsSection
-                  professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
-                  passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
-                  jobTitle={profile.job_title}
-                  industry={profile.industry}
-                  isOwnProfile={false}
-                  onRefresh={fetchData}
-                />
-              </div>
-            )}
+              <TabsContent value="overview" className="grid gap-4 md:grid-cols-2">
+                {/* Bio Widget */}
+                {profile.bio && (
+                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm md:col-span-2">
+                    <h3 className="mb-3 text-lg font-semibold flex items-center gap-2">
+                      <Briefcase className="h-5 w-5" />
+                      About
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {profile.bio}
+                    </p>
+                  </div>
+                )}
 
-            {profile.bio && (
-              <div className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6 shadow-card">
-                <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold">Bio</h3>
-                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                  {profile.bio}
-                </p>
-              </div>
-            )}
+                {/* Skills Widget */}
+                {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
+                  (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
+                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                    <SkillsSection
+                      professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
+                      passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
+                      jobTitle={profile.job_title}
+                      industry={profile.industry}
+                      isOwnProfile={false}
+                      onRefresh={fetchData}
+                    />
+                  </div>
+                )}
 
-            {credits.length > 0 && (
-              <CreditsSection 
-                userId={userId}
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            )}
+                {/* Social Links Widget */}
+                {(profile.instagram_url || profile.twitter_url || profile.linkedin_url || 
+                  profile.spotify_url || profile.soundcloud_url || profile.behance_url || 
+                  profile.imdb_url || profile.website ||
+                  (profile.instagram_followers && profile.instagram_followers > 0) ||
+                  (profile.youtube_subscribers && profile.youtube_subscribers > 0) ||
+                  (profile.tiktok_followers && profile.tiktok_followers > 0) ||
+                  (profile.spotify_listeners && profile.spotify_listeners > 0) ||
+                  (profile.twitter_followers && profile.twitter_followers > 0) ||
+                  (profile.linkedin_connections && profile.linkedin_connections > 0)) && (
+                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                    <SocialLinksSection 
+                      profile={profile}
+                      isOwnProfile={false}
+                      onRefresh={fetchData}
+                    />
+                  </div>
+                )}
 
-            {awards.length > 0 && (
-              <AwardsSection 
-                userId={userId}
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            )}
+                {/* Credits Widget */}
+                {credits.length > 0 && (
+                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm md:col-span-2">
+                    <CreditsSection 
+                      userId={userId}
+                      isOwnProfile={false}
+                      onRefresh={fetchData}
+                    />
+                  </div>
+                )}
 
-            {(profile.instagram_url || profile.twitter_url || profile.linkedin_url || 
-              profile.spotify_url || profile.soundcloud_url || profile.behance_url || 
-              profile.imdb_url || profile.website ||
-              (profile.instagram_followers && profile.instagram_followers > 0) ||
-              (profile.youtube_subscribers && profile.youtube_subscribers > 0) ||
-              (profile.tiktok_followers && profile.tiktok_followers > 0) ||
-              (profile.spotify_listeners && profile.spotify_listeners > 0) ||
-              (profile.twitter_followers && profile.twitter_followers > 0) ||
-              (profile.linkedin_connections && profile.linkedin_connections > 0)) && (
-              <SocialLinksSection 
-                profile={profile}
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            )}
-          </TabsContent>
+                {/* Awards Widget */}
+                {awards.length > 0 && (
+                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm md:col-span-2">
+                    <AwardsSection 
+                      userId={userId}
+                      isOwnProfile={false}
+                      onRefresh={fetchData}
+                    />
+                  </div>
+                )}
+              </TabsContent>
 
-          {portfolioItems.length > 0 && (
-            <TabsContent value="portfolio" className="space-y-3 md:space-y-4">
-              <PortfolioSection 
-                items={portfolioItems} 
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            </TabsContent>
-          )}
+              {portfolioItems.length > 0 && (
+                <TabsContent value="portfolio">
+                  <PortfolioSection 
+                    items={portfolioItems} 
+                    isOwnProfile={false}
+                    onRefresh={fetchData}
+                  />
+                </TabsContent>
+              )}
 
-          {reviews.length > 0 && (
-            <TabsContent value="reviews" className="space-y-3 md:space-y-4">
-              <ReviewsSection 
-                reviews={reviews} 
-                isOwnProfile={false}
-                profileUserId={profile.user_id}
-                onRefresh={fetchData}
-              />
-            </TabsContent>
-          )}
+              {reviews.length > 0 && (
+                <TabsContent value="reviews">
+                  <ReviewsSection 
+                    reviews={reviews} 
+                    isOwnProfile={false}
+                    profileUserId={profile.user_id}
+                    onRefresh={fetchData}
+                  />
+                </TabsContent>
+              )}
 
-          {pressLinks.length > 0 && (
-            <TabsContent value="press" className="space-y-3 md:space-y-4">
-              <PressLinksSection 
-                userId={userId}
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            </TabsContent>
-          )}
+              {pressLinks.length > 0 && (
+                <TabsContent value="press">
+                  <PressLinksSection 
+                    userId={userId}
+                    isOwnProfile={false}
+                    onRefresh={fetchData}
+                  />
+                </TabsContent>
+              )}
 
-          {industryStats.length > 0 && (
-            <TabsContent value="stats" className="space-y-3 md:space-y-4">
-              <IndustryStatsSection 
-                stats={industryStats}
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            </TabsContent>
-          )}
-        </Tabs>
+              {industryStats.length > 0 && (
+                <TabsContent value="stats">
+                  <IndustryStatsSection 
+                    stats={industryStats}
+                    isOwnProfile={false}
+                    onRefresh={fetchData}
+                  />
+                </TabsContent>
+              )}
+            </Tabs>
       </>
       )}
       </div>

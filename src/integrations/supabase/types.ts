@@ -2849,121 +2849,31 @@ export type Database = {
       }
       public_profiles_safe: {
         Row: {
-          account_type: Database["public"]["Enums"]["account_type"] | null
           avatar_url: string | null
-          average_rating: number | null
-          avg_views: number | null
-          badge: Database["public"]["Enums"]["user_badge"] | null
           bio: string | null
-          company_about: string | null
-          company_industry: string | null
-          company_logo_url: string | null
-          company_name: string | null
-          company_size: string | null
           created_at: string | null
           full_name: string | null
-          imdb_url: string | null
-          industry: string | null
-          instagram_followers: number | null
-          instagram_url: string | null
-          job_title: string | null
-          level: number | null
           location: string | null
-          onboarding_completed: boolean | null
           role: string | null
-          spotify_listeners: number | null
-          spotify_url: string | null
-          subscription_tier: string | null
-          tiktok_followers: number | null
-          tiktok_url: string | null
-          total_engagement_rate: number | null
-          total_reviews: number | null
-          twitter_url: string | null
-          updated_at: string | null
           user_id: string | null
-          verified_metrics: boolean | null
-          website: string | null
-          xp: number | null
-          youtube_subscribers: number | null
-          youtube_url: string | null
         }
         Insert: {
-          account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
-          average_rating?: number | null
-          avg_views?: number | null
-          badge?: Database["public"]["Enums"]["user_badge"] | null
           bio?: string | null
-          company_about?: string | null
-          company_industry?: string | null
-          company_logo_url?: string | null
-          company_name?: string | null
-          company_size?: string | null
           created_at?: string | null
           full_name?: string | null
-          imdb_url?: string | null
-          industry?: string | null
-          instagram_followers?: number | null
-          instagram_url?: string | null
-          job_title?: string | null
-          level?: number | null
           location?: string | null
-          onboarding_completed?: boolean | null
           role?: string | null
-          spotify_listeners?: number | null
-          spotify_url?: string | null
-          subscription_tier?: string | null
-          tiktok_followers?: number | null
-          tiktok_url?: string | null
-          total_engagement_rate?: number | null
-          total_reviews?: number | null
-          twitter_url?: string | null
-          updated_at?: string | null
           user_id?: string | null
-          verified_metrics?: boolean | null
-          website?: string | null
-          xp?: number | null
-          youtube_subscribers?: number | null
-          youtube_url?: string | null
         }
         Update: {
-          account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
-          average_rating?: number | null
-          avg_views?: number | null
-          badge?: Database["public"]["Enums"]["user_badge"] | null
           bio?: string | null
-          company_about?: string | null
-          company_industry?: string | null
-          company_logo_url?: string | null
-          company_name?: string | null
-          company_size?: string | null
           created_at?: string | null
           full_name?: string | null
-          imdb_url?: string | null
-          industry?: string | null
-          instagram_followers?: number | null
-          instagram_url?: string | null
-          job_title?: string | null
-          level?: number | null
           location?: string | null
-          onboarding_completed?: boolean | null
           role?: string | null
-          spotify_listeners?: number | null
-          spotify_url?: string | null
-          subscription_tier?: string | null
-          tiktok_followers?: number | null
-          tiktok_url?: string | null
-          total_engagement_rate?: number | null
-          total_reviews?: number | null
-          twitter_url?: string | null
-          updated_at?: string | null
           user_id?: string | null
-          verified_metrics?: boolean | null
-          website?: string | null
-          xp?: number | null
-          youtube_subscribers?: number | null
-          youtube_url?: string | null
         }
         Relationships: []
       }

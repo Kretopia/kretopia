@@ -12,6 +12,14 @@ serve(async (req) => {
 
   try {
     const { title, description, type } = await req.json();
+    
+    // Basic validation
+    if (!title || title.length > 200 || !description || description.length > 1000) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input: title and description required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {

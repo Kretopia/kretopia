@@ -1,10 +1,10 @@
 project_id = "kwmcocsitwssrtzkdojh"
 
 [functions.moderate-opportunity]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-notification-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-weekly-digest]
 verify_jwt = false
@@ -28,7 +28,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.process-partner-submission]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-opportunity-image]
 verify_jwt = true

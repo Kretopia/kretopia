@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { SupportDialog } from "@/components/SupportDialog";
 import { NotificationCenter } from "@/components/NotificationCenter";
@@ -17,7 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { useState, useEffect } from "react";
 
 interface NavbarProps {
-  user?: { email?: string } | null;
+  user?: SupabaseUser | null;
 }
 
 const Navbar = ({ user }: NavbarProps) => {
@@ -35,10 +36,13 @@ const Navbar = ({ user }: NavbarProps) => {
   }, [user]);
 
   const checkAdminStatus = async () => {
+    if (!user?.id) return;
+    
     try {
       const { data } = await supabase
         .from("user_roles")
         .select("role")
+        .eq("user_id", user.id)
         .eq("role", "admin")
         .maybeSingle();
       

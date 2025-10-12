@@ -96,32 +96,32 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
+                <SheetContent side="right" className="w-[85vw] sm:w-[400px] transition-transform duration-150">
                   <SheetHeader>
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col gap-1 mt-6">
+                  <div className="flex flex-col gap-1 mt-6" onClick={handleCloseSheet}>
                     {/* Main nav items - only show on desktop (hidden on mobile where bottom nav exists) */}
                     <div className="hidden lg:flex lg:flex-col lg:gap-1">
-                      <Link to="/dashboard" onClick={handleCloseSheet}>
+                      <Link to="/dashboard">
                         <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                           <LayoutDashboard className="h-5 w-5" />
                           Home
                         </Button>
                       </Link>
-                      <Link to="/discover" onClick={handleCloseSheet}>
+                      <Link to="/discover">
                         <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                           <Compass className="h-5 w-5" />
                           Discover
                         </Button>
                       </Link>
-                      <Link to="/messages" onClick={handleCloseSheet}>
+                      <Link to="/messages">
                         <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                           <MessageCircle className="h-5 w-5" />
                           Messages
                         </Button>
                       </Link>
-                      <Link to="/profile" onClick={handleCloseSheet}>
+                      <Link to="/profile">
                         <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                           <User className="h-5 w-5" />
                           Profile
@@ -131,13 +131,13 @@ const Navbar = ({ user }: NavbarProps) => {
                       <Separator className="my-3" />
                     </div>
                     
-                    <Link to="/circle" onClick={handleCloseSheet}>
+                    <Link to="/circle">
                       <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                         <Users className="h-5 w-5" />
                         My Circle
                       </Button>
                     </Link>
-                    <Link to="/projects" onClick={handleCloseSheet}>
+                    <Link to="/projects">
                       <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                         <FolderKanban className="h-5 w-5" />
                         ThriveDesk
@@ -145,25 +145,25 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Link>
                     
                     <Separator className="my-3" />
-                    <Link to="/thrivepay" onClick={handleCloseSheet}>
+                    <Link to="/thrivepay">
                       <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                         <Wallet className="h-5 w-5" />
                         ThrivePay
                       </Button>
                     </Link>
-                    <Link to="/manage-opportunities" onClick={handleCloseSheet}>
+                    <Link to="/manage-opportunities">
                       <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                         <Briefcase className="h-5 w-5" />
                         Manage Opportunities
                       </Button>
                     </Link>
-                    <Link to="/membership" onClick={handleCloseSheet}>
+                    <Link to="/membership">
                       <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                         <Zap className="h-5 w-5" />
                         Membership
                       </Button>
                     </Link>
-                    <Link to="/settings" onClick={handleCloseSheet}>
+                    <Link to="/settings">
                       <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                         <Settings className="h-5 w-5" />
                         Settings
@@ -171,7 +171,7 @@ const Navbar = ({ user }: NavbarProps) => {
                     </Link>
                     
                     {isAdmin && (
-                      <Link to="/admin" onClick={handleCloseSheet}>
+                      <Link to="/admin">
                         <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                           <Shield className="h-5 w-5" />
                           Admin Panel

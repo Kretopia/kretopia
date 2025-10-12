@@ -62,9 +62,8 @@ const Navbar = ({ user }: NavbarProps) => {
     navigate("/");
   };
 
-  const handleNavigation = (path: string) => {
+  const handleCloseSheet = () => {
     setIsOpen(false);
-    setTimeout(() => navigate(path), 100);
   };
 
   return (
@@ -104,104 +103,80 @@ const Navbar = ({ user }: NavbarProps) => {
                   <div className="flex flex-col gap-1 mt-6">
                     {/* Main nav items - only show on desktop (hidden on mobile where bottom nav exists) */}
                     <div className="hidden lg:flex lg:flex-col lg:gap-1">
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12"
-                        onClick={() => handleNavigation("/dashboard")}
-                      >
-                        <LayoutDashboard className="h-5 w-5" />
-                        Home
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12"
-                        onClick={() => handleNavigation("/discover")}
-                      >
-                        <Compass className="h-5 w-5" />
-                        Discover
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12"
-                        onClick={() => handleNavigation("/messages")}
-                      >
-                        <MessageCircle className="h-5 w-5" />
-                        Messages
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12"
-                        onClick={() => handleNavigation("/profile")}
-                      >
-                        <User className="h-5 w-5" />
-                        Profile
-                      </Button>
+                      <Link to="/dashboard" onClick={handleCloseSheet}>
+                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                          <LayoutDashboard className="h-5 w-5" />
+                          Home
+                        </Button>
+                      </Link>
+                      <Link to="/discover" onClick={handleCloseSheet}>
+                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                          <Compass className="h-5 w-5" />
+                          Discover
+                        </Button>
+                      </Link>
+                      <Link to="/messages" onClick={handleCloseSheet}>
+                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                          <MessageCircle className="h-5 w-5" />
+                          Messages
+                        </Button>
+                      </Link>
+                      <Link to="/profile" onClick={handleCloseSheet}>
+                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                          <User className="h-5 w-5" />
+                          Profile
+                        </Button>
+                      </Link>
                       
                       <Separator className="my-3" />
                     </div>
                     
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/circle")}
-                    >
-                      <Users className="h-5 w-5" />
-                      My Circle
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/projects")}
-                    >
-                      <FolderKanban className="h-5 w-5" />
-                      ThriveDesk
-                    </Button>
+                    <Link to="/circle" onClick={handleCloseSheet}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <Users className="h-5 w-5" />
+                        My Circle
+                      </Button>
+                    </Link>
+                    <Link to="/projects" onClick={handleCloseSheet}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <FolderKanban className="h-5 w-5" />
+                        ThriveDesk
+                      </Button>
+                    </Link>
                     
                     <Separator className="my-3" />
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/thrivepay")}
-                    >
-                      <Wallet className="h-5 w-5" />
-                      ThrivePay
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/manage-opportunities")}
-                    >
-                      <Briefcase className="h-5 w-5" />
-                      Manage Opportunities
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/membership")}
-                    >
-                      <Zap className="h-5 w-5" />
-                      Membership
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/settings")}
-                    >
-                      <Settings className="h-5 w-5" />
-                      Settings
-                    </Button>
+                    <Link to="/thrivepay" onClick={handleCloseSheet}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <Wallet className="h-5 w-5" />
+                        ThrivePay
+                      </Button>
+                    </Link>
+                    <Link to="/manage-opportunities" onClick={handleCloseSheet}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <Briefcase className="h-5 w-5" />
+                        Manage Opportunities
+                      </Button>
+                    </Link>
+                    <Link to="/membership" onClick={handleCloseSheet}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <Zap className="h-5 w-5" />
+                        Membership
+                      </Button>
+                    </Link>
+                    <Link to="/settings" onClick={handleCloseSheet}>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <Settings className="h-5 w-5" />
+                        Settings
+                      </Button>
+                    </Link>
                     
                     {isAdmin && (
-                      <>
-                        <Button 
-                          variant="ghost" 
-                          className="justify-start gap-3 h-12"
-                          onClick={() => handleNavigation("/admin")}
-                        >
+                      <Link to="/admin" onClick={handleCloseSheet}>
+                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
                           <Shield className="h-5 w-5" />
                           Admin Panel
                         </Button>
-                      </>
+                      </Link>
                     )}
                     
                     <Separator className="my-3" />

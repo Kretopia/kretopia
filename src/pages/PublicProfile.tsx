@@ -360,7 +360,7 @@ const PublicProfile = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-6">
-      <div className="container mx-auto max-w-4xl">
+      <div className="container mx-auto max-w-6xl space-y-6">
         {/* Back Button */}
         <Button
           variant="ghost"
@@ -371,135 +371,48 @@ const PublicProfile = () => {
             } else if (state?.from === 'circle') {
               navigate('/circle');
             } else {
-      navigate('/discover', { state: { cardIndex: state?.cardIndex } });
-    }
-  }}
-  className="mb-4 gap-2"
->
-  <ArrowLeft className="h-4 w-4" />
-  {location.state && (location.state as any).from === 'circle' 
-    ? 'Back to My Circle' 
-    : location.state && (location.state as any).from === 'connect' 
-    ? 'Back to Connect' 
-    : 'Back to Discover'}
-</Button>
+              navigate('/discover', { state: { cardIndex: state?.cardIndex } });
+            }
+          }}
+          className="mb-4 gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {location.state && (location.state as any).from === 'circle' 
+            ? 'Back to My Circle' 
+            : location.state && (location.state as any).from === 'connect' 
+            ? 'Back to Connect' 
+            : 'Back to Discover'}
+        </Button>
 
-{/* Render company view for company accounts */}
-{profile.account_type === 'company' ? (
-  <div className="space-y-6">
-    {/* Back to top button for company view */}
-    <CompanyProfileView
-      profile={profile}
-      reviews={reviews}
-      isOwnProfile={false}
-      onRefresh={fetchData}
-    />
-  </div>
-) : (
-<>
-{/* Profile Header */}
-        <div className="mb-6 md:mb-8 overflow-hidden rounded-2xl md:rounded-3xl border border-border bg-card shadow-card">
-          <div className="relative h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
-          
-          <div className="relative px-4 md:px-8 pb-6 md:pb-8">
-            <div className="mb-4 md:mb-6 -mt-12 md:-mt-16 flex flex-col items-start gap-3 md:gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 md:gap-4 w-full sm:w-auto">
-                <Avatar className="h-24 w-24 md:h-32 md:w-32 rounded-xl md:rounded-2xl border-4 border-card">
-                  <AvatarImage 
-                    src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
-                    alt={profile.full_name}
-                  />
-                  <AvatarFallback className="text-2xl md:text-4xl">
-                    {profile.full_name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <h1 className="text-xl md:text-3xl font-bold leading-tight">{profile.full_name}</h1>
-                    {userBadge && (
-                      <Badge 
-                        variant={userBadge === 'og' || userBadge === 'founder' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {userBadge === 'founder' ? '👑 Founder' : userBadge === 'og' ? '⭐ OG Thriver' : '🚀 Beta'}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="mb-2 text-base md:text-lg text-muted-foreground">
-                    {profile.role}
-                  </p>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs md:text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="truncate">{profile.location || 'Remote'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-3 w-3 md:h-4 md:w-4 fill-accent text-accent" />
-                      <span>4.9 (New member)</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Action buttons */}
-              {isLoggedIn ? (
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {connectionStatus === 'accepted' ? (
-                    <Button variant="outline" disabled className="gap-2">
-                      <UserCheck className="h-4 w-4" />
-                      Connected
-                    </Button>
-                  ) : isPendingReceived ? (
-                    <Button onClick={handleAcceptConnection} variant="gradient" className="gap-2">
-                      <UserCheck className="h-4 w-4" />
-                      Accept Request
-                    </Button>
-                  ) : connectionStatus === 'pending' ? (
-                    <Button variant="outline" disabled className="gap-2">
-                      <UserPlus className="h-4 w-4" />
-                      Pending
-                    </Button>
-                  ) : (
-                    <Button onClick={handleConnect} variant="gradient" className="gap-2">
-                      <UserPlus className="h-4 w-4" />
-                      Connect
-                    </Button>
-                  )}
-                  <Button onClick={handleMessage} variant="outline" className="gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    Message
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  <Button onClick={() => navigate('/auth')} variant="gradient" className="gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    Sign Up to Connect
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 md:gap-4 rounded-xl md:rounded-2xl border border-border bg-background p-4 md:p-6">
-              <div className="text-center">
-                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-primary">{stats.circle}</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Circle</div>
-              </div>
-              <div className="text-center">
-                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-secondary">{stats.projects}</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Projects</div>
-              </div>
-              <div className="text-center">
-                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-accent">{stats.responseRate}%</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Response Rate</div>
-              </div>
-            </div>
+        {/* Render company view for company accounts */}
+        {profile.account_type === 'company' ? (
+          <div className="space-y-6">
+            <CompanyProfileView
+              profile={profile}
+              reviews={reviews}
+              isOwnProfile={false}
+              onRefresh={fetchData}
+            />
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Profile Hero */}
+            <ProfileHero
+              profile={profile}
+              stats={stats}
+              isOwnProfile={false}
+              isConnected={isConnected}
+              connectionStatus={connectionStatus}
+              onConnect={handleConnect}
+              onMessage={handleMessage}
+              onShare={() => {
+                navigator.clipboard.writeText(window.location.href);
+                toast({ title: "Link copied!" });
+              }}
+            />
 
-        {/* Tabs */}
-        <Tabs defaultValue="overview" className="w-full">
+            {/* Tabs */}
+            <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
             <TabsTrigger value="overview" className="rounded-lg md:rounded-xl text-xs md:text-sm">Overview</TabsTrigger>
             {portfolioItems.length > 0 && (

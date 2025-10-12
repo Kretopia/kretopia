@@ -651,242 +651,89 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
-      <div className="container mx-auto max-w-4xl">
-        {/* Profile Header */}
-        <div className="mb-4 sm:mb-6 md:mb-8 overflow-hidden rounded-xl md:rounded-2xl lg:rounded-3xl border border-border bg-card shadow-card">
-          <div className="relative h-24 sm:h-32 md:h-48 bg-gradient-to-br from-primary via-secondary to-accent" />
-          
-          <div className="relative px-3 sm:px-4 md:px-8 pb-4 sm:pb-6 md:pb-8">
-            <div className="mb-4 md:mb-6 -mt-12 md:-mt-16 flex flex-col items-start gap-3 md:gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 md:gap-4 w-full sm:w-auto">
-                <div className="relative group">
-                  <Avatar className="h-24 w-24 md:h-32 md:w-32 rounded-xl md:rounded-2xl border-4 border-card">
-                    <AvatarImage 
-                      src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
-                      alt={profile.full_name}
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="text-2xl md:text-4xl">
-                      {profile.full_name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploadingAvatar}
-                    className="absolute inset-0 flex items-center justify-center rounded-xl md:rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
-                  >
-                    {isUploadingAvatar ? (
-                      <Loader2 className="h-6 w-6 md:h-8 md:w-8 text-white animate-spin" />
-                    ) : (
-                      <Camera className="h-6 w-6 md:h-8 md:w-8 text-white" />
-                    )}
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    className="hidden"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <h1 className="text-xl md:text-3xl font-bold leading-tight">{profile.full_name}</h1>
-                    {userBadge && (
-                      <Badge 
-                        variant={userBadge === 'og' || userBadge === 'founder' ? 'default' : 'secondary'}
-                        className="text-xs md:text-sm font-semibold"
-                      >
-                        {userBadge === 'founder' ? '👑 Founder' : userBadge === 'og' ? '⭐ OG Thriver' : '🚀 Beta'}
-                      </Badge>
-                    )}
-                    {(() => {
-                      const tierData = getTierByPoints(profile?.xp || 0);
-                      return (
-                        <Badge 
-                          variant="outline"
-                          className={`text-xs md:text-sm font-semibold bg-gradient-to-r ${tierData.color} text-white border-0`}
-                        >
-                          <span className="mr-1">{tierData.icon}</span>
-                          {tierData.displayName}
-                        </Badge>
-                      );
-                    })()}
-                  </div>
-                  <p className="mb-2 text-base md:text-lg text-muted-foreground">
-                    {profile.role}
-                  </p>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs md:text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="truncate">{profile.location || 'Remote'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-3 w-3 md:h-4 md:w-4 fill-accent text-accent" />
-                      <span>4.9 (New member)</span>
-                    </div>
-                  </div>
-                  
-                  {/* Bio */}
-                  {profile.bio && (
-                    <p className="mt-3 md:mt-4 text-sm md:text-base text-foreground/90 leading-relaxed">
-                      {profile.bio}
-                    </p>
-                  )}
-                  
-                  {/* Skills Highlights */}
-                  {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
-                    (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
-                    <div className="mt-3 md:mt-4">
-                      <div className="flex flex-wrap gap-1.5 md:gap-2">
-                        {Array.isArray(profile.professional_skills) && profile.professional_skills.slice(0, 5).map((skill: any, index: number) => (
-                          <Badge 
-                            key={`prof-${index}`} 
-                            variant="secondary"
-                            className="text-xs md:text-sm px-2 md:px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                          >
-                            {typeof skill === 'string' ? skill : skill.skill || skill.name}
-                          </Badge>
-                        ))}
-                        {Array.isArray(profile.passion_skills) && profile.passion_skills.slice(0, 3).map((skill: any, index: number) => (
-                          <Badge 
-                            key={`passion-${index}`} 
-                            variant="outline"
-                            className="text-xs md:text-sm px-2 md:px-3 py-1 border-secondary text-secondary hover:bg-secondary/10 transition-colors"
-                          >
-                            {typeof skill === 'string' ? skill : skill.skill || skill.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                {isReorderMode ? (
-                  <>
-                    <Button variant="outline" onClick={() => setIsReorderMode(false)} className="flex-1 min-w-[100px] sm:flex-none">
-                      Cancel
-                    </Button>
-                    <Button variant="gradient" onClick={handleSaveSectionOrder} className="flex-1 min-w-[120px] sm:flex-none">
-                      Save Order
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <ShareProfileDialog profile={profile} />
-                    <Button variant="outline" onClick={() => setIsReorderMode(true)} className="flex-1 min-w-[100px] sm:flex-none">
-                      Reorder
-                    </Button>
-                    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                      <DialogTrigger asChild>
-                        <Button variant="gradient" className="flex-1 min-w-[120px] sm:flex-none">
-                          <Edit className="h-4 w-4" />
-                          <span className="ml-2 hidden xs:inline">Edit Profile</span>
-                          <span className="ml-2 xs:hidden">Edit</span>
-                        </Button>
-                      </DialogTrigger>
-                  <DialogContent className="sm:max-w-[500px]">
-                    <DialogHeader>
-                      <DialogTitle>Edit Profile</DialogTitle>
-                      <DialogDescription>
-                        Update your profile information and settings
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="full_name">Full Name</Label>
-                        <Input
-                          id="full_name"
-                          value={editForm.full_name}
-                          onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="role">Role</Label>
-                        <Input
-                          id="role"
-                          value={editForm.role}
-                          onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          value={editForm.location}
-                          onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="bio">Bio</Label>
-                        <Textarea
-                          id="bio"
-                          value={editForm.bio}
-                          onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                          rows={4}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="avatar_url">Avatar URL</Label>
-                        <Input
-                          id="avatar_url"
-                          value={editForm.avatar_url}
-                          onChange={(e) => setEditForm({ ...editForm, avatar_url: e.target.value })}
-                          placeholder="https://example.com/avatar.jpg"
-                        />
-                      </div>
-                      <Button onClick={handleEditSave} className="w-full" variant="gradient">
-                        Save Changes
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                  </>
-                )}
-              </div>
-            </div>
+      <div className="container mx-auto max-w-6xl space-y-6">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleAvatarUpload}
+          className="hidden"
+        />
 
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-2 md:gap-4 rounded-xl md:rounded-2xl border border-border bg-background p-4 md:p-6">
-              <div className="text-center">
-                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-primary">{stats.circle}</div>
-                <div className="text-xs md:text-sm text-muted-foreground">My Circle</div>
-              </div>
-              <div className="text-center">
-                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-secondary">{stats.projects}</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Projects</div>
-              </div>
-              <div className="text-center">
-                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-amber-500">{(profile?.xp || 0).toLocaleString()}</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Points</div>
-              </div>
-              <div className="text-center">
-                <div className="mb-0.5 md:mb-1 text-lg md:text-2xl font-bold text-accent">{stats.responseRate}%</div>
-                <div className="text-xs md:text-sm text-muted-foreground">Response</div>
-              </div>
-            </div>
+        {/* Profile Hero */}
+        <ProfileHero
+          profile={profile}
+          stats={stats}
+          isOwnProfile={true}
+          onEdit={() => setIsEditOpen(true)}
+          onShare={handleShare}
+          onAvatarClick={() => fileInputRef.current?.click()}
+          isUploadingAvatar={isUploadingAvatar}
+        />
 
-            {/* Profile Strength Score */}
-            {profile && (
-              <>
-                <ProfileStrengthScore 
-                  profile={profile}
-                  portfolioCount={portfolioItems.length}
-                  creditsCount={credits.length}
-                  awardsCount={awards.length}
-                  pressCount={pressLinks.length}
+        {/* Edit Dialog */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Edit Profile</DialogTitle>
+              <DialogDescription>
+                Update your profile information and settings
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="full_name">Full Name</Label>
+                <Input
+                  id="full_name"
+                  value={editForm.full_name}
+                  onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
                 />
-                <TierProgressCard currentPoints={profile.xp || 0} />
-                <ProfileCompletionProgress 
-                  completion={checkProfileCompletion(profile, portfolioItems.length)}
-                  showDetails={true}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Input
+                  id="role"
+                  value={editForm.role}
+                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
                 />
-              </>
-            )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  value={editForm.location}
+                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                  rows={4}
+                />
+              </div>
+              <Button onClick={handleEditSave} className="w-full" variant="gradient">
+                Save Changes
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Profile Completion & Progress Cards */}
+        {profile && (
+          <div className="grid md:grid-cols-2 gap-4">
+            <ProfileStrengthScore 
+              profile={profile}
+              portfolioCount={portfolioItems.length}
+              creditsCount={credits.length}
+              awardsCount={awards.length}
+            />
+            <TierProgressCard currentPoints={profile.xp || 0} />
           </div>
-        </div>
+        )}
 
         {/* Profile Visibility Banner */}
         {profile && (

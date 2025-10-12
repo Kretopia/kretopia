@@ -105,100 +105,111 @@ const Navbar = ({ user }: NavbarProps) => {
                     {/* Main nav items - only show on desktop (hidden on mobile where bottom nav exists) */}
                     <div className="hidden lg:flex lg:flex-col lg:gap-1">
                       <SheetClose asChild>
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                          <Link to="/dashboard">
-                            <LayoutDashboard className="h-5 w-5" />
-                            <span>Home</span>
-                          </Link>
-                        </Button>
+                        <Link 
+                          to="/dashboard"
+                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                          <LayoutDashboard className="h-5 w-5" />
+                          <span>Home</span>
+                        </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                          <Link to="/discover">
-                            <Compass className="h-5 w-5" />
-                            <span>Discover</span>
-                          </Link>
-                        </Button>
+                        <Link 
+                          to="/discover"
+                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                          <Compass className="h-5 w-5" />
+                          <span>Discover</span>
+                        </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                          <Link to="/messages">
-                            <MessageCircle className="h-5 w-5" />
-                            <span>Messages</span>
-                          </Link>
-                        </Button>
+                        <Link 
+                          to="/messages"
+                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                          <MessageCircle className="h-5 w-5" />
+                          <span>Messages</span>
+                        </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                          <Link to="/profile">
-                            <User className="h-5 w-5" />
-                            <span>Profile</span>
-                          </Link>
-                        </Button>
+                        <Link 
+                          to="/profile"
+                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                          <User className="h-5 w-5" />
+                          <span>Profile</span>
+                        </Link>
                       </SheetClose>
                       
                       <Separator className="my-3" />
                     </div>
                     
                     <SheetClose asChild>
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                        <Link to="/circle">
-                          <Users className="h-5 w-5" />
-                          <span>My Circle</span>
-                        </Link>
-                      </Button>
+                      <Link 
+                        to="/circle"
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <Users className="h-5 w-5" />
+                        <span>My Circle</span>
+                      </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                        <Link to="/projects">
-                          <FolderKanban className="h-5 w-5" />
-                          <span>ThriveDesk</span>
-                        </Link>
-                      </Button>
+                      <Link 
+                        to="/projects"
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <FolderKanban className="h-5 w-5" />
+                        <span>ThriveDesk</span>
+                      </Link>
                     </SheetClose>
                     
                     <Separator className="my-3" />
                     <SheetClose asChild>
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                        <Link to="/thrivepay">
-                          <Wallet className="h-5 w-5" />
-                          <span>ThrivePay</span>
-                        </Link>
-                      </Button>
+                      <Link 
+                        to="/thrivepay"
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <Wallet className="h-5 w-5" />
+                        <span>ThrivePay</span>
+                      </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                        <Link to="/manage-opportunities">
-                          <Briefcase className="h-5 w-5" />
-                          <span>Manage Opportunities</span>
-                        </Link>
-                      </Button>
+                      <Link 
+                        to="/manage-opportunities"
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <Briefcase className="h-5 w-5" />
+                        <span>Manage Opportunities</span>
+                      </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                        <Link to="/membership">
-                          <Zap className="h-5 w-5" />
-                          <span>Membership</span>
-                        </Link>
-                      </Button>
+                      <Link 
+                        to="/membership"
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <Zap className="h-5 w-5" />
+                        <span>Membership</span>
+                      </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                        <Link to="/settings">
-                          <Settings className="h-5 w-5" />
-                          <span>Settings</span>
-                        </Link>
-                      </Button>
+                      <Link 
+                        to="/settings"
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <Settings className="h-5 w-5" />
+                        <span>Settings</span>
+                      </Link>
                     </SheetClose>
                     
                     {isAdmin && (
                       <SheetClose asChild>
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
-                          <Link to="/admin">
-                            <Shield className="h-5 w-5" />
-                            <span>Admin Panel</span>
-                          </Link>
-                        </Button>
+                        <Link 
+                          to="/admin"
+                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                          <Shield className="h-5 w-5" />
+                          <span>Admin Panel</span>
+                        </Link>
                       </SheetClose>
                     )}
                     

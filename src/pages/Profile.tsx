@@ -717,14 +717,14 @@ const Profile = () => {
         {/* Header Section with Banner and Avatar */}
         <div className="relative">
           {/* Gradient Banner */}
-          <div className="h-48 md:h-64 bg-gradient-to-br from-primary via-primary/80 to-accent rounded-b-3xl" />
+          <div className="h-32 md:h-40 bg-gradient-to-br from-primary via-primary/80 to-accent rounded-b-3xl" />
           
           {/* Content Over Banner */}
-          <div className="relative px-6 -mt-20">
-            <div className="flex flex-col items-center text-center space-y-4">
+          <div className="relative px-6 -mt-16">
+            <div className="flex flex-col items-center text-center space-y-3">
               {/* Avatar */}
               <div className="relative group">
-                <Avatar className="h-32 w-32 md:h-40 md:w-40 rounded-3xl border-4 border-background shadow-2xl">
+                <Avatar className="h-24 w-24 md:h-32 md:w-32 rounded-3xl border-4 border-background shadow-2xl">
                   <AvatarImage 
                     src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
                     alt={profile.full_name}

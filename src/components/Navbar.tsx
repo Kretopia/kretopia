@@ -63,8 +63,9 @@ const Navbar = ({ user }: NavbarProps) => {
     navigate("/");
   };
 
-  const handleCloseSheet = () => {
+  const handleNavigate = (path: string) => {
     setIsOpen(false);
+    navigate(path);
   };
 
   return (
@@ -104,113 +105,91 @@ const Navbar = ({ user }: NavbarProps) => {
                   <div className="flex flex-col gap-1 mt-6">
                     {/* Main nav items - only show on desktop (hidden on mobile where bottom nav exists) */}
                     <div className="hidden lg:flex lg:flex-col lg:gap-1">
-                      <SheetClose asChild>
-                        <Link 
-                          to="/dashboard"
-                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                        >
-                          <LayoutDashboard className="h-5 w-5" />
-                          <span>Home</span>
-                        </Link>
-                      </SheetClose>
-                      <SheetClose asChild>
-                        <Link 
-                          to="/discover"
-                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                        >
-                          <Compass className="h-5 w-5" />
-                          <span>Discover</span>
-                        </Link>
-                      </SheetClose>
-                      <SheetClose asChild>
-                        <Link 
-                          to="/messages"
-                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                        >
-                          <MessageCircle className="h-5 w-5" />
-                          <span>Messages</span>
-                        </Link>
-                      </SheetClose>
-                      <SheetClose asChild>
-                        <Link 
-                          to="/profile"
-                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                        >
-                          <User className="h-5 w-5" />
-                          <span>Profile</span>
-                        </Link>
-                      </SheetClose>
+                      <button
+                        onClick={() => handleNavigate("/dashboard")}
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      >
+                        <LayoutDashboard className="h-5 w-5" />
+                        <span>Home</span>
+                      </button>
+                      <button
+                        onClick={() => handleNavigate("/discover")}
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      >
+                        <Compass className="h-5 w-5" />
+                        <span>Discover</span>
+                      </button>
+                      <button
+                        onClick={() => handleNavigate("/messages")}
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                        <span>Messages</span>
+                      </button>
+                      <button
+                        onClick={() => handleNavigate("/profile")}
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      >
+                        <User className="h-5 w-5" />
+                        <span>Profile</span>
+                      </button>
                       
                       <Separator className="my-3" />
                     </div>
                     
-                    <SheetClose asChild>
-                      <Link 
-                        to="/circle"
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                      >
-                        <Users className="h-5 w-5" />
-                        <span>My Circle</span>
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link 
-                        to="/projects"
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                      >
-                        <FolderKanban className="h-5 w-5" />
-                        <span>ThriveDesk</span>
-                      </Link>
-                    </SheetClose>
+                    <button
+                      onClick={() => handleNavigate("/circle")}
+                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                    >
+                      <Users className="h-5 w-5" />
+                      <span>My Circle</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavigate("/projects")}
+                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                    >
+                      <FolderKanban className="h-5 w-5" />
+                      <span>ThriveDesk</span>
+                    </button>
                     
                     <Separator className="my-3" />
-                    <SheetClose asChild>
-                      <Link 
-                        to="/thrivepay"
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                      >
-                        <Wallet className="h-5 w-5" />
-                        <span>ThrivePay</span>
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link 
-                        to="/manage-opportunities"
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                      >
-                        <Briefcase className="h-5 w-5" />
-                        <span>Manage Opportunities</span>
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link 
-                        to="/membership"
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                      >
-                        <Zap className="h-5 w-5" />
-                        <span>Membership</span>
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link 
-                        to="/settings"
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                      >
-                        <Settings className="h-5 w-5" />
-                        <span>Settings</span>
-                      </Link>
-                    </SheetClose>
+                    <button
+                      onClick={() => handleNavigate("/thrivepay")}
+                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                    >
+                      <Wallet className="h-5 w-5" />
+                      <span>ThrivePay</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavigate("/manage-opportunities")}
+                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                    >
+                      <Briefcase className="h-5 w-5" />
+                      <span>Manage Opportunities</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavigate("/membership")}
+                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                    >
+                      <Zap className="h-5 w-5" />
+                      <span>Membership</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavigate("/settings")}
+                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                    >
+                      <Settings className="h-5 w-5" />
+                      <span>Settings</span>
+                    </button>
                     
                     {isAdmin && (
-                      <SheetClose asChild>
-                        <Link 
-                          to="/admin"
-                          className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                        >
-                          <Shield className="h-5 w-5" />
-                          <span>Admin Panel</span>
-                        </Link>
-                      </SheetClose>
+                      <button
+                        onClick={() => handleNavigate("/admin")}
+                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      >
+                        <Shield className="h-5 w-5" />
+                        <span>Admin Panel</span>
+                      </button>
                     )}
                     
                     <Separator className="my-3" />

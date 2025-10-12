@@ -100,83 +100,83 @@ const Navbar = ({ user }: NavbarProps) => {
                   <SheetHeader>
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col gap-1 mt-6" onClick={handleCloseSheet}>
+                  <div className="flex flex-col gap-1 mt-6">
                     {/* Main nav items - only show on desktop (hidden on mobile where bottom nav exists) */}
                     <div className="hidden lg:flex lg:flex-col lg:gap-1">
-                      <Link to="/dashboard">
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                        <Link to="/dashboard" onClick={handleCloseSheet}>
                           <LayoutDashboard className="h-5 w-5" />
-                          Home
-                        </Button>
-                      </Link>
-                      <Link to="/discover">
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                          <span>Home</span>
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                        <Link to="/discover" onClick={handleCloseSheet}>
                           <Compass className="h-5 w-5" />
-                          Discover
-                        </Button>
-                      </Link>
-                      <Link to="/messages">
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                          <span>Discover</span>
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                        <Link to="/messages" onClick={handleCloseSheet}>
                           <MessageCircle className="h-5 w-5" />
-                          Messages
-                        </Button>
-                      </Link>
-                      <Link to="/profile">
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                          <span>Messages</span>
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                        <Link to="/profile" onClick={handleCloseSheet}>
                           <User className="h-5 w-5" />
-                          Profile
-                        </Button>
-                      </Link>
+                          <span>Profile</span>
+                        </Link>
+                      </Button>
                       
                       <Separator className="my-3" />
                     </div>
                     
-                    <Link to="/circle">
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                    <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                      <Link to="/circle" onClick={handleCloseSheet}>
                         <Users className="h-5 w-5" />
-                        My Circle
-                      </Button>
-                    </Link>
-                    <Link to="/projects">
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <span>My Circle</span>
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                      <Link to="/projects" onClick={handleCloseSheet}>
                         <FolderKanban className="h-5 w-5" />
-                        ThriveDesk
-                      </Button>
-                    </Link>
+                        <span>ThriveDesk</span>
+                      </Link>
+                    </Button>
                     
                     <Separator className="my-3" />
-                    <Link to="/thrivepay">
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                    <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                      <Link to="/thrivepay" onClick={handleCloseSheet}>
                         <Wallet className="h-5 w-5" />
-                        ThrivePay
-                      </Button>
-                    </Link>
-                    <Link to="/manage-opportunities">
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <span>ThrivePay</span>
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                      <Link to="/manage-opportunities" onClick={handleCloseSheet}>
                         <Briefcase className="h-5 w-5" />
-                        Manage Opportunities
-                      </Button>
-                    </Link>
-                    <Link to="/membership">
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <span>Manage Opportunities</span>
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                      <Link to="/membership" onClick={handleCloseSheet}>
                         <Zap className="h-5 w-5" />
-                        Membership
-                      </Button>
-                    </Link>
-                    <Link to="/settings">
-                      <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                        <span>Membership</span>
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                      <Link to="/settings" onClick={handleCloseSheet}>
                         <Settings className="h-5 w-5" />
-                        Settings
-                      </Button>
-                    </Link>
+                        <span>Settings</span>
+                      </Link>
+                    </Button>
                     
                     {isAdmin && (
-                      <Link to="/admin">
-                        <Button variant="ghost" className="w-full justify-start gap-3 h-12">
+                      <Button variant="ghost" className="w-full justify-start gap-3 h-12" asChild>
+                        <Link to="/admin" onClick={handleCloseSheet}>
                           <Shield className="h-5 w-5" />
-                          Admin Panel
-                        </Button>
-                      </Link>
+                          <span>Admin Panel</span>
+                        </Link>
+                      </Button>
                     )}
                     
                     <Separator className="my-3" />

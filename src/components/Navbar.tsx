@@ -27,6 +27,7 @@ const Navbar = ({ user }: NavbarProps) => {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
   const isLandingPage = location.pathname === "/";
 
   useEffect(() => {
@@ -122,7 +123,10 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/ai-assistant")}
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsSupportOpen(true);
+                      }}
                     >
                       <Zap className="h-5 w-5" />
                       AI Assistant
@@ -206,6 +210,7 @@ const Navbar = ({ user }: NavbarProps) => {
           ) : null}
         </div>
       </div>
+      <SupportDialog open={isSupportOpen} onOpenChange={setIsSupportOpen} />
     </nav>
   );
 };

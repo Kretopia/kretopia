@@ -64,8 +64,8 @@ const Navbar = ({ user }: NavbarProps) => {
   };
 
   const handleNavigate = (path: string) => {
-    setIsOpen(false);
     navigate(path);
+    setTimeout(() => setIsOpen(false), 100);
   };
 
   return (

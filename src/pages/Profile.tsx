@@ -28,11 +28,6 @@ import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
-import { ProfileHero } from "@/components/profile/ProfileHero";
-import { AboutSection } from "@/components/profile/AboutSection";
-import { PortfolioGrid } from "@/components/profile/PortfolioGrid";
-import { TestimonialsSection } from "@/components/profile/TestimonialsSection";
-import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -650,8 +645,8 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
-      <div className="container mx-auto max-w-6xl space-y-6">
+    <div className="min-h-screen pb-20 lg:pb-6">
+      <div className="container mx-auto max-w-6xl">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -661,16 +656,96 @@ const Profile = () => {
           className="hidden"
         />
 
-        {/* Profile Hero */}
-        <ProfileHero
-          profile={profile}
-          stats={stats}
-          isOwnProfile={true}
-          onEdit={() => setIsEditOpen(true)}
-          onShare={handleShare}
-          onAvatarClick={() => fileInputRef.current?.click()}
-          isUploadingAvatar={isUploadingAvatar}
-        />
+        {/* Header Section with Banner and Avatar */}
+        <div className="relative">
+          {/* Gradient Banner */}
+          <div className="h-48 md:h-64 bg-gradient-to-br from-primary via-primary/80 to-accent rounded-b-3xl" />
+          
+          {/* Content Over Banner */}
+          <div className="relative px-6 -mt-20">
+            <div className="flex flex-col items-center text-center space-y-4">
+              {/* Avatar */}
+              <div className="relative group">
+                <Avatar className="h-32 w-32 md:h-40 md:w-40 rounded-3xl border-4 border-background shadow-2xl">
+                  <AvatarImage 
+                    src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
+                    alt={profile.full_name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="text-3xl md:text-5xl rounded-3xl bg-primary/10">
+                    {profile.full_name?.split(' ').map(n => n[0]).join('') || '??'}
+                  </AvatarFallback>
+                </Avatar>
+                
+                {isUploadingAvatar && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-3xl">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                )}
+                
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="absolute bottom-2 right-2 h-10 w-10 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingAvatar}
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Name and Role */}
+              <div className="space-y-2">
+                <h1 className="text-3xl md:text-4xl font-bold">{profile.full_name}</h1>
+                
+                {/* Badge */}
+                {profile.badge && (
+                  <Badge 
+                    variant={profile.badge === 'og' || profile.badge === 'founder' ? 'default' : 'secondary'}
+                    className="text-sm px-4 py-1"
+                  >
+                    {profile.badge === 'founder' ? '👑 Founder' : 
+                     profile.badge === 'og' ? '⭐ OG' : 
+                     profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
+                  </Badge>
+                )}
+                
+                {/* Role */}
+                <p className="text-lg md:text-xl text-muted-foreground font-medium">
+                  {profile.role || 'Creative Professional'}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" onClick={() => setIsEditOpen(true)} className="gap-2">
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
+                <Button variant="outline" onClick={handleShare} className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
+              </div>
+
+              {/* Stats */}
+              <div className="w-full max-w-2xl mt-6 grid grid-cols-3 gap-4 rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-4 md:p-6">
+                <div className="text-center space-y-1">
+                  <div className="text-2xl md:text-3xl font-bold text-primary">{stats.circle}</div>
+                  <div className="text-xs md:text-sm text-muted-foreground">Circle</div>
+                </div>
+                <div className="text-center space-y-1 border-x border-border">
+                  <div className="text-2xl md:text-3xl font-bold text-primary">{stats.projects}</div>
+                  <div className="text-xs md:text-sm text-muted-foreground">Projects</div>
+                </div>
+                <div className="text-center space-y-1">
+                  <div className="text-2xl md:text-3xl font-bold text-primary">{stats.responseRate}%</div>
+                  <div className="text-xs md:text-sm text-muted-foreground">Response</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
@@ -722,52 +797,41 @@ const Profile = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Profile Completion & Progress Cards */}
-        {profile && (
-          <div className="grid md:grid-cols-2 gap-4">
-            <ProfileStrengthScore 
-              profile={profile}
-              portfolioCount={portfolioItems.length}
-              creditsCount={credits.length}
-              awardsCount={awards.length}
+        {/* Content Area with Tabs */}
+        <div className="px-3 sm:px-4 md:px-6 space-y-6 mt-6">
+          {/* Profile Completion & Progress Cards */}
+          {profile && (
+            <div className="grid md:grid-cols-2 gap-4">
+              <ProfileStrengthScore 
+                profile={profile}
+                portfolioCount={portfolioItems.length}
+                creditsCount={credits.length}
+                awardsCount={awards.length}
+              />
+              <TierProgressCard currentPoints={profile.xp || 0} />
+            </div>
+          )}
+
+          {/* Profile Visibility Banner */}
+          {profile && (
+            <ProfileVisibilityBanner
+              isVisible={checkProfileCompletion(profile, portfolioItems.length).percentage === 100}
+              missingFields={checkProfileCompletion(profile, portfolioItems.length).missingFields}
             />
-            <TierProgressCard currentPoints={profile.xp || 0} />
-          </div>
-        )}
+          )}
 
-        {/* Profile Visibility Banner */}
-        {profile && (
-          <ProfileVisibilityBanner
-            isVisible={checkProfileCompletion(profile, portfolioItems.length).percentage === 100}
-            missingFields={checkProfileCompletion(profile, portfolioItems.length).missingFields}
-          />
-        )}
+          {/* Tabs */}
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="mb-6 w-full justify-start rounded-xl bg-card p-1 overflow-x-auto">
+              <TabsTrigger value="overview" className="rounded-lg text-sm">Overview</TabsTrigger>
+              <TabsTrigger value="portfolio" className="rounded-lg text-sm">Portfolio</TabsTrigger>
+              <TabsTrigger value="reviews" className="rounded-lg text-sm">Reviews</TabsTrigger>
+              <TabsTrigger value="credits" className="rounded-lg text-sm">Credits</TabsTrigger>
+              <TabsTrigger value="awards" className="rounded-lg text-sm">Awards</TabsTrigger>
+              <TabsTrigger value="stats" className="rounded-lg text-sm">Stats</TabsTrigger>
+            </TabsList>
 
-        {/* Portfolio and Reviews - Outside Tabs */}
-        <div className="space-y-4 md:space-y-6 mb-4 md:mb-6">
-          <PortfolioSection
-            items={portfolioItems}
-            isOwnProfile={true}
-            onRefresh={fetchData}
-          />
-          <ReviewsSection
-            reviews={reviews}
-            isOwnProfile={true}
-            profileUserId={profile.user_id}
-            onRefresh={fetchData}
-          />
-        </div>
-
-        {/* Tabs */}
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="mb-4 md:mb-6 w-full justify-start rounded-xl md:rounded-2xl bg-card p-1 overflow-x-auto">
-            <TabsTrigger value="overview" className="rounded-lg md:rounded-xl text-xs md:text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="credits" className="rounded-lg md:rounded-xl text-xs md:text-sm">Credits</TabsTrigger>
-            <TabsTrigger value="awards" className="rounded-lg md:rounded-xl text-xs md:text-sm">Awards</TabsTrigger>
-            <TabsTrigger value="stats" className="rounded-lg md:rounded-xl text-xs md:text-sm whitespace-nowrap">Industry Stats</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-4 md:space-y-6">
+            <TabsContent value="overview" className="space-y-4 md:space-y-6">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -849,32 +913,50 @@ const Profile = () => {
                 </div>
               </SortableContext>
             </DndContext>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="credits">
-            <CreditsSection 
-              userId={profile.user_id}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-          </TabsContent>
+            <TabsContent value="portfolio">
+              <PortfolioSection
+                items={portfolioItems}
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
 
-          <TabsContent value="awards">
-            <AwardsSection 
-              userId={profile.user_id}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-          </TabsContent>
+            <TabsContent value="reviews">
+              <ReviewsSection
+                reviews={reviews}
+                isOwnProfile={true}
+                profileUserId={profile.user_id}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
 
-          <TabsContent value="stats" className="space-y-3 md:space-y-4">
-            <IndustryStatsSection 
-              stats={industryStats}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="credits">
+              <CreditsSection 
+                userId={profile.user_id}
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
+
+            <TabsContent value="awards">
+              <AwardsSection 
+                userId={profile.user_id}
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
+
+            <TabsContent value="stats" className="space-y-3 md:space-y-4">
+              <IndustryStatsSection 
+                stats={industryStats}
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

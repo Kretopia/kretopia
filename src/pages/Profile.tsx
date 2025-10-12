@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Star, Briefcase, Share2, Edit, Camera, Loader2, Building2 } from "lucide-react";
+import { MapPin, Star, Briefcase, Share2, Edit, Camera, Loader2, Building2, Download, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from 'jspdf';
+import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
@@ -51,6 +53,8 @@ const Profile = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -65,6 +69,8 @@ const Profile = () => {
   const fetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    
+    setCurrentUserId(user.id);
 
     const { data, error } = await supabase
       .from('profiles')
@@ -367,6 +373,168 @@ const Profile = () => {
         description: "Profile updated successfully",
       });
     }
+  };
+
+  const handleDownloadEPK = async () => {
+    if (!profile) return;
+    
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      let yPosition = 20;
+
+      // Title
+      doc.setFontSize(24);
+      doc.setTextColor(59, 130, 246); // Primary color
+      doc.text('Electronic Press Kit', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 15;
+
+      // Name and Role
+      doc.setFontSize(18);
+      doc.setTextColor(0, 0, 0);
+      doc.text(profile.full_name || 'No Name', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 8;
+      
+      if (profile.role) {
+        doc.setFontSize(12);
+        doc.setTextColor(100, 100, 100);
+        doc.text(profile.role, pageWidth / 2, yPosition, { align: 'center' });
+        yPosition += 12;
+      }
+
+      // Bio
+      if (profile.bio) {
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text('About', 20, yPosition);
+        yPosition += 8;
+        doc.setFontSize(10);
+        doc.setTextColor(60, 60, 60);
+        const splitBio = doc.splitTextToSize(profile.bio, pageWidth - 40);
+        doc.text(splitBio, 20, yPosition);
+        yPosition += splitBio.length * 5 + 10;
+      }
+
+      // Skills
+      const professionalSkills = Array.isArray(profile.professional_skills) ? profile.professional_skills as any[] : [];
+      const passionSkills = Array.isArray(profile.passion_skills) ? profile.passion_skills as any[] : [];
+      const allSkills = [...professionalSkills.map((s: any) => s.name || s), ...passionSkills.map((s: any) => s.name || s)];
+      
+      if (allSkills.length > 0) {
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Skills', 20, yPosition);
+        yPosition += 8;
+        doc.setFontSize(10);
+        doc.setTextColor(60, 60, 60);
+        const skillsText = allSkills.join(', ');
+        const splitSkills = doc.splitTextToSize(skillsText, pageWidth - 40);
+        doc.text(splitSkills, 20, yPosition);
+        yPosition += splitSkills.length * 5 + 10;
+      }
+
+      // Contact Info
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Contact Information', 20, yPosition);
+      yPosition += 8;
+      doc.setFontSize(10);
+      doc.setTextColor(60, 60, 60);
+      
+      if (profile.location) {
+        doc.text(`Location: ${profile.location}`, 20, yPosition);
+        yPosition += 6;
+      }
+      if (profile.website) {
+        doc.text(`Website: ${profile.website}`, 20, yPosition);
+        yPosition += 6;
+      }
+
+      // Stats
+      yPosition += 8;
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Professional Statistics', 20, yPosition);
+      yPosition += 8;
+      doc.setFontSize(10);
+      doc.setTextColor(60, 60, 60);
+      doc.text(`Circle: ${stats.circle} connections`, 20, yPosition);
+      yPosition += 6;
+      doc.text(`Projects: ${stats.projects}`, 20, yPosition);
+      yPosition += 6;
+      doc.text(`Response Rate: ${stats.responseRate}%`, 20, yPosition);
+
+      // Save PDF
+      doc.save(`${profile.full_name || 'EPK'}_Press_Kit.pdf`);
+      
+      toast({
+        title: "Success",
+        description: "EPK downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error generating EPK:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate EPK",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadPhotos = async () => {
+    if (portfolioItems.length === 0) {
+      toast({
+        title: "No photos available",
+        description: "Add portfolio items to download press photos",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Downloading",
+        description: "Preparing your press photos...",
+      });
+
+      // Download each portfolio image
+      for (let i = 0; i < portfolioItems.length; i++) {
+        const item = portfolioItems[i] as any;
+        if (item.image_url) {
+          const link = document.createElement('a');
+          link.href = item.image_url;
+          link.download = `press-photo-${i + 1}.jpg`;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Add delay between downloads to prevent browser blocking
+          if (i < portfolioItems.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: `Downloaded ${portfolioItems.length} press photos`,
+      });
+    } catch (error) {
+      console.error('Error downloading photos:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download photos",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleContactClick = () => {
+    toast({
+      title: "Note",
+      description: "This is your own profile. Share your profile link with others so they can contact you!",
+    });
   };
 
   if (!profile) {
@@ -813,7 +981,12 @@ const Profile = () => {
                       </a>
                     </p>
                   )}
-                  <Button variant="gradient" size="sm" className="w-full mt-2">
+                  <Button 
+                    variant="gradient" 
+                    size="sm" 
+                    className="w-full mt-2"
+                    onClick={handleContactClick}
+                  >
                     Contact for Collaboration
                   </Button>
                 </div>
@@ -834,10 +1007,20 @@ const Profile = () => {
             <h2 className="text-2xl font-bold mb-2">Download Media Kit</h2>
             <p className="text-muted-foreground mb-6">Get all my professional materials in one place</p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Button variant="gradient" size="lg">
+              <Button 
+                variant="gradient" 
+                size="lg"
+                onClick={handleDownloadEPK}
+              >
+                <FileText className="mr-2 h-5 w-5" />
                 Download Full EPK (PDF)
               </Button>
-              <Button variant="outline" size="lg">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={handleDownloadPhotos}
+              >
+                <Download className="mr-2 h-5 w-5" />
                 Download Press Photos
               </Button>
             </div>

@@ -13,7 +13,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetClose,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useState, useEffect } from "react";
@@ -63,12 +62,10 @@ const Navbar = ({ user }: NavbarProps) => {
     navigate("/");
   };
 
-  const handleNavigate = (path: string) => {
+  const handleNavigation = (path: string) => {
+    console.log('[Navbar] Navigating to:', path);
     setIsOpen(false);
-    // Small delay to allow sheet to start closing before navigation
-    requestAnimationFrame(() => {
-      navigate(path);
-    });
+    navigate(path);
   };
 
   return (
@@ -101,98 +98,111 @@ const Navbar = ({ user }: NavbarProps) => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[85vw] sm:w-[400px] transition-transform duration-150">
+                <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
                   <SheetHeader>
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
                     {/* Main nav items - only show on desktop (hidden on mobile where bottom nav exists) */}
                     <div className="hidden lg:flex lg:flex-col lg:gap-1">
-                      <button
-                        onClick={() => handleNavigate("/dashboard")}
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12"
+                        onClick={() => handleNavigation("/dashboard")}
                       >
                         <LayoutDashboard className="h-5 w-5" />
-                        <span>Home</span>
-                      </button>
-                      <button
-                        onClick={() => handleNavigate("/discover")}
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                        Home
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12"
+                        onClick={() => handleNavigation("/discover")}
                       >
                         <Compass className="h-5 w-5" />
-                        <span>Discover</span>
-                      </button>
-                      <button
-                        onClick={() => handleNavigate("/messages")}
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                        Discover
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12"
+                        onClick={() => handleNavigation("/messages")}
                       >
                         <MessageCircle className="h-5 w-5" />
-                        <span>Messages</span>
-                      </button>
-                      <button
-                        onClick={() => handleNavigate("/profile")}
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                        Messages
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12"
+                        onClick={() => handleNavigation("/profile")}
                       >
                         <User className="h-5 w-5" />
-                        <span>Profile</span>
-                      </button>
+                        Profile
+                      </Button>
                       
                       <Separator className="my-3" />
                     </div>
                     
-                    <button
-                      onClick={() => handleNavigate("/circle")}
-                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/circle")}
                     >
                       <Users className="h-5 w-5" />
-                      <span>My Circle</span>
-                    </button>
-                    <button
-                      onClick={() => handleNavigate("/projects")}
-                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      My Circle
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/projects")}
                     >
                       <FolderKanban className="h-5 w-5" />
-                      <span>ThriveDesk</span>
-                    </button>
+                      ThriveDesk
+                    </Button>
                     
                     <Separator className="my-3" />
-                    <button
-                      onClick={() => handleNavigate("/thrivepay")}
-                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/thrivepay")}
                     >
                       <Wallet className="h-5 w-5" />
-                      <span>ThrivePay</span>
-                    </button>
-                    <button
-                      onClick={() => handleNavigate("/manage-opportunities")}
-                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      ThrivePay
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/manage-opportunities")}
                     >
                       <Briefcase className="h-5 w-5" />
-                      <span>Manage Opportunities</span>
-                    </button>
-                    <button
-                      onClick={() => handleNavigate("/membership")}
-                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      Manage Opportunities
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/membership")}
                     >
                       <Zap className="h-5 w-5" />
-                      <span>Membership</span>
-                    </button>
-                    <button
-                      onClick={() => handleNavigate("/settings")}
-                      className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
+                      Membership
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/settings")}
                     >
                       <Settings className="h-5 w-5" />
-                      <span>Settings</span>
-                    </button>
+                      Settings
+                    </Button>
                     
                     {isAdmin && (
-                      <button
-                        onClick={() => handleNavigate("/admin")}
-                        className="flex items-center gap-3 h-12 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-left w-full"
-                      >
-                        <Shield className="h-5 w-5" />
-                        <span>Admin Panel</span>
-                      </button>
+                      <>
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12"
+                          onClick={() => handleNavigation("/admin")}
+                        >
+                          <Shield className="h-5 w-5" />
+                          Admin Panel
+                        </Button>
+                      </>
                     )}
                     
                     <Separator className="my-3" />

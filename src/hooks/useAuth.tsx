@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 
@@ -9,66 +9,37 @@ interface SubscriptionInfo {
   subscription_end: string | null;
 }
 
-const CACHE_KEY = 'subscription_cache';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo>(() => {
-    // Initialize from cache
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      try {
-        const { data, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp < CACHE_DURATION) {
-          return data;
-        }
-      } catch (e) {
-        localStorage.removeItem(CACHE_KEY);
-      }
-    }
-    return {
-      tier: 'free',
-      subscribed: false,
-      product_id: null,
-      subscription_end: null,
-    };
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo>({
+    tier: 'free',
+    subscribed: false,
+    product_id: null,
+    subscription_end: null,
   });
 
-  const lastCheckRef = useRef<number>(0);
-  const checkInProgressRef = useRef<boolean>(false);
-
-  const checkSubscription = async (force = false) => {
-    // Debounce: Don't check more than once per 30 seconds unless forced
-    const now = Date.now();
-    if (!force && (now - lastCheckRef.current < 30000 || checkInProgressRef.current)) {
-      return;
-    }
-
-    checkInProgressRef.current = true;
-    lastCheckRef.current = now;
-
+  const checkSubscription = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        checkInProgressRef.current = false;
-        return;
-      }
+      if (!user) return;
+
+      console.log('[useAuth] Checking subscription for user:', user.id);
 
       // Fetch subscription info directly from profiles table
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('subscription_tier, subscription_status, subscription_product_id, subscription_end_date')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .maybeSingle(); // Use maybeSingle to avoid errors if no row found
 
       if (error) {
         console.error('[useAuth] Error fetching profile:', error);
-        checkInProgressRef.current = false;
-        return;
+        throw error;
       }
+      
+      console.log('[useAuth] Profile data:', profile);
 
       if (profile) {
         const newSubscriptionInfo = {
@@ -77,61 +48,43 @@ export const useAuth = () => {
           product_id: profile.subscription_product_id || null,
           subscription_end: profile.subscription_end_date || null,
         };
-        
-        // Cache the result
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          data: newSubscriptionInfo,
-          timestamp: Date.now()
-        }));
-        
+        console.log('[useAuth] Setting subscription info:', newSubscriptionInfo);
         setSubscriptionInfo(newSubscriptionInfo);
       }
     } catch (error) {
       console.error('[useAuth] Error checking subscription:', error);
-    } finally {
-      checkInProgressRef.current = false;
     }
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener FIRST - MUST be synchronous
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // ONLY check subscription on sign in, not on token refresh
-        if (session?.user && event === 'SIGNED_IN') {
-          checkSubscription(true);
+        // Defer subscription check to avoid deadlock
+        if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          setTimeout(() => {
+            checkSubscription();
+          }, 0);
         }
       }
     );
 
-    // Check for existing session
+    // THEN check for existing session
     supabase.auth.getSession()
-      .then(({ data: { session } }) => {
+      .then(({ data: { session }, error }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Only check if cache is stale
+        // Defer subscription check
         if (session?.user) {
-          const cached = localStorage.getItem(CACHE_KEY);
-          let shouldCheck = true;
-          
-          if (cached) {
-            try {
-              const { timestamp } = JSON.parse(cached);
-              shouldCheck = Date.now() - timestamp >= CACHE_DURATION;
-            } catch (e) {
-              // Cache corrupted, check
-            }
-          }
-          
-          if (shouldCheck) {
+          setTimeout(() => {
             checkSubscription();
-          }
+          }, 0);
         }
       })
       .catch((error) => {

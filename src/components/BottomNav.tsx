@@ -31,7 +31,7 @@ const BottomNav = () => {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-background/98 backdrop-blur-xl safe-area-inset-bottom" role="navigation" aria-label="Mobile navigation">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-background/98 backdrop-blur-xl" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }} role="navigation" aria-label="Mobile navigation">
         <div className="flex items-center justify-around px-2 py-3 relative">
           {/* First two items */}
           {navItems.slice(0, 2).map(({ path, icon: Icon, label }) => {

@@ -211,7 +211,7 @@ const Dashboard = () => {
         title="Dashboard - ThriveIN"
         description="Your creative hub. Track your progress, connect with creators, and discover new opportunities on ThriveIN."
       />
-      <div className="min-h-screen p-4 sm:p-6">
+      <div className="p-4 sm:p-6 pb-24 lg:pb-6">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-6 sm:mb-8 flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-center">

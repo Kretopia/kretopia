@@ -521,31 +521,26 @@ const PublicProfile = () => {
             </div>
 
             {/* MID SECTION: Portfolio (Visual First) */}
-            {portfolioItems.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
-                <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
-                <PortfolioSection 
-                  items={portfolioItems} 
+            <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+              <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
+              <PortfolioSection 
+                items={portfolioItems} 
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            </div>
+
+            {/* MID SECTION: Reviews & Social Stats Grid */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Reviews */}
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <ReviewsSection 
+                  reviews={reviews} 
                   isOwnProfile={false}
+                  profileUserId={profile.user_id}
                   onRefresh={fetchData}
                 />
               </div>
-            )}
-
-            {/* MID SECTION: Reviews & Social Stats Grid */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Reviews */}
-              {reviews.length > 0 && (
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                  <h2 className="text-2xl font-bold mb-6">Reviews</h2>
-                  <ReviewsSection 
-                    reviews={reviews} 
-                    isOwnProfile={false}
-                    profileUserId={profile.user_id}
-                    onRefresh={fetchData}
-                  />
-                </div>
-              )}
 
               {/* Social Stats */}
               {(profile.instagram_url || profile.twitter_url || profile.linkedin_url || 

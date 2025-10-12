@@ -166,15 +166,21 @@ export default function ThrivePay() {
 
       <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">ThrivePay</h1>
-              <p className="text-muted-foreground">
-                Secure payments powered by Stripe Connect
-              </p>
-            </div>
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">ThrivePay</h1>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Shield className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
             {getStatusBadge()}
+            {connectStatus === "active" && (
+              <Button onClick={handleManageAccount} variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Manage
+              </Button>
+            )}
           </div>
         </div>
 
@@ -264,16 +270,16 @@ export default function ThrivePay() {
         {connectStatus === "active" && (
           <>
             <div className="grid gap-6 md:grid-cols-3 mb-8">
-              <Card>
+              <Card className="bg-gradient-to-br from-primary via-primary/90 to-accent border-0">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Available Balance</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-primary-foreground/80">Available Balance</CardTitle>
+                  <DollarSign className="h-4 w-4 text-primary-foreground/60" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-3xl font-bold text-primary-foreground">
                     ${balance.available.toFixed(2)}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-primary-foreground/80 mt-1">
                     Ready to transfer
                   </p>
                 </CardContent>
@@ -285,7 +291,7 @@ export default function ThrivePay() {
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-3xl font-bold">
                     ${balance.pending.toFixed(2)}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -300,7 +306,7 @@ export default function ThrivePay() {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-3xl font-bold">
                     ${(balance.available + balance.pending).toFixed(2)}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">

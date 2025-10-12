@@ -50,6 +50,7 @@ const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
 const ProjectTemplates = lazy(() => import("./pages/ProjectTemplates"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
+const Wallet = lazy(() => import("./pages/Wallet"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
@@ -148,6 +149,7 @@ const AppContent = () => {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
+            <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
             <Route path="/project-templates" element={<ProtectedRoute><ProjectTemplates /></ProtectedRoute>} />
             <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
             <Route path="/terms" element={<Terms />} />

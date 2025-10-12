@@ -64,8 +64,11 @@ const Navbar = ({ user }: NavbarProps) => {
   };
 
   const handleNavigate = (path: string) => {
-    navigate(path);
-    setTimeout(() => setIsOpen(false), 100);
+    setIsOpen(false);
+    // Small delay to allow sheet to start closing before navigation
+    requestAnimationFrame(() => {
+      navigate(path);
+    });
   };
 
   return (

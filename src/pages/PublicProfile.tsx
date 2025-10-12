@@ -16,7 +16,11 @@ import { SkillsSection } from "@/components/profile/SkillsSection";
 import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { CreditsSection } from "@/components/profile/CreditsSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
-
+import { ProfileHero } from "@/components/profile/ProfileHero";
+import { AboutSection } from "@/components/profile/AboutSection";
+import { PortfolioGrid } from "@/components/profile/PortfolioGrid";
+import { TestimonialsSection } from "@/components/profile/TestimonialsSection";
+import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 
 interface Profile {

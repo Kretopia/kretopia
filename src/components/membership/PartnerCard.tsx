@@ -85,86 +85,117 @@ export const PartnerCard = ({
     (tierRequired === "creator_pro" && userTier === "creator_pro");
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-border/50 bg-card/50 backdrop-blur-sm">
       {(imageUrl || logoUrl) && (
-        <div className="h-48 bg-muted relative overflow-hidden">
+        <div className="h-48 bg-gradient-to-br from-muted via-muted/80 to-muted/60 relative overflow-hidden">
           <img
             src={imageUrl || logoUrl}
             alt={name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {!canAccess && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-              <Badge variant="secondary" className="text-lg">
-                Creator Pro Required
-              </Badge>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-black/40 flex items-center justify-center backdrop-blur-sm">
+              <div className="text-center">
+                <Badge variant="secondary" className="text-base px-4 py-2 bg-background/90 backdrop-blur-sm">
+                  🔒 Creator Pro Required
+                </Badge>
+              </div>
             </div>
           )}
         </div>
       )}
       
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-semibold mb-1">{name}</h3>
-            <Badge variant="outline" className="mb-2">{type}</Badge>
+      <div className="p-6 space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{name}</h3>
+            <Badge variant="secondary" className="capitalize text-xs font-medium">
+              {type}
+            </Badge>
             {address && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
-                <MapPin className="h-4 w-4" />
-                <span>{address}{city && `, ${city}`}</span>
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-3">
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="line-clamp-1">{address}{city && `, ${city}`}</span>
               </div>
             )}
           </div>
         </div>
 
         {description && (
-          <p className="text-sm text-muted-foreground mb-4">{description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+            {description}
+          </p>
         )}
 
         {discountValue && canAccess && (
-          <div className="bg-primary/5 rounded-lg p-4 mb-4">
-            <p className="font-semibold text-primary mb-2">
-              {discountValue} {discountType === "percentage" ? "% OFF" : "OFF"}
-            </p>
-            {redemptionCode && (
-              <div className="flex items-center gap-2">
-                <code className="bg-background px-3 py-1 rounded text-sm flex-1">
-                  {redemptionCode}
-                </code>
-                <Button size="sm" variant="outline" onClick={copyCode}>
-                  {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 p-4">
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-3">
+                <Badge className="bg-primary text-primary-foreground font-bold text-lg px-3 py-1">
+                  {discountValue}{discountType === "percentage" ? "%" : ""} OFF
+                </Badge>
               </div>
-            )}
+              {redemptionCode && (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-background/80 backdrop-blur-sm px-4 py-2.5 rounded-lg border border-border/50">
+                    <code className="text-sm font-mono font-semibold tracking-wide">
+                      {redemptionCode}
+                    </code>
+                  </div>
+                  <Button 
+                    size="icon" 
+                    variant="outline" 
+                    onClick={copyCode}
+                    className="h-10 w-10 flex-shrink-0"
+                  >
+                    {copied ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="absolute -right-6 -bottom-6 text-6xl opacity-5">💰</div>
           </div>
         )}
 
-        {canAccess && (
-          <div className="flex gap-2">
-            {redemptionUrl && (
-              <Button variant="outline" className="flex-1" asChild>
-                <a href={redemptionUrl} target="_blank" rel="noopener noreferrer">
-                  Redeem <ExternalLink className="h-4 w-4 ml-2" />
-                </a>
-              </Button>
-            )}
-            {pointsPerVisit && (
-              <Button 
-                onClick={handleCheckIn} 
-                disabled={checking}
-                className="flex-1"
-              >
-                Check In (+{pointsPerVisit} pts)
-              </Button>
-            )}
-          </div>
-        )}
-
-        {!canAccess && (
-          <Button className="w-full" asChild>
-            <a href="/subscription">Upgrade to Access</a>
-          </Button>
-        )}
+        <div className="pt-2">
+          {canAccess ? (
+            <div className="flex gap-2">
+              {redemptionUrl && (
+                <Button 
+                  variant="default" 
+                  className="flex-1 group/btn" 
+                  asChild
+                >
+                  <a href={redemptionUrl} target="_blank" rel="noopener noreferrer">
+                    Redeem Offer
+                    <ExternalLink className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                  </a>
+                </Button>
+              )}
+              {pointsPerVisit && (
+                <Button 
+                  onClick={handleCheckIn} 
+                  disabled={checking}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  {checking ? "Checking in..." : `Check In (+${pointsPerVisit} pts)`}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Button className="w-full group/btn bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity" asChild>
+              <a href="/subscription">
+                Upgrade to Access
+                <ExternalLink className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+              </a>
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );

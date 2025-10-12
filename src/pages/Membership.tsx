@@ -272,41 +272,127 @@ export default function Membership() {
         </TabsContent>
 
         <TabsContent value="partners" className="mt-6">
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Partner Discounts</h2>
-              <p className="text-muted-foreground">
-                Exclusive offers and discounts from our partners
-              </p>
-            </div>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Partner Discounts
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Exclusive offers and discounts from our curated partners
+            </p>
           </div>
           
           {partners.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Percent className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No Partner Discounts Yet</h3>
-              <p className="text-muted-foreground">
-                Check back soon for exclusive member discounts
-              </p>
+            <Card className="p-16 text-center border-dashed">
+              <div className="max-w-md mx-auto">
+                <div className="mb-6 inline-flex p-6 rounded-full bg-primary/10">
+                  <Percent className="h-12 w-12 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">No Partner Discounts Yet</h3>
+                <p className="text-muted-foreground text-lg">
+                  Check back soon for exclusive member discounts and perks
+                </p>
+              </div>
             </Card>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
-              {partners.map((partner) => (
-                <PartnerCard
-                  key={partner.id}
-                  id={partner.id}
-                  name={partner.partner_name}
-                  type={partner.category}
-                  description={partner.description}
-                  discountValue={partner.discount_value}
-                  discountType={partner.discount_type}
-                  redemptionCode={partner.redemption_code}
-                  redemptionUrl={partner.redemption_url}
-                  logoUrl={partner.partner_logo_url}
-                  tierRequired={partner.tier_required}
-                  userTier={profile?.subscription_tier || "free"}
-                />
-              ))}
+            <div className="space-y-10">
+              {(() => {
+                // Group partners by category
+                const groupedPartners = partners.reduce((acc, partner) => {
+                  const category = partner.category || 'other';
+                  if (!acc[category]) acc[category] = [];
+                  acc[category].push(partner);
+                  return acc;
+                }, {} as Record<string, any[]>);
+
+                // Category metadata with icons and descriptions
+                const categoryMeta: Record<string, { icon: string; title: string; description: string; gradient: string }> = {
+                  wellness: {
+                    icon: '🧘',
+                    title: 'Wellness & Health',
+                    description: 'Self-care, fitness, and mental health partners',
+                    gradient: 'from-green-500/10 via-emerald-500/5 to-teal-500/10'
+                  },
+                  software: {
+                    icon: '💻',
+                    title: 'Software & Tools',
+                    description: 'Digital tools and platforms for creators',
+                    gradient: 'from-blue-500/10 via-indigo-500/5 to-purple-500/10'
+                  },
+                  services: {
+                    icon: '🎯',
+                    title: 'Professional Services',
+                    description: 'Business and creative services',
+                    gradient: 'from-orange-500/10 via-amber-500/5 to-yellow-500/10'
+                  },
+                  education: {
+                    icon: '📚',
+                    title: 'Education & Learning',
+                    description: 'Courses, workshops, and training',
+                    gradient: 'from-pink-500/10 via-rose-500/5 to-red-500/10'
+                  },
+                  equipment: {
+                    icon: '🎬',
+                    title: 'Equipment & Gear',
+                    description: 'Production equipment and creative tools',
+                    gradient: 'from-violet-500/10 via-purple-500/5 to-fuchsia-500/10'
+                  },
+                  other: {
+                    icon: '✨',
+                    title: 'More Benefits',
+                    description: 'Additional partner offers',
+                    gradient: 'from-gray-500/10 via-slate-500/5 to-zinc-500/10'
+                  }
+                };
+
+                return Object.entries(groupedPartners).map(([category, categoryPartners]: [string, any[]]) => {
+                  const meta = categoryMeta[category] || categoryMeta.other;
+                  
+                  return (
+                    <div key={category} className="space-y-4">
+                      {/* Category Header */}
+                      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${meta.gradient} border border-border/50 p-6 backdrop-blur-sm`}>
+                        <div className="relative z-10">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-4xl">{meta.icon}</span>
+                            <div>
+                              <h3 className="text-2xl font-bold">{meta.title}</h3>
+                              <p className="text-sm text-muted-foreground">{meta.description}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background/60 backdrop-blur-sm border border-border/50">
+                            <Gift className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-medium">{categoryPartners.length} {categoryPartners.length === 1 ? 'offer' : 'offers'} available</span>
+                          </div>
+                        </div>
+                        {/* Decorative element */}
+                        <div className="absolute -right-8 -bottom-8 opacity-10">
+                          <div className="text-[120px]">{meta.icon}</div>
+                        </div>
+                      </div>
+
+                      {/* Partners Grid */}
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {categoryPartners.map((partner) => (
+                          <PartnerCard
+                            key={partner.id}
+                            id={partner.id}
+                            name={partner.partner_name}
+                            type={partner.category}
+                            description={partner.description}
+                            discountValue={partner.discount_value}
+                            discountType={partner.discount_type}
+                            redemptionCode={partner.redemption_code}
+                            redemptionUrl={partner.redemption_url}
+                            logoUrl={partner.partner_logo_url}
+                            tierRequired={partner.tier_required}
+                            userTier={profile?.subscription_tier || "free"}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
         </TabsContent>

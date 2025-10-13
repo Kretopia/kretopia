@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Verified, MessageCircle, UserPlus, Share2, Edit, Camera } from "lucide-react";
+import { MapPin, Star, Verified, MessageCircle, UserPlus, Share2, Edit, Camera, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierByPoints } from "@/lib/tierSystem";
 
@@ -17,6 +17,7 @@ interface ProfileHeroProps {
   onEdit?: () => void;
   onAvatarClick?: () => void;
   isUploadingAvatar?: boolean;
+  skills?: any[];
 }
 
 export const ProfileHero = ({
@@ -30,7 +31,8 @@ export const ProfileHero = ({
   onShare,
   onEdit,
   onAvatarClick,
-  isUploadingAvatar
+  isUploadingAvatar,
+  skills = []
 }: ProfileHeroProps) => {
   const tier = getTierByPoints(profile.points || 0);
   const isCompany = profile.account_type === 'company';
@@ -51,162 +53,178 @@ export const ProfileHero = ({
     ? (profile.company_logo_url || profile.avatar_url)
     : profile.avatar_url;
 
+  // Get top 3 skills
+  const topSkills = Array.isArray(skills) 
+    ? skills.filter((s: any) => s.category === 'professional').slice(0, 3)
+    : [];
+
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-lg">
-      {/* Cover Image with Gradient Overlay */}
-      <div className="relative h-64 md:h-80 bg-gradient-to-br from-primary/20 via-accent/20 to-primary/10 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1600')] bg-cover bg-center opacity-10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
-        
-        {/* Tier Badge - Top Right */}
-        {!isOwnProfile && tier.displayName && tier.displayName !== 'Spark' && (
-          <div className="absolute top-6 right-6">
-            <Badge 
-              className={cn(
-                "gap-2 px-4 py-2 text-sm font-semibold backdrop-blur-sm bg-gradient-to-r",
-                tier.color
-              )}
-            >
-              <span className="text-base">{tier.icon}</span>
-              {tier.displayName}
-            </Badge>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="relative px-6 md:px-10 pb-8">
-        {/* Avatar & Quick Actions */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 -mt-20">
-          {/* Avatar Section */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6">
-            <div className="relative group">
-              <Avatar className="h-32 w-32 md:h-40 md:w-40 rounded-2xl border-4 border-card shadow-2xl">
-                <AvatarImage 
-                  src={displayAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
-                  alt={displayName}
-                  className="object-cover"
-                />
-                <AvatarFallback className="text-3xl md:text-5xl rounded-2xl">
-                  {displayName.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              
-              {isOwnProfile && (
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="absolute bottom-2 right-2 h-10 w-10 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={onAvatarClick}
-                  disabled={isUploadingAvatar}
-                >
-                  {isUploadingAvatar ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
-                  ) : (
-                    <Camera className="h-4 w-4" />
-                  )}
-                </Button>
-              )}
-            </div>
-
-            {/* Name & Info */}
-            <div className="flex-1 space-y-2">
-              <div className="flex items-start gap-3 flex-wrap">
-                <h1 className="text-3xl md:text-4xl font-bold leading-tight">{displayName}</h1>
-                {profile.verified_metrics && (
-                  <Badge variant="secondary" className="gap-1">
-                    <Verified className="h-3 w-3 text-primary" />
-                    Verified
-                  </Badge>
-                )}
-                {profile.badge && (
-                  <Badge 
-                    variant={profile.badge === 'og' || profile.badge === 'founder' ? 'default' : 'secondary'}
-                  >
-                    {profile.badge === 'founder' ? '👑 Founder' : 
-                     profile.badge === 'og' ? '⭐ OG' : 
-                     profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
-                  </Badge>
-                )}
-              </div>
-              
-              <p className="text-lg md:text-xl text-muted-foreground font-medium">
-                {displayRole}
-              </p>
-              
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4" />
-                  <span>{displayLocation || 'Remote'}</span>
-                </div>
-                {profile.average_rating && (
-                  <div className="flex items-center gap-1.5">
-                    <Star className="h-4 w-4 fill-accent text-accent" />
-                    <span className="font-medium">{profile.average_rating.toFixed(1)}</span>
-                    <span className="text-muted-foreground/60">({profile.total_reviews || 0} reviews)</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            {isOwnProfile ? (
-              <>
-                <Button variant="outline" onClick={onEdit} className="gap-2">
-                  <Edit className="h-4 w-4" />
-                  Edit Profile
-                </Button>
-                <Button variant="outline" onClick={onShare} className="gap-2">
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </Button>
-              </>
-            ) : (
-              <>
-                {connectionStatus === 'accepted' ? (
-                  <Button variant="outline" disabled className="gap-2">
-                    <Star className="h-4 w-4 fill-primary text-primary" />
-                    Connected
-                  </Button>
-                ) : connectionStatus === 'pending' ? (
-                  <Button variant="outline" disabled className="gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    Pending
-                  </Button>
+    <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-6">
+      {/* Main Profile Container - Instagram Style */}
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+        {/* Left: Avatar */}
+        <div className="flex justify-center md:justify-start">
+          <div className="relative group">
+            <Avatar className="h-20 w-20 sm:h-32 sm:w-32 md:h-36 md:w-36 rounded-full border-2 border-border">
+              <AvatarImage 
+                src={displayAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
+                alt={displayName}
+                className="object-cover"
+              />
+              <AvatarFallback className="text-2xl sm:text-4xl md:text-5xl">
+                {displayName.split(' ').map(n => n[0]).join('')}
+              </AvatarFallback>
+            </Avatar>
+            
+            {isOwnProfile && (
+              <Button
+                size="icon"
+                variant="secondary"
+                className="absolute bottom-0 right-0 h-8 w-8 sm:h-10 sm:w-10 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={onAvatarClick}
+                disabled={isUploadingAvatar}
+              >
+                {isUploadingAvatar ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
                 ) : (
-                  <Button variant="default" onClick={onConnect} className="gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    Connect
-                  </Button>
+                  <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
                 )}
-                <Button variant="outline" onClick={onMessage} className="gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  Message
-                </Button>
-                <Button variant="ghost" size="icon" onClick={onShare}>
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </>
+              </Button>
             )}
           </div>
         </div>
 
-        {/* Stats Bar */}
-        <div className="mt-8 grid grid-cols-3 gap-4 rounded-2xl border border-border bg-background/50 backdrop-blur-sm p-6">
-          <div className="text-center space-y-1">
-            <div className="text-3xl font-bold text-primary">{stats.circle}</div>
-            <div className="text-sm text-muted-foreground">Connections</div>
+        {/* Right: Profile Info */}
+        <div className="flex-1 space-y-4">
+          {/* Name & Actions Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <h1 className="text-xl sm:text-2xl font-semibold">{displayName}</h1>
+            
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2">
+              {isOwnProfile ? (
+                <>
+                  <Button variant="secondary" size="sm" onClick={onEdit} className="gap-2 flex-1 sm:flex-none">
+                    <Edit className="h-3 w-3" />
+                    Edit Profile
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={onShare} className="gap-2 flex-1 sm:flex-none">
+                    <Share2 className="h-3 w-3" />
+                    Share
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {connectionStatus === 'accepted' ? (
+                    <Button variant="secondary" size="sm" className="gap-2 flex-1 sm:flex-none">
+                      <Star className="h-3 w-3 fill-primary text-primary" />
+                      Connected
+                    </Button>
+                  ) : connectionStatus === 'pending' ? (
+                    <Button variant="secondary" size="sm" disabled className="gap-2 flex-1 sm:flex-none">
+                      <UserPlus className="h-3 w-3" />
+                      Pending
+                    </Button>
+                  ) : (
+                    <Button variant="default" size="sm" onClick={onConnect} className="gap-2 flex-1 sm:flex-none">
+                      <UserPlus className="h-3 w-3" />
+                      Connect
+                    </Button>
+                  )}
+                  <Button variant="secondary" size="sm" onClick={onMessage} className="gap-2 flex-1 sm:flex-none">
+                    <MessageCircle className="h-3 w-3" />
+                    Message
+                  </Button>
+                  <Button variant="ghost" size="sm" className="p-2" onClick={onShare}>
+                    <Share2 className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
-          <div className="text-center space-y-1 border-x border-border">
-            <div className="text-3xl font-bold text-primary">{stats.projects}</div>
-            <div className="text-sm text-muted-foreground">Projects</div>
+
+          {/* Stats Row */}
+          <div className="flex gap-6 sm:gap-8">
+            <div className="text-center sm:text-left">
+              <div className="font-semibold">{stats.circle}</div>
+              <div className="text-sm text-muted-foreground">connections</div>
+            </div>
+            <div className="text-center sm:text-left">
+              <div className="font-semibold">{stats.projects}</div>
+              <div className="text-sm text-muted-foreground">projects</div>
+            </div>
+            <div className="text-center sm:text-left">
+              <div className="font-semibold">{stats.responseRate}%</div>
+              <div className="text-sm text-muted-foreground">response</div>
+            </div>
           </div>
-          <div className="text-center space-y-1">
-            <div className="text-3xl font-bold text-primary">{stats.responseRate}%</div>
-            <div className="text-sm text-muted-foreground">Response Rate</div>
+
+          {/* Name, Role & Badges */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold">{displayName}</span>
+              {profile.verified_metrics && (
+                <Badge variant="secondary" className="gap-1 h-5">
+                  <Verified className="h-3 w-3 text-primary" />
+                  <span className="text-xs">Verified</span>
+                </Badge>
+              )}
+              {profile.badge && (
+                <Badge 
+                  variant={profile.badge === 'og' || profile.badge === 'founder' ? 'default' : 'secondary'}
+                  className="h-5 text-xs"
+                >
+                  {profile.badge === 'founder' ? '👑 Founder' : 
+                   profile.badge === 'og' ? '⭐ OG' : 
+                   profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
+                </Badge>
+              )}
+            </div>
+            
+            {displayRole && (
+              <div className="flex items-center gap-2 text-sm">
+                <Briefcase className="h-3 w-3 text-muted-foreground" />
+                <span>{displayRole}</span>
+              </div>
+            )}
+            
+            {displayLocation && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-3 w-3" />
+                <span>{displayLocation}</span>
+              </div>
+            )}
+
+            {profile.average_rating && (
+              <div className="flex items-center gap-1.5 text-sm">
+                <Star className="h-3 w-3 fill-accent text-accent" />
+                <span className="font-medium">{profile.average_rating.toFixed(1)}</span>
+                <span className="text-muted-foreground">({profile.total_reviews || 0} reviews)</span>
+              </div>
+            )}
           </div>
+
+          {/* Bio */}
+          {profile.bio && (
+            <div className="text-sm leading-relaxed">
+              {profile.bio}
+            </div>
+          )}
+
+          {/* Top Skills */}
+          {topSkills.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {topSkills.map((skill: any, index: number) => (
+                <Badge 
+                  key={index}
+                  variant="secondary"
+                  className="text-xs"
+                >
+                  {skill.skill}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

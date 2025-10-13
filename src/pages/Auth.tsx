@@ -39,10 +39,16 @@ const Auth = () => {
   
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
-  // Redirect if already authenticated & fetch opportunities count
+  // Redirect if already authenticated & fetch opportunities count & pre-fill invite code
   useEffect(() => {
     if (user) {
       navigate(redirectTo);
+    }
+    
+    // Pre-fill invite code from URL
+    const inviteFromUrl = searchParams.get("inviteCode");
+    if (inviteFromUrl) {
+      setInviteCode(inviteFromUrl);
     }
     
     // Fetch opportunities count for social proof
@@ -54,7 +60,7 @@ const Auth = () => {
       setOpportunitiesCount(count || 0);
     };
     fetchCount();
-  }, [user, navigate, redirectTo]);
+  }, [user, navigate, redirectTo, searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

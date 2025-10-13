@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.get-onboarding-matches]
 verify_jwt = true
 
+[functions.send-waitlist-invite]
+verify_jwt = false
+
 [functions.notify-swipe]
 verify_jwt = true
 

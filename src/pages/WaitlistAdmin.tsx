@@ -23,6 +23,10 @@ interface WaitlistEntry {
   why_join: string | null;
   status: string;
   created_at: string;
+  ai_score: number | null;
+  ai_decision: string | null;
+  ai_reasoning: string | null;
+  invite_code: string | null;
 }
 
 const WaitlistAdmin = () => {
@@ -131,13 +135,34 @@ const WaitlistAdmin = () => {
             </p>
           </div>
         </div>
-        <Badge variant={
-          entry.status === "approved" ? "default" :
-          entry.status === "rejected" ? "destructive" : "secondary"
-        }>
-          {entry.status}
-        </Badge>
+        <div className="flex flex-col items-end gap-2">
+          <Badge variant={
+            entry.status === "approved" || entry.status === "auto_approved" ? "default" :
+            entry.status === "rejected" ? "destructive" : "secondary"
+          }>
+            {entry.status}
+          </Badge>
+          {entry.ai_score !== null && (
+            <Badge variant="outline" className="text-xs">
+              AI Score: {entry.ai_score}/100
+            </Badge>
+          )}
+        </div>
       </div>
+
+      {entry.ai_reasoning && (
+        <div className="mb-3 p-3 bg-accent/50 rounded-lg">
+          <p className="text-xs font-medium mb-1">🤖 AI Analysis:</p>
+          <p className="text-xs text-muted-foreground">{entry.ai_reasoning}</p>
+        </div>
+      )}
+
+      {entry.invite_code && (
+        <div className="mb-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+          <p className="text-xs font-medium mb-1">Invite Code:</p>
+          <p className="text-sm font-mono font-bold text-primary">{entry.invite_code}</p>
+        </div>
+      )}
 
       {entry.bio && (
         <div className="mb-3">

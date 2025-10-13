@@ -2616,12 +2616,17 @@ export type Database = {
       }
       waitlist: {
         Row: {
+          ai_decision: string | null
+          ai_reasoning: string | null
+          ai_score: number | null
           bio: string | null
           created_at: string | null
           email: string
           full_name: string
           id: string
           instagram_url: string | null
+          invite_code: string | null
+          invite_sent_at: string | null
           linkedin_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -2634,12 +2639,17 @@ export type Database = {
           why_join: string | null
         }
         Insert: {
+          ai_decision?: string | null
+          ai_reasoning?: string | null
+          ai_score?: number | null
           bio?: string | null
           created_at?: string | null
           email: string
           full_name: string
           id?: string
           instagram_url?: string | null
+          invite_code?: string | null
+          invite_sent_at?: string | null
           linkedin_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -2652,12 +2662,17 @@ export type Database = {
           why_join?: string | null
         }
         Update: {
+          ai_decision?: string | null
+          ai_reasoning?: string | null
+          ai_score?: number | null
           bio?: string | null
           created_at?: string | null
           email?: string
           full_name?: string
           id?: string
           instagram_url?: string | null
+          invite_code?: string | null
+          invite_sent_at?: string | null
           linkedin_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null

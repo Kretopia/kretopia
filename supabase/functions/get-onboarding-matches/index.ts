@@ -152,9 +152,9 @@ Return ONLY valid JSON array (top 6):
 
     // Build matched profiles with AI scores
     const rankedMatches = scores
-      .sort((a, b) => b.score - a.score)
+      .sort((a: any, b: any) => b.score - a.score)
       .slice(0, 6)
-      .map(scoreData => {
+      .map((scoreData: any) => {
         const profile = potentialMatches[scoreData.index];
         return {
           user_id: profile.user_id,
@@ -176,7 +176,7 @@ Return ONLY valid JSON array (top 6):
   } catch (error) {
     console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

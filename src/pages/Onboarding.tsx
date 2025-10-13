@@ -14,10 +14,12 @@ import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loade
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
+import { MatchedProfilesStep } from "@/components/onboarding/MatchedProfilesStep";
 
 const STEPS = [
   { id: 1, title: "Profile", icon: Users },
   { id: 2, title: "Skills", icon: Award },
+  { id: 3, title: "Connect", icon: Sparkles },
 ];
 
 interface Skill {
@@ -133,6 +135,9 @@ export default function Onboarding() {
         });
       }
       analytics.onboardingStep(2, "skills_added");
+    }
+
+    if (currentStep === 3) {
       await completeOnboarding();
       return;
     }
@@ -246,7 +251,7 @@ export default function Onboarding() {
     }
   };
 
-  const progress = (currentStep / 2) * 100;
+  const progress = (currentStep / 3) * 100;
 
   return (
     <>
@@ -405,33 +410,39 @@ export default function Onboarding() {
           </div>
         )}
 
-        <div className="flex gap-3 mt-8">
-          {currentStep > 1 && (
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep(currentStep - 1)}
-              disabled={loading}
-            >
-              Back
-            </Button>
-          )}
-          <Button
-            onClick={handleNext}
-            disabled={loading}
-            className="flex-1"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Setting up...
-              </>
-            ) : currentStep === 2 ? (
-              "Complete & Start Matching"
-            ) : (
-              "Continue"
+        {currentStep === 3 && (
+          <MatchedProfilesStep onComplete={completeOnboarding} />
+        )}
+
+        {currentStep !== 3 && (
+          <div className="flex gap-3 mt-8">
+            {currentStep > 1 && (
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep(currentStep - 1)}
+                disabled={loading}
+              >
+                Back
+              </Button>
             )}
-          </Button>
-        </div>
+            <Button
+              onClick={handleNext}
+              disabled={loading}
+              className="flex-1"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Setting up...
+                </>
+              ) : currentStep === 3 ? (
+                "Complete & Start Discovering"
+              ) : (
+                "Continue"
+              )}
+            </Button>
+          </div>
+        )}
         
         <ImageCropDialog
           imageUrl={tempImageUrl}

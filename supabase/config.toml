@@ -1,5 +1,11 @@
 project_id = "kwmcocsitwssrtzkdojh"
 
+[functions.validate-waitlist-ai]
+verify_jwt = false
+
+[functions.get-onboarding-matches]
+verify_jwt = true
+
 [functions.notify-swipe]
 verify_jwt = true
 

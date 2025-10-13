@@ -10,7 +10,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest' | 'activity-digest' | 'streak-warning';
+  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest' | 'activity-digest' | 'streak-warning' | 'swipe';
   data: {
     userName?: string;
     opportunityTitle?: string;
@@ -35,6 +35,9 @@ interface EmailRequest {
     streakCount?: number;
     hasFreezes?: boolean;
     freezesAvailable?: number;
+    swiperName?: string;
+    swiperRole?: string;
+    swiperAvatar?: string;
   };
 }
 
@@ -197,6 +200,22 @@ const generateEmailContent = (type: string, data: any) => {
             <p>${freezeMessage}</p>
             <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Visit ThriveIN Now</a>
             <p style="color: #666; margin-top: 30px;">Keep the momentum going!<br>The ThriveIN Team</p>
+          </div>
+        `
+      };
+    
+    case 'swipe':
+      return {
+        subject: "💫 Someone's Interested in You!",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8B5CF6;">Someone's Interested! 💫</h1>
+            <p>Hi ${data.userName},</p>
+            ${data.swiperAvatar ? `<div style="text-align: center; margin: 20px 0;"><img src="${data.swiperAvatar}" alt="Profile" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;"></div>` : ''}
+            <p><strong>${data.swiperName}</strong> (${data.swiperRole}) wants to connect with you on ThriveIN!</p>
+            <p>Check out their profile and swipe right to match and start collaborating together.</p>
+            <a href="${baseUrl}/discover" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">See Who's Interested</a>
+            <p style="color: #666; margin-top: 30px;">Don't miss out on new connections!<br>The ThriveIN Team</p>
           </div>
         `
       };

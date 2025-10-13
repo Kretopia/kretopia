@@ -540,6 +540,20 @@ const Discover = () => {
             action_text: 'Check Them Out',
             image_url: senderProfile?.avatar_url,
           });
+
+          // Send email and push notifications via edge function
+          try {
+            await supabase.functions.invoke('notify-swipe', {
+              body: {
+                recipientId: currentCard.user_id,
+                swiperName: senderProfile?.full_name || 'Someone',
+                swiperRole: senderProfile?.role || 'A creator',
+                swiperAvatar: senderProfile?.avatar_url,
+              }
+            });
+          } catch (notifyError) {
+            console.error('Failed to send notifications:', notifyError);
+          }
         }
       }
 

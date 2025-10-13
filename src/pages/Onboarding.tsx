@@ -97,11 +97,18 @@ export default function Onboarding() {
     if (currentStep === 2) {
       if (selectedSkills.length === 0) {
         toast({
-          title: "Select at least one skill",
-          description: "This helps us match you with the right people",
+          title: "Add some skills",
+          description: "Select 3-5 skills to help us match you with opportunities",
           variant: "destructive",
         });
         return;
+      }
+      
+      if (selectedSkills.length < 3) {
+        toast({
+          title: "Tip: Add more skills",
+          description: "3-5 skills help our AI find better matches for you",
+        });
       }
       analytics.onboardingStep(2, "skills_added");
       await completeOnboarding();

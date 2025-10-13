@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User, Loader2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import {
@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -243,14 +244,14 @@ const Auth = () => {
 
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-12">
+    <div className="flex min-h-screen items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
+        <div className="mb-6 sm:mb-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary">
             <Sparkles className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h1 className="mb-2 text-4xl font-bold">Welcome to ThriveIN</h1>
-          <p className="text-muted-foreground">
+          <h1 className="mb-2 text-3xl sm:text-4xl font-bold">Welcome to ThriveIN</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             {searchParams.get("redirect")?.includes("/opportunity/") 
               ? "Create an account to apply for this opportunity" 
               : "The AI-powered creative network where talent meets opportunity"}
@@ -258,9 +259,6 @@ const Auth = () => {
           <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               ✨ 7 AI Features
-            </span>
-            <span className="flex items-center gap-1">
-              🤝 22 Creators
             </span>
             <span className="flex items-center gap-1">
               💼 {opportunitiesCount || 0}+ Opportunities
@@ -276,7 +274,7 @@ const Auth = () => {
 
           <TabsContent value="signin">
 
-            <form onSubmit={handleSignIn} className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-4 sm:space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
                 <Input
@@ -289,7 +287,8 @@ const Auth = () => {
                     setEmailError("");
                   }}
                   required
-                  className={emailError ? "border-destructive" : ""}
+                  className={`h-11 sm:h-10 text-base ${emailError ? "border-destructive" : ""}`}
+                  autoComplete="email"
                 />
                 {emailError && (
                   <p className="text-sm text-destructive flex items-center gap-1">
@@ -310,7 +309,8 @@ const Auth = () => {
                     setPasswordError("");
                   }}
                   required
-                  className={passwordError ? "border-destructive" : ""}
+                  className={`h-11 sm:h-10 text-base ${passwordError ? "border-destructive" : ""}`}
+                  autoComplete="current-password"
                 />
                 {passwordError && (
                   <p className="text-sm text-destructive flex items-center gap-1">
@@ -326,7 +326,14 @@ const Auth = () => {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
               
               <div className="mt-4 text-center">
@@ -343,7 +350,7 @@ const Auth = () => {
 
           <TabsContent value="signup">
 
-            <form onSubmit={handleSignUp} className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-4 sm:space-y-5">
               {/* Prominent waitlist option */}
               <div className="rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 mb-4 border border-primary/20">
                 <div className="flex items-start gap-3">
@@ -403,7 +410,8 @@ const Auth = () => {
                     setInviteError("");
                   }}
                   required
-                  className={inviteError ? "border-destructive" : ""}
+                  className={`h-11 sm:h-10 text-base ${inviteError ? "border-destructive" : ""}`}
+                  autoComplete="off"
                 />
                 {inviteError && (
                   <p className="text-sm text-destructive flex items-center gap-1">
@@ -425,7 +433,8 @@ const Auth = () => {
                     setEmailError("");
                   }}
                   required
-                  className={emailError ? "border-destructive" : ""}
+                  className={`h-11 sm:h-10 text-base ${emailError ? "border-destructive" : ""}`}
+                  autoComplete="email"
                 />
                 {emailError && (
                   <p className="text-sm text-destructive flex items-center gap-1">
@@ -435,7 +444,7 @@ const Auth = () => {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
+                <Label htmlFor="signup-password">Password *</Label>
                 <Input
                   id="signup-password"
                   type="password"
@@ -447,7 +456,8 @@ const Auth = () => {
                   }}
                   required
                   minLength={8}
-                  className={passwordError ? "border-destructive" : ""}
+                  className={`h-11 sm:h-10 text-base ${passwordError ? "border-destructive" : ""}`}
+                  autoComplete="new-password"
                 />
                 {passwordError && (
                   <p className="text-sm text-destructive flex items-center gap-1">
@@ -455,9 +465,7 @@ const Auth = () => {
                     {passwordError}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Must be at least 8 characters
-                </p>
+                <PasswordStrengthIndicator password={password} />
               </div>
               <Button
                 type="submit"
@@ -466,7 +474,14 @@ const Auth = () => {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? "Creating account..." : "Create Account"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </form>
           </TabsContent>

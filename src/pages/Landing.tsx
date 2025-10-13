@@ -11,6 +11,7 @@ import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { PartnerBenefitsSection } from "@/components/landing/PartnerBenefitsSection";
 import { Button } from "@/components/ui/button";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { ActivityFeed } from "@/components/landing/ActivityFeed";
 
 const Landing = () => {
   const [opportunitiesCount, setOpportunitiesCount] = useState<number>(0);
@@ -61,6 +62,47 @@ const Landing = () => {
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
               <span>24-48hr approval</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Activity Feed Section */}
+      <section className="px-6 py-20 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid gap-8 lg:grid-cols-2 items-start">
+            <div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+                <Sparkles className="h-4 w-4" />
+                <span>Live Activity</span>
+              </div>
+              <h2 className="mb-4 text-3xl font-bold leading-tight tracking-tight md:text-4xl">
+                See What's{" "}
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  Happening Now
+                </span>
+              </h2>
+              <p className="text-lg leading-relaxed text-muted-foreground mb-6">
+                Real creators joining, sharing work, and posting opportunities every day. 
+                Join a thriving community of creatives building together.
+              </p>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  <span>New creators daily</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+                  <span>Active opportunities</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
+                  <span>Fresh portfolios</span>
+                </div>
+              </div>
+            </div>
+            <div className="lg:sticky lg:top-24">
+              <ActivityFeed />
             </div>
           </div>
         </div>

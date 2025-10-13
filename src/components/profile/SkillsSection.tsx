@@ -246,41 +246,54 @@ Thank you so much!`;
   const SkillBadge = ({ skill }: { skill: Skill }) => {
     const endorsements = endorsementCounts[skill.skill] || 0;
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2">
-        <div className="flex-1">
-          <p className="font-medium text-sm">{skill.skill}</p>
-          <p className="text-xs text-muted-foreground">{skill.category}</p>
-          {endorsements > 0 && (
-            <div className="flex items-center gap-1 mt-1">
-              <ThumbsUp className="h-3 w-3 text-primary" />
-              <span className="text-xs text-muted-foreground">
-                {endorsements} {endorsements === 1 ? 'endorsement' : 'endorsements'}
-              </span>
+      <div className="rounded-xl border border-border bg-card hover:bg-accent/5 transition-colors p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-base mb-1 truncate">{skill.skill}</h4>
+            <p className="text-xs text-muted-foreground mb-2">{skill.category}</p>
+            
+            {/* Skill level stars */}
+            <div className="flex items-center gap-1 mb-2">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-3.5 w-3.5 ${i < skill.level ? 'fill-primary text-primary' : 'fill-muted text-muted'}`}
+                />
+              ))}
             </div>
-          )}
-        </div>
-        <div className="flex gap-0.5">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`h-3 w-3 ${i < skill.level ? 'fill-primary text-primary' : 'text-muted'}`}
-            />
-          ))}
+            
+            {/* Endorsement count */}
+            {endorsements > 0 && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10">
+                <ThumbsUp className="h-3 w-3 text-primary" />
+                <span className="text-xs font-medium text-primary">
+                  {endorsements} {endorsements === 1 ? 'endorsement' : 'endorsements'}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Skills & Expertise</h3>
+        <div>
+          <h3 className="text-xl font-semibold">Skills & Expertise</h3>
+          {(professionalSkills.length > 0 || passionSkills.length > 0) && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {professionalSkills.length + passionSkills.length} {professionalSkills.length + passionSkills.length === 1 ? 'skill' : 'skills'}
+            </p>
+          )}
+        </div>
         {isOwnProfile && (
           <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
             <DialogTrigger asChild>
-              <Button variant="gradient" size="sm">
+              <Button variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Edit Skills
+                Edit
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
@@ -443,11 +456,16 @@ Thank you so much!`;
 
       {professionalSkills.length > 0 && (
         <div className="space-y-3">
-          <h4 className="font-semibold flex items-center gap-2 text-sm">
-            <Briefcase className="h-4 w-4 text-primary" />
-            Professional Skills
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Briefcase className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm">Professional Skills</h4>
+              <p className="text-xs text-muted-foreground">{professionalSkills.length} {professionalSkills.length === 1 ? 'skill' : 'skills'}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
             {professionalSkills.map((skill, idx) => (
               <SkillBadge key={idx} skill={skill} />
             ))}
@@ -457,11 +475,16 @@ Thank you so much!`;
 
       {passionSkills.length > 0 && (
         <div className="space-y-3">
-          <h4 className="font-semibold flex items-center gap-2 text-sm">
-            <Sparkles className="h-4 w-4 text-secondary" />
-            Passion Projects & Hobbies
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-secondary" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm">Passion Projects</h4>
+              <p className="text-xs text-muted-foreground">{passionSkills.length} {passionSkills.length === 1 ? 'skill' : 'skills'}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
             {passionSkills.map((skill, idx) => (
               <SkillBadge key={idx} skill={skill} />
             ))}
@@ -478,7 +501,7 @@ Thank you so much!`;
 
       {/* Request Endorsements Button */}
       {isOwnProfile && (professionalSkills.length > 0 || passionSkills.length > 0) && (
-        <div className="pt-4 border-t border-border">
+        <div className="pt-2">
           <Dialog open={endorsementDialogOpen} onOpenChange={setEndorsementDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="gradient" className="w-full" size="lg">

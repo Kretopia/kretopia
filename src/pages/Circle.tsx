@@ -21,6 +21,8 @@ import { useNavigate } from "react-router-dom";
 import { trackEvent, EventCategory } from "@/lib/analytics";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
+import { SmartConnectionSuggestions } from "@/components/circle/SmartConnectionSuggestions";
+import { ActivityEngagementCard } from "@/components/circle/ActivityEngagementCard";
 
 interface Connection {
   id: string;
@@ -729,45 +731,78 @@ const Circle = () => {
                   <Sparkles className="h-5 w-5 text-yellow-500" />
                   Activity Feed
                 </h2>
-                <p className="text-sm text-muted-foreground">See what your circle is creating</p>
+                <p className="text-sm text-muted-foreground">See what your circle is creating and engage</p>
               </div>
             </div>
-            <ScrollArea className="h-[600px]">
-              <div className="space-y-4">
-                {activityFeed.length === 0 ? (
-                  <Card className="p-8 text-center">
-                    <Sparkles className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-muted-foreground">No activity yet from your circle</p>
-                    <p className="text-sm text-muted-foreground mt-1">Connect with creators to see their portfolio work</p>
-                  </Card>
-                ) : (
-                  activityFeed.map(item => {
-                    const key = `${item.activity_type}-${item.id}`;
-                    switch (item.activity_type) {
-                      case 'portfolio':
-                        return <PortfolioItemCard key={key} item={item} />;
-                      case 'award':
-                        return <AwardActivityCard key={key} item={item} />;
-                      case 'press':
-                        return <PressActivityCard key={key} item={item} />;
-                      case 'credit':
-                        return <CreditActivityCard key={key} item={item} />;
-                      default:
-                        return null;
-                    }
-                  })
-                )}
+
+            {activityFeed.length === 0 ? (
+              <div className="space-y-6">
+                <Card className="p-12 text-center border-2 border-dashed">
+                  <div className="max-w-md mx-auto space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                      <Sparkles className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Your Feed is Waiting</h3>
+                    <p className="text-muted-foreground">
+                      Connect with creators to see their latest work, achievements, and updates right here
+                    </p>
+                    <div className="flex gap-3 justify-center pt-4">
+                      <Button onClick={() => setActiveTab("connect")} className="gap-2">
+                        <Users className="h-4 w-4" />
+                        Discover Creators
+                      </Button>
+                      <Button onClick={() => setShowInviteDialog(true)} variant="outline" className="gap-2">
+                        <Share2 className="h-4 w-4" />
+                        Invite Friends
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Show smart suggestions even when feed is empty */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Recommended for You
+                  </h3>
+                  <SmartConnectionSuggestions />
+                </div>
               </div>
-            </ScrollArea>
+            ) : (
+              <ScrollArea className="h-[600px]">
+                <div className="space-y-4">
+                  {activityFeed.map((item, idx) => {
+                    const key = `${item.activity_type}-${item.id}`;
+                    // Use new engagement card for better interaction
+                    return (
+                      <ActivityEngagementCard
+                        key={key}
+                        activity={item}
+                        onLike={(id) => console.log('Liked:', id)}
+                        onComment={(id) => console.log('Comment:', id)}
+                        onShare={(id) => {
+                          toast({ title: "Shared to your network!" });
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            )}
           </TabsContent>
 
           <TabsContent value="connect" className="space-y-4">
+            {/* Smart Suggestions First */}
+            <div className="mb-6">
+              <SmartConnectionSuggestions />
+            </div>
+
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <Search className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Discover Creators</h2>
+                <h2 className="text-xl font-semibold">Browse All Creators</h2>
               </div>
-              <p className="text-sm text-muted-foreground">Find and connect with new people</p>
+              <p className="text-sm text-muted-foreground">Search and explore the entire community</p>
             </div>
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

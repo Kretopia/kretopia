@@ -23,6 +23,10 @@ import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore"
 import { TierProgressCard } from "@/components/membership/TierProgressCard";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
+import { ProfileOptimizationHub } from "@/components/profile/ProfileOptimizationHub";
+import { PortfolioAnalytics } from "@/components/profile/PortfolioAnalytics";
+import { SkillsVerification } from "@/components/profile/SkillsVerification";
+import { ProfileVisibilityDashboard } from "@/components/profile/ProfileVisibilityDashboard";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { getTierByPoints } from "@/lib/tierSystem";
@@ -735,6 +739,24 @@ const Profile = () => {
 
         {/* Content Area */}
         <div className="px-3 sm:px-4 md:px-6 space-y-6 mt-6">
+          {/* Profile Optimization Hub - Enhanced with AI insights */}
+          {profile && (
+            <ProfileOptimizationHub
+              completion={checkProfileCompletion(profile, portfolioItems.length)}
+              viewCount={portfolioItems.reduce((sum: number, item: any) => sum + (item.view_count || 0), 0)}
+              matchRate={profile.level ? profile.level * 10 : 0}
+              profileViews={stats.circle * 5}
+            />
+          )}
+
+          {/* Profile Visibility Dashboard */}
+          {profile && (
+            <ProfileVisibilityDashboard
+              profile={profile}
+              portfolioCount={portfolioItems.length}
+            />
+          )}
+
           {/* Profile Completion & Progress Cards */}
           {profile && (
             <div id="overview" className="grid md:grid-cols-2 gap-4 scroll-mt-20">
@@ -743,6 +765,7 @@ const Profile = () => {
                 portfolioCount={portfolioItems.length}
                 creditsCount={credits.length}
                 awardsCount={awards.length}
+                pressCount={pressLinks.length}
               />
               <TierProgressCard currentPoints={profile.xp || 0} />
             </div>
@@ -784,6 +807,20 @@ const Profile = () => {
             </div>
           </div>
 
+          {/* Skills Verification - New Enhancement */}
+          {profile && Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0 && (
+            <SkillsVerification
+              skills={profile.professional_skills as any}
+              userId={profile.user_id}
+              onSkillsUpdate={(updatedSkills) => {
+                setProfile({
+                  ...profile,
+                  professional_skills: updatedSkills as any
+                });
+              }}
+            />
+          )}
+
           {/* MID SECTION: Portfolio - Always Show */}
           <div id="portfolio" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
             <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
@@ -793,6 +830,11 @@ const Profile = () => {
               onRefresh={fetchData}
             />
           </div>
+
+          {/* Portfolio Analytics - New Enhancement */}
+          {profile && portfolioItems.length > 0 && (
+            <PortfolioAnalytics userId={profile.user_id} />
+          )}
 
           {/* MID SECTION: Reviews & Social Stats Grid */}
           <div id="reviews-stats" className="grid gap-6 lg:grid-cols-2 scroll-mt-20">

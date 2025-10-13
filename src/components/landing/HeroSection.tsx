@@ -20,16 +20,15 @@ export const HeroSection = () => {
           </div>
           
           <h1 className="mb-8 text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
-            Where Creatives:
-            <br />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Get Paid or Trade
+              Find Your Next Collaborator.
             </span>
+            <br />
+            Land Your Next Gig.
           </h1>
           
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Find paid gigs and barter deals for creators, designers, filmmakers, musicians, and all creative professionals. Match with brands 
-            and collaborators, negotiate your terms, and bring projects to life—all in one platform.
+            The platform designed for creatives who want to work together and get paid for their craft.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">

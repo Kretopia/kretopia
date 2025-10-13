@@ -133,7 +133,12 @@ Format: [{"id": "...", "match_reason": "Why this is a great match (1 sentence)",
     }
 
     const aiData = await aiResponse.json();
-    const recommendedItems = JSON.parse(aiData.choices[0].message.content);
+    let content = aiData.choices[0].message.content;
+    
+    // Strip markdown code blocks if present
+    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    
+    const recommendedItems = JSON.parse(content);
 
     // Fetch full details
     let recommendations;

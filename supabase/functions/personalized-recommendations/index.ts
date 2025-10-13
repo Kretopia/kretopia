@@ -37,15 +37,29 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(20);
 
+    const { activeTab } = await req.json();
+    
     const { data: opportunities } = await supabaseClient
       .from("opportunities")
       .select("*")
       .eq("status", "active")
       .limit(50);
 
+    const { data: creators } = await supabaseClient
+      .from("profiles")
+      .select("user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills")
+      .neq("user_id", user.id)
+      .not("full_name", "is", null)
+      .not("bio", "is", null)
+      .not("avatar_url", "is", null)
+      .limit(50);
+
     // Call Lovable AI for personalized recommendations
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    const isCreatorMode = activeTab === "creators";
+    const dataToAnalyze = isCreatorMode ? creators : opportunities;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -59,8 +73,9 @@ serve(async (req) => {
           {
             role: "system",
             content: `You are an AI recommendation engine for ThriveIN, a platform for creatives.
-Analyze the user's profile, recent activity, and available opportunities to recommend the top 5 most relevant opportunities.
-Return ONLY a JSON array of opportunity IDs ranked by relevance, like: ["id1", "id2", "id3", "id4", "id5"]`,
+Analyze the user's profile, recent activity, and available ${isCreatorMode ? "creators" : "opportunities"} to recommend the top 3 most relevant matches.
+Return ONLY a JSON array of ${isCreatorMode ? "creator user_ids" : "opportunity IDs"} ranked by relevance with match reasons.
+Format: [{"id": "...", "match_reason": "Why this is a great match (1 sentence)", "ai_match_score": 85}]`,
           },
           {
             role: "user",
@@ -78,14 +93,23 @@ Return ONLY a JSON array of opportunity IDs ranked by relevance, like: ["id1", "
                 target: s.target_id,
                 action: s.action,
               })) || [],
-              available_opportunities: opportunities?.map((o) => ({
-                id: o.id,
-                title: o.title,
-                type: o.type,
-                skills: o.skills || [],
-                tags: o.tags || [],
-                compensation: o.compensation,
-              })) || [],
+              available_items: isCreatorMode
+                ? creators?.map((c) => ({
+                    id: c.user_id,
+                    name: c.full_name,
+                    role: c.role,
+                    bio: c.bio,
+                    skills: [...(c.professional_skills || []), ...(c.passion_skills || [])],
+                    location: c.location,
+                  })) || []
+                : opportunities?.map((o) => ({
+                    id: o.id,
+                    title: o.title,
+                    type: o.type,
+                    skills: o.skills || [],
+                    tags: o.tags || [],
+                    compensation: o.compensation,
+                  })) || [],
             }),
           },
         ],
@@ -109,21 +133,36 @@ Return ONLY a JSON array of opportunity IDs ranked by relevance, like: ["id1", "
     }
 
     const aiData = await aiResponse.json();
-    const recommendedIds = JSON.parse(aiData.choices[0].message.content);
+    const recommendedItems = JSON.parse(aiData.choices[0].message.content);
 
-    // Fetch full opportunity details
-    const { data: recommendations } = await supabaseClient
-      .from("opportunities")
-      .select("*")
-      .in("id", recommendedIds);
-
-    // Sort by AI ranking
-    const sortedRecommendations = recommendedIds
-      .map((id: string) => recommendations?.find((r) => r.id === id))
-      .filter(Boolean);
+    // Fetch full details
+    let recommendations;
+    if (isCreatorMode) {
+      const ids = recommendedItems.map((item: any) => item.id);
+      const { data } = await supabaseClient
+        .from("profiles")
+        .select("user_id, full_name, role, bio, avatar_url, location, professional_skills")
+        .in("user_id", ids);
+      
+      recommendations = recommendedItems.map((item: any) => {
+        const profile = data?.find((p) => p.user_id === item.id);
+        return profile ? { ...profile, ...item } : null;
+      }).filter(Boolean);
+    } else {
+      const ids = recommendedItems.map((item: any) => item.id);
+      const { data } = await supabaseClient
+        .from("opportunities")
+        .select("*")
+        .in("id", ids);
+      
+      recommendations = recommendedItems.map((item: any) => {
+        const opp = data?.find((o) => o.id === item.id);
+        return opp ? { ...opp, ...item } : null;
+      }).filter(Boolean);
+    }
 
     return new Response(
-      JSON.stringify({ recommendations: sortedRecommendations }),
+      JSON.stringify({ recommendations }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

@@ -26,6 +26,9 @@ import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
 import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { FirstCollaborationPrompt } from "@/components/discover/FirstCollaborationPrompt";
+import { DailyRecommendations } from "@/components/discover/DailyRecommendations";
+import { SmartFilterSuggestions } from "@/components/discover/SmartFilterSuggestions";
+import { AIMatchRecommendations } from "@/components/discover/AIMatchRecommendations";
 
 type CardType = "creator" | "opportunity";
 
@@ -730,6 +733,20 @@ const Discover = () => {
           </div>
         )}
 
+        {/* Daily AI Recommendations */}
+        <div className="mb-4">
+          <DailyRecommendations
+            activeTab={activeTab}
+            onSelect={(id, type) => {
+              // Find and jump to the card
+              const cardIndex = cards.findIndex(c => c.id === id);
+              if (cardIndex !== -1) {
+                setCurrentIndex(cardIndex);
+              }
+            }}
+          />
+        </div>
+
         <div className="grid lg:grid-cols-[250px_1fr] gap-4 sm:gap-6">
           <div className="hidden lg:block">
             {activeTab === 'creators' ? (
@@ -767,6 +784,20 @@ const Discover = () => {
                 />
               )}
             </div>
+
+            {/* Smart Filter Suggestions */}
+            <SmartFilterSuggestions
+              activeTab={activeTab}
+              currentFilters={activeTab === 'creators' ? creatorFilters : opportunityFilters}
+              onApplySuggestion={(filter, value) => {
+                if (activeTab === 'creators') {
+                  setCreatorFilters(prev => ({ ...prev, [filter]: value }));
+                } else {
+                  setOpportunityFilters(prev => ({ ...prev, [filter]: value }));
+                }
+              }}
+              className="mb-4"
+            />
 
             {hasMoreCards && (
               <>
@@ -953,16 +984,17 @@ const Discover = () => {
                 
                 <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{currentCard.description}</p>
 
-                {currentCard.type === "creator" && currentCard.ai_match_score && currentCard.ai_match_score >= 70 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full mt-3 text-xs sm:text-sm flex items-center justify-center gap-2"
-                    onClick={() => setShowMatchExplanation(true)}
-                  >
-                    <Sparkles className="h-3 w-3" />
-                    Why this match?
-                  </Button>
+                {/* AI Match Insights */}
+                {currentCard.type === "creator" && (
+                  <div className="mt-4">
+                    <AIMatchRecommendations
+                      matchScore={currentCard.ai_match_score}
+                      matchReasons={currentCard.match_reasons}
+                      onExplainMatch={() => setShowMatchExplanation(true)}
+                      socialStats={currentCard.socialStats}
+                      showLocked={!currentCard.ai_match_score && subscriptionTier === 'free'}
+                    />
+                  </div>
                 )}
 
                 {currentCard.type === "creator" && currentCard.user_id && (

@@ -13,9 +13,11 @@ interface ShareProfileDialogProps {
     bio?: string;
     user_id: string;
   };
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export const ShareProfileDialog = ({ profile }: ShareProfileDialogProps) => {
+export const ShareProfileDialog = ({ profile, open, onOpenChange }: ShareProfileDialogProps) => {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
   const { toast } = useToast();
@@ -114,14 +116,7 @@ ${profileUrl}
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="flex-1 min-w-[130px] sm:flex-none gap-2">
-          <Share2 className="h-4 w-4" />
-          <span className="hidden xs:inline">Share Profile</span>
-          <span className="xs:hidden">Share</span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>Share Your Profile</DialogTitle>

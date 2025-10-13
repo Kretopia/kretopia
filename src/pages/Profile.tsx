@@ -62,6 +62,7 @@ const Profile = () => {
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -207,10 +208,7 @@ const Profile = () => {
   }, [toast]);
 
   const handleShare = () => {
-    toast({
-      title: "Profile link copied!",
-      description: "Share your profile with others",
-    });
+    setIsShareDialogOpen(true);
   };
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -661,6 +659,15 @@ const Profile = () => {
           onOpenChange={setIsImportDialogOpen}
           onImport={handleImportData}
         />
+
+        {/* Share Profile Dialog */}
+        {profile && (
+          <ShareProfileDialog 
+            profile={profile}
+            open={isShareDialogOpen}
+            onOpenChange={setIsShareDialogOpen}
+          />
+        )}
 
         {/* Content Area */}
         <div className="px-3 sm:px-4 md:px-6 space-y-6 mt-6">

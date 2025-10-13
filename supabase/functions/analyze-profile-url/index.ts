@@ -35,11 +35,11 @@ serve(async (req) => {
       if (response.status === 999 || url.includes('linkedin.com')) {
         return new Response(
           JSON.stringify({ 
-            error: "LinkedIn blocks automated profile scraping. Please try: 1) Copy-paste your profile information manually, 2) Use your LinkedIn public profile URL and manually enter details, or 3) Export your LinkedIn profile as PDF and extract information from there.",
+            error: "LinkedIn blocks automated profile scraping. Please manually copy-paste your information or try another profile URL.",
             success: false,
             isLinkedInBlock: true
           }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       throw new Error(`Failed to fetch URL: ${response.status}`);

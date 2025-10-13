@@ -75,7 +75,7 @@ export const EngagementNudge = () => {
           title: "You have new messages!",
           description: "Someone is trying to connect with you",
           action: "View Messages",
-          route: "/circle",
+          route: "/messages",
           icon: MessageCircle,
         });
         return;

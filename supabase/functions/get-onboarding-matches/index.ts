@@ -66,40 +66,50 @@ serve(async (req) => {
       );
     }
 
-    // Use AI to score and rank matches
+    // Use AI to score and rank matches with sophisticated analysis
     const mySkills = [
       ...(Array.isArray(myProfile.professional_skills) ? myProfile.professional_skills : Object.keys(myProfile.professional_skills || {})),
       ...(Array.isArray(myProfile.passion_skills) ? myProfile.passion_skills : Object.keys(myProfile.passion_skills || {}))
     ];
 
-    const prompt = `You're helping a new user discover their first connections. Score these profiles as collaboration matches (0-100).
+    const prompt = `You are an expert matchmaking AI for creative professionals. Analyze collaboration potential with nuanced scoring.
 
-NEW USER:
+NEW USER PROFILE:
 Name: ${myProfile.full_name}
 Role: ${myProfile.role}
 Bio: ${myProfile.bio || "Not provided"}
-Skills: ${mySkills.join(", ") || "None listed"}
+Professional Skills: ${mySkills.filter(s => myProfile.professional_skills?.[s] || Array.isArray(myProfile.professional_skills)).join(", ") || "None"}
+Passion Skills: ${mySkills.filter(s => myProfile.passion_skills?.[s] || Array.isArray(myProfile.passion_skills)).join(", ") || "None"}
 Location: ${myProfile.location || "Not specified"}
+Account Type: ${myProfile.account_type || "individual"}
 
 POTENTIAL MATCHES:
 ${potentialMatches.map((p, i) => {
-  const theirSkills = [
-    ...(Array.isArray(p.professional_skills) ? p.professional_skills : Object.keys(p.professional_skills || {})),
-    ...(Array.isArray(p.passion_skills) ? p.passion_skills : Object.keys(p.passion_skills || {}))
-  ];
+  const theirProfSkills = Array.isArray(p.professional_skills) ? p.professional_skills : Object.keys(p.professional_skills || {});
+  const theirPassionSkills = Array.isArray(p.passion_skills) ? p.passion_skills : Object.keys(p.passion_skills || {});
   return `${i}. ${p.full_name} - ${p.role}
    Bio: ${p.bio || "No bio"}
-   Skills: ${theirSkills.join(", ") || "None"}
+   Professional: ${theirProfSkills.join(", ") || "None"}
+   Passion: ${theirPassionSkills.join(", ") || "None"}
    Location: ${p.location || "Not specified"}`;
 }).join("\n\n")}
 
-For EACH match, provide:
-1. Match score (60-95, be generous for first impressions)
-2. One compelling reason why they should connect
-3. Suggested collaboration idea
+SCORING CRITERIA (be specific and strategic):
+1. **Complementary Skills** (35pts): Do they have skills that naturally work together? (e.g., videographer + editor, writer + illustrator)
+2. **Role Synergy** (25pts): Do their roles align for productive collaboration? (e.g., director + cinematographer > director + director)
+3. **Shared Interests** (20pts): Do they have overlapping passion skills or interests that could spark creative projects?
+4. **Career Alignment** (10pts): Are they at similar career stages or have complementary experience levels?
+5. **Geographic Proximity** (10pts): Being in the same location enables in-person collaboration
 
-Return ONLY valid JSON array (top 6):
-[{"index": 0, "score": 82, "reason": "Complementary skills in video + music", "collab_idea": "Create a music video together"}]`;
+For each match, provide:
+- **score**: 65-95 (be selective - only high-quality matches)
+- **reason**: One compelling sentence explaining the main synergy (be specific, mention actual skills/roles)
+- **collab_idea**: A concrete, actionable project idea they could start together (be creative and specific)
+- **skill_match**: Array of 2-3 specific overlapping or complementary skills
+- **match_type**: "complementary" (different but synergistic) or "similar" (shared expertise)
+
+Return ONLY valid JSON array of top 6 matches, sorted by score:
+[{"index": 0, "score": 88, "reason": "Your videography pairs perfectly with their editing and sound design expertise", "collab_idea": "Produce a short documentary combining your cinematography with their post-production magic", "skill_match": ["Video Production", "Audio Editing", "Storytelling"], "match_type": "complementary"}]`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -111,10 +121,12 @@ Return ONLY valid JSON array (top 6):
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are a matchmaking AI for creatives. Focus on collaboration potential." },
+          { 
+            role: "system", 
+            content: "You are an expert creative collaboration matchmaker. Analyze profiles deeply to find genuine synergies. Be specific and strategic in your recommendations. Focus on actionable collaboration opportunities." 
+          },
           { role: "user", content: prompt }
         ],
-        temperature: 0.7,
       }),
     });
 
@@ -150,7 +162,7 @@ Return ONLY valid JSON array (top 6):
       scores = [];
     }
 
-    // Build matched profiles with AI scores
+    // Build matched profiles with enhanced AI scores
     const rankedMatches = scores
       .sort((a: any, b: any) => b.score - a.score)
       .slice(0, 6)
@@ -164,7 +176,9 @@ Return ONLY valid JSON array (top 6):
           bio: profile.bio,
           match_score: scoreData.score,
           reason: scoreData.reason,
-          collab_idea: scoreData.collab_idea
+          collab_idea: scoreData.collab_idea,
+          skill_match: scoreData.skill_match || [],
+          match_type: scoreData.match_type || "similar"
         };
       });
 

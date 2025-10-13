@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, UserPlus, ArrowRight, Lightbulb } from "lucide-react";
+import { Sparkles, UserPlus, ArrowRight, Lightbulb, Zap, Users } from "lucide-react";
 
 interface MatchedProfile {
   user_id: string;
@@ -17,10 +17,12 @@ interface MatchedProfile {
   match_score: number;
   reason: string;
   collab_idea: string;
+  skill_match?: string[];
+  match_type?: "complementary" | "similar";
 }
 
 interface MatchedProfilesStepProps {
-  onComplete: () => void;
+  onComplete: (connectionCount: number) => void;
 }
 
 export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) => {
@@ -131,7 +133,7 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
           <p className="text-muted-foreground mb-4">
             No matches found yet. Complete your profile and check back soon!
           </p>
-          <Button onClick={onComplete} variant="gradient">
+          <Button onClick={() => onComplete(0)} variant="gradient">
             Continue to Discover <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Card>
@@ -151,14 +153,38 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
                   <div className="mb-3">
                     <h3 className="font-semibold text-lg mb-1">{match.full_name}</h3>
                     <p className="text-sm text-muted-foreground mb-2">{match.role}</p>
-                    <Badge variant="secondary" className="text-xs">
-                      {match.match_score}% Match
-                    </Badge>
+                    <div className="flex items-center gap-2 justify-center">
+                      <Badge variant="secondary" className="text-xs">
+                        {match.match_score}% Match
+                      </Badge>
+                      {match.match_type && (
+                        <Badge 
+                          variant={match.match_type === "complementary" ? "default" : "outline"} 
+                          className="text-xs"
+                        >
+                          {match.match_type === "complementary" ? (
+                            <><Zap className="h-3 w-3 mr-1" /> Complementary</>
+                          ) : (
+                            <><Users className="h-3 w-3 mr-1" /> Similar</>
+                          )}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                     {match.bio}
                   </p>
+
+                  {match.skill_match && match.skill_match.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3 justify-center">
+                      {match.skill_match.slice(0, 3).map((skill, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="bg-accent/30 rounded-lg p-3 mb-4 w-full">
                     <p className="text-xs font-medium text-primary mb-1 flex items-center gap-1">
@@ -171,7 +197,7 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
                   <div className="bg-secondary/20 rounded-lg p-3 mb-4 w-full">
                     <p className="text-xs font-medium text-secondary mb-1 flex items-center gap-1">
                       <Lightbulb className="h-3 w-3" />
-                      Collab Idea
+                      Collaboration Idea
                     </p>
                     <p className="text-xs text-muted-foreground">{match.collab_idea}</p>
                   </div>
@@ -198,7 +224,7 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
           </div>
 
           <div className="text-center pt-6">
-            <Button onClick={onComplete} variant="gradient" size="lg">
+            <Button onClick={() => onComplete(connectedIds.size)} variant="gradient" size="lg">
               {connectedIds.size > 0 
                 ? `Continue with ${connectedIds.size} Connection${connectedIds.size > 1 ? 's' : ''}`
                 : "Skip for Now"

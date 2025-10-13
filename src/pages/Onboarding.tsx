@@ -15,11 +15,13 @@ import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 import { MatchedProfilesStep } from "@/components/onboarding/MatchedProfilesStep";
+import { ConnectionSuccessStep } from "@/components/onboarding/ConnectionSuccessStep";
 
 const STEPS = [
   { id: 1, title: "Profile", icon: Users },
   { id: 2, title: "Skills", icon: Award },
   { id: 3, title: "Connect", icon: Sparkles },
+  { id: 4, title: "Success", icon: Star },
 ];
 
 interface Skill {
@@ -41,6 +43,7 @@ export default function Onboarding() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [connectionCount, setConnectionCount] = useState(0);
   
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -411,10 +414,22 @@ export default function Onboarding() {
         )}
 
         {currentStep === 3 && (
-          <MatchedProfilesStep onComplete={completeOnboarding} />
+          <MatchedProfilesStep 
+            onComplete={(count) => {
+              setConnectionCount(count);
+              setCurrentStep(4);
+            }} 
+          />
         )}
 
-        {currentStep !== 3 && (
+        {currentStep === 4 && (
+          <ConnectionSuccessStep
+            connectionCount={connectionCount}
+            onComplete={completeOnboarding}
+          />
+        )}
+
+        {currentStep !== 3 && currentStep !== 4 && (
           <div className="flex gap-3 mt-8">
             {currentStep > 1 && (
               <Button

@@ -30,6 +30,7 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  const [opportunitiesCount, setOpportunitiesCount] = useState<number>(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -37,11 +38,21 @@ const Auth = () => {
   
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated & fetch opportunities count
   useEffect(() => {
     if (user) {
       navigate(redirectTo);
     }
+    
+    // Fetch opportunities count for social proof
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from('opportunities')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active');
+      setOpportunitiesCount(count || 0);
+    };
+    fetchCount();
   }, [user, navigate, redirectTo]);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -242,8 +253,19 @@ const Auth = () => {
           <p className="text-muted-foreground">
             {searchParams.get("redirect")?.includes("/opportunity/") 
               ? "Create an account to apply for this opportunity" 
-              : "Join the creative network powered by AI"}
+              : "The AI-powered creative network where talent meets opportunity"}
           </p>
+          <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              ✨ 7 AI Features
+            </span>
+            <span className="flex items-center gap-1">
+              🤝 22 Creators
+            </span>
+            <span className="flex items-center gap-1">
+              💼 {opportunitiesCount || 0}+ Opportunities
+            </span>
+          </div>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
@@ -322,13 +344,25 @@ const Auth = () => {
           <TabsContent value="signup">
 
             <form onSubmit={handleSignUp} className="space-y-4">
-              <div className="rounded-lg bg-primary/10 p-3 mb-4">
-                <p className="text-sm text-center">
-                  🔒 ThriveIN is invite-only. Don't have a code? 
-                  <a href="/#waitlist" className="ml-1 font-semibold text-primary hover:underline">
-                    Join the waitlist
-                  </a>
-                </p>
+              {/* Prominent waitlist option */}
+              <div className="rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 mb-4 border border-primary/20">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-primary/20 p-2 shrink-0">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm mb-1">No Invite Code?</h4>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Join our beta waitlist for free access—most creators approved within 24 hours
+                    </p>
+                    <a 
+                      href="/#waitlist" 
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                    >
+                      Get Free Access via Waitlist →
+                    </a>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-3">

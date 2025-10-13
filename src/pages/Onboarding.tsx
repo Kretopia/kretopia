@@ -250,8 +250,12 @@ export default function Onboarding() {
         {currentStep === 1 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-2">Welcome to ThriveIN!</h2>
-              <p className="text-muted-foreground">Set up your profile in under 2 minutes</p>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+                <Sparkles className="h-4 w-4" />
+                <span>Earn +100 XP for completing</span>
+              </div>
+              <h2 className="text-3xl font-bold mb-2">Let's Set Up Your Profile!</h2>
+              <p className="text-muted-foreground">This takes under 2 minutes and helps us match you better</p>
             </div>
 
             {/* Optional Photo Upload - Inline */}
@@ -328,8 +332,12 @@ export default function Onboarding() {
         {currentStep === 2 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Pick your skills</h2>
-              <p className="text-muted-foreground">Select all that apply (you can add more later)</p>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/20 bg-secondary/5 px-4 py-2 text-sm font-medium text-secondary">
+                <Award className="h-4 w-4" />
+                <span>AI uses these to match you</span>
+              </div>
+              <h2 className="text-2xl font-bold mb-2">What are your top skills?</h2>
+              <p className="text-muted-foreground">Select 3-5 skills (you can always add more later)</p>
             </div>
 
             <div className="flex flex-wrap gap-2">

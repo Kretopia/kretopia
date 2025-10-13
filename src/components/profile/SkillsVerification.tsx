@@ -23,37 +23,21 @@ interface SkillsVerificationProps {
 }
 
 export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVerificationProps) => {
-  const [selectedSkill, setSelectedSkill] = useState<string>("");
-  const [endorserName, setEndorserName] = useState("");
-  const [endorserEmail, setEndorserEmail] = useState("");
-  const [projectName, setProjectName] = useState("");
   const [personalMessage, setPersonalMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [shareLink, setShareLink] = useState("");
   const { toast } = useToast();
 
-  const handleRequestEndorsement = async () => {
-    if (!selectedSkill || !endorserEmail) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in the required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleGenerateLink = async () => {
     setSubmitting(true);
     try {
       const { data, error } = await supabase
         .from("skill_endorsement_requests")
         .insert({
           profile_id: userId,
-          skill_name: selectedSkill,
-          endorser_name: endorserName,
-          endorser_email: endorserEmail,
-          project_name: projectName,
-          personal_message: personalMessage,
+          skill_name: "All Skills", // Generic request for all skills
+          personal_message: personalMessage || null,
         })
         .select()
         .single();
@@ -62,19 +46,11 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
 
       const link = `${window.location.origin}/endorse-skill/${data.share_token}`;
       setShareLink(link);
-      setShareDialogOpen(false);
 
       toast({
-        title: "Endorsement Link Created!",
-        description: "Copy and share the link with your client",
+        title: "Link Generated!",
+        description: "Share this link to receive endorsements",
       });
-
-      // Reset form
-      setEndorserName("");
-      setEndorserEmail("");
-      setProjectName("");
-      setPersonalMessage("");
-      setSelectedSkill("");
 
       onSkillsUpdate?.();
     } catch (error: any) {
@@ -128,105 +104,89 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3">
+        {/* Skills Display */}
+        <div className="grid gap-2 sm:gap-3">
           {skills.map((skill) => {
             const stats = getSkillStats(skill);
             return (
               <div
                 key={skill.name}
-                className="flex items-center justify-between p-3 border rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg gap-2"
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{skill.name}</span>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-sm sm:text-base">{skill.name}</span>
                     {stats.endorsements > 0 && (
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
                     <span>{stats.endorsements} endorsement{stats.endorsements !== 1 ? 's' : ''}</span>
                     {stats.level !== 'No endorsements yet' && getLevelBadge(stats.level)}
                   </div>
                 </div>
-                <Dialog open={shareDialogOpen && selectedSkill === skill.name} onOpenChange={(open) => {
-                  setShareDialogOpen(open);
-                  if (open) setSelectedSkill(skill.name);
-                }}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Request Endorsement
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Request Endorsement for {skill.name}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="endorserEmail">Client Email *</Label>
-                        <Input
-                          id="endorserEmail"
-                          type="email"
-                          value={endorserEmail}
-                          onChange={(e) => setEndorserEmail(e.target.value)}
-                          placeholder="client@example.com"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="endorserName">Client Name</Label>
-                        <Input
-                          id="endorserName"
-                          value={endorserName}
-                          onChange={(e) => setEndorserName(e.target.value)}
-                          placeholder="John Doe"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="projectName">Project Name</Label>
-                        <Input
-                          id="projectName"
-                          value={projectName}
-                          onChange={(e) => setProjectName(e.target.value)}
-                          placeholder="Website Redesign"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="personalMessage">Personal Message</Label>
-                        <Textarea
-                          id="personalMessage"
-                          value={personalMessage}
-                          onChange={(e) => setPersonalMessage(e.target.value)}
-                          placeholder="Add a personal note to your client..."
-                          rows={3}
-                        />
-                      </div>
-                      <Button
-                        onClick={handleRequestEndorsement}
-                        disabled={submitting}
-                        className="w-full"
-                      >
-                        {submitting ? "Creating..." : "Create Endorsement Link"}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
               </div>
             );
           })}
         </div>
 
-        {shareLink && (
-          <div className="mt-4 p-4 bg-muted rounded-lg space-y-2">
-            <Label>Share this link with your client:</Label>
-            <div className="flex gap-2">
-              <Input value={shareLink} readOnly />
-              <Button onClick={copyToClipboard} variant="outline">
-                Copy
+        {/* Generate Link Section */}
+        <div className="pt-4 border-t space-y-3">
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full sm:w-auto" variant="default">
+                <Share2 className="h-4 w-4 mr-2" />
+                Request Endorsements
               </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Generate Endorsement Link</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="personalMessage">Personal Message (Optional)</Label>
+                  <Textarea
+                    id="personalMessage"
+                    value={personalMessage}
+                    onChange={(e) => setPersonalMessage(e.target.value)}
+                    placeholder="Add a note for your clients..."
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+                <Button
+                  onClick={handleGenerateLink}
+                  disabled={submitting}
+                  className="w-full"
+                >
+                  {submitting ? "Generating..." : "Generate Link"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {shareLink && (
+            <div className="p-3 sm:p-4 bg-muted rounded-lg space-y-2">
+              <Label className="text-sm">Share this link:</Label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input 
+                  value={shareLink} 
+                  readOnly 
+                  className="text-xs sm:text-sm flex-1"
+                />
+                <Button 
+                  onClick={copyToClipboard} 
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                >
+                  Copy
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );

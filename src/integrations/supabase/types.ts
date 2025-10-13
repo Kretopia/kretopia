@@ -2423,7 +2423,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
-          endorser_email: string
+          endorser_email: string | null
           endorser_name: string | null
           expires_at: string
           id: string
@@ -2437,7 +2437,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
-          endorser_email: string
+          endorser_email?: string | null
           endorser_name?: string | null
           expires_at?: string
           id?: string
@@ -2451,7 +2451,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
-          endorser_email?: string
+          endorser_email?: string | null
           endorser_name?: string | null
           expires_at?: string
           id?: string

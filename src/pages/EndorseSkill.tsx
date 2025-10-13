@@ -24,10 +24,11 @@ export default function EndorseSkill() {
     endorserName: "",
     endorserEmail: "",
     endorserCompany: "",
-    proficiencyLevel: "",
     testimonial: "",
     relationship: "",
   });
+  const [selectedSkill, setSelectedSkill] = useState("");
+  const [proficiencyLevel, setProficiencyLevel] = useState("");
 
   useEffect(() => {
     fetchRequestData();
@@ -54,17 +55,10 @@ export default function EndorseSkill() {
       const request = data[0];
       setRequestData(request);
 
-      // Pre-fill with request data
-      setFormData((prev) => ({
-        ...prev,
-        endorserName: request.endorser_name || "",
-        endorserEmail: request.endorser_email || "",
-      }));
-
-      // Fetch profile data
+      // Fetch profile data with skills
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name, avatar_url")
+        .select("full_name, avatar_url, skills")
         .eq("user_id", request.profile_id)
         .single();
 
@@ -84,10 +78,10 @@ export default function EndorseSkill() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.endorserName || !formData.endorserEmail || !formData.proficiencyLevel) {
+    if (!formData.endorserName || !formData.endorserEmail || !selectedSkill || !proficiencyLevel) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: "Please select a skill, proficiency level, and provide your details",
         variant: "destructive",
       });
       return;
@@ -101,28 +95,16 @@ export default function EndorseSkill() {
         .insert({
           profile_id: requestData.profile_id,
           request_id: requestData.id,
-          skill_name: requestData.skill_name,
+          skill_name: selectedSkill,
           endorser_name: formData.endorserName,
           endorser_email: formData.endorserEmail,
           endorser_company: formData.endorserCompany,
-          project_name: requestData.project_name,
-          proficiency_level: formData.proficiencyLevel,
+          proficiency_level: proficiencyLevel,
           testimonial: formData.testimonial,
           relationship: formData.relationship,
         });
 
       if (endorsementError) throw endorsementError;
-
-      // Update request status
-      const { error: updateError } = await supabase
-        .from("skill_endorsement_requests")
-        .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", requestData.id);
-
-      if (updateError) throw updateError;
 
       setSubmitted(true);
       toast({
@@ -172,67 +154,39 @@ export default function EndorseSkill() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full">
         <CardHeader>
-          <CardTitle>Endorse {profileData?.full_name}'s Skill</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">Endorse {profileData?.full_name}'s Skills</CardTitle>
           <CardDescription>
-            You've been asked to endorse <strong>{requestData?.skill_name}</strong>
-            {requestData?.project_name && ` for the project "${requestData.project_name}"`}
+            Select a skill to endorse and share your experience
           </CardDescription>
           {requestData?.personal_message && (
-            <div className="mt-4 p-4 bg-muted rounded-lg">
+            <div className="mt-4 p-3 sm:p-4 bg-muted rounded-lg">
               <p className="text-sm italic">{requestData.personal_message}</p>
             </div>
           )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="endorserName">Your Name *</Label>
-                <Input
-                  id="endorserName"
-                  value={formData.endorserName}
-                  onChange={(e) => setFormData({ ...formData, endorserName: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="endorserEmail">Your Email *</Label>
-                <Input
-                  id="endorserEmail"
-                  type="email"
-                  value={formData.endorserEmail}
-                  onChange={(e) => setFormData({ ...formData, endorserEmail: e.target.value })}
-                  required
-                />
-              </div>
+            {/* Skill Selection */}
+            <div>
+              <Label htmlFor="skillSelect" className="text-sm sm:text-base">Select Skill to Endorse *</Label>
+              <Select value={selectedSkill} onValueChange={setSelectedSkill}>
+                <SelectTrigger id="skillSelect">
+                  <SelectValue placeholder="Choose a skill" />
+                </SelectTrigger>
+                <SelectContent>
+                  {profileData?.skills?.map((skill: string) => (
+                    <SelectItem key={skill} value={skill}>
+                      {skill}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
+            {/* Proficiency Level */}
             <div>
-              <Label htmlFor="endorserCompany">Your Company</Label>
-              <Input
-                id="endorserCompany"
-                value={formData.endorserCompany}
-                onChange={(e) => setFormData({ ...formData, endorserCompany: e.target.value })}
-                placeholder="Optional"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="relationship">Your Relationship</Label>
-              <Input
-                id="relationship"
-                value={formData.relationship}
-                onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                placeholder="e.g., Client, Colleague, Manager"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="proficiencyLevel">Proficiency Level *</Label>
-              <Select
-                value={formData.proficiencyLevel}
-                onValueChange={(value) => setFormData({ ...formData, proficiencyLevel: value })}
-              >
+              <Label htmlFor="proficiencyLevel" className="text-sm sm:text-base">Proficiency Level *</Label>
+              <Select value={proficiencyLevel} onValueChange={setProficiencyLevel}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select proficiency level" />
                 </SelectTrigger>
@@ -271,14 +225,59 @@ export default function EndorseSkill() {
               </Select>
             </div>
 
+            {/* Your Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="endorserName" className="text-sm sm:text-base">Your Name *</Label>
+                <Input
+                  id="endorserName"
+                  value={formData.endorserName}
+                  onChange={(e) => setFormData({ ...formData, endorserName: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="endorserEmail" className="text-sm sm:text-base">Your Email *</Label>
+                <Input
+                  id="endorserEmail"
+                  type="email"
+                  value={formData.endorserEmail}
+                  onChange={(e) => setFormData({ ...formData, endorserEmail: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="endorserCompany" className="text-sm sm:text-base">Your Company</Label>
+                <Input
+                  id="endorserCompany"
+                  value={formData.endorserCompany}
+                  onChange={(e) => setFormData({ ...formData, endorserCompany: e.target.value })}
+                  placeholder="Optional"
+                />
+              </div>
+              <div>
+                <Label htmlFor="relationship" className="text-sm sm:text-base">Your Relationship</Label>
+                <Input
+                  id="relationship"
+                  value={formData.relationship}
+                  onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
+                  placeholder="e.g., Client, Manager"
+                />
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="testimonial">Testimonial (Optional)</Label>
+              <Label htmlFor="testimonial" className="text-sm sm:text-base">Testimonial (Optional)</Label>
               <Textarea
                 id="testimonial"
                 value={formData.testimonial}
                 onChange={(e) => setFormData({ ...formData, testimonial: e.target.value })}
-                placeholder="Share your experience working with them on this skill..."
+                placeholder="Share your experience..."
                 rows={4}
+                className="resize-none"
               />
             </div>
 

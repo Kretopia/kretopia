@@ -12,7 +12,6 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { CreatorFilters, type CreatorFilterState } from "@/components/discover/CreatorFilters";
 import { OpportunityFiltersComponent, type OpportunityFilterState } from "@/components/discover/OpportunityFiltersComponent";
 import { CreditPromptDialog } from "@/components/discover/CreditPromptDialog";
-import { QuickCreateOpportunityDialog } from "@/components/discover/QuickCreateOpportunityDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
 import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
@@ -25,7 +24,6 @@ import { UpgradeDialog } from "@/components/UpgradeDialog";
 import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
 import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
-import { FirstCollaborationPrompt } from "@/components/discover/FirstCollaborationPrompt";
 import { DailyRecommendations } from "@/components/discover/DailyRecommendations";
 import { SmartFilterSuggestions } from "@/components/discover/SmartFilterSuggestions";
 import { AIMatchRecommendations } from "@/components/discover/AIMatchRecommendations";
@@ -90,7 +88,6 @@ const Discover = () => {
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const { isFirstTime, loading: firstTimeLoading } = useFirstTimeUser();
-  const [showQuickCreate, setShowQuickCreate] = useState(false);
   
   // Use subscription tier from auth context
   const subscriptionTier = subscriptionInfo.tier as SubscriptionTier;
@@ -847,9 +844,8 @@ const Discover = () => {
                       <>
                         <h2 className="mb-2 text-xl sm:text-2xl font-bold">No opportunities yet</h2>
                         <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                          Post the first collaboration opportunity, paid work, or barter deal
+                          Be the first to post a collaboration opportunity, paid work, or barter deal
                         </p>
-                        <QuickCreateOpportunityDialog />
                       </>
                     )}
                   </div>
@@ -1118,13 +1114,6 @@ const Discover = () => {
           }}
         />
       )}
-
-      <FirstCollaborationPrompt onPostOpportunity={() => setShowQuickCreate(true)} />
-
-      <QuickCreateOpportunityDialog 
-        open={showQuickCreate} 
-        onOpenChange={setShowQuickCreate}
-      />
     </div>
   );
 };

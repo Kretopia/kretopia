@@ -1,10 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MapPin, Star, Briefcase, Share2, Edit, Camera, Loader2, Building2, Download, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +27,8 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { getTierByPoints } from "@/lib/tierSystem";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
+import { ProfileEditDialog } from "@/components/profile/ProfileEditDialog";
+import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { Globe } from "lucide-react";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -571,133 +569,19 @@ const Profile = () => {
     return (
       <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
         <div className="container mx-auto max-w-4xl space-y-6">
-          {/* Edit Profile Dialog */}
-          <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Edit Company Profile</DialogTitle>
-                <DialogDescription>
-                  Update your company information
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="companyLogo">Company Logo</Label>
-                  <div className="flex items-center gap-4 mt-2">
-                    <Avatar className="h-20 w-20 rounded-lg">
-                      <AvatarImage src={editForm.avatar_url} />
-                      <AvatarFallback>
-                        <Building2 className="h-10 w-10" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <Input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleAvatarUpload}
-                      />
-                      <Button 
-                        variant="outline" 
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploadingAvatar}
-                        size="sm"
-                      >
-                        {isUploadingAvatar ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Camera className="mr-2 h-4 w-4" />
-                            Change Logo
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="full_name">Company Name</Label>
-                  <Input
-                    id="full_name"
-                    value={editForm.full_name}
-                    onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="role">Industry</Label>
-                  <Input
-                    id="role"
-                    value={editForm.role}
-                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                    placeholder="e.g., Technology, Marketing, Entertainment"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="company_size">Company Size</Label>
-                  <Input
-                    id="company_size"
-                    value={editForm.company_size}
-                    onChange={(e) => setEditForm({ ...editForm, company_size: e.target.value })}
-                    placeholder="e.g., 1-10 employees"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="location">Address</Label>
-                  <Input
-                    id="location"
-                    value={editForm.location}
-                    onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                    placeholder="Company address"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="bio">About</Label>
-                  <Textarea
-                    id="bio"
-                    value={editForm.bio}
-                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                    placeholder="Tell us about your company..."
-                    rows={5}
-                  />
-                </div>
-                <div>
-                  <Label>Gallery Images</Label>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleGalleryChange}
-                    className="mt-2"
-                  />
-                  {galleryPreviews.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mt-3">
-                      {galleryPreviews.map((preview, index) => (
-                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                          <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="absolute top-1 right-1 h-6 w-6 p-0"
-                            onClick={() => removeGalleryImage(index)}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-2 justify-end mt-4">
-                <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                <Button onClick={handleEditSave}>Save Changes</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          {/* Edit Profile Dialog with Completion Tracking */}
+          <CompanyProfileEditDialog
+            open={isEditOpen}
+            onOpenChange={setIsEditOpen}
+            editForm={editForm}
+            onFormChange={setEditForm}
+            onSave={handleEditSave}
+            onAvatarUpload={handleAvatarUpload}
+            isUploadingAvatar={isUploadingAvatar}
+            galleryPreviews={galleryPreviews}
+            onGalleryChange={handleGalleryChange}
+            onRemoveGalleryImage={removeGalleryImage}
+          />
 
           {/* Company Profile View with Edit Button */}
           <div className="relative">
@@ -826,71 +710,17 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Edit Dialog */}
-        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Edit Profile</DialogTitle>
-              <DialogDescription>
-                Update your profile information and settings
-              </DialogDescription>
-            </DialogHeader>
-            
-            {/* Quick Fill Button */}
-            <div className="border-b pb-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full gap-2"
-                onClick={() => {
-                  setIsImportDialogOpen(true);
-                }}
-              >
-                <Globe className="h-4 w-4" />
-                Quick Fill from Website
-              </Button>
-            </div>
-            
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  value={editForm.full_name}
-                  onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Input
-                  id="role"
-                  value={editForm.role}
-                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={editForm.location}
-                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  value={editForm.bio}
-                  onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                  rows={4}
-                />
-              </div>
-              <Button onClick={handleEditSave} className="w-full" variant="gradient">
-                Save Changes
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Edit Dialog with Completion Tracking */}
+        <ProfileEditDialog
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          profile={profile}
+          portfolioCount={portfolioItems.length}
+          editForm={editForm}
+          onFormChange={setEditForm}
+          onSave={handleEditSave}
+          onQuickFill={() => setIsImportDialogOpen(true)}
+        />
 
         {/* Import from Website Dialog */}
         <ImportFromWebsiteDialog

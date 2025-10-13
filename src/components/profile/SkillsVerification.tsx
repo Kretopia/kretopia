@@ -56,7 +56,7 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
 
       if (error) throw error;
 
-      const link = `https://www.thrivein.io/endorse?token=${data.share_token}`;
+      const link = `${window.location.origin}/endorse?token=${data.share_token}`;
       setShareLink(link);
       
       // Auto-copy the full message

@@ -55,17 +55,31 @@ export const DailyRecommendations = ({ onSelect, activeTab }: DailyRecommendatio
       if (error) throw error;
 
       if (data?.recommendations) {
-        const formattedRecs: Recommendation[] = data.recommendations.map((rec: any) => ({
-          id: rec.id,
-          type: activeTab === "creators" ? "creator" : "opportunity",
-          name: rec.full_name || rec.title,
-          title: rec.role || rec.type,
-          location: rec.location,
-          avatar: rec.avatar_url || rec.image_url,
-          match_score: rec.ai_match_score || Math.floor(Math.random() * 20) + 80,
-          match_reason: rec.match_reason || "Strong compatibility based on your profile",
-          tags: rec.professional_skills?.slice(0, 3) || rec.skills?.slice(0, 3) || []
-        }));
+        const formattedRecs: Recommendation[] = data.recommendations.map((rec: any) => {
+          // Extract skill names from skill objects or use skills array directly
+          let tags: string[] = [];
+          if (rec.professional_skills) {
+            tags = Array.isArray(rec.professional_skills) 
+              ? rec.professional_skills.slice(0, 3).map((s: any) => typeof s === 'string' ? s : s.skill)
+              : Object.keys(rec.professional_skills).slice(0, 3);
+          } else if (rec.skills) {
+            tags = Array.isArray(rec.skills)
+              ? rec.skills.slice(0, 3).map((s: any) => typeof s === 'string' ? s : s.skill || s)
+              : [];
+          }
+
+          return {
+            id: rec.id,
+            type: activeTab === "creators" ? "creator" : "opportunity",
+            name: rec.full_name || rec.title,
+            title: rec.role || rec.type,
+            location: rec.location,
+            avatar: rec.avatar_url || rec.image_url,
+            match_score: rec.ai_match_score || Math.floor(Math.random() * 20) + 80,
+            match_reason: rec.match_reason || "Strong compatibility based on your profile",
+            tags: tags.filter(Boolean)
+          };
+        });
 
         setRecommendations(formattedRecs.slice(0, 3));
       }

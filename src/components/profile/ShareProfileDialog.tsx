@@ -32,8 +32,27 @@ ${profileUrl}
 
 #CreativePortfolio #ThriveIN`;
 
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profile.full_name}'s Creative Portfolio`,
+          text: shareText,
+          url: profileUrl,
+        });
+        toast({
+          title: "Shared successfully",
+          description: "Profile shared via native share",
+        });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Share failed:', err);
+        }
+      }
+    }
+  };
+
   const handleSocialShare = (platform: string) => {
-    console.log('Share button clicked:', platform);
     let shareUrl = '';
     
     switch (platform) {
@@ -54,18 +73,15 @@ ${profileUrl}
         break;
     }
     
-    console.log('Opening URL:', shareUrl);
-    
     if (shareUrl) {
-      if (platform === 'email') {
-        window.location.href = shareUrl;
-      } else {
-        const newWindow = window.open(shareUrl, '_blank');
-        if (!newWindow) {
-          console.error('Popup blocked! Trying alternative method...');
-          window.location.href = shareUrl;
-        }
-      }
+      // Create a temporary link element and click it
+      const link = document.createElement('a');
+      link.href = shareUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
       toast({
         title: "Opening share dialog",
@@ -170,6 +186,20 @@ ${profileUrl}
             />
           </div>
 
+          {/* Native share button (for mobile) */}
+          {navigator.share && (
+            <div className="pt-2 border-t">
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={handleNativeShare}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share via...
+              </Button>
+            </div>
+          )}
+
           {/* Social share buttons */}
           <div className="pt-2 border-t">
             <Label className="mb-3 block">Share on</Label>
@@ -178,6 +208,7 @@ ${profileUrl}
                 variant="outline"
                 size="sm"
                 onClick={() => handleSocialShare('twitter')}
+                type="button"
               >
                 Twitter/X
               </Button>
@@ -185,6 +216,7 @@ ${profileUrl}
                 variant="outline"
                 size="sm"
                 onClick={() => handleSocialShare('linkedin')}
+                type="button"
               >
                 LinkedIn
               </Button>
@@ -192,6 +224,7 @@ ${profileUrl}
                 variant="outline"
                 size="sm"
                 onClick={() => handleSocialShare('facebook')}
+                type="button"
               >
                 Facebook
               </Button>
@@ -199,6 +232,7 @@ ${profileUrl}
                 variant="outline"
                 size="sm"
                 onClick={() => handleSocialShare('whatsapp')}
+                type="button"
               >
                 WhatsApp
               </Button>
@@ -206,6 +240,7 @@ ${profileUrl}
                 variant="outline"
                 size="sm"
                 onClick={() => handleSocialShare('email')}
+                type="button"
               >
                 Email
               </Button>

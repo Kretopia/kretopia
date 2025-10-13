@@ -30,6 +30,8 @@ import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletio
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { getTierByPoints } from "@/lib/tierSystem";
+import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
+import { Globe } from "lucide-react";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -55,6 +57,7 @@ const Profile = () => {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -288,6 +291,24 @@ const Profile = () => {
     } finally {
       setIsUploadingAvatar(false);
     }
+  };
+
+  const handleImportData = (data: any) => {
+    console.log('[Profile] Importing website data:', data);
+    
+    // Update form with imported data
+    const updates: any = {};
+    if (data.full_name) updates.full_name = data.full_name;
+    if (data.role) updates.role = data.role;
+    if (data.bio) updates.bio = data.bio;
+    if (data.location) updates.location = data.location;
+    
+    setEditForm(prev => ({ ...prev, ...updates }));
+    
+    toast({
+      title: "Success",
+      description: "Profile data imported successfully. Review and save when ready.",
+    });
   };
 
   const handleEditSave = async () => {
@@ -814,6 +835,22 @@ const Profile = () => {
                 Update your profile information and settings
               </DialogDescription>
             </DialogHeader>
+            
+            {/* Quick Fill Button */}
+            <div className="border-b pb-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => {
+                  setIsImportDialogOpen(true);
+                }}
+              >
+                <Globe className="h-4 w-4" />
+                Quick Fill from Website
+              </Button>
+            </div>
+            
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name</Label>
@@ -854,6 +891,13 @@ const Profile = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Import from Website Dialog */}
+        <ImportFromWebsiteDialog
+          open={isImportDialogOpen}
+          onOpenChange={setIsImportDialogOpen}
+          onImport={handleImportData}
+        />
 
         {/* Content Area */}
         <div className="px-3 sm:px-4 md:px-6 space-y-6 mt-6">

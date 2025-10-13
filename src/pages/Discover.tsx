@@ -662,7 +662,6 @@ const Discover = () => {
           <div className="mb-3 sm:mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl sm:text-3xl font-bold">Discover</h1>
             <div className="flex items-center gap-2 flex-wrap">
-              <QuickCreateOpportunityDialog />
               {subscriptionTier === 'free' ? (
                 <Badge 
                   variant={dailySwipesLeft <= 3 ? "destructive" : "secondary"} 

@@ -34,6 +34,7 @@ import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteD
 import { ProfileEditDialog } from "@/components/profile/ProfileEditDialog";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
+import { ProfileHero } from "@/components/profile/ProfileHero";
 import { Globe } from "lucide-react";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -627,132 +628,20 @@ const Profile = () => {
           className="hidden"
         />
 
-        {/* Header Section with Banner and Avatar */}
-        <div className="relative">
-          {/* Gradient Banner */}
-          <div className="h-32 md:h-40 bg-gradient-to-br from-primary via-primary/80 to-accent rounded-b-3xl" />
-          
-          {/* Content Over Banner */}
-          <div className="relative px-6 -mt-16">
-            <div className="flex flex-col items-center text-center space-y-3">
-              {/* Avatar */}
-              <div className="relative group">
-                <Avatar className="h-24 w-24 md:h-32 md:w-32 rounded-3xl border-4 border-background shadow-2xl">
-                  <AvatarImage 
-                    src={profile.avatar_url || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
-                    alt={profile.full_name}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="text-3xl md:text-5xl rounded-3xl bg-primary/10">
-                    {profile.full_name?.split(' ').map(n => n[0]).join('') || '??'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                {isUploadingAvatar && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-3xl">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                )}
-                
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="absolute bottom-2 right-2 h-10 w-10 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingAvatar}
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Name and Role */}
-              <div className="space-y-2 max-w-2xl">
-                <h1 className="text-3xl md:text-4xl font-bold">{profile.full_name}</h1>
-                
-                {/* Badge */}
-                {profile.badge && (
-                  <Badge 
-                    variant={profile.badge === 'og' || profile.badge === 'founder' ? 'default' : 'secondary'}
-                    className="text-sm px-4 py-1"
-                  >
-                    {profile.badge === 'founder' ? '👑 Founder' : 
-                     profile.badge === 'og' ? '⭐ OG' : 
-                     profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
-                  </Badge>
-                )}
-                
-                {/* Role */}
-                <p className="text-lg md:text-xl text-muted-foreground font-medium">
-                  {profile.role || 'Creative Professional'}
-                </p>
-                
-                {/* Job Title & Industry */}
-                {(profile.job_title || profile.industry) && (
-                  <div className="pt-2 space-y-1">
-                    {profile.job_title && (
-                      <p className="text-base font-semibold">{profile.job_title}</p>
-                    )}
-                    {profile.industry && (
-                      <p className="text-sm text-muted-foreground">{profile.industry}</p>
-                    )}
-                  </div>
-                )}
-                
-                {/* Skills Preview */}
-                {Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0 && (
-                  <div className="pt-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Top Skills</p>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.professional_skills.slice(0, 5).map((skill: any, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="text-xs">
-                          {skill.skill}
-                          {skill.level && (
-                            <span className="ml-1.5">
-                              {'⭐'.repeat(Math.min(skill.level, 5))}
-                            </span>
-                          )}
-                        </Badge>
-                      ))}
-                      {profile.professional_skills.length > 5 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{profile.professional_skills.length - 5} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-2">
-                <Button variant="outline" onClick={() => setIsEditOpen(true)} className="gap-2">
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
-                <Button variant="outline" onClick={handleShare} className="gap-2">
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </Button>
-              </div>
-
-              {/* Stats */}
-              <div className="w-full max-w-2xl mt-6 grid grid-cols-3 gap-4 rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-4 md:p-6">
-                <div className="text-center space-y-1">
-                  <div className="text-2xl md:text-3xl font-bold text-primary">{stats.circle}</div>
-                  <div className="text-xs md:text-sm text-muted-foreground">Circle</div>
-                </div>
-                <div className="text-center space-y-1 border-x border-border">
-                  <div className="text-2xl md:text-3xl font-bold text-primary">{stats.projects}</div>
-                  <div className="text-xs md:text-sm text-muted-foreground">Projects</div>
-                </div>
-                <div className="text-center space-y-1">
-                  <div className="text-2xl md:text-3xl font-bold text-primary">{stats.responseRate}%</div>
-                  <div className="text-xs md:text-sm text-muted-foreground">Response</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Profile Hero Section */}
+        <ProfileHero
+          profile={profile}
+          stats={stats}
+          isOwnProfile={true}
+          onEdit={() => setIsEditOpen(true)}
+          onShare={handleShare}
+          onAvatarClick={() => fileInputRef.current?.click()}
+          isUploadingAvatar={isUploadingAvatar}
+          skills={[
+            ...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []),
+            ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])
+          ]}
+        />
 
         {/* Edit Dialog with Completion Tracking */}
         <ProfileEditDialog

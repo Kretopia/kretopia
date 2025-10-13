@@ -396,130 +396,27 @@ const PublicProfile = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* TOP SECTION: Hero with all key info */}
-            <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-              {/* Cover Image */}
-              <div className="h-32 md:h-48 bg-gradient-to-r from-primary/20 via-primary/10 to-background" />
-              
-              <div className="p-6 md:p-8">
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Avatar */}
-                  <Avatar className="h-24 w-24 md:h-32 md:w-32 -mt-16 md:-mt-20 border-4 border-card shadow-lg">
-                    <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
-                    <AvatarFallback className="text-2xl md:text-3xl">{profile.full_name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-
-                  {/* Profile Header Info */}
-                  <div className="flex-1">
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                      <div>
-                        <div className="flex items-start gap-3 mb-2">
-                          <h1 className="text-3xl md:text-4xl font-bold">{profile.full_name}</h1>
-                          {userBadge && (
-                            <Badge variant={userBadge === 'og' ? 'default' : 'secondary'} className="mt-1">
-                              {userBadge.toUpperCase()}
-                            </Badge>
-                          )}
-                        </div>
-                        {profile.job_title && (
-                          <p className="text-xl text-muted-foreground mb-1">{profile.job_title}</p>
-                        )}
-                        {profile.industry && (
-                          <p className="text-sm text-muted-foreground mb-2">{profile.industry}</p>
-                        )}
-                        {profile.location && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <MapPin className="h-4 w-4" />
-                            <span>{profile.location}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Action Buttons */}
-                      {isLoggedIn && (
-                        <div className="flex flex-wrap gap-2">
-                          {connectionStatus === 'accepted' ? (
-                            <>
-                              <Button onClick={handleMessage} size="lg" className="gap-2">
-                                <MessageCircle className="h-4 w-4" />
-                                Message
-                              </Button>
-                              <Badge variant="secondary" className="gap-1 px-3 py-2">
-                                <UserCheck className="h-4 w-4" />
-                                Connected
-                              </Badge>
-                            </>
-                          ) : isPendingReceived ? (
-                            <Button onClick={handleAcceptConnection} size="lg" className="gap-2">
-                              <UserCheck className="h-4 w-4" />
-                              Accept Connection
-                            </Button>
-                          ) : (
-                            <Button
-                              onClick={handleConnect}
-                              size="lg"
-                              variant={connectionStatus === 'pending' ? 'secondary' : 'default'}
-                              disabled={connectionStatus === 'pending'}
-                              className="gap-2"
-                            >
-                              <UserPlus className="h-4 w-4" />
-                              {connectionStatus === 'pending' ? 'Request Sent' : 'Connect'}
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Stats Row */}
-                    <div className="flex gap-6 mt-6 text-sm">
-                      <div>
-                        <div className="font-bold text-xl">{stats.circle}</div>
-                        <div className="text-muted-foreground">Connections</div>
-                      </div>
-                      <div>
-                        <div className="font-bold text-xl">{stats.projects}</div>
-                        <div className="text-muted-foreground">Projects</div>
-                      </div>
-                      {profile.average_rating && (
-                        <div>
-                          <div className="flex items-center gap-1">
-                            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                            <span className="font-bold text-xl">{profile.average_rating.toFixed(1)}</span>
-                          </div>
-                          <div className="text-muted-foreground">{profile.total_reviews || 0} reviews</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Bio */}
-                    {profile.bio && (
-                      <div className="mt-6">
-                        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">About</h3>
-                        <p className="text-base leading-relaxed">
-                          {profile.bio}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Skills */}
-                    {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
-                      (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
-                      <div className="mt-6">
-                        <SkillsSection
-                          professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
-                          passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
-                          jobTitle={profile.job_title}
-                          industry={profile.industry}
-                          isOwnProfile={false}
-                          userId={profile.user_id}
-                          onRefresh={fetchData}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Profile Hero Section */}
+            <ProfileHero
+              profile={profile}
+              stats={stats}
+              isOwnProfile={false}
+              connectionStatus={connectionStatus}
+              onConnect={isPendingReceived ? handleAcceptConnection : handleConnect}
+              onMessage={handleMessage}
+              onShare={() => {
+                const profileUrl = `${window.location.origin}/profile/${userId}`;
+                navigator.clipboard.writeText(profileUrl);
+                toast({
+                  title: "Profile link copied!",
+                  description: "Share this profile with others",
+                });
+              }}
+              skills={[
+                ...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []),
+                ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])
+              ]}
+            />
 
             {/* MID SECTION: Portfolio (Visual First) */}
             <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">

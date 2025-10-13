@@ -812,12 +812,7 @@ const Profile = () => {
             <SkillsVerification
               skills={profile.professional_skills as any}
               userId={profile.user_id}
-              onSkillsUpdate={(updatedSkills) => {
-                setProfile({
-                  ...profile,
-                  professional_skills: updatedSkills as any
-                });
-              }}
+              onSkillsUpdate={fetchData}
             />
           )}
 

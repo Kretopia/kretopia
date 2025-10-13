@@ -29,6 +29,7 @@ import { getTierByPoints } from "@/lib/tierSystem";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 import { ProfileEditDialog } from "@/components/profile/ProfileEditDialog";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
+import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { Globe } from "lucide-react";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -609,6 +610,9 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen pb-20 lg:pb-6">
+      {/* Quick Navigation */}
+      <ProfileQuickNav />
+      
       <div className="container mx-auto max-w-6xl">
         {/* Hidden file input */}
         <input
@@ -733,7 +737,7 @@ const Profile = () => {
         <div className="px-3 sm:px-4 md:px-6 space-y-6 mt-6">
           {/* Profile Completion & Progress Cards */}
           {profile && (
-            <div className="grid md:grid-cols-2 gap-4">
+            <div id="overview" className="grid md:grid-cols-2 gap-4 scroll-mt-20">
               <ProfileStrengthScore 
                 profile={profile}
                 portfolioCount={portfolioItems.length}
@@ -781,7 +785,7 @@ const Profile = () => {
           </div>
 
           {/* MID SECTION: Portfolio - Always Show */}
-          <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card">
+          <div id="portfolio" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
             <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
             <PortfolioSection
               items={portfolioItems}
@@ -791,7 +795,7 @@ const Profile = () => {
           </div>
 
           {/* MID SECTION: Reviews & Social Stats Grid */}
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div id="reviews-stats" className="grid gap-6 lg:grid-cols-2 scroll-mt-20">
             {/* Reviews - Always Show */}
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
               <ReviewsSection
@@ -841,7 +845,7 @@ const Profile = () => {
           </div>
 
           {/* Contact & Booking Section - NEW EPK ELEMENT */}
-          <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card">
+          <div id="contact" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
             <h2 className="text-2xl font-bold mb-6">Contact & Booking</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-3">
@@ -877,7 +881,7 @@ const Profile = () => {
           </div>
 
           {/* Download Media Kit - NEW EPK ELEMENT */}
-          <div className="rounded-2xl border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-6 md:p-8 shadow-card text-center">
+          <div id="media-kit" className="rounded-2xl border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-6 md:p-8 shadow-card text-center scroll-mt-20">
             <h2 className="text-2xl font-bold mb-2">Download Media Kit</h2>
             <p className="text-muted-foreground mb-6">Get all my professional materials in one place</p>
             <div className="flex flex-wrap justify-center gap-3">
@@ -913,7 +917,7 @@ const Profile = () => {
           </div>
 
           {/* BOTTOM SECTION: Experience/Credits */}
-          <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card">
+          <div id="experience" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
             <h2 className="text-2xl font-bold mb-6">Experience & Credits</h2>
             {credits.length > 0 ? (
               <CreditsSection 
@@ -930,7 +934,7 @@ const Profile = () => {
           </div>
 
           {/* BOTTOM SECTION: Press & Awards Grid */}
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div id="press-awards" className="grid gap-6 lg:grid-cols-2 scroll-mt-20">
             {/* Press */}
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
               <h2 className="text-2xl font-bold mb-6">Press & Media</h2>

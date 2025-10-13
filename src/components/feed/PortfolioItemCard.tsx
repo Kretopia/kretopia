@@ -9,6 +9,7 @@ import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getMediaThumbnail } from "@/lib/mediaUtils";
+import DOMPurify from "dompurify";
 
 interface PortfolioItemCardProps {
   item: {
@@ -103,12 +104,19 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
   };
 
   const renderMedia = () => {
-    // If there's an embed code, use it
+    // If there's an embed code, sanitize it before rendering to prevent XSS
     if (item.embed_code) {
+      const sanitizedEmbed = DOMPurify.sanitize(item.embed_code, {
+        ALLOWED_TAGS: ['iframe', 'div', 'script'],
+        ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'class', 'style'],
+        ALLOWED_URI_REGEXP: /^https?:\/\/(www\.)?(youtube|vimeo|spotify|soundcloud|dailymotion|twitch)\.com/,
+        ADD_ATTR: ['target'],
+      });
+      
       return (
         <div 
           className="w-full h-full"
-          dangerouslySetInnerHTML={{ __html: item.embed_code }}
+          dangerouslySetInnerHTML={{ __html: sanitizedEmbed }}
         />
       );
     }

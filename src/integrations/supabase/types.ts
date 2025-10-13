@@ -3240,7 +3240,9 @@ export type Database = {
       }
       user_applications_view: {
         Row: {
+          applicant_avatar: string | null
           applicant_id: string | null
+          applicant_name: string | null
           application_notes: string | null
           availability: string | null
           compensation: string | null
@@ -3250,12 +3252,10 @@ export type Database = {
           id: string | null
           location: string | null
           opportunity_id: string | null
+          opportunity_status: string | null
           opportunity_title: string | null
           opportunity_type: string | null
           portfolio_links: string[] | null
-          poster_avatar: string | null
-          poster_id: string | null
-          poster_name: string | null
           status: string | null
           updated_at: string | null
         }

@@ -4,11 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, Star } from "lucide-react";
+import { CheckCircle2, ThumbsUp } from "lucide-react";
+
+interface SkillWithEndorsements {
+  skill: string;
+  category: string;
+  level: number;
+  endorsementCount: number;
+}
 
 export default function EndorseSkill() {
   const [searchParams] = useSearchParams();
@@ -17,19 +22,13 @@ export default function EndorseSkill() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [requestData, setRequestData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
-
-  const [formData, setFormData] = useState({
-    endorserName: "",
-    endorserEmail: "",
-    endorserCompany: "",
-    testimonial: "",
-    relationship: "",
-  });
-  const [selectedSkill, setSelectedSkill] = useState("");
-  const [proficiencyLevel, setProficiencyLevel] = useState("");
+  const [skills, setSkills] = useState<SkillWithEndorsements[]>([]);
+  const [endorsedSkills, setEndorsedSkills] = useState<Set<string>>(new Set());
+  const [endorserName, setEndorserName] = useState("");
+  const [endorserEmail, setEndorserEmail] = useState("");
+  const [showNameForm, setShowNameForm] = useState(true);
 
   useEffect(() => {
     if (!token) {
@@ -61,14 +60,56 @@ export default function EndorseSkill() {
       const request = data[0];
       setRequestData(request);
 
-      // Fetch profile data with skills
+      // Fetch profile data with professional and passion skills
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name, avatar_url, skills")
+        .select("full_name, avatar_url, professional_skills, passion_skills")
         .eq("user_id", request.profile_id)
         .single();
 
       setProfileData(profile);
+
+      // Combine professional and passion skills
+      const allSkills: SkillWithEndorsements[] = [];
+      
+      if (profile?.professional_skills) {
+        (profile.professional_skills as any[]).forEach((s: any) => {
+          allSkills.push({
+            skill: s.skill,
+            category: s.category,
+            level: s.level,
+            endorsementCount: 0
+          });
+        });
+      }
+      
+      if (profile?.passion_skills) {
+        (profile.passion_skills as any[]).forEach((s: any) => {
+          allSkills.push({
+            skill: s.skill,
+            category: s.category,
+            level: s.level,
+            endorsementCount: 0
+          });
+        });
+      }
+
+      // Fetch endorsement counts for each skill
+      const { data: endorsementCounts } = await supabase
+        .from("skill_endorsement_counts")
+        .select("skill_name, endorsement_count")
+        .eq("profile_id", request.profile_id);
+
+      if (endorsementCounts) {
+        endorsementCounts.forEach((ec: any) => {
+          const skill = allSkills.find(s => s.skill === ec.skill_name);
+          if (skill) {
+            skill.endorsementCount = ec.endorsement_count;
+          }
+        });
+      }
+
+      setSkills(allSkills);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -81,41 +122,49 @@ export default function EndorseSkill() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.endorserName || !formData.endorserEmail || !selectedSkill || !proficiencyLevel) {
+    if (!endorserName.trim() || !endorserEmail.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please select a skill, proficiency level, and provide your details",
+        description: "Please provide your name and email",
         variant: "destructive",
       });
       return;
     }
+    setShowNameForm(false);
+  };
+
+  const handleEndorseSkill = async (skillName: string) => {
+    if (endorsedSkills.has(skillName)) return;
 
     setSubmitting(true);
     try {
-      // Create endorsement
-      const { error: endorsementError } = await supabase
+      const { error } = await supabase
         .from("skill_endorsements")
         .insert({
           profile_id: requestData.profile_id,
           request_id: requestData.id,
-          skill_name: selectedSkill,
-          endorser_name: formData.endorserName,
-          endorser_email: formData.endorserEmail,
-          endorser_company: formData.endorserCompany,
-          proficiency_level: proficiencyLevel,
-          testimonial: formData.testimonial,
-          relationship: formData.relationship,
+          skill_name: skillName,
+          endorser_name: endorserName,
+          endorser_email: endorserEmail,
+          proficiency_level: "advanced", // Default level for quick endorsements
         });
 
-      if (endorsementError) throw endorsementError;
+      if (error) throw error;
 
-      setSubmitted(true);
+      setEndorsedSkills(new Set([...endorsedSkills, skillName]));
+      
+      // Update local count
+      setSkills(skills.map(s => 
+        s.skill === skillName 
+          ? { ...s, endorsementCount: s.endorsementCount + 1 }
+          : s
+      ));
+
       toast({
-        title: "Thank You!",
-        description: "Your endorsement has been submitted successfully",
+        title: "Endorsed!",
+        description: `You've endorsed ${skillName}`,
       });
     } catch (error: any) {
       toast({
@@ -136,33 +185,60 @@ export default function EndorseSkill() {
     );
   }
 
-  if (submitted) {
+  if (showNameForm) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
-          <CardContent className="pt-6 text-center space-y-4">
-            <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
-            <h2 className="text-2xl font-bold">Thank You!</h2>
-            <p className="text-muted-foreground">
-              Your endorsement has been submitted successfully. {profileData?.full_name} will
-              appreciate your feedback.
-            </p>
-            <Button onClick={() => navigate("/")} className="w-full">
-              Return to Home
-            </Button>
+          <CardHeader>
+            <CardTitle>Endorse {profileData?.full_name}'s Skills</CardTitle>
+            <CardDescription>
+              Please provide your information to get started
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleNameSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="name">Your Name *</Label>
+                <Input
+                  id="name"
+                  value={endorserName}
+                  onChange={(e) => setEndorserName(e.target.value)}
+                  placeholder="Enter your name"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Your Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={endorserEmail}
+                  onChange={(e) => setEndorserEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full">
+                Continue
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
     );
   }
 
+  const allEndorsed = endorsedSkills.size === skills.length && skills.length > 0;
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 py-20">
       <Card className="max-w-2xl w-full">
         <CardHeader>
-          <CardTitle className="text-xl sm:text-2xl">Endorse {profileData?.full_name}'s Skills</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">
+            Endorse {profileData?.full_name}'s Skills
+          </CardTitle>
           <CardDescription>
-            Select a skill to endorse and share your experience
+            Click the + button to endorse skills you've seen them demonstrate
           </CardDescription>
           {requestData?.personal_message && (
             <div className="mt-4 p-3 sm:p-4 bg-muted rounded-lg">
@@ -170,127 +246,63 @@ export default function EndorseSkill() {
             </div>
           )}
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Skill Selection */}
-            <div>
-              <Label htmlFor="skillSelect" className="text-sm sm:text-base">Select Skill to Endorse *</Label>
-              <Select value={selectedSkill} onValueChange={setSelectedSkill}>
-                <SelectTrigger id="skillSelect">
-                  <SelectValue placeholder="Choose a skill" />
-                </SelectTrigger>
-                <SelectContent>
-                  {profileData?.skills?.map((skill: string) => (
-                    <SelectItem key={skill} value={skill}>
-                      {skill}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <CardContent className="space-y-4">
+          {skills.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No skills to endorse yet
             </div>
-
-            {/* Proficiency Level */}
-            <div>
-              <Label htmlFor="proficiencyLevel" className="text-sm sm:text-base">Proficiency Level *</Label>
-              <Select value={proficiencyLevel} onValueChange={setProficiencyLevel}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select proficiency level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4" />
-                      Beginner
+          ) : (
+            <div className="space-y-3">
+              {skills.map((skill) => {
+                const isEndorsed = endorsedSkills.has(skill.skill);
+                return (
+                  <div
+                    key={skill.skill}
+                    className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-accent/5 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{skill.skill}</p>
+                      <p className="text-sm text-muted-foreground">{skill.category}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {skill.endorsementCount} {skill.endorsementCount === 1 ? 'endorsement' : 'endorsements'}
+                      </p>
                     </div>
-                  </SelectItem>
-                  <SelectItem value="intermediate">
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4 fill-current" />
-                      <Star className="h-4 w-4" />
-                      Intermediate
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="advanced">
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4 fill-current" />
-                      <Star className="h-4 w-4 fill-current" />
-                      <Star className="h-4 w-4" />
-                      Advanced
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="expert">
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4 fill-current" />
-                      <Star className="h-4 w-4 fill-current" />
-                      <Star className="h-4 w-4 fill-current" />
-                      <Star className="h-4 w-4 fill-current" />
-                      Expert
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                    <Button
+                      variant={isEndorsed ? "outline" : "gradient"}
+                      size="icon"
+                      onClick={() => handleEndorseSkill(skill.skill)}
+                      disabled={submitting || isEndorsed}
+                      className="shrink-0"
+                    >
+                      <ThumbsUp className={`h-4 w-4 ${isEndorsed ? 'fill-current' : ''}`} />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
+          )}
 
-            {/* Your Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="endorserName" className="text-sm sm:text-base">Your Name *</Label>
-                <Input
-                  id="endorserName"
-                  value={formData.endorserName}
-                  onChange={(e) => setFormData({ ...formData, endorserName: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="endorserEmail" className="text-sm sm:text-base">Your Email *</Label>
-                <Input
-                  id="endorserEmail"
-                  type="email"
-                  value={formData.endorserEmail}
-                  onChange={(e) => setFormData({ ...formData, endorserEmail: e.target.value })}
-                  required
-                />
-              </div>
+          {allEndorsed && (
+            <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
+              <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto mb-2" />
+              <p className="font-medium text-green-700 dark:text-green-400">
+                Thank you for endorsing all skills!
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {profileData?.full_name} will appreciate your support
+              </p>
             </div>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="endorserCompany" className="text-sm sm:text-base">Your Company</Label>
-                <Input
-                  id="endorserCompany"
-                  value={formData.endorserCompany}
-                  onChange={(e) => setFormData({ ...formData, endorserCompany: e.target.value })}
-                  placeholder="Optional"
-                />
-              </div>
-              <div>
-                <Label htmlFor="relationship" className="text-sm sm:text-base">Your Relationship</Label>
-                <Input
-                  id="relationship"
-                  value={formData.relationship}
-                  onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                  placeholder="e.g., Client, Manager"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="testimonial" className="text-sm sm:text-base">Testimonial (Optional)</Label>
-              <Textarea
-                id="testimonial"
-                value={formData.testimonial}
-                onChange={(e) => setFormData({ ...formData, testimonial: e.target.value })}
-                placeholder="Share your experience..."
-                rows={4}
-                className="resize-none"
-              />
-            </div>
-
-            <Button type="submit" disabled={submitting} className="w-full">
-              {submitting ? "Submitting..." : "Submit Endorsement"}
+          <div className="pt-4 border-t">
+            <Button 
+              onClick={() => navigate("/")} 
+              variant="outline" 
+              className="w-full"
+            >
+              Done
             </Button>
-          </form>
+          </div>
         </CardContent>
       </Card>
     </div>

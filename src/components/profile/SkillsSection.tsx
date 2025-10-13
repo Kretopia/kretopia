@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Star, Sparkles, Briefcase } from "lucide-react";
+import { Plus, X, Star, Sparkles, Briefcase, ThumbsUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -21,6 +21,7 @@ interface SkillsSectionProps {
   jobTitle?: string;
   industry?: string;
   isOwnProfile: boolean;
+  userId: string;
   onRefresh: () => void;
 }
 
@@ -65,7 +66,8 @@ export const SkillsSection = ({
   passionSkills = [], 
   jobTitle = "",
   industry = "",
-  isOwnProfile, 
+  isOwnProfile,
+  userId,
   onRefresh 
 }: SkillsSectionProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -77,7 +79,29 @@ export const SkillsSection = ({
   const [selectedSkill, setSelectedSkill] = useState<string>("");
   const [selectedLevel, setSelectedLevel] = useState<number>(3);
   const [skillType, setSkillType] = useState<"professional" | "passion">("professional");
+  const [endorsementCounts, setEndorsementCounts] = useState<Record<string, number>>({});
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (userId) {
+      fetchEndorsementCounts();
+    }
+  }, [userId]);
+
+  const fetchEndorsementCounts = async () => {
+    const { data } = await supabase
+      .from("skill_endorsement_counts")
+      .select("skill_name, endorsement_count")
+      .eq("profile_id", userId);
+    
+    if (data) {
+      const counts: Record<string, number> = {};
+      data.forEach((item: any) => {
+        counts[item.skill_name] = item.endorsement_count;
+      });
+      setEndorsementCounts(counts);
+    }
+  };
 
   const addSkill = () => {
     if (!selectedSkill.trim()) {
@@ -136,22 +160,33 @@ export const SkillsSection = ({
     }
   };
 
-  const SkillBadge = ({ skill }: { skill: Skill }) => (
-    <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2">
-      <div className="flex-1">
-        <p className="font-medium text-sm">{skill.skill}</p>
-        <p className="text-xs text-muted-foreground">{skill.category}</p>
+  const SkillBadge = ({ skill }: { skill: Skill }) => {
+    const endorsements = endorsementCounts[skill.skill] || 0;
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2">
+        <div className="flex-1">
+          <p className="font-medium text-sm">{skill.skill}</p>
+          <p className="text-xs text-muted-foreground">{skill.category}</p>
+          {endorsements > 0 && (
+            <div className="flex items-center gap-1 mt-1">
+              <ThumbsUp className="h-3 w-3 text-primary" />
+              <span className="text-xs text-muted-foreground">
+                {endorsements} {endorsements === 1 ? 'endorsement' : 'endorsements'}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-0.5">
+          {[...Array(5)].map((_, i) => (
+            <Star
+              key={i}
+              className={`h-3 w-3 ${i < skill.level ? 'fill-primary text-primary' : 'text-muted'}`}
+            />
+          ))}
+        </div>
       </div>
-      <div className="flex gap-0.5">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`h-3 w-3 ${i < skill.level ? 'fill-primary text-primary' : 'text-muted'}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-4">

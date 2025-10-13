@@ -511,6 +511,7 @@ const PublicProfile = () => {
                           jobTitle={profile.job_title}
                           industry={profile.industry}
                           isOwnProfile={false}
+                          userId={profile.user_id}
                           onRefresh={fetchData}
                         />
                       </div>

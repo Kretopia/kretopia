@@ -10,8 +10,16 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
-export const QuickCreateOpportunityDialog = () => {
-  const [open, setOpen] = useState(false);
+interface QuickCreateOpportunityDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export const QuickCreateOpportunityDialog = ({ open: controlledOpen, onOpenChange }: QuickCreateOpportunityDialogProps = {}) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? onOpenChange! : setInternalOpen;
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',

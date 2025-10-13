@@ -25,6 +25,7 @@ import { UpgradeDialog } from "@/components/UpgradeDialog";
 import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
 import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
+import { FirstCollaborationPrompt } from "@/components/discover/FirstCollaborationPrompt";
 
 type CardType = "creator" | "opportunity";
 
@@ -86,6 +87,7 @@ const Discover = () => {
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const { isFirstTime, loading: firstTimeLoading } = useFirstTimeUser();
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
   
   // Use subscription tier from auth context
   const subscriptionTier = subscriptionInfo.tier as SubscriptionTier;
@@ -1085,6 +1087,13 @@ const Discover = () => {
           }}
         />
       )}
+
+      <FirstCollaborationPrompt onPostOpportunity={() => setShowQuickCreate(true)} />
+
+      <QuickCreateOpportunityDialog 
+        open={showQuickCreate} 
+        onOpenChange={setShowQuickCreate}
+      />
     </div>
   );
 };

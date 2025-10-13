@@ -3131,6 +3131,14 @@ export type Database = {
           role: string
         }[]
       }
+      get_own_profile_sensitive_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          stripe_customer_id: string
+          subscription_status: string
+          subscription_tier: string
+        }[]
+      }
       get_review_request_by_token: {
         Args: { token_param: string }
         Returns: {
@@ -3155,6 +3163,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_profile_owner: {
+        Args: { _profile_user_id: string }
         Returns: boolean
       }
       send_opportunity_alerts: {

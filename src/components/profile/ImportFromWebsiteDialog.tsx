@@ -46,15 +46,28 @@ export const ImportFromWebsiteDialog = ({ open, onOpenChange, onImport }: Import
           title: "Analysis Complete",
           description: "Review the extracted data and apply changes",
         });
+      } else if (data.isLinkedInBlock) {
+        toast({
+          title: "LinkedIn Access Restricted",
+          description: data.error || "LinkedIn blocks automated profile scraping. Please manually copy-paste your information.",
+          variant: "destructive",
+          duration: 8000,
+        });
       } else {
-        throw new Error("Failed to extract profile data");
+        throw new Error(data.error || "Failed to extract profile data");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing URL:", error);
+      const errorMessage = error?.message || "Could not extract profile data from this URL. Please try another or enter manually.";
+      const isLinkedInError = errorMessage.includes("LinkedIn") || url.includes("linkedin.com");
+      
       toast({
-        title: "Analysis Failed",
-        description: "Could not extract profile data from this URL. Please try another or enter manually.",
+        title: isLinkedInError ? "LinkedIn Access Restricted" : "Analysis Failed",
+        description: isLinkedInError 
+          ? "LinkedIn blocks automated access. Please manually enter your profile information or try another URL." 
+          : errorMessage,
         variant: "destructive",
+        duration: isLinkedInError ? 8000 : 5000,
       });
     } finally {
       setIsLoading(false);

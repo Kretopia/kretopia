@@ -24,11 +24,24 @@ serve(async (req) => {
     // Fetch the webpage content
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; ThriveBot/1.0; +https://lovable.app)",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
       },
     });
 
     if (!response.ok) {
+      // LinkedIn returns 999 status when blocking automated access
+      if (response.status === 999 || url.includes('linkedin.com')) {
+        return new Response(
+          JSON.stringify({ 
+            error: "LinkedIn blocks automated profile scraping. Please try: 1) Copy-paste your profile information manually, 2) Use your LinkedIn public profile URL and manually enter details, or 3) Export your LinkedIn profile as PDF and extract information from there.",
+            success: false,
+            isLinkedInBlock: true
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       throw new Error(`Failed to fetch URL: ${response.status}`);
     }
 

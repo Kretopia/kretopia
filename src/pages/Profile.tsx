@@ -666,7 +666,7 @@ const Profile = () => {
               </div>
 
               {/* Name and Role */}
-              <div className="space-y-2">
+              <div className="space-y-2 max-w-2xl">
                 <h1 className="text-3xl md:text-4xl font-bold">{profile.full_name}</h1>
                 
                 {/* Badge */}
@@ -685,6 +685,42 @@ const Profile = () => {
                 <p className="text-lg md:text-xl text-muted-foreground font-medium">
                   {profile.role || 'Creative Professional'}
                 </p>
+                
+                {/* Job Title & Industry */}
+                {(profile.job_title || profile.industry) && (
+                  <div className="pt-2 space-y-1">
+                    {profile.job_title && (
+                      <p className="text-base font-semibold">{profile.job_title}</p>
+                    )}
+                    {profile.industry && (
+                      <p className="text-sm text-muted-foreground">{profile.industry}</p>
+                    )}
+                  </div>
+                )}
+                
+                {/* Skills Preview */}
+                {Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0 && (
+                  <div className="pt-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Top Skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.professional_skills.slice(0, 5).map((skill: any, idx: number) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {skill.skill}
+                          {skill.level && (
+                            <span className="ml-1.5">
+                              {'⭐'.repeat(Math.min(skill.level, 5))}
+                            </span>
+                          )}
+                        </Badge>
+                      ))}
+                      {profile.professional_skills.length > 5 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{profile.professional_skills.length - 5} more
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
@@ -779,33 +815,30 @@ const Profile = () => {
             />
           )}
 
-          {/* TOP SECTION: Bio & Skills */}
-          <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card">
-            <div className="space-y-6">
-              {/* Bio */}
-              <div>
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">About</h3>
-                <p className="text-base leading-relaxed">
-                  {profile.bio || 'Creative professional passionate about collaboration and innovation.'}
-                </p>
-              </div>
-
-              {/* Skills */}
-              {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
-                (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
-                <div>
-                  <SkillsSection
-                    professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
-                    passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
-                    jobTitle={profile.job_title}
-                    industry={profile.industry}
-                    isOwnProfile={true}
-                    onRefresh={fetchData}
-                  />
-                </div>
-              )}
+          {/* About Section */}
+          {profile.bio && (
+            <div id="about" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">About</h3>
+              <p className="text-base leading-relaxed">
+                {profile.bio}
+              </p>
             </div>
-          </div>
+          )}
+
+          {/* Full Skills Section */}
+          {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
+            (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
+            <div id="skills" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
+              <SkillsSection
+                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
+                jobTitle={profile.job_title}
+                industry={profile.industry}
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
+            </div>
+          )}
 
           {/* Skills Verification - New Enhancement */}
           {profile && Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0 && (

@@ -25,7 +25,7 @@ import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { ProfileOptimizationHub } from "@/components/profile/ProfileOptimizationHub";
 import { PortfolioAnalytics } from "@/components/profile/PortfolioAnalytics";
-import { SkillsVerification } from "@/components/profile/SkillsVerification";
+
 import { ProfileVisibilityDashboard } from "@/components/profile/ProfileVisibilityDashboard";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
@@ -841,14 +841,6 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Skills Verification - New Enhancement */}
-          {profile && Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0 && (
-            <SkillsVerification
-              skills={profile.professional_skills as any}
-              userId={profile.user_id}
-              onSkillsUpdate={fetchData}
-            />
-          )}
 
           {/* MID SECTION: Portfolio - Always Show */}
           <div id="portfolio" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">

@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Star, Sparkles, Briefcase, ThumbsUp } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, X, Star, Sparkles, Briefcase, ThumbsUp, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -80,6 +81,10 @@ export const SkillsSection = ({
   const [selectedLevel, setSelectedLevel] = useState<number>(3);
   const [skillType, setSkillType] = useState<"professional" | "passion">("professional");
   const [endorsementCounts, setEndorsementCounts] = useState<Record<string, number>>({});
+  const [endorsementDialogOpen, setEndorsementDialogOpen] = useState(false);
+  const [personalMessage, setPersonalMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [shareLink, setShareLink] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -183,6 +188,58 @@ export const SkillsSection = ({
       toast({ title: "Success", description: "Skills updated successfully" });
       setIsEditOpen(false);
       onRefresh();
+    }
+  };
+
+  const handleGenerateEndorsementLink = async () => {
+    setSubmitting(true);
+    try {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", userId)
+        .single();
+
+      const { data, error } = await supabase
+        .from("skill_endorsement_requests")
+        .insert({
+          profile_id: userId,
+          skill_name: "All Skills",
+          personal_message: personalMessage || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const link = `https://thrivein.io/endorse?token=${data.share_token}`;
+      setShareLink(link);
+      
+      const message = `Hi there,
+
+${personalMessage || "I hope you're doing well! I'm reaching out because your endorsement would mean a lot to me."} 
+
+Would you mind taking a few minutes to endorse my skills? Your validation helps build credibility and trust with future clients.
+
+Simply click the link below:
+${link}
+
+Thank you so much!`;
+
+      await navigator.clipboard.writeText(message);
+
+      toast({
+        title: "Message Copied!",
+        description: "Pre-written message with link copied to clipboard - ready to share!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -416,6 +473,75 @@ export const SkillsSection = ({
         <div className="rounded-2xl border border-border bg-card p-8 text-center">
           <Star className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
           <p className="text-muted-foreground">No skills added yet</p>
+        </div>
+      )}
+
+      {/* Request Endorsements Button */}
+      {isOwnProfile && (professionalSkills.length > 0 || passionSkills.length > 0) && (
+        <div className="pt-4 border-t border-border">
+          <Dialog open={endorsementDialogOpen} onOpenChange={setEndorsementDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="gradient" className="w-full" size="lg">
+                <Share2 className="h-4 w-4 mr-2" />
+                Request Endorsements
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Request Skill Endorsements</DialogTitle>
+                <DialogDescription>
+                  Create a shareable link to request endorsements from clients and colleagues
+                </DialogDescription>
+              </DialogHeader>
+              
+              {!shareLink ? (
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Personal Message (Optional)</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Add a personal touch to your endorsement request..."
+                      value={personalMessage}
+                      onChange={(e) => setPersonalMessage(e.target.value)}
+                      rows={4}
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={handleGenerateEndorsementLink} 
+                    disabled={submitting}
+                    variant="gradient"
+                    className="w-full"
+                  >
+                    {submitting ? "Generating..." : "Generate Link"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4 py-4">
+                  <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-4 text-center">
+                    <p className="text-sm text-green-700 dark:text-green-400 font-medium">
+                      ✓ Message copied to clipboard!
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Paste and send to your clients or colleagues
+                    </p>
+                  </div>
+                  
+                  <Button 
+                    onClick={() => {
+                      setEndorsementDialogOpen(false);
+                      setShareLink("");
+                      setPersonalMessage("");
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Done
+                  </Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       )}
     </div>

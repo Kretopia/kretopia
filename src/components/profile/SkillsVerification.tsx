@@ -56,12 +56,26 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
 
       if (error) throw error;
 
-      const link = `https://www.thrivein.io/endorse-skill/${data.share_token}`;
+      const link = `https://www.thrivein.io/endorse?token=${data.share_token}`;
       setShareLink(link);
+      
+      // Auto-copy the full message
+      const message = `Hi there,
+
+${personalMessage || "I hope you're doing well! I'm reaching out because your endorsement would mean a lot to me."} 
+
+Would you mind taking a few minutes to endorse my skills? Your validation helps build credibility and trust with future clients.
+
+Simply click the link below:
+${link}
+
+Thank you so much!`;
+
+      await navigator.clipboard.writeText(message);
 
       toast({
-        title: "Link Generated!",
-        description: "Share this link to receive endorsements",
+        title: "Message Copied!",
+        description: "Pre-written message with link copied to clipboard - ready to share!",
       });
 
       onSkillsUpdate?.();
@@ -76,31 +90,22 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareLink);
-    toast({
-      title: "Copied!",
-      description: "Link copied to clipboard",
-    });
-  };
+  const copyMessage = () => {
+    const message = `Hi there,
 
-  const copyFullMessage = () => {
-    const message = `Hi! 👋
+${personalMessage || "I hope you're doing well! I'm reaching out because your endorsement would mean a lot to me."} 
 
-I hope you're doing well! I'm reaching out to ask if you'd be willing to endorse my skills on ThriveIn. Your endorsement would mean a lot and help validate my expertise.
-${personalMessage ? `\n${personalMessage}\n` : ''}
-You can endorse my skills here:
+Would you mind taking a few minutes to endorse my skills? Your validation helps build credibility and trust with future clients.
+
+Simply click the link below:
 ${shareLink}
 
-Thank you so much for your time and support!
-
-Best regards,
-${fullName}`;
+Thank you so much!`;
 
     navigator.clipboard.writeText(message);
     toast({
       title: "Message Copied!",
-      description: "Full message with link copied to clipboard",
+      description: "Pre-written message with link copied to clipboard",
     });
   };
 
@@ -199,58 +204,26 @@ ${fullName}`;
           </Dialog>
 
           {shareLink && (
-            <div className="p-3 sm:p-4 bg-muted rounded-lg space-y-3">
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">Share Link:</Label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Input 
-                    value={shareLink} 
-                    readOnly 
-                    className="text-xs sm:text-sm flex-1"
-                  />
-                  <Button 
-                    onClick={copyToClipboard} 
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                  >
-                    Copy Link
-                  </Button>
+            <div className="p-3 sm:p-4 bg-accent/10 border border-accent/20 rounded-lg space-y-3">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-2">
+                  <p className="text-sm font-medium">Message ready to share!</p>
+                  <p className="text-xs text-muted-foreground">
+                    The pre-written message with your endorsement link has been copied to your clipboard. 
+                    Simply paste it in an email or message to send to your clients or collaborators.
+                  </p>
                 </div>
               </div>
               
-              <div className="pt-2 border-t">
-                <Label className="text-sm font-semibold mb-2 block">Pre-written Message:</Label>
-                <div className="p-3 bg-background rounded border text-sm space-y-2 mb-2">
-                  <p className="text-muted-foreground">
-                    Hi! 👋
-                    <br /><br />
-                    I hope you're doing well! I'm reaching out to ask if you'd be willing to endorse my skills on ThriveIn. Your endorsement would mean a lot and help validate my expertise.
-                    {personalMessage && (
-                      <>
-                        <br /><br />
-                        {personalMessage}
-                      </>
-                    )}
-                    <br /><br />
-                    You can endorse my skills here:<br />
-                    <span className="text-primary break-all">{shareLink}</span>
-                    <br /><br />
-                    Thank you so much for your time and support!
-                    <br /><br />
-                    Best regards,<br />
-                    {fullName}
-                  </p>
-                </div>
-                <Button 
-                  onClick={copyFullMessage} 
-                  variant="default"
-                  size="sm"
-                  className="w-full"
-                >
-                  Copy Full Message
-                </Button>
-              </div>
+              <Button 
+                onClick={copyMessage} 
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                Copy Message Again
+              </Button>
             </div>
           )}
         </div>

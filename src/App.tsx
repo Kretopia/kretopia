@@ -147,8 +147,7 @@ const AppContent = () => {
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
             <Route path="/partner-submit" element={<PartnerSubmit />} />
-            <Route path="/submit-review/:token" element={<SubmitReview />} />
-            <Route path="/endorse-skill/:token" element={<EndorseSkill />} />
+            <Route path="/endorse" element={<EndorseSkill />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />

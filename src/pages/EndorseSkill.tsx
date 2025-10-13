@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, Star } from "lucide-react";
 
 export default function EndorseSkill() {
-  const { token } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const token = searchParams.get("token");
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -31,6 +32,11 @@ export default function EndorseSkill() {
   const [proficiencyLevel, setProficiencyLevel] = useState("");
 
   useEffect(() => {
+    if (!token) {
+      toast({ title: "Error", description: "Invalid endorsement link", variant: "destructive" });
+      navigate("/");
+      return;
+    }
     fetchRequestData();
   }, [token]);
 

@@ -704,16 +704,6 @@ const Profile = () => {
             />
           )}
 
-          {/* About Section */}
-          {profile.bio && (
-            <div id="about" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">About</h3>
-              <p className="text-base leading-relaxed">
-                {profile.bio}
-              </p>
-            </div>
-          )}
-
           {/* Full Skills Section */}
           {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
             (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (

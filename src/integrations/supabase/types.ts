@@ -2419,6 +2419,164 @@ export type Database = {
           },
         ]
       }
+      skill_endorsement_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          endorser_email: string
+          endorser_name: string | null
+          expires_at: string
+          id: string
+          personal_message: string | null
+          profile_id: string
+          project_name: string | null
+          share_token: string
+          skill_name: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          endorser_email: string
+          endorser_name?: string | null
+          expires_at?: string
+          id?: string
+          personal_message?: string | null
+          profile_id: string
+          project_name?: string | null
+          share_token?: string
+          skill_name: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          endorser_email?: string
+          endorser_name?: string | null
+          expires_at?: string
+          id?: string
+          personal_message?: string | null
+          profile_id?: string
+          project_name?: string | null
+          share_token?: string
+          skill_name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_endorsement_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsement_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsement_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsement_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      skill_endorsements: {
+        Row: {
+          created_at: string
+          endorser_company: string | null
+          endorser_email: string
+          endorser_name: string
+          id: string
+          proficiency_level: string
+          profile_id: string
+          project_name: string | null
+          relationship: string | null
+          request_id: string | null
+          skill_name: string
+          testimonial: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          endorser_company?: string | null
+          endorser_email: string
+          endorser_name: string
+          id?: string
+          proficiency_level: string
+          profile_id: string
+          project_name?: string | null
+          relationship?: string | null
+          request_id?: string | null
+          skill_name: string
+          testimonial?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          endorser_company?: string | null
+          endorser_email?: string
+          endorser_name?: string
+          id?: string
+          proficiency_level?: string
+          profile_id?: string
+          project_name?: string | null
+          relationship?: string | null
+          request_id?: string | null
+          skill_name?: string
+          testimonial?: string | null
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "skill_endorsement_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_messages: {
         Row: {
           content: string
@@ -3121,6 +3279,23 @@ export type Database = {
       generate_secure_token: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_endorsement_request_by_token: {
+        Args: { token_param: string }
+        Returns: {
+          completed_at: string
+          created_at: string
+          endorser_email: string
+          endorser_name: string
+          expires_at: string
+          id: string
+          personal_message: string
+          profile_id: string
+          project_name: string
+          share_token: string
+          skill_name: string
+          status: string
+        }[]
       }
       get_mutual_connections: {
         Args: { user1_id: string; user2_id: string }

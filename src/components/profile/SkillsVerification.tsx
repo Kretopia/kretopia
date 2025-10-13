@@ -1,54 +1,43 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle2, Clock, Share2, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Shield, CheckCircle2, Clock, AlertCircle, 
-  Upload, Link as LinkIcon, ExternalLink 
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface Skill {
   name: string;
-  verified?: boolean;
-  verificationUrl?: string;
+  endorsements?: number;
+  averageLevel?: string;
 }
 
 interface SkillsVerificationProps {
   skills: Skill[];
   userId: string;
-  onSkillsUpdate: (skills: Skill[]) => void;
+  onSkillsUpdate?: () => void;
 }
 
 export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVerificationProps) => {
-  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
-  const [verificationUrl, setVerificationUrl] = useState("");
-  const [verificationNotes, setVerificationNotes] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState<string>("");
+  const [endorserName, setEndorserName] = useState("");
+  const [endorserEmail, setEndorserEmail] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [personalMessage, setPersonalMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareLink, setShareLink] = useState("");
   const { toast } = useToast();
 
-  const verifiedCount = skills.filter(s => s.verified).length;
-  const pendingCount = skills.filter(s => s.verificationUrl && !s.verified).length;
-  const unverifiedCount = skills.filter(s => !s.verificationUrl && !s.verified).length;
-
-  const handleSubmitVerification = async () => {
-    if (!selectedSkill || !verificationUrl) {
+  const handleRequestEndorsement = async () => {
+    if (!selectedSkill || !endorserEmail) {
       toast({
-        title: "Missing information",
-        description: "Please provide a verification URL",
+        title: "Missing Information",
+        description: "Please fill in the required fields",
         variant: "destructive",
       });
       return;
@@ -56,36 +45,41 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
 
     setSubmitting(true);
     try {
-      // Update skill with verification URL
-      const updatedSkills = skills.map(skill => 
-        skill.name === selectedSkill
-          ? { ...skill, verificationUrl, verified: false }
-          : skill
-      );
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          professional_skills: updatedSkills as any
+      const { data, error } = await supabase
+        .from("skill_endorsement_requests")
+        .insert({
+          profile_id: userId,
+          skill_name: selectedSkill,
+          endorser_name: endorserName,
+          endorser_email: endorserEmail,
+          project_name: projectName,
+          personal_message: personalMessage,
         })
-        .eq('user_id', userId);
+        .select()
+        .single();
 
       if (error) throw error;
 
-      onSkillsUpdate(updatedSkills);
-      
+      const link = `${window.location.origin}/endorse-skill/${data.share_token}`;
+      setShareLink(link);
+      setShareDialogOpen(false);
+
       toast({
-        title: "Verification submitted! 🎯",
-        description: "We'll review your submission within 24-48 hours",
+        title: "Endorsement Link Created!",
+        description: "Copy and share the link with your client",
       });
 
-      setDialogOpen(false);
-      setVerificationUrl("");
-      setVerificationNotes("");
-      setSelectedSkill(null);
+      // Reset form
+      setEndorserName("");
+      setEndorserEmail("");
+      setProjectName("");
+      setPersonalMessage("");
+      setSelectedSkill("");
+
+      onSkillsUpdate?.();
     } catch (error: any) {
       toast({
-        title: "Submission failed",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -94,197 +88,145 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
     }
   };
 
-  const getSkillStatus = (skill: Skill) => {
-    if (skill.verified) return 'verified';
-    if (skill.verificationUrl) return 'pending';
-    return 'unverified';
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareLink);
+    toast({
+      title: "Copied!",
+      description: "Link copied to clipboard",
+    });
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'verified':
-        return (
-          <Badge className="gap-1 bg-green-500/10 text-green-600 border-green-500/20">
-            <CheckCircle2 className="h-3 w-3" />
-            Verified
-          </Badge>
-        );
-      case 'pending':
-        return (
-          <Badge variant="secondary" className="gap-1">
-            <Clock className="h-3 w-3" />
-            Pending
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Not Verified
-          </Badge>
-        );
-    }
+  const getSkillStats = (skill: Skill) => ({
+    endorsements: skill.endorsements || 0,
+    level: skill.averageLevel || 'No endorsements yet',
+  });
+
+  const getLevelBadge = (level: string) => {
+    const levels: Record<string, { variant: any; icon: any }> = {
+      expert: { variant: "default", icon: <Star className="h-3 w-3" /> },
+      advanced: { variant: "secondary", icon: <Star className="h-3 w-3" /> },
+      intermediate: { variant: "outline", icon: <Clock className="h-3 w-3" /> },
+      beginner: { variant: "outline", icon: <Clock className="h-3 w-3" /> },
+    };
+
+    const config = levels[level.toLowerCase()] || levels.beginner;
+    
+    return (
+      <Badge variant={config.variant} className="gap-1">
+        {config.icon}
+        {level}
+      </Badge>
+    );
   };
 
   return (
-    <Card className="border-primary/20">
+    <Card>
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Skills Verification
-            </CardTitle>
-            <CardDescription className="mt-2">
-              Verify your skills to build trust and stand out
-            </CardDescription>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">{verifiedCount}</div>
-            <div className="text-xs text-muted-foreground">verified</div>
-          </div>
-        </div>
+        <CardTitle>Skill Endorsements</CardTitle>
+        <CardDescription>
+          Request endorsements from clients to validate your skills and proficiency levels
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="p-3 bg-green-500/5 border-green-500/20">
-            <div className="text-center">
-              <div className="text-xl font-bold text-green-600">{verifiedCount}</div>
-              <div className="text-xs text-muted-foreground">Verified</div>
-            </div>
-          </Card>
-          <Card className="p-3 bg-yellow-500/5 border-yellow-500/20">
-            <div className="text-center">
-              <div className="text-xl font-bold text-yellow-600">{pendingCount}</div>
-              <div className="text-xs text-muted-foreground">Pending</div>
-            </div>
-          </Card>
-          <Card className="p-3 bg-muted/50">
-            <div className="text-center">
-              <div className="text-xl font-bold">{unverifiedCount}</div>
-              <div className="text-xs text-muted-foreground">Unverified</div>
-            </div>
-          </Card>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3">
+          {skills.map((skill) => {
+            const stats = getSkillStats(skill);
+            return (
+              <div
+                key={skill.name}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{skill.name}</span>
+                    {stats.endorsements > 0 && (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{stats.endorsements} endorsement{stats.endorsements !== 1 ? 's' : ''}</span>
+                    {stats.level !== 'No endorsements yet' && getLevelBadge(stats.level)}
+                  </div>
+                </div>
+                <Dialog open={shareDialogOpen && selectedSkill === skill.name} onOpenChange={(open) => {
+                  setShareDialogOpen(open);
+                  if (open) setSelectedSkill(skill.name);
+                }}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Request Endorsement
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Request Endorsement for {skill.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="endorserEmail">Client Email *</Label>
+                        <Input
+                          id="endorserEmail"
+                          type="email"
+                          value={endorserEmail}
+                          onChange={(e) => setEndorserEmail(e.target.value)}
+                          placeholder="client@example.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="endorserName">Client Name</Label>
+                        <Input
+                          id="endorserName"
+                          value={endorserName}
+                          onChange={(e) => setEndorserName(e.target.value)}
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="projectName">Project Name</Label>
+                        <Input
+                          id="projectName"
+                          value={projectName}
+                          onChange={(e) => setProjectName(e.target.value)}
+                          placeholder="Website Redesign"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="personalMessage">Personal Message</Label>
+                        <Textarea
+                          id="personalMessage"
+                          value={personalMessage}
+                          onChange={(e) => setPersonalMessage(e.target.value)}
+                          placeholder="Add a personal note to your client..."
+                          rows={3}
+                        />
+                      </div>
+                      <Button
+                        onClick={handleRequestEndorsement}
+                        disabled={submitting}
+                        className="w-full"
+                      >
+                        {submitting ? "Creating..." : "Create Endorsement Link"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Info Box */}
-        <Card className="p-4 bg-primary/5 border-primary/20">
-          <div className="flex gap-3">
-            <Shield className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-semibold mb-1 text-sm">Why verify your skills?</h4>
-              <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• Verified profiles get 5x more trust from potential collaborators</li>
-                <li>• Rank higher in search results and recommendations</li>
-                <li>• Access to exclusive opportunities requiring verified skills</li>
-              </ul>
+        {shareLink && (
+          <div className="mt-4 p-4 bg-muted rounded-lg space-y-2">
+            <Label>Share this link with your client:</Label>
+            <div className="flex gap-2">
+              <Input value={shareLink} readOnly />
+              <Button onClick={copyToClipboard} variant="outline">
+                Copy
+              </Button>
             </div>
           </div>
-        </Card>
-
-        {/* Skills List */}
-        <div className="space-y-2">
-          <h4 className="font-semibold text-sm">Your Skills</h4>
-          {skills.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              No skills added yet. Add skills to start verification.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {skills.map((skill, index) => {
-                const status = getSkillStatus(skill);
-                return (
-                  <Card key={index} className="p-3 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">{skill.name}</div>
-                        {skill.verificationUrl && (
-                          <a 
-                            href={skill.verificationUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            View proof
-                          </a>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {getStatusBadge(status)}
-                        {status === 'unverified' && (
-                          <Dialog open={dialogOpen && selectedSkill === skill.name} onOpenChange={setDialogOpen}>
-                            <DialogTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => setSelectedSkill(skill.name)}
-                              >
-                                Verify
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Verify Skill: {skill.name}</DialogTitle>
-                                <DialogDescription>
-                                  Provide proof of your skill (certificates, portfolio work, etc.)
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4 mt-4">
-                                <div>
-                                  <Label htmlFor="verification-url">Verification URL *</Label>
-                                  <Input
-                                    id="verification-url"
-                                    placeholder="https://certificate.com/your-cert"
-                                    value={verificationUrl}
-                                    onChange={(e) => setVerificationUrl(e.target.value)}
-                                    className="mt-1"
-                                  />
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    Link to certificate, portfolio item, or other proof
-                                  </p>
-                                </div>
-                                <div>
-                                  <Label htmlFor="verification-notes">Additional Notes</Label>
-                                  <Textarea
-                                    id="verification-notes"
-                                    placeholder="Any context that helps verify this skill..."
-                                    value={verificationNotes}
-                                    onChange={(e) => setVerificationNotes(e.target.value)}
-                                    rows={3}
-                                    className="mt-1"
-                                  />
-                                </div>
-                                <Button 
-                                  onClick={handleSubmitVerification}
-                                  disabled={submitting}
-                                  className="w-full"
-                                >
-                                  {submitting ? (
-                                    <>
-                                      <Clock className="h-4 w-4 mr-2 animate-spin" />
-                                      Submitting...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Upload className="h-4 w-4 mr-2" />
-                                      Submit for Review
-                                    </>
-                                  )}
-                                </Button>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -41,7 +41,6 @@ const StorageManagement = lazy(() => import("./pages/StorageManagement"));
 const SupportDashboard = lazy(() => import("./pages/SupportDashboard"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const Settings = lazy(() => import("./pages/Settings"));
-const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -56,6 +55,8 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const TestEmails = lazy(() => import("./pages/TestEmails"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
+const SubmitReview = lazy(() => import("./pages/SubmitReview"));
+const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -146,6 +147,8 @@ const AppContent = () => {
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
             <Route path="/partner-submit" element={<PartnerSubmit />} />
+            <Route path="/submit-review/:token" element={<SubmitReview />} />
+            <Route path="/endorse-skill/:token" element={<EndorseSkill />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />

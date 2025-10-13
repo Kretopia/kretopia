@@ -36,7 +36,7 @@ export function ProfileQuickNav() {
   useEffect(() => {
     const handleScroll = () => {
       // Show nav after scrolling past header
-      setIsVisible(window.scrollY > 300);
+      setIsVisible(window.scrollY > 100);
 
       // Determine which section is in view
       const sectionElements = sections.map((s) => ({

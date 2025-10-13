@@ -27,11 +27,23 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
   const [submitting, setSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [shareLink, setShareLink] = useState("");
+  const [fullName, setFullName] = useState("");
   const { toast } = useToast();
 
   const handleGenerateLink = async () => {
     setSubmitting(true);
     try {
+      // Get user's full name
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", userId)
+        .single();
+
+      if (profileData) {
+        setFullName(profileData.full_name);
+      }
+
       const { data, error } = await supabase
         .from("skill_endorsement_requests")
         .insert({
@@ -44,7 +56,7 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
 
       if (error) throw error;
 
-      const link = `${window.location.origin}/endorse-skill/${data.share_token}`;
+      const link = `https://www.thrivein.io/endorse-skill/${data.share_token}`;
       setShareLink(link);
 
       toast({
@@ -69,6 +81,26 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
     toast({
       title: "Copied!",
       description: "Link copied to clipboard",
+    });
+  };
+
+  const copyFullMessage = () => {
+    const message = `Hi! 👋
+
+I hope you're doing well! I'm reaching out to ask if you'd be willing to endorse my skills on ThriveIn. Your endorsement would mean a lot and help validate my expertise.
+${personalMessage ? `\n${personalMessage}\n` : ''}
+You can endorse my skills here:
+${shareLink}
+
+Thank you so much for your time and support!
+
+Best regards,
+${fullName}`;
+
+    navigator.clipboard.writeText(message);
+    toast({
+      title: "Message Copied!",
+      description: "Full message with link copied to clipboard",
     });
   };
 
@@ -167,21 +199,56 @@ export const SkillsVerification = ({ skills, userId, onSkillsUpdate }: SkillsVer
           </Dialog>
 
           {shareLink && (
-            <div className="p-3 sm:p-4 bg-muted rounded-lg space-y-2">
-              <Label className="text-sm">Share this link:</Label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input 
-                  value={shareLink} 
-                  readOnly 
-                  className="text-xs sm:text-sm flex-1"
-                />
+            <div className="p-3 sm:p-4 bg-muted rounded-lg space-y-3">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Share Link:</Label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input 
+                    value={shareLink} 
+                    readOnly 
+                    className="text-xs sm:text-sm flex-1"
+                  />
+                  <Button 
+                    onClick={copyToClipboard} 
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                  >
+                    Copy Link
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="pt-2 border-t">
+                <Label className="text-sm font-semibold mb-2 block">Pre-written Message:</Label>
+                <div className="p-3 bg-background rounded border text-sm space-y-2 mb-2">
+                  <p className="text-muted-foreground">
+                    Hi! 👋
+                    <br /><br />
+                    I hope you're doing well! I'm reaching out to ask if you'd be willing to endorse my skills on ThriveIn. Your endorsement would mean a lot and help validate my expertise.
+                    {personalMessage && (
+                      <>
+                        <br /><br />
+                        {personalMessage}
+                      </>
+                    )}
+                    <br /><br />
+                    You can endorse my skills here:<br />
+                    <span className="text-primary break-all">{shareLink}</span>
+                    <br /><br />
+                    Thank you so much for your time and support!
+                    <br /><br />
+                    Best regards,<br />
+                    {fullName}
+                  </p>
+                </div>
                 <Button 
-                  onClick={copyToClipboard} 
-                  variant="outline"
+                  onClick={copyFullMessage} 
+                  variant="default"
                   size="sm"
-                  className="shrink-0"
+                  className="w-full"
                 >
-                  Copy
+                  Copy Full Message
                 </Button>
               </div>
             </div>

@@ -10,9 +10,10 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2 } from "lucide-react";
+import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2, Globe } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
+import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 
 const STEPS = [
   { id: 1, title: "Profile", icon: Users },
@@ -43,6 +44,7 @@ export default function Onboarding() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState<string>("");
+  const [showImportDialog, setShowImportDialog] = useState(false);
   
   const [profile, setProfile] = useState({
     full_name: "",
@@ -56,6 +58,26 @@ export default function Onboarding() {
   useEffect(() => {
     checkOnboardingStatus();
   }, []);
+
+  const handleImportData = (data: any) => {
+    const updatedProfile = { ...profile };
+    
+    if (data.full_name) updatedProfile.full_name = data.full_name;
+    if (data.role) updatedProfile.role = data.role;
+    if (data.bio) updatedProfile.bio = data.bio;
+    if (data.location) updatedProfile.location = data.location;
+    
+    setProfile(updatedProfile);
+    
+    if (data.skills && Array.isArray(data.skills)) {
+      setSelectedSkills(data.skills);
+    }
+    
+    toast({
+      title: "Data Imported",
+      description: "Review and adjust your profile information as needed",
+    });
+  };
 
   const checkOnboardingStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -263,6 +285,16 @@ export default function Onboarding() {
               </div>
               <h2 className="text-3xl font-bold mb-2">Let's Set Up Your Profile!</h2>
               <p className="text-muted-foreground">This takes under 2 minutes and helps us match you better</p>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowImportDialog(true)}
+                className="mt-4 gap-2"
+              >
+                <Globe className="h-4 w-4" />
+                Quick Fill from Website
+              </Button>
             </div>
 
             {/* Optional Photo Upload - Inline */}
@@ -410,6 +442,12 @@ export default function Onboarding() {
           }}
           onCropComplete={uploadAvatar}
           loading={uploadingAvatar}
+        />
+        
+        <ImportFromWebsiteDialog
+          open={showImportDialog}
+          onOpenChange={setShowImportDialog}
+          onImport={handleImportData}
         />
       </Card>
     </div>

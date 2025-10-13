@@ -88,6 +88,32 @@ export const SkillsSection = ({
     }
   }, [userId]);
 
+  // Real-time subscription for endorsement updates
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel('skill-endorsements-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'skill_endorsements',
+          filter: `profile_id=eq.${userId}`
+        },
+        () => {
+          // Refetch endorsement counts when a new endorsement is added
+          fetchEndorsementCounts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const fetchEndorsementCounts = async () => {
     const { data } = await supabase
       .from("skill_endorsement_counts")

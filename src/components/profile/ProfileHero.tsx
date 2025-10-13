@@ -93,8 +93,34 @@ export const ProfileHero = ({
           )}
         </div>
 
-        {/* Name */}
-        <h1 className="text-2xl font-semibold">{displayName}</h1>
+        {/* Name & Badges */}
+        <div className="flex items-center gap-2 flex-wrap justify-center">
+          <h1 className="text-2xl font-semibold">{displayName}</h1>
+          {profile.verified_metrics && (
+            <Badge variant="secondary" className="gap-1 h-5">
+              <Verified className="h-3 w-3 text-primary" />
+              <span className="text-xs">Verified</span>
+            </Badge>
+          )}
+          {profile.badge && (
+            <Badge 
+              variant="default"
+              className="h-5 text-xs"
+            >
+              {profile.badge === 'founder' ? '👑 Founder' : 
+               profile.badge === 'og' ? '⭐ OG' : 
+               profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
+            </Badge>
+          )}
+        </div>
+
+        {/* Role */}
+        {displayRole && (
+          <div className="flex items-center gap-2 text-sm">
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <span>{displayRole}</span>
+          </div>
+        )}
         
         {/* Action Buttons */}
         <div className="flex gap-2 w-full max-w-sm">
@@ -156,35 +182,6 @@ export const ProfileHero = ({
 
         {/* Profile Details - Left Aligned */}
         <div className="w-full text-left space-y-2">
-          {/* Name & Badges Row */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-base">{displayName}</span>
-            {profile.verified_metrics && (
-              <Badge variant="secondary" className="gap-1 h-5">
-                <Verified className="h-3 w-3 text-primary" />
-                <span className="text-xs">Verified</span>
-              </Badge>
-            )}
-            {profile.badge && (
-              <Badge 
-                variant="default"
-                className="h-5 text-xs"
-              >
-                {profile.badge === 'founder' ? '👑 Founder' : 
-                 profile.badge === 'og' ? '⭐ OG' : 
-                 profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
-              </Badge>
-            )}
-          </div>
-          
-          {/* Role */}
-          {displayRole && (
-            <div className="flex items-center gap-2 text-sm">
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
-              <span>{displayRole}</span>
-            </div>
-          )}
-          
           {/* Location */}
           {displayLocation && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -200,19 +197,17 @@ export const ProfileHero = ({
               <span className="font-medium">{profile.average_rating.toFixed(1)}</span>
             </div>
           )}
-        </div>
 
-        {/* Bio */}
-        {profile.bio && (
-          <div className="w-full text-left text-sm leading-relaxed">
-            {profile.bio}
-          </div>
-        )}
+          {/* Bio */}
+          {profile.bio && (
+            <div className="text-sm leading-relaxed mt-2">
+              {profile.bio}
+            </div>
+          )}
 
-        {/* Top Skills */}
-        {topSkills.length > 0 && (
-          <div className="w-full">
-            <div className="flex flex-wrap gap-2">
+          {/* Top Skills */}
+          {topSkills.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
               {topSkills.map((skill: any, index: number) => (
                 <Badge 
                   key={index}
@@ -223,8 +218,8 @@ export const ProfileHero = ({
                 </Badge>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

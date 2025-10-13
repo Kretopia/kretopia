@@ -112,41 +112,43 @@ const Navbar = ({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
-                    {/* Main Navigation */}
-                    <Button
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/dashboard")}
-                      >
-                        <LayoutDashboard className="h-5 w-5" />
-                        Home
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/discover")}
-                      >
-                        <Compass className="h-5 w-5" />
-                        Discover
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/circle")}
-                      >
-                        <Users className="h-5 w-5" />
-                        Network
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/projects")}
-                      >
-                        <FolderKanban className="h-5 w-5" />
-                        Projects
-                      </Button>
-                      
-                      <Separator className="my-3" />
+                    {/* Main Navigation - Only show on lg+ screens (hidden on mobile where BottomNav shows these) */}
+                    <div className="hidden lg:flex lg:flex-col lg:gap-1">
+                      <Button
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12 w-full"
+                          onClick={() => handleNavigation("/dashboard")}
+                        >
+                          <LayoutDashboard className="h-5 w-5" />
+                          Home
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12 w-full"
+                          onClick={() => handleNavigation("/discover")}
+                        >
+                          <Compass className="h-5 w-5" />
+                          Discover
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12 w-full"
+                          onClick={() => handleNavigation("/circle")}
+                        >
+                          <Users className="h-5 w-5" />
+                          Network
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12 w-full"
+                          onClick={() => handleNavigation("/projects")}
+                        >
+                          <FolderKanban className="h-5 w-5" />
+                          Projects
+                        </Button>
+                        
+                        <Separator className="my-3" />
+                    </div>
 
                     <Button
                       variant="ghost" 

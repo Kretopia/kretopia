@@ -138,9 +138,14 @@ const Discover = () => {
   useEffect(() => {
     const fetchData = async () => {
       console.log('[Discover] Starting to fetch data...');
+      setLoading(true);
+      setCards([]); // Clear cards when switching tabs
+      setFeaturedProfile(null); // Clear featured profile
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.error('[Discover] No authenticated user');
+        setLoading(false);
         return;
       }
       console.log('[Discover] User authenticated:', user.id);

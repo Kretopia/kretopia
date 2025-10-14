@@ -15,7 +15,6 @@ import { CreditPromptDialog } from "@/components/discover/CreditPromptDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
 import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
-import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 import { useUndoSwipe } from "@/hooks/useUndoSwipe";
 import { scoreProfilesWithAI } from "@/components/discover/AIMatchScoring";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
@@ -937,17 +936,6 @@ const Discover = () => {
                     </div>
                   )}
                 </div>
-
-                {/* Bookmark button for opportunities */}
-                {currentCard.type === 'opportunity' && (
-                  <div className="absolute left-3 sm:left-4 top-3 sm:top-4">
-                    <BookmarkButton 
-                      opportunityId={currentCard.id}
-                      variant="outline"
-                      className="bg-background/90 backdrop-blur-sm"
-                    />
-                  </div>
-                )}
               </div>
 
               <div className="p-4 sm:p-6">

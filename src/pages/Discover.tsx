@@ -1017,13 +1017,15 @@ const Discover = () => {
         onOpenChange={setShowCreditPrompt}
       />
 
-      <MatchExplanationDialog
-        open={showMatchExplanation}
-        onOpenChange={setShowMatchExplanation}
-        match={currentCard}
-        onConnect={() => handleSwipe("right")}
-        onPass={() => handleSwipe("left")}
-      />
+      {currentCard && (
+        <MatchExplanationDialog
+          open={showMatchExplanation}
+          onOpenChange={setShowMatchExplanation}
+          match={currentCard}
+          onConnect={() => handleSwipe("right")}
+          onPass={() => handleSwipe("left")}
+        />
+      )}
 
       <UpgradeDialog
         open={showUpgradeDialog}

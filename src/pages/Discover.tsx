@@ -137,12 +137,13 @@ const Discover = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log('[Discover] Starting to fetch data...');
-      setLoading(true);
-      setCards([]); // Clear cards when switching tabs
-      setFeaturedProfile(null); // Clear featured profile
-      
-      const { data: { user } } = await supabase.auth.getUser();
+      try {
+        console.log('[Discover] Starting to fetch data...');
+        setLoading(true);
+        setCards([]); // Clear cards when switching tabs
+        setFeaturedProfile(null); // Clear featured profile
+        
+        const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.error('[Discover] No authenticated user');
         setLoading(false);
@@ -458,7 +459,17 @@ const Discover = () => {
         setCards(opportunityCards);
       }
       
+      console.log('[Discover] Finished fetching data, setting loading to false');
       setLoading(false);
+      } catch (error) {
+        console.error('[Discover] Error in fetchData:', error);
+        setLoading(false);
+        toast({
+          title: "Error loading data",
+          description: "Please try refreshing the page",
+          variant: "destructive"
+        });
+      }
     };
 
     fetchData();
@@ -867,16 +878,25 @@ const Discover = () => {
                     <div className="relative h-96 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10">
                       <div className="text-center p-6">
                         <Sparkles className="mx-auto mb-4 h-16 w-16 text-primary animate-pulse" />
-                        <h2 className="mb-2 text-2xl font-bold">No more opportunities right now</h2>
+                        <h2 className="mb-2 text-2xl font-bold">No opportunities available</h2>
                         <p className="text-muted-foreground mb-4">
-                          Check back soon for new opportunities
+                          {cards.length === 0 
+                            ? "There are no opportunities from other creators at the moment. Check back soon or post your own opportunity!"
+                            : "You've seen all available opportunities. Check back soon for more!"}
                         </p>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => window.location.reload()}
-                        >
-                          Refresh
-                        </Button>
+                        <div className="flex gap-2 justify-center">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => window.location.reload()}
+                          >
+                            Refresh
+                          </Button>
+                          <Button 
+                            onClick={() => navigate('/manage-opportunities')}
+                          >
+                            Post Opportunity
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>

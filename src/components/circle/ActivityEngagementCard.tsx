@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, Sparkles } from "lucide-react";
+import { Flame, MessageCircle, Share2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -115,10 +115,10 @@ export const ActivityEngagementCard = ({
         <Button
           variant="ghost"
           size="sm"
-          className={`gap-2 ${liked ? 'text-red-500' : ''}`}
+          className={`gap-2 ${liked ? 'text-orange-500' : ''}`}
           onClick={handleLike}
         >
-          <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
+          <Flame className={`h-4 w-4 ${liked ? 'fill-orange-500' : ''}`} />
           {likeCount > 0 && <span className="text-xs">{likeCount}</span>}
         </Button>
         <Button

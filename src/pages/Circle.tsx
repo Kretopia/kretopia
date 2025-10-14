@@ -243,6 +243,30 @@ const Circle = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    try {
+      // Fetch AI-recommended "For You" feed
+      const { data: feedData, error: feedError } = await supabase.functions.invoke(
+        'generate-for-you-feed',
+        {
+          body: { userId: user.id }
+        }
+      );
+
+      if (feedError) {
+        console.error('Error fetching For You feed:', feedError);
+        throw feedError;
+      }
+
+      if (feedData?.feed && feedData.feed.length > 0) {
+        console.log('For You feed loaded:', feedData.feed.length, 'items, AI:', feedData.aiRecommended);
+        setActivityFeed(feedData.feed);
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to load For You feed, falling back:', error);
+    }
+
+    // Fallback: Load from connections if AI feed fails
     const { data: myConnections } = await supabase
       .from('connections')
       .select('connected_user_id')
@@ -747,10 +771,10 @@ const Circle = () => {
             <div className="mb-4">
               <div>
                 <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Flame className="h-5 w-5 text-orange-500" />
-                  Spark Feed
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  For You
                 </h2>
-                <p className="text-sm text-muted-foreground">See what your circle is creating and engage with their work</p>
+                <p className="text-sm text-muted-foreground">AI-recommended content personalized for you across the platform</p>
               </div>
             </div>
 
@@ -761,9 +785,9 @@ const Circle = () => {
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center mx-auto">
                       <Flame className="h-8 w-8 text-orange-500" />
                     </div>
-                    <h3 className="text-xl font-semibold">Start the Spark 🔥</h3>
+                    <h3 className="text-xl font-semibold">Discover Amazing Content ✨</h3>
                     <p className="text-muted-foreground">
-                      Connect with creators to see their posts, work, and achievements. Your network's creativity starts here.
+                      Your personalized For You feed will show trending posts, work, and achievements from creators across the platform. Start exploring to see more!
                     </p>
                     <div className="flex gap-3 justify-center pt-4">
                       <Button onClick={() => navigate("/discover")} className="gap-2">

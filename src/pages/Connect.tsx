@@ -31,6 +31,7 @@ export default function Connect() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [featuredProfile, setFeaturedProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
@@ -256,7 +257,18 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
       console.log('[Connect] Final profiles to display:', unconnectedProfiles.length);
       console.log('[Connect] Profile details:', unconnectedProfiles);
 
-      setProfiles(unconnectedProfiles);
+      // Select featured profile (highest level OG/Beta user)
+      const ogProfiles = unconnectedProfiles.filter(p => p.badge === 'og');
+      const featuredCandidate = ogProfiles.length > 0 
+        ? ogProfiles.sort((a, b) => (b.level || 0) - (a.level || 0))[0]
+        : unconnectedProfiles.sort((a, b) => (b.level || 0) - (a.level || 0))[0];
+      
+      if (featuredCandidate) {
+        setFeaturedProfile(featuredCandidate);
+        setProfiles(unconnectedProfiles.filter(p => p.user_id !== featuredCandidate.user_id));
+      } else {
+        setProfiles(unconnectedProfiles);
+      }
     } catch (error) {
       console.error('Error fetching profiles:', error);
       toast.error('Failed to load profiles');
@@ -450,8 +462,8 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24 md:pb-8">
       <SEO 
-        title="Connect - Find Creators"
-        description="Search and connect with creators in your industry"
+        title="Creators - Discover & Connect"
+        description="Browse creators in a grid layout, view featured profiles, and connect with collaborators"
       />
       
       {/* Header */}
@@ -459,9 +471,9 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">Connect</h1>
+            <h1 className="text-2xl font-bold">Creators</h1>
           </div>
-          <p className="text-muted-foreground">Find and connect with creators</p>
+          <p className="text-muted-foreground">Discover and connect with talented creators</p>
         </div>
       </div>
 
@@ -525,7 +537,7 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
               </div>
-            ) : profiles.length === 0 ? (
+            ) : profiles.length === 0 && !featuredProfile ? (
               <EmptyState
                 icon={Users}
                 title="No Creators Found"
@@ -533,8 +545,77 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
                 className="py-16"
               />
             ) : (
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {profiles.map((profile) => (
+              <>
+                {/* Featured Profile */}
+                {featuredProfile && (
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      <h2 className="text-lg font-semibold">Featured Creator</h2>
+                    </div>
+                    <Card className="overflow-hidden hover:shadow-xl transition-all border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+                      <div 
+                        onClick={() => navigate(`/profile/${featuredProfile.user_id}`, { state: { from: 'connect' } })}
+                        className="cursor-pointer"
+                      >
+                        <div className="grid md:grid-cols-[200px_1fr] gap-6 p-6">
+                          <div className="flex justify-center md:justify-start">
+                            <Avatar className="h-32 w-32 border-4 border-primary/20">
+                              <AvatarImage src={featuredProfile.avatar_url || undefined} />
+                              <AvatarFallback className="text-2xl">
+                                {featuredProfile.full_name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="text-2xl font-bold">{featuredProfile.full_name}</h3>
+                              <Badge className={`${getBadgeColor(featuredProfile.badge)} text-white`}>
+                                {featuredProfile.badge.toUpperCase()}
+                              </Badge>
+                              <Badge variant="outline" className="gap-1">
+                                Level {featuredProfile.level || 1}
+                              </Badge>
+                            </div>
+                            <p className="text-lg text-muted-foreground mb-2">{featuredProfile.role}</p>
+                            {featuredProfile.location && (
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+                                <MapPin className="h-4 w-4" />
+                                {featuredProfile.location}
+                              </div>
+                            )}
+                            {featuredProfile.bio && (
+                              <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+                                {featuredProfile.bio}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {featuredProfile.professional_skills?.slice(0, 5).map((skill: any, idx: number) => (
+                                <Badge key={idx} variant="secondary">
+                                  {skill.name}
+                                </Badge>
+                              ))}
+                            </div>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              {getConnectionButton(featuredProfile)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Regular Grid */}
+                {profiles.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                      <h2 className="text-lg font-semibold">All Creators</h2>
+                      <Badge variant="secondary">{profiles.length}</Badge>
+                    </div>
+                    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                      {profiles.map((profile) => (
               <Card 
                 key={profile.user_id}
                 className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
@@ -590,8 +671,11 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
                   {getConnectionButton(profile)}
                 </div>
               </Card>
-                ))}
-              </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
             )}
           </div>
         </div>

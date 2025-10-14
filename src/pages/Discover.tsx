@@ -68,7 +68,7 @@ const Discover = () => {
   const [cards, setCards] = useState<Card[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"creators" | "opportunities">("creators");
+  const [activeTab, setActiveTab] = useState<"creators" | "opportunities">("opportunities");
   const [userLevel, setUserLevel] = useState<number>(1);
   const [userCredits, setUserCredits] = useState<number>(0);
   const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
@@ -656,7 +656,7 @@ const Discover = () => {
       <div className="mx-auto max-w-6xl">
         <div className="mb-4 sm:mb-6">
           <div className="mb-3 sm:mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl sm:text-3xl font-bold">Discover</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Opportunities</h1>
             <div className="flex items-center gap-2 flex-wrap">
               {subscriptionTier === 'free' ? (
                 <Badge 
@@ -679,34 +679,14 @@ const Discover = () => {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-3 sm:mb-4">
-            <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="creators" className="text-sm sm:text-base">Creators to Collab</TabsTrigger>
-              <TabsTrigger value="opportunities" className="text-sm sm:text-base">Opportunities</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Discover is now Opportunities only - Creators moved to Connect page */}
 
-          {/* AI Features Banner - Updated for all users */}
-          {activeTab === 'creators' && (
-            <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/20">
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-              {subscriptionTier === 'free' ? (
-                <p className="text-xs text-muted-foreground">
-                  AI matching active • 3 smart recommendations per day
-                </p>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  AI-powered matching active • Unlimited smart recommendations
-                </p>
-              )}
-            </div>
-          )}
 
           {/* Profile Completion Banner */}
           {profileCompletionStatus && profileCompletionStatus.percentage < 70 && (
             <ProfileCompletionBanner 
               completion={profileCompletionStatus} 
-              page={activeTab === 'creators' ? 'discover' : 'opportunities'} 
+              page="opportunities" 
             />
           )}
         </div>
@@ -715,14 +695,14 @@ const Discover = () => {
         {!firstTimeLoading && isFirstTime && (
           <div className="mb-4">
             <FirstTimeUserGuide
-              title="👋 Welcome to Discovery!"
-              description="Your gateway to finding perfect collaborations"
+              title="👋 Welcome to Opportunities!"
+              description="Find paid work, barters, and collaboration opportunities"
               tips={[
-                "Browse 'Creators to Collab' for direct partnerships (podcast guests, collab videos, etc.)",
-                "Check 'Opportunities' for paid work, barters, and open calls",
                 "Swipe right (→) to show interest, left (←) to pass",
-                "✨ AI shows you 3 smart recommendations daily (upgrade for unlimited)",
-                "When both swipe right on creators, it's a match! Start collaborating"
+                "Look for opportunities that match your skills and interests",
+                "Check compensation and location details carefully",
+                "Use filters to narrow down to what you're looking for",
+                "Looking for creators to collab with? Check the Connect page!"
               ]}
             />
           </div>
@@ -731,7 +711,7 @@ const Discover = () => {
         {/* Daily AI Recommendations */}
         <div className="mb-4">
           <DailyRecommendations
-            activeTab={activeTab}
+            activeTab="opportunities"
             onSelect={(id, type) => {
               // Find and jump to the card
               const cardIndex = cards.findIndex(c => c.id === id);
@@ -744,52 +724,30 @@ const Discover = () => {
 
         <div className="grid lg:grid-cols-[250px_1fr] gap-4 sm:gap-6">
           <div className="hidden lg:block">
-            {activeTab === 'creators' ? (
-              <CreatorFilters 
-                filters={creatorFilters}
-                onFilterChange={setCreatorFilters}
-                isPremium={subscriptionTier !== 'free'}
-                userLevel={userLevel}
-              />
-            ) : (
+            <OpportunityFiltersComponent
+              filters={opportunityFilters}
+              onFilterChange={setOpportunityFilters}
+              isPremium={subscriptionTier !== 'free'}
+              userLevel={userLevel}
+            />
+          </div>
+
+          <div className="max-w-md mx-auto w-full">
+            <div className="lg:hidden mb-3">
               <OpportunityFiltersComponent
                 filters={opportunityFilters}
                 onFilterChange={setOpportunityFilters}
                 isPremium={subscriptionTier !== 'free'}
                 userLevel={userLevel}
               />
-            )}
-          </div>
-
-          <div className="max-w-md mx-auto w-full">
-            <div className="lg:hidden mb-3">
-              {activeTab === 'creators' ? (
-                <CreatorFilters 
-                  filters={creatorFilters}
-                  onFilterChange={setCreatorFilters}
-                  isPremium={subscriptionTier !== 'free'}
-                  userLevel={userLevel}
-                />
-              ) : (
-                <OpportunityFiltersComponent
-                  filters={opportunityFilters}
-                  onFilterChange={setOpportunityFilters}
-                  isPremium={subscriptionTier !== 'free'}
-                  userLevel={userLevel}
-                />
-              )}
             </div>
 
             {/* Smart Filter Suggestions */}
             <SmartFilterSuggestions
-              activeTab={activeTab}
-              currentFilters={activeTab === 'creators' ? creatorFilters : opportunityFilters}
+              activeTab="opportunities"
+              currentFilters={opportunityFilters}
               onApplySuggestion={(filter, value) => {
-                if (activeTab === 'creators') {
-                  setCreatorFilters(prev => ({ ...prev, [filter]: value }));
-                } else {
-                  setOpportunityFilters(prev => ({ ...prev, [filter]: value }));
-                }
+                setOpportunityFilters(prev => ({ ...prev, [filter]: value }));
               }}
               className="mb-4"
             />
@@ -825,28 +783,17 @@ const Discover = () => {
                 <div className="relative h-72 sm:h-80 md:h-96 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10">
                   <div className="text-center p-6">
                     <Sparkles className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary animate-pulse" />
-                    {activeTab === 'creators' ? (
-                      <>
-                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">You've seen all active creators</h2>
-                        <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                          Check back soon for new creators, or switch to 'Opportunities' tab for paid work and barter deals
-                        </p>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => window.location.reload()}
-                          className="mt-2"
-                        >
-                          Refresh
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <h2 className="mb-2 text-xl sm:text-2xl font-bold">No opportunities yet</h2>
-                        <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                          Be the first to post a collaboration opportunity, paid work, or barter deal
-                        </p>
-                      </>
-                    )}
+                    <h2 className="mb-2 text-xl sm:text-2xl font-bold">No more opportunities right now</h2>
+                    <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                      Check back soon for new opportunities, or explore creators to collab with on the Connect page
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => window.location.reload()}
+                      className="mt-2"
+                    >
+                      Refresh
+                    </Button>
                   </div>
                 </div>
               </div>

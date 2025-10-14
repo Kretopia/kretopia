@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmptyState } from "@/components/ui/empty-state";
 import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle, Crown, Zap, HelpCircle, ArrowRight } from "lucide-react";
 import { TooltipHint } from "@/components/ui/tooltip-hint";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +29,7 @@ import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { DailyRecommendations } from "@/components/discover/DailyRecommendations";
 import { SmartFilterSuggestions } from "@/components/discover/SmartFilterSuggestions";
 import { AIMatchRecommendations } from "@/components/discover/AIMatchRecommendations";
+import { SEO } from "@/components/SEO";
 
 type CardType = "creator" | "opportunity";
 
@@ -68,7 +72,8 @@ const Discover = () => {
   const [cards, setCards] = useState<Card[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"creators" | "opportunities">("opportunities");
+  const [activeTab, setActiveTab] = useState<"creators" | "opportunities">("creators");
+  const [featuredProfile, setFeaturedProfile] = useState<Card | null>(null);
   const [userLevel, setUserLevel] = useState<number>(1);
   const [userCredits, setUserCredits] = useState<number>(0);
   const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
@@ -224,16 +229,15 @@ const Discover = () => {
         
         console.log('[Discover] Fetched profiles:', profiles?.length || 0);
 
-        // Filter out already swiped profiles and connected users - only require basics (name, role, avatar, bio exists)
+        // Filter out connected users but keep swiped for grid view
         const completeProfiles = (profiles || []).filter(profile => {
           return !connectedUserIds.has(profile.user_id) &&
-                 !swipedIds.has(profile.user_id) && // Don't show already swiped profiles
                  profile.full_name && 
                  profile.full_name !== 'New User' && 
                  profile.role && 
                  profile.role.trim() !== '' && 
                  profile.avatar_url &&
-                 profile.bio; // Just needs to exist, no length requirement
+                 profile.bio;
         });
 
         // Only fetch portfolio for first 20 profiles to improve initial load
@@ -322,7 +326,30 @@ const Discover = () => {
         }
 
         console.log('[Discover] Created creator cards:', creatorCards.length);
-        setCards(creatorCards);
+        
+        // Select featured profile for grid view
+        const ogProfiles = creatorCards.filter(c => {
+          const profileData = completeProfiles.find(p => p.user_id === c.id);
+          return profileData?.badge === 'og';
+        });
+        const featuredCandidate = ogProfiles.length > 0 
+          ? ogProfiles.sort((a, b) => {
+              const aProfile = completeProfiles.find(p => p.user_id === a.id);
+              const bProfile = completeProfiles.find(p => p.user_id === b.id);
+              return (bProfile?.level || 0) - (aProfile?.level || 0);
+            })[0]
+          : creatorCards.sort((a, b) => {
+              const aProfile = completeProfiles.find(p => p.user_id === a.id);
+              const bProfile = completeProfiles.find(p => p.user_id === b.id);
+              return (bProfile?.level || 0) - (aProfile?.level || 0);
+            })[0];
+        
+        if (featuredCandidate) {
+          setFeaturedProfile(featuredCandidate);
+          setCards(creatorCards.filter(c => c.id !== featuredCandidate.id));
+        } else {
+          setCards(creatorCards);
+        }
       } else {
         console.log('[Discover] Fetching opportunities...');
         let opportunitiesQuery = supabase
@@ -422,14 +449,15 @@ const Discover = () => {
           });
         }
 
+        console.log('[Discover] Created opportunity cards:', opportunityCards.length);
         setCards(opportunityCards);
       }
-
+      
       setLoading(false);
     };
 
     fetchData();
-  }, [activeTab, creatorFilters, opportunityFilters]);
+  }, [activeTab, creatorFilters, opportunityFilters, subscriptionTier, aiScoringEnabled]);
 
   const handleSwipe = async (direction: "left" | "right", isSuperLike: boolean = false) => {
     const currentCard = cards[currentIndex];
@@ -652,12 +680,136 @@ const Discover = () => {
   const hasMoreCards = currentIndex < cards.length;
 
   return (
-    <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-24 sm:pb-20">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-4 sm:mb-6">
-          <div className="mb-3 sm:mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl sm:text-3xl font-bold">Opportunities</h1>
-            <div className="flex items-center gap-2 flex-wrap">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24 md:pb-8">
+      <SEO 
+        title="Discover - Creators & Opportunities"
+        description="Discover talented creators and exciting opportunities. Toggle between grid and swipe views to find your perfect match."
+      />
+
+      {/* Header with Tabs */}
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold">Discover</h1>
+          </div>
+          
+          {/* Tab Toggle */}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "creators" | "opportunities")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="creators">Creators</TabsTrigger>
+              <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-6">
+        {activeTab === 'creators' ? (
+          // Grid View for Creators
+          <div className="grid lg:grid-cols-[300px_1fr] gap-6">
+            {/* Filters Sidebar */}
+            <aside className="lg:sticky lg:top-24 lg:h-fit">
+              <CreatorFilters
+                filters={creatorFilters}
+                onFilterChange={setCreatorFilters}
+                isPremium={subscriptionTier !== 'free'}
+                userLevel={userLevel}
+              />
+            </aside>
+
+            {/* Main Content */}
+            <div>
+              {/* Featured Profile */}
+              {featuredProfile && (
+                <Card className="p-6 mb-6 border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                  <div className="flex items-start gap-2 mb-4">
+                    <Badge variant="secondary" className="gap-1">
+                      <Star className="h-3 w-3" />
+                      Featured Creator
+                    </Badge>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <Avatar className="h-24 w-24 border-2 border-primary">
+                      <AvatarImage src={featuredProfile.image} />
+                      <AvatarFallback>{featuredProfile.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="text-xl font-bold">{featuredProfile.name}</h3>
+                          <p className="text-muted-foreground">{featuredProfile.title}</p>
+                        </div>
+                      </div>
+                      {featuredProfile.location && (
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
+                          <MapPin className="h-4 w-4" />
+                          {featuredProfile.location}
+                        </div>
+                      )}
+                      <p className="text-sm mb-4 line-clamp-3">{featuredProfile.description}</p>
+                      <Button 
+                        onClick={() => navigate(`/profile/${featuredProfile.user_id}`)}
+                        variant="default"
+                      >
+                        View Profile
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Creator Grid */}
+              {cards.length === 0 ? (
+                <EmptyState
+                  icon={Users}
+                  title="No creators found"
+                  description="Try adjusting your filters or check back later"
+                />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {cards.map((creator) => (
+                    <Card 
+                      key={creator.id}
+                      className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/profile/${creator.user_id}`)}
+                    >
+                      <div className="flex items-start gap-3 mb-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={creator.image} />
+                          <AvatarFallback>{creator.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{creator.name}</h4>
+                          <p className="text-sm text-muted-foreground truncate">{creator.title}</p>
+                        </div>
+                      </div>
+                      {creator.ai_match_score && (
+                        <div className="mb-3">
+                          <Badge variant="secondary" className="gap-1">
+                            <Sparkles className="h-3 w-3" />
+                            {creator.ai_match_score}% Match
+                          </Badge>
+                        </div>
+                      )}
+                      {creator.location && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                          <MapPin className="h-3 w-3" />
+                          {creator.location}
+                        </div>
+                      )}
+                      <p className="text-sm line-clamp-2">{creator.description}</p>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          // Swipe View for Opportunities
+          <div className="max-w-6xl mx-auto">
+            {/* Swipes Badge */}
+            <div className="flex justify-end mb-4">
               {subscriptionTier === 'free' ? (
                 <Badge 
                   variant={dailySwipesLeft <= 3 ? "destructive" : "secondary"} 
@@ -665,364 +817,213 @@ const Discover = () => {
                   onClick={() => dailySwipesLeft <= 3 && navigate('/subscription')}
                 >
                   <Zap className="h-3 w-3" />
-                  <span className="hidden xs:inline">{dailySwipesLeft}/10 swipes today</span>
-                  <span className="xs:hidden">{dailySwipesLeft}/10</span>
+                  <span>{dailySwipesLeft}/10 swipes today</span>
                   {dailySwipesLeft <= 3 && <span className="hidden sm:inline">• Upgrade for unlimited</span>}
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="gap-1 text-xs">
                   <Sparkles className="h-3 w-3" />
-                  <span className="hidden xs:inline">Unlimited swipes</span>
-                  <span className="xs:hidden">∞</span>
+                  <span>Unlimited swipes</span>
                 </Badge>
               )}
             </div>
-          </div>
 
-          {/* Discover is now Opportunities only - Creators moved to Connect page */}
+            <div className="grid lg:grid-cols-[250px_1fr] gap-6">
+              {/* Filters Sidebar */}
+              <div className="hidden lg:block">
+                <OpportunityFiltersComponent
+                  filters={opportunityFilters}
+                  onFilterChange={setOpportunityFilters}
+                  isPremium={subscriptionTier !== 'free'}
+                  userLevel={userLevel}
+                />
+              </div>
 
+              {/* Swipe Cards */}
+              <div className="max-w-md mx-auto w-full">
+                {/* Mobile Filters */}
+                <div className="lg:hidden mb-3">
+                  <OpportunityFiltersComponent
+                    filters={opportunityFilters}
+                    onFilterChange={setOpportunityFilters}
+                    isPremium={subscriptionTier !== 'free'}
+                    userLevel={userLevel}
+                  />
+                </div>
 
-          {/* Profile Completion Banner */}
-          {profileCompletionStatus && profileCompletionStatus.percentage < 70 && (
-            <ProfileCompletionBanner 
-              completion={profileCompletionStatus} 
-              page="opportunities" 
-            />
-          )}
-        </div>
+                {hasMoreCards && (
+                  <div className="mb-3 text-center text-sm text-muted-foreground">
+                    {currentIndex + 1} / {cards.length}
+                  </div>
+                )}
 
-        {/* First-Time User Guide */}
-        {!firstTimeLoading && isFirstTime && (
-          <div className="mb-4">
-            <FirstTimeUserGuide
-              title="👋 Welcome to Opportunities!"
-              description="Find paid work, barters, and collaboration opportunities"
-              tips={[
-                "Swipe right (→) to show interest, left (←) to pass",
-                "Look for opportunities that match your skills and interests",
-                "Check compensation and location details carefully",
-                "Use filters to narrow down to what you're looking for",
-                "Looking for creators to collab with? Check the Connect page!"
-              ]}
-            />
+                {!hasMoreCards ? (
+                  <div className="relative mb-6 overflow-hidden rounded-3xl border bg-card shadow-lg">
+                    <div className="relative h-96 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10">
+                      <div className="text-center p-6">
+                        <Sparkles className="mx-auto mb-4 h-16 w-16 text-primary animate-pulse" />
+                        <h2 className="mb-2 text-2xl font-bold">No more opportunities right now</h2>
+                        <p className="text-muted-foreground mb-4">
+                          Check back soon for new opportunities
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => window.location.reload()}
+                        >
+                          Refresh
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="relative mb-6">
+                      {/* Next card (background) */}
+                      {nextCard && (
+                        <div 
+                          className="absolute inset-0 overflow-hidden rounded-3xl border bg-card shadow-lg"
+                          style={{
+                            transform: 'scale(0.95) translateY(10px)',
+                            opacity: 0.5,
+                            zIndex: 0,
+                          }}
+                        >
+                          <div className="relative h-96">
+                            <img src={nextCard.image} alt={nextCard.name} className="h-full w-full object-cover" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Current card */}
+                      {currentCard && (
+                        <div
+                          ref={cardRef}
+                          className="relative overflow-hidden rounded-3xl border bg-card shadow-2xl cursor-grab active:cursor-grabbing select-none"
+                          style={{
+                            transform: swipeDirection 
+                              ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '30deg' : '-30deg'})`
+                              : `translateX(${dragOffset.x}px) rotate(${dragOffset.x * 0.1}deg)`,
+                            transition: swipeDirection ? 'transform 0.3s ease-out' : isDragging ? 'none' : 'transform 0.2s ease-out',
+                            zIndex: 1,
+                          }}
+                          onMouseDown={handleDragStart}
+                          onMouseMove={handleDragMove}
+                          onMouseUp={handleDragEnd}
+                          onMouseLeave={handleDragEnd}
+                          onTouchStart={handleDragStart}
+                          onTouchMove={handleDragMove}
+                          onTouchEnd={handleDragEnd}
+                        >
+                          <div className="relative h-96">
+                            <img 
+                              src={currentCard.image} 
+                              alt={currentCard.name} 
+                              className="h-full w-full object-cover" 
+                              draggable={false}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                            
+                            {/* Swipe overlays */}
+                            {swipeDirection === 'right' && (
+                              <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
+                                <div className="bg-green-500 text-white px-8 py-4 rounded-full text-2xl font-bold">
+                                  INTERESTED
+                                </div>
+                              </div>
+                            )}
+                            {swipeDirection === 'left' && (
+                              <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
+                                <div className="bg-red-500 text-white px-8 py-4 rounded-full text-2xl font-bold">
+                                  PASS
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Card content */}
+                            <div className="absolute bottom-0 left-0 right-0 p-6">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <h2 className="text-2xl font-bold mb-2">{currentCard.name}</h2>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Badge variant="secondary">{currentCard.title}</Badge>
+                                    {currentCard.compensation && (
+                                      <Badge variant="outline" className="gap-1">
+                                        <DollarSign className="h-3 w-3" />
+                                        {currentCard.compensation}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {currentCard.location && (
+                                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                      <MapPin className="h-4 w-4" />
+                                      {currentCard.location}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="text-sm line-clamp-3">{currentCard.description}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex justify-center gap-4 mb-6">
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="h-16 w-16 rounded-full"
+                        onClick={() => handleSwipe('left')}
+                      >
+                        <X className="h-6 w-6" />
+                      </Button>
+                      <Button
+                        size="lg"
+                        className="h-16 w-16 rounded-full"
+                        onClick={() => handleSwipe('right')}
+                      >
+                        <CheckCircle2 className="h-6 w-6" />
+                      </Button>
+                    </div>
+
+                    {/* Undo button */}
+                    {undosRemaining > 0 && currentIndex > 0 && (
+                      <UndoSwipeButton
+                        onClick={async () => {
+                          const undone = await undoLastSwipe();
+                          if (undone) {
+                            setCurrentIndex(Math.max(0, currentIndex - 1));
+                            setSwipeDirection(null);
+                            setDragOffset({ x: 0, y: 0 });
+                          }
+                        }}
+                        disabled={isDragging}
+                        userTier={subscriptionTier}
+                        undosRemaining={undosRemaining}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
-
-        {/* Daily AI Recommendations */}
-        <div className="mb-4">
-          <DailyRecommendations
-            activeTab="opportunities"
-            onSelect={(id, type) => {
-              // Find and jump to the card
-              const cardIndex = cards.findIndex(c => c.id === id);
-              if (cardIndex !== -1) {
-                setCurrentIndex(cardIndex);
-              }
-            }}
-          />
-        </div>
-
-        <div className="grid lg:grid-cols-[250px_1fr] gap-4 sm:gap-6">
-          <div className="hidden lg:block">
-            <OpportunityFiltersComponent
-              filters={opportunityFilters}
-              onFilterChange={setOpportunityFilters}
-              isPremium={subscriptionTier !== 'free'}
-              userLevel={userLevel}
-            />
-          </div>
-
-          <div className="max-w-md mx-auto w-full">
-            <div className="lg:hidden mb-3">
-              <OpportunityFiltersComponent
-                filters={opportunityFilters}
-                onFilterChange={setOpportunityFilters}
-                isPremium={subscriptionTier !== 'free'}
-                userLevel={userLevel}
-              />
-            </div>
-
-            {/* Smart Filter Suggestions */}
-            <SmartFilterSuggestions
-              activeTab="opportunities"
-              currentFilters={opportunityFilters}
-              onApplySuggestion={(filter, value) => {
-                setOpportunityFilters(prev => ({ ...prev, [filter]: value }));
-              }}
-              className="mb-4"
-            />
-
-            {hasMoreCards && (
-              <>
-                <div className="mb-3 sm:mb-4 text-center text-xs sm:text-sm text-muted-foreground">
-                  {currentIndex + 1} / {cards.length}
-                </div>
-                
-                {/* Swipe Instructions Banner */}
-                <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 animate-fade-in">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <div className="flex items-center gap-1 text-sm font-medium">
-                      <ArrowRight className="h-4 w-4 text-green-500 animate-pulse" />
-                      <span>Swipe Right to Like</span>
-                    </div>
-                    <span className="text-muted-foreground">•</span>
-                    <div className="flex items-center gap-1 text-sm font-medium">
-                      <X className="h-4 w-4 text-red-500" />
-                      <span>Swipe Left to Pass</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Or use the buttons below
-                  </p>
-                </div>
-              </>
-            )}
-
-            {!hasMoreCards ? (
-              <div className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg">
-                <div className="relative h-72 sm:h-80 md:h-96 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10">
-                  <div className="text-center p-6">
-                    <Sparkles className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary animate-pulse" />
-                    <h2 className="mb-2 text-xl sm:text-2xl font-bold">No more opportunities right now</h2>
-                    <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                      Check back soon for new opportunities, or explore creators to collab with on the Connect page
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => window.location.reload()}
-                      className="mt-2"
-                    >
-                      Refresh
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="relative mb-4 sm:mb-6">
-                {/* Card Stack - Next card visible behind */}
-                {nextCard && (
-                  <div 
-                    className="absolute inset-0 overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-lg"
-                    style={{
-                      transform: 'scale(0.95) translateY(10px)',
-                      opacity: 0.5,
-                      zIndex: 0,
-                      transition: 'all 0.3s ease-out'
-                    }}
-                  >
-                    <div className="relative h-72 sm:h-80 md:h-96">
-                      <img src={nextCard.image} alt={nextCard.name} className="h-full w-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Current Card */}
-                {currentCard && (
-                  <div
-                    ref={cardRef}
-                    className="relative overflow-hidden rounded-2xl sm:rounded-3xl border bg-card shadow-2xl cursor-grab active:cursor-grabbing select-none"
-                    style={{
-                      transform: swipeDirection 
-                        ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '30deg' : '-30deg'})`
-                        : `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${dragOffset.x * 0.15}deg)`,
-                      opacity: swipeDirection ? 0 : 1,
-                      zIndex: 10,
-                      transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                    }}
-                    onMouseDown={handleDragStart}
-                    onMouseMove={handleDragMove}
-                    onMouseUp={handleDragEnd}
-                    onMouseLeave={handleDragEnd}
-                    onTouchStart={handleDragStart}
-                    onTouchMove={handleDragMove}
-                    onTouchEnd={handleDragEnd}
-                  >
-                    {/* Visual feedback overlays - appear during drag */}
-                    {Math.abs(dragOffset.x) > 30 && (
-                      <>
-                        <div 
-                          className="absolute inset-0 z-20 transition-opacity duration-200"
-                          style={{
-                            background: dragOffset.x > 0 
-                              ? 'linear-gradient(90deg, rgba(34, 197, 94, 0.2), transparent)' 
-                              : 'linear-gradient(-90deg, rgba(239, 68, 68, 0.2), transparent)',
-                            opacity: Math.min(Math.abs(dragOffset.x) / 150, 0.8)
-                          }}
-                        />
-                        {dragOffset.x > 0 && (
-                          <div className="absolute top-4 sm:top-8 right-4 sm:right-8 z-30 px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white font-bold text-lg sm:text-2xl rounded-xl rotate-12 border-3 sm:border-4 border-white shadow-2xl animate-scale-in">
-                            ❤️ LIKE
-                          </div>
-                        )}
-                        {dragOffset.x < 0 && (
-                          <div className="absolute top-4 sm:top-8 left-4 sm:left-8 z-30 px-4 sm:px-6 py-2 sm:py-3 bg-red-500 text-white font-bold text-lg sm:text-2xl rounded-xl -rotate-12 border-3 sm:border-4 border-white shadow-2xl animate-scale-in">
-                            ✕ PASS
-                          </div>
-                        )}
-                      </>
-                    )}
-
-              <div className="relative h-72 sm:h-80 md:h-96">
-                <img src={currentCard.image} alt={currentCard.name} className="h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                
-                <div className="absolute right-3 sm:right-4 top-3 sm:top-4 flex flex-col gap-2 items-end">
-                  <div className={`rounded-full px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-medium ${
-                    currentCard.type === "creator" 
-                      ? "bg-primary/90 text-primary-foreground" 
-                      : "bg-secondary/90 text-secondary-foreground"
-                  }`}>
-                    {currentCard.type === "creator" ? "Creator" : "Opportunity"}
-                  </div>
-                  
-                  {currentCard.type === 'creator' && currentCard.ai_match_score && currentCard.ai_match_score >= 60 && (
-                    <div className="bg-gradient-to-r from-primary to-accent text-white rounded-full px-3 py-1 text-xs sm:text-sm font-bold flex items-center gap-1 shadow-lg">
-                      <Sparkles className="h-3 w-3" />
-                      {currentCard.ai_match_score}% Match
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-4 sm:p-6">
-                <h2 className="mb-1 text-xl sm:text-2xl font-bold">{currentCard.name}</h2>
-                <p className="mb-2 sm:mb-3 text-base sm:text-lg text-muted-foreground">{currentCard.title}</p>
-                
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>{currentCard.location}</span>
-                  </div>
-                  {currentCard.compensation && (
-                    <div className="flex items-center gap-1 text-accent">
-                      <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span>{currentCard.compensation}</span>
-                    </div>
-                  )}
-                </div>
-                
-                {currentCard.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {currentCard.tags.map((tag) => (
-                      <span key={tag} className="rounded-full border bg-muted px-2 py-0.5 text-xs">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                
-                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{currentCard.description}</p>
-
-                {/* AI Match Insights */}
-                {currentCard.type === "creator" && (
-                  <div className="mt-4">
-                    <AIMatchRecommendations
-                      matchScore={currentCard.ai_match_score}
-                      matchReasons={currentCard.match_reasons}
-                      onExplainMatch={() => setShowMatchExplanation(true)}
-                      socialStats={currentCard.socialStats}
-                      showLocked={!currentCard.ai_match_score && subscriptionTier === 'free'}
-                    />
-                  </div>
-                )}
-
-                {currentCard.type === "creator" && currentCard.user_id && (
-                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full text-xs sm:text-sm h-8 sm:h-9"
-                      onClick={() => navigate(`/profile/${currentCard.user_id}`, { 
-                        state: { cardIndex: currentIndex }
-                      })}
-                    >
-                      <UserCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                      View Full Profile
-                    </Button>
-                  </div>
-                )}
-              </div>
-                </div>
-              )}
-            </div>
-            )}
-
-            {hasMoreCards && (
-              <>
-                <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-              <UndoSwipeButton
-                onClick={async () => {
-                  const undoneSwipe = await undoLastSwipe();
-                  if (undoneSwipe) {
-                    setDailySwipesLeft(prev => prev + 1);
-                    await checkUndosRemaining();
-                  }
-                }}
-                disabled={isDragging}
-                userTier={subscriptionTier}
-                undosRemaining={undosRemaining}
-              />
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 hover:border-destructive hover:bg-destructive/10 hover:text-destructive transition-all hover:scale-110 active:scale-95" 
-                onClick={() => handleSwipe("left")}
-                disabled={isDragging}
-              >
-                <X className="h-6 w-6 sm:h-8 sm:w-8" />
-              </Button>
-              {currentCard?.type === 'creator' && currentCard.ai_match_score && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-12 w-12 rounded-full"
-                  onClick={() => setShowMatchExplanation(true)}
-                >
-                  <HelpCircle className="h-5 w-5" />
-                </Button>
-              )}
-              <Button 
-                variant="default" 
-                size="icon" 
-                className="h-16 w-16 sm:h-20 sm:w-20 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 active:scale-95" 
-                onClick={() => handleSwipe("right")}
-                disabled={isDragging}
-              >
-                <Flame className="h-8 w-8 sm:h-10 sm:w-10" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 hover:border-accent hover:bg-accent/10 hover:text-accent transition-all hover:scale-110 active:scale-95" 
-                onClick={() => handleSwipe("right", true)}
-                disabled={isDragging}
-              >
-                <Star className="h-6 w-6 sm:h-8 sm:w-8" />
-              </Button>
-            </div>
-
-            <div className="text-center text-xs sm:text-sm text-muted-foreground">
-              <p>🔥 Like • ⭐ Super Like • ❌ Pass</p>
-              <p className="mt-1 text-xs">Drag or tap buttons • {subscriptionTier !== 'free' && '↩️ Undo'}</p>
-            </div>
-              </>
-            )}
-          </div>
-        </div>
       </div>
 
-      <CreditPromptDialog open={showCreditPrompt} onOpenChange={setShowCreditPrompt} />
-      
-      {currentCard && currentCard.type === 'creator' && (
-        <MatchExplanationDialog
-          open={showMatchExplanation}
-          onOpenChange={setShowMatchExplanation}
-          match={currentCard}
-          onConnect={() => handleSwipe("right")}
-          onPass={() => handleSwipe("left")}
-        />
-      )}
+      {/* Dialogs */}
+      <CreditPromptDialog
+        open={showCreditPrompt}
+        onOpenChange={setShowCreditPrompt}
+      />
+
+      <MatchExplanationDialog
+        open={showMatchExplanation}
+        onOpenChange={setShowMatchExplanation}
+        match={currentCard}
+        onConnect={() => handleSwipe("right")}
+        onPass={() => handleSwipe("left")}
+      />
 
       <UpgradeDialog
         open={showUpgradeDialog}

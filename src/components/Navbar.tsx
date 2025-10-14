@@ -128,15 +128,7 @@ const Navbar = ({ user }: NavbarProps) => {
                           onClick={() => handleNavigation("/discover")}
                         >
                           <Compass className="h-5 w-5" />
-                          Opportunities
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/connect")}
-                        >
-                          <User className="h-5 w-5" />
-                          Creators
+                          Discover
                         </Button>
                         <Button 
                           variant="ghost" 

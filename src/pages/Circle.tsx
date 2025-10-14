@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Search, Users, MessageCircle, Calendar, Trash2, UserX, MoreVertical, ExternalLink, Mail, Sparkles, ArrowRight, Share2, TrendingUp, UserPlus, MapPin, Clock, CheckCircle2 } from "lucide-react";
+import { Search, Users, MessageCircle, Calendar, Trash2, UserX, MoreVertical, ExternalLink, Mail, Sparkles, ArrowRight, Share2, TrendingUp, UserPlus, MapPin, Clock, CheckCircle2, Flame, Compass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
@@ -23,6 +23,7 @@ import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { SmartConnectionSuggestions } from "@/components/circle/SmartConnectionSuggestions";
 import { ActivityEngagementCard } from "@/components/circle/ActivityEngagementCard";
+import { FeedPost } from "@/components/feed/FeedPost";
 
 interface Connection {
   id: string;
@@ -48,7 +49,7 @@ const Circle = () => {
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConnection, setSelectedConnection] = useState<{ id: string; name: string; avatar?: string } | null>(null);
-  const [activeTab, setActiveTab] = useState("activity");
+  const [activeTab, setActiveTab] = useState("spark");
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -105,9 +106,7 @@ const Circle = () => {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'connect') {
-      fetchDiscoverProfiles();
-    }
+    // No longer needed as we removed connect tab
   }, [activeTab, searchQuery]);
 
   const fetchConnections = async () => {
@@ -270,7 +269,7 @@ const Circle = () => {
     ];
 
     // Fetch all activity types in parallel with independent error handling
-    const [portfolioData, awardsData, pressData, creditsData] = await Promise.allSettled([
+    const [portfolioData, awardsData, pressData, creditsData, feedPostsData] = await Promise.allSettled([
       supabase
         .from('portfolio_items')
         .select(`
@@ -325,7 +324,21 @@ const Circle = () => {
         `)
         .in('user_id', connectionIds)
         .order('created_at', { ascending: false })
-        .limit(10)
+        .limit(10),
+      
+      supabase
+        .from('feed_posts')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            avatar_url,
+            role
+          )
+        `)
+        .in('user_id', connectionIds)
+        .order('created_at', { ascending: false })
+        .limit(20)
     ]);
 
     // Combine all activities with type tags, handling any failed queries
@@ -333,7 +346,8 @@ const Circle = () => {
       ...(portfolioData.status === 'fulfilled' && portfolioData.value.data ? portfolioData.value.data.map(item => ({ ...item, activity_type: 'portfolio' })) : []),
       ...(awardsData.status === 'fulfilled' && awardsData.value.data ? awardsData.value.data.map(item => ({ ...item, activity_type: 'award' })) : []),
       ...(pressData.status === 'fulfilled' && pressData.value.data ? pressData.value.data.map(item => ({ ...item, activity_type: 'press' })) : []),
-      ...(creditsData.status === 'fulfilled' && creditsData.value.data ? creditsData.value.data.map(item => ({ ...item, activity_type: 'credit' })) : [])
+      ...(creditsData.status === 'fulfilled' && creditsData.value.data ? creditsData.value.data.map(item => ({ ...item, activity_type: 'credit' })) : []),
+      ...(feedPostsData.status === 'fulfilled' && feedPostsData.value.data ? feedPostsData.value.data.map(item => ({ ...item, activity_type: 'feed_post' })) : [])
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     setActivityFeed(allActivities);
@@ -718,20 +732,25 @@ const Circle = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 h-12">
-            <TabsTrigger value="activity" className="text-base">Activity</TabsTrigger>
-            <TabsTrigger value="connect" className="text-base">Connect</TabsTrigger>
-            <TabsTrigger value="connections" className="text-base">Circle</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 h-12">
+            <TabsTrigger value="spark" className="text-base flex items-center gap-2">
+              <Flame className="h-4 w-4" />
+              Spark
+            </TabsTrigger>
+            <TabsTrigger value="connections" className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Connections
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="activity" className="space-y-4">
+          <TabsContent value="spark" className="space-y-4">
             <div className="mb-4">
               <div>
                 <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-yellow-500" />
-                  Activity Feed
+                  <Flame className="h-5 w-5 text-orange-500" />
+                  Spark Feed
                 </h2>
-                <p className="text-sm text-muted-foreground">See what your circle is creating and engage</p>
+                <p className="text-sm text-muted-foreground">See what your circle is creating and engage with their work</p>
               </div>
             </div>
 
@@ -739,16 +758,16 @@ const Circle = () => {
               <div className="space-y-6">
                 <Card className="p-12 text-center border-2 border-dashed">
                   <div className="max-w-md mx-auto space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                      <Sparkles className="h-8 w-8 text-primary" />
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center mx-auto">
+                      <Flame className="h-8 w-8 text-orange-500" />
                     </div>
-                    <h3 className="text-xl font-semibold">Your Feed is Waiting</h3>
+                    <h3 className="text-xl font-semibold">Start the Spark 🔥</h3>
                     <p className="text-muted-foreground">
-                      Connect with creators to see their latest work, achievements, and updates right here
+                      Connect with creators to see their posts, work, and achievements. Your network's creativity starts here.
                     </p>
                     <div className="flex gap-3 justify-center pt-4">
-                      <Button onClick={() => setActiveTab("connect")} className="gap-2">
-                        <Users className="h-4 w-4" />
+                      <Button onClick={() => navigate("/discover")} className="gap-2">
+                        <Compass className="h-4 w-4" />
                         Discover Creators
                       </Button>
                       <Button onClick={() => setShowInviteDialog(true)} variant="outline" className="gap-2">
@@ -773,7 +792,19 @@ const Circle = () => {
                 <div className="space-y-4">
                   {activityFeed.map((item, idx) => {
                     const key = `${item.activity_type}-${item.id}`;
-                    // Use new engagement card for better interaction
+                    
+                    // Render Spark posts differently
+                    if (item.activity_type === 'feed_post') {
+                      return (
+                        <FeedPost
+                          key={key}
+                          post={item}
+                          onDelete={() => fetchActivityFeed()}
+                        />
+                      );
+                    }
+                    
+                    // Use engagement card for portfolio/awards/press/credits
                     return (
                       <ActivityEngagementCard
                         key={key}
@@ -789,98 +820,6 @@ const Circle = () => {
                 </div>
               </ScrollArea>
             )}
-          </TabsContent>
-
-          <TabsContent value="connect" className="space-y-4">
-            {/* Smart Suggestions First */}
-            <div className="mb-6">
-              <SmartConnectionSuggestions />
-            </div>
-
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Search className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Browse All Creators</h2>
-              </div>
-              <p className="text-sm text-muted-foreground">Search and explore the entire community</p>
-            </div>
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, role, skills..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <ScrollArea className="h-[600px]">
-              {discoverLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                </div>
-              ) : discoverProfiles.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <UserPlus className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-muted-foreground">No creators found</p>
-                  <p className="text-sm text-muted-foreground mt-1">Try adjusting your search</p>
-                </Card>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2">
-                  {discoverProfiles.map((profile) => (
-                    <Card key={profile.user_id} className="p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start gap-3 mb-3">
-                        <Avatar className="h-12 w-12 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
-                          <AvatarImage src={profile.avatar_url || ''} />
-                          <AvatarFallback>{profile.full_name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold truncate cursor-pointer hover:text-primary" onClick={() => navigate(`/profile/${profile.user_id}`)}>
-                            {profile.full_name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground truncate">{profile.role}</p>
-                          {profile.location && (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                              <MapPin className="h-3 w-3" />
-                              {profile.location}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      {profile.bio && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{profile.bio}</p>
-                      )}
-                      {profile.connectionStatus === 'pending_sent' ? (
-                        <Button size="sm" variant="outline" disabled className="w-full gap-2">
-                          <Clock className="h-4 w-4" />
-                          Pending
-                        </Button>
-                      ) : profile.connectionStatus === 'pending_received' ? (
-                        <div className="space-y-2">
-                          <Button 
-                            size="sm" 
-                            onClick={() => navigate(`/profile/${profile.user_id}`, { state: { from: 'circle' } })} 
-                            variant="outline" 
-                            className="w-full gap-2"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            View Profile
-                          </Button>
-                          <Button size="sm" onClick={() => handleAcceptConnection(profile.user_id)} className="w-full gap-2">
-                            <CheckCircle2 className="h-4 w-4" />
-                            Accept Request
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" onClick={() => navigate(`/profile/${profile.user_id}`, { state: { from: 'circle' } })} variant="outline" className="w-full gap-2">
-                          <ExternalLink className="h-4 w-4" />
-                          View Profile
-                        </Button>
-                      )}
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
           </TabsContent>
 
           <TabsContent value="connections" className="space-y-4">
@@ -917,12 +856,13 @@ const Circle = () => {
                     </p>
                     {!searchQuery && (
                       <div className="flex gap-3 justify-center">
-                        <Button onClick={() => setActiveTab("connect")} size="lg" className="gap-2">
-                          <Sparkles className="h-4 w-4" />
+                        <Button onClick={() => navigate("/discover")} size="lg" className="gap-2">
+                          <Compass className="h-4 w-4" />
                           Discover Creators
                         </Button>
-                        <Button onClick={() => navigate("/discover")} variant="outline" size="lg">
-                          Browse All
+                        <Button onClick={() => setShowInviteDialog(true)} variant="outline" size="lg" className="gap-2">
+                          <Share2 className="h-4 w-4" />
+                          Invite Friends
                         </Button>
                       </div>
                     )}

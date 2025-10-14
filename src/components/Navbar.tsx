@@ -136,7 +136,7 @@ const Navbar = ({ user }: NavbarProps) => {
                           onClick={() => handleNavigation("/circle")}
                         >
                           <Users className="h-5 w-5" />
-                          Network
+                          My Circle
                         </Button>
                         <Button 
                           variant="ghost" 

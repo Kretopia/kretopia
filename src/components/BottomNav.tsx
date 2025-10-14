@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Compass, Plus, MessageCircle, User, Briefcase, Image } from "lucide-react";
+import { LayoutDashboard, Compass, Plus, MessageCircle, User, Briefcase, Image, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { AddPortfolioDialog } from "@/components/AddPortfolioDialog";
+import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,6 +17,7 @@ const BottomNav = () => {
   const location = useLocation();
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [showPortfolioDialog, setShowPortfolioDialog] = useState(false);
+  const [showSparkDialog, setShowSparkDialog] = useState(false);
   
   // Hide bottom nav on landing page
   if (location.pathname === "/") {
@@ -25,7 +27,7 @@ const BottomNav = () => {
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Home" },
     { path: "/discover", icon: Compass, label: "Discover" },
-    { path: "/circle", icon: User, label: "Network" },
+    { path: "/circle", icon: User, label: "My Circle" },
     { path: "/projects", icon: Briefcase, label: "Projects" },
   ];
 
@@ -66,13 +68,17 @@ const BottomNav = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-56 mb-2">
-              <DropdownMenuItem onClick={() => setShowPostDialog(true)}>
-                <Briefcase className="mr-2 h-4 w-4" />
-                <span>Post Opportunity</span>
+              <DropdownMenuItem onClick={() => setShowSparkDialog(true)}>
+                <Flame className="mr-2 h-4 w-4" />
+                <span>Spark</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowPortfolioDialog(true)}>
                 <Image className="mr-2 h-4 w-4" />
-                <span>Add Portfolio Item</span>
+                <span>Add Portfolio</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowPostDialog(true)}>
+                <Briefcase className="mr-2 h-4 w-4" />
+                <span>Post Opportunity</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -111,6 +117,14 @@ const BottomNav = () => {
         open={showPortfolioDialog}
         onOpenChange={setShowPortfolioDialog}
         onSuccess={() => setShowPortfolioDialog(false)}
+      />
+
+      <CreatePostDialog
+        open={showSparkDialog}
+        onOpenChange={setShowSparkDialog}
+        onPostCreated={() => {
+          setShowSparkDialog(false);
+        }}
       />
     </>
   );

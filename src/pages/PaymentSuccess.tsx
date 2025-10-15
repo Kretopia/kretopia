@@ -14,7 +14,7 @@ export default function PaymentSuccess() {
   useEffect(() => {
     const verifyPayment = async () => {
       try {
-        // Give Stripe webhooks a moment to process
+        // Give Stripe a moment to process the payment
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         const { data: { user } } = await supabase.auth.getUser();
@@ -23,7 +23,20 @@ export default function PaymentSuccess() {
           return;
         }
 
-        // Check updated subscription status
+        // Call check-subscription to sync with Stripe and update profile
+        console.log('[PaymentSuccess] Syncing subscription with Stripe...');
+        const { data: syncData, error: syncError } = await supabase.functions.invoke("check-subscription");
+        
+        if (syncError) {
+          console.error('[PaymentSuccess] Error syncing subscription:', syncError);
+        } else {
+          console.log('[PaymentSuccess] Subscription synced:', syncData);
+        }
+
+        // Wait a moment for the update to propagate
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Now fetch the updated subscription status
         const { data: profile } = await supabase
           .from("profiles")
           .select("subscription_tier")
@@ -32,6 +45,7 @@ export default function PaymentSuccess() {
 
         if (profile?.subscription_tier) {
           setTier(profile.subscription_tier);
+          console.log('[PaymentSuccess] Updated tier:', profile.subscription_tier);
         }
       } catch (error) {
         console.error("Error verifying payment:", error);

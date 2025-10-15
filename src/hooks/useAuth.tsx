@@ -27,12 +27,21 @@ export const useAuth = () => {
 
       console.log('[useAuth] Checking subscription for user:', user.id);
 
-      // Fetch subscription info directly from profiles table
+      // First, sync with Stripe to ensure we have the latest status
+      const { data: syncData, error: syncError } = await supabase.functions.invoke('check-subscription');
+      
+      if (syncError) {
+        console.error('[useAuth] Error syncing with Stripe:', syncError);
+      } else {
+        console.log('[useAuth] Synced with Stripe:', syncData);
+      }
+
+      // Then fetch the updated subscription info from profiles table
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('subscription_tier, subscription_status, subscription_product_id, subscription_end_date')
         .eq('user_id', user.id)
-        .maybeSingle(); // Use maybeSingle to avoid errors if no row found
+        .maybeSingle();
 
       if (error) {
         console.error('[useAuth] Error fetching profile:', error);

@@ -46,9 +46,7 @@ export const ProfileVisibilityBanner = ({ isVisible, missingFields }: ProfileVis
           size="sm"
           variant="default"
           className="gap-2 w-full sm:w-auto"
-          onClick={() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onClick={() => navigate('/profile')}
         >
           <Eye className="h-4 w-4" />
           Complete Profile Now (+50 XP)

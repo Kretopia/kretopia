@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export const ProfileVisibilityDashboard = ({
   profile, 
   portfolioCount 
 }: ProfileVisibilityDashboardProps) => {
+  const navigate = useNavigate();
   const [viewStats, setViewStats] = useState({ total: 0, thisWeek: 0, trend: 0 });
   const [searchAppearances, setSearchAppearances] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -249,7 +251,7 @@ export const ProfileVisibilityDashboard = ({
         )}
 
         {!isVisible && (
-          <Button className="w-full" size="lg">
+          <Button className="w-full" size="lg" onClick={() => navigate('/profile')}>
             <Target className="mr-2 h-4 w-4" />
             Complete Profile to Get Discovered
           </Button>

@@ -170,13 +170,15 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
                       />
                       {statKey && (
                         <Input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={(editData as any)[statKey] || ""}
                           onChange={(e) => {
-                            setEditData({ ...editData, [statKey]: parseInt(e.target.value) || 0 });
+                            const value = e.target.value.replace(/\D/g, '');
+                            setEditData({ ...editData, [statKey]: value ? parseInt(value) : 0 });
                             setHasUnsavedChanges(true);
                           }}
-                          placeholder={`Number of ${statLabel}`}
+                          placeholder={`Number of ${statLabel} (e.g., 50000)`}
                         />
                       )}
                     </div>
@@ -185,23 +187,26 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
                 <div className="space-y-2 pt-2">
                   <Label className="font-semibold">Additional Metrics</Label>
                   <Input
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     value={editData.total_engagement_rate || ""}
                     onChange={(e) => {
-                      setEditData({ ...editData, total_engagement_rate: parseFloat(e.target.value) || 0 });
+                      const value = e.target.value.replace(/[^\d.]/g, '');
+                      setEditData({ ...editData, total_engagement_rate: value ? parseFloat(value) : 0 });
                       setHasUnsavedChanges(true);
                     }}
-                    placeholder="Engagement rate (%)"
+                    placeholder="Engagement rate (%) - e.g., 5.2"
                   />
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={editData.avg_views || ""}
                     onChange={(e) => {
-                      setEditData({ ...editData, avg_views: parseInt(e.target.value) || 0 });
+                      const value = e.target.value.replace(/\D/g, '');
+                      setEditData({ ...editData, avg_views: value ? parseInt(value) : 0 });
                       setHasUnsavedChanges(true);
                     }}
-                    placeholder="Average views per post"
+                    placeholder="Average views per post - e.g., 100000"
                   />
                 </div>
                 <Button onClick={handleSave} className="w-full" variant="gradient">Save Social Data</Button>

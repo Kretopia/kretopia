@@ -85,6 +85,7 @@ export const SkillsSection = ({
   const [personalMessage, setPersonalMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [shareLink, setShareLink] = useState("");
+  const [editingSkillIndex, setEditingSkillIndex] = useState<{type: 'professional' | 'passion', index: number} | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -166,6 +167,19 @@ export const SkillsSection = ({
     } else {
       setEditPassion(editPassion.filter((_, i) => i !== index));
     }
+  };
+
+  const updateSkillLevel = (type: 'professional' | 'passion', index: number, newLevel: number) => {
+    if (type === "professional") {
+      const updated = [...editProfessional];
+      updated[index] = { ...updated[index], level: newLevel };
+      setEditProfessional(updated);
+    } else {
+      const updated = [...editPassion];
+      updated[index] = { ...updated[index], level: newLevel };
+      setEditPassion(updated);
+    }
+    setEditingSkillIndex(null);
   };
 
   const handleSave = async () => {
@@ -368,16 +382,36 @@ Thank you so much!`;
                     
                     <div className="space-y-2">
                       {editProfessional.map((skill, idx) => (
-                        <div key={idx} className="flex items-center gap-2 rounded-lg border p-2">
+                        <div key={idx} className="flex items-center gap-2 rounded-lg border p-2 hover:bg-accent/5 transition-colors">
                           <div className="flex-1">
                             <p className="text-sm font-medium">{skill.skill}</p>
                             <p className="text-xs text-muted-foreground">{skill.category}</p>
                           </div>
-                          <div className="flex gap-0.5">
-                            {[...Array(skill.level)].map((_, i) => (
-                              <Star key={i} className="h-3 w-3 fill-primary text-primary" />
-                            ))}
-                          </div>
+                          {editingSkillIndex?.type === 'professional' && editingSkillIndex?.index === idx ? (
+                            <div className="flex gap-1">
+                              {[1, 2, 3, 4, 5].map((level) => (
+                                <Button
+                                  key={level}
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 p-0"
+                                  onClick={() => updateSkillLevel('professional', idx, level)}
+                                >
+                                  <Star className={`h-3 w-3 ${level <= skill.level ? 'fill-primary text-primary' : 'text-muted'}`} />
+                                </Button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div 
+                              className="flex gap-0.5 cursor-pointer hover:opacity-70 transition-opacity"
+                              onClick={() => setEditingSkillIndex({ type: 'professional', index: idx })}
+                              title="Click to edit skill level"
+                            >
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`h-3 w-3 ${i < skill.level ? 'fill-primary text-primary' : 'text-muted'}`} />
+                              ))}
+                            </div>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -399,16 +433,36 @@ Thank you so much!`;
                   </h4>
                   <div className="space-y-2">
                     {editPassion.map((skill, idx) => (
-                      <div key={idx} className="flex items-center gap-2 rounded-lg border p-2">
+                      <div key={idx} className="flex items-center gap-2 rounded-lg border p-2 hover:bg-accent/5 transition-colors">
                         <div className="flex-1">
                           <p className="text-sm font-medium">{skill.skill}</p>
                           <p className="text-xs text-muted-foreground">{skill.category}</p>
                         </div>
-                        <div className="flex gap-0.5">
-                          {[...Array(skill.level)].map((_, i) => (
-                            <Star key={i} className="h-3 w-3 fill-secondary text-secondary" />
-                          ))}
-                        </div>
+                        {editingSkillIndex?.type === 'passion' && editingSkillIndex?.index === idx ? (
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((level) => (
+                              <Button
+                                key={level}
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 p-0"
+                                onClick={() => updateSkillLevel('passion', idx, level)}
+                              >
+                                <Star className={`h-3 w-3 ${level <= skill.level ? 'fill-secondary text-secondary' : 'text-muted'}`} />
+                              </Button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div 
+                            className="flex gap-0.5 cursor-pointer hover:opacity-70 transition-opacity"
+                            onClick={() => setEditingSkillIndex({ type: 'passion', index: idx })}
+                            title="Click to edit skill level"
+                          >
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className={`h-3 w-3 ${i < skill.level ? 'fill-secondary text-secondary' : 'text-muted'}`} />
+                            ))}
+                          </div>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"

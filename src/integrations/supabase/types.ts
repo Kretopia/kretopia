@@ -1558,6 +1558,9 @@ export type Database = {
           og_promotion_expires_at: string | null
           og_promotion_used: boolean | null
           onboarding_completed: boolean
+          onboarding_reminder_sent: boolean | null
+          onboarding_started_at: string | null
+          onboarding_step: number | null
           partner_location_id: string | null
           passion_skills: Json | null
           press_links: Json | null
@@ -1636,6 +1639,9 @@ export type Database = {
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
           onboarding_completed?: boolean
+          onboarding_reminder_sent?: boolean | null
+          onboarding_started_at?: string | null
+          onboarding_step?: number | null
           partner_location_id?: string | null
           passion_skills?: Json | null
           press_links?: Json | null
@@ -1714,6 +1720,9 @@ export type Database = {
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
           onboarding_completed?: boolean
+          onboarding_reminder_sent?: boolean | null
+          onboarding_started_at?: string | null
+          onboarding_step?: number | null
           partner_location_id?: string | null
           passion_skills?: Json | null
           press_links?: Json | null

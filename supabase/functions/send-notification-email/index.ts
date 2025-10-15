@@ -10,7 +10,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest' | 'activity-digest' | 'streak-warning' | 'swipe';
+  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest' | 'activity-digest' | 'streak-warning' | 'swipe' | 'onboarding-reminder';
   data: {
     userName?: string;
     opportunityTitle?: string;
@@ -38,6 +38,8 @@ interface EmailRequest {
     swiperName?: string;
     swiperRole?: string;
     swiperAvatar?: string;
+    stepMessage?: string;
+    onboardingUrl?: string;
   };
 }
 
@@ -216,6 +218,31 @@ const generateEmailContent = (type: string, data: any) => {
             <p>Check out their profile and swipe right to match and start collaborating together.</p>
             <a href="${baseUrl}/discover" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">See Who's Interested</a>
             <p style="color: #666; margin-top: 30px;">Don't miss out on new connections!<br>The ThriveIN Team</p>
+          </div>
+        `
+      };
+    
+    case 'onboarding-reminder':
+      return {
+        subject: '🚀 Complete Your ThriveIN Profile',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8B5CF6;">Finish Setting Up Your Profile! 🎨</h1>
+            <p>Hi ${data.userName || 'there'},</p>
+            <p>You started creating your ThriveIN profile, but haven't finished yet.</p>
+            <p><strong>${data.stepMessage || "You're almost there!"}</strong></p>
+            <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; color: #333; font-weight: bold;">Complete your profile to:</p>
+              <ul style="margin: 10px 0; padding-left: 20px; color: #666;">
+                <li>✨ Connect with other creators</li>
+                <li>🎯 Get matched with opportunities</li>
+                <li>🚀 Start collaborating on projects</li>
+                <li>🎁 Earn your first 100 XP</li>
+              </ul>
+            </div>
+            <a href="${data.onboardingUrl || baseUrl + '/onboarding'}" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Complete Your Profile</a>
+            <p>It only takes 2 minutes! 🚀</p>
+            <p style="color: #666; margin-top: 30px;">We're excited to see you thrive!<br>The ThriveIN Team</p>
           </div>
         `
       };

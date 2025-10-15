@@ -93,14 +93,25 @@ export default function Onboarding() {
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("full_name, role, bio")
+      .select("full_name, role, bio, onboarding_completed, onboarding_step, onboarding_started_at")
       .eq("user_id", user.id)
       .single();
 
-    if (profileData?.bio && profileData?.role) {
+    if (profileData?.onboarding_completed) {
       navigate("/discover");
     } else {
-      // Track onboarding start
+      // Track onboarding start if not already started
+      if (!profileData?.onboarding_started_at) {
+        await supabase
+          .from("profiles")
+          .update({
+            onboarding_started_at: new Date().toISOString(),
+            onboarding_step: 1
+          })
+          .eq("user_id", user.id);
+      }
+      
+      // Track onboarding start in analytics
       const { analytics } = await import("@/lib/analytics");
       analytics.onboardingStart();
     }
@@ -110,14 +121,46 @@ export default function Onboarding() {
     const { analytics } = await import("@/lib/analytics");
     
     if (currentStep === 1) {
-      if (!profile.full_name || !profile.role || !profile.bio) {
+      // Strict validation for name - trim and check for actual content
+      if (!profile.full_name?.trim()) {
         toast({
-          title: "Missing information",
-          description: "Please fill in all required fields",
+          title: "Name is required",
+          description: "Please enter your full name to continue",
           variant: "destructive",
         });
         return;
       }
+      
+      if (!profile.role?.trim()) {
+        toast({
+          title: "Role is required",
+          description: "Please enter your role or profession",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!profile.bio?.trim()) {
+        toast({
+          title: "About section is required",
+          description: "Please tell us a bit about yourself",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Update onboarding step in database
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ 
+            onboarding_step: 2,
+            ...profile
+          })
+          .eq("user_id", user.id);
+      }
+      
       analytics.onboardingStep(1, "profile_complete");
     }
 
@@ -137,6 +180,16 @@ export default function Onboarding() {
           description: "3-5 skills help our AI find better matches for you",
         });
       }
+      
+      // Update onboarding step in database
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ onboarding_step: 3 })
+          .eq("user_id", user.id);
+      }
+      
       analytics.onboardingStep(2, "skills_added");
     }
 
@@ -229,6 +282,7 @@ export default function Onboarding() {
           ...profile,
           professional_skills: skillObjects as any,
           onboarding_completed: true,
+          onboarding_step: 4,
           xp: 100, // Award all XP at once
         })
         .eq("user_id", user.id);

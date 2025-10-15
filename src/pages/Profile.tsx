@@ -867,54 +867,31 @@ const Profile = () => {
 
           {/* BOTTOM SECTION: Experience/Credits */}
           <div id="experience" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
-            <h2 className="text-2xl font-bold mb-6">Experience & Credits</h2>
-            {credits.length > 0 ? (
-              <CreditsSection 
-                userId={profile.user_id}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Briefcase className="mx-auto mb-3 h-12 w-12" />
-                <p className="text-sm">Add your professional credits and work history</p>
-              </div>
-            )}
+            <CreditsSection 
+              userId={profile.user_id}
+              isOwnProfile={true}
+              onRefresh={fetchData}
+            />
           </div>
 
           {/* BOTTOM SECTION: Press & Awards Grid */}
           <div id="press-awards" className="grid gap-6 lg:grid-cols-2 scroll-mt-20">
             {/* Press */}
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <h2 className="text-2xl font-bold mb-6">Press & Media</h2>
-              {pressLinks.length > 0 ? (
-                <PressLinksSection 
-                  userId={profile.user_id}
-                  isOwnProfile={true}
-                  onRefresh={fetchData}
-                />
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">Add press coverage and media features</p>
-                </div>
-              )}
+              <PressLinksSection 
+                userId={profile.user_id}
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
             </div>
 
             {/* Awards */}
             <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <h2 className="text-2xl font-bold mb-6">Awards & Recognition</h2>
-              {awards.length > 0 ? (
-                <AwardsSection 
-                  userId={profile.user_id}
-                  isOwnProfile={true}
-                  onRefresh={fetchData}
-                />
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Star className="mx-auto mb-3 h-12 w-12" />
-                  <p className="text-sm">Showcase your awards and achievements</p>
-                </div>
-              )}
+              <AwardsSection 
+                userId={profile.user_id}
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
             </div>
           </div>
 

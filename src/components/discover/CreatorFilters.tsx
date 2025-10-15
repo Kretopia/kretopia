@@ -9,7 +9,6 @@ import { Filter, Lock, X } from "lucide-react";
 
 export interface CreatorFilterState {
   role: string;
-  location: string;
   minFollowers: number;
   verified: boolean;
   level: string;
@@ -27,7 +26,6 @@ export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel }
   const clearFilters = () => {
     onFilterChange({
       role: 'all',
-      location: 'all',
       minFollowers: 0,
       verified: false,
       level: 'all',
@@ -37,7 +35,6 @@ export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel }
 
   const hasActiveFilters = 
     filters.role !== 'all' || 
-    filters.location !== 'all' || 
     filters.minFollowers > 0 || 
     filters.verified ||
     filters.level !== 'all' ||
@@ -62,23 +59,6 @@ export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel }
               <SelectItem value="Writer">Writer</SelectItem>
               <SelectItem value="Designer">Designer</SelectItem>
               <SelectItem value="Artist">Artist</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Location (Free)</Label>
-          <Select value={filters.location} onValueChange={(value) => onFilterChange({ ...filters, location: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Locations" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              <SelectItem value="remote">Remote</SelectItem>
-              <SelectItem value="New York">New York</SelectItem>
-              <SelectItem value="Los Angeles">Los Angeles</SelectItem>
-              <SelectItem value="London">London</SelectItem>
-              <SelectItem value="Tokyo">Tokyo</SelectItem>
             </SelectContent>
           </Select>
         </div>

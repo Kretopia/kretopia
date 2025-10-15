@@ -103,7 +103,6 @@ const Discover = () => {
 
   const [creatorFilters, setCreatorFilters] = useState<CreatorFilterState>({
     role: 'all',
-    location: 'all',
     minFollowers: 0,
     verified: false,
     level: 'all',
@@ -216,14 +215,10 @@ const Discover = () => {
           .neq('user_id', user.id)
           .not('full_name', 'is', null)
           .not('bio', 'is', null)
-          .not('avatar_url', 'is', null)
-          .not('location', 'is', null);
+          .not('avatar_url', 'is', null);
 
         if (creatorFilters.role !== 'all') {
           profilesQuery = profilesQuery.eq('role', creatorFilters.role);
-        }
-        if (creatorFilters.location !== 'all') {
-          profilesQuery = profilesQuery.ilike('location', `%${creatorFilters.location}%`);
         }
         
         const { data: profiles, error: profilesError } = await profilesQuery.limit(50);

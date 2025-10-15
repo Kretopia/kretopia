@@ -41,7 +41,6 @@ export default function Connect() {
   const [isPremium, setIsPremium] = useState(false);
   const [filters, setFilters] = useState<CreatorFilterState>({
     role: 'all',
-    location: 'all',
     minFollowers: 0,
     verified: false,
     level: 'all',
@@ -157,10 +156,6 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
       // Apply filters
       if (filters.role !== 'all') {
         query = query.eq('role', filters.role);
-      }
-
-      if (filters.location !== 'all') {
-        query = query.ilike('location', `%${filters.location}%`);
       }
 
       if (filters.badge !== 'all') {

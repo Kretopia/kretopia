@@ -7,7 +7,6 @@ import { PostOpportunitySection } from "@/components/landing/PostOpportunitySect
 import { FeatureCard } from "@/components/landing/FeatureCard";
 import { PricingCard } from "@/components/landing/PricingCard";
 import { EarnCard } from "@/components/landing/EarnCard";
-import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { PartnerBenefitsSection } from "@/components/landing/PartnerBenefitsSection";
 import { Button } from "@/components/ui/button";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
@@ -32,36 +31,46 @@ const Landing = () => {
     <div className="min-h-screen">
       <HeroSection />
       
-      {/* Waitlist Section - MOVED UP */}
-      <section id="waitlist" className="px-6 py-20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+      {/* Sign Up Section */}
+      <section id="signup" className="px-6 py-20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
         <div className="container mx-auto max-w-3xl">
           <div className="text-center mb-10">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
               <Sparkles className="h-4 w-4" />
-              <span>Join the Beta</span>
+              <span>Open Beta</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              No Invite Code?{" "}
+              Sign Up in{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                No Problem
+                30 Seconds
               </span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Join our beta waitlist for free access. We manually review applications to ensure quality—most creators 
-              get approved within 24 hours. Skip the code, start creating.
+              No waitlist. No invite codes. Just sign up with your email and start connecting with creatives today.
             </p>
           </div>
-          <WaitlistForm />
+          
+          <div className="flex justify-center">
+            <Link to="/auth">
+              <Button size="xl" className="text-lg px-12 py-6 shadow-lg hover:shadow-xl transition-shadow">
+                Get Started Free →
+              </Button>
+            </Link>
+          </div>
           
           {/* Social proof */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span>Quality-focused community</span>
+              <span>No credit card required</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span>24-48hr approval</span>
+              <span>Instant access</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
+              <span>100% free to start</span>
             </div>
           </div>
         </div>
@@ -292,18 +301,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Secondary CTA for Have Invite */}
-      <section className="px-6 py-16 bg-muted/30">
-        <div className="container mx-auto max-w-2xl text-center">
-          <h3 className="text-2xl font-bold mb-4">Already have an invite code?</h3>
-          <p className="text-muted-foreground mb-6">Skip the waitlist and get instant access</p>
-          <Link to="/auth">
-            <Button variant="default" size="lg">
-              Sign Up with Code →
-            </Button>
-          </Link>
-        </div>
-      </section>
 
       {/* Final CTA Section */}
       <section className="px-6 py-20">
@@ -315,25 +312,16 @@ const Landing = () => {
                 Ready to Start Creating?
               </h2>
               <p className="mb-8 text-lg opacity-90">
-                Join ThriveIN and start building your creative career
+                No waitlist, no invite codes. Join thousands of creatives building together.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#waitlist">
-                  <Button
-                    variant="outline" 
-                    size="xl"
-                    className="border-2 border-white/70 bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm font-semibold"
-                  >
-                    Join Beta Waitlist
-                  </Button>
-                </a>
+              <div className="flex justify-center">
                 <Link to="/auth">
                   <Button
                     variant="outline" 
                     size="xl"
                     className="border-2 border-white/70 bg-white hover:bg-white/90 text-primary backdrop-blur-sm font-semibold"
                   >
-                    Have an Invite? Sign Up
+                    Sign Up Free - It Takes 30 Seconds →
                   </Button>
                 </Link>
               </div>

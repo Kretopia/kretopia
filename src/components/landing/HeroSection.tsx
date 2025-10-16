@@ -35,37 +35,24 @@ export const HeroSection = () => {
             <Link to="/auth">
               <Button variant="hero" size="xl" className="shadow-glow transition-smooth hover:-translate-y-1">
                 <Sparkles className="mr-2 h-5 w-5" />
-                Start Creating Now
+                Get Started Free
               </Button>
             </Link>
-            <Link to="#waitlist">
-              <Button variant="outline" size="xl" className="transition-smooth hover:-translate-y-1 border-2">
-                Join Beta Waitlist
-              </Button>
-            </Link>
-          </div>
-          
-          {/* No invite code callout */}
-          <div className="mt-6 inline-flex items-center gap-2 rounded-lg bg-accent/50 backdrop-blur-sm px-4 py-2 text-sm">
-            <span className="text-muted-foreground">Don't have an invite code?</span>
-            <a href="#waitlist" className="font-semibold text-primary hover:underline">
-              Get free access via waitlist →
-            </a>
           </div>
           
           {/* Trust indicators */}
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground md:gap-8">
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span>AI-Powered for All Users</span>
+              <span>No Waitlist</span>
             </div>
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
-              <span>Built for All Creatives</span>
+              <span>Sign Up in 30 Seconds</span>
             </div>
             <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
               <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span>Secure Payments</span>
+              <span>100% Free to Start</span>
             </div>
           </div>
         </div>

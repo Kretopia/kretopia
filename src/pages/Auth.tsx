@@ -122,16 +122,6 @@ const Auth = () => {
     const emailValidation = validateEmail(email);
     const passwordValidation = validatePassword(password);
     
-    if (!inviteCode.trim()) {
-      setInviteError("Invite code is required");
-      toast({
-        title: "Invite Required",
-        description: "ThriveIN is invite-only. Please enter your invite code or join the waitlist.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     if (!emailValidation.valid) {
       setEmailError(emailValidation.error || "");
       return;
@@ -146,30 +136,12 @@ const Auth = () => {
     setInviteError("");
     setLoading(true);
 
-    // Validate invite code first (without consuming it)
-    const { data: isValid, error: validateError } = await supabase
-      .rpc('validate_invite_code', { 
-        code: inviteCode.trim()
-      });
-
-    if (validateError || !isValid) {
-      setInviteError("Invalid invite code");
-      toast({
-        title: "Invalid Invite Code",
-        description: "This invite code is incorrect or has already been fully used. Please check the code and try again.",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}${redirectTo}`,
         data: {
-          invite_code: inviteCode.trim(),
           account_type: accountType,
         },
       },
@@ -357,23 +329,17 @@ const Auth = () => {
           <TabsContent value="signup">
 
             <form onSubmit={handleSignUp} className="space-y-4 sm:space-y-5">
-              {/* Prominent waitlist option */}
+              {/* AI Verification Notice */}
               <div className="rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 mb-4 border border-primary/20">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-primary/20 p-2 shrink-0">
                     <Sparkles className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-sm mb-1">No Invite Code?</h4>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Join our beta waitlist for free access—most creators approved within 24 hours
+                    <h4 className="font-semibold text-sm mb-1">AI-Verified Creator Platform</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Your profile will be verified by AI to ensure quality and industry fit. Most authentic creative professionals are approved instantly.
                     </p>
-                    <a 
-                      href="/#waitlist" 
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-                    >
-                      Get Free Access via Waitlist →
-                    </a>
                   </div>
                 </div>
               </div>
@@ -402,29 +368,6 @@ const Auth = () => {
                     </Label>
                   </div>
                 </RadioGroup>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="signup-invite">Invite Code *</Label>
-                <Input
-                  id="signup-invite"
-                  type="text"
-                  placeholder="Enter your invite code"
-                  value={inviteCode}
-                  onChange={(e) => {
-                    setInviteCode(e.target.value);
-                    setInviteError("");
-                  }}
-                  required
-                  className={`h-11 sm:h-10 text-base ${inviteError ? "border-destructive" : ""}`}
-                  autoComplete="off"
-                />
-                {inviteError && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {inviteError}
-                  </p>
-                )}
               </div>
 
               <div className="space-y-2">

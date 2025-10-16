@@ -287,6 +287,33 @@ export default function Onboarding() {
         })
         .eq("user_id", user.id);
 
+      // Trigger AI verification
+      try {
+        const { data: portfolioItems } = await supabase
+          .from("portfolio_items")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        const verificationData = {
+          fullName: profile.full_name,
+          role: profile.role,
+          bio: profile.bio,
+          location: profile.location,
+          portfolioItems: portfolioItems || 0,
+          socialLinks: {},
+          accountType: "individual" as const,
+        };
+
+        await supabase.functions.invoke("verify-profile", {
+          body: verificationData,
+        });
+
+        console.log("Profile verification submitted");
+      } catch (verifyError) {
+        console.error("Verification error (non-blocking):", verifyError);
+        // Don't block onboarding if verification fails
+      }
+
       const { analytics } = await import("@/lib/analytics");
       analytics.onboardingComplete();
 

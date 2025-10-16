@@ -3,6 +3,9 @@ project_id = "kwmcocsitwssrtzkdojh"
 [functions.validate-waitlist-ai]
 verify_jwt = false
 
+[functions.verify-profile]
+verify_jwt = true
+
 [functions.get-onboarding-matches]
 verify_jwt = true
 

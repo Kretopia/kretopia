@@ -6,11 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, MapPin, CheckCircle, Users } from "lucide-react";
+import { Shield, MapPin, CheckCircle, Users, ShieldCheck } from "lucide-react";
 import { LocationsTab } from "@/components/admin/LocationsTab";
 import { CheckInsTab } from "@/components/admin/CheckInsTab";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { PartnerSubmissionsTab } from "@/components/admin/PartnerSubmissionsTab";
+import { VerificationTab } from "@/components/admin/VerificationTab";
 
 export default function Admin() {
   const { user } = useAuth();
@@ -77,8 +78,12 @@ export default function Admin() {
         <h1 className="text-3xl font-bold">Admin Panel</h1>
       </div>
 
-      <Tabs defaultValue="locations" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="verifications" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="verifications">
+            <ShieldCheck className="mr-2 h-4 w-4" />
+            Verifications
+          </TabsTrigger>
           <TabsTrigger value="locations">
             <MapPin className="mr-2 h-4 w-4" />
             Locations
@@ -96,6 +101,10 @@ export default function Admin() {
             Partners
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="verifications" className="mt-6">
+          <VerificationTab />
+        </TabsContent>
 
         <TabsContent value="locations" className="mt-6">
           <LocationsTab />

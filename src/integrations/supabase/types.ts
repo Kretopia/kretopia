@@ -1563,12 +1563,14 @@ export type Database = {
           onboarding_step: number | null
           partner_location_id: string | null
           passion_skills: Json | null
+          portfolio_verified: boolean | null
           press_links: Json | null
           professional_skills: Json | null
           project_credits: number | null
           review_share_token: string | null
           role: string
           section_order: Json | null
+          social_verified: boolean | null
           soundcloud_url: string | null
           spotify_listeners: number | null
           spotify_url: string | null
@@ -1592,6 +1594,10 @@ export type Database = {
           twitter_url: string | null
           updated_at: string | null
           user_id: string
+          verification_notes: string | null
+          verification_score: number | null
+          verification_status: string | null
+          verified_at: string | null
           verified_metrics: boolean | null
           website: string | null
           xp: number | null
@@ -1644,12 +1650,14 @@ export type Database = {
           onboarding_step?: number | null
           partner_location_id?: string | null
           passion_skills?: Json | null
+          portfolio_verified?: boolean | null
           press_links?: Json | null
           professional_skills?: Json | null
           project_credits?: number | null
           review_share_token?: string | null
           role: string
           section_order?: Json | null
+          social_verified?: boolean | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
@@ -1673,6 +1681,10 @@ export type Database = {
           twitter_url?: string | null
           updated_at?: string | null
           user_id: string
+          verification_notes?: string | null
+          verification_score?: number | null
+          verification_status?: string | null
+          verified_at?: string | null
           verified_metrics?: boolean | null
           website?: string | null
           xp?: number | null
@@ -1725,12 +1737,14 @@ export type Database = {
           onboarding_step?: number | null
           partner_location_id?: string | null
           passion_skills?: Json | null
+          portfolio_verified?: boolean | null
           press_links?: Json | null
           professional_skills?: Json | null
           project_credits?: number | null
           review_share_token?: string | null
           role?: string
           section_order?: Json | null
+          social_verified?: boolean | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
@@ -1754,6 +1768,10 @@ export type Database = {
           twitter_url?: string | null
           updated_at?: string | null
           user_id?: string
+          verification_notes?: string | null
+          verification_score?: number | null
+          verification_status?: string | null
+          verified_at?: string | null
           verified_metrics?: boolean | null
           website?: string | null
           xp?: number | null
@@ -2858,6 +2876,48 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      verification_requests: {
+        Row: {
+          ai_decision: string | null
+          ai_reasoning: string | null
+          ai_score: number | null
+          created_at: string | null
+          id: string
+          profile_data: Json
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_decision?: string | null
+          ai_reasoning?: string | null
+          ai_score?: number | null
+          created_at?: string | null
+          id?: string
+          profile_data: Json
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_decision?: string | null
+          ai_reasoning?: string | null
+          ai_score?: number | null
+          created_at?: string | null
+          id?: string
+          profile_data?: Json
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []

@@ -93,28 +93,48 @@ export default function Onboarding() {
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("full_name, role, bio, onboarding_completed, onboarding_step, onboarding_started_at")
+      .select("full_name, role, bio, location, avatar_url, onboarding_completed, onboarding_step, onboarding_started_at")
       .eq("user_id", user.id)
       .single();
 
     if (profileData?.onboarding_completed) {
       navigate("/discover");
-    } else {
-      // Track onboarding start if not already started
-      if (!profileData?.onboarding_started_at) {
-        await supabase
-          .from("profiles")
-          .update({
-            onboarding_started_at: new Date().toISOString(),
-            onboarding_step: 1
-          })
-          .eq("user_id", user.id);
+      return;
+    }
+    
+    // Load existing profile data into form state
+    if (profileData) {
+      setProfile({
+        full_name: profileData.full_name === 'New User' ? '' : (profileData.full_name || ''),
+        role: profileData.role === 'Creator' || profileData.role === 'Company' ? '' : (profileData.role || ''),
+        bio: profileData.bio || '',
+        location: profileData.location || '',
+      });
+      
+      if (profileData.avatar_url) {
+        setAvatarUrl(profileData.avatar_url);
       }
       
-      // Track onboarding start in analytics
-      const { analytics } = await import("@/lib/analytics");
-      analytics.onboardingStart();
+      // Resume from last step if they've started
+      if (profileData.onboarding_step && profileData.onboarding_step > 1) {
+        setCurrentStep(profileData.onboarding_step);
+      }
     }
+    
+    // Track onboarding start if not already started
+    if (!profileData?.onboarding_started_at) {
+      await supabase
+        .from("profiles")
+        .update({
+          onboarding_started_at: new Date().toISOString(),
+          onboarding_step: 1
+        })
+        .eq("user_id", user.id);
+    }
+    
+    // Track onboarding start in analytics
+    const { analytics } = await import("@/lib/analytics");
+    analytics.onboardingStart();
   };
 
   const handleNext = async () => {
@@ -150,15 +170,36 @@ export default function Onboarding() {
       }
       
       // Update onboarding step in database
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        
+        console.log("Updating profile:", { ...profile, onboarding_step: 2 });
+        
+        const { error } = await supabase
           .from("profiles")
           .update({ 
             onboarding_step: 2,
             ...profile
           })
           .eq("user_id", user.id);
+        
+        if (error) {
+          console.error("Profile update error:", error);
+          throw error;
+        }
+        
+        console.log("Profile updated successfully");
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        toast({
+          title: "Update failed",
+          description: "Failed to save your profile. Please try again.",
+          variant: "destructive",
+        });
+        return;
       }
       
       analytics.onboardingStep(1, "profile_complete");
@@ -182,12 +223,29 @@ export default function Onboarding() {
       }
       
       // Update onboarding step in database
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        
+        const { error } = await supabase
           .from("profiles")
           .update({ onboarding_step: 3 })
           .eq("user_id", user.id);
+        
+        if (error) {
+          console.error("Profile update error:", error);
+          throw error;
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        toast({
+          title: "Update failed",
+          description: "Failed to save your progress. Please try again.",
+          variant: "destructive",
+        });
+        return;
       }
       
       analytics.onboardingStep(2, "skills_added");

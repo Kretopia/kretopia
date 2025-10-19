@@ -99,13 +99,13 @@ const Circle = () => {
         .eq('user_id', user.id)
         .single();
 
-      // Fetch diverse content - get user_ids first then join profiles
+      // Fetch diverse content - including user's own content
       const [portfolioItems, awardItems, pressItems, creditItems, postItems] = await Promise.all([
-        supabase.from('portfolio_items').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
-        supabase.from('awards').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(15),
-        supabase.from('press_links').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(15),
-        supabase.from('credits').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(15),
-        supabase.from('feed_posts').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(20)
+        supabase.from('portfolio_items').select('*').order('created_at', { ascending: false }).limit(20),
+        supabase.from('awards').select('*').order('created_at', { ascending: false }).limit(15),
+        supabase.from('press_links').select('*').order('created_at', { ascending: false }).limit(15),
+        supabase.from('credits').select('*').order('created_at', { ascending: false }).limit(15),
+        supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(20)
       ]);
 
       // Get all user IDs

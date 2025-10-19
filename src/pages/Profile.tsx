@@ -667,120 +667,135 @@ const Profile = () => {
           />
         )}
 
-        {/* Content Area */}
-        <div className="px-3 sm:px-4 md:px-6 space-y-6 mt-6">
-          {/* Profile Optimization Hub - Enhanced with AI insights */}
-          {profile && (
+        {/* Content Area with Tabs */}
+        <div className="px-3 sm:px-4 md:px-6 mt-6">
+          {/* Optimization & Visibility Tools */}
+          <div className="grid gap-6 md:grid-cols-2 mb-8">
             <ProfileOptimizationHub
               completion={checkProfileCompletion(profile, portfolioItems.length)}
               viewCount={portfolioItems.reduce((sum: number, item: any) => sum + (item.view_count || 0), 0)}
               matchRate={profile.level ? profile.level * 10 : 0}
               profileViews={stats.circle * 5}
             />
-          )}
-
-          {/* Profile Visibility Dashboard */}
-          {profile && (
             <ProfileVisibilityDashboard
               profile={profile}
               portfolioCount={portfolioItems.length}
             />
-          )}
-
-          {/* Profile Completion & Progress Cards */}
-          {profile && (
-            <div id="overview" className="grid md:grid-cols-2 gap-4 scroll-mt-20">
-              <ProfileStrengthScore 
-                profile={profile}
-                portfolioCount={portfolioItems.length}
-                creditsCount={credits.length}
-                awardsCount={awards.length}
-                pressCount={pressLinks.length}
-              />
-              <TierProgressCard currentPoints={profile.xp || 0} />
-            </div>
-          )}
-
-          {/* Profile Visibility Banner */}
-          {profile && (
-            <ProfileVisibilityBanner
-              isVisible={checkProfileCompletion(profile, portfolioItems.length).percentage === 100}
-              missingFields={checkProfileCompletion(profile, portfolioItems.length).missingFields}
-            />
-          )}
-
-          {/* Full Skills Section */}
-          {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
-            (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
-            <div id="skills" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
-              <SkillsSection
-                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
-                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
-                jobTitle={profile.job_title}
-                industry={profile.industry}
-                isOwnProfile={true}
-                userId={profile.user_id}
-                onRefresh={fetchData}
-              />
-            </div>
-          )}
-
-
-          {/* MID SECTION: Portfolio - Always Show */}
-          <div id="portfolio" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
-            <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
-            <PortfolioSection
-              items={portfolioItems}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
           </div>
 
-          {/* Portfolio Analytics - New Enhancement */}
-          {profile && portfolioItems.length > 0 && (
-            <PortfolioAnalytics userId={profile.user_id} />
-          )}
+          {/* Tabbed Interface */}
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="w-full justify-start mb-8 h-auto flex-wrap bg-muted/50 p-1">
+              <TabsTrigger value="overview" className="gap-2">
+                <Globe className="h-4 w-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="portfolio" className="gap-2">
+                <Briefcase className="h-4 w-4" />
+                Portfolio
+              </TabsTrigger>
+              <TabsTrigger value="experience" className="gap-2">
+                <Star className="h-4 w-4" />
+                Experience
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="gap-2">
+                <Star className="h-4 w-4" />
+                Reviews & Social
+              </TabsTrigger>
+              <TabsTrigger value="media" className="gap-2">
+                <Download className="h-4 w-4" />
+                Media & Press
+              </TabsTrigger>
+            </TabsList>
 
-          {/* MID SECTION: Reviews & Social Stats Grid */}
-          <div id="reviews-stats" className="grid gap-6 lg:grid-cols-2 scroll-mt-20">
-            {/* Reviews - Always Show */}
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <ReviewsSection
-                reviews={reviews}
-                isOwnProfile={true}
-                profileUserId={profile.user_id}
-                onRefresh={fetchData}
-              />
-            </div>
-
-            {/* Social Stats & Metrics */}
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <h2 className="text-2xl font-bold mb-6">Stats & Metrics</h2>
-              {(profile.youtube_subscribers || profile.instagram_followers || 
-                profile.tiktok_followers || profile.spotify_listeners || 
-                profile.twitter_followers || profile.linkedin_connections) ? (
-                <SocialStatsSection
-                  youtubeSubscribers={profile.youtube_subscribers}
-                  instagramFollowers={profile.instagram_followers}
-                  tiktokFollowers={profile.tiktok_followers}
-                  spotifyListeners={profile.spotify_listeners}
-                  twitterFollowers={profile.twitter_followers}
-                  linkedinConnections={profile.linkedin_connections}
-                  verifiedMetrics={profile.verified_metrics}
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-8 mt-0">
+              {/* Profile Strength & Progress */}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <ProfileStrengthScore 
+                  profile={profile}
+                  portfolioCount={portfolioItems.length}
+                  creditsCount={credits.length}
+                  awardsCount={awards.length}
+                  pressCount={pressLinks.length}
                 />
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">Add your social media stats to showcase your reach</p>
-                  <Button variant="outline" size="sm" onClick={() => setIsEditOpen(true)} className="mt-4">
-                    Add Stats
-                  </Button>
+                <TierProgressCard currentPoints={profile.xp || 0} />
+                <ProfileVisibilityBanner
+                  isVisible={checkProfileCompletion(profile, portfolioItems.length).percentage === 100}
+                  missingFields={checkProfileCompletion(profile, portfolioItems.length).missingFields}
+                />
+              </div>
+
+              {/* About Section */}
+              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <AboutSection
+                  bio={profile.bio}
+                  jobTitle={profile.role}
+                  industry={profile.industry}
+                  skills={[
+                    ...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []),
+                    ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])
+                  ]}
+                  responseTime={stats.responseRate}
+                  isOwnProfile={true}
+                />
+              </div>
+
+              {/* Skills Section */}
+              {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
+                (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
+                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                  <SkillsSection
+                    professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+                    passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
+                    jobTitle={profile.job_title}
+                    industry={profile.industry}
+                    isOwnProfile={true}
+                    userId={profile.user_id}
+                    onRefresh={fetchData}
+                  />
                 </div>
               )}
-              
+
+              {/* Contact & Links */}
+              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Contact & Links</h2>
+                <SocialLinksSection 
+                  profile={profile}
+                  isOwnProfile={true}
+                  onRefresh={fetchData}
+                />
+              </div>
+
+              {/* Invite Codes */}
+              <InviteCodesCard />
+            </TabsContent>
+
+            {/* Portfolio Tab */}
+            <TabsContent value="portfolio" className="space-y-8 mt-0">
+              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
+                <PortfolioSection 
+                  items={portfolioItems} 
+                  isOwnProfile={true}
+                  onRefresh={fetchData}
+                />
+              </div>
+
+              {/* Portfolio Analytics */}
+              {portfolioItems.length > 0 && (
+                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                  <PortfolioAnalytics userId={profile.user_id} />
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Experience Tab */}
+            <TabsContent value="experience" className="space-y-8 mt-0">
               {/* Industry Stats */}
               {industryStats.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-border">
-                  <h3 className="text-lg font-semibold mb-4">Industry Achievements</h3>
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-6">Industry Stats</h2>
                   <IndustryStatsSection 
                     stats={industryStats}
                     isOwnProfile={true}
@@ -788,113 +803,105 @@ const Profile = () => {
                   />
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Contact & Booking Section - NEW EPK ELEMENT */}
-          <div id="contact" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
-            <h2 className="text-2xl font-bold mb-6">Contact & Booking</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Get in Touch</h3>
-                <div className="space-y-2">
-                  {profile.website && (
-                    <p className="text-sm">
-                      <span className="text-muted-foreground">Website:</span>{' '}
-                      <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        {profile.website}
-                      </a>
-                    </p>
-                  )}
-                  <Button 
-                    variant="gradient" 
-                    size="sm" 
-                    className="w-full mt-2"
-                    onClick={handleContactClick}
-                  >
-                    Contact for Collaboration
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Professional Links</h3>
-                <SocialLinksSection 
-                  profile={profile}
+              {/* Experience & Credits */}
+              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6">Experience & Credits</h2>
+                <CreditsSection 
+                  userId={profile.user_id}
                   isOwnProfile={true}
                   onRefresh={fetchData}
                 />
               </div>
-            </div>
-          </div>
+            </TabsContent>
 
-          {/* Download Media Kit - NEW EPK ELEMENT */}
-          <div id="media-kit" className="rounded-2xl border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-6 md:p-8 shadow-card text-center scroll-mt-20">
-            <h2 className="text-2xl font-bold mb-2">Download Media Kit</h2>
-            <p className="text-muted-foreground mb-6">Get all my professional materials in one place</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button 
-                variant="gradient" 
-                size="lg"
-                onClick={handleDownloadEPK}
-              >
-                <FileText className="mr-2 h-5 w-5" />
-                Download Full EPK (PDF)
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={handleDownloadPhotos}
-              >
-                <Download className="mr-2 h-5 w-5" />
-                Download Press Photos
-              </Button>
-            </div>
-          </div>
+            {/* Reviews & Social Tab */}
+            <TabsContent value="reviews" className="space-y-8 mt-0">
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Reviews */}
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <ReviewsSection 
+                    reviews={reviews} 
+                    isOwnProfile={true}
+                    profileUserId={profile.user_id}
+                    onRefresh={fetchData}
+                  />
+                </div>
 
-          {/* Social Links removed from grid - now in Contact section */}
-          <div className="hidden">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <h2 className="text-2xl font-bold mb-6">Links</h2>
-              <SocialLinksSection 
-                profile={profile}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            </div>
-          </div>
+                {/* Social Stats */}
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-6">Stats & Metrics</h2>
+                  {(profile.youtube_subscribers || profile.instagram_followers || 
+                    profile.tiktok_followers || profile.spotify_listeners || 
+                    profile.twitter_followers || profile.linkedin_connections) ? (
+                    <SocialStatsSection
+                      youtubeSubscribers={profile.youtube_subscribers}
+                      instagramFollowers={profile.instagram_followers}
+                      tiktokFollowers={profile.tiktok_followers}
+                      spotifyListeners={profile.spotify_listeners}
+                      twitterFollowers={profile.twitter_followers}
+                      linkedinConnections={profile.linkedin_connections}
+                      verifiedMetrics={profile.verified_metrics}
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">Add your social media stats to showcase your reach</p>
+                      <Button variant="outline" size="sm" onClick={() => setIsEditOpen(true)} className="mt-4">
+                        Add Stats
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
 
-          {/* BOTTOM SECTION: Experience/Credits */}
-          <div id="experience" className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-card scroll-mt-20">
-            <CreditsSection 
-              userId={profile.user_id}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-          </div>
+            {/* Media & Press Tab */}
+            <TabsContent value="media" className="space-y-8 mt-0">
+              {/* Media Kit Download */}
+              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                  <Download className="h-6 w-6" />
+                  Media Kit & Assets
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Download your professional media kit and portfolio assets for promotional use.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <Button onClick={handleDownloadEPK} className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    Download EPK (PDF)
+                  </Button>
+                  {portfolioItems.length > 0 && (
+                    <Button onClick={handleDownloadPhotos} variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Download All Photos
+                    </Button>
+                  )}
+                </div>
+              </div>
 
-          {/* BOTTOM SECTION: Press & Awards Grid */}
-          <div id="press-awards" className="grid gap-6 lg:grid-cols-2 scroll-mt-20">
-            {/* Press */}
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <PressLinksSection 
-                userId={profile.user_id}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            </div>
+              {/* Press & Awards Grid */}
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Press */}
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <PressLinksSection 
+                    userId={profile.user_id}
+                    isOwnProfile={true}
+                    onRefresh={fetchData}
+                  />
+                </div>
 
-            {/* Awards */}
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-              <AwardsSection 
-                userId={profile.user_id}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            </div>
-          </div>
-
-          {/* Invite Codes Card */}
-          <InviteCodesCard />
+                {/* Awards */}
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <AwardsSection 
+                    userId={profile.user_id}
+                    isOwnProfile={true}
+                    onRefresh={fetchData}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { AboutSection } from "@/components/profile/AboutSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
-import { Download, FileText, Globe } from "lucide-react";
+import { Download, FileText, Globe, Award } from "lucide-react";
 
 interface Profile {
   full_name: string;
@@ -420,99 +420,183 @@ const PublicProfile = () => {
               ]}
             />
 
-            {/* MID SECTION: Portfolio (Visual First) */}
-            <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
-              <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
-              <PortfolioSection 
-                items={portfolioItems} 
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            </div>
+            {/* Tab Navigation */}
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="w-full justify-start mb-6 h-auto flex-wrap bg-muted/50 p-1">
+                <TabsTrigger value="overview" className="gap-2">
+                  <Globe className="h-4 w-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="portfolio" className="gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Portfolio
+                </TabsTrigger>
+                <TabsTrigger value="experience" className="gap-2">
+                  <Star className="h-4 w-4" />
+                  Experience
+                </TabsTrigger>
+                <TabsTrigger value="reviews" className="gap-2">
+                  <Star className="h-4 w-4" />
+                  Reviews & Social
+                </TabsTrigger>
+                {(pressLinks.length > 0 || awards.length > 0) && (
+                  <TabsTrigger value="press" className="gap-2">
+                    <Award className="h-4 w-4" />
+                    Press & Awards
+                  </TabsTrigger>
+                )}
+              </TabsList>
 
-            {/* MID SECTION: Reviews & Social Stats Grid */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Reviews */}
-              <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                <ReviewsSection 
-                  reviews={reviews} 
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="space-y-6 mt-0">
+                {/* About Section */}
+                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <AboutSection
+                  bio={profile.bio}
+                  jobTitle={profile.role}
+                  industry={profile.industry}
+                  skills={[
+                    ...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []),
+                    ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])
+                  ]}
+                  responseTime={stats.responseRate}
                   isOwnProfile={false}
-                  profileUserId={profile.user_id}
-                  onRefresh={fetchData}
                 />
-              </div>
+                </div>
 
-              {/* Social Stats */}
-              {(profile.instagram_url || profile.twitter_url || profile.linkedin_url || 
-                profile.spotify_url || profile.soundcloud_url || profile.behance_url || 
-                profile.imdb_url || profile.website ||
-                (profile.instagram_followers && profile.instagram_followers > 0) ||
-                (profile.youtube_subscribers && profile.youtube_subscribers > 0) ||
-                (profile.tiktok_followers && profile.tiktok_followers > 0) ||
-                (profile.spotify_listeners && profile.spotify_listeners > 0) ||
-                (profile.twitter_followers && profile.twitter_followers > 0) ||
-                (profile.linkedin_connections && profile.linkedin_connections > 0)) && (
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                  <h2 className="text-2xl font-bold mb-6">Social & Links</h2>
+                {/* Skills Section */}
+                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                  <SkillsSection 
+                    professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+                    passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
+                    jobTitle={profile.job_title}
+                    industry={profile.industry}
+                    userId={userId}
+                    isOwnProfile={false}
+                    onRefresh={fetchData}
+                  />
+                </div>
+
+                {/* Contact & Links */}
+                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-6">Contact & Links</h2>
                   <SocialLinksSection 
                     profile={profile}
                     isOwnProfile={false}
                     onRefresh={fetchData}
                   />
                 </div>
-              )}
+              </TabsContent>
 
-              {/* Industry Stats */}
-              {industryStats.length > 0 && (
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm md:col-span-2">
-                  <h2 className="text-2xl font-bold mb-6">Industry Stats</h2>
-                  <IndustryStatsSection 
-                    stats={industryStats}
+              {/* Portfolio Tab */}
+              <TabsContent value="portfolio" className="space-y-6 mt-0">
+                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
+                  <PortfolioSection 
+                    items={portfolioItems} 
                     isOwnProfile={false}
                     onRefresh={fetchData}
                   />
                 </div>
-              )}
-            </div>
+              </TabsContent>
 
-            {/* BOTTOM SECTION: Experience/Credits */}
-            {credits.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
-                <h2 className="text-2xl font-bold mb-6">Experience & Credits</h2>
-                <CreditsSection 
-                  userId={userId}
-                  isOwnProfile={false}
-                  onRefresh={fetchData}
-                />
-              </div>
-            )}
+              {/* Experience Tab */}
+              <TabsContent value="experience" className="space-y-6 mt-0">
+                {/* Industry Stats */}
+                {industryStats.length > 0 && (
+                  <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                    <h2 className="text-2xl font-bold mb-6">Industry Stats</h2>
+                    <IndustryStatsSection 
+                      stats={industryStats}
+                      isOwnProfile={false}
+                      onRefresh={fetchData}
+                    />
+                  </div>
+                )}
 
-            {/* BOTTOM SECTION: Press & Awards Grid */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Press */}
-              {pressLinks.length > 0 && (
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                  <h2 className="text-2xl font-bold mb-6">Press & Media</h2>
-                  <PressLinksSection 
-                    userId={userId}
-                    isOwnProfile={false}
-                    onRefresh={fetchData}
-                  />
+                {/* Experience & Credits */}
+                {credits.length > 0 ? (
+                  <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                    <h2 className="text-2xl font-bold mb-6">Experience & Credits</h2>
+                    <CreditsSection 
+                      userId={userId}
+                      isOwnProfile={false}
+                      onRefresh={fetchData}
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm text-center">
+                    <p className="text-muted-foreground">No experience or credits listed.</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Reviews & Social Tab */}
+              <TabsContent value="reviews" className="space-y-6 mt-0">
+                <div className="grid gap-6 lg:grid-cols-2">
+                  {/* Reviews */}
+                  <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                    <ReviewsSection 
+                      reviews={reviews} 
+                      isOwnProfile={false}
+                      profileUserId={profile.user_id}
+                      onRefresh={fetchData}
+                    />
+                  </div>
+
+                  {/* Social Stats */}
+                  <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                    <h2 className="text-2xl font-bold mb-6">Stats & Metrics</h2>
+                    {(profile.youtube_subscribers || profile.instagram_followers || 
+                      profile.tiktok_followers || profile.spotify_listeners || 
+                      profile.twitter_followers || profile.linkedin_connections) ? (
+                      <SocialStatsSection
+                        youtubeSubscribers={profile.youtube_subscribers}
+                        instagramFollowers={profile.instagram_followers}
+                        tiktokFollowers={profile.tiktok_followers}
+                        spotifyListeners={profile.spotify_listeners}
+                        twitterFollowers={profile.twitter_followers}
+                        linkedinConnections={profile.linkedin_connections}
+                        verifiedMetrics={profile.verified_metrics}
+                      />
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p className="text-sm">No social stats added yet</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </TabsContent>
 
-              {/* Awards */}
-              {awards.length > 0 && (
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                  <h2 className="text-2xl font-bold mb-6">Awards & Recognition</h2>
-                  <AwardsSection 
-                    userId={userId}
-                    isOwnProfile={false}
-                    onRefresh={fetchData}
-                  />
-                </div>
+              {/* Press & Awards Tab */}
+              {(pressLinks.length > 0 || awards.length > 0) && (
+                <TabsContent value="press" className="space-y-6 mt-0">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {/* Press */}
+                    {pressLinks.length > 0 && (
+                      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                        <PressLinksSection 
+                          userId={userId}
+                          isOwnProfile={false}
+                          onRefresh={fetchData}
+                        />
+                      </div>
+                    )}
+
+                    {/* Awards */}
+                    {awards.length > 0 && (
+                      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                        <AwardsSection 
+                          userId={userId}
+                          isOwnProfile={false}
+                          onRefresh={fetchData}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
               )}
-            </div>
+            </Tabs>
           </div>
         )}
       </div>

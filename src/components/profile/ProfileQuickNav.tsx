@@ -72,39 +72,34 @@ export function ProfileQuickNav() {
   };
 
   return (
-    <div className="hidden md:block fixed right-4 lg:right-6 top-1/2 -translate-y-1/2 z-50">
-      <div className="bg-card border-2 border-border rounded-2xl shadow-xl p-3 space-y-2 min-w-[160px] lg:min-w-[180px]">
-          {sections.map((section) => (
-            <Button
-              key={section.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => scrollToSection(section.id)}
-              className={cn(
-                "w-full justify-start gap-3 transition-all px-3 py-2",
-                activeSection === section.id
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "hover:bg-accent"
-              )}
-            >
-              {section.icon}
-              <span className="text-sm">{section.label}</span>
-            </Button>
-          ))}
-          
-          {/* Back to top */}
-          <div className="pt-2 mt-2 border-t border-border">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={scrollToTop}
-              className="w-full justify-start gap-3 px-3 py-2"
-            >
-              <ChevronUp className="h-4 w-4" />
-              <span className="text-sm">Back to Top</span>
-            </Button>
-          </div>
+    <div className="hidden md:block fixed right-4 lg:right-6 top-1/2 -translate-y-1/2 z-[100]">
+      <div className="bg-card/95 backdrop-blur-sm border-2 border-primary/20 rounded-xl shadow-2xl p-2 space-y-1 min-w-[160px] lg:min-w-[180px]">
+        {sections.map((section) => (
+          <button
+            key={section.id}
+            onClick={() => scrollToSection(section.id)}
+            className={cn(
+              "w-full flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left text-sm font-medium",
+              activeSection === section.id
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "hover:bg-accent text-foreground"
+            )}
+          >
+            <span className="flex-shrink-0">{section.icon}</span>
+            <span>{section.label}</span>
+          </button>
+        ))}
+        
+        <div className="pt-1 mt-1 border-t border-border">
+          <button
+            onClick={scrollToTop}
+            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-left text-sm font-medium hover:bg-accent text-foreground"
+          >
+            <ChevronUp className="h-4 w-4 flex-shrink-0" />
+            <span>Back to Top</span>
+          </button>
         </div>
       </div>
+    </div>
   );
 }

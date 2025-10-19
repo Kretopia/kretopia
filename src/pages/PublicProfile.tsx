@@ -21,6 +21,9 @@ import { PortfolioGrid } from "@/components/profile/PortfolioGrid";
 import { TestimonialsSection } from "@/components/profile/TestimonialsSection";
 import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
+import { AboutSection } from "@/components/profile/AboutSection";
+import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+import { Download, FileText, Globe } from "lucide-react";
 
 interface Profile {
   full_name: string;

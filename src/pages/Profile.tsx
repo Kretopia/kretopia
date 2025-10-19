@@ -33,9 +33,10 @@ import { getTierByPoints } from "@/lib/tierSystem";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 import { ProfileEditDialog } from "@/components/profile/ProfileEditDialog";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
-import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { ProfileHero } from "@/components/profile/ProfileHero";
 import { Globe } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AboutSection } from "@/components/profile/AboutSection";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -613,9 +614,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen pb-20 lg:pb-6">
-      {/* Quick Navigation */}
-      <ProfileQuickNav />
-      
       <div className="container mx-auto max-w-6xl">
         {/* Hidden file input */}
         <input

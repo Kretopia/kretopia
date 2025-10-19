@@ -50,6 +50,7 @@ serve(async (req) => {
       }
       
       if (videoId) {
+        console.log(`Processing YouTube video ID: ${videoId}`);
         data.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
         data.embedCode = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         data.mediaUrl = `https://www.youtube.com/watch?v=${videoId}`;
@@ -57,15 +58,25 @@ serve(async (req) => {
         // Fetch YouTube metadata using oEmbed
         try {
           const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+          console.log(`Fetching YouTube oEmbed from: ${oembedUrl}`);
+          
           const ytResponse = await fetch(oembedUrl);
+          console.log(`YouTube oEmbed response status: ${ytResponse.status}`);
+          
           if (ytResponse.ok) {
             const ytData = await ytResponse.json();
-            data.title = ytData.title;
-            // YouTube oEmbed doesn't provide description, but we can use title
-            console.log(`YouTube metadata - title: ${data.title}`);
+            console.log(`YouTube oEmbed data:`, ytData);
+            data.title = ytData.title || "";
+            data.description = ytData.author_name ? `By ${ytData.author_name}` : "";
+            console.log(`Set title to: ${data.title}`);
+          } else {
+            console.error(`YouTube oEmbed failed with status: ${ytResponse.status}`);
+            const errorText = await ytResponse.text();
+            console.error(`Error response: ${errorText}`);
           }
         } catch (e) {
           console.error("Error fetching YouTube metadata:", e);
+          console.error("Error details:", e instanceof Error ? e.message : String(e));
         }
       }
     }

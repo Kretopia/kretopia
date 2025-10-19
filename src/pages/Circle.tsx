@@ -245,6 +245,10 @@ const Circle = () => {
                 <>
                   {item.content.media_type === 'video' || item.content.file_url?.match(/\.(mp4|mov|avi|webm)$/i) ? (
                     <video 
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
                       controls 
                       className="w-full h-auto rounded-md mb-2 max-h-96"
                       poster={item.content.thumbnail_url}
@@ -328,6 +332,10 @@ const Circle = () => {
                 <>
                   {item.content.thumbnail_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
                     <video 
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
                       controls 
                       className="w-full h-auto rounded-md mb-2 max-h-96"
                       poster={item.content.thumbnail_url}
@@ -357,6 +365,10 @@ const Circle = () => {
                 <>
                   {item.content.image_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
                     <video 
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
                       controls 
                       className="w-full h-auto rounded-md mb-2 max-h-96"
                     >

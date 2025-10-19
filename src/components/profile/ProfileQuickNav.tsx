@@ -72,10 +72,8 @@ export function ProfileQuickNav() {
   };
 
   return (
-    <>
-      {/* Desktop Side Navigation */}
-      <div className="hidden lg:block fixed right-6 top-1/2 -translate-y-1/2 z-40">
-        <div className="bg-card border border-border rounded-2xl shadow-lg p-3 space-y-2 min-w-[180px]">
+    <div className="hidden md:block fixed right-4 lg:right-6 top-1/2 -translate-y-1/2 z-50">
+      <div className="bg-card border-2 border-border rounded-2xl shadow-xl p-3 space-y-2 min-w-[160px] lg:min-w-[180px]">
           {sections.map((section) => (
             <Button
               key={section.id}
@@ -108,7 +106,5 @@ export function ProfileQuickNav() {
           </div>
         </div>
       </div>
-
-    </>
   );
 }

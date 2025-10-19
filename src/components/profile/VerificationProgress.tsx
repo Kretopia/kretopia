@@ -14,6 +14,7 @@ interface VerificationProgressProps {
   awardsCount: number;
   pressCount: number;
   socialVerified: boolean;
+  verificationScore?: number; // Optional: show database score
   onRequestVerification?: () => void;
 }
 
@@ -25,6 +26,7 @@ export function VerificationProgress({
   awardsCount,
   pressCount,
   socialVerified,
+  verificationScore,
   onRequestVerification,
 }: VerificationProgressProps) {
   const currentLevelData = getLevelData(level);
@@ -53,7 +55,7 @@ export function VerificationProgress({
   
   const pressPoints = pressCount > 0 ? 5 : 0;
   
-  const totalScore = portfolioPoints + creditsPoints + socialPoints + awardsPoints + pressPoints;
+  const totalScore = verificationScore ?? (portfolioPoints + creditsPoints + socialPoints + awardsPoints + pressPoints);
   
   const requirements = [
     { 

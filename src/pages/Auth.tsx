@@ -115,11 +115,27 @@ const Auth = () => {
       const { analytics } = await import("@/lib/analytics");
       analytics.signIn('email');
       
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in",
-      });
-      navigate(redirectTo);
+      // Check if user is admin and redirect accordingly
+      const { data: { user: signedInUser } } = await supabase.auth.getUser();
+      if (signedInUser) {
+        const { data: adminData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", signedInUser.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        
+        const isAdmin = !!adminData;
+        
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully signed in",
+        });
+        
+        navigate(isAdmin ? "/admin" : redirectTo);
+      } else {
+        navigate(redirectTo);
+      }
     }
     setLoading(false);
   };

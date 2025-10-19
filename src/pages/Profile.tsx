@@ -210,11 +210,25 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    const initProfile = async () => {
+      await fetchData();
+      
+      // Calculate and update verification score on page load
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.functions.invoke('update-verification-score', {
+          body: { userId: user.id }
+        });
+        // Refetch to get updated score
+        await fetchData();
+      }
+    };
+    
+    initProfile();
 
-    // Set up real-time subscription for portfolio items
+    // Set up real-time subscriptions for all verification score components
     const channel = supabase
-      .channel('portfolio-changes')
+      .channel('profile-changes')
       .on(
         'postgres_changes',
         {
@@ -222,9 +236,69 @@ const Profile = () => {
           schema: 'public',
           table: 'portfolio_items'
         },
-        (payload) => {
+        async (payload) => {
           console.log('Portfolio item changed:', payload);
-          // Refetch data when portfolio items change
+          // Update verification score and refetch data
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.functions.invoke('update-verification-score', {
+              body: { userId: user.id }
+            });
+          }
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'credits'
+        },
+        async (payload) => {
+          console.log('Credits changed:', payload);
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.functions.invoke('update-verification-score', {
+              body: { userId: user.id }
+            });
+          }
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'awards'
+        },
+        async (payload) => {
+          console.log('Awards changed:', payload);
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.functions.invoke('update-verification-score', {
+              body: { userId: user.id }
+            });
+          }
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'press_links'
+        },
+        async (payload) => {
+          console.log('Press links changed:', payload);
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.functions.invoke('update-verification-score', {
+              body: { userId: user.id }
+            });
+          }
           fetchData();
         }
       )
@@ -734,6 +808,7 @@ const Profile = () => {
                   awardsCount={awards.length}
                   pressCount={pressLinks.length}
                   socialVerified={!!(profile.instagram_url || profile.linkedin_url || profile.twitter_url)}
+                  verificationScore={profile.verification_score}
                   onRequestVerification={async () => {
                     try {
                       const { data: { user } } = await supabase.auth.getUser();

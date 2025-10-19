@@ -98,12 +98,37 @@ export const ProfileHero = ({
           <div className="flex-1 min-w-0 pt-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-semibold">{displayName}</h1>
-              {profile.verified_metrics && (
+              
+              {/* Admin Verified Badge - ThriveIN Official */}
+              {profile.verification_status === 'verified' && (
+                <Badge 
+                  variant="default" 
+                  className="gap-1.5 h-6 px-2 bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3.5 w-3.5"
+                  >
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                  </svg>
+                  <span className="text-xs font-bold tracking-wide">VERIFIED</span>
+                </Badge>
+              )}
+              
+              {/* Social Stats Verified */}
+              {profile.verified_metrics && profile.verification_status !== 'verified' && (
                 <Badge variant="secondary" className="gap-1 h-5">
                   <Verified className="h-3 w-3 text-primary" />
                   <span className="text-xs">Verified</span>
                 </Badge>
               )}
+              
               {profile.badge && (
                 <Badge 
                   variant="default"

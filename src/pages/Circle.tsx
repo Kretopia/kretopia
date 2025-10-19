@@ -405,27 +405,8 @@ const Circle = () => {
                   <span className="text-sm font-medium">{item.reactions || 0}</span>
                 </Button>
                 <Button variant="ghost" size="sm" className="gap-1.5">
-                  <Share2 className="h-5 w-5" />
-                </Button>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleConnect(item.user.id)}
-                  className="gap-1.5"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  <span>Connect</span>
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => handleMessage(item.user.id, item.user.name, item.user.avatar)}
-                  className="gap-1.5"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  <span>Message</span>
+                  <MessageCircle className="h-5 w-5" />
+                  <span className="text-sm font-medium">Comment</span>
                 </Button>
               </div>
             </div>

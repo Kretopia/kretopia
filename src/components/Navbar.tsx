@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -77,6 +78,9 @@ const Navbar = ({ user }: NavbarProps) => {
             <Zap className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-lg sm:text-xl font-bold">thriveIN</span>
+          <Badge variant="secondary" className="bg-primary/10 text-primary text-xs ml-1">
+            BETA
+          </Badge>
         </Link>
 
 

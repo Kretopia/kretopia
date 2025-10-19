@@ -313,13 +313,17 @@ export const VerificationTab = () => {
   const flaggedRequests = requests.filter(r => r.status === "flagged");
   const approvedRequests = requests.filter(r => r.status === "approved");
   const rejectedRequests = requests.filter(r => r.status === "rejected");
+  const appealedRequests = requests.filter(r => r.status === "appealed");
 
   return (
     <>
       <Tabs defaultValue="flagged" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="flagged">
             Flagged ({flaggedRequests.length})
+          </TabsTrigger>
+          <TabsTrigger value="appealed">
+            Appeals ({appealedRequests.length})
           </TabsTrigger>
           <TabsTrigger value="pending">
             Pending ({pendingRequests.length})
@@ -344,6 +348,18 @@ export const VerificationTab = () => {
             </Card>
           ) : (
             flaggedRequests.map(renderRequest)
+          )}
+        </TabsContent>
+
+        <TabsContent value="appealed" className="space-y-4">
+          {appealedRequests.length === 0 ? (
+            <Card>
+              <CardContent className="flex items-center justify-center p-8">
+                <p className="text-muted-foreground">No appeals pending</p>
+              </CardContent>
+            </Card>
+          ) : (
+            appealedRequests.map(renderRequest)
           )}
         </TabsContent>
 

@@ -2885,6 +2885,11 @@ export type Database = {
           ai_decision: string | null
           ai_reasoning: string | null
           ai_score: number | null
+          appeal_decision: string | null
+          appeal_reason: string | null
+          appeal_reviewed_at: string | null
+          appeal_reviewed_by: string | null
+          appeal_submitted_at: string | null
           created_at: string | null
           id: string
           profile_data: Json
@@ -2898,6 +2903,11 @@ export type Database = {
           ai_decision?: string | null
           ai_reasoning?: string | null
           ai_score?: number | null
+          appeal_decision?: string | null
+          appeal_reason?: string | null
+          appeal_reviewed_at?: string | null
+          appeal_reviewed_by?: string | null
+          appeal_submitted_at?: string | null
           created_at?: string | null
           id?: string
           profile_data: Json
@@ -2911,6 +2921,11 @@ export type Database = {
           ai_decision?: string | null
           ai_reasoning?: string | null
           ai_score?: number | null
+          appeal_decision?: string | null
+          appeal_reason?: string | null
+          appeal_reviewed_at?: string | null
+          appeal_reviewed_by?: string | null
+          appeal_submitted_at?: string | null
           created_at?: string | null
           id?: string
           profile_data?: Json

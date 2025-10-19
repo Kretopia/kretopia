@@ -13,6 +13,11 @@ interface ProfileData {
   location?: string;
   website?: string;
   portfolioItems?: number;
+  portfolioCount?: number;
+  creditsCount?: number;
+  awardsCount?: number;
+  pressCount?: number;
+  socialVerified?: boolean;
   socialLinks?: {
     instagram?: string;
     twitter?: string;
@@ -48,7 +53,15 @@ serve(async (req) => {
     }
 
     const profileData: ProfileData = await req.json();
-    const { fullName, role, bio, website, socialLinks, portfolioItems, accountType } = profileData;
+    const { 
+      fullName, role, bio, website, socialLinks, 
+      portfolioItems, accountType,
+      portfolioCount = 0,
+      creditsCount = 0,
+      awardsCount = 0,
+      pressCount = 0,
+      socialVerified = false
+    } = profileData;
 
     // Build AI verification prompt
     const prompt = `You are a profile verification AI for ThriveIN, an exclusive creative and content creator platform. Evaluate this profile for authenticity, industry fit, and quality standards.
@@ -192,16 +205,34 @@ Return ONLY valid JSON (no markdown):
       profileStatus = "rejected";
     }
 
+    // Auto-approve/reject based on score
+    if (evaluation.score >= 75) {
+      status = "approved";
+      profileStatus = "verified";
+    } else if (evaluation.score < 40) {
+      status = "rejected";
+      profileStatus = "rejected";
+    }
+
     // Store verification request
     const { error: requestError } = await supabaseClient
       .from("verification_requests")
       .insert({
         user_id: user.id,
-        profile_data: profileData,
+        portfolio_count: portfolioCount,
+        credits_count: creditsCount,
+        awards_count: awardsCount,
+        press_count: pressCount,
+        social_verified: socialVerified,
         ai_score: evaluation.score,
-        ai_decision: evaluation.decision,
         ai_reasoning: evaluation.reasoning,
+        authenticity_score: evaluation.authenticity_score,
+        industry_fit_score: evaluation.industry_fit_score,
+        quality_score: evaluation.quality_score,
+        social_proof_score: evaluation.social_proof_score,
         status: status,
+        decision: evaluation.decision,
+        reviewed_at: status !== "pending" ? new Date().toISOString() : null,
       });
 
     if (requestError) {

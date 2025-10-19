@@ -40,6 +40,8 @@ import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download } from "lucide-react";
 import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
+import { VerificationProgress } from "@/components/profile/VerificationProgress";
+import { VerificationAppealDialog } from "@/components/profile/VerificationAppealDialog";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -701,6 +703,62 @@ const Profile = () => {
                   creditsCount={credits.length}
                   awardsCount={awards.length}
                   pressCount={pressLinks.length}
+                />
+                <VerificationProgress
+                  level={profile.level || 1}
+                  xp={profile.xp || 0}
+                  portfolioCount={portfolioItems.length}
+                  creditsCount={credits.length}
+                  awardsCount={awards.length}
+                  pressCount={pressLinks.length}
+                  socialVerified={!!(profile.instagram_url || profile.linkedin_url || profile.twitter_url)}
+                  onRequestVerification={async () => {
+                    try {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (!user) return;
+
+                      const { data, error } = await supabase.functions.invoke('verify-profile', {
+                        body: {
+                          fullName: profile.full_name,
+                          role: profile.role,
+                          bio: profile.bio,
+                          website: profile.website,
+                          portfolioCount: portfolioItems.length,
+                          creditsCount: credits.length,
+                          awardsCount: awards.length,
+                          pressCount: pressLinks.length,
+                          socialVerified: !!(profile.instagram_url || profile.linkedin_url || profile.twitter_url),
+                          socialLinks: {
+                            instagram: profile.instagram_url,
+                            twitter: profile.twitter_url,
+                            linkedin: profile.linkedin_url,
+                            spotify: profile.spotify_url,
+                            behance: profile.behance_url,
+                            imdb: profile.imdb_url,
+                          },
+                          accountType: profile.account_type,
+                        }
+                      });
+
+                      if (error) throw error;
+
+                      toast({
+                        title: "Verification submitted",
+                        description: data.status === 'verified' ? 
+                          "Your profile has been verified!" : 
+                          "Your verification request is being reviewed.",
+                      });
+
+                      fetchData();
+                    } catch (error) {
+                      console.error('Verification error:', error);
+                      toast({
+                        title: "Error",
+                        description: "Failed to submit verification request",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
                 />
                 <TierProgressCard currentPoints={profile.xp || 0} />
                 <ProfileVisibilityBanner

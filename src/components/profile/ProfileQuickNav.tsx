@@ -29,13 +29,9 @@ const sections: Section[] = [
 
 export function ProfileQuickNav() {
   const [activeSection, setActiveSection] = useState("overview");
-  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show nav after scrolling past header
-      setIsVisible(window.scrollY > 100);
-
       // Determine which section is in view
       const sectionElements = sections.map((s) => ({
         id: s.id,
@@ -74,8 +70,6 @@ export function ProfileQuickNav() {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  if (!isVisible) return null;
 
   return (
     <>

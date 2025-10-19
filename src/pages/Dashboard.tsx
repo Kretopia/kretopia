@@ -466,30 +466,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-bold">Quick Actions</h2>
-          <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
-            <QuickActionCard
-              title="Find Opportunities"
-              description="Browse and swipe through new gigs and collabs"
-              icon={<Briefcase className="h-5 w-5" />}
-              to="/discover"
-            />
-            <QuickActionCard
-              title="Edit Profile"
-              description="Update your EPK and showcase your work"
-              icon={<Users className="h-5 w-5" />}
-              to="/profile"
-            />
-            <QuickActionCard
-              title="Grow Your Circle"
-              description="Connect with other creators on the platform"
-              icon={<Sparkles className="h-5 w-5" />}
-              to="/discover"
-            />
-          </div>
-        </div>
 
         {/* Recent Activity */}
         <div>

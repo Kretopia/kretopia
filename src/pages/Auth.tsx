@@ -50,9 +50,22 @@ const Auth = () => {
 
   // Redirect if already authenticated & fetch opportunities count & pre-fill invite code
   useEffect(() => {
-    if (user) {
-      navigate(redirectTo);
-    }
+    const checkUserAndRedirect = async () => {
+      if (user) {
+        // Check if user is admin
+        const { data: adminData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        
+        const isAdmin = !!adminData;
+        navigate(isAdmin ? "/admin" : redirectTo);
+      }
+    };
+    
+    checkUserAndRedirect();
     
     // Pre-fill invite code from URL
     const inviteFromUrl = searchParams.get("inviteCode");
@@ -115,27 +128,12 @@ const Auth = () => {
       const { analytics } = await import("@/lib/analytics");
       analytics.signIn('email');
       
-      // Check if user is admin and redirect accordingly
-      const { data: { user: signedInUser } } = await supabase.auth.getUser();
-      if (signedInUser) {
-        const { data: adminData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", signedInUser.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        
-        const isAdmin = !!adminData;
-        
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in",
-        });
-        
-        navigate(isAdmin ? "/admin" : redirectTo);
-      } else {
-        navigate(redirectTo);
-      }
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully signed in",
+      });
+      
+      // Don't navigate here - let the useEffect handle it after auth state updates
     }
     setLoading(false);
   };

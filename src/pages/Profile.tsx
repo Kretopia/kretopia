@@ -211,6 +211,28 @@ const Profile = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Set up real-time subscription for portfolio items
+    const channel = supabase
+      .channel('portfolio-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'portfolio_items'
+        },
+        (payload) => {
+          console.log('Portfolio item changed:', payload);
+          // Refetch data when portfolio items change
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [toast]);
 
   const handleShare = () => {

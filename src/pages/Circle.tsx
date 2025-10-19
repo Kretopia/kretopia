@@ -19,7 +19,8 @@ import {
   Film,
   UserPlus,
   Send,
-  Play
+  Play,
+  Bookmark
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,8 @@ import { formatDistanceToNow } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
+import { SavedSparksDialog } from "@/components/SavedSparksDialog";
+import { toast as sonnerToast } from "sonner";
 import DOMPurify from "dompurify";
 
 interface SparkItem {
@@ -44,6 +47,7 @@ interface SparkItem {
   created_at: string;
   reactions?: number;
   hasReacted?: boolean;
+  isSaved?: boolean;
   comments?: any[];
   showComments?: boolean;
   commentText?: string;
@@ -55,6 +59,7 @@ const Circle = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
+  const [showSavedSparks, setShowSavedSparks] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -92,13 +97,6 @@ const Circle = () => {
     }
 
     try {
-      // Get user profile to filter recommendations
-      const { data: userProfile } = await supabase
-        .from('profiles')
-        .select('role, location, professional_skills, passion_skills')
-        .eq('user_id', user.id)
-        .single();
-
       // Fetch diverse content - including user's own content
       const [portfolioItems, awardItems, pressItems, creditItems, postItems] = await Promise.all([
         supabase.from('portfolio_items').select('*').order('created_at', { ascending: false }).limit(20),
@@ -152,20 +150,19 @@ const Circle = () => {
       // Sort by created_at
       feed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      // Fetch reactions and comments for portfolio and posts
+      // Fetch reactions and saved status for all items
       const portfolioIds = feed.filter(f => f.type === 'portfolio').map(f => f.id);
       const postIds = feed.filter(f => f.type === 'post').map(f => f.id);
+      const allItemIds = feed.map(f => ({ id: f.id, type: f.type }));
 
-      const [portfolioReactions, postReactions, postComments] = await Promise.all([
+      const [portfolioReactions, postReactions, savedSparks] = await Promise.all([
         portfolioIds.length > 0 
           ? supabase.from('portfolio_reactions').select('portfolio_item_id, user_id').in('portfolio_item_id', portfolioIds)
           : Promise.resolve({ data: [] }),
         postIds.length > 0
           ? supabase.from('feed_reactions').select('post_id, user_id').in('post_id', postIds)
           : Promise.resolve({ data: [] }),
-        postIds.length > 0
-          ? supabase.from('feed_comments').select('*, profiles:user_id(full_name, avatar_url)').in('post_id', postIds).order('created_at', { ascending: true })
-          : Promise.resolve({ data: [] })
+        supabase.from('saved_sparks').select('*').eq('user_id', user.id)
       ]);
 
       // Build reaction maps
@@ -187,15 +184,13 @@ const Circle = () => {
         });
       });
 
-      // Build comment map
-      const commentMap = new Map<string, any[]>();
-      (postComments.data || []).forEach(c => {
-        const comments = commentMap.get(c.post_id) || [];
-        comments.push(c);
-        commentMap.set(c.post_id, comments);
+      // Build saved map
+      const savedMap = new Map<string, boolean>();
+      (savedSparks.data || []).forEach(s => {
+        savedMap.set(`${s.item_type}-${s.item_id}`, true);
       });
 
-      // Update feed with reactions and comments
+      // Update feed with reactions and saved status
       feed.forEach(item => {
         if (item.type === 'portfolio') {
           const reactionData = portfolioReactionMap.get(item.id);
@@ -205,8 +200,8 @@ const Circle = () => {
           const reactionData = postReactionMap.get(item.id);
           item.reactions = reactionData?.count || 0;
           item.hasReacted = reactionData?.hasReacted || false;
-          item.comments = commentMap.get(item.id) || [];
         }
+        item.isSaved = savedMap.has(`${item.type}-${item.id}`);
       });
 
       setSparkFeed(feed);
@@ -258,63 +253,104 @@ const Circle = () => {
 
   const handleReaction = async (itemId: string, itemType: string) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast({ title: "Please sign in to react", variant: "destructive" });
-      return;
+    if (!user) return;
+
+    const tableName = itemType === 'portfolio' ? 'portfolio_reactions' : 
+                     itemType === 'post' ? 'feed_reactions' : null;
+    
+    if (!tableName) return;
+
+    const columnName = itemType === 'portfolio' ? 'portfolio_item_id' : 'post_id';
+
+    // Check if user already reacted
+    const { data: existing } = await supabase
+      .from(tableName)
+      .select('id')
+      .eq(columnName, itemId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (existing) {
+      // Remove reaction
+      await supabase
+        .from(tableName)
+        .delete()
+        .eq('id', existing.id);
+    } else {
+      // Add reaction
+      const insertData = itemType === 'portfolio' 
+        ? { portfolio_item_id: itemId, user_id: user.id }
+        : { post_id: itemId, user_id: user.id };
+        
+      await supabase
+        .from(tableName)
+        .insert([insertData]);
     }
 
-    try {
-      const item = sparkFeed.find(i => i.id === itemId);
-      if (!item) return;
-
-      // Handle different item types
-      if (itemType === 'portfolio') {
-        if (item.hasReacted) {
-          await supabase
-            .from('portfolio_reactions')
-            .delete()
-            .eq('portfolio_item_id', itemId)
-            .eq('user_id', user.id);
-        } else {
-          await supabase
-            .from('portfolio_reactions')
-            .insert({ portfolio_item_id: itemId, user_id: user.id });
-        }
-      } else if (itemType === 'post') {
-        if (item.hasReacted) {
-          await supabase
-            .from('feed_reactions')
-            .delete()
-            .eq('post_id', itemId)
-            .eq('user_id', user.id);
-        } else {
-          await supabase
-            .from('feed_reactions')
-            .insert({ post_id: itemId, user_id: user.id });
-        }
+    // Update local state
+    setSparkFeed(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const newReactions = existing ? (item.reactions || 1) - 1 : (item.reactions || 0) + 1;
+        return { ...item, reactions: newReactions, hasReacted: !existing };
       }
-
-      // Update local state
-      setSparkFeed(feed => feed.map(i => {
-        if (i.id === itemId) {
-          return {
-            ...i,
-            hasReacted: !i.hasReacted,
-            reactions: (i.reactions || 0) + (i.hasReacted ? -1 : 1)
-          };
-        }
-        return i;
-      }));
-    } catch (error) {
-      console.error('Error toggling reaction:', error);
-      toast({ title: "Failed to react", variant: "destructive" });
-    }
+      return item;
+    }));
   };
 
-  const toggleComments = (itemId: string) => {
+  const handleBookmark = async (itemId: string, itemType: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Check if already saved
+    const { data: existing } = await supabase
+      .from('saved_sparks')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('item_type', itemType)
+      .eq('item_id', itemId)
+      .single();
+
+    if (existing) {
+      // Remove bookmark
+      await supabase
+        .from('saved_sparks')
+        .delete()
+        .eq('id', existing.id);
+      
+      sonnerToast.success("Removed from saved sparks");
+    } else {
+      // Add bookmark
+      await supabase
+        .from('saved_sparks')
+        .insert([{ user_id: user.id, item_type: itemType, item_id: itemId }]);
+      
+      sonnerToast.success("Saved to your sparks!");
+    }
+
+    // Update local state
+    setSparkFeed(prev => prev.map(item => {
+      if (item.id === itemId) {
+        return { ...item, isSaved: !existing };
+      }
+      return item;
+    }));
+  };
+
+  const toggleComments = async (itemId: string, itemType: string) => {
+    const item = sparkFeed.find(i => i.id === itemId);
+    if (!item) return;
+
+    const isOpening = !item.showComments;
+    
+    // Toggle the comments section
     setSparkFeed(feed => feed.map(i => 
       i.id === itemId ? { ...i, showComments: !i.showComments } : i
     ));
+
+    // If opening and no comments loaded yet, fetch them
+    if (isOpening && !item.comments) {
+      await fetchCommentsForItem(itemId, itemType);
+    }
   };
 
   const handleCommentSubmit = async (itemId: string, itemType: string) => {
@@ -324,46 +360,98 @@ const Circle = () => {
     const item = sparkFeed.find(i => i.id === itemId);
     if (!item || !item.commentText?.trim()) return;
 
+    let tableName = '';
+    let columnName = '';
+
+    switch (itemType) {
+      case 'portfolio':
+        tableName = 'portfolio_comments';
+        columnName = 'portfolio_item_id';
+        break;
+      case 'award':
+        tableName = 'award_comments';
+        columnName = 'award_id';
+        break;
+      case 'press':
+        tableName = 'press_comments';
+        columnName = 'press_link_id';
+        break;
+      case 'credit':
+        tableName = 'credit_comments';
+        columnName = 'credit_id';
+        break;
+      case 'post':
+        tableName = 'feed_comments';
+        columnName = 'post_id';
+        break;
+      default:
+        return;
+    }
+
     try {
-      if (itemType === 'post') {
-        const { error } = await supabase
-          .from('feed_comments')
-          .insert({
-            post_id: itemId,
-            user_id: user.id,
-            content: item.commentText
-          });
+      const { error } = await supabase
+        .from(tableName as any)
+        .insert([{
+          [columnName]: itemId,
+          user_id: user.id,
+          content: item.commentText
+        }]);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Refresh comments
-        await fetchCommentsForItem(itemId, itemType);
-        
-        // Clear comment text
-        setSparkFeed(feed => feed.map(i => 
-          i.id === itemId ? { ...i, commentText: '' } : i
-        ));
+      // Refresh comments
+      await fetchCommentsForItem(itemId, itemType);
+      
+      // Clear comment text
+      setSparkFeed(feed => feed.map(i => 
+        i.id === itemId ? { ...i, commentText: '' } : i
+      ));
 
-        toast({ title: "Comment added!" });
-      }
+      sonnerToast.success("Comment posted!");
     } catch (error) {
       console.error('Error adding comment:', error);
-      toast({ title: "Failed to add comment", variant: "destructive" });
+      sonnerToast.error("Failed to add comment");
     }
   };
 
   const fetchCommentsForItem = async (itemId: string, itemType: string) => {
-    if (itemType === 'post') {
-      const { data } = await supabase
-        .from('feed_comments')
-        .select('*, profiles:user_id(full_name, avatar_url)')
-        .eq('post_id', itemId)
-        .order('created_at', { ascending: true });
+    let tableName = '';
+    let columnName = '';
 
-      setSparkFeed(feed => feed.map(i => 
-        i.id === itemId ? { ...i, comments: data || [] } : i
-      ));
+    switch (itemType) {
+      case 'portfolio':
+        tableName = 'portfolio_comments';
+        columnName = 'portfolio_item_id';
+        break;
+      case 'award':
+        tableName = 'award_comments';
+        columnName = 'award_id';
+        break;
+      case 'press':
+        tableName = 'press_comments';
+        columnName = 'press_link_id';
+        break;
+      case 'credit':
+        tableName = 'credit_comments';
+        columnName = 'credit_id';
+        break;
+      case 'post':
+        tableName = 'feed_comments';
+        columnName = 'post_id';
+        break;
+      default:
+        return;
     }
+
+    const { data } = await supabase
+      .from(tableName as any)
+      .select('*, profiles:user_id(full_name, avatar_url)')
+      .eq(columnName, itemId)
+      .order('created_at', { ascending: true });
+
+    setSparkFeed(feed => feed.map(i => 
+      i.id === itemId ? { ...i, comments: data || [] } : i
+    ));
   };
 
   const updateCommentText = (itemId: string, text: string) => {
@@ -596,24 +684,33 @@ const Circle = () => {
 
           {/* Actions */}
           <div className="flex flex-col gap-3 pt-3 border-t">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleReaction(item.id, item.type)}
+                  className={`gap-1.5 ${item.hasReacted ? 'text-orange-500' : ''}`}
+                >
+                  <Flame className={`h-5 w-5 ${item.hasReacted ? 'fill-orange-500' : ''}`} />
+                  <span className="text-sm font-medium">{item.reactions || 0}</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => toggleComments(item.id, item.type)}
+                  className="gap-1.5"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  <span className="text-sm font-medium">{item.comments?.length || 0}</span>
+                </Button>
+              </div>
+              <Button
+                variant="ghost"
                 size="sm"
-                onClick={() => handleReaction(item.id, item.type)}
-                className={`gap-1.5 ${item.hasReacted ? 'text-orange-500' : ''}`}
+                onClick={() => handleBookmark(item.id, item.type)}
               >
-                <Flame className={`h-5 w-5 ${item.hasReacted ? 'fill-orange-500' : ''}`} />
-                <span className="text-sm font-medium">{item.reactions || 0}</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => toggleComments(item.id)}
-                className="gap-1.5"
-              >
-                <MessageCircle className="h-5 w-5" />
-                <span className="text-sm font-medium">{item.comments?.length || 0}</span>
+                <Bookmark className={`h-5 w-5 ${item.isSaved ? 'fill-current' : ''}`} />
               </Button>
             </div>
 
@@ -672,17 +769,27 @@ const Circle = () => {
     <>
       <SEO
         title="Spark 🔥 - ThriveIN"
-        description="Discover creative content from the ThriveIN community. Connect with creators and explore their work."
+        description="Share your spark, get feedback from peers, get inspiration"
       />
       <div className="min-h-screen p-4 sm:p-6">
         <div className="container mx-auto max-w-4xl">
           {/* Header */}
-          <div className="mb-6 flex items-center gap-2">
-            <Flame className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Spark</h1>
-              <p className="text-sm text-muted-foreground">Discover the creative community</p>
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Flame className="h-8 w-8 text-primary" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold">Spark</h1>
+                <p className="text-sm text-muted-foreground">Share your spark, get feedback from peers, get inspiration</p>
+              </div>
             </div>
+            <Button
+              onClick={() => setShowSavedSparks(true)}
+              variant="outline"
+              className="gap-2"
+            >
+              <Bookmark className="h-4 w-4" />
+              Saved
+            </Button>
           </div>
 
           {/* Feed */}
@@ -726,6 +833,11 @@ const Circle = () => {
           item={selectedMedia}
         />
       )}
+
+      <SavedSparksDialog
+        open={showSavedSparks}
+        onOpenChange={setShowSavedSparks}
+      />
     </>
   );
 };

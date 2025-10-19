@@ -106,6 +106,41 @@ export type Database = {
           },
         ]
       }
+      award_comments: {
+        Row: {
+          award_id: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          award_id: string
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          award_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_comments_award_id_fkey"
+            columns: ["award_id"]
+            isOneToOne: false
+            referencedRelation: "awards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       awards: {
         Row: {
           category: string | null
@@ -302,6 +337,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      credit_comments: {
+        Row: {
+          content: string
+          created_at: string
+          credit_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          credit_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          credit_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_comments_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "credits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       credits: {
         Row: {
@@ -1353,6 +1423,41 @@ export type Database = {
           },
         ]
       }
+      portfolio_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          portfolio_item_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          portfolio_item_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          portfolio_item_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_comments_portfolio_item_id_fkey"
+            columns: ["portfolio_item_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_items: {
         Row: {
           category: string | null
@@ -1458,6 +1563,41 @@ export type Database = {
             columns: ["portfolio_item_id"]
             isOneToOne: false
             referencedRelation: "portfolio_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      press_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          press_link_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          press_link_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          press_link_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "press_comments_press_link_id_fkey"
+            columns: ["press_link_id"]
+            isOneToOne: false
+            referencedRelation: "press_links"
             referencedColumns: ["id"]
           },
         ]
@@ -2445,6 +2585,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      saved_sparks: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       skill_endorsement_requests: {
         Row: {

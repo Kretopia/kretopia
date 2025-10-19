@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   MessageCircle, 
   Share2, 
@@ -16,7 +17,9 @@ import {
   Award,
   Newspaper,
   Film,
-  UserPlus
+  UserPlus,
+  Send,
+  Play
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +27,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
+import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import DOMPurify from "dompurify";
 
 interface SparkItem {
@@ -40,6 +44,9 @@ interface SparkItem {
   created_at: string;
   reactions?: number;
   hasReacted?: boolean;
+  comments?: any[];
+  showComments?: boolean;
+  commentText?: string;
 }
 
 const Circle = () => {
@@ -47,6 +54,7 @@ const Circle = () => {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -144,6 +152,63 @@ const Circle = () => {
       // Sort by created_at
       feed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+      // Fetch reactions and comments for portfolio and posts
+      const portfolioIds = feed.filter(f => f.type === 'portfolio').map(f => f.id);
+      const postIds = feed.filter(f => f.type === 'post').map(f => f.id);
+
+      const [portfolioReactions, postReactions, postComments] = await Promise.all([
+        portfolioIds.length > 0 
+          ? supabase.from('portfolio_reactions').select('portfolio_item_id, user_id').in('portfolio_item_id', portfolioIds)
+          : Promise.resolve({ data: [] }),
+        postIds.length > 0
+          ? supabase.from('feed_reactions').select('post_id, user_id').in('post_id', postIds)
+          : Promise.resolve({ data: [] }),
+        postIds.length > 0
+          ? supabase.from('feed_comments').select('*, profiles:user_id(full_name, avatar_url)').in('post_id', postIds).order('created_at', { ascending: true })
+          : Promise.resolve({ data: [] })
+      ]);
+
+      // Build reaction maps
+      const portfolioReactionMap = new Map<string, { count: number; hasReacted: boolean }>();
+      (portfolioReactions.data || []).forEach(r => {
+        const current = portfolioReactionMap.get(r.portfolio_item_id) || { count: 0, hasReacted: false };
+        portfolioReactionMap.set(r.portfolio_item_id, {
+          count: current.count + 1,
+          hasReacted: current.hasReacted || r.user_id === user.id
+        });
+      });
+
+      const postReactionMap = new Map<string, { count: number; hasReacted: boolean }>();
+      (postReactions.data || []).forEach(r => {
+        const current = postReactionMap.get(r.post_id) || { count: 0, hasReacted: false };
+        postReactionMap.set(r.post_id, {
+          count: current.count + 1,
+          hasReacted: current.hasReacted || r.user_id === user.id
+        });
+      });
+
+      // Build comment map
+      const commentMap = new Map<string, any[]>();
+      (postComments.data || []).forEach(c => {
+        const comments = commentMap.get(c.post_id) || [];
+        comments.push(c);
+        commentMap.set(c.post_id, comments);
+      });
+
+      // Update feed with reactions and comments
+      feed.forEach(item => {
+        if (item.type === 'portfolio') {
+          const reactionData = portfolioReactionMap.get(item.id);
+          item.reactions = reactionData?.count || 0;
+          item.hasReacted = reactionData?.hasReacted || false;
+        } else if (item.type === 'post') {
+          const reactionData = postReactionMap.get(item.id);
+          item.reactions = reactionData?.count || 0;
+          item.hasReacted = reactionData?.hasReacted || false;
+          item.comments = commentMap.get(item.id) || [];
+        }
+      });
+
       setSparkFeed(feed);
     } catch (error) {
       console.error('Error fetching spark feed:', error);
@@ -193,13 +258,118 @@ const Circle = () => {
 
   const handleReaction = async (itemId: string, itemType: string) => {
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Please sign in to react", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const item = sparkFeed.find(i => i.id === itemId);
+      if (!item) return;
+
+      // Handle different item types
+      if (itemType === 'portfolio') {
+        if (item.hasReacted) {
+          await supabase
+            .from('portfolio_reactions')
+            .delete()
+            .eq('portfolio_item_id', itemId)
+            .eq('user_id', user.id);
+        } else {
+          await supabase
+            .from('portfolio_reactions')
+            .insert({ portfolio_item_id: itemId, user_id: user.id });
+        }
+      } else if (itemType === 'post') {
+        if (item.hasReacted) {
+          await supabase
+            .from('feed_reactions')
+            .delete()
+            .eq('post_id', itemId)
+            .eq('user_id', user.id);
+        } else {
+          await supabase
+            .from('feed_reactions')
+            .insert({ post_id: itemId, user_id: user.id });
+        }
+      }
+
+      // Update local state
+      setSparkFeed(feed => feed.map(i => {
+        if (i.id === itemId) {
+          return {
+            ...i,
+            hasReacted: !i.hasReacted,
+            reactions: (i.reactions || 0) + (i.hasReacted ? -1 : 1)
+          };
+        }
+        return i;
+      }));
+    } catch (error) {
+      console.error('Error toggling reaction:', error);
+      toast({ title: "Failed to react", variant: "destructive" });
+    }
+  };
+
+  const toggleComments = (itemId: string) => {
+    setSparkFeed(feed => feed.map(i => 
+      i.id === itemId ? { ...i, showComments: !i.showComments } : i
+    ));
+  };
+
+  const handleCommentSubmit = async (itemId: string, itemType: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Toggle reaction logic
-    toast({
-      title: "Reaction added",
-      description: "Your reaction has been recorded"
-    });
+    const item = sparkFeed.find(i => i.id === itemId);
+    if (!item || !item.commentText?.trim()) return;
+
+    try {
+      if (itemType === 'post') {
+        const { error } = await supabase
+          .from('feed_comments')
+          .insert({
+            post_id: itemId,
+            user_id: user.id,
+            content: item.commentText
+          });
+
+        if (error) throw error;
+
+        // Refresh comments
+        await fetchCommentsForItem(itemId, itemType);
+        
+        // Clear comment text
+        setSparkFeed(feed => feed.map(i => 
+          i.id === itemId ? { ...i, commentText: '' } : i
+        ));
+
+        toast({ title: "Comment added!" });
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      toast({ title: "Failed to add comment", variant: "destructive" });
+    }
+  };
+
+  const fetchCommentsForItem = async (itemId: string, itemType: string) => {
+    if (itemType === 'post') {
+      const { data } = await supabase
+        .from('feed_comments')
+        .select('*, profiles:user_id(full_name, avatar_url)')
+        .eq('post_id', itemId)
+        .order('created_at', { ascending: true });
+
+      setSparkFeed(feed => feed.map(i => 
+        i.id === itemId ? { ...i, comments: data || [] } : i
+      ));
+    }
+  };
+
+  const updateCommentText = (itemId: string, text: string) => {
+    setSparkFeed(feed => feed.map(i => 
+      i.id === itemId ? { ...i, commentText: text } : i
+    ));
   };
 
   const renderSparkItem = (item: SparkItem) => {
@@ -244,14 +414,24 @@ const Circle = () => {
               {(item.content.thumbnail_url || item.content.media_url) && (
                 <>
                   {item.content.media_type === 'video' || item.content.media_url?.match(/\.(mp4|mov|avi|webm)$/i) ? (
-                    <video 
-                      controls 
-                      className="w-full h-auto rounded-md mb-2 max-h-96"
-                      poster={item.content.thumbnail_url}
+                    <div 
+                      className="relative w-full rounded-md mb-2 max-h-96 cursor-pointer group"
+                      onClick={() => setSelectedMedia({
+                        title: item.content.title,
+                        description: item.content.description,
+                        media_type: 'video',
+                        media_url: item.content.media_url
+                      })}
                     >
-                      <source src={item.content.media_url} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+                      <img 
+                        src={item.content.thumbnail_url || item.content.media_url} 
+                        alt={item.content.title}
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="h-16 w-16 text-white" fill="white" />
+                      </div>
+                    </div>
                   ) : item.content.media_type === 'audio' || item.content.media_url?.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
                     <div className="w-full mb-2">
                       <audio 
@@ -327,13 +507,25 @@ const Circle = () => {
               {item.content.thumbnail_url && (
                 <>
                   {item.content.thumbnail_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
-                    <video 
-                      controls 
-                      className="w-full h-auto rounded-md mb-2 max-h-96"
+                    <div 
+                      className="relative w-full rounded-md mb-2 max-h-96 cursor-pointer group"
+                      onClick={() => setSelectedMedia({
+                        title: item.content.project_name,
+                        description: `${item.content.role} • ${item.content.platform}`,
+                        media_type: 'video',
+                        media_url: item.content.thumbnail_url
+                      })}
                     >
-                      <source src={item.content.thumbnail_url} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+                      <video 
+                        className="w-full h-full object-cover rounded-md"
+                        muted
+                      >
+                        <source src={item.content.thumbnail_url} type="video/mp4" />
+                      </video>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="h-16 w-16 text-white" fill="white" />
+                      </div>
+                    </div>
                   ) : (
                     <img 
                       src={item.content.thumbnail_url} 
@@ -355,13 +547,25 @@ const Circle = () => {
               {item.content.image_url && (
                 <>
                   {item.content.image_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
-                    <video 
-                      controls 
-                      className="w-full h-auto rounded-md mb-2 max-h-96"
+                    <div 
+                      className="relative w-full rounded-md mb-2 max-h-96 cursor-pointer group"
+                      onClick={() => setSelectedMedia({
+                        title: 'Video Post',
+                        description: '',
+                        media_type: 'video',
+                        media_url: item.content.image_url
+                      })}
                     >
-                      <source src={item.content.image_url} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+                      <video 
+                        className="w-full h-full object-cover rounded-md"
+                        muted
+                      >
+                        <source src={item.content.image_url} type="video/mp4" />
+                      </video>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="h-16 w-16 text-white" fill="white" />
+                      </div>
+                    </div>
                   ) : item.content.image_url.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
                     <div className="w-full mb-2">
                       <audio 
@@ -392,23 +596,70 @@ const Circle = () => {
 
           {/* Actions */}
           <div className="flex flex-col gap-3 pt-3 border-t">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => handleReaction(item.id, item.type)}
+                className={`gap-1.5 ${item.hasReacted ? 'text-orange-500' : ''}`}
+              >
+                <Flame className={`h-5 w-5 ${item.hasReacted ? 'fill-orange-500' : ''}`} />
+                <span className="text-sm font-medium">{item.reactions || 0}</span>
+              </Button>
+              {item.type === 'post' && (
                 <Button 
                   variant="ghost" 
-                  size="sm"
-                  onClick={() => handleReaction(item.id, item.type)}
+                  size="sm" 
+                  onClick={() => toggleComments(item.id)}
                   className="gap-1.5"
                 >
-                  <Flame className={`h-5 w-5 ${item.hasReacted ? 'fill-primary text-primary' : ''}`} />
-                  <span className="text-sm font-medium">{item.reactions || 0}</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="gap-1.5">
                   <MessageCircle className="h-5 w-5" />
-                  <span className="text-sm font-medium">Comment</span>
+                  <span className="text-sm font-medium">{item.comments?.length || 0}</span>
                 </Button>
-              </div>
+              )}
             </div>
+
+            {/* Comments Section */}
+            {item.type === 'post' && item.showComments && (
+              <div className="space-y-3 pt-3 border-t">
+                {/* Existing Comments */}
+                {item.comments?.map((comment: any) => (
+                  <div key={comment.id} className="flex gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={comment.profiles?.avatar_url} />
+                      <AvatarFallback>{comment.profiles?.full_name?.[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="bg-muted rounded-lg p-2">
+                        <p className="text-sm font-semibold">{comment.profiles?.full_name}</p>
+                        <p className="text-sm">{comment.content}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add Comment */}
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Add a comment..."
+                    value={item.commentText || ''}
+                    onChange={(e) => updateCommentText(item.id, e.target.value)}
+                    rows={2}
+                    className="resize-none"
+                  />
+                  <Button
+                    size="icon"
+                    onClick={() => handleCommentSubmit(item.id, item.type)}
+                    disabled={!item.commentText?.trim()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <p className="text-xs text-muted-foreground mt-2">
@@ -467,6 +718,14 @@ const Circle = () => {
           recipientId={selectedUser.user_id}
           recipientName={selectedUser.full_name}
           recipientAvatar={selectedUser.avatar_url}
+        />
+      )}
+
+      {selectedMedia && (
+        <MediaPlayerModal
+          isOpen={!!selectedMedia}
+          onClose={() => setSelectedMedia(null)}
+          item={selectedMedia}
         />
       )}
     </>

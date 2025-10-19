@@ -186,6 +186,17 @@ const Navbar = ({ user }: NavbarProps) => {
                       Settings
                     </Button>
                     
+                    {isAdmin && (
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12 text-primary"
+                        onClick={() => handleNavigation("/admin")}
+                      >
+                        <Shield className="h-5 w-5" />
+                        Admin Panel
+                      </Button>
+                    )}
+                    
                     <Separator className="my-3" />
                     
                     <Button 

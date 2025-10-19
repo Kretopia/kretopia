@@ -21,7 +21,11 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAdminAccess();
+    if (user) {
+      checkAdminAccess();
+    } else {
+      setLoading(false);
+    }
   }, [user]);
 
   const checkAdminAccess = async () => {
@@ -31,6 +35,7 @@ export default function Admin() {
       return;
     }
 
+    setLoading(true);
     try {
       console.log('[Admin] Checking admin access for user:', user.id);
       const { data, error } = await supabase
@@ -44,7 +49,13 @@ export default function Admin() {
 
       if (error) {
         console.error('[Admin] Error querying user_roles:', error);
-        throw error;
+        toast({
+          title: "Error",
+          description: "Failed to verify admin access",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+        return;
       }
 
       if (!data) {
@@ -62,6 +73,11 @@ export default function Admin() {
       setIsAdmin(true);
     } catch (error) {
       console.error('[Admin] Error checking admin access:', error);
+      toast({
+        title: "Error",
+        description: "An error occurred while checking permissions",
+        variant: "destructive",
+      });
       navigate("/dashboard");
     } finally {
       setLoading(false);

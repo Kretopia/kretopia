@@ -97,58 +97,48 @@ const Circle = () => {
     }
 
     try {
-      // Fetch diverse content - including user's own content
-      const [portfolioItems, awardItems, pressItems, creditItems, postItems] = await Promise.all([
-        supabase.from('portfolio_items').select('*').order('created_at', { ascending: false }).limit(20),
-        supabase.from('awards').select('*').order('created_at', { ascending: false }).limit(15),
-        supabase.from('press_links').select('*').order('created_at', { ascending: false }).limit(15),
-        supabase.from('credits').select('*').order('created_at', { ascending: false }).limit(15),
-        supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(20)
-      ]);
-
-      // Get all user IDs
-      const allUserIds = [...new Set([
-        ...(portfolioItems.data || []).map(i => i.user_id),
-        ...(awardItems.data || []).map(i => i.user_id),
-        ...(pressItems.data || []).map(i => i.user_id),
-        ...(creditItems.data || []).map(i => i.user_id),
-        ...(postItems.data || []).map(i => i.user_id)
-      ])];
-
-      // Fetch profiles
-      const { data: profiles } = await supabase
+      // Get user profile for AI recommendations
+      const { data: userProfile } = await supabase
         .from('profiles')
-        .select('user_id, full_name, avatar_url, role, location')
-        .in('user_id', allUserIds);
+        .select('role, bio, professional_skills, passion_skills, location')
+        .eq('user_id', user.id)
+        .single();
 
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      // Call AI-powered feed generation
+      const { data: feedData, error: feedError } = await supabase.functions.invoke('generate-for-you-feed', {
+        body: { userId: user.id, userProfile }
+      });
 
-      // Transform into unified feed format
-      const feed: SparkItem[] = [
-        ...(portfolioItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'portfolio' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
-        }),
-        ...(awardItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'award' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
-        }),
-        ...(pressItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'press' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
-        }),
-        ...(creditItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'credit' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
-        }),
-        ...(postItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'post' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
-        })
-      ];
+      if (feedError) {
+        console.error('AI feed error:', feedError);
+        throw feedError;
+      }
 
-      // Sort by created_at
-      feed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Transform AI feed data into SparkItem format
+      const feed: SparkItem[] = (feedData?.feed || [])
+        .filter((item: any) => item.profiles && item.user_id) // Filter out items without profile data
+        .map((item: any) => {
+          const profile = item.profiles;
+          const itemType = item.activity_type === 'feed_post' ? 'post' : item.activity_type;
+          
+          return {
+            id: item.id,
+            type: itemType as 'portfolio' | 'award' | 'credit' | 'press' | 'post',
+            user: {
+              id: item.user_id,
+              name: profile.full_name || 'Unknown',
+              avatar: profile.avatar_url || '',
+              role: profile.role || 'Creator',
+              location: item.location
+            },
+            content: item,
+            created_at: item.created_at,
+            reactions: 0,
+            showComments: false,
+            comments: [],
+            commentText: ''
+          };
+        });
 
       // Fetch reactions and saved status for all items
       const portfolioIds = feed.filter(f => f.type === 'portfolio').map(f => f.id);

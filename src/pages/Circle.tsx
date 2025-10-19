@@ -100,8 +100,62 @@ const Circle = () => {
         }
       });
 
+    // Set up real-time updates for activity feed
+    const activityChannel = supabase
+      .channel('circle-activity-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'portfolio_items'
+        },
+        () => {
+          console.log('New portfolio item detected, refreshing feed');
+          fetchActivityFeed();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'awards'
+        },
+        () => {
+          console.log('New award detected, refreshing feed');
+          fetchActivityFeed();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'press_links'
+        },
+        () => {
+          console.log('New press link detected, refreshing feed');
+          fetchActivityFeed();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'feed_posts'
+        },
+        () => {
+          console.log('New feed post detected, refreshing feed');
+          fetchActivityFeed();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(activityChannel);
     };
   }, []);
 

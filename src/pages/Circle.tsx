@@ -606,21 +606,19 @@ const Circle = () => {
                 <Flame className={`h-5 w-5 ${item.hasReacted ? 'fill-orange-500' : ''}`} />
                 <span className="text-sm font-medium">{item.reactions || 0}</span>
               </Button>
-              {item.type === 'post' && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => toggleComments(item.id)}
-                  className="gap-1.5"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  <span className="text-sm font-medium">{item.comments?.length || 0}</span>
-                </Button>
-              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => toggleComments(item.id)}
+                className="gap-1.5"
+              >
+                <MessageCircle className="h-5 w-5" />
+                <span className="text-sm font-medium">{item.comments?.length || 0}</span>
+              </Button>
             </div>
 
             {/* Comments Section */}
-            {item.type === 'post' && item.showComments && (
+            {item.showComments && (
               <div className="space-y-3 pt-3 border-t">
                 {/* Existing Comments */}
                 {item.comments?.map((comment: any) => (

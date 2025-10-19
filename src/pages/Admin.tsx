@@ -26,11 +26,13 @@ export default function Admin() {
 
   const checkAdminAccess = async () => {
     if (!user) {
+      console.log('[Admin] No user, redirecting to auth');
       navigate("/auth");
       return;
     }
 
     try {
+      console.log('[Admin] Checking admin access for user:', user.id);
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
@@ -38,9 +40,15 @@ export default function Admin() {
         .eq("role", "admin")
         .maybeSingle();
 
-      if (error) throw error;
+      console.log('[Admin] User roles query result:', { data, error });
+
+      if (error) {
+        console.error('[Admin] Error querying user_roles:', error);
+        throw error;
+      }
 
       if (!data) {
+        console.log('[Admin] No admin role found for user');
         toast({
           title: "Access Denied",
           description: "You don't have admin permissions",
@@ -50,9 +58,10 @@ export default function Admin() {
         return;
       }
 
+      console.log('[Admin] Admin access granted');
       setIsAdmin(true);
     } catch (error) {
-      console.error("Error checking admin access:", error);
+      console.error('[Admin] Error checking admin access:', error);
       navigate("/dashboard");
     } finally {
       setLoading(false);

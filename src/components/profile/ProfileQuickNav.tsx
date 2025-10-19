@@ -22,10 +22,8 @@ interface Section {
 const sections: Section[] = [
   { id: "overview", label: "Overview", icon: <User className="h-4 w-4" /> },
   { id: "portfolio", label: "Portfolio", icon: <Briefcase className="h-4 w-4" /> },
-  { id: "reviews-stats", label: "Reviews", icon: <Star className="h-4 w-4" /> },
-  { id: "contact", label: "Contact", icon: <Mail className="h-4 w-4" /> },
-  { id: "media-kit", label: "Media Kit", icon: <Download className="h-4 w-4" /> },
   { id: "experience", label: "Experience", icon: <BarChart3 className="h-4 w-4" /> },
+  { id: "reviews-stats", label: "Reviews", icon: <Star className="h-4 w-4" /> },
   { id: "press-awards", label: "Press & Awards", icon: <Award className="h-4 w-4" /> },
 ];
 

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MapPin, Star, Briefcase, ArrowLeft, MessageCircle, UserPlus, UserCheck } from "lucide-react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
@@ -23,6 +22,8 @@ import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { AboutSection } from "@/components/profile/AboutSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
+import { SEO } from "@/components/SEO";
 import { Download, FileText, Globe, Award } from "lucide-react";
 
 interface Profile {
@@ -361,7 +362,11 @@ const PublicProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
+      <SEO 
+        title={`${profile?.full_name || 'User'}'s Profile`}
+        description={profile?.bio || `View ${profile?.full_name || 'User'}'s professional profile`}
+      />
       <div className="container mx-auto max-w-7xl px-4 py-6">
         {/* Back Button */}
         <Button
@@ -420,52 +425,30 @@ const PublicProfile = () => {
               ]}
             />
 
-            {/* Tab Navigation */}
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="w-full justify-start mb-6 h-auto flex-wrap bg-muted/50 p-1">
-                <TabsTrigger value="overview" className="gap-2">
-                  <Globe className="h-4 w-4" />
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger value="portfolio" className="gap-2">
-                  <Briefcase className="h-4 w-4" />
-                  Portfolio
-                </TabsTrigger>
-                <TabsTrigger value="experience" className="gap-2">
-                  <Star className="h-4 w-4" />
-                  Experience
-                </TabsTrigger>
-                <TabsTrigger value="reviews" className="gap-2">
-                  <Star className="h-4 w-4" />
-                  Reviews & Social
-                </TabsTrigger>
-                {(pressLinks.length > 0 || awards.length > 0) && (
-                  <TabsTrigger value="press" className="gap-2">
-                    <Award className="h-4 w-4" />
-                    Press & Awards
-                  </TabsTrigger>
-                )}
-              </TabsList>
+            {/* Sticky Navigation */}
+            <ProfileQuickNav />
 
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-6 mt-0">
+            {/* Scrolling Content Sections */}
+            <div className="space-y-8">
+              {/* Overview Section */}
+              <section id="overview">
                 {/* About Section */}
-                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
-                <AboutSection
-                  bio={profile.bio}
-                  jobTitle={profile.role}
-                  industry={profile.industry}
-                  skills={[
-                    ...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []),
-                    ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])
-                  ]}
-                  responseTime={stats.responseRate}
-                  isOwnProfile={false}
-                />
+                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">
+                  <AboutSection
+                    bio={profile.bio}
+                    jobTitle={profile.role}
+                    industry={profile.industry}
+                    skills={[
+                      ...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []),
+                      ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])
+                    ]}
+                    responseTime={stats.responseRate}
+                    isOwnProfile={false}
+                  />
                 </div>
 
                 {/* Skills Section */}
-                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">
                   <SkillsSection 
                     professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
                     passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
@@ -486,10 +469,10 @@ const PublicProfile = () => {
                     onRefresh={fetchData}
                   />
                 </div>
-              </TabsContent>
+              </section>
 
-              {/* Portfolio Tab */}
-              <TabsContent value="portfolio" className="space-y-6 mt-0">
+              {/* Portfolio Section */}
+              <section id="portfolio">
                 <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
                   <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
                   <PortfolioSection 
@@ -498,13 +481,13 @@ const PublicProfile = () => {
                     onRefresh={fetchData}
                   />
                 </div>
-              </TabsContent>
+              </section>
 
-              {/* Experience Tab */}
-              <TabsContent value="experience" className="space-y-6 mt-0">
+              {/* Experience Section */}
+              <section id="experience">
                 {/* Industry Stats */}
                 {industryStats.length > 0 && (
-                  <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <div className="rounded-2xl border border-border bg-card p-6 shadow-sm mb-6">
                     <h2 className="text-2xl font-bold mb-6">Industry Stats</h2>
                     <IndustryStatsSection 
                       stats={industryStats}
@@ -529,10 +512,10 @@ const PublicProfile = () => {
                     <p className="text-muted-foreground">No experience or credits listed.</p>
                   </div>
                 )}
-              </TabsContent>
+              </section>
 
-              {/* Reviews & Social Tab */}
-              <TabsContent value="reviews" className="space-y-6 mt-0">
+              {/* Reviews & Social Section */}
+              <section id="reviews-stats">
                 <div className="grid gap-6 lg:grid-cols-2">
                   {/* Reviews */}
                   <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
@@ -566,11 +549,11 @@ const PublicProfile = () => {
                     )}
                   </div>
                 </div>
-              </TabsContent>
+              </section>
 
-              {/* Press & Awards Tab */}
+              {/* Press & Awards Section */}
               {(pressLinks.length > 0 || awards.length > 0) && (
-                <TabsContent value="press" className="space-y-6 mt-0">
+                <section id="press-awards">
                   <div className="grid gap-6 md:grid-cols-2">
                     {/* Press */}
                     {pressLinks.length > 0 && (
@@ -594,9 +577,9 @@ const PublicProfile = () => {
                       </div>
                     )}
                   </div>
-                </TabsContent>
+                </section>
               )}
-            </Tabs>
+            </div>
           </div>
         )}
       </div>

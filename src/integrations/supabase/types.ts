@@ -2890,6 +2890,7 @@ export type Database = {
           appeal_reviewed_at: string | null
           appeal_reviewed_by: string | null
           appeal_submitted_at: string | null
+          authenticity_score: number | null
           created_at: string | null
           id: string
           profile_data: Json
@@ -2908,6 +2909,7 @@ export type Database = {
           appeal_reviewed_at?: string | null
           appeal_reviewed_by?: string | null
           appeal_submitted_at?: string | null
+          authenticity_score?: number | null
           created_at?: string | null
           id?: string
           profile_data: Json
@@ -2926,6 +2928,7 @@ export type Database = {
           appeal_reviewed_at?: string | null
           appeal_reviewed_by?: string | null
           appeal_submitted_at?: string | null
+          authenticity_score?: number | null
           created_at?: string | null
           id?: string
           profile_data?: Json

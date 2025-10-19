@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Heart, 
   MessageCircle, 
   Share2, 
   ExternalLink,
@@ -205,29 +204,29 @@ const Circle = () => {
 
   const renderSparkItem = (item: SparkItem) => {
     return (
-      <Card key={item.id} className="overflow-hidden">
+      <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <Link 
               to={`/profile/${item.user.id}`} 
-              className="flex items-center gap-3 flex-1 min-w-0"
+              className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
             >
-              <Avatar className="h-10 w-10 flex-shrink-0">
+              <Avatar className="h-12 w-12 flex-shrink-0">
                 <AvatarImage src={item.user.avatar} />
                 <AvatarFallback>{item.user.name[0]}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="font-semibold truncate">{item.user.name}</p>
+                <p className="font-semibold truncate text-base">{item.user.name}</p>
                 <p className="text-sm text-muted-foreground truncate">{item.user.role}</p>
                 {item.user.location && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                     <MapPin className="h-3 w-3" />
                     {item.user.location}
                   </p>
                 )}
               </div>
             </Link>
-            <Badge variant="outline" className="flex-shrink-0 ml-2">
+            <Badge variant="outline" className="flex-shrink-0 ml-2 capitalize">
               {item.type === 'portfolio' && <Film className="h-3 w-3 mr-1" />}
               {item.type === 'award' && <Trophy className="h-3 w-3 mr-1" />}
               {item.type === 'press' && <Newspaper className="h-3 w-3 mr-1" />}
@@ -243,15 +242,38 @@ const Circle = () => {
           {item.type === 'portfolio' && (
             <div>
               {item.content.thumbnail_url && (
-                <img 
-                  src={item.content.thumbnail_url} 
-                  alt={item.content.title}
-                  className="w-full h-64 object-cover rounded-md mb-2"
-                />
+                <>
+                  {item.content.media_type === 'video' || item.content.file_url?.match(/\.(mp4|mov|avi|webm)$/i) ? (
+                    <video 
+                      controls 
+                      className="w-full h-auto rounded-md mb-2 max-h-96"
+                      poster={item.content.thumbnail_url}
+                    >
+                      <source src={item.content.file_url || item.content.thumbnail_url} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : item.content.media_type === 'audio' || item.content.file_url?.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
+                    <div className="w-full mb-2">
+                      <audio 
+                        controls 
+                        className="w-full"
+                      >
+                        <source src={item.content.file_url} />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </div>
+                  ) : (
+                    <img 
+                      src={item.content.thumbnail_url} 
+                      alt={item.content.title}
+                      className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
+                    />
+                  )}
+                </>
               )}
-              <h3 className="font-semibold">{item.content.title}</h3>
+              <h3 className="font-semibold text-lg">{item.content.title}</h3>
               {item.content.description && (
-                <p className="text-sm text-muted-foreground">{item.content.description}</p>
+                <p className="text-sm text-muted-foreground mt-1">{item.content.description}</p>
               )}
             </div>
           )}
@@ -262,10 +284,10 @@ const Circle = () => {
                 <img 
                   src={item.content.image_url} 
                   alt={item.content.title}
-                  className="w-full h-48 object-cover rounded-md mb-2"
+                  className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
                 />
               )}
-              <h3 className="font-semibold">{item.content.title}</h3>
+              <h3 className="font-semibold text-lg">{item.content.title}</h3>
               <p className="text-sm text-muted-foreground">{item.content.organization}</p>
               {item.content.description && (
                 <p className="text-sm mt-1">{item.content.description}</p>
@@ -279,10 +301,10 @@ const Circle = () => {
                 <img 
                   src={item.content.thumbnail_url} 
                   alt={item.content.title}
-                  className="w-full h-48 object-cover rounded-md mb-2"
+                  className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
                 />
               )}
-              <h3 className="font-semibold">{item.content.title}</h3>
+              <h3 className="font-semibold text-lg">{item.content.title}</h3>
               <p className="text-sm text-muted-foreground">{item.content.publication}</p>
               {item.content.excerpt && (
                 <p className="text-sm mt-1 line-clamp-2">{item.content.excerpt}</p>
@@ -303,13 +325,26 @@ const Circle = () => {
           {item.type === 'credit' && (
             <div>
               {item.content.thumbnail_url && (
-                <img 
-                  src={item.content.thumbnail_url} 
-                  alt={item.content.project_name}
-                  className="w-full h-48 object-cover rounded-md mb-2"
-                />
+                <>
+                  {item.content.thumbnail_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
+                    <video 
+                      controls 
+                      className="w-full h-auto rounded-md mb-2 max-h-96"
+                      poster={item.content.thumbnail_url}
+                    >
+                      <source src={item.content.thumbnail_url} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img 
+                      src={item.content.thumbnail_url} 
+                      alt={item.content.project_name}
+                      className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
+                    />
+                  )}
+                </>
               )}
-              <h3 className="font-semibold">{item.content.project_name}</h3>
+              <h3 className="font-semibold text-lg">{item.content.project_name}</h3>
               <p className="text-sm text-muted-foreground">
                 {item.content.role} • {item.content.platform} ({item.content.year})
               </p>
@@ -319,14 +354,36 @@ const Circle = () => {
           {item.type === 'post' && (
             <div>
               {item.content.image_url && (
-                <img 
-                  src={item.content.image_url} 
-                  alt="Post"
-                  className="w-full h-64 object-cover rounded-md mb-2"
-                />
+                <>
+                  {item.content.image_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
+                    <video 
+                      controls 
+                      className="w-full h-auto rounded-md mb-2 max-h-96"
+                    >
+                      <source src={item.content.image_url} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : item.content.image_url.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
+                    <div className="w-full mb-2">
+                      <audio 
+                        controls 
+                        className="w-full"
+                      >
+                        <source src={item.content.image_url} />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </div>
+                  ) : (
+                    <img 
+                      src={item.content.image_url} 
+                      alt="Post"
+                      className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
+                    />
+                  )}
+                </>
               )}
               <div 
-                className="prose prose-sm max-w-none"
+                className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(item.content.content || '') 
                 }}
@@ -335,50 +392,46 @@ const Circle = () => {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2 border-t">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => handleReaction(item.id, item.type)}
-                className="gap-1"
-              >
-                <Heart className="h-4 w-4" />
-                <span className="text-xs">{item.reactions || 0}</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => handleMessage(item.user.id, item.user.name, item.user.avatar)}
-                className="gap-1"
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-xs">Message</span>
-              </Button>
-              <Button variant="ghost" size="sm" className="gap-1">
-                <Share2 className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleConnect(item.user.id)}
-              >
-                <UserPlus className="h-4 w-4 mr-1" />
-                Connect
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`/profile/${item.user.id}`)}
-              >
-                View Profile
-              </Button>
+          <div className="flex flex-col gap-3 pt-3 border-t">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleReaction(item.id, item.type)}
+                  className="gap-1.5"
+                >
+                  <Flame className={`h-5 w-5 ${item.hasReacted ? 'fill-primary text-primary' : ''}`} />
+                  <span className="text-sm font-medium">{item.reactions || 0}</span>
+                </Button>
+                <Button variant="ghost" size="sm" className="gap-1.5">
+                  <Share2 className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleConnect(item.user.id)}
+                  className="gap-1.5"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Connect</span>
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleMessage(item.user.id, item.user.name, item.user.avatar)}
+                  className="gap-1.5"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Message</span>
+                </Button>
+              </div>
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-2">
             {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
           </p>
         </CardContent>
@@ -393,7 +446,7 @@ const Circle = () => {
         description="Discover creative content from the ThriveIN community. Connect with creators and explore their work."
       />
       <div className="min-h-screen p-4 sm:p-6">
-        <div className="container mx-auto max-w-2xl">
+        <div className="container mx-auto max-w-4xl">
           {/* Header */}
           <div className="mb-6 flex items-center gap-2">
             <Flame className="h-8 w-8 text-primary" />

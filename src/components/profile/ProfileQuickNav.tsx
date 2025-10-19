@@ -74,8 +74,8 @@ export function ProfileQuickNav() {
   return (
     <>
       {/* Desktop Side Navigation */}
-      <div className="hidden lg:block fixed left-4 top-1/2 -translate-y-1/2 z-40">
-        <div className="bg-card/95 backdrop-blur-lg border border-border rounded-2xl shadow-lg p-2 space-y-1">
+      <div className="hidden lg:block fixed right-6 top-1/2 -translate-y-1/2 z-40">
+        <div className="bg-card border border-border rounded-2xl shadow-lg p-3 space-y-2 min-w-[180px]">
           {sections.map((section) => (
             <Button
               key={section.id}
@@ -83,67 +83,32 @@ export function ProfileQuickNav() {
               size="sm"
               onClick={() => scrollToSection(section.id)}
               className={cn(
-                "w-full justify-start gap-2 transition-all",
+                "w-full justify-start gap-3 transition-all px-3 py-2",
                 activeSection === section.id
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "hover:bg-muted"
+                  : "hover:bg-accent"
               )}
-              title={section.label}
             >
               {section.icon}
-              <span className="text-xs font-medium">{section.label}</span>
+              <span className="text-sm">{section.label}</span>
             </Button>
           ))}
           
           {/* Back to top */}
-          <div className="pt-2 border-t border-border">
+          <div className="pt-2 mt-2 border-t border-border">
             <Button
               variant="ghost"
               size="sm"
               onClick={scrollToTop}
-              className="w-full justify-start gap-2"
-              title="Back to top"
+              className="w-full justify-start gap-3 px-3 py-2"
             >
               <ChevronUp className="h-4 w-4" />
-              <span className="text-xs font-medium">Top</span>
+              <span className="text-sm">Back to Top</span>
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-20 left-0 right-0 z-40 px-4">
-        <div className="bg-card/95 backdrop-blur-lg border border-border rounded-2xl shadow-lg p-2">
-          <div className="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar">
-            {sections.map((section) => (
-              <Button
-                key={section.id}
-                variant="ghost"
-                size="sm"
-                onClick={() => scrollToSection(section.id)}
-                className={cn(
-                  "flex-shrink-0 gap-1 px-3",
-                  activeSection === section.id
-                    ? "bg-primary text-primary-foreground"
-                    : ""
-                )}
-              >
-                {section.icon}
-                <span className="text-xs hidden sm:inline">{section.label}</span>
-              </Button>
-            ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={scrollToTop}
-              className="flex-shrink-0"
-              title="Back to top"
-            >
-              <ChevronUp className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
     </>
   );
 }

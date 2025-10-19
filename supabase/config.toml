@@ -56,3 +56,6 @@ verify_jwt = true
 
 [functions.generate-for-you-feed]
 verify_jwt = true
+
+[functions.update-verification-score]
+verify_jwt = true

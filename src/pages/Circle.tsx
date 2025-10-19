@@ -97,53 +97,58 @@ const Circle = () => {
     }
 
     try {
-      // Fetch user profile for AI personalization
-      const { data: profile } = await supabase
+      // Fetch diverse content - including user's own content
+      const [portfolioItems, awardItems, pressItems, creditItems, postItems] = await Promise.all([
+        supabase.from('portfolio_items').select('*').order('created_at', { ascending: false }).limit(20),
+        supabase.from('awards').select('*').order('created_at', { ascending: false }).limit(15),
+        supabase.from('press_links').select('*').order('created_at', { ascending: false }).limit(15),
+        supabase.from('credits').select('*').order('created_at', { ascending: false }).limit(15),
+        supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(20)
+      ]);
+
+      // Get all user IDs
+      const allUserIds = [...new Set([
+        ...(portfolioItems.data || []).map(i => i.user_id),
+        ...(awardItems.data || []).map(i => i.user_id),
+        ...(pressItems.data || []).map(i => i.user_id),
+        ...(creditItems.data || []).map(i => i.user_id),
+        ...(postItems.data || []).map(i => i.user_id)
+      ])];
+
+      // Fetch profiles
+      const { data: profiles } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+        .select('user_id, full_name, avatar_url, role, location')
+        .in('user_id', allUserIds);
 
-      // Call AI-powered feed generation
-      const { data: feedData, error: feedError } = await supabase.functions.invoke('generate-for-you-feed', {
-        body: { 
-          userId: user.id,
-          userProfile: profile 
-        }
-      });
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      if (feedError) {
-        console.error('Error generating AI feed:', feedError);
-        toast({
-          title: "Failed to generate feed",
-          description: "Loading recent content instead",
-          variant: "destructive"
-        });
-        // Fallback to chronological feed
-        await fetchChronologicalFeed(user.id);
-        return;
-      }
+      // Transform into unified feed format
+      const feed: SparkItem[] = [
+        ...(portfolioItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'portfolio' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
+        }),
+        ...(awardItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'award' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
+        }),
+        ...(pressItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'press' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
+        }),
+        ...(creditItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'credit' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
+        }),
+        ...(postItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'post' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0, showComments: false, comments: [], commentText: '' };
+        })
+      ];
 
-      // Transform feed data into SparkItems
-      const feed: SparkItem[] = (feedData.feed || []).map((item: any) => ({
-        id: item.id,
-        type: item.type,
-        content: item.content,
-        user: {
-          id: item.user.user_id,
-          name: item.user.full_name,
-          avatar: item.user.avatar_url,
-          role: item.user.role,
-          location: item.user.location
-        },
-        created_at: item.created_at,
-        reactions: 0,
-        hasReacted: false,
-        isSaved: false,
-        showComments: false,
-        comments: [],
-        commentText: ''
-      }));
+      // Sort by created_at
+      feed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       // Fetch reactions and saved status for all items
       const portfolioIds = feed.filter(f => f.type === 'portfolio').map(f => f.id);
@@ -209,112 +214,6 @@ const Circle = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchChronologicalFeed = async (userId: string) => {
-    try {
-      // Fetch diverse content - fallback when AI fails
-      const [portfolioItems, awardItems, pressItems, creditItems, postItems] = await Promise.all([
-        supabase.from('portfolio_items').select('*').order('created_at', { ascending: false }).limit(20),
-        supabase.from('awards').select('*').order('created_at', { ascending: false }).limit(15),
-        supabase.from('press_links').select('*').order('created_at', { ascending: false }).limit(15),
-        supabase.from('credits').select('*').order('created_at', { ascending: false }).limit(15),
-        supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(20)
-      ]);
-
-      const allUserIds = [...new Set([
-        ...(portfolioItems.data || []).map(i => i.user_id),
-        ...(awardItems.data || []).map(i => i.user_id),
-        ...(pressItems.data || []).map(i => i.user_id),
-        ...(creditItems.data || []).map(i => i.user_id),
-        ...(postItems.data || []).map(i => i.user_id)
-      ])];
-
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, role, location')
-        .in('user_id', allUserIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
-
-      const feed: SparkItem[] = [
-        ...(portfolioItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'portfolio' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
-        }),
-        ...(awardItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'award' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
-        }),
-        ...(pressItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'press' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
-        }),
-        ...(creditItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'credit' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
-        }),
-        ...(postItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
-          const profile = profileMap.get(item.user_id)!;
-          return { id: item.id, type: 'post' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
-        })
-      ];
-
-      feed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      const portfolioIds = feed.filter(f => f.type === 'portfolio').map(f => f.id);
-      const postIds = feed.filter(f => f.type === 'post').map(f => f.id);
-
-      const [portfolioReactions, postReactions, savedSparks] = await Promise.all([
-        portfolioIds.length > 0 
-          ? supabase.from('portfolio_reactions').select('portfolio_item_id, user_id').in('portfolio_item_id', portfolioIds)
-          : Promise.resolve({ data: [] }),
-        postIds.length > 0
-          ? supabase.from('feed_reactions').select('post_id, user_id').in('post_id', postIds)
-          : Promise.resolve({ data: [] }),
-        supabase.from('saved_sparks').select('*').eq('user_id', userId)
-      ]);
-
-      const portfolioReactionMap = new Map<string, { count: number; hasReacted: boolean }>();
-      (portfolioReactions.data || []).forEach(r => {
-        const current = portfolioReactionMap.get(r.portfolio_item_id) || { count: 0, hasReacted: false };
-        portfolioReactionMap.set(r.portfolio_item_id, {
-          count: current.count + 1,
-          hasReacted: current.hasReacted || r.user_id === userId
-        });
-      });
-
-      const postReactionMap = new Map<string, { count: number; hasReacted: boolean }>();
-      (postReactions.data || []).forEach(r => {
-        const current = postReactionMap.get(r.post_id) || { count: 0, hasReacted: false };
-        postReactionMap.set(r.post_id, {
-          count: current.count + 1,
-          hasReacted: current.hasReacted || r.user_id === userId
-        });
-      });
-
-      const savedMap = new Map<string, boolean>();
-      (savedSparks.data || []).forEach(s => {
-        savedMap.set(`${s.item_type}-${s.item_id}`, true);
-      });
-
-      feed.forEach(item => {
-        if (item.type === 'portfolio') {
-          const reactionData = portfolioReactionMap.get(item.id);
-          item.reactions = reactionData?.count || 0;
-          item.hasReacted = reactionData?.hasReacted || false;
-        } else if (item.type === 'post') {
-          const reactionData = postReactionMap.get(item.id);
-          item.reactions = reactionData?.count || 0;
-          item.hasReacted = reactionData?.hasReacted || false;
-        }
-        item.isSaved = savedMap.has(`${item.type}-${item.id}`);
-      });
-
-      setSparkFeed(feed);
-    } catch (error) {
-      console.error('Error in fallback feed:', error);
     }
   };
 

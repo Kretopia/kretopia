@@ -21,14 +21,14 @@ export const HeroSection = () => {
           
           <h1 className="mb-8 text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Find Your Next Collaborator.
+              Where Stats Meet Portfolio.
             </span>
             <br />
-            Land Your Next Gig.
+            Where AI Meets Industry.
           </h1>
           
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            The platform designed for creatives who want to work together and get paid for their craft.
+            The professional platform where verified metrics, awards, and press coverage combine with AI-powered brand matching. Build your complete creative profile, connect with nearby collaborators, and manage projects effortlessly.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">

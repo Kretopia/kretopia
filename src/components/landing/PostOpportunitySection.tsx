@@ -16,11 +16,11 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
         <div className="mb-6">
           <Briefcase className="mx-auto h-12 w-12 text-primary mb-4" />
           <h2 className="text-3xl font-bold mb-3 md:text-4xl">
-            Brands: Find Content Creators
+            Brands: Find Professional Creators
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
-            Post paid sponsorships or barter opportunities. Connect with creators 
-            who match your brand and audience.
+            Access creators with verified stats, portfolio work, and industry credentials. 
+            Our AI matches you with talent that fits your brand and campaign goals.
           </p>
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
             <Sparkles className="h-4 w-4" />

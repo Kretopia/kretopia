@@ -47,13 +47,13 @@ const Landing = () => {
               <span>Open Beta</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Sign Up in{" "}
+              Join the{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                30 Seconds
+                Industry Standard
               </span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              No waitlist. No invite codes. Just sign up with your email and start connecting with creatives today.
+              Where serious creators showcase verified metrics, awards, and portfolio work. Complete your professional profile to be discovered by brands.
             </p>
           </div>
           
@@ -93,14 +93,14 @@ const Landing = () => {
                 <span>Live Activity</span>
               </div>
               <h2 className="mb-4 text-3xl font-bold leading-tight tracking-tight md:text-4xl">
-                See What's{" "}
+                Professional Creators{" "}
                 <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                  Happening Now
+                  Already Here
                 </span>
               </h2>
               <p className="text-lg leading-relaxed text-muted-foreground mb-6">
-                Real creators joining, sharing work, and posting opportunities every day. 
-                Join a thriving community of creatives building together.
+                Watch verified creators join, share award-winning portfolios, and secure brand partnerships. 
+                This is where industry professionals connect.
               </p>
               <div className="flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -135,53 +135,52 @@ const Landing = () => {
               <span>Everything you need in one place</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Everything Creatives{" "}
+              The Complete{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Need to Thrive
+                Creative Platform
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              Whether you're a creator, designer, filmmaker, photographer, or musician—find paid gigs, 
-              barter opportunities, and collaborations that match your craft and help you succeed
+              From verified stats and press coverage to AI-powered matching and project management—everything you need to showcase your work, connect with brands, and deliver projects professionally.
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
-              icon={<Briefcase className="h-8 w-8" />}
-              title="Paid Jobs"
-              description="Browse sponsored content deals, brand partnerships, and paid gigs"
+              icon={<Trophy className="h-8 w-8" />}
+              title="Verified Stats & Awards"
+              description="Showcase Instagram, YouTube, TikTok, Spotify metrics alongside your awards and press coverage in one professional profile"
               gradient="from-primary to-secondary"
+            />
+            <FeatureCard
+              icon={<Sparkles className="h-8 w-8" />}
+              title="AI + Brand Matching"
+              description="Our AI analyzes your portfolio, stats, and location to connect you with brands seeking creators exactly like you"
+              gradient="from-secondary to-accent"
             />
             <FeatureCard
               icon={<Users className="h-8 w-8" />}
-              title="Barter Deals"
-              description="Trade your creative services for products, services, or cross-promotion"
-              gradient="from-secondary to-accent"
-            />
-            <FeatureCard
-              icon={<Wallet className="h-8 w-8" />}
-              title="Secure Payments"
-              description="Get paid safely with built-in escrow and milestone tracking"
+              title="Location-Based Connections"
+              description="Find collaborators near you for in-person shoots, events, and partnerships that require local presence"
               gradient="from-accent to-primary"
             />
             <FeatureCard
-              icon={<Lightbulb className="h-8 w-8" />}
-              title="Smart Matching"
-              description="AI finds opportunities that fit your niche and audience"
-              gradient="from-secondary to-accent"
-            />
-            <FeatureCard
               icon={<Rocket className="h-8 w-8" />}
-              title="Easy Collaboration"
-              description="Chat, negotiate terms, and manage deliverables in one place"
+              title="Effortless Project Management"
+              description="Track tasks, milestones, and deliverables whether managing a team or working solo—all in one workspace"
               gradient="from-primary to-secondary"
             />
             <FeatureCard
-              icon={<Trophy className="h-8 w-8" />}
-              title="Build Your Brand"
-              description="Showcase your work, grow your following, and get discovered"
+              icon={<Wallet className="h-8 w-8" />}
+              title="Secure Payment Escrow"
+              description="Built-in payment protection with milestone-based releases ensures you get paid for completed work"
               gradient="from-secondary to-accent"
+            />
+            <FeatureCard
+              icon={<Briefcase className="h-8 w-8" />}
+              title="Portfolio + Reviews System"
+              description="Display your best work alongside client reviews, creating trust and credibility with potential collaborators"
+              gradient="from-accent to-primary"
             />
           </div>
         </div>
@@ -316,10 +315,10 @@ const Landing = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(0_0%_100%/0.1),transparent_50%)]" />
             <div className="relative text-primary-foreground">
               <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-                Ready to Start Creating?
+                Ready to Go Pro?
               </h2>
               <p className="mb-8 text-lg opacity-90">
-                No waitlist, no invite codes. Join thousands of creatives building together.
+                Join the platform where stats, portfolio, and AI matching work together to land you better opportunities.
               </p>
               <div className="flex justify-center">
                 <Link to="/auth">

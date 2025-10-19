@@ -395,18 +395,12 @@ const Circle = () => {
       <div className="min-h-screen p-4 sm:p-6">
         <div className="container mx-auto max-w-2xl">
           {/* Header */}
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Flame className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">Spark</h1>
-                <p className="text-sm text-muted-foreground">Discover the creative community</p>
-              </div>
+          <div className="mb-6 flex items-center gap-2">
+            <Flame className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Spark</h1>
+              <p className="text-sm text-muted-foreground">Discover the creative community</p>
             </div>
-            <Button onClick={() => navigate('/discover')} variant="outline">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Discover
-            </Button>
           </div>
 
           {/* Feed */}

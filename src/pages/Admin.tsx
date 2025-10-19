@@ -97,53 +97,57 @@ export default function Admin() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24">
-      <div className="flex items-center gap-3 mb-6">
-        <Shield className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold">Admin Panel</h1>
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-24">
+      <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+        <h1 className="text-2xl sm:text-3xl font-bold">Admin Panel</h1>
       </div>
 
       <Tabs defaultValue="verifications" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="verifications">
-            <ShieldCheck className="mr-2 h-4 w-4" />
-            Verifications
+        <TabsList className="grid w-full grid-cols-5 h-auto p-1 lg:grid-cols-5">
+          <TabsTrigger value="verifications" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <ShieldCheck className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Verifications</span>
+            <span className="sm:hidden">Verify</span>
           </TabsTrigger>
-          <TabsTrigger value="locations">
-            <MapPin className="mr-2 h-4 w-4" />
-            Locations
+          <TabsTrigger value="locations" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Locations</span>
+            <span className="sm:hidden">Places</span>
           </TabsTrigger>
-          <TabsTrigger value="checkins">
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Check-ins
+          <TabsTrigger value="checkins" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Check-ins</span>
+            <span className="sm:hidden">Checks</span>
           </TabsTrigger>
-          <TabsTrigger value="users">
-            <Users className="mr-2 h-4 w-4" />
-            Users
+          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span>Users</span>
           </TabsTrigger>
-          <TabsTrigger value="partners">
-            <Shield className="mr-2 h-4 w-4" />
-            Partners
+          <TabsTrigger value="partners" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Shield className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Partners</span>
+            <span className="sm:hidden">Parts</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="verifications" className="mt-6">
+        <TabsContent value="verifications" className="mt-4 sm:mt-6">
           <VerificationTab />
         </TabsContent>
 
-        <TabsContent value="locations" className="mt-6">
+        <TabsContent value="locations" className="mt-4 sm:mt-6">
           <LocationsTab />
         </TabsContent>
 
-        <TabsContent value="checkins" className="mt-6">
+        <TabsContent value="checkins" className="mt-4 sm:mt-6">
           <CheckInsTab />
         </TabsContent>
 
-        <TabsContent value="users" className="mt-6">
+        <TabsContent value="users" className="mt-4 sm:mt-6">
           <UsersTab />
         </TabsContent>
 
-        <TabsContent value="partners" className="mt-6">
+        <TabsContent value="partners" className="mt-4 sm:mt-6">
           <PartnerSubmissionsTab />
         </TabsContent>
       </Tabs>

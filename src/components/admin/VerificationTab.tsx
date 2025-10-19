@@ -201,33 +201,35 @@ export const VerificationTab = () => {
 
   const renderRequest = (request: VerificationRequest) => (
     <Card key={request.id}>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+      <CardHeader className="p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {request.profiles.avatar_url && (
               <img
                 src={request.profiles.avatar_url}
                 alt={request.profiles.full_name}
-                className="h-12 w-12 rounded-full object-cover"
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-full object-cover flex-shrink-0"
               />
             )}
-            <div>
-              <CardTitle className="text-lg">{request.profiles.full_name}</CardTitle>
-              <CardDescription>{request.profiles.role}</CardDescription>
+            <div className="min-w-0">
+              <CardTitle className="text-base sm:text-lg truncate">{request.profiles.full_name}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm truncate">{request.profiles.role}</CardDescription>
             </div>
           </div>
-          {getScoreBadge(request.ai_score)}
+          <div className="flex-shrink-0">
+            {getScoreBadge(request.ai_score)}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
         <div>
-          <h4 className="font-semibold mb-2">AI Analysis</h4>
-          <p className="text-sm text-muted-foreground">{request.ai_reasoning}</p>
+          <h4 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">AI Analysis</h4>
+          <p className="text-xs sm:text-sm text-muted-foreground">{request.ai_reasoning}</p>
         </div>
 
         <div>
-          <h4 className="font-semibold mb-2">Profile Data</h4>
-          <div className="text-sm space-y-1">
+          <h4 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">Profile Data</h4>
+          <div className="text-xs sm:text-sm space-y-1">
             <p><strong>Account Type:</strong> {request.profile_data.accountType}</p>
             {request.profile_data.bio && (
               <p><strong>Bio:</strong> {request.profile_data.bio}</p>
@@ -248,8 +250,8 @@ export const VerificationTab = () => {
 
         {request.profile_data.socialLinks && Object.keys(request.profile_data.socialLinks).length > 0 && (
           <div>
-            <h4 className="font-semibold mb-2">Social Links</h4>
-            <div className="flex flex-wrap gap-2">
+            <h4 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">Social Links</h4>
+            <div className="flex flex-wrap gap-1 sm:gap-2">
               {Object.entries(request.profile_data.socialLinks).map(([platform, url]: [string, any]) => 
                 url && (
                   <a
@@ -257,9 +259,9 @@ export const VerificationTab = () => {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs px-2 py-1 bg-secondary rounded-md hover:bg-secondary/80 flex items-center gap-1"
+                    className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-1 bg-secondary rounded-md hover:bg-secondary/80 flex items-center gap-1"
                   >
-                    {platform} <ExternalLink className="h-3 w-3" />
+                    {platform} <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   </a>
                 )
               )}
@@ -268,11 +270,12 @@ export const VerificationTab = () => {
         )}
 
         {request.status === "flagged" && (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
               onClick={() => handleApprove(request)}
               disabled={actionLoading}
-              className="flex-1"
+              className="flex-1 text-sm"
+              size="sm"
             >
               {actionLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -290,7 +293,8 @@ export const VerificationTab = () => {
                 setShowRejectDialog(true);
               }}
               disabled={actionLoading}
-              className="flex-1"
+              className="flex-1 text-sm"
+              size="sm"
             >
               <XCircle className="mr-2 h-4 w-4" />
               Reject
@@ -318,21 +322,26 @@ export const VerificationTab = () => {
   return (
     <>
       <Tabs defaultValue="flagged" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="flagged">
-            Flagged ({flaggedRequests.length})
+        <TabsList className="grid w-full grid-cols-5 h-auto p-1">
+          <TabsTrigger value="flagged" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <span className="hidden sm:inline">Flagged ({flaggedRequests.length})</span>
+            <span className="sm:hidden">Flag ({flaggedRequests.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="appealed">
-            Appeals ({appealedRequests.length})
+          <TabsTrigger value="appealed" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <span className="hidden sm:inline">Appeals ({appealedRequests.length})</span>
+            <span className="sm:hidden">App ({appealedRequests.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="pending">
-            Pending ({pendingRequests.length})
+          <TabsTrigger value="pending" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <span className="hidden sm:inline">Pending ({pendingRequests.length})</span>
+            <span className="sm:hidden">Pend ({pendingRequests.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="approved">
-            Approved ({approvedRequests.length})
+          <TabsTrigger value="approved" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <span className="hidden sm:inline">Approved ({approvedRequests.length})</span>
+            <span className="sm:hidden">App ({approvedRequests.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="rejected">
-            Rejected ({rejectedRequests.length})
+          <TabsTrigger value="rejected" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <span className="hidden sm:inline">Rejected ({rejectedRequests.length})</span>
+            <span className="sm:hidden">Rej ({rejectedRequests.length})</span>
           </TabsTrigger>
         </TabsList>
 

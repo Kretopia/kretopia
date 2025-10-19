@@ -20,39 +20,45 @@ export const HeroSection = () => {
           </div>
           
           <h1 className="mb-8 text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Where Stats Meet Portfolio.
-            </span>
+            The Professional Network for
             <br />
-            Where AI Meets Industry.
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Verified Creators
+            </span>
           </h1>
           
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            The professional platform where verified metrics, awards, and press coverage combine with AI-powered brand matching. Build your complete creative profile, connect with nearby collaborators, and manage projects effortlessly.
+            Connect verified stats, awards, and portfolio work with AI-powered brand matching. 
+            The complete platform where professional creators get discovered, collaborate, and deliver—all in one place.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link to="/auth">
               <Button variant="hero" size="xl" className="shadow-glow transition-smooth hover:-translate-y-1">
                 <Sparkles className="mr-2 h-5 w-5" />
-                Get Started Free
+                Join the Platform
+              </Button>
+            </Link>
+            <Link to="/discover">
+              <Button variant="outline" size="xl" className="border-2">
+                Explore Opportunities
               </Button>
             </Link>
           </div>
           
           {/* Trust indicators */}
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground md:gap-8">
-            <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
-              <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span>No Waitlist</span>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-accent" />
+              <span className="font-medium">No Credit Card Required</span>
             </div>
-            <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
-              <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
-              <span>Sign Up in 30 Seconds</span>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-secondary" />
+              <span className="font-medium">Instant Access</span>
             </div>
-            <div className="flex items-center gap-2 transition-smooth hover:text-foreground">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span>100% Free to Start</span>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-primary" />
+              <span className="font-medium">Free Forever Plan</span>
             </div>
           </div>
         </div>

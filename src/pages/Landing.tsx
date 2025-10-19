@@ -47,37 +47,40 @@ const Landing = () => {
               <span>Open Beta</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Join the{" "}
+              Your Professional Profile,{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Industry Standard
+                Finally Complete
               </span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Where serious creators showcase verified metrics, awards, and portfolio work. Complete your professional profile to be discovered by brands.
+              Verified social stats, industry awards, press coverage, and portfolio work—all in one professional profile. Stop sending scattered links. Start getting discovered.
             </p>
           </div>
           
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-4">
             <Link to="/auth">
               <Button size="xl" className="text-lg px-12 py-6 shadow-lg hover:shadow-xl transition-shadow">
-                Get Started Free →
+                Create Your Profile
               </Button>
             </Link>
           </div>
           
           {/* Social proof */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span>Instant access</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
-              <span>100% free to start</span>
+          <div className="mt-8 text-center">
+            <p className="text-sm text-muted-foreground mb-4">Join creators already building their verified profiles</p>
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <span>Verified Stats Integration</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-accent" />
+                <span>AI Brand Matching</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-secondary" />
+                <span>Secure Payments</span>
+              </div>
             </div>
           </div>
         </div>
@@ -93,14 +96,14 @@ const Landing = () => {
                 <span>Live Activity</span>
               </div>
               <h2 className="mb-4 text-3xl font-bold leading-tight tracking-tight md:text-4xl">
-                Professional Creators{" "}
+                See Who's{" "}
                 <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                  Already Here
+                  Building Now
                 </span>
               </h2>
               <p className="text-lg leading-relaxed text-muted-foreground mb-6">
-                Watch verified creators join, share award-winning portfolios, and secure brand partnerships. 
-                This is where industry professionals connect.
+                Real creators joining daily. Real portfolios being shared. Real brand partnerships forming. 
+                Watch the platform come alive with verified professionals.
               </p>
               <div className="flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -135,51 +138,51 @@ const Landing = () => {
               <span>Everything you need in one place</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              The Complete{" "}
+              Everything You Need.{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Creative Platform
+                One Platform.
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              From verified stats and press coverage to AI-powered matching and project management—everything you need to showcase your work, connect with brands, and deliver projects professionally.
+              Stop juggling multiple tools and scattered profiles. From verified stats to AI matching, portfolio showcase to project delivery—manage your entire creative business in one professional workspace.
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
               icon={<Trophy className="h-8 w-8" />}
-              title="Verified Stats & Awards"
-              description="Showcase Instagram, YouTube, TikTok, Spotify metrics alongside your awards and press coverage in one professional profile"
+              title="Verified Social Stats & Industry Recognition"
+              description="Connect Instagram, YouTube, TikTok, Spotify—display verified metrics alongside awards, press features, and professional credits in one unified profile"
               gradient="from-primary to-secondary"
             />
             <FeatureCard
               icon={<Sparkles className="h-8 w-8" />}
-              title="AI + Brand Matching"
-              description="Our AI analyzes your portfolio, stats, and location to connect you with brands seeking creators exactly like you"
+              title="AI-Powered Brand Matching"
+              description="Smart algorithms analyze your skills, portfolio, audience demographics, and location to match you with relevant brand opportunities and campaigns"
               gradient="from-secondary to-accent"
             />
             <FeatureCard
               icon={<Users className="h-8 w-8" />}
-              title="Location-Based Connections"
-              description="Find collaborators near you for in-person shoots, events, and partnerships that require local presence"
+              title="Geographic Network Discovery"
+              description="Connect with creators, photographers, videographers, and brands in your area for local collaborations, shoots, and in-person projects"
               gradient="from-accent to-primary"
             />
             <FeatureCard
               icon={<Rocket className="h-8 w-8" />}
-              title="Effortless Project Management"
-              description="Track tasks, milestones, and deliverables whether managing a team or working solo—all in one workspace"
+              title="Integrated Project Workspace"
+              description="Collaborate in real-time with built-in task boards, file sharing, milestone tracking, and team communication—whether solo or managing multiple collaborators"
               gradient="from-primary to-secondary"
             />
             <FeatureCard
               icon={<Wallet className="h-8 w-8" />}
-              title="Secure Payment Escrow"
-              description="Built-in payment protection with milestone-based releases ensures you get paid for completed work"
+              title="Milestone-Based Payment Protection"
+              description="Secure escrow system holds funds and releases payments as deliverables are completed, protecting both creators and clients throughout the project lifecycle"
               gradient="from-secondary to-accent"
             />
             <FeatureCard
               icon={<Briefcase className="h-8 w-8" />}
-              title="Portfolio + Reviews System"
-              description="Display your best work alongside client reviews, creating trust and credibility with potential collaborators"
+              title="Professional Portfolio & Social Proof"
+              description="Showcase your best work with rich media support, collect verified client reviews, and build credibility that converts opportunities into partnerships"
               gradient="from-accent to-primary"
             />
           </div>
@@ -195,14 +198,14 @@ const Landing = () => {
               <span>Flexible pricing for every creative</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Start Free,{" "}
+              Flexible Pricing That{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Grow Unlimited
+                Scales With You
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              No credit card required to start. Earn credits through activity or upgrade 
-              for unlimited access to premium features
+              Start building your profile completely free. Earn credits through platform activity, or upgrade for unlimited access and premium visibility. 
+              No contracts, cancel anytime.
             </p>
           </div>
 
@@ -255,14 +258,14 @@ const Landing = () => {
               <span>Activity-based rewards</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Get Rewarded for{" "}
+              Earn Credits Through{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Being Active
+                Platform Activity
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              Complete your profile, connect with fellow creatives, and finish projects to earn credits. 
-              No subscription needed—just be active and grow
+              Build your profile, collaborate with other professionals, deliver quality work, and earn credits automatically. 
+              Stay active, get rewarded—it's that simple.
             </p>
           </div>
 
@@ -315,10 +318,10 @@ const Landing = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(0_0%_100%/0.1),transparent_50%)]" />
             <div className="relative text-primary-foreground">
               <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-                Ready to Go Pro?
+                Join Thousands of Verified Creators
               </h2>
               <p className="mb-8 text-lg opacity-90">
-                Join the platform where stats, portfolio, and AI matching work together to land you better opportunities.
+                Build your complete professional profile. Get matched with brands through AI. Manage projects seamlessly. All in one platform.
               </p>
               <div className="flex justify-center">
                 <Link to="/auth">
@@ -327,7 +330,7 @@ const Landing = () => {
                     size="xl"
                     className="border-2 border-white/70 bg-white hover:bg-white/90 text-primary backdrop-blur-sm font-semibold"
                   >
-                    Sign Up Free - It Takes 30 Seconds →
+                    Create Your Profile Now →
                   </Button>
                 </Link>
               </div>

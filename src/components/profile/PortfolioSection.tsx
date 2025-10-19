@@ -73,6 +73,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
           thumbnail_url: data.thumbnailUrl || "",
           embed_code: data.embedCode || "",
           title: data.title || "",
+          description: data.description || "",
         });
       }
     } catch (error) {
@@ -289,7 +290,14 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
                         <Input
                           value={newItem.title}
                           onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                          placeholder="Title (optional - auto-detected)"
+                          placeholder="Title*"
+                          className="text-sm"
+                        />
+                        <Textarea
+                          value={newItem.description}
+                          onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                          rows={2}
+                          placeholder="Description (optional)"
                           className="text-sm"
                         />
                         <div className="grid grid-cols-2 gap-2">
@@ -310,7 +318,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
                           onClick={handleAdd}
                           className="w-full"
                           variant="gradient"
-                          disabled={!newItem.media_url}
+                          disabled={!newItem.title}
                         >
                           Add to Portfolio
                         </Button>

@@ -77,35 +77,49 @@ Portfolio Items: ${portfolioItems || 0}
 SOCIAL LINKS:
 ${Object.entries(socialLinks || {}).map(([platform, url]) => `${platform}: ${url || "None"}`).join("\n")}
 
-VERIFICATION CRITERIA:
+VERIFICATION CRITERIA - WEIGHTED POINT SYSTEM:
 
-1. AUTHENTICITY (30 points):
-   - Real person/company (not fake, bot, or spam)
-   - Consistent identity across platforms
-   - Professional presentation
-   - Red flags: Generic names, suspicious patterns, no social proof
+1. PORTFOLIO (40 points max) - PRIMARY DRIVER:
+   - 2-3 items: 15 points (minimum viable)
+   - 4-6 items: 28 points (solid body of work)
+   - 7-10 items: 35 points (experienced creator)
+   - 10+ items: 40 points (extensive portfolio)
+   
+2. CREDITS (25 points max) - PROFESSIONAL BOOST:
+   - 3 points per credit, caps at 25 points
+   - Shows real professional work and collaborations
+   
+3. SOCIAL PROOF (20 points max):
+   - 1 platform: 8 points
+   - 2-3 platforms: 15 points
+   - 4+ platforms: 20 points
+   - Bonus: Add 5 points if any platform shows verification/significant following
+   
+4. AWARDS (10 points max) - PRESTIGE BONUS:
+   - 1 award: 7 points
+   - 2+ awards: 10 points
+   - Not required, but significantly boosts credibility
+   
+5. PRESS (5 points max) - CREDIBILITY BOOST:
+   - 5 points for any press features (caps at 5)
+   - Media mentions add legitimacy
 
-2. INDUSTRY FIT (30 points):
-   - Creative/Content Creator Industries: Artists, Musicians, Designers, Filmmakers, Photographers, Writers, Content Creators, Influencers, Performers, Producers
-   - NOT for: Generic sales, MLM, unrelated industries
-   - Company must be creative industry (production companies, agencies, venues, labels)
+CORE REQUIREMENTS (Must have or auto-reject):
+- Minimum 2 portfolio items
+- Complete bio
+- At least 1 social link
+- Industry fit (creative/content creator field)
 
-3. PROFILE QUALITY (25 points):
-   - Complete bio with clear description
-   - Professional role definition
-   - Portfolio or work samples (if applicable)
-   - Quality of presentation
+AUTHENTICITY CHECK (applies to all):
+- Real person/company (not fake, bot, or spam)
+- Consistent identity across platforms
+- Professional presentation
+- Red flags: Generic names, suspicious patterns, contradictions
 
-4. SOCIAL PROOF (15 points):
-   - Active social media presence
-   - Real following/engagement indicators
-   - Verifiable links
-   - Industry-relevant platforms
-
-SCORING RULES:
-- AUTO-VERIFY: 75+ points (clear creative professional, authentic, complete profile)
-- FLAG FOR REVIEW: 50-74 points (potential fit but needs human verification)
-- AUTO-REJECT: <50 points (spam, not industry fit, incomplete, suspicious)
+SCORING THRESHOLDS:
+- AUTO-APPROVE: 60+ points (verified creator with solid credentials)
+- MANUAL REVIEW: 40-59 points (shows potential, needs human verification)
+- AUTO-REJECT: <40 points (incomplete, spam, or not industry fit)
 
 Return ONLY valid JSON (no markdown):
 {
@@ -205,8 +219,8 @@ Return ONLY valid JSON (no markdown):
       profileStatus = "rejected";
     }
 
-    // Auto-approve/reject based on score
-    if (evaluation.score >= 75) {
+    // Auto-approve/reject based on score thresholds
+    if (evaluation.score >= 60) {
       status = "approved";
       profileStatus = "verified";
     } else if (evaluation.score < 40) {

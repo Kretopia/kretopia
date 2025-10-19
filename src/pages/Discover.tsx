@@ -29,6 +29,7 @@ import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 import { DailyRecommendations } from "@/components/discover/DailyRecommendations";
 import { SmartFilterSuggestions } from "@/components/discover/SmartFilterSuggestions";
 import { AIMatchRecommendations } from "@/components/discover/AIMatchRecommendations";
+import { SmartConnectionSuggestions } from "@/components/circle/SmartConnectionSuggestions";
 import { SEO } from "@/components/SEO";
 
 type CardType = "creator" | "opportunity";

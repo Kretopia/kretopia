@@ -14,7 +14,8 @@ import {
   Trophy,
   Coins,
   HardDrive,
-  BarChart3
+  BarChart3,
+  Flame
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -245,14 +246,53 @@ const Dashboard = () => {
               description="Get the most out of ThriveIN in 5 simple steps"
               tips={[
                 "Complete your profile (adds photo, bio, skills) to unlock Discovery and earn 50 XP",
-                "Visit Discover and swipe on 5+ creators or opportunities to start building connections",
+                "Visit Spark to see creative content from the community",
+                "Connect with creators in Discover to start building your network",
                 "Post an opportunity or apply to one to get your first collaboration started",
-                "Connect with creators daily to maintain your streak and earn bonus credits",
                 "Check Daily Goals to earn XP, credits, and climb the leaderboard"
               ]}
             />
           </div>
         )}
+
+        {/* Quick Access Cards */}
+        <div className="mb-6 sm:mb-8 grid gap-4 md:grid-cols-3">
+          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/circle')}>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-primary/10">
+                <Flame className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Spark Feed</h3>
+                <p className="text-sm text-muted-foreground">Discover creators</p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/messages')}>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-accent/10">
+                <MessageCircle className="h-6 w-6 text-accent" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Messages</h3>
+                <p className="text-sm text-muted-foreground">Stay connected</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/discover')}>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-secondary/10">
+                <Users className="h-6 w-6 text-secondary" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Discover</h3>
+                <p className="text-sm text-muted-foreground">Find opportunities</p>
+              </div>
+            </div>
+          </Card>
+        </div>
 
         {/* Profile Optimization Hub */}
         {profile && checkProfileCompletion(profile).percentage < 100 && (
@@ -382,12 +422,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* AI Match Recommendations - Only for Creator Pro */}
-        {profile && profile.subscription_tier === 'creator_pro' && (
-          <div className="mb-6 sm:mb-8">
-            <AIMatchRecommendations />
-          </div>
-        )}
 
         {/* Features & Tools */}
         <div className="mb-6 sm:mb-8">

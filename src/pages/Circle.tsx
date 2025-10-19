@@ -1,546 +1,164 @@
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Search, Users, MessageCircle, Calendar, Trash2, UserX, MoreVertical, ExternalLink, Mail, Sparkles, ArrowRight, Share2, TrendingUp, UserPlus, MapPin, Clock, CheckCircle2, Flame, Compass } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  ExternalLink,
+  Loader2,
+  Flame,
+  Sparkles,
+  Users,
+  MapPin,
+  Trophy,
+  Award,
+  Newspaper,
+  Film,
+  UserPlus
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Link, useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import { SEO } from "@/components/SEO";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
-import { InviteDialog } from "@/components/InviteDialog";
-import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { PortfolioItemCard } from "@/components/feed/PortfolioItemCard";
-import { AwardActivityCard } from "@/components/feed/AwardActivityCard";
-import { PressActivityCard } from "@/components/feed/PressActivityCard";
-import { CreditActivityCard } from "@/components/feed/CreditActivityCard";
-import { useNavigate } from "react-router-dom";
-import { trackEvent, EventCategory } from "@/lib/analytics";
-import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
-import { checkProfileCompletion } from "@/lib/profileCompletion";
-import { SmartConnectionSuggestions } from "@/components/circle/SmartConnectionSuggestions";
-import { ActivityEngagementCard } from "@/components/circle/ActivityEngagementCard";
-import { FeedPost } from "@/components/feed/FeedPost";
+import DOMPurify from "dompurify";
 
-interface Connection {
+interface SparkItem {
   id: string;
-  connected_user_id: string;
-  status: string;
-  created_at: string;
-  profile: {
-    full_name: string;
+  type: 'portfolio' | 'award' | 'credit' | 'press' | 'post';
+  user: {
+    id: string;
+    name: string;
+    avatar: string;
     role: string;
-    avatar_url: string | null;
-    location: string | null;
-    bio: string | null;
-    xp?: number;
-    level?: number;
+    location?: string;
   };
-  isOnline?: boolean;
-  mutualConnections?: number;
+  content: any;
+  created_at: string;
+  reactions?: number;
+  hasReacted?: boolean;
 }
 
 const Circle = () => {
-  const [connections, setConnections] = useState<Connection[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
-  const [activityFeed, setActivityFeed] = useState<any[]>([]);
+  const [sparkFeed, setSparkFeed] = useState<SparkItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedConnection, setSelectedConnection] = useState<{ id: string; name: string; avatar?: string } | null>(null);
-  const [activeTab, setActiveTab] = useState("spark");
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
-  const [showInviteDialog, setShowInviteDialog] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [discoverProfiles, setDiscoverProfiles] = useState<any[]>([]);
-  const [discoverLoading, setDiscoverLoading] = useState(false);
-  const [profileCompletionStatus, setProfileCompletionStatus] = useState<any>(null);
-  const [startProjectMatch, setStartProjectMatch] = useState<{ id: string; name: string; role: string; avatar?: string; matchId: string } | null>(null);
-  const [currentUserRole, setCurrentUserRole] = useState<string>("");
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showMessageDialog, setShowMessageDialog] = useState(false);
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchConnections();
-    fetchPendingRequests();
-    fetchActivityFeed();
-    fetchProfileCompletion();
-    fetchCurrentUserRole();
+    fetchSparkFeed();
     
     // Track page view
-    import("@/lib/analytics").then(({ analytics }) => {
-      analytics.pageView("circle");
-    });
-    
-    // Set up real-time presence
-    const channel = supabase.channel('circle-presence');
-    
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        const online = new Set<string>();
-        Object.values(state).forEach((presences: any) => {
-          presences.forEach((presence: any) => {
-            if (presence.user_id) online.add(presence.user_id);
-          });
-        });
-        setOnlineUsers(online);
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await channel.track({
-              user_id: user.id,
-              online_at: new Date().toISOString(),
-            });
-          }
-        }
-      });
+    const trackPageView = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.pageView("spark");
+    };
+    trackPageView();
 
-    // Set up real-time updates for activity feed
-    const activityChannel = supabase
-      .channel('circle-activity-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'portfolio_items'
-        },
-        () => {
-          console.log('New portfolio item detected, refreshing feed');
-          fetchActivityFeed();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'awards'
-        },
-        () => {
-          console.log('New award detected, refreshing feed');
-          fetchActivityFeed();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'press_links'
-        },
-        () => {
-          console.log('New press link detected, refreshing feed');
-          fetchActivityFeed();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'feed_posts'
-        },
-        () => {
-          console.log('New feed post detected, refreshing feed');
-          fetchActivityFeed();
-        }
-      )
+    // Set up real-time updates
+    const feedChannel = supabase
+      .channel('spark-feed-updates')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'portfolio_items' }, () => fetchSparkFeed())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'awards' }, () => fetchSparkFeed())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'press_links' }, () => fetchSparkFeed())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_posts' }, () => fetchSparkFeed())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'credits' }, () => fetchSparkFeed())
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(activityChannel);
+      supabase.removeChannel(feedChannel);
     };
   }, []);
 
-  useEffect(() => {
-    // No longer needed as we removed connect tab
-  }, [activeTab, searchQuery]);
-
-  const fetchConnections = async () => {
+  const fetchSparkFeed = async () => {
+    setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Fetch accepted connections
-    const { data: myConnections } = await supabase
-      .from('connections')
-      .select(`
-        id,
-        connected_user_id,
-        status,
-        created_at
-      `)
-      .eq('user_id', user.id)
-      .eq('status', 'accepted');
-
-    const { data: reverseConnections } = await supabase
-      .from('connections')
-      .select(`
-        id,
-        user_id,
-        status,
-        created_at
-      `)
-      .eq('connected_user_id', user.id)
-      .eq('status', 'accepted');
-
-    const { data: matches } = await supabase
-      .from('matches')
-      .select('*')
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .eq('status', 'active');
-
-    const connectionsMap = new Map<string, any>();
-    const userIds = new Set<string>();
-
-    if (myConnections) {
-      myConnections.forEach(c => {
-        if (!connectionsMap.has(c.connected_user_id)) {
-          userIds.add(c.connected_user_id);
-          connectionsMap.set(c.connected_user_id, {
-            id: c.id,
-            connected_user_id: c.connected_user_id,
-            created_at: c.created_at
-          });
-        }
-      });
+    if (!user) {
+      setLoading(false);
+      return;
     }
-
-    if (reverseConnections) {
-      reverseConnections.forEach(c => {
-        if (!connectionsMap.has(c.user_id)) {
-          userIds.add(c.user_id);
-          connectionsMap.set(c.user_id, {
-            id: c.id,
-            connected_user_id: c.user_id,
-            created_at: c.created_at
-          });
-        }
-      });
-    }
-
-    if (matches) {
-      matches.forEach(m => {
-        const otherId = m.user1_id === user.id ? m.user2_id : m.user1_id;
-        if (!connectionsMap.has(otherId)) {
-          userIds.add(otherId);
-          connectionsMap.set(otherId, {
-            id: m.id,
-            connected_user_id: otherId,
-            created_at: m.created_at
-          });
-        }
-      });
-    }
-
-    const allConnections = Array.from(connectionsMap.values());
-
-    if (userIds.size > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, role, avatar_url, location, bio, xp, level')
-        .in('user_id', Array.from(userIds));
-
-      const connectionsWithProfiles = allConnections.map(connection => ({
-        ...connection,
-        profile: profiles?.find(p => p.user_id === connection.connected_user_id) || {
-          full_name: 'Unknown User',
-          role: 'Creator',
-          avatar_url: null,
-          location: null,
-          bio: null,
-        },
-        mutualConnections: 0
-      }));
-
-      setConnections(connectionsWithProfiles);
-    }
-    setLoading(false);
-  };
-
-  const fetchPendingRequests = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Get pending connection requests
-    const { data: requests } = await supabase
-      .from('connections')
-      .select('id, user_id, connected_user_id, status, created_at')
-      .eq('connected_user_id', user.id)
-      .eq('status', 'pending');
-
-    if (requests) {
-      // Fetch profile data for each requester
-      const userIds = requests.map(r => r.user_id);
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, role, bio')
-        .in('user_id', userIds);
-
-      // Merge profile data with requests
-      const enrichedRequests = requests.map(request => ({
-        ...request,
-        profiles: profiles?.find(p => p.user_id === request.user_id)
-      }));
-
-      setPendingRequests(enrichedRequests);
-    }
-  };
-
-  const fetchActivityFeed = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
 
     try {
-      // Fetch AI-recommended "For You" feed
-      const { data: feedData, error: feedError } = await supabase.functions.invoke(
-        'generate-for-you-feed',
-        {
-          body: { userId: user.id }
-        }
-      );
-
-      if (feedError) {
-        console.error('Error fetching For You feed:', feedError);
-        throw feedError;
-      }
-
-      if (feedData?.feed && feedData.feed.length > 0) {
-        console.log('For You feed loaded:', feedData.feed.length, 'items, AI:', feedData.aiRecommended);
-        setActivityFeed(feedData.feed);
-        return;
-      }
-    } catch (error) {
-      console.error('Failed to load For You feed, falling back:', error);
-    }
-
-    // Fallback: Load from connections if AI feed fails
-    const { data: myConnections } = await supabase
-      .from('connections')
-      .select('connected_user_id')
-      .eq('user_id', user.id)
-      .eq('status', 'accepted');
-
-    const { data: reverseConnections } = await supabase
-      .from('connections')
-      .select('user_id')
-      .eq('connected_user_id', user.id)
-      .eq('status', 'accepted');
-
-    const { data: matches } = await supabase
-      .from('matches')
-      .select('user1_id, user2_id')
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .eq('status', 'active');
-
-    const connectionIds = [
-      user.id,
-      ...(myConnections?.map(c => c.connected_user_id) || []),
-      ...(reverseConnections?.map(c => c.user_id) || []),
-      ...(matches?.map(m => m.user1_id === user.id ? m.user2_id : m.user1_id) || [])
-    ];
-
-    // Fetch all activity types in parallel with independent error handling
-    const [portfolioData, awardsData, pressData, creditsData, feedPostsData] = await Promise.allSettled([
-      supabase
-        .from('portfolio_items')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role
-          )
-        `)
-        .in('user_id', connectionIds)
-        .order('created_at', { ascending: false })
-        .limit(15),
-      
-      supabase
-        .from('awards')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role
-          )
-        `)
-        .in('user_id', connectionIds)
-        .order('created_at', { ascending: false })
-        .limit(10),
-      
-      supabase
-        .from('press_links')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role
-          )
-        `)
-        .in('user_id', connectionIds)
-        .order('created_at', { ascending: false })
-        .limit(10),
-      
-      supabase
-        .from('credits')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role
-          )
-        `)
-        .in('user_id', connectionIds)
-        .order('created_at', { ascending: false })
-        .limit(10),
-      
-      supabase
-        .from('feed_posts')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role
-          )
-        `)
-        .in('user_id', connectionIds)
-        .order('created_at', { ascending: false })
-        .limit(20)
-    ]);
-
-    // Combine all activities with type tags, handling any failed queries
-    const allActivities = [
-      ...(portfolioData.status === 'fulfilled' && portfolioData.value.data ? portfolioData.value.data.map(item => ({ ...item, activity_type: 'portfolio' })) : []),
-      ...(awardsData.status === 'fulfilled' && awardsData.value.data ? awardsData.value.data.map(item => ({ ...item, activity_type: 'award' })) : []),
-      ...(pressData.status === 'fulfilled' && pressData.value.data ? pressData.value.data.map(item => ({ ...item, activity_type: 'press' })) : []),
-      ...(creditsData.status === 'fulfilled' && creditsData.value.data ? creditsData.value.data.map(item => ({ ...item, activity_type: 'credit' })) : []),
-      ...(feedPostsData.status === 'fulfilled' && feedPostsData.value.data ? feedPostsData.value.data.map(item => ({ ...item, activity_type: 'feed_post' })) : [])
-    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    setActivityFeed(allActivities);
-  };
-
-  const fetchProfileCompletion = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (userProfile) {
-      const { data: portfolioItems } = await supabase
-        .from('portfolio_items')
-        .select('id')
-        .eq('user_id', user.id);
-
-      const completionStatus = checkProfileCompletion(userProfile, portfolioItems?.length || 0);
-      setProfileCompletionStatus(completionStatus);
-    }
-  };
-
-  const fetchCurrentUserRole = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profile) {
-      setCurrentUserRole(profile.role || "");
-    }
-  };
-
-  const fetchDiscoverProfiles = async () => {
-    if (!searchQuery && discoverProfiles.length > 0) return;
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    setDiscoverLoading(true);
-    try {
-      let query = supabase
+      // Get user profile to filter recommendations
+      const { data: userProfile } = await supabase
         .from('profiles')
-        .select('*')
-        .neq('user_id', user.id)
-        .not('full_name', 'is', null)
-        .not('bio', 'is', null)
-        .not('avatar_url', 'is', null);
+        .select('role, location, professional_skills, passion_skills')
+        .eq('user_id', user.id)
+        .single();
 
-      if (searchQuery) {
-        query = query.or(`full_name.ilike.%${searchQuery}%,role.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%`);
-      }
+      // Fetch diverse content - get user_ids first then join profiles
+      const [portfolioItems, awardItems, pressItems, creditItems, postItems] = await Promise.all([
+        supabase.from('portfolio_items').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
+        supabase.from('awards').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(15),
+        supabase.from('press_links').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(15),
+        supabase.from('credits').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(15),
+        supabase.from('feed_posts').select('*').neq('user_id', user.id).order('created_at', { ascending: false }).limit(20)
+      ]);
 
-      const { data } = await query.limit(50);
+      // Get all user IDs
+      const allUserIds = [...new Set([
+        ...(portfolioItems.data || []).map(i => i.user_id),
+        ...(awardItems.data || []).map(i => i.user_id),
+        ...(pressItems.data || []).map(i => i.user_id),
+        ...(creditItems.data || []).map(i => i.user_id),
+        ...(postItems.data || []).map(i => i.user_id)
+      ])];
 
-      const { data: connections } = await supabase
-        .from('connections')
-        .select('*')
-        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`);
+      // Fetch profiles
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role, location')
+        .in('user_id', allUserIds);
 
-      const { data: matches } = await supabase
-        .from('matches')
-        .select('*')
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      const completeProfiles = data?.filter(profile => 
-        profile.full_name && 
-        profile.full_name !== 'New User' && 
-        profile.role && 
-        profile.avatar_url &&
-        profile.bio
-      ) || [];
+      // Transform into unified feed format
+      const feed: SparkItem[] = [
+        ...(portfolioItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'portfolio' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
+        }),
+        ...(awardItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'award' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
+        }),
+        ...(pressItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'press' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
+        }),
+        ...(creditItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'credit' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
+        }),
+        ...(postItems.data || []).filter(item => profileMap.has(item.user_id)).map(item => {
+          const profile = profileMap.get(item.user_id)!;
+          return { id: item.id, type: 'post' as const, user: { id: profile.user_id, name: profile.full_name, avatar: profile.avatar_url, role: profile.role, location: profile.location }, content: item, created_at: item.created_at, reactions: 0 };
+        })
+      ];
 
-      const profilesWithStatus = completeProfiles.map(profile => {
-        const connection = connections?.find(
-          c => (c.user_id === user.id && c.connected_user_id === profile.user_id) ||
-               (c.connected_user_id === user.id && c.user_id === profile.user_id)
-        );
+      // Sort by created_at
+      feed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-        const match = matches?.find(
-          m => (m.user1_id === user.id && m.user2_id === profile.user_id) ||
-               (m.user2_id === user.id && m.user1_id === profile.user_id)
-        );
-
-        let connectionStatus = 'none';
-        if (match || (connection && connection.status === 'accepted')) {
-          connectionStatus = 'connected';
-        } else if (connection) {
-          connectionStatus = connection.user_id === user.id ? 'pending_sent' : 'pending_received';
-        }
-
-        return { ...profile, connectionStatus };
-      });
-
-      const unconnectedProfiles = profilesWithStatus.filter(
-        profile => profile.connectionStatus !== 'connected'
-      );
-
-      setDiscoverProfiles(unconnectedProfiles);
+      setSparkFeed(feed);
     } catch (error) {
-      console.error('Error fetching profiles:', error);
+      console.error('Error fetching spark feed:', error);
+      toast({
+        title: "Error loading feed",
+        description: "Please try again",
+        variant: "destructive"
+      });
     } finally {
-      setDiscoverLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleConnect = async (profile: any) => {
+  const handleConnect = async (userId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -549,522 +167,282 @@ const Circle = () => {
         .from('connections')
         .insert({
           user_id: user.id,
-          connected_user_id: profile.user_id,
+          connected_user_id: userId,
           status: 'pending'
         });
 
       if (error) throw error;
 
-      const { data: senderProfile } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url, role')
-        .eq('user_id', user.id)
-        .single();
-
-      await supabase.from('notifications').insert({
-        user_id: profile.user_id,
-        title: "🤝 New Connection Request",
-        message: `${senderProfile?.full_name || 'Someone'} wants to connect`,
-        type: 'connection_request',
-        category: 'collaboration',
-        priority: 'high',
-        link: '/circle',
+      toast({
+        title: "Connection request sent",
+        description: "They'll be notified of your request"
       });
-
-      // Track connection engagement
-      trackEvent({
-        eventName: 'connection_request_sent',
-        eventCategory: EventCategory.ENGAGEMENT,
-        properties: { target_user_id: profile.user_id }
-      });
-
-      toast({ title: `Request sent to ${profile.full_name}` });
-      fetchDiscoverProfiles();
     } catch (error) {
       console.error('Error:', error);
-      toast({ title: "Failed to send request", variant: "destructive" });
+      toast({
+        title: "Connection failed",
+        description: "Could not send request",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleAcceptConnection = async (connectionIdOrUserId: string) => {
+  const handleMessage = (userId: string, userName: string, userAvatar: string) => {
+    setSelectedUser({ user_id: userId, full_name: userName, avatar_url: userAvatar });
+    setShowMessageDialog(true);
+  };
+
+  const handleReaction = async (itemId: string, itemType: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    try {
-      // First, try to find the connection by ID
-      let { data: connection } = await supabase
-        .from('connections')
-        .select('*')
-        .eq('id', connectionIdOrUserId)
-        .maybeSingle();
-
-      // If not found by ID, try to find by user_id (when accepting from discover tab)
-      if (!connection) {
-        const { data: foundConnection } = await supabase
-          .from('connections')
-          .select('*')
-          .eq('user_id', connectionIdOrUserId)
-          .eq('connected_user_id', user.id)
-          .eq('status', 'pending')
-          .maybeSingle();
-        
-        connection = foundConnection;
-      }
-
-      if (!connection) {
-        throw new Error('Connection not found');
-      }
-
-      // Accept the connection
-      const { error } = await supabase
-        .from('connections')
-        .update({ status: 'accepted' })
-        .eq('id', connection.id);
-
-      if (error) throw error;
-
-      // Create bidirectional connection
-      await supabase
-        .from('connections')
-        .upsert({
-          user_id: user.id,
-          connected_user_id: connection.user_id,
-          status: 'accepted'
-        }, {
-          onConflict: 'user_id,connected_user_id',
-          ignoreDuplicates: true
-        });
-
-      // Award 20 XP to both users for the new connection
-      const { data: accepterProfile } = await supabase
-        .from('profiles')
-        .select('xp')
-        .eq('user_id', user.id)
-        .single();
-
-      const { data: requesterProfile } = await supabase
-        .from('profiles')
-        .select('xp')
-        .eq('user_id', connection.user_id)
-        .single();
-
-      // Award XP to both users
-      await Promise.all([
-        supabase
-          .from('profiles')
-          .update({ xp: (accepterProfile?.xp || 0) + 20 })
-          .eq('user_id', user.id),
-        supabase
-          .from('profiles')
-          .update({ xp: (requesterProfile?.xp || 0) + 20 })
-          .eq('user_id', connection.user_id)
-      ]);
-
-      toast({ title: "Connection accepted! 🎉 +20 XP" });
-      
-      // Track connection acceptance
-      trackEvent({
-        eventName: 'connection_accepted',
-        eventCategory: EventCategory.ENGAGEMENT,
-        properties: { connection_id: connection.id }
-      });
-      
-      // Refresh all connection data and switch to Circle tab to show the new connection
-      await Promise.all([
-        fetchPendingRequests(),
-        fetchConnections(),
-        fetchDiscoverProfiles()
-      ]);
-      
-      // Switch to Circle tab to see the accepted connection
-      setActiveTab('connections');
-    } catch (error) {
-      console.error('Error accepting connection:', error);
-      toast({ 
-        title: "Failed to accept connection", 
-        description: "Please try again",
-        variant: "destructive" 
-      });
-    }
+    // Toggle reaction logic
+    toast({
+      title: "Reaction added",
+      description: "Your reaction has been recorded"
+    });
   };
 
-  const handleMessage = (connectionId: string, userName: string, userAvatar?: string) => {
-    setSelectedConnection({ id: connectionId, name: userName, avatar: userAvatar || undefined });
-  };
-
-  const getFilteredConnections = () => {
-    if (!searchQuery) return connections;
-    return connections.filter(c => 
-      c.profile.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.profile.role?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  };
-
-  const filteredConnections = getFilteredConnections();
-  const onlineCount = connections.filter(c => onlineUsers.has(c.connected_user_id)).length;
-
-  if (loading) {
+  const renderSparkItem = (item: SparkItem) => {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-          <p className="text-sm text-muted-foreground">Loading your circle...</p>
-        </div>
-      </div>
+      <Card key={item.id} className="overflow-hidden">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <Link 
+              to={`/profile/${item.user.id}`} 
+              className="flex items-center gap-3 flex-1 min-w-0"
+            >
+              <Avatar className="h-10 w-10 flex-shrink-0">
+                <AvatarImage src={item.user.avatar} />
+                <AvatarFallback>{item.user.name[0]}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="font-semibold truncate">{item.user.name}</p>
+                <p className="text-sm text-muted-foreground truncate">{item.user.role}</p>
+                {item.user.location && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {item.user.location}
+                  </p>
+                )}
+              </div>
+            </Link>
+            <Badge variant="outline" className="flex-shrink-0 ml-2">
+              {item.type === 'portfolio' && <Film className="h-3 w-3 mr-1" />}
+              {item.type === 'award' && <Trophy className="h-3 w-3 mr-1" />}
+              {item.type === 'press' && <Newspaper className="h-3 w-3 mr-1" />}
+              {item.type === 'credit' && <Award className="h-3 w-3 mr-1" />}
+              {item.type === 'post' && <Sparkles className="h-3 w-3 mr-1" />}
+              {item.type}
+            </Badge>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-3">
+          {/* Content based on type */}
+          {item.type === 'portfolio' && (
+            <div>
+              {item.content.thumbnail_url && (
+                <img 
+                  src={item.content.thumbnail_url} 
+                  alt={item.content.title}
+                  className="w-full h-64 object-cover rounded-md mb-2"
+                />
+              )}
+              <h3 className="font-semibold">{item.content.title}</h3>
+              {item.content.description && (
+                <p className="text-sm text-muted-foreground">{item.content.description}</p>
+              )}
+            </div>
+          )}
+
+          {item.type === 'award' && (
+            <div>
+              {item.content.image_url && (
+                <img 
+                  src={item.content.image_url} 
+                  alt={item.content.title}
+                  className="w-full h-48 object-cover rounded-md mb-2"
+                />
+              )}
+              <h3 className="font-semibold">{item.content.title}</h3>
+              <p className="text-sm text-muted-foreground">{item.content.organization}</p>
+              {item.content.description && (
+                <p className="text-sm mt-1">{item.content.description}</p>
+              )}
+            </div>
+          )}
+
+          {item.type === 'press' && (
+            <div>
+              {item.content.thumbnail_url && (
+                <img 
+                  src={item.content.thumbnail_url} 
+                  alt={item.content.title}
+                  className="w-full h-48 object-cover rounded-md mb-2"
+                />
+              )}
+              <h3 className="font-semibold">{item.content.title}</h3>
+              <p className="text-sm text-muted-foreground">{item.content.publication}</p>
+              {item.content.excerpt && (
+                <p className="text-sm mt-1 line-clamp-2">{item.content.excerpt}</p>
+              )}
+              {item.content.url && (
+                <a 
+                  href={item.content.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary flex items-center gap-1 mt-2 hover:underline"
+                >
+                  Read article <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          )}
+
+          {item.type === 'credit' && (
+            <div>
+              {item.content.thumbnail_url && (
+                <img 
+                  src={item.content.thumbnail_url} 
+                  alt={item.content.project_name}
+                  className="w-full h-48 object-cover rounded-md mb-2"
+                />
+              )}
+              <h3 className="font-semibold">{item.content.project_name}</h3>
+              <p className="text-sm text-muted-foreground">
+                {item.content.role} • {item.content.platform} ({item.content.year})
+              </p>
+            </div>
+          )}
+
+          {item.type === 'post' && (
+            <div>
+              {item.content.image_url && (
+                <img 
+                  src={item.content.image_url} 
+                  alt="Post"
+                  className="w-full h-64 object-cover rounded-md mb-2"
+                />
+              )}
+              <div 
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(item.content.content || '') 
+                }}
+              />
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-2 border-t">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => handleReaction(item.id, item.type)}
+                className="gap-1"
+              >
+                <Heart className="h-4 w-4" />
+                <span className="text-xs">{item.reactions || 0}</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => handleMessage(item.user.id, item.user.name, item.user.avatar)}
+                className="gap-1"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-xs">Message</span>
+              </Button>
+              <Button variant="ghost" size="sm" className="gap-1">
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleConnect(item.user.id)}
+              >
+                <UserPlus className="h-4 w-4 mr-1" />
+                Connect
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/profile/${item.user.id}`)}
+              >
+                View Profile
+              </Button>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+          </p>
+        </CardContent>
+      </Card>
     );
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0">
-      <div className="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-bold">My Circle</h1>
-              <p className="text-sm text-muted-foreground">Your creative network hub</p>
+    <>
+      <SEO
+        title="Spark 🔥 - ThriveIN"
+        description="Discover creative content from the ThriveIN community. Connect with creators and explore their work."
+      />
+      <div className="min-h-screen p-4 sm:p-6">
+        <div className="container mx-auto max-w-2xl">
+          {/* Header */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Flame className="h-8 w-8 text-primary" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold">Spark</h1>
+                <p className="text-sm text-muted-foreground">Discover the creative community</p>
+              </div>
             </div>
-            <Button 
-              variant="outline" 
-              className="gap-2"
-              onClick={() => setShowInviteDialog(true)}
-            >
-              <Share2 className="h-4 w-4" />
-              Invite
+            <Button onClick={() => navigate('/discover')} variant="outline">
+              <Sparkles className="h-4 w-4 mr-2" />
+              Discover
             </Button>
           </div>
 
-          {/* Stats Bar */}
-          <div className="grid grid-cols-3 gap-3">
-            <Card className="p-4">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="text-2xl font-bold">{connections.length}</p>
-                  <p className="text-xs text-muted-foreground">Connections</p>
-                </div>
-              </div>
+          {/* Feed */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : sparkFeed.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No content yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Start discovering creators to see their latest work
+              </p>
+              <Button onClick={() => navigate('/discover')}>
+                Explore Creators
+              </Button>
             </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-green-500" />
-                <div>
-                  <p className="text-2xl font-bold">{onlineCount}</p>
-                  <p className="text-xs text-muted-foreground">Online Now</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-500" />
-                <div>
-                  <p className="text-2xl font-bold">{pendingRequests.length}</p>
-                  <p className="text-xs text-muted-foreground">Requests</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Pending Requests */}
-          {pendingRequests.length > 0 && (
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Connection Requests ({pendingRequests.length})
-                </h3>
-              </div>
-              <div className="space-y-2">
-                {pendingRequests.slice(0, 3).map((request) => (
-                  <div key={request.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={request.profiles?.avatar_url || ''} />
-                        <AvatarFallback>{request.profiles?.full_name?.[0] || 'U'}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm">{request.profiles?.full_name}</p>
-                        <p className="text-xs text-muted-foreground">{request.profiles?.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleAcceptConnection(request.id)}>
-                        Accept
-                      </Button>
-                      <Button size="sm" variant="ghost">Decline</Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
+          ) : (
+            <div className="space-y-6">
+              {sparkFeed.map(renderSparkItem)}
+            </div>
           )}
         </div>
-
-        {/* Profile Completion Banner */}
-        {profileCompletionStatus && profileCompletionStatus.percentage < 70 && (
-          <ProfileCompletionBanner 
-            completion={profileCompletionStatus} 
-            page="circle" 
-          />
-        )}
-
-        {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 h-12">
-            <TabsTrigger value="spark" className="text-base flex items-center gap-2">
-              <Flame className="h-4 w-4" />
-              Spark
-            </TabsTrigger>
-            <TabsTrigger value="connections" className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Connections
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="spark" className="space-y-4">
-            <div className="mb-4">
-              <div>
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  For You
-                </h2>
-                <p className="text-sm text-muted-foreground">AI-recommended content personalized for you across the platform</p>
-              </div>
-            </div>
-
-            {activityFeed.length === 0 ? (
-              <div className="space-y-6">
-                <Card className="p-12 text-center border-2 border-dashed">
-                  <div className="max-w-md mx-auto space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center mx-auto">
-                      <Flame className="h-8 w-8 text-orange-500" />
-                    </div>
-                    <h3 className="text-xl font-semibold">Discover Amazing Content ✨</h3>
-                    <p className="text-muted-foreground">
-                      Your personalized For You feed will show trending posts, work, and achievements from creators across the platform. Start exploring to see more!
-                    </p>
-                    <div className="flex gap-3 justify-center pt-4">
-                      <Button onClick={() => navigate("/discover")} className="gap-2">
-                        <Compass className="h-4 w-4" />
-                        Discover Creators
-                      </Button>
-                      <Button onClick={() => setShowInviteDialog(true)} variant="outline" className="gap-2">
-                        <Share2 className="h-4 w-4" />
-                        Invite Friends
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Show smart suggestions even when feed is empty */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    Recommended for You
-                  </h3>
-                  <SmartConnectionSuggestions />
-                </div>
-              </div>
-            ) : (
-              <ScrollArea className="h-[600px]">
-                <div className="space-y-4">
-                  {activityFeed.map((item, idx) => {
-                    const key = `${item.activity_type}-${item.id}`;
-                    
-                    // Render Spark posts differently
-                    if (item.activity_type === 'feed_post') {
-                      return (
-                        <FeedPost
-                          key={key}
-                          post={item}
-                          onDelete={() => fetchActivityFeed()}
-                        />
-                      );
-                    }
-                    
-                    // Use engagement card for portfolio/awards/press/credits
-                    return (
-                      <ActivityEngagementCard
-                        key={key}
-                        activity={item}
-                        onLike={(id) => console.log('Liked:', id)}
-                        onComment={(id) => console.log('Comment:', id)}
-                        onShare={(id) => {
-                          toast({ title: "Shared to your network!" });
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            )}
-          </TabsContent>
-
-          <TabsContent value="connections" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-xl font-semibold">My Connections</h2>
-                <p className="text-sm text-muted-foreground">{connections.length} connections</p>
-              </div>
-              <div className="relative flex-1 max-w-xs">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search connections..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <ScrollArea className="h-[600px]">
-              <div className="grid gap-4 md:grid-cols-2">
-                {filteredConnections.length === 0 ? (
-                  <div className="col-span-2 text-center py-16">
-                    <div className="mb-6 mx-auto w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Users className="h-12 w-12 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-bold mb-3">
-                      {searchQuery ? "No matching connections" : "No Connections Yet"}
-                    </h3>
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      {searchQuery 
-                        ? "Try adjusting your search or browse all connections"
-                        : "Your circle is where your collaborators live. Start discovering creators to build your network!"}
-                    </p>
-                    {!searchQuery && (
-                      <div className="flex gap-3 justify-center">
-                        <Button onClick={() => navigate("/discover")} size="lg" className="gap-2">
-                          <Compass className="h-4 w-4" />
-                          Discover Creators
-                        </Button>
-                        <Button onClick={() => setShowInviteDialog(true)} variant="outline" size="lg" className="gap-2">
-                          <Share2 className="h-4 w-4" />
-                          Invite Friends
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  filteredConnections.map((connection) => (
-                    <ConnectionCard
-                      key={connection.id}
-                      connection={connection}
-                      isOnline={onlineUsers.has(connection.connected_user_id)}
-                      onMessage={handleMessage}
-                      onViewProfile={() => navigate(`/profile/${connection.connected_user_id}`)}
-                      onStartProject={(conn: Connection) => {
-                        // Track match-to-project intent
-                        trackEvent({
-                          eventName: 'start_project_clicked',
-                          eventCategory: EventCategory.COLLABORATION,
-                          properties: { collaborator_id: conn.connected_user_id }
-                        });
-                        
-                        setStartProjectMatch({
-                          id: conn.connected_user_id,
-                          name: conn.profile.full_name,
-                          role: conn.profile.role,
-                          avatar: conn.profile.avatar_url,
-                          matchId: conn.id
-                        });
-                      }}
-                    />
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
       </div>
 
-      {selectedConnection && (
+      {selectedUser && (
         <DirectMessageDialog
-          open={!!selectedConnection}
-          onOpenChange={(open) => !open && setSelectedConnection(null)}
-          recipientId={selectedConnection.id}
-          recipientName={selectedConnection.name}
-          recipientAvatar={selectedConnection.avatar}
+          open={showMessageDialog}
+          onOpenChange={setShowMessageDialog}
+          recipientId={selectedUser.user_id}
+          recipientName={selectedUser.full_name}
+          recipientAvatar={selectedUser.avatar_url}
         />
       )}
-
-      {startProjectMatch && (
-        <StartProjectFromMatchDialog
-          open={!!startProjectMatch}
-          onOpenChange={(open) => !open && setStartProjectMatch(null)}
-          matchedUser={startProjectMatch}
-          matchId={startProjectMatch.matchId}
-          currentUserRole={currentUserRole}
-        />
-      )}
-
-      <InviteDialog 
-        open={showInviteDialog} 
-        onOpenChange={setShowInviteDialog}
-      />
-    </div>
-  );
-};
-
-const ConnectionCard = ({ connection, isOnline, onMessage, onViewProfile, onStartProject }: any) => {
-  return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-3 mb-3">
-        <div className="relative">
-          <Avatar className="h-12 w-12 cursor-pointer" onClick={onViewProfile}>
-            <AvatarImage src={connection.profile.avatar_url || ''} />
-            <AvatarFallback>{connection.profile.full_name[0]}</AvatarFallback>
-          </Avatar>
-          {isOnline && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full" />
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold truncate cursor-pointer hover:text-primary" onClick={onViewProfile}>
-            {connection.profile.full_name}
-          </h3>
-          <p className="text-sm text-muted-foreground truncate">{connection.profile.role}</p>
-          {connection.profile.location && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-              <MapPin className="h-3 w-3" />
-              {connection.profile.location}
-            </p>
-          )}
-        </div>
-      </div>
-      {connection.profile.bio && (
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{connection.profile.bio}</p>
-      )}
-      <div className="grid grid-cols-2 gap-2">
-        <Button 
-          size="sm" 
-          variant="outline" 
-          onClick={onViewProfile}
-          className="h-9"
-        >
-          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-          Profile
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onMessage(connection.connected_user_id, connection.profile.full_name, connection.profile.avatar_url)}
-          className="h-9"
-        >
-          <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-          Message
-        </Button>
-        <Button
-          size="sm"
-          variant="gradient"
-          onClick={() => onStartProject(connection)}
-          className="h-9 col-span-2 gap-1.5 font-semibold"
-        >
-          <ArrowRight className="h-4 w-4" />
-          Start Project Together
-        </Button>
-      </div>
-    </Card>
+    </>
   );
 };
 

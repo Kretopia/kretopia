@@ -10,6 +10,7 @@ interface PlatformData {
   mediaType: string;
   thumbnailUrl?: string;
   title?: string;
+  description?: string;
   embedCode?: string;
   mediaUrl?: string;
 }
@@ -52,6 +53,20 @@ serve(async (req) => {
         data.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
         data.embedCode = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         data.mediaUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        
+        // Fetch YouTube metadata using oEmbed
+        try {
+          const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+          const ytResponse = await fetch(oembedUrl);
+          if (ytResponse.ok) {
+            const ytData = await ytResponse.json();
+            data.title = ytData.title;
+            // YouTube oEmbed doesn't provide description, but we can use title
+            console.log(`YouTube metadata - title: ${data.title}`);
+          }
+        } catch (e) {
+          console.error("Error fetching YouTube metadata:", e);
+        }
       }
     }
     
@@ -198,6 +213,7 @@ serve(async (req) => {
           
           data.title = extractMeta("og:title") || extractMeta("twitter:title");
           data.thumbnailUrl = extractMeta("og:image") || extractMeta("twitter:image");
+          data.description = extractMeta("og:description") || extractMeta("twitter:description");
           
           const ogType = extractMeta("og:type");
           if (ogType?.includes("video")) {

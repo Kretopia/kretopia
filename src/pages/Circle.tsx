@@ -255,46 +255,67 @@ const Circle = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const tableName = itemType === 'portfolio' ? 'portfolio_reactions' : 
-                     itemType === 'post' ? 'feed_reactions' : null;
-    
-    if (!tableName) return;
+    if (itemType === 'portfolio') {
+      // Check if user already reacted
+      const { data: existing } = await supabase
+        .from('portfolio_reactions')
+        .select('id')
+        .eq('portfolio_item_id', itemId)
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    const columnName = itemType === 'portfolio' ? 'portfolio_item_id' : 'post_id';
-
-    // Check if user already reacted
-    const { data: existing } = await supabase
-      .from(tableName)
-      .select('id')
-      .eq(columnName, itemId)
-      .eq('user_id', user.id)
-      .single();
-
-    if (existing) {
-      // Remove reaction
-      await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', existing.id);
-    } else {
-      // Add reaction
-      const insertData = itemType === 'portfolio' 
-        ? { portfolio_item_id: itemId, user_id: user.id }
-        : { post_id: itemId, user_id: user.id };
-        
-      await supabase
-        .from(tableName)
-        .insert([insertData]);
-    }
-
-    // Update local state
-    setSparkFeed(prev => prev.map(item => {
-      if (item.id === itemId) {
-        const newReactions = existing ? (item.reactions || 1) - 1 : (item.reactions || 0) + 1;
-        return { ...item, reactions: newReactions, hasReacted: !existing };
+      if (existing) {
+        // Remove reaction
+        await supabase
+          .from('portfolio_reactions')
+          .delete()
+          .eq('id', existing.id);
+      } else {
+        // Add reaction
+        await supabase
+          .from('portfolio_reactions')
+          .insert([{ portfolio_item_id: itemId, user_id: user.id }]);
       }
-      return item;
-    }));
+
+      // Update local state
+      setSparkFeed(prev => prev.map(item => {
+        if (item.id === itemId) {
+          const newReactions = existing ? (item.reactions || 1) - 1 : (item.reactions || 0) + 1;
+          return { ...item, reactions: newReactions, hasReacted: !existing };
+        }
+        return item;
+      }));
+    } else if (itemType === 'post') {
+      // Check if user already reacted
+      const { data: existing } = await supabase
+        .from('feed_reactions')
+        .select('id')
+        .eq('post_id', itemId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existing) {
+        // Remove reaction
+        await supabase
+          .from('feed_reactions')
+          .delete()
+          .eq('id', existing.id);
+      } else {
+        // Add reaction
+        await supabase
+          .from('feed_reactions')
+          .insert([{ post_id: itemId, user_id: user.id }]);
+      }
+
+      // Update local state
+      setSparkFeed(prev => prev.map(item => {
+        if (item.id === itemId) {
+          const newReactions = existing ? (item.reactions || 1) - 1 : (item.reactions || 0) + 1;
+          return { ...item, reactions: newReactions, hasReacted: !existing };
+        }
+        return item;
+      }));
+    }
   };
 
   const handleBookmark = async (itemId: string, itemType: string) => {

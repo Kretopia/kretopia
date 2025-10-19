@@ -241,34 +241,30 @@ const Circle = () => {
           {/* Content based on type */}
           {item.type === 'portfolio' && (
             <div>
-              {item.content.thumbnail_url && (
+              {(item.content.thumbnail_url || item.content.media_url) && (
                 <>
-                  {item.content.media_type === 'video' || item.content.file_url?.match(/\.(mp4|mov|avi|webm)$/i) ? (
+                  {item.content.media_type === 'video' || item.content.media_url?.match(/\.(mp4|mov|avi|webm)$/i) ? (
                     <video 
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
                       controls 
                       className="w-full h-auto rounded-md mb-2 max-h-96"
                       poster={item.content.thumbnail_url}
                     >
-                      <source src={item.content.file_url || item.content.thumbnail_url} type="video/mp4" />
+                      <source src={item.content.media_url} type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
-                  ) : item.content.media_type === 'audio' || item.content.file_url?.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
+                  ) : item.content.media_type === 'audio' || item.content.media_url?.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
                     <div className="w-full mb-2">
                       <audio 
                         controls 
                         className="w-full"
                       >
-                        <source src={item.content.file_url} />
+                        <source src={item.content.media_url} />
                         Your browser does not support the audio element.
                       </audio>
                     </div>
                   ) : (
                     <img 
-                      src={item.content.thumbnail_url} 
+                      src={item.content.thumbnail_url || item.content.media_url} 
                       alt={item.content.title}
                       className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
                     />
@@ -332,13 +328,8 @@ const Circle = () => {
                 <>
                   {item.content.thumbnail_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
                     <video 
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
                       controls 
                       className="w-full h-auto rounded-md mb-2 max-h-96"
-                      poster={item.content.thumbnail_url}
                     >
                       <source src={item.content.thumbnail_url} type="video/mp4" />
                       Your browser does not support the video tag.
@@ -365,10 +356,6 @@ const Circle = () => {
                 <>
                   {item.content.image_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
                     <video 
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
                       controls 
                       className="w-full h-auto rounded-md mb-2 max-h-96"
                     >

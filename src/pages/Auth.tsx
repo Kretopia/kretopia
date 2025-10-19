@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User, Loader2 } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Chrome } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import {
@@ -18,20 +18,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
+import { Progress } from "@/components/ui/progress";
+import { Card } from "@/components/ui/card";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [inviteError, setInviteError] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const [opportunitiesCount, setOpportunitiesCount] = useState<number>(0);
+  
+  // Multi-step signup state
+  const [signupStep, setSignupStep] = useState(1);
+  const totalSteps = 3;
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -115,25 +124,63 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}${redirectTo}`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in with Google",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNextStep = () => {
+    // Validate current step before proceeding
+    if (signupStep === 1) {
+      // Account type is always selected (has default)
+      setSignupStep(2);
+    } else if (signupStep === 2) {
+      // Validate email
+      const emailValidation = validateEmail(email);
+      if (!emailValidation.valid) {
+        setEmailError(emailValidation.error || "");
+        return;
+      }
+      setEmailError("");
+      setSignupStep(3);
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate inputs
-    const emailValidation = validateEmail(email);
+    // Final validation
     const passwordValidation = validatePassword(password);
     
-    if (!emailValidation.valid) {
-      setEmailError(emailValidation.error || "");
-      return;
-    }
     if (!passwordValidation.valid) {
       setPasswordError(passwordValidation.error || "");
       return;
     }
+
+    if (password !== confirmPassword) {
+      setConfirmPasswordError("Passwords don't match");
+      return;
+    }
     
-    setEmailError("");
     setPasswordError("");
-    setInviteError("");
+    setConfirmPasswordError("");
     setLoading(true);
 
     const { error } = await supabase.auth.signUp({
@@ -313,6 +360,28 @@ const Auth = () => {
                   "Sign In"
                 )}
               </Button>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                <Chrome className="mr-2 h-4 w-4" />
+                Google
+              </Button>
               
               <div className="mt-4 text-center">
                 <button
@@ -327,112 +396,243 @@ const Auth = () => {
           </TabsContent>
 
           <TabsContent value="signup">
+            {/* Progress indicator */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Step {signupStep} of {totalSteps}</span>
+                <span className="text-sm text-muted-foreground">
+                  {signupStep === 1 && "Choose your path"}
+                  {signupStep === 2 && "Your email"}
+                  {signupStep === 3 && "Secure your account"}
+                </span>
+              </div>
+              <Progress value={(signupStep / totalSteps) * 100} className="h-2" />
+            </div>
 
-            <form onSubmit={handleSignUp} className="space-y-4 sm:space-y-5">
-              {/* AI Verification Notice */}
-              <div className="rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 mb-4 border border-primary/20">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-primary/20 p-2 shrink-0">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-sm mb-1">AI-Verified Creator Platform</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Your profile will be verified by AI to ensure quality and industry fit. Most authentic creative professionals are approved instantly.
-                    </p>
+            {/* Step 1: Account Type Selection */}
+            {signupStep === 1 && (
+              <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                <div className="rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 border border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-primary/20 p-2 shrink-0">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm mb-1">AI-Verified Creator Platform</h4>
+                      <p className="text-xs text-muted-foreground">
+                        Your profile will be verified by AI to ensure quality and industry fit.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-3">
-                <Label>I am a... *</Label>
-                <RadioGroup value={accountType} onValueChange={(value) => setAccountType(value as "individual" | "company")}>
-                  <div className="flex items-center space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-accent transition-colors">
-                    <RadioGroupItem value="individual" id="individual" />
-                    <Label htmlFor="individual" className="flex items-center gap-2 cursor-pointer flex-1">
-                      <User className="h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-semibold">Creator / Creative</div>
-                        <div className="text-xs text-muted-foreground">Individual professional</div>
+                <div className="space-y-3">
+                  <Label className="text-base">I am a...</Label>
+                  <div className="space-y-3">
+                    <Card 
+                      className={`p-4 cursor-pointer transition-all hover:shadow-md border-2 ${
+                        accountType === 'individual' ? 'border-primary bg-primary/5' : 'border-border'
+                      }`}
+                      onClick={() => setAccountType('individual')}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-lg bg-primary/10 p-2.5">
+                          <User className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold mb-1">Creator / Creative</div>
+                          <div className="text-sm text-muted-foreground">
+                            Individual professional looking to showcase work and connect
+                          </div>
+                        </div>
                       </div>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-accent transition-colors">
-                    <RadioGroupItem value="company" id="company" />
-                    <Label htmlFor="company" className="flex items-center gap-2 cursor-pointer flex-1">
-                      <Briefcase className="h-5 w-5 text-primary" />
-                      <div>
-                        <div className="font-semibold">Brand / Venue / Company</div>
-                        <div className="text-xs text-muted-foreground">Business or organization</div>
-                      </div>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
+                    </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setEmailError("");
-                  }}
-                  required
-                  className={`h-11 sm:h-10 text-base ${emailError ? "border-destructive" : ""}`}
-                  autoComplete="email"
-                />
-                {emailError && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {emailError}
-                  </p>
-                )}
+                    <Card 
+                      className={`p-4 cursor-pointer transition-all hover:shadow-md border-2 ${
+                        accountType === 'company' ? 'border-primary bg-primary/5' : 'border-border'
+                      }`}
+                      onClick={() => setAccountType('company')}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-lg bg-primary/10 p-2.5">
+                          <Briefcase className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold mb-1">Brand / Venue / Company</div>
+                          <div className="text-sm text-muted-foreground">
+                            Business looking to hire talent and post opportunities
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleNextStep}
+                  variant="gradient"
+                  size="lg"
+                  className="w-full"
+                >
+                  Continue
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">Password *</Label>
-                <Input
-                  id="signup-password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setPasswordError("");
-                  }}
-                  required
-                  minLength={8}
-                  className={`h-11 sm:h-10 text-base ${passwordError ? "border-destructive" : ""}`}
-                  autoComplete="new-password"
-                />
-                {passwordError && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {passwordError}
-                  </p>
-                )}
-                <PasswordStrengthIndicator password={password} />
+            )}
+
+            {/* Step 2: Email */}
+            {signupStep === 2 && (
+              <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email Address</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError("");
+                    }}
+                    required
+                    className={`h-11 text-base ${emailError ? "border-destructive" : ""}`}
+                    autoComplete="email"
+                    autoFocus
+                  />
+                  {emailError && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {emailError}
+                    </p>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                >
+                  <Chrome className="mr-2 h-4 w-4" />
+                  Google
+                </Button>
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSignupStep(1)}
+                    className="flex-1"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleNextStep}
+                    variant="gradient"
+                    className="flex-1"
+                  >
+                    Continue
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <Button
-                type="submit"
-                variant="gradient"
-                size="lg"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </form>
+            )}
+
+            {/* Step 3: Password */}
+            {signupStep === 3 && (
+              <form onSubmit={handleSignUp} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Create Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError("");
+                    }}
+                    required
+                    minLength={8}
+                    className={`h-11 text-base ${passwordError ? "border-destructive" : ""}`}
+                    autoComplete="new-password"
+                    autoFocus
+                  />
+                  {passwordError && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {passwordError}
+                    </p>
+                  )}
+                  <PasswordStrengthIndicator password={password} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      setConfirmPasswordError("");
+                    }}
+                    required
+                    className={`h-11 text-base ${confirmPasswordError ? "border-destructive" : ""}`}
+                    autoComplete="new-password"
+                  />
+                  {confirmPasswordError && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {confirmPasswordError}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSignupStep(2)}
+                    className="flex-1"
+                    disabled={loading}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="gradient"
+                    className="flex-1"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Account"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            )}
           </TabsContent>
         </Tabs>
 

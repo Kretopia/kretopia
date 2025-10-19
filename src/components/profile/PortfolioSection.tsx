@@ -276,7 +276,10 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
                                 {previewData.platform} • {previewData.mediaType}
                               </p>
                               {previewData.title && (
-                                <p className="font-medium text-sm line-clamp-2">{previewData.title}</p>
+                                <p className="font-medium text-sm line-clamp-2 mb-1">{previewData.title}</p>
+                              )}
+                              {previewData.description && (
+                                <p className="text-xs text-muted-foreground line-clamp-2">{previewData.description}</p>
                               )}
                             </div>
                           </div>

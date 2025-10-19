@@ -77,7 +77,7 @@ export const VerificationTab = () => {
         console.error("Error fetching profiles:", profilesError);
       }
 
-      // Merge the data
+      // Merge the data and remove duplicates (keep most recent per user)
       const mergedData = requestsData.map(request => {
         const profile = profilesData?.find(p => p.user_id === request.user_id);
         return {
@@ -86,7 +86,21 @@ export const VerificationTab = () => {
         };
       });
 
-      setRequests(mergedData as VerificationRequest[]);
+      // Remove duplicates - keep only the most recent request per user_id
+      const uniqueRequests = mergedData.reduce((acc, current) => {
+        const existingIndex = acc.findIndex(item => item.user_id === current.user_id);
+        if (existingIndex === -1) {
+          acc.push(current);
+        } else {
+          // Keep the more recent one
+          if (new Date(current.created_at) > new Date(acc[existingIndex].created_at)) {
+            acc[existingIndex] = current;
+          }
+        }
+        return acc;
+      }, [] as any[]);
+
+      setRequests(uniqueRequests as VerificationRequest[]);
     } else {
       setRequests([]);
     }
@@ -269,7 +283,7 @@ export const VerificationTab = () => {
           </div>
         )}
 
-        {request.status === "flagged" && (
+        {(request.status === "pending" || request.status === "flagged" || request.status === "appealed") && (
           <div className="flex flex-col sm:flex-row gap-2">
             <Button
               onClick={() => handleApprove(request)}

@@ -162,8 +162,8 @@ export default function Onboarding() {
       
       if (!profile.bio?.trim()) {
         toast({
-          title: "About section is required",
-          description: "Please tell us a bit about yourself",
+          title: "Tell us about yourself! ✨",
+          description: "Your bio helps other creators find and connect with you. Just a few sentences!",
           variant: "destructive",
         });
         return;
@@ -494,11 +494,14 @@ export default function Onboarding() {
               </div>
               <div>
                 <Label htmlFor="bio">About You *</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  ⭐ This helps you get discovered! Share what you do and what you're looking for.
+                </p>
                 <Textarea
                   id="bio"
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  placeholder="Quick intro: What you do and what you're looking for..."
+                  placeholder="I'm a videographer specializing in music videos and brand content. Looking to collaborate with musicians and creative directors..."
                   rows={3}
                 />
               </div>

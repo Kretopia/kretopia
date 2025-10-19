@@ -26,6 +26,13 @@ const Landing = () => {
     };
 
     fetchOpportunitiesCount();
+    
+    // Track landing page view
+    const trackView = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.pageView("landing");
+    };
+    trackView();
   }, []);
   return (
     <div className="min-h-screen">

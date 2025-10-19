@@ -214,8 +214,7 @@ const Discover = () => {
           .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, instagram_followers, youtube_subscribers, tiktok_followers, spotify_listeners, total_engagement_rate, verified_metrics, level, badge')
           .neq('user_id', user.id)
           .not('full_name', 'is', null)
-          .not('bio', 'is', null)
-          .not('avatar_url', 'is', null);
+          .eq('onboarding_completed', true);
 
         if (creatorFilters.role !== 'all') {
           profilesQuery = profilesQuery.eq('role', creatorFilters.role);
@@ -237,7 +236,7 @@ const Discover = () => {
                  profile.full_name !== 'New User' && 
                  profile.role && 
                  profile.role.trim() !== '' && 
-                 profile.avatar_url &&
+                 (profile.avatar_url || profile.bio) &&
                  profile.bio;
         });
 

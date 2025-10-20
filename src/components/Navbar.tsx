@@ -78,7 +78,7 @@ const Navbar = ({ user }: NavbarProps) => {
           <img 
             src={thriveinIcon} 
             alt="ThriveIN Icon" 
-            className="h-8 w-8 object-contain"
+            className="h-10 w-10 sm:h-12 sm:w-12 object-contain"
           />
           <span className="text-lg sm:text-xl font-bold tracking-tight">
             thriveIN

@@ -74,13 +74,14 @@ const Navbar = ({ user }: NavbarProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2">
-        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2" aria-label="ThriveIN Home">
+        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 sm:gap-3" aria-label="ThriveIN Home">
           <img 
             src={thriveinLogo} 
             alt="ThriveIN Logo" 
-            className="h-10 sm:h-12 w-auto object-contain"
+            className="h-14 sm:h-16 w-auto object-contain"
+            style={{ imageRendering: '-webkit-optimize-contrast' }}
           />
-          <Badge variant="secondary" className="bg-primary/10 text-primary text-xs ml-1">
+          <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
             BETA
           </Badge>
         </Link>

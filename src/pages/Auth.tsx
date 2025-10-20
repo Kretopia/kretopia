@@ -378,6 +378,7 @@ const Auth = () => {
                 )}
               </Button>
 
+              {/* Google Sign In temporarily disabled
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
@@ -399,6 +400,7 @@ const Auth = () => {
                 <Chrome className="mr-2 h-4 w-4" />
                 Google
               </Button>
+              */}
               
               <div className="mt-4 text-center">
                 <button
@@ -525,6 +527,7 @@ const Auth = () => {
                   )}
                 </div>
 
+                {/* Google Sign In temporarily disabled
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
@@ -546,6 +549,7 @@ const Auth = () => {
                   <Chrome className="mr-2 h-4 w-4" />
                   Google
                 </Button>
+                */}
 
                 <div className="flex gap-2">
                   <Button

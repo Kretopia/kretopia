@@ -3270,10 +3270,14 @@ export type Database = {
       }
       public_profiles: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"] | null
           avatar_url: string | null
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
+          company_about: string | null
+          company_logo_url: string | null
+          company_name: string | null
           created_at: string | null
           full_name: string | null
           imdb_url: string | null
@@ -3297,10 +3301,14 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          company_about?: string | null
+          company_logo_url?: string | null
+          company_name?: string | null
           created_at?: string | null
           full_name?: string | null
           imdb_url?: string | null
@@ -3324,10 +3332,14 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          company_about?: string | null
+          company_logo_url?: string | null
+          company_name?: string | null
           created_at?: string | null
           full_name?: string | null
           imdb_url?: string | null

@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User } from "lucide-react";
-import thriveinLogo from "@/assets/thrivein-logo.png";
+import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
@@ -76,11 +76,13 @@ const Navbar = ({ user }: NavbarProps) => {
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 sm:gap-3" aria-label="ThriveIN Home">
           <img 
-            src={thriveinLogo} 
-            alt="ThriveIN Logo" 
-            className="h-8 sm:h-10 w-auto object-contain"
-            style={{ imageRendering: '-webkit-optimize-contrast' }}
+            src={thriveinIcon} 
+            alt="ThriveIN Icon" 
+            className="h-8 w-8 object-contain"
           />
+          <span className="text-lg sm:text-xl font-bold tracking-tight">
+            thriveIN
+          </span>
           <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
             BETA
           </Badge>

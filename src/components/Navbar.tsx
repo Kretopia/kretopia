@@ -78,7 +78,7 @@ const Navbar = ({ user }: NavbarProps) => {
           <img 
             src={thriveinLogo} 
             alt="ThriveIN Logo" 
-            className="h-14 sm:h-16 w-auto object-contain"
+            className="h-8 sm:h-10 w-auto object-contain"
             style={{ imageRendering: '-webkit-optimize-contrast' }}
           />
           <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">

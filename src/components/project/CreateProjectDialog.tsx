@@ -168,6 +168,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
 
       if (projectError) throw projectError;
 
+      // Track project creation
+      const { analytics } = await import("@/lib/analytics");
+      analytics.projectCreated(project.id);
+
       // Get user profile for inviter name
       const { data: userProfile } = await supabase
         .from('profiles')

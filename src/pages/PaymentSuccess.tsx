@@ -46,6 +46,10 @@ export default function PaymentSuccess() {
         if (profile?.subscription_tier) {
           setTier(profile.subscription_tier);
           console.log('[PaymentSuccess] Updated tier:', profile.subscription_tier);
+          
+          // Track subscription start
+          const { analytics } = await import("@/lib/analytics");
+          analytics.subscriptionStart(profile.subscription_tier);
         }
       } catch (error) {
         console.error("Error verifying payment:", error);

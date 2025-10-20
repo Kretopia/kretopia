@@ -57,6 +57,11 @@ const Navbar = ({ user }: NavbarProps) => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    
+    // Track sign out
+    const { analytics } = await import("@/lib/analytics");
+    analytics.signOut();
+    
     toast({
       title: "Signed out",
       description: "You've been successfully signed out",

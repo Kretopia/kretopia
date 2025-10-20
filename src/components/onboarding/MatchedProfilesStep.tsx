@@ -73,6 +73,10 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
 
       if (error) throw error;
 
+      // Track connection request
+      const { analytics } = await import("@/lib/analytics");
+      analytics.connectionRequest(userId);
+
       setConnectedIds(prev => new Set([...prev, userId]));
       
       toast({

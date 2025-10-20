@@ -110,6 +110,10 @@ export const ApplyToOpportunityDialog = ({
       return;
     }
 
+    // Track opportunity application
+    const { analytics } = await import("@/lib/analytics");
+    analytics.opportunityApply(opportunityId);
+
     toast({
       title: "Application submitted!",
       description: "The opportunity creator will review your application",

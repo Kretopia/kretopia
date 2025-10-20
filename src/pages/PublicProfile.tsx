@@ -278,6 +278,10 @@ const PublicProfile = () => {
         variant: "destructive",
       });
     } else {
+      // Track connection request
+      const { analytics } = await import("@/lib/analytics");
+      analytics.connectionRequest(userId);
+      
       setConnectionStatus('pending');
       toast({
         title: "Connection Request Sent!",

@@ -222,6 +222,10 @@ const Circle = () => {
 
       if (error) throw error;
 
+      // Track connection request
+      const { analytics } = await import("@/lib/analytics");
+      analytics.connectionRequest(userId);
+
       toast({
         title: "Connection request sent",
         description: "They'll be notified of your request"

@@ -178,6 +178,10 @@ Return top 3 reasons why this user would benefit from expanding their network in
 
       if (error) throw error;
 
+      // Track connection request
+      const { analytics } = await import("@/lib/analytics");
+      analytics.connectionRequest(profile.user_id);
+
       toast({ 
         title: `Request sent to ${profile.full_name}`,
         description: "They'll be notified of your connection request"

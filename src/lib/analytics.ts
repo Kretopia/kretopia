@@ -195,4 +195,19 @@ export const analytics = {
       eventCategory: EventCategory.ONBOARDING,
       properties: { step_number: stepNumber, step_name: stepName },
     }),
+
+  // Collaboration events
+  connectionRequest: (targetUserId?: string) =>
+    trackEvent({
+      eventName: 'connection_request',
+      eventCategory: EventCategory.COLLABORATION,
+      properties: { target_user_id: targetUserId },
+    }),
+
+  projectCreated: (projectId: string, matchId?: string) =>
+    trackEvent({
+      eventName: 'project_created',
+      eventCategory: EventCategory.COLLABORATION,
+      properties: { project_id: projectId, match_id: matchId },
+    }),
 };

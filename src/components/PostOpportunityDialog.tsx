@@ -210,7 +210,7 @@ export const PostOpportunityDialog = ({
       }
 
       // Create opportunity with authenticated user
-      const { error: opportunityError } = await supabase
+      const { data: newOpportunity, error: opportunityError } = await supabase
         .from('opportunities')
         .insert({
           title: formData.title,
@@ -226,9 +226,17 @@ export const PostOpportunityDialog = ({
           status: 'active',
           image_url: imageUrl,
           created_by: user.id,
-        });
+        })
+        .select()
+        .single();
 
       if (opportunityError) throw opportunityError;
+
+      // Track opportunity creation
+      if (newOpportunity) {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.opportunityCreate(newOpportunity.id);
+      }
 
       toast({
         title: "Opportunity Posted! 🎉",

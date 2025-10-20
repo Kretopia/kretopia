@@ -287,6 +287,10 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
 
       if (connectionError) throw connectionError;
 
+      // Track connection request
+      const { analytics } = await import("@/lib/analytics");
+      analytics.connectionRequest(profile.user_id);
+
       // Get current user's profile for notification
       const { data: senderProfile } = await supabase
         .from('profiles')

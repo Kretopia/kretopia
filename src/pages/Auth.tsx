@@ -41,12 +41,19 @@ const Auth = () => {
   const [signupStep, setSignupStep] = useState(1);
   const totalSteps = 3;
   
+  // Password reset state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [newPasswordError, setNewPasswordError] = useState("");
+  const [confirmNewPasswordError, setConfirmNewPasswordError] = useState("");
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   
   const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const isPasswordReset = searchParams.get("reset") === "true";
 
   // Redirect if already authenticated & fetch opportunities count & pre-fill invite code
   useEffect(() => {
@@ -283,6 +290,50 @@ const Auth = () => {
     setResetLoading(false);
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate new password
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.valid) {
+      setNewPasswordError(passwordValidation.error || "");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setConfirmNewPasswordError("Passwords don't match");
+      return;
+    }
+
+    setNewPasswordError("");
+    setConfirmNewPasswordError("");
+    setLoading(true);
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Password Reset Successful",
+        description: "Your password has been updated. Redirecting to dashboard...",
+      });
+      
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
+    }
+
+    setLoading(false);
+  };
+
 
 
   return (
@@ -292,23 +343,95 @@ const Auth = () => {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary">
             <Sparkles className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h1 className="mb-2 text-3xl sm:text-4xl font-bold">Welcome to ThriveIN</h1>
+          <h1 className="mb-2 text-3xl sm:text-4xl font-bold">
+            {isPasswordReset ? "Reset Your Password" : "Welcome to ThriveIN"}
+          </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            {searchParams.get("redirect")?.includes("/opportunity/") 
-              ? "Create an account to apply for this opportunity" 
-              : "The AI-powered creative network where talent meets opportunity"}
+            {isPasswordReset 
+              ? "Enter your new password below to complete the reset process" 
+              : searchParams.get("redirect")?.includes("/opportunity/") 
+                ? "Create an account to apply for this opportunity" 
+                : "The AI-powered creative network where talent meets opportunity"}
           </p>
-          <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              ✨ 7 AI Features
-            </span>
-            <span className="flex items-center gap-1">
-              💼 {opportunitiesCount || 0}+ Opportunities
-            </span>
-          </div>
+          {!isPasswordReset && (
+            <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                ✨ 7 AI Features
+              </span>
+              <span className="flex items-center gap-1">
+                💼 {opportunitiesCount || 0}+ Opportunities
+              </span>
+            </div>
+          )}
         </div>
 
-        <Tabs defaultValue="signin" className="w-full">
+        {isPasswordReset ? (
+          <form onSubmit={handlePasswordReset} className="space-y-4 sm:space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="••••••••"
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setNewPasswordError("");
+                }}
+                required
+                minLength={8}
+                className={`h-11 sm:h-10 text-base ${newPasswordError ? "border-destructive" : ""}`}
+                autoComplete="new-password"
+              />
+              {newPasswordError && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {newPasswordError}
+                </p>
+              )}
+              <PasswordStrengthIndicator password={newPassword} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+              <Input
+                id="confirm-new-password"
+                type="password"
+                placeholder="••••••••"
+                value={confirmNewPassword}
+                onChange={(e) => {
+                  setConfirmNewPassword(e.target.value);
+                  setConfirmNewPasswordError("");
+                }}
+                required
+                className={`h-11 sm:h-10 text-base ${confirmNewPasswordError ? "border-destructive" : ""}`}
+                autoComplete="new-password"
+              />
+              {confirmNewPasswordError && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {confirmNewPasswordError}
+                </p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              variant="gradient"
+              size="lg"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Resetting Password...
+                </>
+              ) : (
+                "Reset Password"
+              )}
+            </Button>
+          </form>
+        ) : (
+          <Tabs defaultValue="signin" className="w-full">
           <TabsList className="mb-6 grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -656,6 +779,7 @@ const Auth = () => {
             )}
           </TabsContent>
         </Tabs>
+        )}
 
         <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
           <DialogContent>

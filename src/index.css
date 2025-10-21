@@ -93,16 +93,13 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
     margin: 0;
     padding: 0;
-    height: 100%;
-    overflow: hidden;
     font-feature-settings: 'rlig' 1, 'calt' 1;
     /* Handle safe areas for mobile devices with notches */
     padding-bottom: env(safe-area-inset-bottom);
   }
 
   #root {
-    height: 100%;
-    overflow: hidden;
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {

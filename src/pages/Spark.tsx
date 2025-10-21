@@ -117,6 +117,7 @@ const Circle = () => {
     }
 
     try {
+      // Show loading spinner first
       setLoading(true);
 
       // Get user profile for AI recommendations
@@ -126,16 +127,10 @@ const Circle = () => {
         .eq('user_id', user.id)
         .single();
 
-      // Call AI-powered feed generation (runs in background, non-blocking)
-      const feedPromise = supabase.functions.invoke('generate-for-you-feed', {
+      // Start the AI feed generation
+      const { data: feedData, error: feedError } = await supabase.functions.invoke('generate-for-you-feed', {
         body: { userId: user.id, userProfile }
       });
-
-      // Set loading to false immediately to show UI
-      setLoading(false);
-
-      // Wait for feed data in background
-      const { data: feedData, error: feedError } = await feedPromise;
 
       if (feedError) {
         console.error('AI feed error:', feedError);

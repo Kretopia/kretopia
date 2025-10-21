@@ -141,10 +141,8 @@ const Discover = () => {
     const fetchData = async () => {
       try {
         console.log('[Discover] Starting to fetch data...');
-        setLoading(true);
-        setCards([]);
-        setFeaturedProfile(null);
         
+        // Show UI immediately - don't block on loading state
         const { data: { user } } = await supabase.auth.getUser();
         if (!isMounted) return;
       if (!user) {
@@ -152,6 +150,8 @@ const Discover = () => {
         setLoading(false);
         return;
       }
+      
+      setLoading(true);
       console.log('[Discover] User authenticated:', user.id);
 
       // Batch all initial data fetching in parallel

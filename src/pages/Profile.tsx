@@ -89,147 +89,112 @@ const Profile = () => {
     
     setCurrentUserId(user.id);
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
+    // Batch all database queries in parallel for faster loading
+    const [
+      profileResult,
+      connectionsResult,
+      portfolioResult,
+      reviewsResult,
+      statsResult,
+      creditsResult,
+      awardsResult,
+      pressResult
+    ] = await Promise.all([
+      supabase.from('profiles').select('*').eq('user_id', user.id).single(),
+      supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
+      supabase.from('portfolio_items').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('reviews').select('*').eq('profile_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('industry_stats').select('*').eq('user_id', user.id).order('display_order', { ascending: true }),
+      supabase.from('credits').select('*').eq('user_id', user.id).order('year', { ascending: false }),
+      supabase.from('awards').select('*').eq('user_id', user.id).order('year', { ascending: false }),
+      supabase.from('press_links').select('*').eq('user_id', user.id).order('published_date', { ascending: false })
+    ]);
 
+    const { data, error } = profileResult;
+    
     if (error) {
       toast({
         title: "Error",
         description: "Failed to load profile",
         variant: "destructive",
       });
-    } else {
-      setProfile({ ...data, section_order: data.section_order });
-      setUserBadge(data.badge || 'beta');
-      
-      // Set form data based on account type
-      const isCompany = data.account_type === 'company';
-      setEditForm({
-        full_name: isCompany ? (data.company_name || data.full_name || "") : (data.full_name || ""),
-        role: isCompany ? (data.company_industry || "") : (data.role || ""),
-        bio: isCompany ? (data.company_about || "") : (data.bio || ""),
-        location: isCompany ? (data.company_address || "") : (data.location || ""),
-        avatar_url: isCompany ? (data.company_logo_url || data.avatar_url || "") : (data.avatar_url || ""),
-        company_size: data.company_size || "",
-      });
+      return;
     }
 
-    // Fetch connections count
-    const { count: connectionsCount } = await supabase
-      .from('connections')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('status', 'accepted');
-
-    // Fetch portfolio items
-    const { data: portfolioData } = await supabase
-      .from('portfolio_items')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    // Fetch reviews
-    const { data: reviewsData } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('profile_id', user.id)
-      .order('created_at', { ascending: false });
-
-    // Fetch industry stats
-    const { data: statsData } = await supabase
-      .from('industry_stats')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('display_order', { ascending: true });
-
-    // Fetch credits
-    const { data: creditsData } = await supabase
-      .from('credits')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('year', { ascending: false });
-
-    // Fetch awards
-    const { data: awardsData } = await supabase
-      .from('awards')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('year', { ascending: false });
-
-    // Fetch press links
-    const { data: pressData } = await supabase
-      .from('press_links')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('published_date', { ascending: false });
+    setProfile({ ...data, section_order: data.section_order });
+    setUserBadge(data.badge || 'beta');
+    
+    // Set form data based on account type
+    const isCompany = data.account_type === 'company';
+    setEditForm({
+      full_name: isCompany ? (data.company_name || data.full_name || "") : (data.full_name || ""),
+      role: isCompany ? (data.company_industry || "") : (data.role || ""),
+      bio: isCompany ? (data.company_about || "") : (data.bio || ""),
+      location: isCompany ? (data.company_address || "") : (data.location || ""),
+      avatar_url: isCompany ? (data.company_logo_url || data.avatar_url || "") : (data.avatar_url || ""),
+      company_size: data.company_size || "",
+    });
 
     // Fetch company-specific data if company account
     let companyReviewsData = null;
     let discountsData = null;
     
     if (data?.account_type === 'company') {
-      const { data: reviewsData } = await supabase
-        .from('company_reviews')
-        .select(`
+      const [reviewsResult, discountsResult] = await Promise.all([
+        supabase.from('company_reviews').select(`
           *,
           reviewer:profiles!company_reviews_reviewer_id_fkey(full_name, avatar_url)
-        `)
-        .eq('company_id', user.id)
-        .eq('status', 'published')
-        .order('created_at', { ascending: false });
+        `).eq('company_id', user.id).eq('status', 'published').order('created_at', { ascending: false }),
+        supabase.from('partner_discounts').select('*').eq('partner_name', data.company_name).eq('is_active', true)
+      ]);
       
-      companyReviewsData = reviewsData?.map(review => ({
+      companyReviewsData = reviewsResult.data?.map(review => ({
         ...review,
         reviewer_name: review.reviewer?.full_name || 'Anonymous',
         reviewer_avatar: review.reviewer?.avatar_url || '',
       })) || [];
       
-      // Fetch partner discounts for this company
-      const { data: discounts } = await supabase
-        .from('partner_discounts')
-        .select('*')
-        .eq('partner_name', data.company_name)
-        .eq('is_active', true);
-      
-      discountsData = discounts || [];
+      discountsData = discountsResult.data || [];
     }
 
     setStats(prev => ({
       ...prev,
-      circle: connectionsCount || 0,
-      projects: portfolioData?.length || 0,
+      circle: connectionsResult.count || 0,
+      projects: portfolioResult.data?.length || 0,
     }));
-    setPortfolioItems(portfolioData || []);
-    setReviews(reviewsData || []);
+    setPortfolioItems(portfolioResult.data || []);
+    setReviews(reviewsResult.data || []);
     setCompanyReviews(companyReviewsData || []);
     setPartnerDiscounts(discountsData || []);
-    setIndustryStats(statsData || []);
-    setCredits(creditsData || []);
-    setAwards(awardsData || []);
-    setPressLinks(pressData || []);
+    setIndustryStats(statsResult.data || []);
+    setCredits(creditsResult.data || []);
+    setAwards(awardsResult.data || []);
+    setPressLinks(pressResult.data || []);
   };
 
   useEffect(() => {
     const initProfile = async () => {
-      await fetchData();
-      
-      // Calculate and update verification score on page load
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.functions.invoke('update-verification-score', {
+      if (!user) return;
+      
+      // Update verification score and fetch data in parallel
+      const [scoreResult] = await Promise.all([
+        supabase.functions.invoke('update-verification-score', {
           body: { userId: user.id }
-        });
-        // Refetch to get updated score
-        await fetchData();
+        }),
+        fetchData()
+      ]);
+      
+      if (scoreResult.error) {
+        console.error('Verification score update failed:', scoreResult.error);
       }
     };
     
     initProfile();
 
-    // Set up real-time subscriptions for all verification score components
+    // Set up lightweight real-time subscriptions - only refetch data, score update is debounced
+    let updateTimeout: NodeJS.Timeout;
+    
     const channel = supabase
       .channel('profile-changes')
       .on(
@@ -239,15 +204,17 @@ const Profile = () => {
           schema: 'public',
           table: 'portfolio_items'
         },
-        async (payload) => {
-          console.log('Portfolio item changed:', payload);
-          // Update verification score and refetch data
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await supabase.functions.invoke('update-verification-score', {
-              body: { userId: user.id }
-            });
-          }
+        () => {
+          // Debounce verification score updates
+          clearTimeout(updateTimeout);
+          updateTimeout = setTimeout(async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase.functions.invoke('update-verification-score', {
+                body: { userId: user.id }
+              });
+            }
+          }, 2000);
           fetchData();
         }
       )
@@ -256,54 +223,9 @@ const Profile = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'credits'
+          table: 'profiles'
         },
-        async (payload) => {
-          console.log('Credits changed:', payload);
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await supabase.functions.invoke('update-verification-score', {
-              body: { userId: user.id }
-            });
-          }
-          fetchData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'awards'
-        },
-        async (payload) => {
-          console.log('Awards changed:', payload);
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await supabase.functions.invoke('update-verification-score', {
-              body: { userId: user.id }
-            });
-          }
-          fetchData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'press_links'
-        },
-        async (payload) => {
-          console.log('Press links changed:', payload);
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await supabase.functions.invoke('update-verification-score', {
-              body: { userId: user.id }
-            });
-          }
-          fetchData();
-        }
+        () => fetchData()
       )
       .subscribe();
 

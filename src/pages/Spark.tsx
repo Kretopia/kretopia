@@ -110,6 +110,56 @@ const Circle = () => {
     };
   }, []);
 
+  // Fallback to basic feed without AI
+  const fetchBasicFeed = async (userId: string) => {
+    try {
+      // Fetch recent content directly
+      const [portfolioData, awardsData, pressData, creditsData, feedPostsData] = await Promise.all([
+        supabase.from('portfolio_items').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(10),
+        supabase.from('awards').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(5),
+        supabase.from('press_links').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(5),
+        supabase.from('credits').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(5),
+        supabase.from('feed_posts').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(10)
+      ]);
+
+      const allContent = [
+        ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
+        ...(awardsData.data || []).map(item => ({ ...item, activity_type: 'award' })),
+        ...(pressData.data || []).map(item => ({ ...item, activity_type: 'press' })),
+        ...(creditsData.data || []).map(item => ({ ...item, activity_type: 'credit' })),
+        ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post' }))
+      ].filter(item => item.profiles);
+
+      const feed: SparkItem[] = allContent.map((item: any) => {
+        const profile = item.profiles;
+        return {
+          id: item.id,
+          type: item.activity_type === 'feed_post' ? 'post' : item.activity_type,
+          user: {
+            id: item.user_id,
+            name: profile.full_name || 'Unknown',
+            avatar: profile.avatar_url || '',
+            role: profile.role || 'Creator',
+          },
+          content: item,
+          created_at: item.created_at,
+          reactions: 0,
+          showComments: false,
+          comments: [],
+          commentText: ''
+        };
+      });
+
+      setSparkFeed(feed);
+      setCachedFeed(userId, feed);
+    } catch (error) {
+      console.error('[Spark] Error loading basic feed:', error);
+      setSparkFeed([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchSparkFeed = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -137,14 +187,35 @@ const Circle = () => {
         .eq('user_id', user.id)
         .single();
 
-      // Start the AI feed generation
-      const { data: feedData, error: feedError } = await supabase.functions.invoke('generate-for-you-feed', {
-        body: { userId: user.id, userProfile }
-      });
+      // Start the AI feed generation with 10 second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      let feedData: any;
+      let feedError: any;
+      
+      try {
+        const result = await supabase.functions.invoke('generate-for-you-feed', {
+          body: { userId: user.id, userProfile }
+        });
+        clearTimeout(timeoutId);
+        feedData = result.data;
+        feedError = result.error;
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          console.error('[Spark] Feed generation timeout - falling back to basic feed');
+          feedError = { message: 'Request timeout' };
+        } else {
+          feedError = err;
+        }
+      }
 
       if (feedError) {
-        console.error('AI feed error:', feedError);
-        throw feedError;
+        console.error('[Spark] AI feed error, loading basic feed:', feedError);
+        // Fall back to basic feed without AI
+        await fetchBasicFeed(user.id);
+        return;
       }
 
       // Transform AI feed data into SparkItem format

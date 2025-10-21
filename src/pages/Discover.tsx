@@ -295,11 +295,17 @@ const Discover = () => {
           setCards(creatorCards);
         }
         
-        // Run AI scoring in background after UI is ready (non-blocking)
+        // Run AI scoring in background with timeout protection
         const hasAIAccess = TIER_LIMITS[subscriptionTier as SubscriptionTier]?.hasAIRecommendations;
         if (aiScoringEnabled && userProfile && hasAIAccess && isMounted) {
           setTimeout(() => {
             if (!isMounted) return;
+            
+            // Set timeout for AI scoring (5 seconds)
+            const aiTimeout = setTimeout(() => {
+              console.log('[Discover] AI scoring timeout - continuing without scores');
+            }, 5000);
+            
             scoreProfilesWithAI(
               userProfile,
               profilesWithPortfolio.slice(0, 10).map(p => ({
@@ -312,14 +318,18 @@ const Discover = () => {
                 location: p.location
               }))
             ).then(scoredProfiles => {
+              clearTimeout(aiTimeout);
               if (!isMounted) return;
               setCards(prev => prev.map((card, idx) => ({
                 ...card,
                 ai_match_score: scoredProfiles[idx]?.ai_match_score,
                 match_reasons: scoredProfiles[idx]?.match_reasons
               })).sort((a, b) => (b.ai_match_score || 0) - (a.ai_match_score || 0)));
-            }).catch(err => console.error('[Discover] Background AI scoring failed:', err));
-          }, 1000);
+            }).catch(err => {
+              clearTimeout(aiTimeout);
+              console.error('[Discover] Background AI scoring failed:', err);
+            });
+          }, 500); // Reduced from 1000ms to 500ms for faster AI scoring
         }
       } else {
         console.log('[Discover] Fetching opportunities...');

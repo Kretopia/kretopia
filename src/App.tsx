@@ -71,7 +71,7 @@ const queryClient = new QueryClient({
 
 const LoadingFallback = () => (
   <div className="flex min-h-screen items-center justify-center">
-    <div className="animate-pulse text-primary">Loading...</div>
+    <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
   </div>
 );
 

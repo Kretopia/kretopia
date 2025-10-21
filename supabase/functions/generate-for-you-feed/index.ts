@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // In-memory cache for feed results (lasts for function lifetime)
-const feedCache = new Map<string, { data: any; timestamp: number }>();
+const feedCache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 serve(async (req) => {

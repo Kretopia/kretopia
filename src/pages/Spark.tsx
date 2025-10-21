@@ -119,7 +119,7 @@ const Circle = () => {
 
     try {
       // Check cache first
-      const cached = getCachedFeed(user.id);
+      const cached = getCachedFeed<SparkItem[]>(user.id);
       if (cached) {
         setSparkFeed(cached);
         setLoading(false);

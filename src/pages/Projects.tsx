@@ -92,6 +92,7 @@ const Projects = () => {
         .map(p => p.match_id)
         .filter((id, index, self) => id && self.indexOf(id) === index); // unique non-null ids
 
+      // Batch fetch matches data
       let matchesData: any[] = [];
       if (matchIds.length > 0) {
         const { data } = await supabase
@@ -100,34 +101,46 @@ const Projects = () => {
           .in('id', matchIds);
         matchesData = data || [];
       }
-      // Fetch collaborator details for matched projects
-      const projectsWithCollaborators = await Promise.all(
-        projectsData.map(async (project) => {
-          // Skip collaborator fetch for solo projects
-          if (!project.match_id) {
-            return { ...project, matches: null, collaborator: null };
-          }
-
-          const match = matchesData.find(m => m.id === project.match_id);
-          if (!match) return { ...project, matches: null, collaborator: null };
-
-          const collaboratorId = match.user1_id === user.id 
-            ? match.user2_id 
-            : match.user1_id;
-
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('user_id', collaboratorId)
-            .maybeSingle();
-
-          return {
-            ...project,
-            matches: match,
-            collaborator: profile,
-          };
+      
+      // Get all unique collaborator IDs
+      const collaboratorIds = projectsData
+        .filter(p => p.match_id)
+        .map(p => {
+          const match = matchesData.find(m => m.id === p.match_id);
+          if (!match) return null;
+          return match.user1_id === user.id ? match.user2_id : match.user1_id;
         })
-      );
+        .filter(Boolean);
+      
+      // Batch fetch ALL collaborator profiles at once
+      let collaboratorsMap = new Map();
+      if (collaboratorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', collaboratorIds);
+        
+        profiles?.forEach(p => collaboratorsMap.set(p.user_id, p));
+      }
+      
+      // Map projects with their collaborator data
+      const projectsWithCollaborators = projectsData.map(project => {
+        if (!project.match_id) {
+          return { ...project, matches: null, collaborator: null };
+        }
+
+        const match = matchesData.find(m => m.id === project.match_id);
+        if (!match) return { ...project, matches: null, collaborator: null };
+
+        const collaboratorId = match.user1_id === user.id ? match.user2_id : match.user1_id;
+        const collaborator = collaboratorsMap.get(collaboratorId);
+
+        return {
+          ...project,
+          matches: match,
+          collaborator: collaborator || null,
+        };
+      });
 
       setProjects(projectsWithCollaborators);
     } catch (err) {

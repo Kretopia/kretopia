@@ -89,7 +89,7 @@ const Profile = () => {
     
     setCurrentUserId(user.id);
 
-    // Batch all database queries in parallel for faster loading
+    // Batch ALL database queries in parallel - including company data
     const [
       profileResult,
       connectionsResult,
@@ -100,7 +100,7 @@ const Profile = () => {
       awardsResult,
       pressResult
     ] = await Promise.all([
-      supabase.from('profiles').select('*').eq('user_id', user.id).single(),
+      supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
       supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
       supabase.from('portfolio_items').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
       supabase.from('reviews').select('*').eq('profile_id', user.id).order('created_at', { ascending: false }),
@@ -135,26 +135,24 @@ const Profile = () => {
       company_size: data.company_size || "",
     });
 
-    // Fetch company-specific data if company account
-    let companyReviewsData = null;
-    let discountsData = null;
-    
+    // Fetch company-specific data ONLY if company account (in parallel with setting state above)
     if (data?.account_type === 'company') {
-      const [reviewsResult, discountsResult] = await Promise.all([
+      Promise.all([
         supabase.from('company_reviews').select(`
           *,
           reviewer:profiles!company_reviews_reviewer_id_fkey(full_name, avatar_url)
         `).eq('company_id', user.id).eq('status', 'published').order('created_at', { ascending: false }),
         supabase.from('partner_discounts').select('*').eq('partner_name', data.company_name).eq('is_active', true)
-      ]);
-      
-      companyReviewsData = reviewsResult.data?.map(review => ({
-        ...review,
-        reviewer_name: review.reviewer?.full_name || 'Anonymous',
-        reviewer_avatar: review.reviewer?.avatar_url || '',
-      })) || [];
-      
-      discountsData = discountsResult.data || [];
+      ]).then(([reviewsResult, discountsResult]) => {
+        const companyReviewsData = reviewsResult.data?.map(review => ({
+          ...review,
+          reviewer_name: review.reviewer?.full_name || 'Anonymous',
+          reviewer_avatar: review.reviewer?.avatar_url || '',
+        })) || [];
+        
+        setCompanyReviews(companyReviewsData);
+        setPartnerDiscounts(discountsResult.data || []);
+      });
     }
 
     setStats(prev => ({
@@ -164,8 +162,6 @@ const Profile = () => {
     }));
     setPortfolioItems(portfolioResult.data || []);
     setReviews(reviewsResult.data || []);
-    setCompanyReviews(companyReviewsData || []);
-    setPartnerDiscounts(discountsData || []);
     setIndustryStats(statsResult.data || []);
     setCredits(creditsResult.data || []);
     setAwards(awardsResult.data || []);
@@ -188,44 +184,31 @@ const Profile = () => {
     
     initProfile();
 
-    // Set up lightweight real-time subscriptions - only refetch data, score update is debounced
+    // Set up lightweight real-time subscriptions - debounce refetches
     let updateTimeout: NodeJS.Timeout;
     
     const channel = supabase
       .channel('profile-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'portfolio_items'
-        },
+        { event: '*', schema: 'public', table: 'portfolio_items' },
         () => {
-          // Debounce verification score updates
           clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              await supabase.functions.invoke('update-verification-score', {
-                body: { userId: user.id }
-              });
-            }
-          }, 2000);
-          fetchData();
+          updateTimeout = setTimeout(() => fetchData(), 1000);
         }
       )
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
-        () => fetchData()
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          clearTimeout(updateTimeout);
+          updateTimeout = setTimeout(() => fetchData(), 1000);
+        }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(updateTimeout);
       supabase.removeChannel(channel);
     };
   }, [toast]);

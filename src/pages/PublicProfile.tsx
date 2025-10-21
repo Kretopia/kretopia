@@ -130,19 +130,18 @@ const PublicProfile = () => {
 
     // Check connection status if logged in
     if (user) {
-      // Check both directions for connection
-      const { data: connections } = await supabase
-        .from('connections')
-        .select('status, user_id, connected_user_id')
-        .or(`and(user_id.eq.${user.id},connected_user_id.eq.${userId}),and(user_id.eq.${userId},connected_user_id.eq.${user.id})`);
+      // Batch connection and match queries in parallel
+      const [connectionsResult, matchResult] = await Promise.all([
+        supabase.from('connections').select('status, user_id, connected_user_id')
+          .or(`and(user_id.eq.${user.id},connected_user_id.eq.${userId}),and(user_id.eq.${userId},connected_user_id.eq.${user.id})`),
+        supabase.from('matches').select('status')
+          .or(`and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`)
+          .eq('status', 'active')
+          .maybeSingle()
+      ]);
 
-      // Also check for matches
-      const { data: match } = await supabase
-        .from('matches')
-        .select('status')
-        .or(`and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`)
-        .eq('status', 'active')
-        .maybeSingle();
+      const connections = connectionsResult.data;
+      const match = matchResult.data;
 
       if (match || (connections && connections.length > 0 && connections[0].status === 'accepted')) {
         setConnectionStatus('accepted');
@@ -184,60 +183,34 @@ const PublicProfile = () => {
 
     const totalConnections = (outgoingCount || 0) + (incomingCount || 0) + (matchesCount || 0);
 
-    // Fetch portfolio items
-    const { data: portfolioData } = await supabase
-      .from('portfolio_items')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    // Fetch reviews (only approved)
-    const { data: reviewsData } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('profile_id', userId)
-      .eq('status', 'approved')
-      .order('created_at', { ascending: false });
-
-    // Fetch industry stats
-    const { data: statsData } = await supabase
-      .from('industry_stats')
-      .select('*')
-      .eq('user_id', userId)
-      .order('display_order', { ascending: true });
-
-    // Fetch credits
-    const { data: creditsData } = await supabase
-      .from('credits')
-      .select('*')
-      .eq('user_id', userId)
-      .order('year', { ascending: false });
-
-    // Fetch awards
-    const { data: awardsData } = await supabase
-      .from('awards')
-      .select('*')
-      .eq('user_id', userId)
-      .order('year', { ascending: false });
-
-    // Fetch press links
-    const { data: pressData } = await supabase
-      .from('press_links')
-      .select('*')
-      .eq('user_id', userId)
-      .order('published_date', { ascending: false });
+    // Batch ALL remaining queries in parallel
+    const [
+      portfolioResult,
+      reviewsResult,
+      statsResult,
+      creditsResult,
+      awardsResult,
+      pressResult
+    ] = await Promise.all([
+      supabase.from('portfolio_items').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('reviews').select('*').eq('profile_id', userId).eq('status', 'approved').order('created_at', { ascending: false }),
+      supabase.from('industry_stats').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
+      supabase.from('credits').select('*').eq('user_id', userId).order('year', { ascending: false }),
+      supabase.from('awards').select('*').eq('user_id', userId).order('year', { ascending: false }),
+      supabase.from('press_links').select('*').eq('user_id', userId).order('published_date', { ascending: false })
+    ]);
 
     setStats(prev => ({
       ...prev,
       circle: totalConnections,
-      projects: portfolioData?.length || 0,
+      projects: portfolioResult.data?.length || 0,
     }));
-    setPortfolioItems(portfolioData || []);
-    setReviews(reviewsData || []);
-    setIndustryStats(statsData || []);
-    setCredits(creditsData || []);
-    setAwards(awardsData || []);
-    setPressLinks(pressData || []);
+    setPortfolioItems(portfolioResult.data || []);
+    setReviews(reviewsResult.data || []);
+    setIndustryStats(statsResult.data || []);
+    setCredits(creditsResult.data || []);
+    setAwards(awardsResult.data || []);
+    setPressLinks(pressResult.data || []);
   };
 
   useEffect(() => {

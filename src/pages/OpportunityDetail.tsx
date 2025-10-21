@@ -36,36 +36,41 @@ const OpportunityDetail = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    const fetchOpportunity = async () => {
-      const { data, error } = await supabase
-        .from('opportunities')
-        .select('*')
-        .eq('id', id)
-        .single();
+    const fetchData = async () => {
+      if (!user) {
+        // Just fetch opportunity data
+        const { data, error } = await supabase
+          .from('opportunities')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching opportunity:', error);
-      } else {
-        setOpportunity(data);
+        if (error) {
+          console.error('Error fetching opportunity:', error);
+        } else {
+          setOpportunity(data);
+        }
+        setLoading(false);
+        return;
       }
+
+      // Batch fetch opportunity and saved status in parallel
+      const [oppResult, savedResult] = await Promise.all([
+        supabase.from('opportunities').select('*').eq('id', id).maybeSingle(),
+        supabase.from('saved_opportunities').select('id').eq('user_id', user.id).eq('opportunity_id', id).maybeSingle()
+      ]);
+
+      if (oppResult.error) {
+        console.error('Error fetching opportunity:', oppResult.error);
+      } else {
+        setOpportunity(oppResult.data);
+      }
+      
+      setIsSaved(!!savedResult.data);
       setLoading(false);
     };
 
-    fetchOpportunity();
-    
-    // Check if opportunity is saved
-    const checkSaved = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from('saved_opportunities')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('opportunity_id', id)
-        .maybeSingle();
-      setIsSaved(!!data);
-    };
-    
-    checkSaved();
+    fetchData();
   }, [id, user]);
 
   const handleShare = () => {

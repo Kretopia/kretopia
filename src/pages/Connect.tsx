@@ -49,8 +49,8 @@ export default function Connect() {
 
   useEffect(() => {
     if (user) {
-      fetchUserProfile();
-      fetchProfiles();
+      // Fetch both in parallel
+      Promise.all([fetchUserProfile(), fetchProfiles()]);
     }
   }, [user, searchQuery, filters]);
 
@@ -70,8 +70,9 @@ export default function Connect() {
   };
 
   useEffect(() => {
+    // Generate suggestions in background (non-blocking)
     if (user && !searchQuery && !loadingSuggestions) {
-      generateSearchSuggestions();
+      setTimeout(() => generateSearchSuggestions(), 500);
     }
   }, [user]);
 
@@ -178,21 +179,16 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
 
       const { data, error } = await query.limit(50);
       
-      console.log('[Connect] Raw query result:', { data, error, count: data?.length });
-
       if (error) throw error;
 
-      // Get connection statuses
-      const { data: connections } = await supabase
-        .from('connections')
-        .select('*')
-        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`);
+      // Batch connection and match queries in parallel
+      const [connectionsResult, matchesResult] = await Promise.all([
+        supabase.from('connections').select('*').or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`),
+        supabase.from('matches').select('*').or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+      ]);
 
-      // Get matches
-      const { data: matches } = await supabase
-        .from('matches')
-        .select('*')
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+      const connections = connectionsResult.data;
+      const matches = matchesResult.data;
 
       // Filter profiles - require complete profile to be discoverable
       const completeProfiles = data?.filter(profile => {

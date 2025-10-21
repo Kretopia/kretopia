@@ -79,9 +79,12 @@ const Messages = () => {
 
   useEffect(() => {
     if (currentUserId) {
-      fetchConnections();
-      fetchConversations();
-      subscribeToMessages();
+      // Run all initial fetches in parallel
+      Promise.all([
+        fetchConnections(),
+        fetchConversations(),
+        subscribeToMessages()
+      ]);
     }
   }, [currentUserId]);
 
@@ -100,29 +103,17 @@ const Messages = () => {
   };
 
   const fetchConnections = async () => {
-    // Fetch accepted connections in both directions
-    const { data: outgoingConnections } = await supabase
-      .from("connections")
-      .select("connected_user_id")
-      .eq("user_id", currentUserId)
-      .eq("status", "accepted");
-
-    const { data: incomingConnections } = await supabase
-      .from("connections")
-      .select("user_id")
-      .eq("connected_user_id", currentUserId)
-      .eq("status", "accepted");
-
-    const { data: matches } = await supabase
-      .from("matches")
-      .select("user1_id, user2_id")
-      .or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`)
-      .eq("status", "active");
+    // Batch all connection queries in parallel
+    const [outgoingResult, incomingResult, matchesResult] = await Promise.all([
+      supabase.from("connections").select("connected_user_id").eq("user_id", currentUserId).eq("status", "accepted"),
+      supabase.from("connections").select("user_id").eq("connected_user_id", currentUserId).eq("status", "accepted"),
+      supabase.from("matches").select("user1_id, user2_id").or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`).eq("status", "active")
+    ]);
 
     const connectedIds = new Set<string>();
-    outgoingConnections?.forEach((c) => connectedIds.add(c.connected_user_id));
-    incomingConnections?.forEach((c) => connectedIds.add(c.user_id));
-    matches?.forEach((m) => {
+    outgoingResult.data?.forEach((c) => connectedIds.add(c.connected_user_id));
+    incomingResult.data?.forEach((c) => connectedIds.add(c.user_id));
+    matchesResult.data?.forEach((m) => {
       connectedIds.add(m.user1_id === currentUserId ? m.user2_id : m.user1_id);
     });
 
@@ -145,34 +136,27 @@ const Messages = () => {
   };
 
   const fetchMessages = async (userId: string) => {
-    const { data: messagesData, error } = await supabase
-      .from("messages")
-      .select("*")
-      .or(
+    // Batch messages and profile fetch in parallel
+    const [messagesResult, profileResult] = await Promise.all([
+      supabase.from("messages").select("*").or(
         `and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`
-      )
-      .order("created_at", { ascending: true });
+      ).order("created_at", { ascending: true }),
+      supabase.from("profiles").select("full_name, avatar_url, role").eq("user_id", userId).maybeSingle()
+    ]);
 
-    if (error) {
-      console.error("Error fetching messages:", error);
+    if (messagesResult.error) {
+      console.error("Error fetching messages:", messagesResult.error);
       return;
     }
 
-    setMessages(messagesData || []);
+    setMessages(messagesResult.data || []);
 
-    // Fetch other user's profile
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, avatar_url, role")
-      .eq("user_id", userId)
-      .single();
-
-    if (profile) {
+    if (profileResult.data) {
       setOtherUser({
         id: userId,
-        name: profile.full_name,
-        avatar: profile.avatar_url,
-        role: profile.role,
+        name: profileResult.data.full_name,
+        avatar: profileResult.data.avatar_url,
+        role: profileResult.data.role,
       });
     }
   };

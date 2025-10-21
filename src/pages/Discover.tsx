@@ -1076,14 +1076,14 @@ const Discover = () => {
           onOpenChange={(open) => {
             setShowMatchCelebration(open);
             if (!open) {
-              // Navigate to Circle when dialog closes
-              navigate('/circle');
+              // Navigate to Spark when dialog closes
+              navigate('/spark');
             }
           }}
           matchedUser={matchedUser}
           onSendMessage={() => {
             setShowMatchCelebration(false);
-            navigate('/circle');
+            navigate('/spark');
           }}
         />
       )}

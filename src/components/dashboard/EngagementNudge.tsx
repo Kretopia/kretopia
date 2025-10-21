@@ -126,7 +126,7 @@ export const EngagementNudge = () => {
           title: "You have new connections!",
           description: "Start collaborating on your next project",
           action: "View Connections",
-          route: "/circle",
+          route: "/spark",
           icon: Users,
         });
         return;

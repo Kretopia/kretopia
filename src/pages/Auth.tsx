@@ -101,7 +101,7 @@ const Auth = () => {
           title: "Already Connected",
           description: "You're already connected with this user",
         });
-        navigate('/circle');
+        navigate('/spark');
         return;
       }
 
@@ -128,7 +128,7 @@ const Auth = () => {
         description: `Request sent to ${targetProfile?.full_name || 'user'}`,
       });
 
-      navigate('/circle');
+      navigate('/spark');
     } catch (error) {
       console.error('Auto-connect error:', error);
       toast({

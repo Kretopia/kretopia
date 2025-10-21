@@ -115,10 +115,10 @@ export const MatchCelebrationDialog = ({
               className="flex-1"
               onClick={() => {
                 onOpenChange(false);
-                navigate('/circle');
+                navigate('/spark');
               }}
             >
-              View in Circle
+              View in Spark
             </Button>
             <Button
               className="flex-1 bg-gradient-to-r from-primary to-primary/80"

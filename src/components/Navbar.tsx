@@ -147,10 +147,10 @@ const Navbar = ({ user }: NavbarProps) => {
                         <Button 
                           variant="ghost" 
                           className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/circle")}
+                          onClick={() => handleNavigation("/spark")}
                         >
                           <Users className="h-5 w-5" />
-                          My Circle
+                          Spark
                         </Button>
                         <Button 
                           variant="ghost" 

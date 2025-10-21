@@ -334,7 +334,7 @@ Return ONLY valid JSON array:
             <Button
               size="sm"
               variant="outline"
-              onClick={() => navigate(`/circle?user=${applicant.applicant_id}`)}
+              onClick={() => navigate(`/spark?user=${applicant.applicant_id}`)}
             >
               <Mail className="w-3 h-3 mr-1" />
               Message

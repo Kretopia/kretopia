@@ -27,7 +27,7 @@ const BottomNav = () => {
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Home" },
     { path: "/discover", icon: Compass, label: "Discover" },
-    { path: "/circle", icon: Flame, label: "Spark" },
+    { path: "/spark", icon: Flame, label: "Spark" },
     { path: "/projects", icon: Briefcase, label: "Projects" },
   ];
 

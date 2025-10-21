@@ -379,8 +379,8 @@ const PublicProfile = () => {
             const state = location.state as { from?: string; cardIndex?: number };
             if (state?.from === 'connect') {
               navigate('/connect');
-            } else if (state?.from === 'circle') {
-              navigate('/circle');
+            } else if (state?.from === 'spark') {
+              navigate('/spark');
             } else {
               navigate('/discover', { state: { cardIndex: state?.cardIndex } });
             }

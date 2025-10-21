@@ -23,7 +23,7 @@ const Discover = lazy(() => import("./pages/Discover"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
-const Circle = lazy(() => import("./pages/Circle"));
+const Spark = lazy(() => import("./pages/Spark"));
 const Connect = lazy(() => import("./pages/Connect"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
@@ -128,7 +128,7 @@ const AppContent = () => {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/:userId" element={<PublicProfile />} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-            <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+            <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
             <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />

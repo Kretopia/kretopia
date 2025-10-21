@@ -127,7 +127,7 @@ serve(async (req) => {
       ...(pressData.data || []).map(item => ({ ...item, activity_type: 'press' })),
       ...(creditsData.data || []).map(item => ({ ...item, activity_type: 'credit' })),
       ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post' }))
-    ].filter(item => item.user_id !== userId); // Exclude user's own content
+    ].filter(item => item.user_id && item.profiles); // Include all content with valid profiles
 
     // Use AI to score and rank content if available
     if (lovableApiKey && allContent.length > 0) {

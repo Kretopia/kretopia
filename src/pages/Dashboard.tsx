@@ -270,7 +270,7 @@ const Dashboard = () => {
 
         {/* Quick Access Cards */}
         <div className="mb-6 sm:mb-8 grid gap-4 md:grid-cols-3">
-          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/circle')}>
+          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/spark')}>
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-full bg-primary/10">
                 <Flame className="h-6 w-6 text-primary" />

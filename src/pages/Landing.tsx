@@ -16,23 +16,26 @@ const Landing = () => {
   const [opportunitiesCount, setOpportunitiesCount] = useState<number>(0);
 
   useEffect(() => {
-    const fetchOpportunitiesCount = async () => {
-      const { count } = await supabase
-        .from('opportunities')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'active');
+    let isMounted = true;
+    
+    const init = async () => {
+      // Run both in parallel
+      const [{ count }, { analytics }] = await Promise.all([
+        supabase.from('opportunities').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        import("@/lib/analytics")
+      ]);
+      
+      if (!isMounted) return;
       
       setOpportunitiesCount(count || 0);
-    };
-
-    fetchOpportunitiesCount();
-    
-    // Track landing page view
-    const trackView = async () => {
-      const { analytics } = await import("@/lib/analytics");
       analytics.pageView("landing");
     };
-    trackView();
+    
+    init();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
   return (
     <div className="min-h-screen">

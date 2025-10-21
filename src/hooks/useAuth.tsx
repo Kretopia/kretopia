@@ -79,38 +79,51 @@ export const useAuth = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!isMounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Only check subscription on actual sign-in (not every token refresh)
+        // Only check subscription on actual sign-in
         if (session?.user && event === 'SIGNED_IN') {
-          setTimeout(() => checkSubscription(true), 0); // Force sync on sign-in
+          await checkSubscription(true);
         }
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession()
-      .then(({ data: { session }, error }) => {
+    // Check for existing session once
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
         
-        // Use cached data on page load (don't force Stripe sync)
+        // Load subscription from cache/DB only (no Stripe call)
         if (session?.user) {
-          setTimeout(() => checkSubscription(false), 0);
+          const subInfo = await fetchSubscriptionFromDB(session.user.id);
+          if (isMounted && subInfo) {
+            setSubscriptionInfo(subInfo);
+          }
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('[useAuth] Error getting session:', error);
-        setLoading(false);
-      });
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    
+    initAuth();
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);

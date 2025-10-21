@@ -65,11 +65,26 @@ const Dashboard = () => {
 
   const fetchProfile = async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      // Check and award daily login credits
-      const dailyResult = await checkAndAwardDailyLogin(user.id);
+      // Run all queries in parallel for faster loading
+      const [
+        dailyResult,
+        { data: profileData, error: profileError },
+        { count: portfolioCount },
+        { count: connectionsCount },
+        { data: matchesData }
+      ] = await Promise.all([
+        checkAndAwardDailyLogin(user.id),
+        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('portfolio_items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
+        supabase.from('matches').select('*, projects!inner(*)').or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).limit(10)
+      ]);
+
+      // Show daily bonus toast if awarded
       if (dailyResult.awarded) {
         toast({
           title: "Daily Bonus! 🎉",
@@ -77,20 +92,15 @@ const Dashboard = () => {
         });
       }
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('[Dashboard] Error fetching profile:', error);
+      // Handle profile data
+      if (profileError) {
+        console.error('[Dashboard] Error fetching profile:', profileError);
         toast({
           title: "Error",
           description: "Failed to load profile",
           variant: "destructive",
         });
-      } else if (!data) {
+      } else if (!profileData) {
         console.warn('[Dashboard] Profile not found for user:', user.id);
         toast({
           title: "Profile Missing",
@@ -99,51 +109,31 @@ const Dashboard = () => {
         });
         navigate("/onboarding");
       } else {
-        setProfile(data);
+        setProfile(profileData);
       }
 
-      // Fetch portfolio count
-      const { count: portfolioCount } = await supabase
-        .from('portfolio_items')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      
+      // Set portfolio count
       setPortfolioCount(portfolioCount || 0);
 
-      // Fetch connections count
-      const { count: connectionsCount } = await supabase
-        .from('connections')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'accepted');
+      // Set connections count
+      setStats(prev => ({ ...prev, circle: connectionsCount || 0 }));
 
-      setStats(prev => ({
-        ...prev,
-        circle: connectionsCount || 0,
-      }));
-
-      // Fetch active projects through matches
-      const { data: matchesData } = await supabase
-        .from('matches')
-        .select('*, projects!inner(*)')
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-        .limit(10);
-
+      // Process active projects
       if (matchesData) {
-        const activeProjects = matchesData
+        const activeProjectsList = matchesData
           .map(match => match.projects)
           .flat()
           .filter((project: any) => project && project.status === 'active')
           .slice(0, 5);
 
-        setActiveProjects(activeProjects);
-        setStats(prev => ({
-          ...prev,
-          projects: activeProjects.length,
-        }));
+        setActiveProjects(activeProjectsList);
+        setStats(prev => ({ ...prev, projects: activeProjectsList.length }));
       }
-      
-    setLoading(false);
+    } catch (error) {
+      console.error('[Dashboard] Error in fetchProfile:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

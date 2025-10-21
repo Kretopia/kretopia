@@ -17,13 +17,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 interface NavbarProps {
   user?: SupabaseUser | null;
 }
 
-const Navbar = ({ user }: NavbarProps) => {
+const Navbar = memo(({ user }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -263,6 +263,8 @@ const Navbar = ({ user }: NavbarProps) => {
       <SupportDialog open={isSupportOpen} onOpenChange={setIsSupportOpen} />
     </nav>
   );
-};
+});
+
+Navbar.displayName = "Navbar";
 
 export default Navbar;

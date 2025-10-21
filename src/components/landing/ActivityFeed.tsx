@@ -23,27 +23,29 @@ export const ActivityFeed = () => {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        // Fetch recent profiles
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, avatar_url, role, created_at")
-          .order("created_at", { ascending: false })
-          .limit(3);
-
-        // Fetch recent opportunities
-        const { data: opportunities } = await supabase
-          .from("opportunities")
-          .select("id, title, type, created_at")
-          .eq("status", "active")
-          .order("created_at", { ascending: false })
-          .limit(3);
-
-        // Fetch recent portfolio items
-        const { data: portfolio } = await supabase
-          .from("portfolio_items")
-          .select("id, title, user_id, created_at, profiles(full_name, avatar_url)")
-          .order("created_at", { ascending: false })
-          .limit(3);
+        // Fetch all data in parallel for faster loading
+        const [
+          { data: profiles },
+          { data: opportunities },
+          { data: portfolio }
+        ] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("user_id, full_name, avatar_url, role, created_at")
+            .order("created_at", { ascending: false })
+            .limit(3),
+          supabase
+            .from("opportunities")
+            .select("id, title, type, created_at")
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(3),
+          supabase
+            .from("portfolio_items")
+            .select("id, title, user_id, created_at, profiles(full_name, avatar_url)")
+            .order("created_at", { ascending: false })
+            .limit(3)
+        ]);
 
         const allActivities: ActivityItem[] = [];
 

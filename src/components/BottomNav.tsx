@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, Compass, Plus, MessageCircle, User, Briefcase, Image, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { AddPortfolioDialog } from "@/components/AddPortfolioDialog";
 import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const BottomNav = () => {
+const BottomNav = memo(() => {
   const location = useLocation();
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [showPortfolioDialog, setShowPortfolioDialog] = useState(false);
@@ -128,6 +128,8 @@ const BottomNav = () => {
       />
     </>
   );
-};
+});
+
+BottomNav.displayName = "BottomNav";
 
 export default BottomNav;

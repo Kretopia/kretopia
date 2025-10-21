@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
-import { useAuth } from "./hooks/useAuth";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
@@ -171,15 +171,17 @@ const App = () => {
     <GlobalErrorBoundary>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <VercelAnalytics />
-            <BrowserRouter>
-              <OnboardingTour />
-              <AppContent />
-            </BrowserRouter>
-          </TooltipProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <VercelAnalytics />
+              <BrowserRouter>
+                <OnboardingTour />
+                <AppContent />
+              </BrowserRouter>
+            </TooltipProvider>
+          </AuthProvider>
         </QueryClientProvider>
       </HelmetProvider>
     </GlobalErrorBoundary>

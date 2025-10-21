@@ -216,8 +216,7 @@ const Discover = () => {
           .neq('user_id', user.id)
           .not('full_name', 'is', null)
           .not('bio', 'is', null)
-          .not('avatar_url', 'is', null)
-          .eq('onboarding_completed', true);
+          .not('avatar_url', 'is', null);
 
         if (creatorFilters.role !== 'all') {
           profilesQuery = profilesQuery.eq('role', creatorFilters.role);
@@ -244,20 +243,15 @@ const Discover = () => {
         });
 
         // Filter out connected users and require complete profiles
+        // Relaxed requirements: only need basic info (name, role, avatar, bio) - portfolio is optional
         const completeProfiles = (profiles || []).filter(profile => {
-          const hasSkills = (Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
-                           (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0);
-          const hasPortfolio = (portfolioMap.get(profile.user_id) || 0) > 0;
-          
           return !connectedUserIds.has(profile.user_id) &&
                  profile.full_name && 
                  profile.full_name !== 'New User' && 
                  profile.role && 
                  profile.role.trim() !== '' && 
                  profile.avatar_url &&
-                 profile.bio &&
-                 hasSkills &&
-                 hasPortfolio;
+                 profile.bio;
         });
 
         // Only fetch portfolio for first 20 profiles to improve initial load

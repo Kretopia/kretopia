@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Verified, MessageCircle, UserPlus, Share2, Edit, Camera, Briefcase } from "lucide-react";
+import { MapPin, Star, Verified, MessageCircle, UserPlus, Share2, Edit, Camera, Briefcase, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierByPoints } from "@/lib/tierSystem";
 
@@ -18,6 +18,7 @@ interface ProfileHeroProps {
   onAvatarClick?: () => void;
   isUploadingAvatar?: boolean;
   skills?: any[];
+  onShowQR?: () => void;
 }
 
 export const ProfileHero = ({
@@ -32,7 +33,8 @@ export const ProfileHero = ({
   onEdit,
   onAvatarClick,
   isUploadingAvatar,
-  skills = []
+  skills = [],
+  onShowQR
 }: ProfileHeroProps) => {
   const tier = getTierByPoints(profile.points || 0);
   const isCompany = profile.account_type === 'company';
@@ -196,11 +198,14 @@ export const ProfileHero = ({
             <>
               <Button variant="default" size="sm" onClick={onEdit} className="gap-2 flex-1">
                 <Edit className="h-4 w-4" />
-                Edit Profile
+                Edit
               </Button>
-              <Button variant="default" size="sm" onClick={onShare} className="gap-2 flex-1">
+              <Button variant="default" size="sm" onClick={onShowQR} className="gap-2 flex-1">
+                <QrCode className="h-4 w-4" />
+                QR Code
+              </Button>
+              <Button variant="ghost" size="sm" className="p-2" onClick={onShare}>
                 <Share2 className="h-4 w-4" />
-                Share
               </Button>
             </>
           ) : (

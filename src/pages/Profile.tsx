@@ -20,6 +20,7 @@ import { AwardsSection } from "@/components/profile/AwardsSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
+import { ProfileQRDialog } from "@/components/profile/ProfileQRDialog";
 import { TierProgressCard } from "@/components/membership/TierProgressCard";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
@@ -69,6 +70,7 @@ const Profile = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -732,6 +734,7 @@ const Profile = () => {
           isOwnProfile={true}
           onEdit={() => setIsEditOpen(true)}
           onShare={handleShare}
+          onShowQR={() => setIsQRDialogOpen(true)}
           onAvatarClick={() => fileInputRef.current?.click()}
           isUploadingAvatar={isUploadingAvatar}
           skills={[
@@ -761,11 +764,20 @@ const Profile = () => {
 
         {/* Share Profile Dialog */}
         {profile && (
-          <ShareProfileDialog 
-            profile={profile}
-            open={isShareDialogOpen}
-            onOpenChange={setIsShareDialogOpen}
-          />
+          <>
+            <ShareProfileDialog 
+              profile={profile}
+              open={isShareDialogOpen}
+              onOpenChange={setIsShareDialogOpen}
+            />
+            <ProfileQRDialog
+              open={isQRDialogOpen}
+              onOpenChange={setIsQRDialogOpen}
+              userId={currentUserId || ''}
+              userName={profile.full_name}
+              userAvatar={profile.avatar_url}
+            />
+          </>
         )}
 
         {/* Content Area with Tabs */}

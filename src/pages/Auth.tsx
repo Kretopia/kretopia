@@ -54,11 +54,17 @@ const Auth = () => {
   
   const redirectTo = searchParams.get("redirect") || "/dashboard";
   const isPasswordReset = searchParams.get("reset") === "true";
+  const connectUserId = searchParams.get("connect");
 
   // Redirect if already authenticated & fetch opportunities count & pre-fill invite code
   useEffect(() => {
     if (user) {
-      navigate(redirectTo);
+      // Handle auto-connect if user just logged in with connect parameter
+      if (connectUserId) {
+        handleAutoConnect(connectUserId);
+      } else {
+        navigate(redirectTo);
+      }
     }
     
     // Pre-fill invite code from URL
@@ -76,7 +82,63 @@ const Auth = () => {
       setOpportunitiesCount(count || 0);
     };
     fetchCount();
-  }, [user, navigate, redirectTo, searchParams]);
+  }, [user, navigate, redirectTo, searchParams, connectUserId]);
+
+  const handleAutoConnect = async (targetUserId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check if connection already exists
+      const { data: existingConnection } = await supabase
+        .from('connections')
+        .select('*')
+        .or(`and(user_id.eq.${user.id},connected_user_id.eq.${targetUserId}),and(user_id.eq.${targetUserId},connected_user_id.eq.${user.id})`)
+        .maybeSingle();
+
+      if (existingConnection) {
+        toast({
+          title: "Already Connected",
+          description: "You're already connected with this user",
+        });
+        navigate('/circle');
+        return;
+      }
+
+      // Get target user's profile
+      const { data: targetProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', targetUserId)
+        .single();
+
+      // Send connection request
+      const { error } = await supabase
+        .from('connections')
+        .insert({
+          user_id: user.id,
+          connected_user_id: targetUserId,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Connection Request Sent! 🎉",
+        description: `Request sent to ${targetProfile?.full_name || 'user'}`,
+      });
+
+      navigate('/circle');
+    } catch (error) {
+      console.error('Auto-connect error:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Unable to send connection request",
+        variant: "destructive",
+      });
+      navigate(redirectTo);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,11 +305,16 @@ const Auth = () => {
         description: "Your account has been created. Welcome to ThriveIN!",
       });
       
-      // Redirect based on account type
-      if (accountType === "company") {
-        navigate("/company-onboarding");
+      // Check if we need to auto-connect after signup
+      if (connectUserId) {
+        await handleAutoConnect(connectUserId);
       } else {
-        navigate("/onboarding");
+        // Redirect based on account type
+        if (accountType === "company") {
+          navigate("/company-onboarding");
+        } else {
+          navigate("/onboarding");
+        }
       }
     }
     setLoading(false);

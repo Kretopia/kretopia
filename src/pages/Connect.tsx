@@ -48,10 +48,20 @@ export default function Connect() {
   });
 
   useEffect(() => {
-    if (user) {
-      // Fetch both in parallel
-      Promise.all([fetchUserProfile(), fetchProfiles()]);
-    }
+    let isMounted = true;
+    
+    const loadData = async () => {
+      if (user && isMounted) {
+        // Fetch both in parallel
+        await Promise.all([fetchUserProfile(), fetchProfiles()]);
+      }
+    };
+    
+    loadData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user, searchQuery, filters]);
 
   const fetchUserProfile = async () => {
@@ -70,10 +80,22 @@ export default function Connect() {
   };
 
   useEffect(() => {
-    // Generate suggestions in background (non-blocking)
+    let isMounted = true;
+    let suggestionTimeout: NodeJS.Timeout;
+    
+    // Generate suggestions in background (non-blocking, debounced)
     if (user && !searchQuery && !loadingSuggestions) {
-      setTimeout(() => generateSearchSuggestions(), 500);
+      suggestionTimeout = setTimeout(() => {
+        if (isMounted) {
+          generateSearchSuggestions();
+        }
+      }, 1000);
     }
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(suggestionTimeout);
+    };
   }, [user]);
 
   const generateSearchSuggestions = async () => {

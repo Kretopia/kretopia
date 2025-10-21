@@ -78,14 +78,24 @@ const Messages = () => {
   }, []);
 
   useEffect(() => {
-    if (currentUserId) {
-      // Run all initial fetches in parallel
-      Promise.all([
-        fetchConnections(),
-        fetchConversations(),
-        subscribeToMessages()
-      ]);
-    }
+    let isMounted = true;
+    
+    const loadData = async () => {
+      if (currentUserId && isMounted) {
+        // Run all initial fetches in parallel
+        await Promise.all([
+          fetchConnections(),
+          fetchConversations(),
+          subscribeToMessages()
+        ]);
+      }
+    };
+    
+    loadData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [currentUserId]);
 
   useEffect(() => {

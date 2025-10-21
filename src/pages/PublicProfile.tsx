@@ -90,6 +90,7 @@ const PublicProfile = () => {
   const [connectionStatus, setConnectionStatus] = useState<'none' | 'pending' | 'accepted'>('none');
   const [isPendingReceived, setIsPendingReceived] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -97,6 +98,8 @@ const PublicProfile = () => {
 
     const { data: { user } } = await supabase.auth.getUser();
     setIsLoggedIn(!!user);
+    
+    setLoading(true);
     
     // Fetch profile using only public fields from profiles table
     const { data, error } = await supabase
@@ -112,6 +115,7 @@ const PublicProfile = () => {
         description: "Failed to load profile",
         variant: "destructive",
       });
+      setLoading(false);
       return;
     }
 
@@ -122,6 +126,7 @@ const PublicProfile = () => {
         variant: "destructive",
       });
       navigate('/');
+      setLoading(false);
       return;
     }
 
@@ -211,10 +216,23 @@ const PublicProfile = () => {
     setCredits(creditsResult.data || []);
     setAwards(awardsResult.data || []);
     setPressLinks(pressResult.data || []);
+    setLoading(false);
   };
 
   useEffect(() => {
-    fetchData();
+    let isMounted = true;
+    
+    const loadData = async () => {
+      if (isMounted) {
+        await fetchData();
+      }
+    };
+    
+    loadData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [userId]);
 
   const handleConnect = async () => {

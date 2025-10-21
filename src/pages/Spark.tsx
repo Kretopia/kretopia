@@ -64,7 +64,16 @@ const Circle = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchSparkFeed();
+    let isMounted = true;
+    let fetchTimeout: NodeJS.Timeout;
+
+    const loadFeed = async () => {
+      if (isMounted) {
+        await fetchSparkFeed();
+      }
+    };
+
+    loadFeed();
     
     // Track page view
     const trackPageView = async () => {
@@ -73,23 +82,34 @@ const Circle = () => {
     };
     trackPageView();
 
-    // Set up real-time updates
+    // Debounced refresh function to avoid excessive refetches
+    const debouncedRefresh = () => {
+      clearTimeout(fetchTimeout);
+      fetchTimeout = setTimeout(() => {
+        if (isMounted) {
+          fetchSparkFeed();
+        }
+      }, 2000); // Wait 2 seconds before refetching
+    };
+
+    // Set up real-time updates with debouncing
     const feedChannel = supabase
       .channel('spark-feed-updates')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'portfolio_items' }, () => fetchSparkFeed())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'awards' }, () => fetchSparkFeed())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'press_links' }, () => fetchSparkFeed())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_posts' }, () => fetchSparkFeed())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'credits' }, () => fetchSparkFeed())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'portfolio_items' }, debouncedRefresh)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'awards' }, debouncedRefresh)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'press_links' }, debouncedRefresh)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_posts' }, debouncedRefresh)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'credits' }, debouncedRefresh)
       .subscribe();
 
     return () => {
+      isMounted = false;
+      clearTimeout(fetchTimeout);
       supabase.removeChannel(feedChannel);
     };
   }, []);
 
   const fetchSparkFeed = async () => {
-    setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setLoading(false);
@@ -97,6 +117,8 @@ const Circle = () => {
     }
 
     try {
+      setLoading(true);
+
       // Get user profile for AI recommendations
       const { data: userProfile } = await supabase
         .from('profiles')
@@ -104,10 +126,16 @@ const Circle = () => {
         .eq('user_id', user.id)
         .single();
 
-      // Call AI-powered feed generation
-      const { data: feedData, error: feedError } = await supabase.functions.invoke('generate-for-you-feed', {
+      // Call AI-powered feed generation (runs in background, non-blocking)
+      const feedPromise = supabase.functions.invoke('generate-for-you-feed', {
         body: { userId: user.id, userProfile }
       });
+
+      // Set loading to false immediately to show UI
+      setLoading(false);
+
+      // Wait for feed data in background
+      const { data: feedData, error: feedError } = await feedPromise;
 
       if (feedError) {
         console.error('AI feed error:', feedError);

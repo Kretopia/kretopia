@@ -64,10 +64,14 @@ const Dashboard = () => {
   useStreakUpdate();
 
   const fetchProfile = async () => {
-    setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
 
       // Run all queries in parallel for faster loading
       const [
@@ -137,7 +141,15 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchProfile();
+    let isMounted = true;
+
+    const loadDashboard = async () => {
+      if (isMounted) {
+        await fetchProfile();
+      }
+    };
+
+    loadDashboard();
     
     // Handle payment/subscription success from URL params
     const paymentStatus = searchParams.get("payment");
@@ -204,6 +216,10 @@ const Dashboard = () => {
       
       handleSubscriptionSuccess();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [toast, searchParams, navigate]);
 
   return (

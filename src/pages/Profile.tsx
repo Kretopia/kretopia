@@ -26,6 +26,7 @@ import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { ProfileOptimizationHub } from "@/components/profile/ProfileOptimizationHub";
 import { PortfolioAnalytics } from "@/components/profile/PortfolioAnalytics";
+import { DiscoverReadyBanner } from "@/components/DiscoverReadyBanner";
 
 import { ProfileVisibilityDashboard } from "@/components/profile/ProfileVisibilityDashboard";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
@@ -875,6 +876,9 @@ const Profile = () => {
                   missingFields={checkProfileCompletion(profile, portfolioItems.length).missingFields}
                 />
               </div>
+
+              {/* Discover Ready Banner */}
+              <DiscoverReadyBanner portfolioCount={portfolioItems.length} />
 
               {/* About Section */}
               <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">

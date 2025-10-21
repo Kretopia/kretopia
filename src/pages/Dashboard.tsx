@@ -38,6 +38,7 @@ import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
 import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 import { SEO } from "@/components/SEO";
 import { SuccessMetrics } from "@/components/dashboard/SuccessMetrics";
+import { DiscoverReadyBanner } from "@/components/DiscoverReadyBanner";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -49,6 +50,7 @@ const Dashboard = () => {
     projects: 0,
     profileViews: 0
   });
+  const [portfolioCount, setPortfolioCount] = useState(0);
   const [activeProjects, setActiveProjects] = useState<any[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -99,6 +101,14 @@ const Dashboard = () => {
       } else {
         setProfile(data);
       }
+
+      // Fetch portfolio count
+      const { count: portfolioCount } = await supabase
+        .from('portfolio_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      
+      setPortfolioCount(portfolioCount || 0);
 
       // Fetch connections count
       const { count: connectionsCount } = await supabase
@@ -232,6 +242,9 @@ const Dashboard = () => {
 
         {/* OG Promotion Banner */}
         <OGPromotionBanner />
+
+        {/* Discover Ready Banner */}
+        <DiscoverReadyBanner portfolioCount={portfolioCount} />
 
         {/* Engagement Nudge */}
         <div className="mb-6 sm:mb-8">

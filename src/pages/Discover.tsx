@@ -242,16 +242,18 @@ const Discover = () => {
           portfolioMap.set(item.user_id, (portfolioMap.get(item.user_id) || 0) + 1);
         });
 
-        // Filter out connected users and require complete profiles
-        // Relaxed requirements: only need basic info (name, role, avatar, bio) - portfolio is optional
+        // Filter out connected users and require complete profiles with at least one portfolio item
         const completeProfiles = (profiles || []).filter(profile => {
+          const hasPortfolio = (portfolioMap.get(profile.user_id) || 0) > 0;
+          
           return !connectedUserIds.has(profile.user_id) &&
                  profile.full_name && 
                  profile.full_name !== 'New User' && 
                  profile.role && 
                  profile.role.trim() !== '' && 
                  profile.avatar_url &&
-                 profile.bio;
+                 profile.bio &&
+                 hasPortfolio; // Must have at least one portfolio item
         });
 
         // Only fetch portfolio for first 20 profiles to improve initial load

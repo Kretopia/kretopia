@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const checkSubscription = async (forceSync = false) => {
-    if (fetchingRef.current) return; // Prevent concurrent calls
+    if (fetchingRef.current) return;
     
     try {
       fetchingRef.current = true;
@@ -71,17 +71,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      const shouldSyncStripe = forceSync || (now - lastSyncRef.current) > CACHE_DURATION;
-      
-      if (shouldSyncStripe) {
-        await supabase.functions.invoke('check-subscription');
-        lastSyncRef.current = now;
-      }
-
+      // Fetch from DB immediately (fast)
       const subInfo = await fetchSubscriptionFromDB(user.id);
       if (subInfo) {
         setSubscriptionInfo(subInfo);
         subscriptionCache.set(user.id, { data: subInfo, timestamp: now });
+      }
+
+      // Sync with Stripe in background (don't await - non-blocking)
+      const shouldSyncStripe = forceSync || (now - lastSyncRef.current) > CACHE_DURATION;
+      if (shouldSyncStripe) {
+        lastSyncRef.current = now;
+        supabase.functions.invoke('check-subscription').catch(err => 
+          console.error('[AuthContext] Background sync failed:', err)
+        );
       }
     } catch (error) {
       console.error('[AuthContext] Error checking subscription:', error);
@@ -114,16 +117,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false); // Set loading false immediately
         
+        // Load subscription data in background (non-blocking)
         if (session?.user) {
-          const subInfo = await fetchSubscriptionFromDB(session.user.id);
-          if (isMounted && subInfo) {
-            setSubscriptionInfo(subInfo);
-          }
+          fetchSubscriptionFromDB(session.user.id)
+            .then(subInfo => {
+              if (isMounted && subInfo) {
+                setSubscriptionInfo(subInfo);
+              }
+            })
+            .catch(err => console.error('[AuthContext] Error loading subscription:', err));
         }
       } catch (error) {
         console.error('[AuthContext] Error getting session:', error);
-      } finally {
         if (isMounted) setLoading(false);
       }
     };

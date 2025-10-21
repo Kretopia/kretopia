@@ -136,14 +136,17 @@ const Discover = () => {
   }, [location.state]);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchData = async () => {
       try {
         console.log('[Discover] Starting to fetch data...');
         setLoading(true);
-        setCards([]); // Clear cards when switching tabs
-        setFeaturedProfile(null); // Clear featured profile
+        setCards([]);
+        setFeaturedProfile(null);
         
         const { data: { user } } = await supabase.auth.getUser();
+        if (!isMounted) return;
       if (!user) {
         console.error('[Discover] No authenticated user');
         setLoading(false);
@@ -151,59 +154,43 @@ const Discover = () => {
       }
       console.log('[Discover] User authenticated:', user.id);
 
-      const { data: userProfile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      // Batch all initial data fetching in parallel
+      const [
+        profileResult,
+        portfolioResult,
+        walletResult,
+        swipesResult,
+        connectionsResult
+      ] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('portfolio_items').select('id').eq('user_id', user.id),
+        supabase.from('wallets').select('credits').eq('user_id', user.id).maybeSingle(),
+        supabase.from('swipes').select('target_id, target_type').eq('user_id', user.id),
+        supabase.from('connections').select('user_id, connected_user_id, status').or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
+      ]);
+      
+      if (!isMounted) return;
+      
+      const userProfile = profileResult.data;
       
       // Check profile completion
       if (userProfile) {
-        const { data: portfolioItems } = await supabase
-          .from('portfolio_items')
-          .select('id')
-          .eq('user_id', user.id);
-        
-        const completionStatus = checkProfileCompletion(userProfile, portfolioItems?.length || 0);
+        const completionStatus = checkProfileCompletion(userProfile, portfolioResult.data?.length || 0);
         setProfileIncomplete(!completionStatus.isComplete);
         setProfileCompletionPercent(completionStatus.completionPercentage);
         setProfileCompletionStatus(completionStatus);
-      }
-      
-      if (userProfile) {
         setUserLevel(userProfile.level || 1);
         const remaining = getRemainingSwipes(subscriptionTier, userProfile.daily_swipes || 0);
         setDailySwipesLeft(remaining === -1 ? 999 : remaining);
       }
 
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('credits')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (wallet) {
-        setUserCredits(wallet.credits || 0);
+      if (walletResult.data) {
+        setUserCredits(walletResult.data.credits || 0);
       }
 
-      // Fetch ALL user's previous swipes to filter them out permanently
-      const { data: userSwipes } = await supabase
-        .from('swipes')
-        .select('target_id, target_type')
-        .eq('user_id', user.id);
-
-      const swipedIds = new Set(userSwipes?.map(s => s.target_id) || []);
-      console.log('[Discover] Fetched swipes to filter:', swipedIds.size);
-
-      // Fetch ALL connections (pending, accepted, rejected) to exclude them
-      const { data: existingConnections } = await supabase
-        .from('connections')
-        .select('user_id, connected_user_id, status')
-        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`);
-
-      // Create set of connected user IDs
+      const swipedIds = new Set(swipesResult.data?.map(s => s.target_id) || []);
       const connectedUserIds = new Set(
-        existingConnections?.map(conn => 
+        connectionsResult.data?.map(conn => 
           conn.user_id === user.id ? conn.connected_user_id : conn.user_id
         ) || []
       );
@@ -231,42 +218,41 @@ const Discover = () => {
         
         console.log('[Discover] Fetched profiles:', profiles?.length || 0);
 
-        // Get portfolio counts for each profile
-        const { data: portfolioCounts } = await supabase
-          .from('portfolio_items')
-          .select('user_id')
-          .in('user_id', profiles.map(p => p.user_id));
+        // Filter complete profiles first (before fetching portfolio)
+        const completeProfiles = (profiles || []).filter(profile => 
+          !connectedUserIds.has(profile.user_id) &&
+          profile.full_name && 
+          profile.full_name !== 'New User' && 
+          profile.role && 
+          profile.role.trim() !== '' && 
+          profile.avatar_url &&
+          profile.bio
+        );
+
+        // Batch fetch portfolio data
+        const profileIds = completeProfiles.map(p => p.user_id);
+        const [portfolioCountsResult, portfolioItemsResult] = await Promise.all([
+          supabase.from('portfolio_items').select('user_id').in('user_id', profileIds),
+          supabase.from('portfolio_items').select('id, user_id, title, media_type, media_url, thumbnail_url')
+            .in('user_id', profileIds.slice(0, 20))
+            .eq('featured', true)
+            .limit(60)
+        ]);
+        
+        if (!isMounted) return;
         
         const portfolioMap = new Map();
-        portfolioCounts?.forEach(item => {
+        portfolioCountsResult.data?.forEach(item => {
           portfolioMap.set(item.user_id, (portfolioMap.get(item.user_id) || 0) + 1);
         });
 
-        // Filter out connected users and require complete profiles with at least one portfolio item
-        const completeProfiles = (profiles || []).filter(profile => {
-          const hasPortfolio = (portfolioMap.get(profile.user_id) || 0) > 0;
-          
-          return !connectedUserIds.has(profile.user_id) &&
-                 profile.full_name && 
-                 profile.full_name !== 'New User' && 
-                 profile.role && 
-                 profile.role.trim() !== '' && 
-                 profile.avatar_url &&
-                 profile.bio &&
-                 hasPortfolio; // Must have at least one portfolio item
-        });
+        // Filter profiles with at least one portfolio item
+        const profilesWithPortfolio = completeProfiles.filter(profile => 
+          (portfolioMap.get(profile.user_id) || 0) > 0
+        );
 
-        // Only fetch portfolio for first 20 profiles to improve initial load
-        const profileIdsForPortfolio = completeProfiles.slice(0, 20).map(p => p.user_id);
-        const { data: portfolioItems } = await supabase
-          .from('portfolio_items')
-          .select('id, user_id, title, media_type, media_url, thumbnail_url')
-          .in('user_id', profileIdsForPortfolio)
-          .eq('featured', true)
-          .limit(60);
-
-        let creatorCards: Card[] = completeProfiles.map(profile => {
-          const userPortfolio = (portfolioItems || []).filter(item => item.user_id === profile.user_id);
+        let creatorCards: Card[] = profilesWithPortfolio.map(profile => {
+          const userPortfolio = (portfolioItemsResult.data || []).filter(item => item.user_id === profile.user_id);
           return {
             id: profile.user_id, // Use user_id as the card id
             type: 'creator' as CardType,
@@ -289,21 +275,34 @@ const Discover = () => {
           };
         });
 
-        // Apply AI scoring for ALL users (with limits for free tier)
-        const hasAIAccess = TIER_LIMITS[subscriptionTier as SubscriptionTier]?.hasAIRecommendations;
-        const aiLimit = TIER_LIMITS[subscriptionTier as SubscriptionTier]?.aiRecommendationsPerDay;
+        // Skip AI scoring on initial load - run in background after cards are displayed
+        // This makes the UI appear much faster
+        if (!isMounted) return;
+
+        console.log('[Discover] Created creator cards:', creatorCards.length);
         
-        if (aiScoringEnabled && userProfile && hasAIAccess) {
-          console.log('[Discover] Applying AI match scoring...');
-          try {
-            // For free users, only score the first few profiles (limited AI usage)
-            const profilesToScore = aiLimit > 0 && aiLimit !== -1 
-              ? completeProfiles.slice(0, aiLimit) 
-              : completeProfiles;
-            
-            const scoredProfiles = await scoreProfilesWithAI(
+        // Select featured profile
+        const ogProfiles = creatorCards.filter(c => {
+          const profileData = profilesWithPortfolio.find(p => p.user_id === c.id);
+          return profileData?.badge === 'og';
+        });
+        const featuredCandidate = ogProfiles.length > 0 ? ogProfiles[0] : creatorCards[0];
+        
+        if (featuredCandidate) {
+          setFeaturedProfile(featuredCandidate);
+          setCards(creatorCards.filter(c => c.id !== featuredCandidate.id));
+        } else {
+          setCards(creatorCards);
+        }
+        
+        // Run AI scoring in background after UI is ready (non-blocking)
+        const hasAIAccess = TIER_LIMITS[subscriptionTier as SubscriptionTier]?.hasAIRecommendations;
+        if (aiScoringEnabled && userProfile && hasAIAccess && isMounted) {
+          setTimeout(() => {
+            if (!isMounted) return;
+            scoreProfilesWithAI(
               userProfile,
-              profilesToScore.map(p => ({
+              profilesWithPortfolio.slice(0, 10).map(p => ({
                 user_id: p.user_id || '',
                 full_name: p.full_name || '',
                 role: p.role || '',
@@ -312,59 +311,15 @@ const Discover = () => {
                 passion_skills: [],
                 location: p.location
               }))
-            );
-
-            // Map scores back to cards
-            creatorCards = creatorCards.map((card, index) => {
-              // Only add score if within the AI limit
-              if (aiLimit === -1 || index < aiLimit) {
-                return {
-                  ...card,
-                  ai_match_score: scoredProfiles[index]?.ai_match_score,
-                  match_reasons: scoredProfiles[index]?.match_reasons
-                };
-              }
-              return card;
-            });
-
-            // Sort by AI match score (highest first), then put non-scored at the end
-            creatorCards.sort((a, b) => {
-              const scoreA = a.ai_match_score || 0;
-              const scoreB = b.ai_match_score || 0;
-              if (scoreA === 0 && scoreB === 0) return 0;
-              if (scoreA === 0) return 1;
-              if (scoreB === 0) return -1;
-              return scoreB - scoreA;
-            });
-          } catch (error) {
-            console.error('[Discover] AI scoring failed, continuing without scores:', error);
-          }
-        }
-
-        console.log('[Discover] Created creator cards:', creatorCards.length);
-        
-        // Select featured profile for grid view
-        const ogProfiles = creatorCards.filter(c => {
-          const profileData = completeProfiles.find(p => p.user_id === c.id);
-          return profileData?.badge === 'og';
-        });
-        const featuredCandidate = ogProfiles.length > 0 
-          ? ogProfiles.sort((a, b) => {
-              const aProfile = completeProfiles.find(p => p.user_id === a.id);
-              const bProfile = completeProfiles.find(p => p.user_id === b.id);
-              return (bProfile?.level || 0) - (aProfile?.level || 0);
-            })[0]
-          : creatorCards.sort((a, b) => {
-              const aProfile = completeProfiles.find(p => p.user_id === a.id);
-              const bProfile = completeProfiles.find(p => p.user_id === b.id);
-              return (bProfile?.level || 0) - (aProfile?.level || 0);
-            })[0];
-        
-        if (featuredCandidate) {
-          setFeaturedProfile(featuredCandidate);
-          setCards(creatorCards.filter(c => c.id !== featuredCandidate.id));
-        } else {
-          setCards(creatorCards);
+            ).then(scoredProfiles => {
+              if (!isMounted) return;
+              setCards(prev => prev.map((card, idx) => ({
+                ...card,
+                ai_match_score: scoredProfiles[idx]?.ai_match_score,
+                match_reasons: scoredProfiles[idx]?.match_reasons
+              })).sort((a, b) => (b.ai_match_score || 0) - (a.ai_match_score || 0)));
+            }).catch(err => console.error('[Discover] Background AI scoring failed:', err));
+          }, 1000);
         }
       } else {
         console.log('[Discover] Fetching opportunities...');
@@ -469,21 +424,30 @@ const Discover = () => {
         setCards(opportunityCards);
       }
       
-      console.log('[Discover] Finished fetching data, setting loading to false');
-      setLoading(false);
+      if (isMounted) {
+        console.log('[Discover] Finished fetching data, setting loading to false');
+        setLoading(false);
+      }
       } catch (error) {
         console.error('[Discover] Error in fetchData:', error);
-        setLoading(false);
-        toast({
-          title: "Error loading data",
-          description: "Please try refreshing the page",
-          variant: "destructive"
-        });
+        if (isMounted) {
+          setLoading(false);
+          toast({
+            title: "Error loading data",
+            description: "Please try refreshing the page",
+            variant: "destructive"
+          });
+        }
       }
     };
 
     fetchData();
-  }, [activeTab, creatorFilters, opportunityFilters, subscriptionTier, aiScoringEnabled]);
+    checkUndosRemaining();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTab, creatorFilters, opportunityFilters, subscriptionTier]);
 
   const handleSwipe = async (direction: "left" | "right", isSuperLike: boolean = false) => {
     const currentCard = cards[currentIndex];

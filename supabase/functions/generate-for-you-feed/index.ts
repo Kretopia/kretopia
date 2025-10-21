@@ -6,6 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// In-memory cache for feed results (lasts for function lifetime)
+const feedCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -24,7 +28,18 @@ serve(async (req) => {
       throw new Error("User ID is required");
     }
 
-    console.log("Generating For You feed for user:", userId);
+    // Check cache first
+    const cached = feedCache.get(userId);
+    const now = Date.now();
+    if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+      console.log("Returning cached feed for user:", userId);
+      return new Response(
+        JSON.stringify({ ...cached.data, cached: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Generating fresh feed for user:", userId);
 
     // Get user's interests, role, and engagement history
     const { data: profile } = await supabase
@@ -42,7 +57,7 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    // Fetch diverse content from platform (trending, popular, new)
+    // Fetch LESS content initially (reduce from 190 to 60 items)
     const [portfolioData, awardsData, pressData, creditsData, feedPostsData] = await Promise.all([
       supabase
         .from("portfolio_items")
@@ -57,7 +72,7 @@ serve(async (req) => {
           )
         `)
         .order("created_at", { ascending: false })
-        .limit(50),
+        .limit(20), // Reduced from 50
       
       supabase
         .from("awards")
@@ -72,7 +87,7 @@ serve(async (req) => {
           )
         `)
         .order("created_at", { ascending: false })
-        .limit(30),
+        .limit(10), // Reduced from 30
       
       supabase
         .from("press_links")
@@ -87,7 +102,7 @@ serve(async (req) => {
           )
         `)
         .order("created_at", { ascending: false })
-        .limit(30),
+        .limit(10), // Reduced from 30
       
       supabase
         .from("credits")
@@ -102,7 +117,7 @@ serve(async (req) => {
           )
         `)
         .order("created_at", { ascending: false })
-        .limit(30),
+        .limit(10), // Reduced from 30
       
       supabase
         .from("feed_posts")
@@ -117,7 +132,7 @@ serve(async (req) => {
           )
         `)
         .order("created_at", { ascending: false })
-        .limit(50)
+        .limit(20) // Reduced from 50
     ]);
 
     // Combine all content
@@ -198,8 +213,13 @@ ${allContent.slice(0, 50).map((item, idx) =>
         // Add remaining items (fallback)
         contentMap.forEach(item => rankedContent.push(item));
         
+        const result = { feed: rankedContent.slice(0, 30), aiRecommended: true };
+        
+        // Cache the result
+        feedCache.set(userId, { data: result, timestamp: now });
+        
         return new Response(
-          JSON.stringify({ feed: rankedContent.slice(0, 30), aiRecommended: true }),
+          JSON.stringify(result),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       } catch (aiError) {
@@ -212,8 +232,13 @@ ${allContent.slice(0, 50).map((item, idx) =>
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 30);
 
+    const result = { feed: diverseFeed, aiRecommended: false };
+    
+    // Cache the fallback result too
+    feedCache.set(userId, { data: result, timestamp: now });
+
     return new Response(
-      JSON.stringify({ feed: diverseFeed, aiRecommended: false }),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

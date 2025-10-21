@@ -32,6 +32,7 @@ import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { SavedSparksDialog } from "@/components/SavedSparksDialog";
 import { toast as sonnerToast } from "sonner";
 import DOMPurify from "dompurify";
+import { getCachedFeed, setCachedFeed } from "@/lib/feedCache";
 
 interface SparkItem {
   id: string;
@@ -117,7 +118,16 @@ const Circle = () => {
     }
 
     try {
-      // Show loading spinner first
+      // Check cache first
+      const cached = getCachedFeed(user.id);
+      if (cached) {
+        setSparkFeed(cached);
+        setLoading(false);
+        console.log('[Spark] Using cached feed');
+        return;
+      }
+      
+      // Show loading spinner
       setLoading(true);
 
       // Get user profile for AI recommendations
@@ -218,6 +228,9 @@ const Circle = () => {
       });
 
       setSparkFeed(feed);
+      
+      // Cache the feed
+      setCachedFeed(user.id, feed);
     } catch (error) {
       console.error('Error fetching spark feed:', error);
       toast({

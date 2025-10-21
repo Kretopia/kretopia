@@ -173,13 +173,8 @@ const Profile = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
-      // Fetch data immediately (don't wait for verification score)
+      // Fetch data immediately
       fetchData();
-      
-      // Update verification score in background (non-blocking)
-      supabase.functions.invoke('update-verification-score', {
-        body: { userId: user.id }
-      }).catch(err => console.error('Verification score update failed:', err));
     };
     
     initProfile();

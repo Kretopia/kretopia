@@ -19,7 +19,6 @@ import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDi
 import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
 import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { useUndoSwipe } from "@/hooks/useUndoSwipe";
-import { scoreProfilesWithAI } from "@/components/discover/AIMatchScoring";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { getRemainingSwipes, TIER_LIMITS, type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { UpgradeDialog } from "@/components/UpgradeDialog";
@@ -293,43 +292,6 @@ const Discover = () => {
           setCards(creatorCards.filter(c => c.id !== featuredCandidate.id));
         } else {
           setCards(creatorCards);
-        }
-        
-        // Run AI scoring in background with timeout protection
-        const hasAIAccess = TIER_LIMITS[subscriptionTier as SubscriptionTier]?.hasAIRecommendations;
-        if (aiScoringEnabled && userProfile && hasAIAccess && isMounted) {
-          setTimeout(() => {
-            if (!isMounted) return;
-            
-            // Set timeout for AI scoring (5 seconds)
-            const aiTimeout = setTimeout(() => {
-              console.log('[Discover] AI scoring timeout - continuing without scores');
-            }, 5000);
-            
-            scoreProfilesWithAI(
-              userProfile,
-              profilesWithPortfolio.slice(0, 10).map(p => ({
-                user_id: p.user_id || '',
-                full_name: p.full_name || '',
-                role: p.role || '',
-                bio: p.bio,
-                professional_skills: [],
-                passion_skills: [],
-                location: p.location
-              }))
-            ).then(scoredProfiles => {
-              clearTimeout(aiTimeout);
-              if (!isMounted) return;
-              setCards(prev => prev.map((card, idx) => ({
-                ...card,
-                ai_match_score: scoredProfiles[idx]?.ai_match_score,
-                match_reasons: scoredProfiles[idx]?.match_reasons
-              })).sort((a, b) => (b.ai_match_score || 0) - (a.ai_match_score || 0)));
-            }).catch(err => {
-              clearTimeout(aiTimeout);
-              console.error('[Discover] Background AI scoring failed:', err);
-            });
-          }, 500); // Reduced from 1000ms to 500ms for faster AI scoring
         }
       } else {
         console.log('[Discover] Fetching opportunities...');

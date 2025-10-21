@@ -180,128 +180,8 @@ const Circle = () => {
       // Show loading spinner
       setLoading(true);
 
-      // Get user profile for AI recommendations
-      const { data: userProfile } = await supabase
-        .from('profiles')
-        .select('role, bio, professional_skills, passion_skills, location')
-        .eq('user_id', user.id)
-        .single();
-
-      // Start the AI feed generation with 10 second timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      let feedData: any;
-      let feedError: any;
-      
-      try {
-        const result = await supabase.functions.invoke('generate-for-you-feed', {
-          body: { userId: user.id, userProfile }
-        });
-        clearTimeout(timeoutId);
-        feedData = result.data;
-        feedError = result.error;
-      } catch (err: any) {
-        clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
-          console.error('[Spark] Feed generation timeout - falling back to basic feed');
-          feedError = { message: 'Request timeout' };
-        } else {
-          feedError = err;
-        }
-      }
-
-      if (feedError) {
-        console.error('[Spark] AI feed error, loading basic feed:', feedError);
-        // Fall back to basic feed without AI
-        await fetchBasicFeed(user.id);
-        return;
-      }
-
-      // Transform AI feed data into SparkItem format
-      const feed: SparkItem[] = (feedData?.feed || [])
-        .filter((item: any) => item.profiles && item.user_id) // Filter out items without profile data
-        .map((item: any) => {
-          const profile = item.profiles;
-          const itemType = item.activity_type === 'feed_post' ? 'post' : item.activity_type;
-          
-          return {
-            id: item.id,
-            type: itemType as 'portfolio' | 'award' | 'credit' | 'press' | 'post',
-            user: {
-              id: item.user_id,
-              name: profile.full_name || 'Unknown',
-              avatar: profile.avatar_url || '',
-              role: profile.role || 'Creator',
-              location: item.location
-            },
-            content: item,
-            created_at: item.created_at,
-            reactions: 0,
-            showComments: false,
-            comments: [],
-            commentText: ''
-          };
-        });
-
-      // Fetch reactions and saved status for all items
-      const portfolioIds = feed.filter(f => f.type === 'portfolio').map(f => f.id);
-      const postIds = feed.filter(f => f.type === 'post').map(f => f.id);
-      const allItemIds = feed.map(f => ({ id: f.id, type: f.type }));
-
-      const [portfolioReactions, postReactions, savedSparks] = await Promise.all([
-        portfolioIds.length > 0 
-          ? supabase.from('portfolio_reactions').select('portfolio_item_id, user_id').in('portfolio_item_id', portfolioIds)
-          : Promise.resolve({ data: [] }),
-        postIds.length > 0
-          ? supabase.from('feed_reactions').select('post_id, user_id').in('post_id', postIds)
-          : Promise.resolve({ data: [] }),
-        supabase.from('saved_sparks').select('*').eq('user_id', user.id)
-      ]);
-
-      // Build reaction maps
-      const portfolioReactionMap = new Map<string, { count: number; hasReacted: boolean }>();
-      (portfolioReactions.data || []).forEach(r => {
-        const current = portfolioReactionMap.get(r.portfolio_item_id) || { count: 0, hasReacted: false };
-        portfolioReactionMap.set(r.portfolio_item_id, {
-          count: current.count + 1,
-          hasReacted: current.hasReacted || r.user_id === user.id
-        });
-      });
-
-      const postReactionMap = new Map<string, { count: number; hasReacted: boolean }>();
-      (postReactions.data || []).forEach(r => {
-        const current = postReactionMap.get(r.post_id) || { count: 0, hasReacted: false };
-        postReactionMap.set(r.post_id, {
-          count: current.count + 1,
-          hasReacted: current.hasReacted || r.user_id === user.id
-        });
-      });
-
-      // Build saved map
-      const savedMap = new Map<string, boolean>();
-      (savedSparks.data || []).forEach(s => {
-        savedMap.set(`${s.item_type}-${s.item_id}`, true);
-      });
-
-      // Update feed with reactions and saved status
-      feed.forEach(item => {
-        if (item.type === 'portfolio') {
-          const reactionData = portfolioReactionMap.get(item.id);
-          item.reactions = reactionData?.count || 0;
-          item.hasReacted = reactionData?.hasReacted || false;
-        } else if (item.type === 'post') {
-          const reactionData = postReactionMap.get(item.id);
-          item.reactions = reactionData?.count || 0;
-          item.hasReacted = reactionData?.hasReacted || false;
-        }
-        item.isSaved = savedMap.has(`${item.type}-${item.id}`);
-      });
-
-      setSparkFeed(feed);
-      
-      // Cache the feed
-      setCachedFeed(user.id, feed);
+      // Load basic feed directly without AI
+      await fetchBasicFeed(user.id);
     } catch (error) {
       console.error('Error fetching spark feed:', error);
       toast({
@@ -309,7 +189,6 @@ const Circle = () => {
         description: "Please try again",
         variant: "destructive"
       });
-    } finally {
       setLoading(false);
     }
   };

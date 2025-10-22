@@ -3571,10 +3571,7 @@ export type Database = {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
-      calculate_level: {
-        Args: { xp: number }
-        Returns: number
-      }
+      calculate_level: { Args: { xp: number }; Returns: number }
       check_storage_available: {
         Args: { file_size_param: number; user_id_param: string }
         Returns: boolean
@@ -3602,18 +3599,9 @@ export type Database = {
         Args: { num_codes?: number; user_id_param: string }
         Returns: undefined
       }
-      generate_invoice_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_membership_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_secure_token: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_invoice_number: { Args: never; Returns: string }
+      generate_membership_number: { Args: never; Returns: string }
+      generate_secure_token: { Args: never; Returns: string }
       get_endorsement_request_by_token: {
         Args: { token_param: string }
         Returns: {
@@ -3641,7 +3629,7 @@ export type Database = {
         }[]
       }
       get_own_profile_sensitive_data: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           stripe_customer_id: string
           subscription_status: string
@@ -3663,10 +3651,7 @@ export type Database = {
           status: string
         }[]
       }
-      get_user_email: {
-        Args: { _user_id: string }
-        Returns: string
-      }
+      get_user_email: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3674,28 +3659,22 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_profile_owner: {
-        Args: { _profile_user_id: string }
-        Returns: boolean
-      }
+      is_profile_owner: { Args: { _profile_user_id: string }; Returns: boolean }
       send_opportunity_alerts: {
         Args: { opportunity_id_param: string }
         Returns: undefined
       }
-      use_invite_code: {
-        Args:
-          | { code: string; new_user_id?: string; user_email: string }
-          | { code: string; user_email: string }
-        Returns: boolean
-      }
+      use_invite_code:
+        | {
+            Args: { code: string; new_user_id?: string; user_email: string }
+            Returns: boolean
+          }
+        | { Args: { code: string; user_email: string }; Returns: boolean }
       user_has_project_access: {
         Args: { project_id_param: string; user_id_param: string }
         Returns: boolean
       }
-      validate_invite_code: {
-        Args: { code: string }
-        Returns: boolean
-      }
+      validate_invite_code: { Args: { code: string }; Returns: boolean }
     }
     Enums: {
       account_type: "individual" | "company"

@@ -1,33 +1,35 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface ProfileData {
-  fullName: string;
-  role: string;
-  bio: string;
-  location?: string;
-  website?: string;
-  portfolioItems?: number;
-  portfolioCount?: number;
-  creditsCount?: number;
-  awardsCount?: number;
-  pressCount?: number;
-  socialVerified?: boolean;
-  socialLinks?: {
-    instagram?: string;
-    twitter?: string;
-    linkedin?: string;
-    spotify?: string;
-    behance?: string;
-    imdb?: string;
-  };
-  accountType: "individual" | "company";
-}
+// Validation schema for profile data
+const ProfileDataSchema = z.object({
+  fullName: z.string().min(2).max(100).trim(),
+  role: z.string().min(2).max(50).trim(),
+  bio: z.string().max(1000).trim(),
+  location: z.string().max(200).optional(),
+  website: z.string().url().max(500).optional().or(z.literal('')),
+  portfolioItems: z.number().int().min(0).optional(),
+  portfolioCount: z.number().int().min(0).default(0),
+  creditsCount: z.number().int().min(0).default(0),
+  awardsCount: z.number().int().min(0).default(0),
+  pressCount: z.number().int().min(0).default(0),
+  socialVerified: z.boolean().optional(),
+  socialLinks: z.object({
+    instagram: z.string().url().max(500).optional().or(z.literal('')),
+    twitter: z.string().url().max(500).optional().or(z.literal('')),
+    linkedin: z.string().url().max(500).optional().or(z.literal('')),
+    spotify: z.string().url().max(500).optional().or(z.literal('')),
+    behance: z.string().url().max(500).optional().or(z.literal('')),
+    imdb: z.string().url().max(500).optional().or(z.literal('')),
+  }).optional(),
+  accountType: z.enum(["individual", "company"]),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -52,7 +54,21 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
-    const profileData: ProfileData = await req.json();
+    // Validate input
+    const rawData = await req.json();
+    let profileData;
+    
+    try {
+      profileData = ProfileDataSchema.parse(rawData);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        return new Response(
+          JSON.stringify({ error: "Invalid profile data", details: validationError.errors }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
+      throw validationError;
+    }
     const { 
       fullName, role, bio, website, socialLinks, 
       portfolioItems, accountType,

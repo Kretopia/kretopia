@@ -3272,12 +3272,19 @@ export type Database = {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"] | null
           avatar_url: string | null
+          average_rating: number | null
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
           company_about: string | null
+          company_address: string | null
+          company_images: Json | null
+          company_industry: string | null
+          company_location_lat: number | null
+          company_location_lng: number | null
           company_logo_url: string | null
           company_name: string | null
+          company_size: string | null
           created_at: string | null
           full_name: string | null
           imdb_url: string | null
@@ -3288,14 +3295,18 @@ export type Database = {
           linkedin_url: string | null
           location: string | null
           passion_skills: Json | null
+          portfolio_verified: boolean | null
           professional_skills: Json | null
           role: string | null
+          social_verified: boolean | null
           soundcloud_url: string | null
           spotify_url: string | null
           tiktok_url: string | null
+          total_reviews: number | null
           twitter_url: string | null
           user_id: string | null
-          verified_metrics: boolean | null
+          verification_status: string | null
+          verified_at: string | null
           website: string | null
           xp: number | null
           youtube_url: string | null
@@ -3303,12 +3314,19 @@ export type Database = {
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
+          average_rating?: number | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
           company_about?: string | null
+          company_address?: string | null
+          company_images?: Json | null
+          company_industry?: string | null
+          company_location_lat?: number | null
+          company_location_lng?: number | null
           company_logo_url?: string | null
           company_name?: string | null
+          company_size?: string | null
           created_at?: string | null
           full_name?: string | null
           imdb_url?: string | null
@@ -3319,14 +3337,18 @@ export type Database = {
           linkedin_url?: string | null
           location?: string | null
           passion_skills?: Json | null
+          portfolio_verified?: boolean | null
           professional_skills?: Json | null
           role?: string | null
+          social_verified?: boolean | null
           soundcloud_url?: string | null
           spotify_url?: string | null
           tiktok_url?: string | null
+          total_reviews?: number | null
           twitter_url?: string | null
           user_id?: string | null
-          verified_metrics?: boolean | null
+          verification_status?: string | null
+          verified_at?: string | null
           website?: string | null
           xp?: number | null
           youtube_url?: string | null
@@ -3334,12 +3356,19 @@ export type Database = {
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
+          average_rating?: number | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
           company_about?: string | null
+          company_address?: string | null
+          company_images?: Json | null
+          company_industry?: string | null
+          company_location_lat?: number | null
+          company_location_lng?: number | null
           company_logo_url?: string | null
           company_name?: string | null
+          company_size?: string | null
           created_at?: string | null
           full_name?: string | null
           imdb_url?: string | null
@@ -3350,14 +3379,18 @@ export type Database = {
           linkedin_url?: string | null
           location?: string | null
           passion_skills?: Json | null
+          portfolio_verified?: boolean | null
           professional_skills?: Json | null
           role?: string | null
+          social_verified?: boolean | null
           soundcloud_url?: string | null
           spotify_url?: string | null
           tiktok_url?: string | null
+          total_reviews?: number | null
           twitter_url?: string | null
           user_id?: string | null
-          verified_metrics?: boolean | null
+          verification_status?: string | null
+          verified_at?: string | null
           website?: string | null
           xp?: number | null
           youtube_url?: string | null

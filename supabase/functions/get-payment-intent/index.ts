@@ -1,10 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Validation schema
+const PaymentIntentRequestSchema = z.object({
+  sessionId: z.string().regex(/^cs_[a-zA-Z0-9]+$/, "Invalid session ID format"),
+});
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -19,10 +25,23 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { sessionId } = await req.json();
-    if (!sessionId) {
-      throw new Error("Missing sessionId");
+    const rawData = await req.json();
+    
+    // Validate input
+    let validated;
+    try {
+      validated = PaymentIntentRequestSchema.parse(rawData);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        return new Response(
+          JSON.stringify({ error: "Invalid request data", details: validationError.errors }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
+      throw validationError;
     }
+
+    const { sessionId } = validated;
 
     logStep("Request received", { sessionId });
 

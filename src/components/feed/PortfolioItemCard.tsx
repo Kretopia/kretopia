@@ -104,13 +104,14 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
   };
 
   const renderMedia = () => {
-    // If there's an embed code, sanitize it before rendering to prevent XSS
+    // If there's an embed code, sanitize it to prevent XSS
     if (item.embed_code) {
       const sanitizedEmbed = DOMPurify.sanitize(item.embed_code, {
-        ALLOWED_TAGS: ['iframe', 'div', 'script'],
-        ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'class', 'style'],
+        ALLOWED_TAGS: ['iframe', 'div'], // Removed 'script' for security
+        ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'class'], // Removed 'style' and 'target'
         ALLOWED_URI_REGEXP: /^https?:\/\/(www\.)?(youtube|vimeo|spotify|soundcloud|dailymotion|twitch)\.com/,
-        ADD_ATTR: ['target'],
+        FORBID_TAGS: ['script', 'object', 'embed', 'link'],
+        FORBID_ATTR: ['onerror', 'onload', 'onclick', 'style'],
       });
       
       return (

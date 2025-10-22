@@ -1,25 +1,36 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { RateLimiter } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface ApplicationData {
-  email: string;
-  fullName: string;
-  role: string;
-  bio: string;
-  whyJoin: string;
-  socialLinks: {
-    instagram: string | null;
-    twitter: string | null;
-    linkedin: string | null;
-    spotify: string | null;
-    website: string | null;
-  };
-}
+// Validation schema
+const ApplicationSchema = z.object({
+  email: z.string().email().max(255),
+  fullName: z.string().min(2).max(100).trim(),
+  role: z.string().min(2).max(50).trim(),
+  bio: z.string().max(500).trim(),
+  whyJoin: z.string().max(500).trim(),
+  socialLinks: z.object({
+    instagram: z.string().url().max(500).nullable().optional(),
+    twitter: z.string().url().max(500).nullable().optional(),
+    linkedin: z.string().url().max(500).nullable().optional(),
+    spotify: z.string().url().max(500).nullable().optional(),
+    website: z.string().url().max(500).nullable().optional(),
+  }).optional(),
+});
+
+// Rate limiter: 3 submissions per IP per hour
+const rateLimiter = new RateLimiter({ points: 3, duration: 3600 });
+
+// Sanitize to prevent prompt injection
+const sanitize = (input: string): string => {
+  return input.replace(/[<>"'`{}[\]]/g, '').slice(0, 500);
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -27,29 +38,70 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+               req.headers.get('x-real-ip') || 'unknown';
+    
+    try {
+      await rateLimiter.consume(ip);
+    } catch (error) {
+      const retryAfter = rateLimiter.getRemainingTime(ip);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Too many submissions. Please try again later.',
+          retryAfter 
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': retryAfter.toString()
+          } 
+        }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const applicationData: ApplicationData = await req.json();
+    // Validate input
+    const rawData = await req.json();
+    let applicationData;
+    
+    try {
+      applicationData = ApplicationSchema.parse(rawData);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Invalid application data', 
+            details: validationError.errors 
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw validationError;
+    }
     const { email, fullName, role, bio, whyJoin, socialLinks } = applicationData;
 
-    // Build AI validation prompt
+    // Build AI validation prompt with sanitized inputs
     const prompt = `Evaluate this creator application for ThriveIN, a creative networking platform. Score 0-100.
 
 APPLICANT INFO:
-Name: ${fullName}
-Role: ${role}
-Bio: ${bio || "Not provided"}
-Why Join: ${whyJoin || "Not provided"}
+Name: ${sanitize(fullName)}
+Role: ${sanitize(role)}
+Bio: ${sanitize(bio || "Not provided")}
+Why Join: ${sanitize(whyJoin || "Not provided")}
 
 SOCIAL PROOF:
-Instagram: ${socialLinks.instagram || "None"}
-Twitter: ${socialLinks.twitter || "None"}
-LinkedIn: ${socialLinks.linkedin || "None"}
-Spotify: ${socialLinks.spotify || "None"}
-Website: ${socialLinks.website || "None"}
+Instagram: ${socialLinks?.instagram || "None"}
+Twitter: ${socialLinks?.twitter || "None"}
+LinkedIn: ${socialLinks?.linkedin || "None"}
+Spotify: ${socialLinks?.spotify || "None"}
+Website: ${socialLinks?.website || "None"}
 
 SCORING CRITERIA:
 - Professional Profile (25pts): Clear role, quality bio, professional presence
@@ -178,11 +230,11 @@ Return JSON only (no markdown):
         role: role,
         bio: bio || null,
         why_join: whyJoin || null,
-        instagram_url: socialLinks.instagram,
-        twitter_url: socialLinks.twitter,
-        linkedin_url: socialLinks.linkedin,
-        spotify_url: socialLinks.spotify,
-        website: socialLinks.website,
+        instagram_url: socialLinks?.instagram ?? null,
+        twitter_url: socialLinks?.twitter ?? null,
+        linkedin_url: socialLinks?.linkedin ?? null,
+        spotify_url: socialLinks?.spotify ?? null,
+        website: socialLinks?.website ?? null,
         status: status,
         ai_score: evaluation.score,
         ai_decision: evaluation.decision,

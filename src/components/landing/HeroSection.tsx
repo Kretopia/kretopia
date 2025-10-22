@@ -20,15 +20,13 @@ export const HeroSection = () => {
           </div>
           
           <h1 className="mb-8 text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
-            The Professional Network for
-            <br />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Verified Creators
+              The AI-driven professional platform for the creator economy
             </span>
           </h1>
           
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Connect verified stats, awards, and portfolio work with AI-powered brand matching. 
+            Connect verified stats, awards, and portfolio work. Get matched with brands. 
             The complete platform where professional creators get discovered, collaborate, and deliver—all in one place.
           </p>
           

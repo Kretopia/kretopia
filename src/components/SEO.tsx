@@ -9,8 +9,8 @@ interface SEOProps {
 }
 
 export const SEO = ({
-  title = "ThriveIN - Where Creatives Connect & Thrive",
-  description = "Connect with creatives, discover opportunities, and grow your career. ThriveIN matches designers, filmmakers, musicians, and all creative professionals with perfect collabs, gigs, and partnerships powered by AI.",
+  title = "ThriveIN - The AI-driven professional platform for the creator economy",
+  description = "Connect verified stats, awards, and portfolio work. Get matched with brands. The complete platform where professional creators get discovered, collaborate, and deliver—all in one place.",
   type = "website",
   image = "https://lovable.dev/opengraph-image-p98pqg.png",
   url

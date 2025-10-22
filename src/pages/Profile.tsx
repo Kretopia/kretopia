@@ -49,6 +49,7 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [companyReviews, setCompanyReviews] = useState([]);
@@ -84,45 +85,63 @@ const Profile = () => {
   const { toast } = useToast();
 
   const fetchData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    
-    setCurrentUserId(user.id);
+    try {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      
+      setCurrentUserId(user.id);
 
-    // Batch ALL database queries in parallel - including company data
-    const [
-      profileResult,
-      connectionsResult,
-      portfolioResult,
-      reviewsResult,
-      statsResult,
-      creditsResult,
-      awardsResult,
-      pressResult
-    ] = await Promise.all([
-      supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
-      supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
-      supabase.from('portfolio_items').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('reviews').select('*').eq('profile_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('industry_stats').select('*').eq('user_id', user.id).order('display_order', { ascending: true }),
-      supabase.from('credits').select('*').eq('user_id', user.id).order('year', { ascending: false }),
-      supabase.from('awards').select('*').eq('user_id', user.id).order('year', { ascending: false }),
-      supabase.from('press_links').select('*').eq('user_id', user.id).order('published_date', { ascending: false })
-    ]);
+      // Batch ALL database queries in parallel
+      const [
+        profileResult,
+        connectionsResult,
+        portfolioResult,
+        reviewsResult,
+        statsResult,
+        creditsResult,
+        awardsResult,
+        pressResult
+      ] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
+        supabase.from('portfolio_items').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('reviews').select('*').eq('profile_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('industry_stats').select('*').eq('user_id', user.id).order('display_order', { ascending: true }),
+        supabase.from('credits').select('*').eq('user_id', user.id).order('year', { ascending: false }),
+        supabase.from('awards').select('*').eq('user_id', user.id).order('year', { ascending: false }),
+        supabase.from('press_links').select('*').eq('user_id', user.id).order('published_date', { ascending: false })
+      ]);
 
-    const { data, error } = profileResult;
-    
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load profile",
-        variant: "destructive",
-      });
-      return;
-    }
+      const { data, error } = profileResult;
+      
+      if (error) {
+        console.error('[Profile] Error loading profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
-    setProfile({ ...data, section_order: data.section_order });
-    setUserBadge(data.badge || 'beta');
+      if (!data) {
+        console.error('[Profile] No profile data returned');
+        toast({
+          title: "Error",
+          description: "Profile not found",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      setProfile({ ...data, section_order: data.section_order });
+      setUserBadge(data.badge || 'beta');
     
     // Set form data based on account type
     const isCompany = data.account_type === 'company';
@@ -155,17 +174,27 @@ const Profile = () => {
       });
     }
 
-    setStats(prev => ({
-      ...prev,
-      circle: connectionsResult.count || 0,
-      projects: portfolioResult.data?.length || 0,
-    }));
-    setPortfolioItems(portfolioResult.data || []);
-    setReviews(reviewsResult.data || []);
-    setIndustryStats(statsResult.data || []);
-    setCredits(creditsResult.data || []);
-    setAwards(awardsResult.data || []);
-    setPressLinks(pressResult.data || []);
+      setStats(prev => ({
+        ...prev,
+        circle: connectionsResult.count || 0,
+        projects: portfolioResult.data?.length || 0,
+      }));
+      setPortfolioItems(portfolioResult.data || []);
+      setReviews(reviewsResult.data || []);
+      setIndustryStats(statsResult.data || []);
+      setCredits(creditsResult.data || []);
+      setAwards(awardsResult.data || []);
+      setPressLinks(pressResult.data || []);
+    } catch (error) {
+      console.error('[Profile] Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load profile data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -561,10 +590,24 @@ const Profile = () => {
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!profile) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading profile...</p>
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-muted-foreground">Profile not found</p>
+          <Button onClick={() => window.location.reload()}>Reload</Button>
+        </div>
       </div>
     );
   }

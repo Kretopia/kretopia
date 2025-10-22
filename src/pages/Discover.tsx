@@ -136,16 +136,33 @@ const Discover = () => {
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
     
     const fetchData = async () => {
+      timeoutId = setTimeout(() => {
+        if (isMounted) {
+          console.error('[Discover] Query timeout after 10 seconds');
+          setLoading(false);
+          toast({
+            title: "Loading timeout",
+            description: "Please refresh the page",
+            variant: "destructive"
+          });
+        }
+      }, 10000);
+
       try {
         console.log('[Discover] Starting to fetch data...');
         
         // Show UI immediately - don't block on loading state
         const { data: { user } } = await supabase.auth.getUser();
-        if (!isMounted) return;
+        if (!isMounted) {
+          clearTimeout(timeoutId);
+          return;
+        }
       if (!user) {
         console.error('[Discover] No authenticated user');
+        clearTimeout(timeoutId);
         setLoading(false);
         return;
       }
@@ -398,11 +415,13 @@ const Discover = () => {
       
       if (isMounted) {
         console.log('[Discover] Finished fetching data, setting loading to false');
+        clearTimeout(timeoutId);
         setLoading(false);
       }
       } catch (error) {
         console.error('[Discover] Error in fetchData:', error);
         if (isMounted) {
+          clearTimeout(timeoutId);
           setLoading(false);
           toast({
             title: "Error loading data",
@@ -418,6 +437,7 @@ const Discover = () => {
     
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
     };
   }, [activeTab, creatorFilters, opportunityFilters, subscriptionTier]);
 

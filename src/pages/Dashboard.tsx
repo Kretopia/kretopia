@@ -64,9 +64,20 @@ const Dashboard = () => {
   useStreakUpdate();
 
   const fetchProfile = async () => {
+    const timeoutId = setTimeout(() => {
+      console.error('[Dashboard] Query timeout after 10 seconds');
+      setLoading(false);
+      toast({
+        title: "Loading timeout",
+        description: "Please refresh the page",
+        variant: "destructive"
+      });
+    }, 10000);
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        clearTimeout(timeoutId);
         setLoading(false);
         return;
       }
@@ -87,6 +98,8 @@ const Dashboard = () => {
         supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
         supabase.from('matches').select('*, projects!inner(*)').or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).limit(10)
       ]);
+
+      clearTimeout(timeoutId);
 
       // Show daily bonus toast if awarded
       if (dailyResult.awarded) {

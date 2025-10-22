@@ -160,6 +160,14 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
   const fetchProfiles = async () => {
     if (!user) return;
 
+    const timeoutId = setTimeout(() => {
+      console.error('[Connect] Query timeout after 10 seconds');
+      setLoading(false);
+      toast.error("Loading timeout", {
+        description: "Please refresh the page"
+      });
+    }, 10000);
+
     setLoading(true);
     try {
       console.log('[Connect] Current user ID:', user.id);
@@ -286,6 +294,7 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
       console.error('Error fetching profiles:', error);
       toast.error('Failed to load profiles');
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };

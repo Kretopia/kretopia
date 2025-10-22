@@ -174,7 +174,7 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
       
       let query = supabase
         .from('profiles')
-        .select('*')
+        .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge, verified_metrics')
         .neq('user_id', user.id)
         .not('full_name', 'is', null)
         .not('avatar_url', 'is', null);
@@ -227,16 +227,7 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
           return false;
         }
 
-        // Apply follower filter (premium only)
-        if (filters.minFollowers > 0 && isPremium) {
-          const totalFollowers = (profile.instagram_followers || 0) + 
-                                 (profile.twitter_followers || 0) + 
-                                 (profile.youtube_subscribers || 0) + 
-                                 (profile.tiktok_followers || 0);
-          if (totalFollowers < filters.minFollowers) {
-            return false;
-          }
-        }
+        // Note: Follower filtering is disabled for privacy reasons
 
         return true;
       }) || [];

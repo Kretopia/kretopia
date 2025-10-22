@@ -215,7 +215,7 @@ const Discover = () => {
         console.log('[Discover] Fetching creator profiles...');
         let profilesQuery = supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, instagram_followers, youtube_subscribers, tiktok_followers, spotify_listeners, total_engagement_rate, verified_metrics, level, badge')
+          .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge')
           .neq('user_id', user.id)
           .not('full_name', 'is', null)
           .not('bio', 'is', null)
@@ -280,14 +280,6 @@ const Discover = () => {
             description: profile.bio || 'Creative professional',
             user_id: profile.user_id,
             portfolio: userPortfolio,
-            socialStats: {
-              instagram_followers: profile.instagram_followers,
-              youtube_subscribers: profile.youtube_subscribers,
-              tiktok_followers: profile.tiktok_followers,
-              spotify_listeners: profile.spotify_listeners,
-              total_engagement_rate: profile.total_engagement_rate,
-              verified_metrics: profile.verified_metrics,
-            },
           };
         });
 

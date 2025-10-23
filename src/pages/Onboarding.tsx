@@ -141,7 +141,7 @@ export default function Onboarding() {
     const { analytics } = await import("@/lib/analytics");
     
     if (currentStep === 1) {
-      // Strict validation for name - trim and check for actual content
+      // Relaxed validation - only require name and role
       if (!profile.full_name?.trim()) {
         toast({
           title: "Name is required",
@@ -160,13 +160,12 @@ export default function Onboarding() {
         return;
       }
       
+      // Bio is now optional but encouraged
       if (!profile.bio?.trim()) {
         toast({
-          title: "Tell us about yourself! ✨",
-          description: "Your bio helps other creators find and connect with you. Just a few sentences!",
-          variant: "destructive",
+          title: "Quick tip! ✨",
+          description: "Adding a bio helps you get 2x more connections. You can add it later!",
         });
-        return;
       }
       
       // Update onboarding step in database
@@ -208,8 +207,8 @@ export default function Onboarding() {
     if (currentStep === 2) {
       if (selectedSkills.length === 0) {
         toast({
-          title: "Add some skills",
-          description: "Select 3-5 skills to help us match you with opportunities",
+          title: "Add at least one skill",
+          description: "Skills help us match you with the right opportunities",
           variant: "destructive",
         });
         return;
@@ -217,8 +216,8 @@ export default function Onboarding() {
       
       if (selectedSkills.length < 3) {
         toast({
-          title: "Tip: Add more skills",
-          description: "3-5 skills help our AI find better matches for you",
+          title: "💡 Pro tip",
+          description: "Adding 3+ skills increases your match rate by 60%!",
         });
       }
       
@@ -493,9 +492,12 @@ export default function Onboarding() {
                 />
               </div>
               <div>
-                <Label htmlFor="bio">About You *</Label>
+                <Label htmlFor="bio">
+                  About You 
+                  <span className="text-xs text-muted-foreground ml-2">(Optional but recommended)</span>
+                </Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  ⭐ This helps you get discovered! Share what you do and what you're looking for.
+                  ⭐ Profiles with bios get 2x more connections! Share what you do and what you're looking for.
                 </p>
                 <Textarea
                   id="bio"

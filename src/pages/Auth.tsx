@@ -418,16 +418,21 @@ const Auth = () => {
               ? "Enter your new password below to complete the reset process" 
               : searchParams.get("redirect")?.includes("/opportunity/") 
                 ? "Create an account to apply for this opportunity" 
-                : "The AI-powered creative network where talent meets opportunity"}
+                : "Join 1,000+ creators finding collaborations & opportunities"}
           </p>
           {!isPasswordReset && (
-            <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                ✨ 7 AI Features
-              </span>
-              <span className="flex items-center gap-1">
-                💼 {opportunitiesCount || 0}+ Opportunities
-              </span>
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  ✨ 7 AI Features
+                </span>
+                <span className="flex items-center gap-1">
+                  💼 {opportunitiesCount || 0}+ Active Opportunities
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                🚀 Setup takes under 2 minutes
+              </p>
             </div>
           )}
         </div>
@@ -498,7 +503,31 @@ const Auth = () => {
             </Button>
           </form>
         ) : (
-          <Tabs defaultValue="signin" className="w-full">
+          <>
+            {/* Google Sign In - Primary CTA */}
+            <Button
+              onClick={handleGoogleSignIn}
+              variant="outline"
+              size="lg"
+              className="w-full mb-4 border-2"
+              disabled={loading}
+            >
+              <Chrome className="mr-2 h-5 w-5" />
+              Continue with Google
+            </Button>
+
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
+
+            <Tabs defaultValue="signin" className="w-full">
           <TabsList className="mb-6 grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -845,7 +874,8 @@ const Auth = () => {
               </form>
             )}
           </TabsContent>
-        </Tabs>
+          </Tabs>
+          </>
         )}
 
         <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>

@@ -76,7 +76,7 @@ export const ProfileCompletionBanner = ({ completion, page = "discover" }: Profi
           </p>
           <div className="flex items-start gap-2 mb-2 text-xs bg-background/80 rounded p-2">
             <Sparkles className="h-3 w-3 text-primary mt-0.5 flex-shrink-0" />
-            <span className="font-medium">{message.stat}</span>
+            <span className="font-medium">✨ Earn +50 XP when you reach 100%! {message.stat}</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {topMissing.map((field) => (

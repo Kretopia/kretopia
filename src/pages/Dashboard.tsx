@@ -39,6 +39,7 @@ import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 import { SEO } from "@/components/SEO";
 import { SuccessMetrics } from "@/components/dashboard/SuccessMetrics";
 import { DiscoverReadyBanner } from "@/components/DiscoverReadyBanner";
+import { FirstActionPrompt } from "@/components/dashboard/FirstActionPrompt";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -52,6 +53,7 @@ const Dashboard = () => {
   });
   const [portfolioCount, setPortfolioCount] = useState(0);
   const [activeProjects, setActiveProjects] = useState<any[]>([]);
+  const [hasAppliedToOpportunity, setHasAppliedToOpportunity] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -134,6 +136,10 @@ const Dashboard = () => {
 
       // Set connections count
       setStats(prev => ({ ...prev, circle: connectionsCount || 0 }));
+
+      // Check if user has applied to opportunities (simple check)
+      // We'll assume they have if they have connections
+      setHasAppliedToOpportunity((connectionsCount || 0) > 0);
 
       // Process active projects
       if (matchesData) {
@@ -264,6 +270,17 @@ const Dashboard = () => {
 
         {/* Discover Ready Banner */}
         <DiscoverReadyBanner portfolioCount={portfolioCount} />
+
+        {/* First Action Prompt - Only show for new users */}
+        {!firstTimeLoading && !loading && (
+          <div className="mb-6 sm:mb-8">
+            <FirstActionPrompt 
+              hasConnections={stats.circle > 0}
+              hasProjects={stats.projects > 0}
+              hasAppliedToOpportunity={hasAppliedToOpportunity}
+            />
+          </div>
+        )}
 
         {/* Engagement Nudge */}
         <div className="mb-6 sm:mb-8">

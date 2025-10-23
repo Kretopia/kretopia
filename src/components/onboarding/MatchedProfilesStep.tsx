@@ -38,18 +38,26 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
 
   const fetchMatches = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("get-onboarding-matches");
+      // Add 15 second timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 15000)
+      );
+
+      const fetchPromise = supabase.functions.invoke("get-onboarding-matches");
+
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
       
       if (error) throw error;
       
-      setMatches(data.matches || []);
+      setMatches(data?.matches || []);
     } catch (error) {
       console.error("Error fetching matches:", error);
       toast({
         title: "Could not load suggestions",
-        description: "You can still explore creators on the Discover page",
-        variant: "destructive",
+        description: "You can skip this step and explore creators on the Discover page",
       });
+      // Set empty matches so user can skip
+      setMatches([]);
     } finally {
       setLoading(false);
     }
@@ -133,12 +141,16 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
       </div>
 
       {matches.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-muted-foreground mb-4">
-            No matches found yet. Complete your profile and check back soon!
-          </p>
-          <Button onClick={() => onComplete(0)} variant="gradient">
-            Continue to Discover <ArrowRight className="ml-2 h-4 w-4" />
+        <Card className="p-12 text-center border-2 border-dashed">
+          <div className="mb-4">
+            <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+            <h3 className="text-lg font-semibold mb-2">Building Your Network</h3>
+            <p className="text-muted-foreground">
+              We're finding the perfect matches for you, or you can skip ahead and explore on your own!
+            </p>
+          </div>
+          <Button onClick={() => onComplete(0)} variant="gradient" size="lg">
+            Skip to Discover <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Card>
       ) : (
@@ -227,13 +239,16 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
             ))}
           </div>
 
-          <div className="text-center pt-6">
-            <Button onClick={() => onComplete(connectedIds.size)} variant="gradient" size="lg">
+          <div className="text-center pt-6 space-y-3">
+            <Button onClick={() => onComplete(connectedIds.size)} variant="gradient" size="lg" className="min-w-[280px]">
               {connectedIds.size > 0 
                 ? `Continue with ${connectedIds.size} Connection${connectedIds.size > 1 ? 's' : ''}`
-                : "Skip for Now"
+                : "Continue to Platform"
               } <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
+            <p className="text-xs text-muted-foreground">
+              You can always connect with more creators later
+            </p>
           </div>
         </>
       )}

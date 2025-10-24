@@ -502,10 +502,18 @@ export default function Onboarding() {
                 <Textarea
                   id="bio"
                   value={profile.bio}
-                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 1000) {
+                      setProfile({ ...profile, bio: e.target.value });
+                    }
+                  }}
                   placeholder="I'm a videographer specializing in music videos and brand content. Looking to collaborate with musicians and creative directors..."
                   rows={3}
+                  maxLength={1000}
                 />
+                <p className="text-xs text-muted-foreground text-right mt-1">
+                  {profile.bio.length}/1000 characters
+                </p>
               </div>
               <div>
                 <Label htmlFor="location">Location (Optional)</Label>

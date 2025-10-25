@@ -16,12 +16,14 @@ import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 import { MatchedProfilesStep } from "@/components/onboarding/MatchedProfilesStep";
 import { ConnectionSuccessStep } from "@/components/onboarding/ConnectionSuccessStep";
+import { AddPortfolioStep } from "@/components/onboarding/AddPortfolioStep";
 
 const STEPS = [
   { id: 1, title: "Profile", icon: Users },
   { id: 2, title: "Skills", icon: Award },
-  { id: 3, title: "Connect", icon: Sparkles },
-  { id: 4, title: "Success", icon: Star },
+  { id: 3, title: "Portfolio", icon: Briefcase },
+  { id: 4, title: "Connect", icon: Sparkles },
+  { id: 5, title: "Success", icon: Star },
 ];
 
 interface Skill {
@@ -44,6 +46,7 @@ export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [connectionCount, setConnectionCount] = useState(0);
+  const [userId, setUserId] = useState<string>("");
   
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -90,6 +93,8 @@ export default function Onboarding() {
       navigate("/auth");
       return;
     }
+
+    setUserId(user.id);
 
     const { data: profileData } = await supabase
       .from("profiles")
@@ -230,7 +235,14 @@ export default function Onboarding() {
         
         const { error } = await supabase
           .from("profiles")
-          .update({ onboarding_step: 3 })
+          .update({ 
+            onboarding_step: 3,
+            professional_skills: selectedSkills.map(skill => ({
+              skill,
+              level: 3,
+              category: "General"
+            })) as any
+          })
           .eq("user_id", user.id);
         
         if (error) {
@@ -250,10 +262,9 @@ export default function Onboarding() {
       analytics.onboardingStep(2, "skills_added");
     }
 
-    if (currentStep === 3) {
-      await completeOnboarding();
-      return;
-    }
+    // Step 3 is portfolio (handled by AddPortfolioStep component)
+    // Step 4 is matched profiles  
+    // Step 5 is connection success
 
     setCurrentStep(currentStep + 1);
   };
@@ -392,7 +403,7 @@ export default function Onboarding() {
     }
   };
 
-  const progress = (currentStep / 3) * 100;
+  const progress = (currentStep / 5) * 100;
 
   return (
     <>
@@ -565,23 +576,36 @@ export default function Onboarding() {
           </div>
         )}
 
-        {currentStep === 3 && (
-          <MatchedProfilesStep 
-            onComplete={(count) => {
-              setConnectionCount(count);
+        {currentStep === 3 && userId && (
+          <AddPortfolioStep 
+            userId={userId}
+            onComplete={async () => {
+              await supabase
+                .from("profiles")
+                .update({ onboarding_step: 4 })
+                .eq("user_id", userId);
               setCurrentStep(4);
-            }} 
+            }}
           />
         )}
 
         {currentStep === 4 && (
+          <MatchedProfilesStep 
+            onComplete={(count) => {
+              setConnectionCount(count);
+              setCurrentStep(5);
+            }} 
+          />
+        )}
+
+        {currentStep === 5 && (
           <ConnectionSuccessStep
             connectionCount={connectionCount}
             onComplete={completeOnboarding}
           />
         )}
 
-        {currentStep !== 3 && currentStep !== 4 && (
+        {currentStep !== 3 && currentStep !== 4 && currentStep !== 5 && (
           <div className="flex gap-3 mt-8">
             {currentStep > 1 && (
               <Button
@@ -602,8 +626,6 @@ export default function Onboarding() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Setting up...
                 </>
-              ) : currentStep === 3 ? (
-                "Complete & Start Discovering"
               ) : (
                 "Continue"
               )}

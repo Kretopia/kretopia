@@ -132,12 +132,19 @@ export const AddPortfolioStep = ({ userId, onComplete }: AddPortfolioStepProps) 
         })
       );
 
-      await Promise.all(insertPromises);
+      const results = await Promise.all(insertPromises);
+      
+      // Check if any inserts failed
+      const hasErrors = results.some(result => result.error);
+      if (hasErrors) {
+        throw new Error("Failed to save some portfolio items");
+      }
+      
       toast.success("Portfolio saved!");
-      onComplete(items);
+      await onComplete(items);
     } catch (error: any) {
       console.error('Error saving portfolio:', error);
-      toast.error("Failed to save portfolio items");
+      toast.error("Failed to save portfolio. Please try again.");
     } finally {
       setIsLoading(false);
     }

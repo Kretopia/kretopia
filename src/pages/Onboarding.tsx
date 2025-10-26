@@ -580,11 +580,26 @@ export default function Onboarding() {
           <AddPortfolioStep 
             userId={userId}
             onComplete={async () => {
-              await supabase
-                .from("profiles")
-                .update({ onboarding_step: 4 })
-                .eq("user_id", userId);
-              setCurrentStep(4);
+              try {
+                const { analytics } = await import("@/lib/analytics");
+                analytics.onboardingStep(3, "portfolio_added");
+                
+                const { error } = await supabase
+                  .from("profiles")
+                  .update({ onboarding_step: 4 })
+                  .eq("user_id", userId);
+                
+                if (error) throw error;
+                
+                setCurrentStep(4);
+              } catch (error) {
+                console.error("Error updating onboarding step:", error);
+                toast({
+                  title: "Error",
+                  description: "Failed to save progress. Please try again.",
+                  variant: "destructive",
+                });
+              }
             }}
           />
         )}

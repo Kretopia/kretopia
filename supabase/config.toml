@@ -1,5 +1,14 @@
 project_id = "kwmcocsitwssrtzkdojh"
 
+[functions.send-activity-digest]
+verify_jwt = true
+
+[functions.send-onboarding-reminders]
+verify_jwt = true
+
+[functions.send-reengagement-emails]
+verify_jwt = true
+
 [functions.validate-waitlist-ai]
 verify_jwt = false
 
@@ -22,12 +31,6 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.send-weekly-digest]
-verify_jwt = false
-
-[functions.send-reengagement-emails]
-verify_jwt = false
-
-[functions.send-onboarding-reminders]
 verify_jwt = false
 
 [functions.generate-content]

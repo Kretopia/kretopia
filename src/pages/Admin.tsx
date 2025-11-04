@@ -54,7 +54,7 @@ export default function Admin() {
           description: "Failed to verify admin access",
           variant: "destructive",
         });
-        navigate("/dashboard");
+        navigate("/spark");
         return;
       }
 
@@ -65,7 +65,7 @@ export default function Admin() {
           description: "You don't have admin permissions",
           variant: "destructive",
         });
-        navigate("/dashboard");
+        navigate("/spark");
         return;
       }
 
@@ -78,7 +78,7 @@ export default function Admin() {
         description: "An error occurred while checking permissions",
         variant: "destructive",
       });
-      navigate("/dashboard");
+      navigate("/spark");
     } finally {
       setLoading(false);
     }

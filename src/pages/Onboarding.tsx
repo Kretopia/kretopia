@@ -105,7 +105,7 @@ export default function Onboarding() {
       .single();
 
     if (profileData?.onboarding_completed) {
-      navigate("/discover");
+      navigate("/spark");
       return;
     }
     
@@ -389,10 +389,10 @@ export default function Onboarding() {
 
       toast({
         title: "🎉 Welcome to ThriveIN!",
-        description: "Your profile is ready. Let's find you some matches!",
+        description: "Your profile is ready. Let's start collaborating!",
       });
 
-      navigate("/discover");
+      navigate("/spark");
     } catch (error) {
       console.error("Onboarding error:", error);
       toast({

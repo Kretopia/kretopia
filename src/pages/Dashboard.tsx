@@ -188,7 +188,7 @@ const Dashboard = () => {
       };
       
       updateWallet();
-      navigate("/dashboard", { replace: true });
+      navigate("/spark", { replace: true });
     }
     
     if (subscriptionSuccess === "true") {
@@ -201,7 +201,7 @@ const Dashboard = () => {
         
         await supabase.functions.invoke("check-subscription");
         await fetchProfile();
-        navigate("/dashboard", { replace: true });
+        navigate("/spark", { replace: true });
       };
       
       handleSubscriptionSuccess();

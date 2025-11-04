@@ -258,8 +258,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </Link>
             </>
           ) : user && isLandingPage ? (
-            <Link to="/dashboard">
-              <Button variant="gradient">Go to Dashboard</Button>
+            <Link to="/spark">
+              <Button variant="gradient">Go to Spark</Button>
             </Link>
           ) : null}
         </div>

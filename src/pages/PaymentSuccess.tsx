@@ -116,8 +116,8 @@ export default function PaymentSuccess() {
             <Button onClick={() => navigate("/discover")} className="w-full">
               Start Discovering
             </Button>
-            <Button onClick={() => navigate("/dashboard")} variant="outline" className="w-full">
-              Go to Dashboard
+            <Button onClick={() => navigate("/spark")} variant="outline" className="w-full">
+              Go to Spark
             </Button>
           </div>
         </CardContent>

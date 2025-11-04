@@ -314,7 +314,7 @@ const Settings = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/spark")}
               className="shrink-0"
             >
               <X className="h-5 w-5" />

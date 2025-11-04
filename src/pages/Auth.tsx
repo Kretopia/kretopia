@@ -52,7 +52,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const redirectTo = searchParams.get("redirect") || "/spark";
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 
@@ -389,12 +389,12 @@ const Auth = () => {
     } else {
       toast({
         title: "Password Reset Successful",
-        description: "Your password has been updated. Redirecting to dashboard...",
+        description: "Your password has been updated. Redirecting to Spark...",
       });
       
-      // Redirect to dashboard after a short delay
+      // Redirect to Spark after a short delay
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/spark");
       }, 1500);
     }
 

@@ -56,18 +56,38 @@ const Navbar = memo(({ user }: NavbarProps) => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    
-    // Track sign out
-    const { analytics } = await import("@/lib/analytics");
-    analytics.signOut();
-    
-    toast({
-      title: "Signed out",
-      description: "You've been successfully signed out",
-    });
-    setIsOpen(false);
-    navigate("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('[Navbar] Sign out error:', error);
+        toast({
+          variant: "destructive",
+          title: "Error signing out",
+          description: error.message,
+        });
+        return;
+      }
+      
+      // Track sign out
+      const { analytics } = await import("@/lib/analytics");
+      analytics.signOut();
+      
+      toast({
+        title: "Signed out",
+        description: "You've been successfully signed out",
+      });
+      
+      setIsOpen(false);
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error('[Navbar] Sign out exception:', error);
+      toast({
+        variant: "destructive",
+        title: "Error signing out",
+        description: "An unexpected error occurred",
+      });
+    }
   };
 
   const handleNavigation = (path: string) => {

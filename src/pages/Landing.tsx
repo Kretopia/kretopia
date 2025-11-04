@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Users, Briefcase, Wallet, Zap, Lightbulb, Rocket, Trophy, Sparkles } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { ProfessionalProfileShowcase } from "@/components/landing/ProfessionalProfileShowcase";
@@ -67,7 +68,7 @@ const Landing = () => {
               </span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Build your profile, get AI-matched with nearby creators to collaborate, and manage projects together. Plus get matched with brand opportunities. Free to start.
+              Connect with nearby creators, collaborate in built-in workspaces, compete in creative challenges, and get matched with brand opportunities—all in one place.
             </p>
           </div>
           
@@ -143,6 +144,99 @@ const Landing = () => {
       </section>
       
       <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
+
+      {/* Cre8 Challenge Section */}
+      <section className="px-6 py-20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+                <Trophy className="h-4 w-4" />
+                <span>Weekly Challenges</span>
+              </div>
+              <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  Cre8 Challenge
+                </span>
+                <br />
+                Get Paid for Your Creativity
+              </h2>
+              <p className="text-lg leading-relaxed text-muted-foreground mb-6">
+                Join weekly creative competitions with cash prizes, or apply for brand-sponsored challenges. 
+                Build your portfolio, win recognition, and earn money doing what you love.
+              </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Trophy className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">Platform Challenges</h3>
+                    <p className="text-sm text-muted-foreground">Weekly creative prompts with cash prizes and community recognition</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="h-5 w-5 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">Brand Challenges</h3>
+                    <p className="text-sm text-muted-foreground">Apply for paid collaborations with top brands and companies</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1">Build Your Portfolio</h3>
+                    <p className="text-sm text-muted-foreground">Every entry adds to your profile and increases your visibility</p>
+                  </div>
+                </div>
+              </div>
+              <Link to="/cre8">
+                <Button size="lg" className="shadow-glow">
+                  <Trophy className="mr-2 h-5 w-5" />
+                  Explore Challenges
+                </Button>
+              </Link>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-3xl" />
+              <Card className="relative border-2 border-primary/10">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                      <Trophy className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">This Week's Challenge</p>
+                      <h3 className="font-bold text-lg">Create a 30-Second Reel</h3>
+                    </div>
+                  </div>
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Prize Pool</span>
+                      <span className="font-bold text-primary">$500</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Entries</span>
+                      <span className="font-semibold">127 creators</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Time Left</span>
+                      <span className="font-semibold text-accent">3 days</span>
+                    </div>
+                  </div>
+                  <Button className="w-full" variant="outline">
+                    View Challenge
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="px-6 py-20">
@@ -335,7 +429,7 @@ const Landing = () => {
                 Ready to Find Your Next Collaborator?
               </h2>
               <p className="mb-8 text-lg opacity-90">
-                Connect with nearby creators. Build together. Plus get matched with brand opportunities. All in one collaborative workspace.
+                Find your creative collaborators. Work together in real-time. Compete in challenges. Get matched with brands. Everything in one platform.
               </p>
               <div className="flex justify-center">
                 <Link to="/auth">

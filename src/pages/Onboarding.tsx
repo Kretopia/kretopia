@@ -442,8 +442,8 @@ export default function Onboarding() {
                 <Sparkles className="h-4 w-4" />
                 <span>Earn +100 XP for completing</span>
               </div>
-              <h2 className="text-3xl font-bold mb-2">Let's Set Up Your Profile!</h2>
-              <p className="text-muted-foreground">This takes under 2 minutes and helps us match you better</p>
+              <h2 className="text-3xl font-bold mb-2">Let's Build Your Creative Profile</h2>
+              <p className="text-muted-foreground">Get matched with nearby collaborators and brand opportunities in under 2 minutes</p>
               
               <Button 
                 variant="outline" 

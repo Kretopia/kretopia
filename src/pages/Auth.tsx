@@ -418,20 +418,23 @@ const Auth = () => {
               ? "Enter your new password below to complete the reset process" 
               : searchParams.get("redirect")?.includes("/opportunity/") 
                 ? "Create an account to apply for this opportunity" 
-                : "Join 1,000+ creators finding collaborations & opportunities"}
+                : "The complete platform for creative collaboration"}
           </p>
           {!isPasswordReset && (
             <div className="mt-4 flex flex-col items-center gap-2">
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  ✨ 7 AI Features
+                  🤝 Find Collaborators
                 </span>
                 <span className="flex items-center gap-1">
-                  💼 {opportunitiesCount || 0}+ Active Opportunities
+                  🏆 Win Challenges
+                </span>
+                <span className="flex items-center gap-1">
+                  💼 Get Brand Deals
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                🚀 Setup takes under 2 minutes
+                🚀 Setup takes under 2 minutes • Free to start
               </p>
             </div>
           )}

@@ -29,10 +29,10 @@ export const HeroSection = () => {
           </h1>
           
           <p className="mx-auto mb-8 sm:mb-12 max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-muted-foreground px-4">
-            AI matches you with nearby creators to collaborate on projects.{" "}
-            <span className="font-semibold text-foreground">Plus get matched with brand opportunities.</span>
+            Connect with nearby creators. Collaborate in real-time workspaces.{" "}
+            <span className="font-semibold text-foreground">Win creative challenges. Get matched with brands.</span>
             <br className="hidden sm:block" />
-            Build together in one collaborative workspace.
+            Everything you need to thrive as a creator—in one platform.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 px-4 sm:flex-row">

@@ -87,14 +87,12 @@ const Dashboard = () => {
       
       setLoading(true);
 
-      // Run critical queries first for faster initial load
+      // Run only essential queries - no blocking operations
       const [
-        dailyResult,
         { data: profileData, error: profileError },
         { count: portfolioCount },
         { count: connectionsCount }
       ] = await Promise.all([
-        checkAndAwardDailyLogin(user.id),
         supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('portfolio_items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted')
@@ -102,13 +100,15 @@ const Dashboard = () => {
 
       clearTimeout(timeoutId);
 
-      // Show daily bonus toast if awarded
-      if (dailyResult.awarded) {
-        toast({
-          title: "Daily Bonus! 🎉",
-          description: "+3 credits for logging in today",
-        });
-      }
+      // Award daily login in background (non-blocking)
+      checkAndAwardDailyLogin(user.id).then(result => {
+        if (result.awarded) {
+          toast({
+            title: "Daily Bonus! 🎉",
+            description: "+5 credits for logging in today",
+          });
+        }
+      }).catch(err => console.error('Daily login error:', err));
 
       // Handle profile data
       if (profileError) {

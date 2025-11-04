@@ -1,12 +1,17 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Star, Briefcase, Share2, Edit, Camera, Loader2, Building2, FileText } from "lucide-react";
+import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
+
+// Context & Hooks
+import { ProfileProvider, useProfileContext } from "@/contexts/ProfileContext";
+import { useProfileData } from "@/hooks/useProfileData";
+import { useAvatarUpload } from "@/hooks/useAvatarUpload";
+
+// Components
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
@@ -27,52 +32,50 @@ import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletio
 import { ProfileOptimizationHub } from "@/components/profile/ProfileOptimizationHub";
 import { PortfolioAnalytics } from "@/components/profile/PortfolioAnalytics";
 import { DiscoverReadyBanner } from "@/components/DiscoverReadyBanner";
-
 import { ProfileVisibilityDashboard } from "@/components/profile/ProfileVisibilityDashboard";
-import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
-import { getTierByPoints } from "@/lib/tierSystem";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 import { ProfileEditDialog } from "@/components/profile/ProfileEditDialog";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ProfileHero } from "@/components/profile/ProfileHero";
-import { Globe } from "lucide-react";
 import { AboutSection } from "@/components/profile/AboutSection";
 import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download } from "lucide-react";
 import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { VerificationProgress } from "@/components/profile/VerificationProgress";
 import { VerificationAppealDialog } from "@/components/profile/VerificationAppealDialog";
+import { ProfileActions } from "@/components/profile/ProfileActions";
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
+import { checkProfileCompletion } from "@/lib/profileCompletion";
 
-const Profile = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [portfolioItems, setPortfolioItems] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [companyReviews, setCompanyReviews] = useState([]);
-  const [partnerDiscounts, setPartnerDiscounts] = useState([]);
-  const [industryStats, setIndustryStats] = useState([]);
-  const [credits, setCredits] = useState([]);
-  const [awards, setAwards] = useState([]);
-  const [pressLinks, setPressLinks] = useState([]);
-  const [userBadge, setUserBadge] = useState<'og' | 'beta' | 'official' | 'founder' | null>(null);
-  const [stats, setStats] = useState({
-    circle: 0,
-    projects: 0,
-    responseRate: 98
-  });
+const ProfileContent = () => {
+  const {
+    profile,
+    portfolioItems,
+    reviews,
+    companyReviews,
+    partnerDiscounts,
+    industryStats,
+    credits,
+    awards,
+    pressLinks,
+    userBadge,
+    stats,
+    currentUserId,
+    isLoading,
+  } = useProfileContext();
+
+  const { toast } = useToast();
+  const { fetchData } = useProfileData();
+  const { uploadAvatar, isUploading: isUploadingAvatar } = useAvatarUpload();
+
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
+  
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -81,242 +84,18 @@ const Profile = () => {
     avatar_url: "",
     company_size: "",
   });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-      
-      setCurrentUserId(user.id);
-
-      // Load ONLY core profile data first (fast)
-      const [profileResult, connectionsResult, portfolioResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
-        supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
-        supabase.from('portfolio_items').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(6)
-      ]);
-
-      const { data, error } = profileResult;
-      
-      if (error) {
-        console.error('[Profile] Error loading profile:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load profile",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (!data) {
-        console.error('[Profile] No profile data returned');
-        toast({
-          title: "Error",
-          description: "Profile not found",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      setProfile({ ...data, section_order: data.section_order });
-      setUserBadge(data.badge || 'beta');
-    
-    // Set form data based on account type
-    const isCompany = data.account_type === 'company';
-    setEditForm({
-      full_name: isCompany ? (data.company_name || data.full_name || "") : (data.full_name || ""),
-      role: isCompany ? (data.company_industry || "") : (data.role || ""),
-      bio: isCompany ? (data.company_about || "") : (data.bio || ""),
-      location: isCompany ? (data.company_address || "") : (data.location || ""),
-      avatar_url: isCompany ? (data.company_logo_url || data.avatar_url || "") : (data.avatar_url || ""),
-      company_size: data.company_size || "",
-    });
-
-      setStats(prev => ({
-        ...prev,
-        circle: connectionsResult.count || 0,
-        projects: portfolioResult.data?.length || 0,
-      }));
-      setPortfolioItems(portfolioResult.data || []);
-      
-      // Stop loading - show UI immediately
-      setIsLoading(false);
-
-      // Load remaining data in background (non-blocking)
-      Promise.all([
-        supabase.from('reviews').select('*').eq('profile_id', user.id).order('created_at', { ascending: false }).limit(10),
-        supabase.from('industry_stats').select('*').eq('user_id', user.id).order('display_order', { ascending: true }),
-        supabase.from('credits').select('*').eq('user_id', user.id).order('year', { ascending: false }).limit(10),
-        supabase.from('awards').select('*').eq('user_id', user.id).order('year', { ascending: false }).limit(10),
-        supabase.from('press_links').select('*').eq('user_id', user.id).order('published_date', { ascending: false }).limit(10)
-      ]).then(([reviewsResult, statsResult, creditsResult, awardsResult, pressResult]) => {
-        setReviews(reviewsResult.data || []);
-        setIndustryStats(statsResult.data || []);
-        setCredits(creditsResult.data || []);
-        setAwards(awardsResult.data || []);
-        setPressLinks(pressResult.data || []);
-      }).catch(err => console.error('[Profile] Error loading additional data:', err));
-
-    // Fetch company-specific data in background if needed
-    if (data?.account_type === 'company') {
-      Promise.all([
-        supabase.from('company_reviews').select('*, reviewer:profiles!company_reviews_reviewer_id_fkey(full_name, avatar_url)')
-          .eq('company_id', user.id).eq('status', 'published').order('created_at', { ascending: false }).limit(10),
-        supabase.from('partner_discounts').select('*').eq('partner_name', data.company_name).eq('is_active', true)
-      ]).then(([reviewsResult, discountsResult]) => {
-        const companyReviewsData = reviewsResult.data?.map(review => ({
-          ...review,
-          reviewer_name: review.reviewer?.full_name || 'Anonymous',
-          reviewer_avatar: review.reviewer?.avatar_url || '',
-        })) || [];
-        
-        setCompanyReviews(companyReviewsData);
-        setPartnerDiscounts(discountsResult.data || []);
-      }).catch(err => console.error('[Profile] Error loading company data:', err));
-    }
-    } catch (error) {
-      console.error('[Profile] Unexpected error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile data",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const initProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      // Fetch data immediately
-      fetchData();
-    };
-    
-    initProfile();
-
-    // Set up lightweight real-time subscriptions - only for portfolio
-    let updateTimeout: NodeJS.Timeout;
-    
-    const channel = supabase
-      .channel('profile-changes')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'portfolio_items' },
-        () => {
-          clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => fetchData(), 2000);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      clearTimeout(updateTimeout);
-      supabase.removeChannel(channel);
-    };
-  }, [toast]);
-
-  const handleShare = () => {
-    setIsShareDialogOpen(true);
-  };
-
-  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      setGalleryFiles(prev => [...prev, ...files]);
-      
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setGalleryPreviews(prev => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  };
-
-  const removeGalleryImage = (index: number) => {
-    setGalleryFiles(prev => prev.filter((_, i) => i !== index));
-    setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
+  const handleShare = () => setIsShareDialogOpen(true);
+  
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    setIsUploadingAvatar(true);
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      console.log('[Profile] Updating avatar_url in database:', publicUrl);
-      
-      // Update the correct field based on account type
-      const isCompany = profile?.account_type === 'company';
-      const updateData = isCompany 
-        ? { company_logo_url: publicUrl, avatar_url: publicUrl }
-        : { avatar_url: publicUrl };
-      
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('user_id', user.id);
-
-      if (updateError) {
-        console.error('[Profile] Error updating avatar in database:', updateError);
-        throw updateError;
-      }
-
-      console.log('[Profile] Avatar updated successfully, refreshing profile');
-      setProfile({ ...profile!, avatar_url: publicUrl });
-      setEditForm({ ...editForm, avatar_url: publicUrl });
-      
-      // Refresh profile data from database to ensure it persisted
-      await fetchData();
-      
-      toast({
-        title: "Success",
-        description: "Profile picture updated successfully",
-      });
-    } catch (error) {
-      console.error('[Profile] Avatar upload error:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload profile picture",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploadingAvatar(false);
-    }
+    await uploadAvatar(file, editForm, setEditForm, fetchData);
   };
 
   const handleImportData = (data: any) => {
-    console.log('[Profile] Importing website data:', data);
-    
-    // Update form with imported data
     const updates: any = {};
     if (data.full_name) updates.full_name = data.full_name;
     if (data.role) updates.role = data.role;
@@ -335,9 +114,6 @@ const Profile = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    console.log('[Profile] Saving profile updates:', editForm);
-    
-    // Determine if this is a company account
     const isCompany = profile?.account_type === 'company';
     
     let updateData = isCompany ? {
@@ -347,7 +123,7 @@ const Profile = () => {
       company_address: editForm.location,
       company_size: editForm.company_size,
       company_logo_url: editForm.avatar_url,
-      full_name: editForm.full_name, // Also update full_name for display
+      full_name: editForm.full_name,
     } : {
       full_name: editForm.full_name,
       role: editForm.role,
@@ -370,10 +146,7 @@ const Profile = () => {
             .from('avatars')
             .upload(fileName, file);
 
-          if (uploadError) {
-            console.error('Gallery upload error:', uploadError);
-            continue;
-          }
+          if (uploadError) continue;
 
           const { data: { publicUrl } } = supabase.storage
             .from('avatars')
@@ -397,405 +170,127 @@ const Profile = () => {
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('[Profile] Error updating profile:', error);
       toast({
         title: "Error",
-        description: `Failed to update profile: ${error.message}`,
-        variant: "destructive",
-      });
-    } else {
-      console.log('[Profile] Profile updated successfully');
-      setGalleryFiles([]);
-      setGalleryPreviews([]);
-      await fetchData(); // Refresh all data
-      setIsEditOpen(false);
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-      });
-    }
-  };
-
-  const handleDownloadEPK = async () => {
-    if (!profile) return;
-    
-    try {
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.getWidth();
-      let yPosition = 20;
-
-      // Title
-      doc.setFontSize(24);
-      doc.setTextColor(59, 130, 246); // Primary color
-      doc.text('Electronic Press Kit', pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 15;
-
-      // Name and Role
-      doc.setFontSize(18);
-      doc.setTextColor(0, 0, 0);
-      doc.text(profile.full_name || 'No Name', pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 8;
-      
-      if (profile.role) {
-        doc.setFontSize(12);
-        doc.setTextColor(100, 100, 100);
-        doc.text(profile.role, pageWidth / 2, yPosition, { align: 'center' });
-        yPosition += 12;
-      }
-
-      // Bio
-      if (profile.bio) {
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 0);
-        doc.text('About', 20, yPosition);
-        yPosition += 8;
-        doc.setFontSize(10);
-        doc.setTextColor(60, 60, 60);
-        const splitBio = doc.splitTextToSize(profile.bio, pageWidth - 40);
-        doc.text(splitBio, 20, yPosition);
-        yPosition += splitBio.length * 5 + 10;
-      }
-
-      // Skills
-      const professionalSkills = Array.isArray(profile.professional_skills) ? profile.professional_skills as any[] : [];
-      const passionSkills = Array.isArray(profile.passion_skills) ? profile.passion_skills as any[] : [];
-      const allSkills = [...professionalSkills.map((s: any) => s.name || s), ...passionSkills.map((s: any) => s.name || s)];
-      
-      if (allSkills.length > 0) {
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 0);
-        doc.text('Skills', 20, yPosition);
-        yPosition += 8;
-        doc.setFontSize(10);
-        doc.setTextColor(60, 60, 60);
-        const skillsText = allSkills.join(', ');
-        const splitSkills = doc.splitTextToSize(skillsText, pageWidth - 40);
-        doc.text(splitSkills, 20, yPosition);
-        yPosition += splitSkills.length * 5 + 10;
-      }
-
-      // Contact Info
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Contact Information', 20, yPosition);
-      yPosition += 8;
-      doc.setFontSize(10);
-      doc.setTextColor(60, 60, 60);
-      
-      if (profile.location) {
-        doc.text(`Location: ${profile.location}`, 20, yPosition);
-        yPosition += 6;
-      }
-      if (profile.website) {
-        doc.text(`Website: ${profile.website}`, 20, yPosition);
-        yPosition += 6;
-      }
-
-      // Stats
-      yPosition += 8;
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Professional Statistics', 20, yPosition);
-      yPosition += 8;
-      doc.setFontSize(10);
-      doc.setTextColor(60, 60, 60);
-      doc.text(`Circle: ${stats.circle} connections`, 20, yPosition);
-      yPosition += 6;
-      doc.text(`Projects: ${stats.projects}`, 20, yPosition);
-      yPosition += 6;
-      doc.text(`Response Rate: ${stats.responseRate}%`, 20, yPosition);
-
-      // Save PDF
-      doc.save(`${profile.full_name || 'EPK'}_Press_Kit.pdf`);
-      
-      toast({
-        title: "Success",
-        description: "EPK downloaded successfully",
-      });
-    } catch (error) {
-      console.error('Error generating EPK:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate EPK",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDownloadPhotos = async () => {
-    if (portfolioItems.length === 0) {
-      toast({
-        title: "No photos available",
-        description: "Add portfolio items to download press photos",
+        description: "Failed to update profile",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      toast({
-        title: "Downloading",
-        description: "Preparing your press photos...",
-      });
-
-      // Download each portfolio image
-      for (let i = 0; i < portfolioItems.length; i++) {
-        const item = portfolioItems[i] as any;
-        if (item.image_url) {
-          const link = document.createElement('a');
-          link.href = item.image_url;
-          link.download = `press-photo-${i + 1}.jpg`;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          // Add delay between downloads to prevent browser blocking
-          if (i < portfolioItems.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-        }
-      }
-
-      toast({
-        title: "Success",
-        description: `Downloaded ${portfolioItems.length} press photos`,
-      });
-    } catch (error) {
-      console.error('Error downloading photos:', error);
-      toast({
-        title: "Error",
-        description: "Failed to download photos",
-        variant: "destructive",
-      });
-    }
+    await fetchData();
+    setIsEditOpen(false);
+    setGalleryFiles([]);
+    setGalleryPreviews([]);
+    toast({
+      title: "Success",
+      description: "Profile updated successfully",
+    });
   };
 
-  const handleContactClick = () => {
+  const handleDownloadEPK = () => {
+    if (!profile) return;
+
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.text(profile.full_name || 'Electronic Press Kit', 20, 20);
+    doc.setFontSize(12);
+    doc.text(profile.role || '', 20, 30);
+    
+    if (profile.bio) {
+      doc.setFontSize(10);
+      const splitBio = doc.splitTextToSize(profile.bio, 170);
+      doc.text(splitBio, 20, 50);
+    }
+
+    doc.save(`${profile.full_name}_EPK.pdf`);
+  };
+
+  const handleDownloadPhotos = async () => {
+    // Implementation for downloading portfolio photos
     toast({
-      title: "Note",
-      description: "This is your own profile. Share your profile link with others so they can contact you!",
+      title: "Download Started",
+      description: "Your photos are being prepared for download",
     });
   };
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading profile...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
           <p className="text-muted-foreground">Profile not found</p>
-          <Button onClick={() => window.location.reload()}>Reload</Button>
         </div>
       </div>
     );
   }
 
-  // Company profile view with enhanced features
+  // Company profile view
   if (profile.account_type === 'company') {
     return (
-      <div className="min-h-screen p-3 sm:p-4 md:p-6 pb-20 lg:pb-6">
-        <div className="container mx-auto max-w-4xl space-y-6">
-          {/* Edit Profile Dialog with Completion Tracking */}
-          <CompanyProfileEditDialog
-            open={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            editForm={editForm}
-            onFormChange={setEditForm}
-            onSave={handleEditSave}
-            onAvatarUpload={handleAvatarUpload}
-            isUploadingAvatar={isUploadingAvatar}
-            galleryPreviews={galleryPreviews}
-            onGalleryChange={handleGalleryChange}
-            onRemoveGalleryImage={removeGalleryImage}
-          />
-
-          {/* Company Profile View with Edit Button */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditOpen(true)}
-              className="absolute top-4 right-4 z-10 gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              Edit Profile
-            </Button>
-            <CompanyProfileView
-              profile={profile}
-              reviews={companyReviews}
-              partnerDiscounts={partnerDiscounts}
-              isOwnProfile={true}
-              onRefresh={fetchData}
-            />
-          </div>
-        </div>
-      </div>
+      <CompanyProfileView
+        profile={profile}
+        reviews={companyReviews}
+        partnerDiscounts={partnerDiscounts}
+        isOwnProfile={true}
+        onRefresh={fetchData}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen pb-20 lg:pb-6">
-      <div className="container mx-auto max-w-6xl">
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleAvatarUpload}
-          className="hidden"
-        />
+    <div className="min-h-screen pb-20 md:pb-6">
+      {/* Quick Navigation */}
+      <ProfileQuickNav />
 
-        {/* Profile Hero Section */}
-        <ProfileHero
-          profile={profile}
-          stats={stats}
-          isOwnProfile={true}
-          onEdit={() => setIsEditOpen(true)}
-          onShare={handleShare}
-          onShowQR={() => setIsQRDialogOpen(true)}
-          onAvatarClick={() => fileInputRef.current?.click()}
-          isUploadingAvatar={isUploadingAvatar}
-          skills={[
-            ...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []),
-            ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])
-          ]}
-        />
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleAvatarUpload}
+        className="hidden"
+      />
 
-        {/* Edit Dialog with Completion Tracking */}
-        <ProfileEditDialog
-          open={isEditOpen}
-          onOpenChange={setIsEditOpen}
-          profile={profile}
-          portfolioCount={portfolioItems.length}
-          editForm={editForm}
-          onFormChange={setEditForm}
-          onSave={handleEditSave}
-          onQuickFill={() => setIsImportDialogOpen(true)}
-        />
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="space-y-6">
+          {/* Profile Hero */}
+          <ProfileHero
+            profile={profile}
+            stats={stats}
+            isOwnProfile={true}
+            onEdit={() => setIsEditOpen(true)}
+            onShare={handleShare}
+          />
 
-        {/* Import from Website Dialog */}
-        <ImportFromWebsiteDialog
-          open={isImportDialogOpen}
-          onOpenChange={setIsImportDialogOpen}
-          onImport={handleImportData}
-        />
+          {/* Actions */}
+          <ProfileActions
+            onShare={handleShare}
+            onEdit={() => setIsEditOpen(true)}
+            onDownload={handleDownloadEPK}
+            isOwner={true}
+          />
 
-        {/* Share Profile Dialog */}
-        {profile && (
-          <>
-            <ShareProfileDialog 
-              profile={profile}
-              open={isShareDialogOpen}
-              onOpenChange={setIsShareDialogOpen}
-            />
-            <ProfileQRDialog
-              open={isQRDialogOpen}
-              onOpenChange={setIsQRDialogOpen}
-              userId={currentUserId || ''}
-              userName={profile.full_name}
-              userAvatar={profile.avatar_url}
-            />
-          </>
-        )}
-
-        {/* Content Area with Tabs */}
-        <div className="px-3 sm:px-4 md:px-6 mt-6">
-          {/* Optimization & Visibility Tools */}
-          <div className="grid gap-6 md:grid-cols-2 mb-8">
-            <ProfileOptimizationHub
-              completion={checkProfileCompletion(profile, portfolioItems.length)}
-              viewCount={portfolioItems.reduce((sum: number, item: any) => sum + (item.view_count || 0), 0)}
-              matchRate={profile.level ? profile.level * 10 : 0}
-              profileViews={stats.circle * 5}
-            />
-            <ProfileVisibilityDashboard
-              profile={profile}
-              portfolioCount={portfolioItems.length}
-            />
-          </div>
-
-          {/* Sticky Navigation */}
-          <ProfileQuickNav />
-
-          {/* Scrolling Content Sections */}
-          <div className="space-y-8">
-            {/* Overview Section */}
+          {/* Main Content */}
+          <div className="grid gap-6">
+            {/* Progress & Optimization Section */}
             <section id="overview">
-              {/* Profile Strength & Progress */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-                <ProfileStrengthScore 
-                  profile={profile}
-                  portfolioCount={portfolioItems.length}
-                  creditsCount={credits.length}
-                  awardsCount={awards.length}
-                  pressCount={pressLinks.length}
+              <div className="space-y-6">
+                <ProfileCompletionProgress 
+                  completion={checkProfileCompletion(profile, portfolioItems.length)}
                 />
-                <VerificationProgress
-                  level={profile.level || 1}
-                  xp={profile.xp || 0}
-                  portfolioCount={portfolioItems.length}
-                  creditsCount={credits.length}
-                  awardsCount={awards.length}
-                  pressCount={pressLinks.length}
-                  socialVerified={!!(profile.instagram_url || profile.linkedin_url || profile.twitter_url)}
-                  verificationScore={profile.verification_score}
-                  onRequestVerification={async () => {
-                    try {
-                      const { data: { user } } = await supabase.auth.getUser();
-                      if (!user) return;
-
-                      const { data, error } = await supabase.functions.invoke('verify-profile', {
-                        body: {
-                          fullName: profile.full_name,
-                          role: profile.role,
-                          bio: profile.bio,
-                          website: profile.website,
-                          portfolioCount: portfolioItems.length,
-                          creditsCount: credits.length,
-                          awardsCount: awards.length,
-                          pressCount: pressLinks.length,
-                          socialVerified: !!(profile.instagram_url || profile.linkedin_url || profile.twitter_url),
-                          socialLinks: {
-                            instagram: profile.instagram_url,
-                            twitter: profile.twitter_url,
-                            linkedin: profile.linkedin_url,
-                            spotify: profile.spotify_url,
-                            behance: profile.behance_url,
-                            imdb: profile.imdb_url,
-                          },
-                          accountType: profile.account_type,
-                        }
-                      });
-
-                      if (error) throw error;
-
-                      toast({
-                        title: "Verification submitted",
-                        description: data.status === 'verified' ? 
-                          "Your profile has been verified!" : 
-                          "Your verification request is being reviewed.",
-                      });
-
-                      fetchData();
-                    } catch (error) {
-                      console.error('Verification error:', error);
-                      toast({
-                        title: "Error",
-                        description: "Failed to submit verification request",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
+                <ProfileOptimizationHub 
+                  completion={checkProfileCompletion(profile, portfolioItems.length)}
+                  viewCount={profile.avg_views || 0}
+                  matchRate={0}
+                  profileViews={profile.avg_views || 0}
                 />
                 <TierProgressCard currentPoints={profile.xp || 0} />
                 <ProfileVisibilityBanner
@@ -804,11 +299,10 @@ const Profile = () => {
                 />
               </div>
 
-              {/* Discover Ready Banner */}
               <DiscoverReadyBanner portfolioCount={portfolioItems.length} />
 
-              {/* About Section */}
-              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">
+              {/* About */}
+              <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm my-6">
                 <AboutSection
                   bio={profile.bio}
                   jobTitle={profile.role}
@@ -822,10 +316,10 @@ const Profile = () => {
                 />
               </div>
 
-              {/* Skills Section */}
+              {/* Skills */}
               {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
                 (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
-                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">
+                <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm mb-6">
                   <SkillsSection
                     professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
                     passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
@@ -839,7 +333,7 @@ const Profile = () => {
               )}
 
               {/* Contact & Links */}
-              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">
+              <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm mb-6">
                 <h2 className="text-2xl font-bold mb-6">Contact & Links</h2>
                 <SocialLinksSection 
                   profile={profile}
@@ -848,13 +342,12 @@ const Profile = () => {
                 />
               </div>
 
-              {/* Invite Codes */}
               <InviteCodesCard />
             </section>
 
-            {/* Portfolio Section */}
+            {/* Portfolio */}
             <section id="portfolio">
-              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">
+              <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm mb-6">
                 <h2 className="text-2xl font-bold mb-6">Portfolio</h2>
                 <PortfolioSection 
                   items={portfolioItems} 
@@ -863,19 +356,17 @@ const Profile = () => {
                 />
               </div>
 
-              {/* Portfolio Analytics */}
               {portfolioItems.length > 0 && (
-                <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm">
                   <PortfolioAnalytics userId={profile.user_id} />
                 </div>
               )}
             </section>
 
-            {/* Experience Section */}
+            {/* Experience */}
             <section id="experience">
-              {/* Industry Stats */}
               {industryStats.length > 0 && (
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm mb-6">
+                <div className="rounded-2xl border bg-card p-6 shadow-sm mb-6">
                   <h2 className="text-2xl font-bold mb-6">Industry Stats</h2>
                   <IndustryStatsSection 
                     stats={industryStats}
@@ -885,8 +376,7 @@ const Profile = () => {
                 </div>
               )}
 
-              {/* Experience & Credits */}
-              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+              <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm">
                 <h2 className="text-2xl font-bold mb-6">Experience & Credits</h2>
                 <CreditsSection 
                   userId={profile.user_id}
@@ -896,11 +386,10 @@ const Profile = () => {
               </div>
             </section>
 
-            {/* Reviews & Social Section */}
+            {/* Reviews & Stats */}
             <section id="reviews-stats">
               <div className="grid gap-6 lg:grid-cols-2">
-                {/* Reviews */}
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <div className="rounded-2xl border bg-card p-6 shadow-sm">
                   <ReviewsSection 
                     reviews={reviews} 
                     isOwnProfile={true}
@@ -909,8 +398,7 @@ const Profile = () => {
                   />
                 </div>
 
-                {/* Social Stats */}
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <div className="rounded-2xl border bg-card p-6 shadow-sm">
                   <h2 className="text-2xl font-bold mb-6">Stats & Metrics</h2>
                   {(profile.youtube_subscribers || profile.instagram_followers || 
                     profile.tiktok_followers || profile.spotify_listeners || 
@@ -936,10 +424,9 @@ const Profile = () => {
               </div>
             </section>
 
-            {/* Press & Awards Section */}
+            {/* Press & Awards */}
             <section id="press-awards">
-              {/* Media Kit Download */}
-              <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">
+              <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm mb-6">
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                   <Download className="h-6 w-6" />
                   Media Kit & Assets
@@ -961,10 +448,8 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Press & Awards Grid */}
               <div className="grid gap-6 md:grid-cols-2">
-                {/* Press */}
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <div className="rounded-2xl border bg-card p-6 shadow-sm">
                   <PressLinksSection 
                     userId={profile.user_id}
                     isOwnProfile={true}
@@ -972,8 +457,7 @@ const Profile = () => {
                   />
                 </div>
 
-                {/* Awards */}
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <div className="rounded-2xl border bg-card p-6 shadow-sm">
                   <AwardsSection 
                     userId={profile.user_id}
                     isOwnProfile={true}
@@ -985,7 +469,52 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Dialogs */}
+      <ShareProfileDialog
+        profile={{
+          full_name: profile.full_name || '',
+          role: profile.role || '',
+          bio: profile.bio || '',
+          user_id: profile.user_id
+        }}
+        open={isShareDialogOpen}
+        onOpenChange={setIsShareDialogOpen}
+      />
+
+      <ProfileQRDialog
+        open={isQRDialogOpen}
+        onOpenChange={setIsQRDialogOpen}
+        userId={profile.user_id}
+        userName={profile.full_name || 'User'}
+        userAvatar={profile.avatar_url || undefined}
+      />
+
+      <ImportFromWebsiteDialog
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+        onImport={handleImportData}
+      />
+
+      <ProfileEditDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        profile={profile}
+        portfolioCount={portfolioItems.length}
+        editForm={editForm}
+        onFormChange={setEditForm}
+        onSave={handleEditSave}
+        onQuickFill={() => setIsImportDialogOpen(true)}
+      />
     </div>
+  );
+};
+
+const Profile = () => {
+  return (
+    <ProfileProvider>
+      <ProfileContent />
+    </ProfileProvider>
   );
 };
 

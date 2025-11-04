@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Users, Briefcase, Wallet, Zap, Lightbulb, Rocket, Trophy, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { ThriveDeskShowcase } from "@/components/landing/ThriveDeskShowcase";
 import { PostOpportunitySection } from "@/components/landing/PostOpportunitySection";
 import { FeatureCard } from "@/components/landing/FeatureCard";
 import { PricingCard } from "@/components/landing/PricingCard";
@@ -40,6 +41,9 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       <HeroSection />
+      
+      {/* ThriveDesk Showcase - NEW */}
+      <ThriveDeskShowcase />
       
       {/* Sign Up Section */}
       <section id="signup" className="px-6 py-20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
@@ -153,39 +157,39 @@ const Landing = () => {
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
-              icon={<Trophy className="h-8 w-8" />}
-              title="Verified Social Stats & Industry Recognition"
-              description="Connect Instagram, YouTube, TikTok, Spotify—display verified metrics alongside awards, press features, and professional credits in one unified profile"
-              gradient="from-primary to-secondary"
-            />
-            <FeatureCard
-              icon={<Sparkles className="h-8 w-8" />}
-              title="AI-Powered Brand Matching"
-              description="Smart algorithms analyze your skills, portfolio, audience demographics, and location to match you with relevant brand opportunities and campaigns"
-              gradient="from-secondary to-accent"
-            />
-            <FeatureCard
-              icon={<Users className="h-8 w-8" />}
-              title="Geographic Network Discovery"
-              description="Connect with creators, photographers, videographers, and brands in your area for local collaborations, shoots, and in-person projects"
-              gradient="from-accent to-primary"
-            />
-            <FeatureCard
               icon={<Rocket className="h-8 w-8" />}
-              title="Integrated Project Workspace"
-              description="Collaborate in real-time with built-in task boards, file sharing, milestone tracking, and team communication—whether solo or managing multiple collaborators"
+              title="Complete Project Workspace"
+              description="Built-in task boards, real-time chat, file sharing, and milestone tracking. Stop juggling 5 different tools—everything you need in one place"
               gradient="from-primary to-secondary"
             />
             <FeatureCard
               icon={<Wallet className="h-8 w-8" />}
-              title="Milestone-Based Payment Protection"
-              description="Secure escrow system holds funds and releases payments as deliverables are completed, protecting both creators and clients throughout the project lifecycle"
+              title="Payment Protection with Escrow"
+              description="Funds held safely until work is approved. Milestone-based releases protect both creators and clients. No more PayPal drama or payment disputes"
+              gradient="from-secondary to-accent"
+            />
+            <FeatureCard
+              icon={<Sparkles className="h-8 w-8" />}
+              title="AI-Powered Matching"
+              description="Smart algorithms analyze your skills, portfolio, and audience to match you with relevant brand opportunities and collaborators"
+              gradient="from-accent to-primary"
+            />
+            <FeatureCard
+              icon={<Trophy className="h-8 w-8" />}
+              title="Verified Professional Profile"
+              description="Connect Instagram, YouTube, TikTok, Spotify—display verified metrics alongside awards, press features, and portfolio work in one unified profile"
+              gradient="from-primary to-secondary"
+            />
+            <FeatureCard
+              icon={<Users className="h-8 w-8" />}
+              title="Geographic Discovery"
+              description="Connect with creators, brands, and collaborators in your area for local projects, shoots, and in-person collaborations"
               gradient="from-secondary to-accent"
             />
             <FeatureCard
               icon={<Briefcase className="h-8 w-8" />}
-              title="Professional Portfolio & Social Proof"
-              description="Showcase your best work with rich media support, collect verified client reviews, and build credibility that converts opportunities into partnerships"
+              title="Portfolio & Social Proof"
+              description="Showcase your best work with rich media support, collect verified client reviews, and build credibility that converts opportunities"
               gradient="from-accent to-primary"
             />
           </div>

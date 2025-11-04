@@ -17,13 +17,15 @@ import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteD
 import { MatchedProfilesStep } from "@/components/onboarding/MatchedProfilesStep";
 import { ConnectionSuccessStep } from "@/components/onboarding/ConnectionSuccessStep";
 import { AddPortfolioStep } from "@/components/onboarding/AddPortfolioStep";
+import { WorkspacePreviewStep } from "@/components/onboarding/WorkspacePreviewStep";
 
 const STEPS = [
   { id: 1, title: "Profile", icon: Users },
   { id: 2, title: "Skills", icon: Award },
   { id: 3, title: "Portfolio", icon: Briefcase },
-  { id: 4, title: "Connect", icon: Sparkles },
-  { id: 5, title: "Success", icon: Star },
+  { id: 4, title: "Workspace", icon: Briefcase },
+  { id: 5, title: "Connect", icon: Sparkles },
+  { id: 6, title: "Success", icon: Star },
 ];
 
 interface Skill {
@@ -403,7 +405,7 @@ export default function Onboarding() {
     }
   };
 
-  const progress = (currentStep / 5) * 100;
+  const progress = (currentStep / 6) * 100;
 
   return (
     <>
@@ -605,22 +607,26 @@ export default function Onboarding() {
         )}
 
         {currentStep === 4 && (
+          <WorkspacePreviewStep />
+        )}
+
+        {currentStep === 5 && (
           <MatchedProfilesStep 
             onComplete={(count) => {
               setConnectionCount(count);
-              setCurrentStep(5);
+              setCurrentStep(6);
             }} 
           />
         )}
 
-        {currentStep === 5 && (
+        {currentStep === 6 && (
           <ConnectionSuccessStep
             connectionCount={connectionCount}
             onComplete={completeOnboarding}
           />
         )}
 
-        {currentStep !== 3 && currentStep !== 4 && currentStep !== 5 && (
+        {currentStep !== 3 && currentStep !== 4 && currentStep !== 5 && currentStep !== 6 && (
           <div className="flex gap-3 mt-8">
             {currentStep > 1 && (
               <Button
@@ -644,6 +650,23 @@ export default function Onboarding() {
               ) : (
                 "Continue"
               )}
+            </Button>
+          </div>
+        )}
+
+        {currentStep === 4 && (
+          <div className="flex gap-3 mt-8">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep(currentStep - 1)}
+            >
+              Back
+            </Button>
+            <Button
+              onClick={() => setCurrentStep(5)}
+              className="flex-1"
+            >
+              Got it! Show Me Matches
             </Button>
           </div>
         )}

@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MessageCircle, X } from "lucide-react";
+import { Sparkles, MessageCircle, X, Briefcase, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -11,6 +11,7 @@ interface MatchCelebrationDialogProps {
     name: string;
     avatar: string;
     role: string;
+    userId?: string;
   };
   onSendMessage: () => void;
 }
@@ -109,27 +110,47 @@ export const MatchCelebrationDialog = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="space-y-3 pt-4">
             <Button
-              variant="outline"
-              className="flex-1"
+              className="w-full bg-gradient-to-r from-primary to-primary/80 shadow-glow"
+              size="lg"
               onClick={() => {
                 onOpenChange(false);
-                navigate('/spark');
+                navigate('/projects');
               }}
             >
-              View in Spark
+              <Briefcase className="h-5 w-5 mr-2" />
+              Create Protected Workspace
             </Button>
-            <Button
-              className="flex-1 bg-gradient-to-r from-primary to-primary/80"
-              onClick={() => {
-                onSendMessage();
-                onOpenChange(false);
-              }}
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Send Message
-            </Button>
+            
+            <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
+              <Shield className="h-3.5 w-3.5 text-primary" />
+              <span>Escrow payments • Task board • Chat • Files</span>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  onSendMessage();
+                  onOpenChange(false);
+                }}
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Message
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate('/spark');
+                }}
+              >
+                View Profile
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

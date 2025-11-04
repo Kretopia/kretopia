@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle, Crown, Zap, HelpCircle, ArrowRight } from "lucide-react";
+import { X, Flame, Star, MapPin, DollarSign, Sparkles, Users, Eye, CheckCircle2, Image, Video, Music, UserCircle, Coins, AlertCircle, Crown, Zap, HelpCircle, ArrowRight, Briefcase } from "lucide-react";
 import { TooltipHint } from "@/components/ui/tooltip-hint";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -836,24 +836,34 @@ const Discover = () => {
                     <div className="relative h-96 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10">
                       <div className="text-center p-6">
                         <Sparkles className="mx-auto mb-4 h-16 w-16 text-primary animate-pulse" />
-                        <h2 className="mb-2 text-2xl font-bold">No opportunities available</h2>
-                        <p className="text-muted-foreground mb-4">
+                        <h2 className="mb-2 text-2xl font-bold">All Caught Up!</h2>
+                        <p className="text-muted-foreground mb-6">
                           {cards.length === 0 
-                            ? "There are no opportunities from other creators at the moment. Check back soon or post your own opportunity!"
-                            : "You've seen all available opportunities. Check back soon for more!"}
+                            ? "No opportunities available right now. Post your own or check back soon!"
+                            : "You've seen all opportunities. Ready to start your protected workspace with one of your matches?"}
                         </p>
-                        <div className="flex gap-2 justify-center">
+                        <div className="flex flex-col gap-3 items-center">
                           <Button 
-                            variant="outline" 
-                            onClick={() => window.location.reload()}
+                            onClick={() => navigate('/projects')}
+                            className="shadow-glow"
+                            size="lg"
                           >
-                            Refresh
+                            <Briefcase className="h-5 w-5 mr-2" />
+                            View Your Workspaces
                           </Button>
-                          <Button 
-                            onClick={() => navigate('/manage-opportunities')}
-                          >
-                            Post Opportunity
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => window.location.reload()}
+                            >
+                              Refresh
+                            </Button>
+                            <Button 
+                              onClick={() => navigate('/manage-opportunities')}
+                            >
+                              Post Opportunity
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>

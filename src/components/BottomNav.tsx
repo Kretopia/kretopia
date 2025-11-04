@@ -26,7 +26,7 @@ const BottomNav = memo(() => {
   
   const navItems = [
     { path: "/spark", icon: Flame, label: "Spark" },
-    { path: "/discover", icon: Compass, label: "Match" },
+    { path: "/discover", icon: Compass, label: "Discover" },
     { path: "/circle", icon: Users, label: "Circle" },
     { path: "/projects", icon: Briefcase, label: "Desk" },
   ];

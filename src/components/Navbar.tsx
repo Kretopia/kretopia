@@ -142,7 +142,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           onClick={() => handleNavigation("/discover")}
                         >
                           <Compass className="h-5 w-5" />
-                          Match
+                          Discover
                         </Button>
                         <Button 
                           variant="ghost" 

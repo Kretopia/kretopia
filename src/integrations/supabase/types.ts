@@ -195,6 +195,157 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_entries: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          description: string | null
+          id: string
+          media_type: string
+          media_url: string
+          status: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          vote_count: number | null
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          media_type: string
+          media_url: string
+          status?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          vote_count?: number | null
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          media_type?: string
+          media_url?: string
+          status?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          vote_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_entries_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_votes: {
+        Row: {
+          created_at: string
+          entry_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_votes_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          brand_logo_url: string | null
+          brand_name: string | null
+          budget: string | null
+          category: string
+          created_at: string
+          created_by: string
+          deadline: string
+          description: string
+          id: string
+          max_entries: number | null
+          prize_amount: number | null
+          prize_description: string | null
+          requirements: string | null
+          status: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          type: string
+          updated_at: string
+          voting_ends_at: string | null
+        }
+        Insert: {
+          brand_logo_url?: string | null
+          brand_name?: string | null
+          budget?: string | null
+          category: string
+          created_at?: string
+          created_by: string
+          deadline: string
+          description: string
+          id?: string
+          max_entries?: number | null
+          prize_amount?: number | null
+          prize_description?: string | null
+          requirements?: string | null
+          status?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          voting_ends_at?: string | null
+        }
+        Update: {
+          brand_logo_url?: string | null
+          brand_name?: string | null
+          budget?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string
+          deadline?: string
+          description?: string
+          id?: string
+          max_entries?: number | null
+          prize_amount?: number | null
+          prize_description?: string | null
+          requirements?: string | null
+          status?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          voting_ends_at?: string | null
+        }
+        Relationships: []
+      }
       company_reviews: {
         Row: {
           company_id: string

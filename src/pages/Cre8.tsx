@@ -1,87 +1,178 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Flame, Trophy, TrendingUp, Users, DollarSign, Calendar, Eye, Heart, MessageCircle } from "lucide-react";
+import { Flame, Trophy, TrendingUp, Users, DollarSign, Calendar, Eye, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { supabase } from "@/integrations/supabase/client";
+import { ChallengeDetailDialog } from "@/components/cre8/ChallengeDetailDialog";
+import { formatDistanceToNow } from "date-fns";
+
+interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  type: string;
+  deadline: string;
+  prize_description: string | null;
+  prize_amount: number | null;
+  budget: string | null;
+  thumbnail_url: string | null;
+  brand_name: string | null;
+  brand_logo_url: string | null;
+  entries?: { count: number }[];
+  votes?: { count: number }[];
+}
 
 const Cre8 = () => {
   const [activeTab, setActiveTab] = useState("platform");
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
 
-  // Mock data for platform challenges
-  const platformChallenges = [
-    {
-      id: 1,
-      title: "Golden Hour Cityscape",
-      category: "Photography",
-      description: "Capture the perfect golden hour moment in an urban setting",
-      deadline: "3 days left",
-      prize: "500 XP + Featured Portfolio",
-      entries: 42,
-      votes: 128,
-      thumbnail: "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400"
-    },
-    {
-      id: 2,
-      title: "Lofi Beat Challenge",
-      category: "Music",
-      description: "Create a 2-minute lofi beat with vinyl crackle",
-      deadline: "5 days left",
-      prize: "1000 XP + Spotlight",
-      entries: 28,
-      votes: 89,
-      thumbnail: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400"
-    },
-    {
-      id: 3,
-      title: "30 Second Story",
-      category: "Short Film",
-      description: "Tell a complete story in just 30 seconds",
-      deadline: "1 week left",
-      prize: "1500 XP + Career Boost",
-      entries: 15,
-      votes: 45,
-      thumbnail: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400"
-    }
-  ];
+  useEffect(() => {
+    loadChallenges();
+  }, [activeTab]);
 
-  // Mock data for brand challenges
-  const brandChallenges = [
-    {
-      id: 1,
-      title: "Eco Fashion Logo Design",
-      brand: "GreenThreads Co.",
-      category: "Design",
-      description: "Design a modern logo for sustainable fashion brand",
-      budget: "$500",
-      deadline: "2 weeks",
-      applicants: 12,
-      thumbnail: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=400"
-    },
-    {
-      id: 2,
-      title: "Product Launch Video",
-      brand: "TechFlow",
-      category: "Video",
-      description: "Create a 60-second product launch video",
-      budget: "$1,200",
-      deadline: "10 days",
-      applicants: 8,
-      thumbnail: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400"
-    },
-    {
-      id: 3,
-      title: "UGC Content Series",
-      brand: "FitLife",
-      category: "UGC",
-      description: "5-piece UGC content series for fitness app",
-      budget: "$800",
-      deadline: "3 weeks",
-      applicants: 18,
-      thumbnail: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400"
+  const loadChallenges = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('type', activeTab)
+        .eq('status', 'active')
+        .order('deadline', { ascending: true });
+
+      if (error) throw error;
+
+      // Get counts for each challenge
+      const challengesWithCounts = await Promise.all(
+        (data || []).map(async (challenge) => {
+          const { count: entryCount } = await supabase
+            .from('challenge_entries')
+            .select('*', { count: 'exact', head: true })
+            .eq('challenge_id', challenge.id);
+
+          const { count: voteCount } = await supabase
+            .from('challenge_votes')
+            .select('*', { count: 'exact', head: true })
+            .in('entry_id', 
+              (await supabase
+                .from('challenge_entries')
+                .select('id')
+                .eq('challenge_id', challenge.id)).data?.map(e => e.id) || []
+            );
+
+          return {
+            ...challenge,
+            entries: [{ count: entryCount || 0 }],
+            votes: [{ count: voteCount || 0 }]
+          };
+        })
+      );
+
+      setChallenges(challengesWithCounts);
+    } catch (error) {
+      console.error('Load challenges error:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const getDaysLeft = (deadline: string) => {
+    const days = Math.ceil(
+      (new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
+    return days;
+  };
+
+  const renderChallenges = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    if (challenges.length === 0) {
+      return (
+        <Card className="text-center py-12">
+          <CardContent>
+            <Trophy className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-xl font-bold mb-2">No Active Challenges</h3>
+            <p className="text-muted-foreground">
+              Check back soon for new creative challenges!
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{challenges.map((challenge) => {
+          const daysLeft = getDaysLeft(challenge.deadline);
+          const entryCount = challenge.entries?.[0]?.count || 0;
+          const voteCount = challenge.votes?.[0]?.count || 0;
+
+          return (
+            <Card key={challenge.id} className="hover-lift overflow-hidden group cursor-pointer" onClick={() => setSelectedChallengeId(challenge.id)}>
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={challenge.thumbnail_url || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400"}
+                  alt={challenge.title}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                />
+                <Badge className="absolute top-3 left-3 bg-background/90 backdrop-blur">
+                  {challenge.category}
+                </Badge>
+                <div className={`absolute bottom-3 right-3 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 ${
+                  daysLeft <= 3 ? 'bg-destructive/90 text-destructive-foreground' : 'bg-background/90'
+                }`}>
+                  <Calendar className="h-3 w-3" />
+                  {daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}
+                </div>
+              </div>
+              <CardHeader>
+                {challenge.brand_name && (
+                  <div className="flex items-center gap-2 mb-2">
+                    {challenge.brand_logo_url && (
+                      <img src={challenge.brand_logo_url} alt={challenge.brand_name} className="h-6 w-6 rounded" />
+                    )}
+                    <span className="text-sm font-semibold">{challenge.brand_name}</span>
+                  </div>
+                )}
+                <CardTitle className="text-xl">{challenge.title}</CardTitle>
+                <CardDescription className="line-clamp-2">{challenge.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-4 text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      {entryCount}
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-primary font-semibold">
+                    <Trophy className="h-4 w-4" />
+                    {challenge.prize_description || challenge.budget}
+                  </div>
+                </div>
+                <Button className="w-full" variant="gradient">
+                  View Challenge
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -121,58 +212,7 @@ const Cre8 = () => {
 
             {/* Platform Challenges Tab */}
             <TabsContent value="platform" className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {platformChallenges.map((challenge) => (
-                  <Card key={challenge.id} className="hover-lift overflow-hidden group">
-                    <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={challenge.thumbnail} 
-                        alt={challenge.title}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                      />
-                      <Badge className="absolute top-3 left-3 bg-background/90 backdrop-blur">
-                        {challenge.category}
-                      </Badge>
-                      <div className="absolute bottom-3 right-3 bg-background/90 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {challenge.deadline}
-                      </div>
-                    </div>
-                    <CardHeader>
-                      <CardTitle className="text-xl">{challenge.title}</CardTitle>
-                      <CardDescription>{challenge.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-4 text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            {challenge.entries}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Heart className="h-4 w-4" />
-                            {challenge.votes}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-                        <div className="flex items-center gap-2 text-primary font-semibold">
-                          <Trophy className="h-4 w-4" />
-                          {challenge.prize}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button className="flex-1" variant="gradient">
-                          Join Challenge
-                        </Button>
-                        <Button variant="outline" size="icon">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              {renderChallenges()}
 
               <Card className="bg-gradient-primary text-primary-foreground border-0">
                 <CardHeader>
@@ -192,47 +232,7 @@ const Cre8 = () => {
 
             {/* Brand Challenges Tab */}
             <TabsContent value="brand" className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {brandChallenges.map((challenge) => (
-                  <Card key={challenge.id} className="hover-lift overflow-hidden group">
-                    <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={challenge.thumbnail} 
-                        alt={challenge.title}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                      />
-                      <Badge className="absolute top-3 left-3 bg-background/90 backdrop-blur">
-                        {challenge.category}
-                      </Badge>
-                      <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-bold">
-                        {challenge.budget}
-                      </div>
-                    </div>
-                    <CardHeader>
-                      <CardTitle className="text-xl">{challenge.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground">{challenge.brand}</span>
-                      </CardDescription>
-                      <p className="text-sm text-muted-foreground mt-2">{challenge.description}</p>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Users className="h-4 w-4" />
-                          {challenge.applicants} applicants
-                        </div>
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          {challenge.deadline}
-                        </div>
-                      </div>
-                      <Button className="w-full" variant="gradient">
-                        Apply Now
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              {renderChallenges()}
 
               <Card className="bg-accent/5 border-accent/20">
                 <CardHeader>
@@ -266,6 +266,12 @@ const Cre8 = () => {
           </Tabs>
         </div>
       </div>
+
+      <ChallengeDetailDialog
+        open={!!selectedChallengeId}
+        onOpenChange={(open) => !open && setSelectedChallengeId(null)}
+        challengeId={selectedChallengeId || ""}
+      />
     </>
   );
 };

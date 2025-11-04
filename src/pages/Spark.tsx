@@ -109,19 +109,67 @@ const Circle = () => {
 
   // Optimized feed loading - fetch less data initially, load more on scroll
   const fetchBasicFeed = async (userId: string) => {
+    console.log('[Spark] 🚀 Starting fetchBasicFeed for user:', userId);
+    
     try {
-      // Fetch only recent content with smaller limits for faster initial load
+      console.log('[Spark] 📡 Fetching portfolio items...');
+      const portfolioPromise = supabase
+        .from('portfolio_items')
+        .select('*, profiles:user_id(full_name, avatar_url, role, location)')
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      console.log('[Spark] 📡 Fetching feed posts...');
+      const feedPostsPromise = supabase
+        .from('feed_posts')
+        .select('*, profiles:user_id(full_name, avatar_url, role, location)')
+        .order('created_at', { ascending: false })
+        .limit(8);
+
       const [portfolioData, feedPostsData] = await Promise.all([
-        supabase.from('portfolio_items').select('*, profiles:user_id(full_name, avatar_url, role, location)').order('created_at', { ascending: false }).limit(8),
-        supabase.from('feed_posts').select('*, profiles:user_id(full_name, avatar_url, role, location)').order('created_at', { ascending: false }).limit(8)
+        portfolioPromise,
+        feedPostsPromise
       ]);
+
+      console.log('[Spark] ✅ Portfolio items fetched:', {
+        count: portfolioData.data?.length || 0,
+        error: portfolioData.error,
+        sample: portfolioData.data?.[0]
+      });
+
+      console.log('[Spark] ✅ Feed posts fetched:', {
+        count: feedPostsData.data?.length || 0,
+        error: feedPostsData.error,
+        sample: feedPostsData.data?.[0]
+      });
+
+      if (portfolioData.error) {
+        console.error('[Spark] ❌ Portfolio error:', portfolioData.error);
+      }
+      
+      if (feedPostsData.error) {
+        console.error('[Spark] ❌ Feed posts error:', feedPostsData.error);
+      }
 
       // Combine only portfolio and posts for faster loading
       const allContent = [
         ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
         ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post' }))
-      ].filter(item => item.profiles)
+      ].filter(item => {
+        const hasProfile = !!item.profiles;
+        if (!hasProfile) {
+          console.warn('[Spark] ⚠️ Item missing profile:', item.id);
+        }
+        return hasProfile;
+      })
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      console.log('[Spark] 📦 Combined content:', {
+        totalItems: allContent.length,
+        portfolioCount: portfolioData.data?.length || 0,
+        postsCount: feedPostsData.data?.length || 0,
+        filteredOut: (portfolioData.data?.length || 0) + (feedPostsData.data?.length || 0) - allContent.length
+      });
 
       const feed: SparkItem[] = allContent.map((item: any) => {
         const profile = item.profiles;
@@ -144,12 +192,14 @@ const Circle = () => {
         };
       });
 
+      console.log('[Spark] ✨ Final feed created:', feed.length, 'items');
       setSparkFeed(feed);
       setCachedFeed(userId, feed);
     } catch (error) {
-      console.error('[Spark] Error loading basic feed:', error);
+      console.error('[Spark] ❌ Fatal error loading basic feed:', error);
       setSparkFeed([]);
     } finally {
+      console.log('[Spark] 🏁 Setting loading to false');
       setLoading(false);
     }
   };

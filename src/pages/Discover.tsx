@@ -170,7 +170,7 @@ const Discover = () => {
       setLoading(true);
       console.log('[Discover] User authenticated:', user.id);
 
-      // Batch all initial data fetching in parallel
+        // Batch all initial data fetching in parallel
       const [
         profileResult,
         portfolioResult,
@@ -182,7 +182,7 @@ const Discover = () => {
         supabase.from('portfolio_items').select('id').eq('user_id', user.id),
         supabase.from('wallets').select('credits').eq('user_id', user.id).maybeSingle(),
         supabase.from('swipes').select('target_id, target_type').eq('user_id', user.id),
-        supabase.from('connections').select('user_id, connected_user_id, status').or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
+        supabase.from('connections').select('user_id, connected_user_id').or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`).eq('status', 'accepted')
       ]);
       
       if (!isMounted) return;
@@ -215,7 +215,7 @@ const Discover = () => {
         console.log('[Discover] Fetching creator profiles...');
         let profilesQuery = supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge, website, linkedin_url, instagram_url, twitter_url')
+          .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge')
           .neq('user_id', user.id)
           .not('full_name', 'is', null)
           .not('bio', 'is', null)
@@ -225,7 +225,7 @@ const Discover = () => {
           profilesQuery = profilesQuery.eq('role', creatorFilters.role);
         }
         
-        const { data: profiles, error: profilesError } = await profilesQuery.limit(50);
+        const { data: profiles, error: profilesError } = await profilesQuery.limit(20);
         
         if (profilesError) {
           console.error('[Discover] Error fetching profiles:', profilesError);
@@ -234,68 +234,55 @@ const Discover = () => {
         
         console.log('[Discover] Fetched profiles:', profiles?.length || 0);
 
-        // Filter profiles that meet basic requirements (before portfolio check)
+        // Filter profiles with basic completeness check
         const basicProfiles = (profiles || []).filter(profile => 
           !connectedUserIds.has(profile.user_id) &&
           profile.full_name && 
           profile.full_name !== 'New User' && 
           profile.role && 
-          profile.role !== 'Creator' &&
-          profile.role.trim() !== '' && 
           profile.avatar_url &&
           profile.bio &&
-          profile.bio.length > 20 &&
-          profile.location &&
-          // Check for social links
-          (profile.website || profile.linkedin_url || profile.instagram_url || profile.twitter_url)
+          profile.bio.length > 20
         );
 
-        // Check skills count
+        // Check skills - simplified
         const profilesWithSkills = basicProfiles.filter(profile => {
-          const professionalSkills = profile.professional_skills ? 
-            (Array.isArray(profile.professional_skills) ? profile.professional_skills.length : Object.keys(profile.professional_skills).length) : 0;
-          const passionSkills = profile.passion_skills ? 
-            (Array.isArray(profile.passion_skills) ? profile.passion_skills.length : Object.keys(profile.passion_skills).length) : 0;
-          return (professionalSkills + passionSkills) >= 3;
+          const professionalSkills = Array.isArray(profile.professional_skills) ? profile.professional_skills.length : 0;
+          const passionSkills = Array.isArray(profile.passion_skills) ? profile.passion_skills.length : 0;
+          return (professionalSkills + passionSkills) >= 2;
         });
 
-        // Batch fetch portfolio data
+        // Fetch portfolio count only (simplified query)
         const profileIds = profilesWithSkills.map(p => p.user_id);
-        const [portfolioCountsResult, portfolioItemsResult] = await Promise.all([
-          supabase.from('portfolio_items').select('user_id').in('user_id', profileIds),
-          supabase.from('portfolio_items').select('id, user_id, title, media_type, media_url, thumbnail_url')
-            .in('user_id', profileIds.slice(0, 20))
-            .eq('featured', true)
-            .limit(60)
-        ]);
+        const { data: portfolioCounts } = await supabase
+          .from('portfolio_items')
+          .select('user_id')
+          .in('user_id', profileIds);
         
         if (!isMounted) return;
         
-        const portfolioMap = new Map();
-        portfolioCountsResult.data?.forEach(item => {
+        const portfolioMap = new Map<string, number>();
+        portfolioCounts?.forEach(item => {
           portfolioMap.set(item.user_id, (portfolioMap.get(item.user_id) || 0) + 1);
         });
 
-        // QUALITY FILTER: Only show profiles that meet ALL discovery requirements
+        // Filter profiles with at least 1 portfolio item
         const profilesWithPortfolio = profilesWithSkills.filter(profile => 
           (portfolioMap.get(profile.user_id) || 0) >= 1
         );
 
-        let creatorCards: Card[] = profilesWithPortfolio.map(profile => {
-          const userPortfolio = (portfolioItemsResult.data || []).filter(item => item.user_id === profile.user_id);
-          return {
-            id: profile.user_id, // Use user_id as the card id
-            type: 'creator' as CardType,
-            name: profile.full_name,
-            title: profile.role,
-            location: profile.location || 'Remote',
-            image: profile.avatar_url || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop`,
-            tags: ['Creator'],
-            description: profile.bio || 'Creative professional',
-            user_id: profile.user_id,
-            portfolio: userPortfolio,
-          };
-        });
+        let creatorCards: Card[] = profilesWithPortfolio.map(profile => ({
+          id: profile.user_id,
+          type: 'creator' as CardType,
+          name: profile.full_name,
+          title: profile.role,
+          location: profile.location || 'Remote',
+          image: profile.avatar_url || '',
+          tags: ['Creator'],
+          description: profile.bio || 'Creative professional',
+          user_id: profile.user_id,
+          portfolio: [], // Load portfolio on-demand when viewing
+        }));
 
         // Skip AI scoring on initial load - run in background after cards are displayed
         // This makes the UI appear much faster
@@ -348,7 +335,7 @@ const Discover = () => {
           opportunitiesQuery = opportunitiesQuery.ilike('compensation', `%${opportunityFilters.compensation}%`);
         }
 
-        const { data: opportunities, error: opportunitiesError } = await opportunitiesQuery.limit(100);
+        const { data: opportunities, error: opportunitiesError } = await opportunitiesQuery.limit(30);
         
         if (opportunitiesError) {
           console.error('[Discover] Error fetching opportunities:', opportunitiesError);

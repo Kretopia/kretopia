@@ -95,25 +95,11 @@ const Profile = () => {
       
       setCurrentUserId(user.id);
 
-      // Batch ALL database queries in parallel
-      const [
-        profileResult,
-        connectionsResult,
-        portfolioResult,
-        reviewsResult,
-        statsResult,
-        creditsResult,
-        awardsResult,
-        pressResult
-      ] = await Promise.all([
+      // Load ONLY core profile data first (fast)
+      const [profileResult, connectionsResult, portfolioResult] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
-        supabase.from('portfolio_items').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('reviews').select('*').eq('profile_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('industry_stats').select('*').eq('user_id', user.id).order('display_order', { ascending: true }),
-        supabase.from('credits').select('*').eq('user_id', user.id).order('year', { ascending: false }),
-        supabase.from('awards').select('*').eq('user_id', user.id).order('year', { ascending: false }),
-        supabase.from('press_links').select('*').eq('user_id', user.id).order('published_date', { ascending: false })
+        supabase.from('portfolio_items').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(6)
       ]);
 
       const { data, error } = profileResult;
@@ -154,13 +140,36 @@ const Profile = () => {
       company_size: data.company_size || "",
     });
 
-    // Fetch company-specific data ONLY if company account (in parallel with setting state above)
+      setStats(prev => ({
+        ...prev,
+        circle: connectionsResult.count || 0,
+        projects: portfolioResult.data?.length || 0,
+      }));
+      setPortfolioItems(portfolioResult.data || []);
+      
+      // Stop loading - show UI immediately
+      setIsLoading(false);
+
+      // Load remaining data in background (non-blocking)
+      Promise.all([
+        supabase.from('reviews').select('*').eq('profile_id', user.id).order('created_at', { ascending: false }).limit(10),
+        supabase.from('industry_stats').select('*').eq('user_id', user.id).order('display_order', { ascending: true }),
+        supabase.from('credits').select('*').eq('user_id', user.id).order('year', { ascending: false }).limit(10),
+        supabase.from('awards').select('*').eq('user_id', user.id).order('year', { ascending: false }).limit(10),
+        supabase.from('press_links').select('*').eq('user_id', user.id).order('published_date', { ascending: false }).limit(10)
+      ]).then(([reviewsResult, statsResult, creditsResult, awardsResult, pressResult]) => {
+        setReviews(reviewsResult.data || []);
+        setIndustryStats(statsResult.data || []);
+        setCredits(creditsResult.data || []);
+        setAwards(awardsResult.data || []);
+        setPressLinks(pressResult.data || []);
+      }).catch(err => console.error('[Profile] Error loading additional data:', err));
+
+    // Fetch company-specific data in background if needed
     if (data?.account_type === 'company') {
       Promise.all([
-        supabase.from('company_reviews').select(`
-          *,
-          reviewer:profiles!company_reviews_reviewer_id_fkey(full_name, avatar_url)
-        `).eq('company_id', user.id).eq('status', 'published').order('created_at', { ascending: false }),
+        supabase.from('company_reviews').select('*, reviewer:profiles!company_reviews_reviewer_id_fkey(full_name, avatar_url)')
+          .eq('company_id', user.id).eq('status', 'published').order('created_at', { ascending: false }).limit(10),
         supabase.from('partner_discounts').select('*').eq('partner_name', data.company_name).eq('is_active', true)
       ]).then(([reviewsResult, discountsResult]) => {
         const companyReviewsData = reviewsResult.data?.map(review => ({
@@ -171,20 +180,8 @@ const Profile = () => {
         
         setCompanyReviews(companyReviewsData);
         setPartnerDiscounts(discountsResult.data || []);
-      });
+      }).catch(err => console.error('[Profile] Error loading company data:', err));
     }
-
-      setStats(prev => ({
-        ...prev,
-        circle: connectionsResult.count || 0,
-        projects: portfolioResult.data?.length || 0,
-      }));
-      setPortfolioItems(portfolioResult.data || []);
-      setReviews(reviewsResult.data || []);
-      setIndustryStats(statsResult.data || []);
-      setCredits(creditsResult.data || []);
-      setAwards(awardsResult.data || []);
-      setPressLinks(pressResult.data || []);
     } catch (error) {
       console.error('[Profile] Unexpected error:', error);
       toast({
@@ -192,7 +189,6 @@ const Profile = () => {
         description: "Failed to load profile data",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -208,25 +204,17 @@ const Profile = () => {
     
     initProfile();
 
-    // Set up lightweight real-time subscriptions - debounce refetches
+    // Set up lightweight real-time subscriptions - only for portfolio
     let updateTimeout: NodeJS.Timeout;
     
     const channel = supabase
       .channel('profile-changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'portfolio_items' },
+        { event: 'INSERT', schema: 'public', table: 'portfolio_items' },
         () => {
           clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => fetchData(), 1000);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
-        () => {
-          clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => fetchData(), 1000);
+          updateTimeout = setTimeout(() => fetchData(), 2000);
         }
       )
       .subscribe();

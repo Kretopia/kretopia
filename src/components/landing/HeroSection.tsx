@@ -21,30 +21,30 @@ export const HeroSection = () => {
           
           <h1 className="mb-8 text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Stop Using 5 Tools.{" "}
+              The Professional Platform{" "}
             </span>
             <span className="text-foreground">
-              Start Using ThriveIn.
+              for the Creator Economy
             </span>
           </h1>
           
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Match with creators → Collaborate in real-time → Get paid safely.{" "}
-            <span className="font-semibold text-foreground">All in one workspace.</span>
+            Connect verified social stats, awards, and portfolio work.{" "}
+            <span className="font-semibold text-foreground">Get matched with brands through AI.</span>
             <br className="hidden md:block" />
-            No Slack. No Trello. No PayPal drama.
+            The complete platform where professional creators get discovered, collaborate, and deliver—all in one place.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link to="/auth">
               <Button variant="hero" size="xl" className="shadow-glow transition-smooth hover:-translate-y-1">
                 <Sparkles className="mr-2 h-5 w-5" />
-                Join the Platform
+                Build Your Profile
               </Button>
             </Link>
             <Link to="/discover">
               <Button variant="outline" size="xl" className="border-2">
-                Explore Opportunities
+                See How It Works
               </Button>
             </Link>
           </div>
@@ -52,16 +52,16 @@ export const HeroSection = () => {
           {/* Trust indicators */}
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground md:gap-8">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-accent" />
-              <span className="font-medium">Payment Protection Built-In</span>
+              <div className="h-2 w-2 rounded-full bg-primary" />
+              <span className="font-medium">Verified Stats & Awards</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-secondary" />
-              <span className="font-medium">One Workspace for Everything</span>
+              <span className="font-medium">AI Brand Matching</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary" />
-              <span className="font-medium">Free to Start</span>
+              <div className="h-2 w-2 rounded-full bg-accent" />
+              <span className="font-medium">Built-in Workspace</span>
             </div>
           </div>
         </div>

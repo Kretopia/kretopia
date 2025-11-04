@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import { Users, Briefcase, Wallet, Zap, Lightbulb, Rocket, Trophy, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { ProfessionalProfileShowcase } from "@/components/landing/ProfessionalProfileShowcase";
+import { AIMatchingShowcase } from "@/components/landing/AIMatchingShowcase";
 import { ThriveDeskShowcase } from "@/components/landing/ThriveDeskShowcase";
 import { PostOpportunitySection } from "@/components/landing/PostOpportunitySection";
 import { FeatureCard } from "@/components/landing/FeatureCard";
 import { PricingCard } from "@/components/landing/PricingCard";
 import { EarnCard } from "@/components/landing/EarnCard";
-import { PartnerBenefitsSection } from "@/components/landing/PartnerBenefitsSection";
 import { Button } from "@/components/ui/button";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { ActivityFeed } from "@/components/landing/ActivityFeed";
@@ -42,11 +43,17 @@ const Landing = () => {
     <div className="min-h-screen">
       <HeroSection />
       
-      {/* ThriveDesk Showcase - NEW */}
+      {/* Professional Profile Showcase */}
+      <ProfessionalProfileShowcase />
+      
+      {/* AI Matching Showcase */}
+      <AIMatchingShowcase />
+      
+      {/* ThriveDesk Workspace Showcase */}
       <ThriveDeskShowcase />
       
       {/* Sign Up Section */}
-      <section id="signup" className="px-6 py-20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+      <section id="signup" className="px-6 py-20 bg-muted/30">
         <div className="container mx-auto max-w-3xl">
           <div className="text-center mb-10">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
@@ -54,39 +61,40 @@ const Landing = () => {
               <span>Open Beta</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Your Professional Profile,{" "}
+              Ready to Join{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Finally Complete
+                the Platform?
               </span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Verified social stats, industry awards, press coverage, and portfolio work—all in one professional profile. Stop sending scattered links. Start getting discovered.
+              Build your verified professional profile, get matched with brands through AI, and manage your projects in one seamless workspace. Free to start.
             </p>
           </div>
           
           <div className="flex justify-center gap-4">
             <Link to="/auth">
-              <Button size="xl" className="text-lg px-12 py-6 shadow-lg hover:shadow-xl transition-shadow">
-                Create Your Profile
+              <Button size="xl" className="text-lg px-12 py-6 shadow-glow hover:-translate-y-1 transition-all">
+                <Sparkles className="mr-2 h-5 w-5" />
+                Get Started Free
               </Button>
             </Link>
           </div>
           
           {/* Social proof */}
           <div className="mt-8 text-center">
-            <p className="text-sm text-muted-foreground mb-4">Join creators already building their verified profiles</p>
+            <p className="text-sm text-muted-foreground mb-4">Join professional creators already on the platform</p>
             <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium text-muted-foreground">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
-                <span>Verified Stats Integration</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-accent" />
-                <span>AI Brand Matching</span>
+                <span>Verified Profiles</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-secondary" />
-                <span>Secure Payments</span>
+                <span>AI Matching</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-accent" />
+                <span>Built-in Workspace</span>
               </div>
             </div>
           </div>
@@ -253,8 +261,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Partner Benefits Section */}
-      <PartnerBenefitsSection />
+      {/* Removed partner benefits section - secondary benefit, not core USP */}
 
       {/* How to Earn Credits Section */}
       <section className="px-6 py-20">
@@ -325,10 +332,10 @@ const Landing = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(0_0%_100%/0.1),transparent_50%)]" />
             <div className="relative text-primary-foreground">
               <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-                Join Thousands of Verified Creators
+                The Complete Platform for Professional Creators
               </h2>
               <p className="mb-8 text-lg opacity-90">
-                Build your complete professional profile. Get matched with brands through AI. Manage projects seamlessly. All in one platform.
+                Verified profiles. AI matching. Built-in workspace. Secure payments. Everything you need to grow your creative business.
               </p>
               <div className="flex justify-center">
                 <Link to="/auth">
@@ -337,7 +344,8 @@ const Landing = () => {
                     size="xl"
                     className="border-2 border-white/70 bg-white hover:bg-white/90 text-primary backdrop-blur-sm font-semibold"
                   >
-                    Create Your Profile Now →
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Get Started Free
                   </Button>
                 </Link>
               </div>

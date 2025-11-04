@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Bell, Mail, Smartphone, Save } from "lucide-react";
 import { NotificationSettings as PushSettings } from "@/components/profile/NotificationSettings";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -83,27 +85,44 @@ const NotificationSettings = () => {
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        throw new Error("Not authenticated");
+      }
+
+      console.log("Saving preferences:", preferences);
 
       const { error } = await supabase
         .from('notification_preferences')
         .upsert({
           user_id: user.id,
-          ...preferences,
+          email_matches: preferences.email_matches,
+          email_messages: preferences.email_messages,
+          email_projects: preferences.email_projects,
+          email_opportunities: preferences.email_opportunities,
+          push_matches: preferences.push_matches,
+          push_messages: preferences.push_messages,
+          push_projects: preferences.push_projects,
+          push_opportunities: preferences.push_opportunities,
+          in_app_all: preferences.in_app_all,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
-        description: "Notification preferences saved",
+        description: "Notification preferences saved successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving preferences:', error);
       toast({
         title: "Error",
-        description: "Failed to save preferences",
+        description: error.message || "Failed to save preferences. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -161,6 +180,9 @@ const NotificationSettings = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Push Notifications Device Setup */}
+          <PushSettings />
 
           {/* Email Notifications */}
           <Card>
@@ -232,10 +254,7 @@ const NotificationSettings = () => {
             </CardContent>
           </Card>
 
-          {/* Push Notifications Device Setup */}
-          <PushSettings />
-
-          {/* Push Notification Preferences */}
+          {/* Push Notification Preferences - Info Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -243,10 +262,17 @@ const NotificationSettings = () => {
                 Push Notification Topics
               </CardTitle>
               <CardDescription>
-                Choose which topics you want to receive push notifications for
+                Choose which topics trigger push notifications (when enabled above)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Push notifications require HTTPS and browser support. If you see "not available" above, try accessing the site via HTTPS or use a supported browser (Chrome, Firefox, Edge).
+                </AlertDescription>
+              </Alert>
+              
               <div className="flex items-center justify-between">
                 <Label htmlFor="push_matches" className="flex flex-col gap-1">
                   <span>New Matches</span>

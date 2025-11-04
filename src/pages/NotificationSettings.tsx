@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Bell, Mail, Smartphone, Save } from "lucide-react";
+import { NotificationSettings as PushSettings } from "@/components/profile/NotificationSettings";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -231,63 +232,74 @@ const NotificationSettings = () => {
             </CardContent>
           </Card>
 
-          {/* Push Notifications */}
+          {/* Push Notifications Device Setup */}
+          <PushSettings />
+
+          {/* Push Notification Preferences */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Smartphone className="h-5 w-5" />
-                Push Notifications
+                Push Notification Topics
               </CardTitle>
               <CardDescription>
-                Receive push notifications on your device (coming soon)
+                Choose which topics you want to receive push notifications for
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 opacity-50">
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="push_matches" className="flex flex-col gap-1">
                   <span>New Matches</span>
+                  <span className="font-normal text-sm text-muted-foreground">
+                    Get notified instantly when you match
+                  </span>
                 </Label>
                 <Switch
                   id="push_matches"
                   checked={preferences.push_matches}
                   onCheckedChange={(checked) => updatePreference('push_matches', checked)}
-                  disabled
                 />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <Label htmlFor="push_messages" className="flex flex-col gap-1">
                   <span>New Messages</span>
+                  <span className="font-normal text-sm text-muted-foreground">
+                    Get notified when you receive messages
+                  </span>
                 </Label>
                 <Switch
                   id="push_messages"
                   checked={preferences.push_messages}
                   onCheckedChange={(checked) => updatePreference('push_messages', checked)}
-                  disabled
                 />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <Label htmlFor="push_projects" className="flex flex-col gap-1">
                   <span>Project Updates</span>
+                  <span className="font-normal text-sm text-muted-foreground">
+                    Stay updated on your projects
+                  </span>
                 </Label>
                 <Switch
                   id="push_projects"
                   checked={preferences.push_projects}
                   onCheckedChange={(checked) => updatePreference('push_projects', checked)}
-                  disabled
                 />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <Label htmlFor="push_opportunities" className="flex flex-col gap-1">
                   <span>New Opportunities</span>
+                  <span className="font-normal text-sm text-muted-foreground">
+                    Don't miss matching opportunities
+                  </span>
                 </Label>
                 <Switch
                   id="push_opportunities"
                   checked={preferences.push_opportunities}
                   onCheckedChange={(checked) => updatePreference('push_opportunities', checked)}
-                  disabled
                 />
               </div>
             </CardContent>

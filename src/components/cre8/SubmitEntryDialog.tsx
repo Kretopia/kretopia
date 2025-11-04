@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Upload, Loader2 } from "lucide-react";
+import { useFileUpload } from "@/hooks/useFileUpload";
 
 interface SubmitEntryDialogProps {
   open: boolean;
@@ -19,47 +20,19 @@ interface SubmitEntryDialogProps {
 export const SubmitEntryDialog = ({ open, onOpenChange, challengeId, onSuccess }: SubmitEntryDialogProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
-  const [mediaType, setMediaType] = useState<"image" | "video" | "audio" | "document">("image");
+  
+  const { uploading, mediaUrl, mediaType, uploadFile, clearFile } = useFileUpload({
+    bucket: 'portfolio',
+    folder: 'challenge-entries',
+    userId: user?.id || '',
+  });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-
-    setUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `challenge-entries/${fileName}`;
-
-      const { error: uploadError, data } = await supabase.storage
-        .from('portfolio')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('portfolio')
-        .getPublicUrl(filePath);
-
-      setMediaUrl(publicUrl);
-
-      // Detect media type
-      if (file.type.startsWith('image/')) setMediaType('image');
-      else if (file.type.startsWith('video/')) setMediaType('video');
-      else if (file.type.startsWith('audio/')) setMediaType('audio');
-      else setMediaType('document');
-
-      toast.success("File uploaded successfully!");
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error(error.message || "Failed to upload file");
-    } finally {
-      setUploading(false);
-    }
+    await uploadFile(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +60,7 @@ export const SubmitEntryDialog = ({ open, onOpenChange, challengeId, onSuccess }
       onOpenChange(false);
       setTitle("");
       setDescription("");
-      setMediaUrl("");
+      clearFile();
     } catch (error: any) {
       console.error('Submit error:', error);
       toast.error(error.message || "Failed to submit entry");
@@ -120,7 +93,7 @@ export const SubmitEntryDialog = ({ open, onOpenChange, challengeId, onSuccess }
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setMediaUrl("")}
+                    onClick={clearFile}
                   >
                     Change File
                   </Button>

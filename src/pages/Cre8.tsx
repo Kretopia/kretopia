@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Flame, Trophy, TrendingUp, Users, DollarSign, Calendar, Eye, Loader2 } from "lucide-react";
+import { Flame, Trophy, TrendingUp, DollarSign, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { ChallengeDetailDialog } from "@/components/cre8/ChallengeDetailDialog";
-import { formatDistanceToNow } from "date-fns";
+import { ChallengeCard } from "@/components/cre8/ChallengeCard";
 
 interface Challenge {
   id: string;
@@ -39,42 +38,19 @@ const Cre8 = () => {
   const loadChallenges = async () => {
     setLoading(true);
     try {
+      // Get challenges with entry counts in a single efficient query
       const { data, error } = await supabase
         .from('challenges')
-        .select('*')
+        .select(`
+          *,
+          entries:challenge_entries(count)
+        `)
         .eq('type', activeTab)
         .eq('status', 'active')
         .order('deadline', { ascending: true });
 
       if (error) throw error;
-
-      // Get counts for each challenge
-      const challengesWithCounts = await Promise.all(
-        (data || []).map(async (challenge) => {
-          const { count: entryCount } = await supabase
-            .from('challenge_entries')
-            .select('*', { count: 'exact', head: true })
-            .eq('challenge_id', challenge.id);
-
-          const { count: voteCount } = await supabase
-            .from('challenge_votes')
-            .select('*', { count: 'exact', head: true })
-            .in('entry_id', 
-              (await supabase
-                .from('challenge_entries')
-                .select('id')
-                .eq('challenge_id', challenge.id)).data?.map(e => e.id) || []
-            );
-
-          return {
-            ...challenge,
-            entries: [{ count: entryCount || 0 }],
-            votes: [{ count: voteCount || 0 }]
-          };
-        })
-      );
-
-      setChallenges(challengesWithCounts);
+      setChallenges(data || []);
     } catch (error) {
       console.error('Load challenges error:', error);
     } finally {
@@ -114,63 +90,15 @@ const Cre8 = () => {
 
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {challenges.map((challenge) => {
-          const daysLeft = getDaysLeft(challenge.deadline);
-          const entryCount = challenge.entries?.[0]?.count || 0;
-          const voteCount = challenge.votes?.[0]?.count || 0;
-
-          return (
-            <Card key={challenge.id} className="hover-lift overflow-hidden group cursor-pointer" onClick={() => setSelectedChallengeId(challenge.id)}>
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={challenge.thumbnail_url || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400"}
-                  alt={challenge.title}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                />
-                <Badge className="absolute top-3 left-3 bg-background/90 backdrop-blur">
-                  {challenge.category}
-                </Badge>
-                <div className={`absolute bottom-3 right-3 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 ${
-                  daysLeft <= 3 ? 'bg-destructive/90 text-destructive-foreground' : 'bg-background/90'
-                }`}>
-                  <Calendar className="h-3 w-3" />
-                  {daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}
-                </div>
-              </div>
-              <CardHeader>
-                {challenge.brand_name && (
-                  <div className="flex items-center gap-2 mb-2">
-                    {challenge.brand_logo_url && (
-                      <img src={challenge.brand_logo_url} alt={challenge.brand_name} className="h-6 w-6 rounded" />
-                    )}
-                    <span className="text-sm font-semibold">{challenge.brand_name}</span>
-                  </div>
-                )}
-                <CardTitle className="text-xl">{challenge.title}</CardTitle>
-                <CardDescription className="line-clamp-2">{challenge.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-4 text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      {entryCount}
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-primary font-semibold">
-                    <Trophy className="h-4 w-4" />
-                    {challenge.prize_description || challenge.budget}
-                  </div>
-                </div>
-                <Button className="w-full" variant="gradient">
-                  View Challenge
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {challenges.map((challenge) => (
+          <ChallengeCard
+            key={challenge.id}
+            challenge={challenge}
+            entryCount={challenge.entries?.[0]?.count || 0}
+            daysLeft={getDaysLeft(challenge.deadline)}
+            onClick={() => setSelectedChallengeId(challenge.id)}
+          />
+        ))}
       </div>
     );
   };

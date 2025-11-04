@@ -61,13 +61,13 @@ const Landing = () => {
               <span>Open Beta</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Ready to Join{" "}
+              Ready to Find{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                the Platform?
+                Your Next Collaborator?
               </span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Build your verified professional profile, get matched with brands through AI, and manage your projects in one seamless workspace. Free to start.
+              Build your profile, get AI-matched with nearby creators to collaborate, and manage projects together. Plus get matched with brand opportunities. Free to start.
             </p>
           </div>
           
@@ -75,7 +75,7 @@ const Landing = () => {
             <Link to="/auth">
               <Button size="xl" className="text-lg px-12 py-6 shadow-glow hover:-translate-y-1 transition-all">
                 <Sparkles className="mr-2 h-5 w-5" />
-                Get Started Free
+                Find Collaborators Now
               </Button>
             </Link>
           </div>
@@ -153,13 +153,13 @@ const Landing = () => {
               <span>Everything you need in one place</span>
             </div>
             <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Everything You Need.{" "}
+              Everything You Need to{" "}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                One Platform.
+                Collaborate
               </span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              Stop juggling multiple tools and scattered profiles. From verified stats to AI matching, portfolio showcase to project delivery—manage your entire creative business in one professional workspace.
+              From finding creative partners to delivering projects together—the complete collaboration platform for the creator economy.
             </p>
           </div>
 
@@ -190,14 +190,14 @@ const Landing = () => {
             />
             <FeatureCard
               icon={<Users className="h-8 w-8" />}
-              title="Geographic Discovery"
-              description="Connect with creators, brands, and collaborators in your area for local projects, shoots, and in-person collaborations"
+              title="Creator Discovery"
+              description="Find and connect with nearby creators for collaboration. Build your creative network locally and globally based on complementary skills"
               gradient="from-secondary to-accent"
             />
             <FeatureCard
               icon={<Briefcase className="h-8 w-8" />}
-              title="Portfolio & Social Proof"
-              description="Showcase your best work with rich media support, collect verified client reviews, and build credibility that converts opportunities"
+              title="Brand Opportunities"
+              description="Get matched with brand collaborations too. Showcase your portfolio, verified reviews, and social proof to land paid projects"
               gradient="from-accent to-primary"
             />
           </div>
@@ -332,10 +332,10 @@ const Landing = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(0_0%_100%/0.1),transparent_50%)]" />
             <div className="relative text-primary-foreground">
               <h2 className="mb-4 text-4xl font-bold md:text-5xl">
-                The Complete Platform for Professional Creators
+                Ready to Find Your Next Collaborator?
               </h2>
               <p className="mb-8 text-lg opacity-90">
-                Verified profiles. AI matching. Built-in workspace. Secure payments. Everything you need to grow your creative business.
+                Connect with nearby creators. Build together. Plus get matched with brand opportunities. All in one collaborative workspace.
               </p>
               <div className="flex justify-center">
                 <Link to="/auth">
@@ -345,7 +345,7 @@ const Landing = () => {
                     className="border-2 border-white/70 bg-white hover:bg-white/90 text-primary backdrop-blur-sm font-semibold"
                   >
                     <Sparkles className="mr-2 h-5 w-5" />
-                    Get Started Free
+                    Start Collaborating Free
                   </Button>
                 </Link>
               </div>

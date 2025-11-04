@@ -11,16 +11,16 @@ export const AIMatchingShowcase = () => {
         <div className="text-center mb-16">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
             <Sparkles className="h-4 w-4" />
-            <span>Powered by Advanced AI</span>
+            <span>AI-Powered Collaboration Network</span>
           </div>
           <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-            Like Dating Apps.{" "}
+            Swipe to Find{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              But for Your Career.
+              Your Creative Partner
             </span>
           </h2>
           <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-            Swipe through brand opportunities and collaboration requests. Our AI analyzes your profile, skills, and audience to show you the most relevant matches. When both sides are interested, start your project instantly.
+            Our AI analyzes your skills, location, and creative vision to match you with nearby creators for collaboration. Plus get matched with brand opportunities when they're the right fit.
           </p>
         </div>
 
@@ -41,42 +41,42 @@ export const AIMatchingShowcase = () => {
                 </div>
               </div>
 
-              {/* Opportunity Header */}
+              {/* Creator Header */}
               <div className="bg-gradient-to-br from-primary/10 to-secondary/10 p-8 pb-6">
                 <div className="flex items-start gap-4 mb-4">
                   <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xl font-bold">
-                    N
+                    S
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold mb-1">Nike Sportswear</h3>
-                    <p className="text-muted-foreground">Looking for content creators</p>
+                    <h3 className="text-2xl font-bold mb-1">Sarah Chen</h3>
+                    <p className="text-muted-foreground">Videographer • 2.3km away in Canggu</p>
                   </div>
                 </div>
               </div>
 
-              {/* Opportunity Details */}
+              {/* Creator Details */}
               <div className="p-8 pt-6">
-                <h4 className="text-xl font-bold mb-4">Summer Campaign Content Creator</h4>
+                <h4 className="text-xl font-bold mb-4">Looking for Music Producer to Collaborate</h4>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="flex items-center gap-2 text-sm">
                     <Target className="h-4 w-4 text-primary" />
-                    <span className="text-muted-foreground">Budget:</span>
-                    <span className="font-semibold">$2,500 - $5,000</span>
+                    <span className="text-muted-foreground">Project:</span>
+                    <span className="font-semibold">Music Video Series</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <TrendingUp className="h-4 w-4 text-primary" />
-                    <span className="text-muted-foreground">Timeline:</span>
-                    <span className="font-semibold">4 weeks</span>
+                    <span className="text-muted-foreground">Split:</span>
+                    <span className="font-semibold">50/50 revenue</span>
                   </div>
                 </div>
                 
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 mb-6">
-                  <p className="text-sm font-semibold text-primary mb-2">🎯 Why You're a Great Match:</p>
+                  <p className="text-sm font-semibold text-primary mb-2">🎯 Why You're a Perfect Match:</p>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Your audience demographic matches perfectly (18-34, fitness-focused)</li>
-                    <li>• You've created similar athletic brand content before</li>
-                    <li>• Your engagement rate (4.2%) exceeds their requirements</li>
-                    <li>• Geographic location ideal for their summer campaign</li>
+                    <li>• Complementary skills: Your music production fills her need for original soundtracks</li>
+                    <li>• Super close by: Only 2.3km away in Canggu—easy to meet and work together</li>
+                    <li>• Shared vision: Both focused on creative storytelling and building a portfolio</li>
+                    <li>• Timeline fits: She's flexible and looking to start within 2 weeks</li>
                   </ul>
                 </div>
 
@@ -107,21 +107,21 @@ export const AIMatchingShowcase = () => {
             <Zap className="h-8 w-8 text-primary mb-4" />
             <h3 className="font-semibold mb-2 text-lg">Smart Algorithm</h3>
             <p className="text-sm text-muted-foreground">
-              AI analyzes your skills, audience, portfolio, and location to surface the most relevant opportunities daily.
+              Analyzes complementary skills, proximity, creative vision, and collaboration style to connect you with the right partners.
             </p>
           </Card>
           <Card className="p-6 hover:shadow-glow transition-smooth">
             <Target className="h-8 w-8 text-secondary mb-4" />
             <h3 className="font-semibold mb-2 text-lg">Match Explanations</h3>
             <p className="text-sm text-muted-foreground">
-              See exactly why you match with each opportunity. No guessing—transparent AI that shows its work.
+              See exactly why you're matched with each creator or opportunity so you can connect with confidence.
             </p>
           </Card>
           <Card className="p-6 hover:shadow-glow transition-smooth">
             <TrendingUp className="h-8 w-8 text-accent mb-4" />
             <h3 className="font-semibold mb-2 text-lg">Learn & Improve</h3>
             <p className="text-sm text-muted-foreground">
-              The more you use ThriveIn, the better matches you get. AI learns your preferences and adjusts recommendations.
+              The more you collaborate, the better matches you get. AI learns your style and improves recommendations over time.
             </p>
           </Card>
         </div>
@@ -131,11 +131,11 @@ export const AIMatchingShowcase = () => {
           <Link to="/auth">
             <Button size="xl" className="shadow-glow">
               <Sparkles className="mr-2 h-5 w-5" />
-              Start Getting Matched
+              Find Collaborators Near You
             </Button>
           </Link>
           <p className="mt-4 text-sm text-muted-foreground">
-            Free to start • AI recommendations included
+            Free to start • Connect with creators in your area
           </p>
         </div>
       </div>

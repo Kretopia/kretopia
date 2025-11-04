@@ -16,23 +16,23 @@ export const HeroSection = () => {
           {/* Badge with animation */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2.5 text-sm backdrop-blur-sm transition-smooth hover:scale-105 hover:shadow-glow">
             <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-            <span className="font-medium">The All-in-One Creator Platform</span>
+            <span className="font-medium">AI-Powered Collaboration Network</span>
           </div>
           
           <h1 className="mb-8 text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              The Professional Platform{" "}
+              Find Your Next{" "}
             </span>
             <span className="text-foreground">
-              for the Creator Economy
+              Creative Collaborator
             </span>
           </h1>
           
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Connect verified social stats, awards, and portfolio work.{" "}
-            <span className="font-semibold text-foreground">Get matched with brands through AI.</span>
+            AI matches you with nearby creators to collaborate on projects.{" "}
+            <span className="font-semibold text-foreground">Plus get matched with brand opportunities.</span>
             <br className="hidden md:block" />
-            The complete platform where professional creators get discovered, collaborate, and deliver—all in one place.
+            Build together in one collaborative workspace.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -53,15 +53,15 @@ export const HeroSection = () => {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground md:gap-8">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-primary" />
-              <span className="font-medium">Verified Stats & Awards</span>
+              <span className="font-medium">Find Collaborators Nearby</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-secondary" />
-              <span className="font-medium">AI Brand Matching</span>
+              <span className="font-medium">AI Smart Matching</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-accent" />
-              <span className="font-medium">Built-in Workspace</span>
+              <span className="font-medium">Plus Brand Opportunities</span>
             </div>
           </div>
         </div>

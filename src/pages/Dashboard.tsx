@@ -87,19 +87,17 @@ const Dashboard = () => {
       
       setLoading(true);
 
-      // Run all queries in parallel for faster loading
+      // Run critical queries first for faster initial load
       const [
         dailyResult,
         { data: profileData, error: profileError },
         { count: portfolioCount },
-        { count: connectionsCount },
-        { data: matchesData }
+        { count: connectionsCount }
       ] = await Promise.all([
         checkAndAwardDailyLogin(user.id),
         supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('portfolio_items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
-        supabase.from('matches').select('*, projects!inner(*)').or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`).limit(10)
+        supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted')
       ]);
 
       clearTimeout(timeoutId);
@@ -142,17 +140,25 @@ const Dashboard = () => {
       // We'll assume they have if they have connections
       setHasAppliedToOpportunity((connectionsCount || 0) > 0);
 
-      // Process active projects
-      if (matchesData) {
-        const activeProjectsList = matchesData
-          .map(match => match.projects)
-          .flat()
-          .filter((project: any) => project && project.status === 'active')
-          .slice(0, 5);
-
-        setActiveProjects(activeProjectsList);
-        setStats(prev => ({ ...prev, projects: activeProjectsList.length }));
-      }
+      // Load active projects separately (non-blocking)
+      const loadProjects = async () => {
+        try {
+          const { data: projectsData } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('status', 'active')
+            .or(`creator_id.eq.${user.id}`)
+            .limit(5);
+          
+          if (projectsData) {
+            setActiveProjects(projectsData);
+            setStats(prev => ({ ...prev, projects: projectsData.length }));
+          }
+        } catch (err) {
+          console.error('Error loading projects:', err);
+        }
+      };
+      loadProjects();
     } catch (error) {
       console.error('[Dashboard] Error in fetchProfile:', error);
     } finally {

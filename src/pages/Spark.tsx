@@ -93,14 +93,11 @@ const Circle = () => {
       }, 2000); // Wait 2 seconds before refetching
     };
 
-    // Set up real-time updates with debouncing
+    // Set up real-time updates with debouncing - only for main content types
     const feedChannel = supabase
       .channel('spark-feed-updates')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'portfolio_items' }, debouncedRefresh)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'awards' }, debouncedRefresh)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'press_links' }, debouncedRefresh)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_posts' }, debouncedRefresh)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'credits' }, debouncedRefresh)
       .subscribe();
 
     return () => {
@@ -110,25 +107,21 @@ const Circle = () => {
     };
   }, []);
 
-  // Fallback to basic feed without AI
+  // Optimized feed loading - fetch less data initially, load more on scroll
   const fetchBasicFeed = async (userId: string) => {
     try {
-      // Fetch recent content directly
-      const [portfolioData, awardsData, pressData, creditsData, feedPostsData] = await Promise.all([
-        supabase.from('portfolio_items').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(10),
-        supabase.from('awards').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(5),
-        supabase.from('press_links').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(5),
-        supabase.from('credits').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(5),
-        supabase.from('feed_posts').select('*, profiles:user_id(full_name, avatar_url, role, level, badge)').order('created_at', { ascending: false }).limit(10)
+      // Fetch only recent content with smaller limits for faster initial load
+      const [portfolioData, feedPostsData] = await Promise.all([
+        supabase.from('portfolio_items').select('*, profiles:user_id(full_name, avatar_url, role, location)').order('created_at', { ascending: false }).limit(8),
+        supabase.from('feed_posts').select('*, profiles:user_id(full_name, avatar_url, role, location)').order('created_at', { ascending: false }).limit(8)
       ]);
 
+      // Combine only portfolio and posts for faster loading
       const allContent = [
         ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
-        ...(awardsData.data || []).map(item => ({ ...item, activity_type: 'award' })),
-        ...(pressData.data || []).map(item => ({ ...item, activity_type: 'press' })),
-        ...(creditsData.data || []).map(item => ({ ...item, activity_type: 'credit' })),
         ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post' }))
-      ].filter(item => item.profiles);
+      ].filter(item => item.profiles)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       const feed: SparkItem[] = allContent.map((item: any) => {
         const profile = item.profiles;
@@ -140,6 +133,7 @@ const Circle = () => {
             name: profile.full_name || 'Unknown',
             avatar: profile.avatar_url || '',
             role: profile.role || 'Creator',
+            location: profile.location || undefined
           },
           content: item,
           created_at: item.created_at,
@@ -168,19 +162,19 @@ const Circle = () => {
     }
 
     try {
-      // Check cache first
+      // Check cache first and show immediately
       const cached = getCachedFeed<SparkItem[]>(user.id);
-      if (cached) {
+      if (cached && cached.length > 0) {
         setSparkFeed(cached);
         setLoading(false);
         console.log('[Spark] Using cached feed');
+        // Still refresh in background for new content
+        fetchBasicFeed(user.id);
         return;
       }
       
-      // Show loading spinner
+      // No cache - show loading and fetch
       setLoading(true);
-
-      // Load basic feed directly without AI
       await fetchBasicFeed(user.id);
     } catch (error) {
       console.error('Error fetching spark feed:', error);

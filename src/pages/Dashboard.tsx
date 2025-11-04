@@ -353,10 +353,10 @@ const Dashboard = () => {
         </div>
 
         {/* Profile Optimization Hub */}
-        {profile && checkProfileCompletion(profile).percentage < 100 && (
+        {profile && checkProfileCompletion(profile, portfolioCount).percentage < 100 && (
           <div className="mb-6 sm:mb-8">
             <ProfileOptimizationHub 
-              completion={checkProfileCompletion(profile)}
+              completion={checkProfileCompletion(profile, portfolioCount)}
               profileViews={stats.profileViews}
               matchRate={0}
             />

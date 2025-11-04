@@ -1,20 +1,20 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { SmartConnectionSuggestions } from "@/components/circle/SmartConnectionSuggestions";
+import { ConnectionList } from "@/components/circle/ConnectionList";
+import { MatchFeed } from "@/components/circle/MatchFeed";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SEO } from "@/components/SEO";
-import { Users, Sparkles, MessageCircle, UserPlus, Mail, X, CheckCircle2, MapPin, Star, Zap, Heart, Loader2 } from "lucide-react";
+import { Users, Sparkles, UserPlus, Zap, Loader2, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CreatorFilters, type CreatorFilterState } from "@/components/discover/CreatorFilters";
 import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { useUndoSwipe } from "@/hooks/useUndoSwipe";
+import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
 import { getRemainingSwipes, type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { useToast } from "@/hooks/use-toast";
@@ -54,10 +54,6 @@ export default function Circle() {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [matchLoading, setMatchLoading] = useState(false);
   const [featuredCreator, setFeaturedCreator] = useState<CreatorCard | null>(null);
-  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
@@ -69,10 +65,14 @@ export default function Circle() {
     badge: 'all'
   });
   
-  const cardRef = useRef<HTMLDivElement>(null);
   const { toast: toastHook } = useToast();
   const subscriptionTier = subscriptionInfo.tier as SubscriptionTier;
   const { undosRemaining, trackSwipe, undoLastSwipe, checkUndosRemaining } = useUndoSwipe(subscriptionTier);
+  
+  const swipeGestures = useSwipeGestures({
+    onSwipeLeft: () => handleSwipe("left"),
+    onSwipeRight: () => handleSwipe("right")
+  });
 
   useEffect(() => {
     if (activeTab === "network") {
@@ -238,14 +238,9 @@ export default function Circle() {
     analytics.swipe(direction, currentCard.user_id);
 
     // Animation
-    setSwipeDirection(direction);
-    const targetX = direction === "right" ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
-    setDragOffset({ x: targetX, y: 0 });
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await swipeGestures.animateSwipe(direction);
 
     if (dailySwipesLeft <= 0) {
-      setSwipeDirection(null);
       toastHook({
         title: "Daily limit reached",
         description: "Upgrade to Thriver for unlimited swipes!",
@@ -307,8 +302,7 @@ export default function Circle() {
         analytics.match(currentCard.user_id);
 
         setCurrentMatchIndex(prev => prev + 1);
-        setSwipeDirection(null);
-        setDragOffset({ x: 0, y: 0 });
+        swipeGestures.resetSwipe();
 
         setMatchedUser({
           name: currentCard.name,
@@ -352,80 +346,10 @@ export default function Circle() {
     }
     
     setCurrentMatchIndex(prev => prev + 1);
-    setSwipeDirection(null);
-    setDragOffset({ x: 0, y: 0 });
-  };
-
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (matchLoading || currentMatchIndex >= matchCards.length) return;
-    
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
-    setDragStart({ x: clientX, y: clientY });
-  };
-  
-  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (dragStart.x === 0 && dragStart.y === 0) return;
-    
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
-    const deltaX = clientX - dragStart.x;
-    const deltaY = clientY - dragStart.y;
-    
-    const horizontalDistance = Math.abs(deltaX);
-    const verticalDistance = Math.abs(deltaY);
-    
-    const isHorizontalSwipe = horizontalDistance > verticalDistance * 3 && horizontalDistance > 60;
-    
-    if (isHorizontalSwipe) {
-      if (!isDragging) {
-        setIsDragging(true);
-      }
-      e.preventDefault();
-      setDragOffset({ x: deltaX, y: 0 });
-      
-      if (Math.abs(deltaX) > 80) {
-        setSwipeDirection(deltaX > 0 ? "right" : "left");
-      } else {
-        setSwipeDirection(null);
-      }
-    } else if (verticalDistance > 15 && !isDragging) {
-      setDragStart({ x: 0, y: 0 });
-      setDragOffset({ x: 0, y: 0 });
-    }
-  };
-
-  const handleDragEnd = () => {
-    if (!isDragging) {
-      setDragStart({ x: 0, y: 0 });
-      return;
-    }
-    
-    setIsDragging(false);
-    
-    if (Math.abs(dragOffset.x) > 150) {
-      handleSwipe(dragOffset.x > 0 ? "right" : "left");
-    } else {
-      setDragOffset({ x: 0, y: 0 });
-      setSwipeDirection(null);
-    }
-    
-    setDragStart({ x: 0, y: 0 });
   };
 
   const handleMessage = (userId: string) => {
     navigate(`/messages?user=${userId}`);
-  };
-
-  const getBadgeColor = (badge: string) => {
-    switch (badge) {
-      case 'og': return 'bg-purple-500';
-      case 'beta': return 'bg-blue-500';
-      case 'vip': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
-    }
   };
 
   return (
@@ -507,187 +431,59 @@ export default function Circle() {
               )}
             </div>
 
-            {matchLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="grid lg:grid-cols-[250px_1fr] gap-6">
+              {/* Filters */}
+              <div className="hidden lg:block">
+                <CreatorFilters
+                  filters={creatorFilters}
+                  onFilterChange={setCreatorFilters}
+                  isPremium={subscriptionTier !== 'free'}
+                  userLevel={1}
+                />
               </div>
-            ) : (
-              <div className="grid lg:grid-cols-[250px_1fr] gap-6">
-                {/* Filters */}
-                <div className="hidden lg:block">
-                  <CreatorFilters
-                    filters={creatorFilters}
-                    onFilterChange={setCreatorFilters}
-                    isPremium={subscriptionTier !== 'free'}
-                    userLevel={1}
-                  />
-                </div>
 
-                {/* Swipe Cards */}
-                <div className="max-w-md mx-auto w-full">
-                  {currentMatchIndex < matchCards.length ? (
-                    <>
-                      {currentMatchIndex + 1 < matchCards.length && (
-                        <div className="mb-3 text-center text-sm text-muted-foreground">
-                          {currentMatchIndex + 1} / {matchCards.length}
-                        </div>
-                      )}
+              {/* Swipe Cards */}
+              <div className="max-w-md mx-auto w-full">
+                {currentMatchIndex < matchCards.length && (
+                  <div className="mb-3 text-center text-sm text-muted-foreground">
+                    {currentMatchIndex + 1} / {matchCards.length}
+                  </div>
+                )}
 
-                      <div className="relative mb-6">
-                        {/* Next card (background) */}
-                        {currentMatchIndex + 1 < matchCards.length && (
-                          <div 
-                            className="absolute inset-0 overflow-hidden rounded-3xl border bg-card shadow-lg"
-                            style={{
-                              transform: 'scale(0.95) translateY(10px)',
-                              opacity: 0.5,
-                              zIndex: 0,
-                            }}
-                          >
-                            <div className="relative h-96">
-                              <img 
-                                src={matchCards[currentMatchIndex + 1].image} 
-                                alt={matchCards[currentMatchIndex + 1].name} 
-                                className="h-full w-full object-cover" 
-                              />
-                            </div>
-                          </div>
-                        )}
+                <MatchFeed
+                  cards={matchCards}
+                  currentIndex={currentMatchIndex}
+                  loading={matchLoading}
+                  dragOffset={swipeGestures.dragOffset}
+                  swipeDirection={swipeGestures.swipeDirection}
+                  isDragging={swipeGestures.isDragging}
+                  onSwipeLeft={() => handleSwipe("left")}
+                  onSwipeRight={() => handleSwipe("right")}
+                  onDragStart={swipeGestures.handleDragStart}
+                  onDragMove={swipeGestures.handleDragMove}
+                  onDragEnd={swipeGestures.handleDragEnd}
+                  cardRef={swipeGestures.cardRef}
+                />
 
-                        {/* Current card */}
-                        {matchCards[currentMatchIndex] && (
-                          <div
-                            ref={cardRef}
-                            className="relative overflow-hidden rounded-3xl border bg-card shadow-2xl cursor-grab active:cursor-grabbing select-none"
-                            style={{
-                              transform: swipeDirection 
-                                ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '30deg' : '-30deg'})`
-                                : `translateX(${dragOffset.x}px) rotate(${dragOffset.x * 0.1}deg)`,
-                              transition: swipeDirection ? 'transform 0.3s ease-out' : isDragging ? 'none' : 'transform 0.2s ease-out',
-                              zIndex: 1,
-                            }}
-                            onMouseDown={handleDragStart}
-                            onMouseMove={handleDragMove}
-                            onMouseUp={handleDragEnd}
-                            onMouseLeave={handleDragEnd}
-                            onTouchStart={handleDragStart}
-                            onTouchMove={handleDragMove}
-                            onTouchEnd={handleDragEnd}
-                          >
-                            <div className="relative h-96">
-                              <img 
-                                src={matchCards[currentMatchIndex].image} 
-                                alt={matchCards[currentMatchIndex].name} 
-                                className="h-full w-full object-cover" 
-                                draggable={false}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                              
-                              {/* Swipe overlays */}
-                              {swipeDirection === 'right' && (
-                                <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
-                                  <div className="bg-green-500 text-white px-8 py-4 rounded-full text-2xl font-bold">
-                                    CONNECT
-                                  </div>
-                                </div>
-                              )}
-                              {swipeDirection === 'left' && (
-                                <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
-                                  <div className="bg-red-500 text-white px-8 py-4 rounded-full text-2xl font-bold">
-                                    PASS
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {/* Card content */}
-                              <div className="absolute bottom-0 left-0 right-0 p-6">
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="flex-1">
-                                    <h2 className="text-2xl font-bold mb-2">{matchCards[currentMatchIndex].name}</h2>
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <Badge variant="secondary">{matchCards[currentMatchIndex].title}</Badge>
-                                      {matchCards[currentMatchIndex].badge && (
-                                        <Badge className={matchCards[currentMatchIndex].badge === 'og' ? 'bg-purple-500' : 'bg-blue-500'}>
-                                          {matchCards[currentMatchIndex].badge?.toUpperCase()}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    {matchCards[currentMatchIndex].location && (
-                                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                                        <MapPin className="h-4 w-4" />
-                                        {matchCards[currentMatchIndex].location}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <p className="text-sm line-clamp-3">{matchCards[currentMatchIndex].description}</p>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="mt-3"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/profile/${matchCards[currentMatchIndex].user_id}`);
-                                  }}
-                                >
-                                  View Full Profile
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="flex justify-center gap-4 mb-6">
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          className="h-16 w-16 rounded-full"
-                          onClick={() => handleSwipe('left')}
-                        >
-                          <X className="h-6 w-6" />
-                        </Button>
-                        <Button
-                          size="lg"
-                          className="h-16 w-16 rounded-full"
-                          onClick={() => handleSwipe('right')}
-                        >
-                          <Heart className="h-6 w-6" />
-                        </Button>
-                      </div>
-
-                      {/* Undo button */}
-                      {undosRemaining > 0 && currentMatchIndex > 0 && (
-                        <UndoSwipeButton
-                          onClick={async () => {
-                            const undone = await undoLastSwipe();
-                            if (undone) {
-                              setCurrentMatchIndex(Math.max(0, currentMatchIndex - 1));
-                              setSwipeDirection(null);
-                              setDragOffset({ x: 0, y: 0 });
-                            }
-                          }}
-                          disabled={isDragging}
-                          userTier={subscriptionTier}
-                          undosRemaining={undosRemaining}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <EmptyState
-                      icon={Users}
-                      title="All Caught Up!"
-                      description="You've seen all available creators. Check back later for more matches!"
-                      action={{
-                        label: "View My Network",
-                        onClick: () => setActiveTab("network")
+                {/* Undo button */}
+                {undosRemaining > 0 && currentMatchIndex > 0 && currentMatchIndex < matchCards.length && (
+                  <div className="mt-24">
+                    <UndoSwipeButton
+                      onClick={async () => {
+                        const undone = await undoLastSwipe();
+                        if (undone) {
+                          setCurrentMatchIndex(Math.max(0, currentMatchIndex - 1));
+                          swipeGestures.resetSwipe();
+                        }
                       }}
+                      disabled={swipeGestures.isDragging}
+                      userTier={subscriptionTier}
+                      undosRemaining={undosRemaining}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </TabsContent>
 
           {/* My Network Tab */}
@@ -699,17 +495,7 @@ export default function Circle() {
               </p>
             </div>
 
-            {loading ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map(i => (
-                  <Card key={i} className="p-6 animate-pulse">
-                    <div className="h-24 bg-muted rounded mb-4" />
-                    <div className="h-4 bg-muted rounded mb-2" />
-                    <div className="h-4 bg-muted rounded w-2/3" />
-                  </Card>
-                ))}
-              </div>
-            ) : connections.length === 0 ? (
+            {connections.length === 0 && !loading ? (
               <EmptyState
                 icon={Users}
                 title="No connections yet"
@@ -720,59 +506,11 @@ export default function Circle() {
                 }}
               />
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {connections.map(connection => (
-                  <Card 
-                    key={connection.user_id} 
-                    className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => navigate(`/profile/${connection.user_id}`)}
-                  >
-                    <div className="flex items-start gap-4 mb-4">
-                      <Avatar className="h-16 w-16 border-2 border-primary/20">
-                        <AvatarImage src={connection.avatar_url || ''} />
-                        <AvatarFallback>{connection.full_name?.[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold truncate">{connection.full_name}</h3>
-                          {connection.badge && (
-                            <Badge className={`${getBadgeColor(connection.badge)} text-white text-xs px-2`}>
-                              {connection.badge.toUpperCase()}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground truncate">{connection.role}</p>
-                        {connection.level && (
-                          <p className="text-xs text-muted-foreground mt-1">Level {connection.level}</p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {connection.bio && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                        {connection.bio}
-                      </p>
-                    )}
-
-                    {connection.location && (
-                      <p className="text-xs text-muted-foreground mb-4">📍 {connection.location}</p>
-                    )}
-                    
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="w-full gap-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMessage(connection.user_id);
-                      }}
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      Message
-                    </Button>
-                  </Card>
-                ))}
-              </div>
+              <ConnectionList
+                connections={connections}
+                loading={loading}
+                onMessage={handleMessage}
+              />
             )}
           </TabsContent>
 

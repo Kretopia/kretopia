@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -11,6 +11,7 @@ import { OpportunityFiltersComponent, type OpportunityFilterState } from "@/comp
 import { CreditPromptDialog } from "@/components/discover/CreditPromptDialog";
 import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
 import { useUndoSwipe } from "@/hooks/useUndoSwipe";
+import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 import { getRemainingSwipes, type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { UpgradeDialog } from "@/components/UpgradeDialog";
 import { SEO } from "@/components/SEO";
@@ -34,20 +35,20 @@ const Discover = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
-  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [showCreditPrompt, setShowCreditPrompt] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState({ name: "", description: "" });
   
   const subscriptionTier = subscriptionInfo.tier as SubscriptionTier;
-  const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { undosRemaining, trackSwipe, undoLastSwipe, checkUndosRemaining } = useUndoSwipe(subscriptionTier);
+
+  const swipeGestures = useSwipeGestures({
+    onSwipeLeft: () => handleSwipe("left"),
+    onSwipeRight: () => handleSwipe("right")
+  });
 
   const [opportunityFilters, setOpportunityFilters] = useState<OpportunityFilterState>({
     search: '',
@@ -265,14 +266,9 @@ const Discover = () => {
     analytics.swipe(direction, currentCard.id);
 
     // Animation
-    setSwipeDirection(direction);
-    const targetX = direction === "right" ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
-    setDragOffset({ x: targetX, y: 0 });
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await swipeGestures.animateSwipe(direction);
 
     if (dailySwipesLeft <= 0) {
-      setSwipeDirection(null);
       setUpgradeFeature({
         name: "Unlimited Swipes",
         description: "You've reached your daily swipe limit. Upgrade to Thriver for unlimited daily swipes!"
@@ -310,67 +306,6 @@ const Discover = () => {
     }
     
     setCurrentIndex(prev => prev + 1);
-    setSwipeDirection(null);
-    setDragOffset({ x: 0, y: 0 });
-  };
-
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (loading || currentIndex >= cards.length) return;
-    
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
-    setDragStart({ x: clientX, y: clientY });
-  };
-  
-  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (dragStart.x === 0 && dragStart.y === 0) return;
-    
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
-    const deltaX = clientX - dragStart.x;
-    const deltaY = clientY - dragStart.y;
-    
-    const horizontalDistance = Math.abs(deltaX);
-    const verticalDistance = Math.abs(deltaY);
-    
-    const isHorizontalSwipe = horizontalDistance > verticalDistance * 3 && horizontalDistance > 60;
-    
-    if (isHorizontalSwipe) {
-      if (!isDragging) {
-        setIsDragging(true);
-      }
-      e.preventDefault();
-      setDragOffset({ x: deltaX, y: 0 });
-      
-      if (Math.abs(deltaX) > 80) {
-        setSwipeDirection(deltaX > 0 ? "right" : "left");
-      } else {
-        setSwipeDirection(null);
-      }
-    } else if (verticalDistance > 15 && !isDragging) {
-      setDragStart({ x: 0, y: 0 });
-      setDragOffset({ x: 0, y: 0 });
-    }
-  };
-
-  const handleDragEnd = () => {
-    if (!isDragging) {
-      setDragStart({ x: 0, y: 0 });
-      return;
-    }
-    
-    setIsDragging(false);
-    
-    if (Math.abs(dragOffset.x) > 150) {
-      handleSwipe(dragOffset.x > 0 ? "right" : "left");
-    } else {
-      setDragOffset({ x: 0, y: 0 });
-      setSwipeDirection(null);
-    }
-    
-    setDragStart({ x: 0, y: 0 });
   };
 
   if (loading) {
@@ -514,22 +449,22 @@ const Discover = () => {
                     {/* Current card */}
                     {currentCard && (
                       <div
-                        ref={cardRef}
+                        ref={swipeGestures.cardRef}
                         className="relative overflow-hidden rounded-3xl border bg-card shadow-2xl cursor-grab active:cursor-grabbing select-none"
                         style={{
-                          transform: swipeDirection 
-                            ? `translateX(${swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeDirection === 'right' ? '30deg' : '-30deg'})`
-                            : `translateX(${dragOffset.x}px) rotate(${dragOffset.x * 0.1}deg)`,
-                          transition: swipeDirection ? 'transform 0.3s ease-out' : isDragging ? 'none' : 'transform 0.2s ease-out',
+                          transform: swipeGestures.swipeDirection 
+                            ? `translateX(${swipeGestures.swipeDirection === 'right' ? '150%' : '-150%'}) rotate(${swipeGestures.swipeDirection === 'right' ? '30deg' : '-30deg'})`
+                            : `translateX(${swipeGestures.dragOffset.x}px) rotate(${swipeGestures.dragOffset.x * 0.1}deg)`,
+                          transition: swipeGestures.swipeDirection ? 'transform 0.3s ease-out' : swipeGestures.isDragging ? 'none' : 'transform 0.2s ease-out',
                           zIndex: 1,
                         }}
-                        onMouseDown={handleDragStart}
-                        onMouseMove={handleDragMove}
-                        onMouseUp={handleDragEnd}
-                        onMouseLeave={handleDragEnd}
-                        onTouchStart={handleDragStart}
-                        onTouchMove={handleDragMove}
-                        onTouchEnd={handleDragEnd}
+                        onMouseDown={swipeGestures.handleDragStart}
+                        onMouseMove={swipeGestures.handleDragMove}
+                        onMouseUp={swipeGestures.handleDragEnd}
+                        onMouseLeave={swipeGestures.handleDragEnd}
+                        onTouchStart={swipeGestures.handleDragStart}
+                        onTouchMove={swipeGestures.handleDragMove}
+                        onTouchEnd={swipeGestures.handleDragEnd}
                       >
                         <div className="relative h-96">
                           <img 
@@ -541,14 +476,14 @@ const Discover = () => {
                           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                           
                           {/* Swipe overlays */}
-                          {swipeDirection === 'right' && (
+                          {swipeGestures.swipeDirection === 'right' && (
                             <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
                               <div className="bg-green-500 text-white px-8 py-4 rounded-full text-2xl font-bold">
                                 INTERESTED
                               </div>
                             </div>
                           )}
-                          {swipeDirection === 'left' && (
+                          {swipeGestures.swipeDirection === 'left' && (
                             <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
                               <div className="bg-red-500 text-white px-8 py-4 rounded-full text-2xl font-bold">
                                 PASS
@@ -611,11 +546,10 @@ const Discover = () => {
                         const undone = await undoLastSwipe();
                         if (undone) {
                           setCurrentIndex(Math.max(0, currentIndex - 1));
-                          setSwipeDirection(null);
-                          setDragOffset({ x: 0, y: 0 });
+                          swipeGestures.resetSwipe();
                         }
                       }}
-                      disabled={isDragging}
+                      disabled={swipeGestures.isDragging}
                       userTier={subscriptionTier}
                       undosRemaining={undosRemaining}
                     />

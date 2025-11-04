@@ -67,101 +67,65 @@ const Dashboard = () => {
   useStreakUpdate();
 
   const fetchProfile = async () => {
-    const timeoutId = setTimeout(() => {
-      console.error('[Dashboard] Query timeout after 10 seconds');
-      setLoading(false);
-      toast({
-        title: "Loading timeout",
-        description: "Please refresh the page",
-        variant: "destructive"
-      });
-    }, 10000);
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        clearTimeout(timeoutId);
         setLoading(false);
         return;
       }
       
-      setLoading(true);
+      // Get profile immediately - this is the only blocking query
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      // Run only essential queries - no blocking operations
-      const [
-        { data: profileData, error: profileError },
-        { count: portfolioCount },
-        { count: connectionsCount }
-      ] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
+      if (profileError) {
+        console.error('[Dashboard] Error fetching profile:', profileError);
+        setLoading(false);
+        return;
+      }
+
+      if (!profileData) {
+        console.warn('[Dashboard] Profile not found for user:', user.id);
+        navigate("/onboarding");
+        return;
+      }
+
+      setProfile(profileData);
+      setLoading(false);
+
+      // Load everything else in background (non-blocking)
+      Promise.all([
         supabase.from('portfolio_items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted')
-      ]);
-
-      clearTimeout(timeoutId);
-
-      // Award daily login in background (non-blocking)
-      checkAndAwardDailyLogin(user.id).then(result => {
-        if (result.awarded) {
+        supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
+        supabase.from('projects').select('*').eq('status', 'active').or(`creator_id.eq.${user.id}`).limit(5),
+        checkAndAwardDailyLogin(user.id)
+      ]).then(([
+        { count: portfolioCount },
+        { count: connectionsCount },
+        { data: projectsData },
+        dailyResult
+      ]) => {
+        setPortfolioCount(portfolioCount || 0);
+        setStats(prev => ({ 
+          ...prev, 
+          circle: connectionsCount || 0,
+          projects: projectsData?.length || 0
+        }));
+        setHasAppliedToOpportunity((connectionsCount || 0) > 0);
+        if (projectsData) setActiveProjects(projectsData);
+        
+        if (dailyResult.awarded) {
           toast({
             title: "Daily Bonus! 🎉",
             description: "+5 credits for logging in today",
           });
         }
-      }).catch(err => console.error('Daily login error:', err));
-
-      // Handle profile data
-      if (profileError) {
-        console.error('[Dashboard] Error fetching profile:', profileError);
-        toast({
-          title: "Error",
-          description: "Failed to load profile",
-          variant: "destructive",
-        });
-      } else if (!profileData) {
-        console.warn('[Dashboard] Profile not found for user:', user.id);
-        toast({
-          title: "Profile Missing",
-          description: "Please complete your profile setup",
-          variant: "destructive",
-        });
-        navigate("/onboarding");
-      } else {
-        setProfile(profileData);
-      }
-
-      // Set portfolio count
-      setPortfolioCount(portfolioCount || 0);
-
-      // Set connections count
-      setStats(prev => ({ ...prev, circle: connectionsCount || 0 }));
-
-      // Check if user has applied to opportunities (simple check)
-      // We'll assume they have if they have connections
-      setHasAppliedToOpportunity((connectionsCount || 0) > 0);
-
-      // Load active projects separately (non-blocking)
-      const loadProjects = async () => {
-        try {
-          const { data: projectsData } = await supabase
-            .from('projects')
-            .select('*')
-            .eq('status', 'active')
-            .or(`creator_id.eq.${user.id}`)
-            .limit(5);
-          
-          if (projectsData) {
-            setActiveProjects(projectsData);
-            setStats(prev => ({ ...prev, projects: projectsData.length }));
-          }
-        } catch (err) {
-          console.error('Error loading projects:', err);
-        }
-      };
-      loadProjects();
+      }).catch(err => console.error('Background loading error:', err));
     } catch (error) {
       console.error('[Dashboard] Error in fetchProfile:', error);
-    } finally {
       setLoading(false);
     }
   };

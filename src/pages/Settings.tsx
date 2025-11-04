@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 
@@ -293,13 +293,33 @@ const Settings = () => {
     <div className="min-h-screen p-4 md:p-6">
       <div className="container mx-auto max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-            <SettingsIcon className="h-8 w-8" />
-            Settings
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your account preferences and security
-          </p>
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
+                <SettingsIcon className="h-8 w-8" />
+                Settings
+              </h1>
+              <p className="text-muted-foreground">
+                Manage your account preferences and security
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/dashboard")}
+              className="shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-6">

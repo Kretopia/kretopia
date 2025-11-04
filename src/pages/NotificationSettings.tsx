@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Mail, Smartphone, Save } from "lucide-react";
+import { Bell, Mail, Smartphone, Save, ArrowLeft, X } from "lucide-react";
 import { NotificationSettings as PushSettings } from "@/components/profile/NotificationSettings";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -24,6 +25,7 @@ interface NotificationPreferences {
 }
 
 const NotificationSettings = () => {
+  const navigate = useNavigate();
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     email_matches: true,
     email_messages: true,
@@ -146,10 +148,30 @@ const NotificationSettings = () => {
     <div className="min-h-screen p-4 md:p-6">
       <div className="container mx-auto max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Notification Settings</h1>
-          <p className="text-muted-foreground">
-            Manage how and when you receive notifications
-          </p>
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-2">Notification Settings</h1>
+              <p className="text-muted-foreground">
+                Manage how and when you receive notifications
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/settings")}
+              className="shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-6">

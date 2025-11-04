@@ -41,14 +41,20 @@ export const SmartConnectionSuggestions = () => {
       const connectedIds = connections?.map(c => c.connected_user_id) || [];
 
       // Get potential matches - users with similar skills/roles
-      const { data: potentialMatches } = await supabase
+      let query = supabase
         .from('profiles')
-        .select('*')
+        .select('user_id, full_name, role, bio, avatar_url, location, level, xp')
         .neq('user_id', user.id)
-        .not('user_id', 'in', `(${connectedIds.join(',') || 'null'})`)
         .not('avatar_url', 'is', null)
         .not('bio', 'is', null)
         .limit(10);
+      
+      // Only filter by connected IDs if there are any
+      if (connectedIds.length > 0) {
+        query = query.not('user_id', 'in', `(${connectedIds.join(',')})`);
+      }
+      
+      const { data: potentialMatches } = await query;
 
       if (!potentialMatches || potentialMatches.length === 0) {
         setSuggestions([]);

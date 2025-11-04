@@ -75,12 +75,14 @@ export default function Circle() {
   });
 
   useEffect(() => {
+    if (!user) return;
+    
     if (activeTab === "network") {
       fetchMyNetwork();
     } else if (activeTab === "match") {
       fetchMatchCreators();
     }
-  }, [activeTab, user, creatorFilters]);
+  }, [activeTab, user?.id, creatorFilters.role, creatorFilters.verified, creatorFilters.level, creatorFilters.badge]);
 
   useEffect(() => {
     checkUndosRemaining();
@@ -148,20 +150,27 @@ export default function Circle() {
         ) || []
       );
 
-      // Fetch creators
+      // Fetch creators with optimized query
       let profilesQuery = supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge')
         .neq('user_id', user.id)
         .not('full_name', 'is', null)
         .not('bio', 'is', null)
-        .not('avatar_url', 'is', null);
+        .not('avatar_url', 'is', null)
+        .limit(30); // Increased limit for better filtering
 
       if (creatorFilters.role !== 'all') {
         profilesQuery = profilesQuery.eq('role', creatorFilters.role);
       }
       
-      const { data: profiles } = await profilesQuery.limit(20);
+      const { data: profiles, error: profilesError } = await profilesQuery;
+      
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        setMatchCards([]);
+        return;
+      }
 
       // Filter profiles
       const basicProfiles = (profiles || []).filter(profile => 
@@ -182,22 +191,32 @@ export default function Circle() {
         return (professionalSkills + passionSkills) >= 2;
       });
 
-      // Get portfolio count
-      const profileIds = profilesWithSkills.map(p => p.user_id);
-      const { data: portfolioCounts } = await supabase
-        .from('portfolio_items')
-        .select('user_id')
-        .in('user_id', profileIds);
+      // Get portfolio count - only if we have profiles
+      let profilesWithPortfolio = profilesWithSkills;
       
-      const portfolioMap = new Map<string, number>();
-      portfolioCounts?.forEach(item => {
-        portfolioMap.set(item.user_id, (portfolioMap.get(item.user_id) || 0) + 1);
-      });
+      if (profilesWithSkills.length > 0) {
+        const profileIds = profilesWithSkills.map(p => p.user_id);
+        const { data: portfolioCounts } = await supabase
+          .from('portfolio_items')
+          .select('user_id')
+          .in('user_id', profileIds)
+          .limit(100); // Limit portfolio query
+        
+        const portfolioMap = new Map<string, number>();
+        portfolioCounts?.forEach(item => {
+          portfolioMap.set(item.user_id, (portfolioMap.get(item.user_id) || 0) + 1);
+        });
 
-      // Filter with portfolio
-      const profilesWithPortfolio = profilesWithSkills.filter(profile => 
-        (portfolioMap.get(profile.user_id) || 0) >= 1
-      );
+        // Filter with portfolio
+        profilesWithPortfolio = profilesWithSkills.filter(profile => 
+          (portfolioMap.get(profile.user_id) || 0) >= 1
+        );
+      }
+      
+      // If no profiles with portfolio, just show profiles with skills
+      if (profilesWithPortfolio.length === 0) {
+        profilesWithPortfolio = profilesWithSkills.slice(0, 10);
+      }
 
       const creatorCards: CreatorCard[] = profilesWithPortfolio.map(profile => ({
         id: profile.user_id,

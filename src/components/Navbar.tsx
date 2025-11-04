@@ -176,16 +176,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         <Separator className="my-3" />
                     </div>
 
-                    {/* Discover (Match) moved to hamburger for all screen sizes */}
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/discover")}
-                    >
-                      <Compass className="h-5 w-5" />
-                      Match
-                    </Button>
-
                     <Button
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
@@ -194,6 +184,17 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <User className="h-5 w-5" />
                       My Profile
                     </Button>
+
+                    {/* Discover renamed to Gigs */}
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/discover")}
+                    >
+                      <Compass className="h-5 w-5" />
+                      Gigs
+                    </Button>
+
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
@@ -211,7 +212,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       onClick={() => handleNavigation("/manage-opportunities")}
                     >
                       <Briefcase className="h-5 w-5" />
-                      Gigs
+                      My Opportunities
                     </Button>
                     <Button 
                       variant="ghost" 

@@ -119,17 +119,22 @@ const Circle = () => {
         Promise.all([
           supabase
             .from('portfolio_items')
-            .select('id, user_id, title, description, media_url, media_type, created_at, profiles!inner(full_name, avatar_url, role, location)')
+            .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
             .order('created_at', { ascending: false })
-            .limit(10),
+            .limit(15),
           supabase
             .from('feed_posts')
-            .select('id, user_id, content, media_url, media_type, created_at, profiles!inner(full_name, avatar_url, role, location)')
+            .select('id, user_id, content, media_urls, media_type, created_at')
             .order('created_at', { ascending: false })
-            .limit(10)
+            .limit(15)
         ]),
         timeoutPromise
       ]) as any;
+
+      console.log('[Spark] Raw data fetched:', {
+        portfolio: portfolioData?.data?.length || 0,
+        posts: feedPostsData?.data?.length || 0
+      });
 
       if (portfolioData.error) {
         console.error('[Spark] Portfolio error:', portfolioData.error);
@@ -139,16 +144,33 @@ const Circle = () => {
         console.error('[Spark] Feed posts error:', feedPostsData.error);
       }
 
-      // Combine only portfolio and posts for faster loading
+      // Get all user IDs from content
+      const allUserIds = [
+        ...(portfolioData.data || []).map(item => item.user_id),
+        ...(feedPostsData.data || []).map(item => item.user_id)
+      ];
+
+      // Fetch profiles for all users at once
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role, location')
+        .in('user_id', [...new Set(allUserIds)]);
+
+      console.log('[Spark] Profiles fetched:', profiles?.length || 0);
+
+      // Create a map for quick profile lookup
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      // Combine content and attach profiles
       const allContent = [
-        ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
-        ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post' }))
-      ].filter(item => item.profiles && item.profiles.full_name)
+        ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio', profile: profileMap.get(item.user_id) })),
+        ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post', profile: profileMap.get(item.user_id) }))
+      ].filter(item => item.profile?.full_name) // Only include items with valid profiles
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 15); // Limit to 15 items
+        .slice(0, 20); // Limit to 20 items
 
       const feed: SparkItem[] = allContent.map((item: any) => {
-        const profile = item.profiles;
+        const profile = item.profile;
         return {
           id: item.id,
           type: item.activity_type === 'feed_post' ? 'post' : item.activity_type,

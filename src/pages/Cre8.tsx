@@ -113,7 +113,8 @@ const Cre8 = () => {
     }
 
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{challenges.map((challenge) => {
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {challenges.map((challenge) => {
           const daysLeft = getDaysLeft(challenge.deadline);
           const entryCount = challenge.entries?.[0]?.count || 0;
           const voteCount = challenge.votes?.[0]?.count || 0;

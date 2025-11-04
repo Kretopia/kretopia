@@ -110,18 +110,26 @@ const Circle = () => {
   // Optimized feed loading - fetch less data initially, load more on scroll
   const fetchBasicFeed = async (userId: string) => {
     try {
-      const [portfolioData, feedPostsData] = await Promise.all([
-        supabase
-          .from('portfolio_items')
-          .select('*, profiles:user_id(full_name, avatar_url, role, location)')
-          .order('created_at', { ascending: false })
-          .limit(8),
-        supabase
-          .from('feed_posts')
-          .select('*, profiles:user_id(full_name, avatar_url, role, location)')
-          .order('created_at', { ascending: false })
-          .limit(8)
-      ]);
+      // Fetch with timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Feed load timeout')), 10000)
+      );
+
+      const [portfolioData, feedPostsData] = await Promise.race([
+        Promise.all([
+          supabase
+            .from('portfolio_items')
+            .select('id, user_id, title, description, media_url, media_type, created_at, profiles!inner(full_name, avatar_url, role, location)')
+            .order('created_at', { ascending: false })
+            .limit(10),
+          supabase
+            .from('feed_posts')
+            .select('id, user_id, content, media_url, media_type, created_at, profiles!inner(full_name, avatar_url, role, location)')
+            .order('created_at', { ascending: false })
+            .limit(10)
+        ]),
+        timeoutPromise
+      ]) as any;
 
       if (portfolioData.error) {
         console.error('[Spark] Portfolio error:', portfolioData.error);
@@ -135,8 +143,9 @@ const Circle = () => {
       const allContent = [
         ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
         ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post' }))
-      ].filter(item => !!item.profiles)
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      ].filter(item => item.profiles && item.profiles.full_name)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 15); // Limit to 15 items
 
       const feed: SparkItem[] = allContent.map((item: any) => {
         const profile = item.profiles;
@@ -145,7 +154,7 @@ const Circle = () => {
           type: item.activity_type === 'feed_post' ? 'post' : item.activity_type,
           user: {
             id: item.user_id,
-            name: profile.full_name || 'Unknown',
+            name: profile.full_name,
             avatar: profile.avatar_url || '',
             role: profile.role || 'Creator',
             location: profile.location || undefined
@@ -159,24 +168,30 @@ const Circle = () => {
         };
       });
 
+      console.log('[Spark] Feed loaded:', feed.length, 'items');
       setSparkFeed(feed);
       setCachedFeed(userId, feed);
     } catch (error) {
       console.error('[Spark] Error loading feed:', error);
       setSparkFeed([]);
+      toast({
+        title: "Feed loading issue",
+        description: "Showing limited content. Try refreshing.",
+        variant: "default"
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const fetchSparkFeed = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       // Check cache first and show immediately
       const cached = getCachedFeed<SparkItem[]>(user.id);
       if (cached && cached.length > 0) {
@@ -184,15 +199,16 @@ const Circle = () => {
         setLoading(false);
         console.log('[Spark] Using cached feed');
         // Still refresh in background for new content
-        fetchBasicFeed(user.id);
+        fetchBasicFeed(user.id).catch(err => console.error('[Spark] Background refresh failed:', err));
         return;
       }
       
       // No cache - show loading and fetch
+      console.log('[Spark] No cache, fetching fresh feed...');
       setLoading(true);
       await fetchBasicFeed(user.id);
     } catch (error) {
-      console.error('Error fetching spark feed:', error);
+      console.error('[Spark] Error fetching spark feed:', error);
       toast({
         title: "Error loading feed",
         description: "Please try again",

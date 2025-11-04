@@ -109,31 +109,31 @@ const Circle = () => {
 
   // Optimized feed loading - fetch less data initially, load more on scroll
   const fetchBasicFeed = async (userId: string) => {
+    console.log('[Spark] Starting feed fetch for user:', userId);
+    
     try {
       // Fetch with timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Feed load timeout')), 10000)
       );
 
-      const [portfolioData, feedPostsData] = await Promise.race([
-        Promise.all([
-          supabase
-            .from('portfolio_items')
-            .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
-            .order('created_at', { ascending: false })
-            .limit(15),
-          supabase
-            .from('feed_posts')
-            .select('id, user_id, content, media_urls, media_type, created_at')
-            .order('created_at', { ascending: false })
-            .limit(15)
-        ]),
-        timeoutPromise
-      ]) as any;
+      // Fetch content and profiles separately for reliability
+      const [portfolioData, feedPostsData] = await Promise.all([
+        supabase
+          .from('portfolio_items')
+          .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
+          .order('created_at', { ascending: false })
+          .limit(15),
+        supabase
+          .from('feed_posts')
+          .select('id, user_id, content, media_urls, media_type, created_at')
+          .order('created_at', { ascending: false })
+          .limit(15)
+      ]);
 
       console.log('[Spark] Raw data fetched:', {
-        portfolio: portfolioData?.data?.length || 0,
-        posts: feedPostsData?.data?.length || 0
+        portfolio: { count: portfolioData?.data?.length || 0, error: portfolioData.error },
+        posts: { count: feedPostsData?.data?.length || 0, error: feedPostsData.error }
       });
 
       if (portfolioData.error) {
@@ -145,31 +145,69 @@ const Circle = () => {
       }
 
       // Get all user IDs from content
+      const portfolioItems = portfolioData.data || [];
+      const feedPosts = feedPostsData.data || [];
+      
       const allUserIds = [
-        ...(portfolioData.data || []).map(item => item.user_id),
-        ...(feedPostsData.data || []).map(item => item.user_id)
+        ...portfolioItems.map(item => item.user_id),
+        ...feedPosts.map(item => item.user_id)
       ];
 
+      console.log('[Spark] Total items before profile fetch:', portfolioItems.length + feedPosts.length);
+      console.log('[Spark] Unique user IDs:', [...new Set(allUserIds)].length);
+
+      if (allUserIds.length === 0) {
+        console.log('[Spark] No content found');
+        setSparkFeed([]);
+        setLoading(false);
+        return;
+      }
+
       // Fetch profiles for all users at once
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name, avatar_url, role, location')
         .in('user_id', [...new Set(allUserIds)]);
 
-      console.log('[Spark] Profiles fetched:', profiles?.length || 0);
+      console.log('[Spark] Profiles fetched:', { count: profiles?.length || 0, error: profilesError });
+
+      if (profilesError) {
+        console.error('[Spark] Profiles error:', profilesError);
+      }
 
       // Create a map for quick profile lookup
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
       // Combine content and attach profiles
       const allContent = [
-        ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio', profile: profileMap.get(item.user_id) })),
-        ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post', profile: profileMap.get(item.user_id) }))
-      ].filter(item => item.profile?.full_name) // Only include items with valid profiles
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 20); // Limit to 20 items
+        ...portfolioItems.map(item => ({ 
+          ...item, 
+          activity_type: 'portfolio', 
+          profile: profileMap.get(item.user_id) 
+        })),
+        ...feedPosts.map(item => ({ 
+          ...item, 
+          activity_type: 'feed_post', 
+          profile: profileMap.get(item.user_id) 
+        }))
+      ];
 
-      const feed: SparkItem[] = allContent.map((item: any) => {
+      console.log('[Spark] Content before filtering:', allContent.length);
+
+      const filteredContent = allContent
+        .filter(item => {
+          const hasProfile = item.profile?.full_name;
+          if (!hasProfile) {
+            console.log('[Spark] Filtered out item - no profile:', item.id);
+          }
+          return hasProfile;
+        })
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 20);
+
+      console.log('[Spark] Content after filtering:', filteredContent.length);
+
+      const feed: SparkItem[] = filteredContent.map((item: any) => {
         const profile = item.profile;
         return {
           id: item.id,
@@ -190,7 +228,7 @@ const Circle = () => {
         };
       });
 
-      console.log('[Spark] Feed loaded:', feed.length, 'items');
+      console.log('[Spark] Final feed items:', feed.length);
       setSparkFeed(feed);
       setCachedFeed(userId, feed);
     } catch (error) {
@@ -202,6 +240,7 @@ const Circle = () => {
         variant: "default"
       });
     } finally {
+      console.log('[Spark] Setting loading to false');
       setLoading(false);
     }
   };

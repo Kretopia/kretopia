@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Compass, Plus, MessageCircle, User, Briefcase, Image, Flame } from "lucide-react";
+import { LayoutDashboard, Compass, Plus, MessageCircle, User, Briefcase, Image, Flame, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, memo } from "react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
@@ -25,9 +25,9 @@ const BottomNav = memo(() => {
   }
   
   const navItems = [
-    { path: "/dashboard", icon: LayoutDashboard, label: "Home" },
-    { path: "/discover", icon: Compass, label: "Match" },
     { path: "/spark", icon: Flame, label: "Spark" },
+    { path: "/discover", icon: Compass, label: "Match" },
+    { path: "/circle", icon: Users, label: "Circle" },
     { path: "/projects", icon: Briefcase, label: "Desk" },
   ];
 

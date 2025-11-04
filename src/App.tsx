@@ -24,6 +24,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Spark = lazy(() => import("./pages/Spark"));
+const Circle = lazy(() => import("./pages/Circle"));
 const Connect = lazy(() => import("./pages/Connect"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
@@ -77,6 +78,7 @@ const LoadingFallback = () => (
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   
   if (loading) {
     return <LoadingFallback />;
@@ -87,6 +89,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   return <>{children}</>;
+};
+
+// Redirect to Spark after login instead of Dashboard
+const DefaultRoute = () => {
+  const { user } = useAuth();
+  return user ? <Navigate to="/spark" replace /> : <Landing />;
 };
 
 // Track page views
@@ -116,7 +124,7 @@ const AppContent = () => {
       <div className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
-            <Route path="/" element={<Landing />} />
+            <Route path="/" element={<DefaultRoute />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/accept-invite/:projectId" element={<AcceptInvite />} />
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
@@ -129,6 +137,7 @@ const AppContent = () => {
             <Route path="/profile/:userId" element={<PublicProfile />} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
+            <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
             <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />

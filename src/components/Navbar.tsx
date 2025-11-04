@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User } from "lucide-react";
+import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User, Flame } from "lucide-react";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -79,7 +79,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2">
-        <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 sm:gap-3" aria-label="ThriveIN Home">
+        <Link to={user ? "/spark" : "/"} className="flex items-center gap-2 sm:gap-3" aria-label="ThriveIN Home">
           <img 
             src={thriveinIcon} 
             alt="ThriveIN Icon" 
@@ -131,10 +131,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Button
                           variant="ghost" 
                           className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/dashboard")}
+                          onClick={() => handleNavigation("/spark")}
                         >
-                          <LayoutDashboard className="h-5 w-5" />
-                          Home
+                          <Flame className="h-5 w-5" />
+                          Spark
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -147,10 +147,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         <Button 
                           variant="ghost" 
                           className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/spark")}
+                          onClick={() => handleNavigation("/circle")}
                         >
                           <Users className="h-5 w-5" />
-                          Spark
+                          Circle
                         </Button>
                         <Button 
                           variant="ghost" 

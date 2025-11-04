@@ -24,6 +24,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Spark = lazy(() => import("./pages/Spark"));
+const Cre8 = lazy(() => import("./pages/Cre8"));
 const Circle = lazy(() => import("./pages/Circle"));
 const Connect = lazy(() => import("./pages/Connect"));
 const Messages = lazy(() => import("./pages/Messages"));
@@ -137,6 +138,7 @@ const AppContent = () => {
             <Route path="/profile/:userId" element={<PublicProfile />} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
+            <Route path="/cre8" element={<ProtectedRoute><Cre8 /></ProtectedRoute>} />
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
             <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

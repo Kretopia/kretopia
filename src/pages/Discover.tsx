@@ -215,7 +215,7 @@ const Discover = () => {
         console.log('[Discover] Fetching creator profiles...');
         let profilesQuery = supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge')
+          .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge, website, linkedin_url, instagram_url, twitter_url')
           .neq('user_id', user.id)
           .not('full_name', 'is', null)
           .not('bio', 'is', null)
@@ -234,19 +234,33 @@ const Discover = () => {
         
         console.log('[Discover] Fetched profiles:', profiles?.length || 0);
 
-        // Filter complete profiles first (before fetching portfolio)
-        const completeProfiles = (profiles || []).filter(profile => 
+        // Filter profiles that meet basic requirements (before portfolio check)
+        const basicProfiles = (profiles || []).filter(profile => 
           !connectedUserIds.has(profile.user_id) &&
           profile.full_name && 
           profile.full_name !== 'New User' && 
           profile.role && 
+          profile.role !== 'Creator' &&
           profile.role.trim() !== '' && 
           profile.avatar_url &&
-          profile.bio
+          profile.bio &&
+          profile.bio.length > 20 &&
+          profile.location &&
+          // Check for social links
+          (profile.website || profile.linkedin_url || profile.instagram_url || profile.twitter_url)
         );
 
+        // Check skills count
+        const profilesWithSkills = basicProfiles.filter(profile => {
+          const professionalSkills = profile.professional_skills ? 
+            (Array.isArray(profile.professional_skills) ? profile.professional_skills.length : Object.keys(profile.professional_skills).length) : 0;
+          const passionSkills = profile.passion_skills ? 
+            (Array.isArray(profile.passion_skills) ? profile.passion_skills.length : Object.keys(profile.passion_skills).length) : 0;
+          return (professionalSkills + passionSkills) >= 3;
+        });
+
         // Batch fetch portfolio data
-        const profileIds = completeProfiles.map(p => p.user_id);
+        const profileIds = profilesWithSkills.map(p => p.user_id);
         const [portfolioCountsResult, portfolioItemsResult] = await Promise.all([
           supabase.from('portfolio_items').select('user_id').in('user_id', profileIds),
           supabase.from('portfolio_items').select('id, user_id, title, media_type, media_url, thumbnail_url')
@@ -262,9 +276,9 @@ const Discover = () => {
           portfolioMap.set(item.user_id, (portfolioMap.get(item.user_id) || 0) + 1);
         });
 
-        // Filter profiles with at least one portfolio item
-        const profilesWithPortfolio = completeProfiles.filter(profile => 
-          (portfolioMap.get(profile.user_id) || 0) > 0
+        // QUALITY FILTER: Only show profiles that meet ALL discovery requirements
+        const profilesWithPortfolio = profilesWithSkills.filter(profile => 
+          (portfolioMap.get(profile.user_id) || 0) >= 1
         );
 
         let creatorCards: Card[] = profilesWithPortfolio.map(profile => {

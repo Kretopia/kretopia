@@ -40,6 +40,7 @@ import { SEO } from "@/components/SEO";
 import { SuccessMetrics } from "@/components/dashboard/SuccessMetrics";
 import { DiscoverReadyBanner } from "@/components/DiscoverReadyBanner";
 import { FirstActionPrompt } from "@/components/dashboard/FirstActionPrompt";
+import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -267,6 +268,14 @@ const Dashboard = () => {
 
         {/* OG Promotion Banner */}
         <OGPromotionBanner />
+
+        {/* Profile Visibility Warning - CRITICAL for user awareness */}
+        {profile && (
+          <ProfileVisibilityBanner
+            isVisible={checkProfileCompletion(profile, portfolioCount).isComplete}
+            missingFields={checkProfileCompletion(profile, portfolioCount).missingFields}
+          />
+        )}
 
         {/* Discover Ready Banner */}
         <DiscoverReadyBanner portfolioCount={portfolioCount} />

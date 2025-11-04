@@ -23,7 +23,7 @@ const STEPS = [
   { id: 1, title: "Profile", icon: Users },
   { id: 2, title: "Skills", icon: Award },
   { id: 3, title: "Portfolio", icon: Briefcase },
-  { id: 4, title: "Workspace", icon: Briefcase },
+  { id: 4, title: "Preview", icon: Briefcase },
   { id: 5, title: "Connect", icon: Sparkles },
   { id: 6, title: "Success", icon: Star },
 ];

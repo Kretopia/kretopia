@@ -14,7 +14,7 @@ export const checkProfileCompletion = (profile: Profile, portfolioCount: number 
   const fields = [
     { key: 'full_name', label: 'Full Name', value: profile.full_name && profile.full_name !== 'New User' },
     { key: 'role', label: 'Role/Title', value: profile.role && profile.role !== 'Creator' },
-    { key: 'bio', label: 'Bio', value: profile.bio && profile.bio.length > 20 },
+    { key: 'bio', label: 'Bio (20+ chars)', value: profile.bio && profile.bio.length > 20 },
     { key: 'avatar_url', label: 'Profile Picture', value: profile.avatar_url },
     { key: 'location', label: 'Location', value: profile.location },
     { key: 'skills', label: 'Skills (3+)', value: (() => {
@@ -24,7 +24,7 @@ export const checkProfileCompletion = (profile: Profile, portfolioCount: number 
         (Array.isArray(profile.passion_skills) ? profile.passion_skills.length : Object.keys(profile.passion_skills).length) : 0;
       return (professionalSkills + passionSkills) >= 3;
     })() },
-    { key: 'portfolio', label: 'Portfolio Items', value: portfolioCount >= 1 },
+    { key: 'portfolio', label: 'Portfolio Item', value: portfolioCount >= 1 },
     { key: 'website', label: 'Website or Social Link', value: profile.website || profile.linkedin_url || profile.instagram_url || profile.twitter_url },
   ];
 
@@ -41,6 +41,35 @@ export const checkProfileCompletion = (profile: Profile, portfolioCount: number 
     isComplete,
     completionPercentage: percentage,
   };
+};
+
+// Helper to check if a profile meets minimum discovery requirements
+// This is used to filter profiles in Discover - stricter than just completion
+export const meetsDiscoveryRequirements = (profile: Profile, portfolioCount: number = 0): boolean => {
+  // Must have all critical fields
+  const hasBasicInfo = profile.full_name && 
+                       profile.full_name !== 'New User' && 
+                       profile.role && 
+                       profile.role !== 'Creator' &&
+                       profile.bio && 
+                       profile.bio.length > 20 &&
+                       profile.avatar_url &&
+                       profile.location;
+  
+  // Must have at least 3 skills
+  const professionalSkills = profile.professional_skills ? 
+    (Array.isArray(profile.professional_skills) ? profile.professional_skills.length : Object.keys(profile.professional_skills).length) : 0;
+  const passionSkills = profile.passion_skills ? 
+    (Array.isArray(profile.passion_skills) ? profile.passion_skills.length : Object.keys(profile.passion_skills).length) : 0;
+  const hasSkills = (professionalSkills + passionSkills) >= 3;
+  
+  // Must have at least 1 portfolio item
+  const hasPortfolio = portfolioCount >= 1;
+  
+  // Must have at least one social/web link
+  const hasSocialLink = !!(profile.website || profile.linkedin_url || profile.instagram_url || profile.twitter_url);
+  
+  return hasBasicInfo && hasSkills && hasPortfolio && hasSocialLink;
 };
 
 export const PROFILE_COMPLETION_XP = 50;

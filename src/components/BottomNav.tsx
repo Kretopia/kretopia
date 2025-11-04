@@ -26,9 +26,9 @@ const BottomNav = memo(() => {
   
   const navItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Home" },
-    { path: "/discover", icon: Compass, label: "Discover" },
+    { path: "/discover", icon: Compass, label: "Match" },
     { path: "/spark", icon: Flame, label: "Spark" },
-    { path: "/projects", icon: Briefcase, label: "Projects" },
+    { path: "/projects", icon: Briefcase, label: "Desk" },
   ];
 
   return (

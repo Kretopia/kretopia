@@ -142,7 +142,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           onClick={() => handleNavigation("/discover")}
                         >
                           <Compass className="h-5 w-5" />
-                          Discover
+                          Match
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -158,7 +158,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           onClick={() => handleNavigation("/projects")}
                         >
                           <FolderKanban className="h-5 w-5" />
-                          Projects
+                          Desk
                         </Button>
                         
                         <Separator className="my-3" />
@@ -189,7 +189,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       onClick={() => handleNavigation("/manage-opportunities")}
                     >
                       <Briefcase className="h-5 w-5" />
-                      Manage Opportunities
+                      Gigs
                     </Button>
                     <Button 
                       variant="ghost" 
@@ -210,25 +210,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         Admin Panel
                       </Button>
                     )}
-                    
-                    <Separator className="my-3" />
-                    
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/thrivepay")}
-                    >
-                      <Wallet className="h-5 w-5" />
-                      ThrivePay
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/membership")}
-                    >
-                      <Zap className="h-5 w-5" />
-                      Membership
-                    </Button>
                     
                     <Separator className="my-3" />
                     

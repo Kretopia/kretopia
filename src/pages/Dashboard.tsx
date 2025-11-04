@@ -315,8 +315,8 @@ const Dashboard = () => {
                 <Users className="h-6 w-6 text-secondary" />
               </div>
               <div>
-                <h3 className="font-semibold">Discover</h3>
-                <p className="text-sm text-muted-foreground">Find opportunities</p>
+                <h3 className="font-semibold">Match</h3>
+                <p className="text-sm text-muted-foreground">Find creators</p>
               </div>
             </div>
           </Card>

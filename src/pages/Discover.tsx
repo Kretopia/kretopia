@@ -132,7 +132,7 @@ const Discover = () => {
         console.log('[Discover] Fetching opportunities...');
         let opportunitiesQuery = supabase
           .from('opportunities')
-          .select('*')
+          .select('id, title, type, location, compensation, tags, description, image_url, created_by, created_at, skills')
           .eq('status', 'active')
           .neq('created_by', user.id);
 
@@ -160,7 +160,7 @@ const Discover = () => {
           opportunitiesQuery = opportunitiesQuery.ilike('compensation', `%${opportunityFilters.compensation}%`);
         }
 
-        const { data: opportunities, error: opportunitiesError } = await opportunitiesQuery.limit(30);
+        const { data: opportunities, error: opportunitiesError } = await opportunitiesQuery.limit(20);
         
         if (opportunitiesError) {
           console.error('[Discover] Error fetching opportunities:', opportunitiesError);

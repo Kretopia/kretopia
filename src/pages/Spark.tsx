@@ -117,18 +117,18 @@ const Circle = () => {
         setTimeout(() => reject(new Error('Feed load timeout')), 10000)
       );
 
-      // Fetch content and profiles separately for reliability
+      // Fetch content and profiles separately for reliability - reduced limits
       const [portfolioData, feedPostsData] = await Promise.all([
         supabase
           .from('portfolio_items')
           .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
           .order('created_at', { ascending: false })
-          .limit(15),
+          .limit(10),
         supabase
           .from('feed_posts')
           .select('id, user_id, content, media_urls, media_type, created_at')
           .order('created_at', { ascending: false })
-          .limit(15)
+          .limit(10)
       ]);
 
       console.log('[Spark] Raw data fetched:', {

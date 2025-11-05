@@ -77,12 +77,13 @@ export default function Circle() {
   useEffect(() => {
     if (!user) return;
     
+    // Only fetch when tab becomes active, not on every filter change
     if (activeTab === "network") {
       fetchMyNetwork();
     } else if (activeTab === "match") {
       fetchMatchCreators();
     }
-  }, [activeTab, user?.id, creatorFilters.role, creatorFilters.verified, creatorFilters.level, creatorFilters.badge]);
+  }, [activeTab, user?.id]);
 
   useEffect(() => {
     checkUndosRemaining();
@@ -150,7 +151,7 @@ export default function Circle() {
         ) || []
       );
 
-      // Fetch creators with optimized query
+      // Fetch creators with optimized query - smaller initial limit
       let profilesQuery = supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge')
@@ -158,7 +159,7 @@ export default function Circle() {
         .not('full_name', 'is', null)
         .not('bio', 'is', null)
         .not('avatar_url', 'is', null)
-        .limit(30); // Increased limit for better filtering
+        .limit(20); // Reduced limit for faster loading
 
       if (creatorFilters.role !== 'all') {
         profilesQuery = profilesQuery.eq('role', creatorFilters.role);

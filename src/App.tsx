@@ -59,6 +59,8 @@ const TestEmails = lazy(() => import("./pages/TestEmails"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
+const TestRunner = lazy(() => import("./pages/TestRunner"));
+const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -169,6 +171,8 @@ const AppContent = () => {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />
             <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
+            <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
+            <Route path="/waitlist-admin" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

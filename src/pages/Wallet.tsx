@@ -31,7 +31,7 @@ export default function Wallet() {
 
     const { data: walletData } = await supabase
       .from('wallets')
-      .select('*')
+      .select('user_id, project_credits')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -48,7 +48,7 @@ export default function Wallet() {
 
     const { data: transactions } = await supabase
       .from('transactions')
-      .select('*')
+      .select('id, type, amount, description, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(10);

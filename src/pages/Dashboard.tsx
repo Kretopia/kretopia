@@ -77,7 +77,7 @@ const Dashboard = () => {
       // Get profile immediately - this is the only blocking query
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -100,7 +100,7 @@ const Dashboard = () => {
       Promise.all([
         supabase.from('portfolio_items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
-        supabase.from('projects').select('*').eq('status', 'active').or(`creator_id.eq.${user.id}`).limit(5),
+        supabase.from('projects').select('*').eq('status', 'active').or(`creator_id.eq.${user.id}`).limit(3),
         checkAndAwardDailyLogin(user.id)
       ]).then(([
         { count: portfolioCount },

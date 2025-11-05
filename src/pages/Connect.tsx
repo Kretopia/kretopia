@@ -213,8 +213,8 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
 
       // Batch connection and match queries in parallel
       const [connectionsResult, matchesResult] = await Promise.all([
-        supabase.from('connections').select('*').or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`),
-        supabase.from('matches').select('*').or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+        supabase.from('connections').select('id, user_id, connected_user_id, status, created_at').or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`),
+        supabase.from('matches').select('id, user1_id, user2_id, match_type, status, created_at').or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
       ]);
 
       const connections = connectionsResult.data;

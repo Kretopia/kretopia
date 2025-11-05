@@ -216,14 +216,6 @@ const ThriveDesk = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-    
-    if (profileData) setUserProfile(profileData);
-
     const { data: projectData } = await supabase
       .from('projects')
       .select('*')

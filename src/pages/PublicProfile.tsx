@@ -197,12 +197,12 @@ const PublicProfile = () => {
       awardsResult,
       pressResult
     ] = await Promise.all([
-      supabase.from('portfolio_items').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-      supabase.from('reviews').select('*').eq('profile_id', userId).eq('status', 'approved').order('created_at', { ascending: false }),
-      supabase.from('industry_stats').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
-      supabase.from('credits').select('*').eq('user_id', userId).order('year', { ascending: false }),
-      supabase.from('awards').select('*').eq('user_id', userId).order('year', { ascending: false }),
-      supabase.from('press_links').select('*').eq('user_id', userId).order('published_date', { ascending: false })
+      supabase.from('portfolio_items').select('id, user_id, title, description, media_url, media_type, thumbnail_url, tags, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
+      supabase.from('reviews').select('id, reviewer_name, reviewer_role, reviewer_company, reviewer_avatar_url, review_text, rating, created_at').eq('profile_id', userId).eq('status', 'approved').order('created_at', { ascending: false }).limit(20),
+      supabase.from('industry_stats').select('id, stat_type, stat_value, verified, display_order').eq('user_id', userId).order('display_order', { ascending: true }).limit(10),
+      supabase.from('credits').select('id, project_name, role, year, company, project_url, created_at').eq('user_id', userId).order('year', { ascending: false }).limit(30),
+      supabase.from('awards').select('id, title, organization, year, category, image_url, created_at').eq('user_id', userId).order('year', { ascending: false }).limit(20),
+      supabase.from('press_links').select('id, title, publication, url, published_date, image_url, excerpt, created_at').eq('user_id', userId).order('published_date', { ascending: false}).limit(20)
     ]);
 
     setStats(prev => ({

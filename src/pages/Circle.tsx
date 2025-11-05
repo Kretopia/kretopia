@@ -392,7 +392,7 @@ export default function Circle() {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="suggestions" className="gap-2">
               <Sparkles className="h-4 w-4" />
               Suggestions
@@ -404,10 +404,6 @@ export default function Circle() {
             <TabsTrigger value="network" className="gap-2">
               <Users className="h-4 w-4" />
               My Network
-            </TabsTrigger>
-            <TabsTrigger value="communities" className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              Communities
             </TabsTrigger>
           </TabsList>
 
@@ -534,18 +530,6 @@ export default function Circle() {
             )}
           </TabsContent>
 
-          {/* Communities Tab */}
-          <TabsContent value="communities" className="space-y-6">
-            <EmptyState
-              icon={UserPlus}
-              title="Communities Coming Soon"
-              description="Join interest-based communities to connect with creators who share your passions. Create private groups, host events, and collaborate on projects."
-              action={{
-                label: "Explore Suggestions",
-                onClick: () => setActiveTab("suggestions")
-              }}
-            />
-          </TabsContent>
         </Tabs>
       </div>
 

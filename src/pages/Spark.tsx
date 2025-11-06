@@ -67,12 +67,26 @@ const Circle = () => {
   useEffect(() => {
     let isMounted = true;
     let fetchTimeout: NodeJS.Timeout;
+    let maxLoadTimeout: NodeJS.Timeout;
 
     const loadFeed = async () => {
       if (isMounted) {
         await fetchSparkFeed();
       }
     };
+
+    // Failsafe: ensure loading is never stuck for more than 15 seconds
+    maxLoadTimeout = setTimeout(() => {
+      if (isMounted && loading) {
+        console.warn('[Spark] Max load timeout reached, forcing loading to false');
+        setLoading(false);
+        toast({
+          title: "Loading timeout",
+          description: "Feed took too long to load. Please refresh the page.",
+          variant: "destructive"
+        });
+      }
+    }, 15000);
 
     loadFeed();
     
@@ -103,6 +117,7 @@ const Circle = () => {
     return () => {
       isMounted = false;
       clearTimeout(fetchTimeout);
+      clearTimeout(maxLoadTimeout);
       supabase.removeChannel(feedChannel);
     };
   }, []);
@@ -112,11 +127,6 @@ const Circle = () => {
     console.log('[Spark] Starting feed fetch for user:', userId);
     
     try {
-      // Fetch with timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Feed load timeout')), 10000)
-      );
-
       // Fetch content and profiles separately for reliability - reduced limits
       const [portfolioData, feedPostsData] = await Promise.all([
         supabase
@@ -247,18 +257,29 @@ const Circle = () => {
 
   const fetchSparkFeed = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      console.log('[Spark] fetchSparkFeed started');
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('[Spark] Auth error:', userError);
+        setLoading(false);
+        return;
+      }
+      
       if (!user) {
+        console.log('[Spark] No user found');
         setLoading(false);
         return;
       }
 
+      console.log('[Spark] User found:', user.id);
+
       // Check cache first and show immediately
       const cached = getCachedFeed<SparkItem[]>(user.id);
       if (cached && cached.length > 0) {
+        console.log('[Spark] Using cached feed with', cached.length, 'items');
         setSparkFeed(cached);
         setLoading(false);
-        console.log('[Spark] Using cached feed');
         // Still refresh in background for new content
         fetchBasicFeed(user.id).catch(err => console.error('[Spark] Background refresh failed:', err));
         return;
@@ -266,15 +287,15 @@ const Circle = () => {
       
       // No cache - show loading and fetch
       console.log('[Spark] No cache, fetching fresh feed...');
-      setLoading(true);
       await fetchBasicFeed(user.id);
     } catch (error) {
-      console.error('[Spark] Error fetching spark feed:', error);
+      console.error('[Spark] Error in fetchSparkFeed:', error);
       toast({
         title: "Error loading feed",
         description: "Please try again",
         variant: "destructive"
       });
+      setSparkFeed([]);
       setLoading(false);
     }
   };

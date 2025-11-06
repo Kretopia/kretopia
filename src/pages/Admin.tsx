@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, MapPin, CheckCircle, Users, ShieldCheck } from "lucide-react";
+import { Shield, MapPin, CheckCircle, Users, ShieldCheck, Settings } from "lucide-react";
 import { LocationsTab } from "@/components/admin/LocationsTab";
 import { CheckInsTab } from "@/components/admin/CheckInsTab";
 import { UsersTab } from "@/components/admin/UsersTab";
@@ -19,6 +19,7 @@ export default function Admin() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -84,6 +85,29 @@ export default function Admin() {
     }
   };
 
+  const seedCommunities = async () => {
+    setSeeding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('seed-communities');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Communities seeded successfully!",
+      });
+    } catch (error) {
+      console.error('Error seeding communities:', error);
+      toast({
+        title: "Error",
+        description: "Failed to seed communities",
+        variant: "destructive",
+      });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -104,7 +128,7 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="verifications" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-auto p-1 lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6 h-auto p-1 lg:grid-cols-6">
           <TabsTrigger value="verifications" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <ShieldCheck className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
             <span className="hidden sm:inline">Verifications</span>
@@ -129,6 +153,11 @@ export default function Admin() {
             <span className="hidden sm:inline">Partners</span>
             <span className="sm:hidden">Parts</span>
           </TabsTrigger>
+          <TabsTrigger value="system" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden sm:inline">System</span>
+            <span className="sm:hidden">Sys</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="verifications" className="mt-4 sm:mt-6">
@@ -149,6 +178,23 @@ export default function Admin() {
 
         <TabsContent value="partners" className="mt-4 sm:mt-6">
           <PartnerSubmissionsTab />
+        </TabsContent>
+
+        <TabsContent value="system" className="mt-4 sm:mt-6">
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">System Management</h2>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium mb-2">Seed Communities</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Initialize default communities (ThriveIN Bali & Bali Cre8ives). Only run this once.
+                </p>
+                <Button onClick={seedCommunities} disabled={seeding}>
+                  {seeding ? "Seeding..." : "Seed Communities"}
+                </Button>
+              </div>
+            </div>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

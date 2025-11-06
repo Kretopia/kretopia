@@ -1,5 +1,8 @@
 project_id = "kwmcocsitwssrtzkdojh"
 
+[functions.seed-communities]
+verify_jwt = true
+
 [functions.send-activity-digest]
 verify_jwt = true
 

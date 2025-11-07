@@ -122,32 +122,96 @@ const Circle = () => {
     };
   }, []);
 
-  // Optimized feed loading - fetch less data initially, load more on scroll
-  const fetchBasicFeed = async (userId: string) => {
-    console.log('[Spark] Starting feed fetch for user:', userId);
+  // AI-powered feed generation - fetch personalized content from all users
+  const fetchAIFeed = async (userId: string) => {
+    console.log('[Spark] Starting AI-powered feed fetch for user:', userId);
     
     try {
-      // Get user's connections
-      const { data: connections } = await supabase
-        .from('connections')
-        .select('user_id, connected_user_id')
-        .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
-        .eq('status', 'accepted');
+      // Get user profile for AI recommendations
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-      const connectedUserIds = connections?.map(c => 
-        c.user_id === userId ? c.connected_user_id : c.user_id
-      ) || [];
+      // Call the edge function for AI-powered feed generation
+      const { data: feedData, error: feedError } = await supabase.functions.invoke(
+        'generate-for-you-feed',
+        {
+          body: {
+            userId,
+            profile
+          }
+        }
+      );
 
-      // Get user's community memberships
+      if (feedError) {
+        console.error('[Spark] AI feed generation error:', feedError);
+        // Fallback to basic feed if AI fails
+        return await fetchBasicFeed(userId);
+      }
+
+      if (feedData?.feed && Array.isArray(feedData.feed)) {
+        console.log('[Spark] AI feed generated successfully:', feedData.feed.length, 'items');
+        
+        // Transform AI feed items to SparkItem format
+        const transformedFeed = feedData.feed.map((item: any) => ({
+          id: item.id,
+          type: item.type,
+          user: item.user_profile ? {
+            id: item.user_profile.user_id,
+            name: item.user_profile.full_name,
+            avatar: item.user_profile.avatar_url,
+            role: item.user_profile.role,
+            location: item.user_profile.location
+          } : {
+            id: item.user_id,
+            name: 'Unknown User',
+            avatar: '',
+            role: ''
+          },
+          content: item,
+          created_at: item.created_at,
+          reactions: item.reaction_count || 0,
+          hasReacted: false,
+          isSaved: false
+        }));
+
+        setSparkFeed(transformedFeed);
+        setCachedFeed(userId, transformedFeed);
+        setLoading(false);
+        return transformedFeed;
+      }
+
+      // Fallback if no feed data
+      return await fetchBasicFeed(userId);
+    } catch (error) {
+      console.error('[Spark] AI feed fetch error:', error);
+      // Fallback to basic feed
+      return await fetchBasicFeed(userId);
+    }
+  };
+
+  // Fallback basic feed - fetch from connections and communities
+  const fetchBasicFeed = async (userId: string) => {
+    console.log('[Spark] Starting basic feed fetch for user:', userId);
+    
+    try {
+      // Get ALL users for broader discovery (not just connections)
+      const { data: allProfiles } = await supabase
+        .from('public_profiles')
+        .select('user_id')
+        .limit(100);
+
+      const userIdsToFetch = allProfiles?.map(p => p.user_id) || [userId];
+
+      // Get user's community memberships for community posts
       const { data: memberships } = await supabase
         .from('community_members')
         .select('community_id')
         .eq('user_id', userId);
 
       const communityIds = memberships?.map(m => m.community_id) || [];
-
-      // All user IDs to fetch content from: self + connections
-      const userIdsToFetch = [userId, ...connectedUserIds];
 
       // Fetch content from user and connections
       const [portfolioData, feedPostsData, communityPostsData] = await Promise.all([
@@ -327,14 +391,13 @@ const Circle = () => {
         console.log('[Spark] Using cached feed with', cached.length, 'items');
         setSparkFeed(cached);
         setLoading(false);
-        // Still refresh in background for new content
-        fetchBasicFeed(user.id).catch(err => console.error('[Spark] Background refresh failed:', err));
+        // Still refresh in background for new content with AI
+        fetchAIFeed(user.id).catch(err => console.error('[Spark] Background refresh failed:', err));
         return;
       }
       
-      // No cache - show loading and fetch
       console.log('[Spark] No cache, fetching fresh feed...');
-      await fetchBasicFeed(user.id);
+      await fetchAIFeed(user.id);
     } catch (error) {
       console.error('[Spark] Error in fetchSparkFeed:', error);
       toast({

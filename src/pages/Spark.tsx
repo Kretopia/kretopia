@@ -36,7 +36,7 @@ import { getCachedFeed, setCachedFeed } from "@/lib/feedCache";
 
 interface SparkItem {
   id: string;
-  type: 'portfolio' | 'award' | 'credit' | 'press' | 'post';
+  type: 'portfolio' | 'award' | 'credit' | 'press' | 'post' | 'community_post';
   user: {
     id: string;
     name: string;
@@ -127,23 +127,57 @@ const Circle = () => {
     console.log('[Spark] Starting feed fetch for user:', userId);
     
     try {
-      // Fetch content and profiles separately for reliability - reduced limits
-      const [portfolioData, feedPostsData] = await Promise.all([
+      // Get user's connections
+      const { data: connections } = await supabase
+        .from('connections')
+        .select('user_id, connected_user_id')
+        .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
+        .eq('status', 'accepted');
+
+      const connectedUserIds = connections?.map(c => 
+        c.user_id === userId ? c.connected_user_id : c.user_id
+      ) || [];
+
+      // Get user's community memberships
+      const { data: memberships } = await supabase
+        .from('community_members')
+        .select('community_id')
+        .eq('user_id', userId);
+
+      const communityIds = memberships?.map(m => m.community_id) || [];
+
+      // All user IDs to fetch content from: self + connections
+      const userIdsToFetch = [userId, ...connectedUserIds];
+
+      // Fetch content from user and connections
+      const [portfolioData, feedPostsData, communityPostsData] = await Promise.all([
         supabase
           .from('portfolio_items')
           .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
+          .in('user_id', userIdsToFetch)
           .order('created_at', { ascending: false })
-          .limit(10),
+          .limit(15),
         supabase
           .from('feed_posts')
           .select('id, user_id, content, media_urls, media_type, created_at')
+          .in('user_id', userIdsToFetch)
           .order('created_at', { ascending: false })
-          .limit(10)
+          .limit(15),
+        // Fetch community posts from joined communities
+        communityIds.length > 0 
+          ? supabase
+              .from('community_posts')
+              .select('id, user_id, community_id, content, media_url, created_at')
+              .in('community_id', communityIds)
+              .order('created_at', { ascending: false })
+              .limit(15)
+          : Promise.resolve({ data: [], error: null })
       ]);
 
       console.log('[Spark] Raw data fetched:', {
         portfolio: { count: portfolioData?.data?.length || 0, error: portfolioData.error },
-        posts: { count: feedPostsData?.data?.length || 0, error: feedPostsData.error }
+        posts: { count: feedPostsData?.data?.length || 0, error: feedPostsData.error },
+        community: { count: communityPostsData?.data?.length || 0, error: communityPostsData.error }
       });
 
       if (portfolioData.error) {
@@ -154,13 +188,19 @@ const Circle = () => {
         console.error('[Spark] Feed posts error:', feedPostsData.error);
       }
 
+      if (communityPostsData.error) {
+        console.error('[Spark] Community posts error:', communityPostsData.error);
+      }
+
       // Get all user IDs from content
       const portfolioItems = portfolioData.data || [];
       const feedPosts = feedPostsData.data || [];
+      const communityPosts = communityPostsData.data || [];
       
       const allUserIds = [
         ...portfolioItems.map(item => item.user_id),
-        ...feedPosts.map(item => item.user_id)
+        ...feedPosts.map(item => item.user_id),
+        ...communityPosts.map(item => item.user_id)
       ];
 
       console.log('[Spark] Total items before profile fetch:', portfolioItems.length + feedPosts.length);
@@ -199,6 +239,11 @@ const Circle = () => {
           ...item, 
           activity_type: 'feed_post', 
           profile: profileMap.get(item.user_id) 
+        })),
+        ...communityPosts.map(item => ({ 
+          ...item, 
+          activity_type: 'community_post', 
+          profile: profileMap.get(item.user_id) 
         }))
       ];
 
@@ -221,7 +266,9 @@ const Circle = () => {
         const profile = item.profile;
         return {
           id: item.id,
-          type: item.activity_type === 'feed_post' ? 'post' : item.activity_type,
+          type: item.activity_type === 'feed_post' ? 'post' : 
+                item.activity_type === 'community_post' ? 'community_post' : 
+                item.activity_type,
           user: {
             id: item.user_id,
             name: profile.full_name,
@@ -402,6 +449,36 @@ const Circle = () => {
         }
         return item;
       }));
+    } else if (itemType === 'community_post') {
+      // Check if user already reacted
+      const { data: existing } = await supabase
+        .from('community_post_reactions')
+        .select('id')
+        .eq('post_id', itemId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existing) {
+        // Remove reaction
+        await supabase
+          .from('community_post_reactions')
+          .delete()
+          .eq('id', existing.id);
+      } else {
+        // Add reaction
+        await supabase
+          .from('community_post_reactions')
+          .insert([{ post_id: itemId, user_id: user.id }]);
+      }
+
+      // Update local state
+      setSparkFeed(prev => prev.map(item => {
+        if (item.id === itemId) {
+          const newReactions = existing ? (item.reactions || 1) - 1 : (item.reactions || 0) + 1;
+          return { ...item, reactions: newReactions, hasReacted: !existing };
+        }
+        return item;
+      }));
     }
   };
 
@@ -492,6 +569,10 @@ const Circle = () => {
         tableName = 'feed_comments';
         columnName = 'post_id';
         break;
+      case 'community_post':
+        tableName = 'community_post_comments';
+        columnName = 'post_id';
+        break;
       default:
         return;
     }
@@ -547,6 +628,10 @@ const Circle = () => {
         tableName = 'feed_comments';
         columnName = 'post_id';
         break;
+      case 'community_post':
+        tableName = 'community_post_comments';
+        columnName = 'post_id';
+        break;
       default:
         return;
     }
@@ -598,7 +683,8 @@ const Circle = () => {
               {item.type === 'press' && <Newspaper className="h-3 w-3 mr-1" />}
               {item.type === 'credit' && <Award className="h-3 w-3 mr-1" />}
               {item.type === 'post' && <Sparkles className="h-3 w-3 mr-1" />}
-              {item.type}
+              {item.type === 'community_post' && <Users className="h-3 w-3 mr-1" />}
+              {item.type === 'community_post' ? 'Community' : item.type}
             </Badge>
           </div>
         </CardHeader>
@@ -787,6 +873,53 @@ const Circle = () => {
                   __html: DOMPurify.sanitize(item.content.content || '') 
                 }}
               />
+            </div>
+          )}
+
+          {item.type === 'community_post' && (
+            <div>
+              {item.content.media_url && (
+                <>
+                  {item.content.media_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
+                    <div 
+                      className="relative w-full rounded-md mb-2 max-h-96 cursor-pointer group"
+                      onClick={() => setSelectedMedia({
+                        title: 'Community Video',
+                        description: '',
+                        media_type: 'video',
+                        media_url: item.content.media_url
+                      })}
+                    >
+                      <video 
+                        className="w-full h-full object-cover rounded-md"
+                        muted
+                      >
+                        <source src={item.content.media_url} type="video/mp4" />
+                      </video>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="h-16 w-16 text-white" fill="white" />
+                      </div>
+                    </div>
+                  ) : item.content.media_url.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
+                    <div className="w-full mb-2">
+                      <audio 
+                        controls 
+                        className="w-full"
+                      >
+                        <source src={item.content.media_url} />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </div>
+                  ) : (
+                    <img 
+                      src={item.content.media_url} 
+                      alt="Community Post"
+                      className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
+                    />
+                  )}
+                </>
+              )}
+              <p className="text-sm">{item.content.content}</p>
             </div>
           )}
 

@@ -172,6 +172,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           <FolderKanban className="h-5 w-5" />
                           Desk
                         </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12 w-full"
+                          onClick={() => handleNavigation("/community")}
+                        >
+                          <Users className="h-5 w-5" />
+                          Community
+                        </Button>
                         
                         <Separator className="my-3" />
                     </div>

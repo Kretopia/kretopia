@@ -62,7 +62,7 @@ const Circle = () => {
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
   const [showSavedSparks, setShowSavedSparks] = useState(false);
-  const [activeTab, setActiveTab] = useState<'for-you' | 'following' | 'communities'>('for-you');
+  const [activeTab, setActiveTab] = useState<'for-you' | 'following'>('for-you');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -1301,21 +1301,17 @@ const Circle = () => {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={(v) => {
-            setActiveTab(v as 'for-you' | 'following' | 'communities');
+            setActiveTab(v as 'for-you' | 'following');
             setLoading(true);
           }} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="for-you" className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                For You
+            <TabsList className="w-full mb-6 h-auto">
+              <TabsTrigger value="for-you" className="flex-1 gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>For You</span>
               </TabsTrigger>
-              <TabsTrigger value="following" className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Following
-              </TabsTrigger>
-              <TabsTrigger value="communities" className="gap-2">
-                <Users className="h-4 w-4" />
-                Communities
+              <TabsTrigger value="following" className="flex-1 gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
+                <UserPlus className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>Following</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1356,29 +1352,6 @@ const Circle = () => {
                   </p>
                   <Button onClick={() => navigate('/circle')}>
                     Find Connections
-                  </Button>
-                </Card>
-              ) : (
-                <div className="space-y-6">
-                  {sparkFeed.map(renderSparkItem)}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="communities" className="mt-0">
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : sparkFeed.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No communities yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Join communities to see posts from members
-                  </p>
-                  <Button onClick={() => navigate('/community')}>
-                    Browse Communities
                   </Button>
                 </Card>
               ) : (

@@ -206,6 +206,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/cre8")}
+                    >
+                      <Zap className="h-5 w-5" />
+                      Cre8
+                    </Button>
+
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
                       onClick={() => {
                         setIsOpen(false);
                         setIsSupportOpen(true);

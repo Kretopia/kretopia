@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   MessageCircle, 
   Share2, 
@@ -61,6 +62,7 @@ const Circle = () => {
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
   const [showSavedSparks, setShowSavedSparks] = useState(false);
+  const [activeTab, setActiveTab] = useState<'for-you' | 'following' | 'communities'>('for-you');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -71,7 +73,7 @@ const Circle = () => {
 
     const loadFeed = async () => {
       if (isMounted) {
-        await fetchSparkFeed();
+        await fetchSparkFeed(activeTab);
       }
     };
 
@@ -102,7 +104,7 @@ const Circle = () => {
       clearTimeout(fetchTimeout);
       fetchTimeout = setTimeout(() => {
         if (isMounted) {
-          fetchSparkFeed();
+          fetchSparkFeed(activeTab);
         }
       }, 2000); // Wait 2 seconds before refetching
     };
@@ -120,7 +122,7 @@ const Circle = () => {
       clearTimeout(maxLoadTimeout);
       supabase.removeChannel(feedChannel);
     };
-  }, []);
+  }, [activeTab]);
 
   // AI-powered feed generation - fetch personalized content from all users
   const fetchAIFeed = async (userId: string) => {
@@ -192,12 +194,209 @@ const Circle = () => {
     }
   };
 
-  // Fallback basic feed - fetch from connections and communities
+  // Fetch content from connections only
+  const fetchFollowingFeed = async (userId: string) => {
+    console.log('[Spark] Starting following feed fetch for user:', userId);
+    
+    try {
+      // Get user's connections
+      const { data: connections } = await supabase
+        .from('connections')
+        .select('connected_user_id, user_id')
+        .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
+        .eq('status', 'accepted');
+
+      const connectedUserIds = connections?.map(c => 
+        c.user_id === userId ? c.connected_user_id : c.user_id
+      ) || [];
+
+      // Include user's own content
+      const userIdsToFetch = [userId, ...connectedUserIds];
+
+      if (userIdsToFetch.length === 0) {
+        setSparkFeed([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch content from user and connections only
+      const [portfolioData, feedPostsData] = await Promise.all([
+        supabase
+          .from('portfolio_items')
+          .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
+          .in('user_id', userIdsToFetch)
+          .order('created_at', { ascending: false })
+          .limit(20),
+        supabase
+          .from('feed_posts')
+          .select('id, user_id, content, media_urls, media_type, created_at')
+          .in('user_id', userIdsToFetch)
+          .order('created_at', { ascending: false })
+          .limit(20)
+      ]);
+
+      console.log('[Spark] Following feed data fetched:', {
+        portfolio: { count: portfolioData?.data?.length || 0, error: portfolioData.error },
+        posts: { count: feedPostsData?.data?.length || 0, error: feedPostsData.error }
+      });
+
+      const portfolioItems = portfolioData.data || [];
+      const feedPosts = feedPostsData.data || [];
+      
+      const allUserIds = [
+        ...portfolioItems.map(item => item.user_id),
+        ...feedPosts.map(item => item.user_id)
+      ];
+
+      if (allUserIds.length === 0) {
+        setSparkFeed([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch profiles
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role, location')
+        .in('user_id', [...new Set(allUserIds)]);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      const allContent = [
+        ...portfolioItems.map(item => ({ 
+          ...item, 
+          activity_type: 'portfolio', 
+          profile: profileMap.get(item.user_id) 
+        })),
+        ...feedPosts.map(item => ({ 
+          ...item, 
+          activity_type: 'feed_post', 
+          profile: profileMap.get(item.user_id) 
+        }))
+      ];
+
+      const filteredContent = allContent
+        .filter(item => item.profile?.full_name)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 30);
+
+      const feed: SparkItem[] = filteredContent.map((item: any) => {
+        const profile = item.profile;
+        return {
+          id: item.id,
+          type: item.activity_type === 'feed_post' ? 'post' : item.activity_type,
+          user: {
+            id: item.user_id,
+            name: profile.full_name,
+            avatar: profile.avatar_url || '',
+            role: profile.role || 'Creator',
+            location: profile.location || undefined
+          },
+          content: item,
+          created_at: item.created_at,
+          reactions: 0,
+          showComments: false,
+          comments: [],
+          commentText: ''
+        };
+      });
+
+      setSparkFeed(feed);
+      setLoading(false);
+    } catch (error) {
+      console.error('[Spark] Error loading following feed:', error);
+      setSparkFeed([]);
+      setLoading(false);
+    }
+  };
+
+  // Fetch community posts only
+  const fetchCommunitiesFeed = async (userId: string) => {
+    console.log('[Spark] Starting communities feed fetch for user:', userId);
+    
+    try {
+      // Get user's community memberships
+      const { data: memberships } = await supabase
+        .from('community_members')
+        .select('community_id')
+        .eq('user_id', userId);
+
+      const communityIds = memberships?.map(m => m.community_id) || [];
+
+      if (communityIds.length === 0) {
+        setSparkFeed([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch community posts
+      const { data: communityPostsData, error: communityError } = await supabase
+        .from('community_posts')
+        .select('id, user_id, community_id, content, media_urls, media_type, created_at')
+        .in('community_id', communityIds)
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      console.log('[Spark] Community posts data:', {
+        count: communityPostsData?.length || 0,
+        error: communityError
+      });
+
+      const communityPosts = communityPostsData || [];
+      const allUserIds = communityPosts.map(item => item.user_id);
+
+      if (allUserIds.length === 0) {
+        setSparkFeed([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch profiles
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role, location')
+        .in('user_id', [...new Set(allUserIds)]);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      const feed: SparkItem[] = communityPosts
+        .filter(item => profileMap.get(item.user_id)?.full_name)
+        .map((item: any) => {
+          const profile = profileMap.get(item.user_id);
+          return {
+            id: item.id,
+            type: 'community_post',
+            user: {
+              id: item.user_id,
+              name: profile!.full_name,
+              avatar: profile!.avatar_url || '',
+              role: profile!.role || 'Creator',
+              location: profile!.location || undefined
+            },
+            content: item,
+            created_at: item.created_at,
+            reactions: 0,
+            showComments: false,
+            comments: [],
+            commentText: ''
+          };
+        });
+
+      setSparkFeed(feed);
+      setLoading(false);
+    } catch (error) {
+      console.error('[Spark] Error loading communities feed:', error);
+      setSparkFeed([]);
+      setLoading(false);
+    }
+  };
+
+  // Fallback basic feed - fetch from all users
   const fetchBasicFeed = async (userId: string) => {
     console.log('[Spark] Starting basic feed fetch for user:', userId);
     
     try {
-      // Get ALL users for broader discovery (not just connections)
+      // Get ALL users for broader discovery
       const { data: allProfiles } = await supabase
         .from('public_profiles')
         .select('user_id')
@@ -231,7 +430,7 @@ const Circle = () => {
         communityIds.length > 0 
           ? supabase
               .from('community_posts')
-              .select('id, user_id, community_id, content, media_url, created_at')
+              .select('id, user_id, community_id, content, media_urls, media_type, created_at')
               .in('community_id', communityIds)
               .order('created_at', { ascending: false })
               .limit(15)
@@ -366,9 +565,9 @@ const Circle = () => {
     }
   };
 
-  const fetchSparkFeed = async () => {
+  const fetchSparkFeed = async (tab: 'for-you' | 'following' | 'communities' = 'for-you') => {
     try {
-      console.log('[Spark] fetchSparkFeed started');
+      console.log('[Spark] fetchSparkFeed started for tab:', tab);
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
@@ -385,19 +584,26 @@ const Circle = () => {
 
       console.log('[Spark] User found:', user.id);
 
-      // Check cache first and show immediately
-      const cached = getCachedFeed<SparkItem[]>(user.id);
-      if (cached && cached.length > 0) {
-        console.log('[Spark] Using cached feed with', cached.length, 'items');
-        setSparkFeed(cached);
-        setLoading(false);
-        // Still refresh in background for new content with AI
-        fetchAIFeed(user.id).catch(err => console.error('[Spark] Background refresh failed:', err));
-        return;
+      // Route to appropriate feed based on tab
+      if (tab === 'following') {
+        await fetchFollowingFeed(user.id);
+      } else if (tab === 'communities') {
+        await fetchCommunitiesFeed(user.id);
+      } else {
+        // For You tab - use AI feed with caching
+        const cached = getCachedFeed<SparkItem[]>(user.id);
+        if (cached && cached.length > 0) {
+          console.log('[Spark] Using cached feed with', cached.length, 'items');
+          setSparkFeed(cached);
+          setLoading(false);
+          // Still refresh in background for new content with AI
+          fetchAIFeed(user.id).catch(err => console.error('[Spark] Background refresh failed:', err));
+          return;
+        }
+        
+        console.log('[Spark] No cache, fetching fresh AI feed...');
+        await fetchAIFeed(user.id);
       }
-      
-      console.log('[Spark] No cache, fetching fresh feed...');
-      await fetchAIFeed(user.id);
     } catch (error) {
       console.error('[Spark] Error in fetchSparkFeed:', error);
       toast({
@@ -941,41 +1147,41 @@ const Circle = () => {
 
           {item.type === 'community_post' && (
             <div>
-              {item.content.media_url && (
+              {item.content.media_urls && item.content.media_urls.length > 0 && (
                 <>
-                  {item.content.media_url.match(/\.(mp4|mov|avi|webm)$/i) ? (
+                  {item.content.media_urls[0].match(/\.(mp4|mov|avi|webm)$/i) ? (
                     <div 
                       className="relative w-full rounded-md mb-2 max-h-96 cursor-pointer group"
                       onClick={() => setSelectedMedia({
                         title: 'Community Video',
                         description: '',
                         media_type: 'video',
-                        media_url: item.content.media_url
+                        media_url: item.content.media_urls[0]
                       })}
                     >
                       <video 
                         className="w-full h-full object-cover rounded-md"
                         muted
                       >
-                        <source src={item.content.media_url} type="video/mp4" />
+                        <source src={item.content.media_urls[0]} type="video/mp4" />
                       </video>
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Play className="h-16 w-16 text-white" fill="white" />
                       </div>
                     </div>
-                  ) : item.content.media_url.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
+                  ) : item.content.media_urls[0].match(/\.(mp3|wav|ogg|m4a)$/i) ? (
                     <div className="w-full mb-2">
                       <audio 
                         controls 
                         className="w-full"
                       >
-                        <source src={item.content.media_url} />
+                        <source src={item.content.media_urls[0]} />
                         Your browser does not support the audio element.
                       </audio>
                     </div>
                   ) : (
                     <img 
-                      src={item.content.media_url} 
+                      src={item.content.media_urls[0]} 
                       alt="Community Post"
                       className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
                     />
@@ -1072,7 +1278,7 @@ const Circle = () => {
   return (
     <>
       <SEO
-        title="For You - ThriveIN"
+        title="Spark - ThriveIN"
         description="AI-powered personalized feed - Share your spark, get feedback from peers, get inspiration"
       />
       <div className="min-h-screen p-4 sm:p-6">
@@ -1080,13 +1286,7 @@ const Circle = () => {
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl sm:text-3xl font-bold">For You</h1>
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  AI-Powered
-                </Badge>
-              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Spark</h1>
               <p className="text-sm text-muted-foreground">Share your spark, get feedback from peers, get inspiration</p>
             </div>
             <Button
@@ -1099,27 +1299,95 @@ const Circle = () => {
             </Button>
           </div>
 
-          {/* Feed */}
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : sparkFeed.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">No content yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Start discovering creators to see their latest work
-              </p>
-              <Button onClick={() => navigate('/discover')}>
-                Explore Creators
-              </Button>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {sparkFeed.map(renderSparkItem)}
-            </div>
-          )}
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={(v) => {
+            setActiveTab(v as 'for-you' | 'following' | 'communities');
+            setLoading(true);
+          }} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsTrigger value="for-you" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                For You
+              </TabsTrigger>
+              <TabsTrigger value="following" className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                Following
+              </TabsTrigger>
+              <TabsTrigger value="communities" className="gap-2">
+                <Users className="h-4 w-4" />
+                Communities
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="for-you" className="mt-0">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : sparkFeed.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No content yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    AI-powered feed will show personalized content based on your interests
+                  </p>
+                  <Button onClick={() => navigate('/discover')}>
+                    Explore Creators
+                  </Button>
+                </Card>
+              ) : (
+                <div className="space-y-6">
+                  {sparkFeed.map(renderSparkItem)}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="following" className="mt-0">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : sparkFeed.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <UserPlus className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No connections yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Connect with creators to see their latest work here
+                  </p>
+                  <Button onClick={() => navigate('/circle')}>
+                    Find Connections
+                  </Button>
+                </Card>
+              ) : (
+                <div className="space-y-6">
+                  {sparkFeed.map(renderSparkItem)}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="communities" className="mt-0">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : sparkFeed.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No communities yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Join communities to see posts from members
+                  </p>
+                  <Button onClick={() => navigate('/community')}>
+                    Browse Communities
+                  </Button>
+                </Card>
+              ) : (
+                <div className="space-y-6">
+                  {sparkFeed.map(renderSparkItem)}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 

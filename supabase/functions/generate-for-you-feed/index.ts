@@ -57,180 +57,57 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    // Fetch LESS content initially (reduce from 190 to 60 items)
-    const [portfolioData, awardsData, pressData, creditsData, feedPostsData] = await Promise.all([
+    // Fetch only essential content - much less data for faster response
+    const [portfolioData, feedPostsData] = await Promise.all([
       supabase
         .from("portfolio_items")
         .select(`
-          *,
+          id,
+          user_id,
+          title,
+          description,
+          media_url,
+          media_type,
+          thumbnail_url,
+          created_at,
           profiles:user_id (
             full_name,
             avatar_url,
-            role,
-            level,
-            badge
+            role
           )
         `)
         .order("created_at", { ascending: false })
-        .limit(20), // Reduced from 50
-      
-      supabase
-        .from("awards")
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role,
-            level,
-            badge
-          )
-        `)
-        .order("created_at", { ascending: false })
-        .limit(10), // Reduced from 30
-      
-      supabase
-        .from("press_links")
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role,
-            level,
-            badge
-          )
-        `)
-        .order("created_at", { ascending: false })
-        .limit(10), // Reduced from 30
-      
-      supabase
-        .from("credits")
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role,
-            level,
-            badge
-          )
-        `)
-        .order("created_at", { ascending: false })
-        .limit(10), // Reduced from 30
+        .limit(15), // Further reduced
       
       supabase
         .from("feed_posts")
         .select(`
-          *,
+          id,
+          user_id,
+          content,
+          media_urls,
+          media_type,
+          created_at,
           profiles:user_id (
             full_name,
             avatar_url,
-            role,
-            level,
-            badge
+            role
           )
         `)
         .order("created_at", { ascending: false })
-        .limit(20) // Reduced from 50
+        .limit(15) // Further reduced
     ]);
 
-    // Combine all content
+    // Combine all content - simplified
     const allContent = [
       ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
-      ...(awardsData.data || []).map(item => ({ ...item, activity_type: 'award' })),
-      ...(pressData.data || []).map(item => ({ ...item, activity_type: 'press' })),
-      ...(creditsData.data || []).map(item => ({ ...item, activity_type: 'credit' })),
       ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post' }))
     ].filter(item => item.user_id && item.profiles); // Include all content with valid profiles
 
-    // Use AI to score and rank content if available
-    if (lovableApiKey && allContent.length > 0) {
-      try {
-        const prompt = `You are a content recommendation AI. Based on this user profile:
-Role: ${profile?.role}
-Bio: ${profile?.bio}
-Skills: ${profile?.professional_skills?.join(", ")}
-Location: ${profile?.location}
-
-Score and rank the following ${allContent.length} content items for personalized recommendations. Consider:
-1. Relevance to user's role and interests
-2. Content quality and engagement potential
-3. Diversity (mix of content types and creators)
-4. Trending and fresh content
-5. Discovery of new creators
-
-Return ONLY a JSON array of content IDs in recommended order (most relevant first). Include up to 30 items.
-Format: ["id1", "id2", "id3", ...]
-
-Content items:
-${allContent.slice(0, 50).map((item, idx) => 
-  `${idx + 1}. ID: ${item.id}, Type: ${item.activity_type}, Creator: ${item.profiles?.role || 'Creator'}, Title: ${item.title || item.content?.substring(0, 100) || 'Post'}`
-).join('\n')}`;
-
-        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${lovableApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              { role: "system", content: "You are a content recommendation engine. Return only valid JSON arrays." },
-              { role: "user", content: prompt }
-            ],
-          }),
-        });
-
-        if (!response.ok) {
-          console.error("AI API error:", response.status);
-          throw new Error("AI recommendation failed");
-        }
-
-        const data = await response.json();
-        const recommendedIdsText = data.choices[0]?.message?.content || "[]";
-        
-        // Extract JSON array from response
-        const jsonMatch = recommendedIdsText.match(/\[[\s\S]*\]/);
-        const recommendedIds = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-        
-        console.log("AI recommended IDs:", recommendedIds.length);
-
-        // Sort content by AI recommendations
-        const rankedContent: any[] = [];
-        const contentMap = new Map(allContent.map(item => [item.id, item]));
-        
-        // Add recommended items first
-        recommendedIds.forEach((id: string) => {
-          const item = contentMap.get(id);
-          if (item) {
-            rankedContent.push(item);
-            contentMap.delete(id);
-          }
-        });
-        
-        // Add remaining items (fallback)
-        contentMap.forEach(item => rankedContent.push(item));
-        
-        const result = { feed: rankedContent.slice(0, 30), aiRecommended: true };
-        
-        // Cache the result
-        feedCache.set(userId, { data: result, timestamp: now });
-        
-        return new Response(
-          JSON.stringify(result),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } catch (aiError) {
-        console.error("AI scoring failed, falling back to chronological:", aiError);
-      }
-    }
-
-    // Fallback: Return chronologically sorted content with some smart filtering
+    // Skip AI for now to improve performance - just return chronologically sorted content
     const diverseFeed = allContent
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 30);
+      .slice(0, 20); // Reduced to 20 items
 
     const result = { feed: diverseFeed, aiRecommended: false };
     

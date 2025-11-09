@@ -728,6 +728,148 @@ export type Database = {
         }
         Relationships: []
       }
+      digital_product_purchases: {
+        Row: {
+          amount: number
+          buyer_id: string
+          currency: string | null
+          download_urls: string[] | null
+          id: string
+          payment_intent_id: string | null
+          payment_status: string | null
+          product_id: string
+          purchased_at: string | null
+          seller_id: string
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          currency?: string | null
+          download_urls?: string[] | null
+          id?: string
+          payment_intent_id?: string | null
+          payment_status?: string | null
+          product_id: string
+          purchased_at?: string | null
+          seller_id: string
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          currency?: string | null
+          download_urls?: string[] | null
+          id?: string
+          payment_intent_id?: string | null
+          payment_status?: string | null
+          product_id?: string
+          purchased_at?: string | null
+          seller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_product_purchases_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      digital_product_reviews: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string
+          rating: number
+          review_text: string | null
+          reviewer_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id: string
+          rating: number
+          review_text?: string | null
+          reviewer_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          rating?: number
+          review_text?: string | null
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      digital_products: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          currency: string | null
+          demo_url: string | null
+          description: string | null
+          download_count: number | null
+          file_urls: string[] | null
+          id: string
+          is_active: boolean | null
+          license_type: string | null
+          preview_urls: string[] | null
+          price: number
+          product_type: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          demo_url?: string | null
+          description?: string | null
+          download_count?: number | null
+          file_urls?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          license_type?: string | null
+          preview_urls?: string[] | null
+          price: number
+          product_type: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          demo_url?: string | null
+          description?: string | null
+          download_count?: number | null
+          file_urls?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          license_type?: string | null
+          preview_urls?: string[] | null
+          price?: number
+          product_type?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       feed_comments: {
         Row: {
           content: string

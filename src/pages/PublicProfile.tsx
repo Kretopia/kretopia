@@ -24,6 +24,7 @@ import { AboutSection } from "@/components/profile/AboutSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { SEO } from "@/components/SEO";
+import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 import { Download, FileText, Globe, Award } from "lucide-react";
 
 interface Profile {
@@ -574,6 +575,14 @@ const PublicProfile = () => {
                   </div>
                 </section>
               )}
+
+              {/* Digital Products Marketplace */}
+              <div className="mt-6">
+                <DigitalProductsSection 
+                  userId={userId}
+                  isOwner={false}
+                />
+              </div>
             </div>
           </div>
         )}

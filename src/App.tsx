@@ -20,6 +20,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Discover = lazy(() => import("./pages/Discover"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
@@ -144,6 +145,7 @@ const AppContent = () => {
             <Route path="/cre8" element={<ProtectedRoute><Cre8 /></ProtectedRoute>} />
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
             <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+            <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
             <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />

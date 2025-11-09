@@ -44,6 +44,7 @@ import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { VerificationProgress } from "@/components/profile/VerificationProgress";
 import { VerificationAppealDialog } from "@/components/profile/VerificationAppealDialog";
 import { ProfileActions } from "@/components/profile/ProfileActions";
+import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 
@@ -464,6 +465,14 @@ const ProfileContent = () => {
                     onRefresh={fetchData}
                   />
                 </div>
+              </div>
+
+              {/* Digital Products Marketplace */}
+              <div className="mt-6">
+                <DigitalProductsSection 
+                  userId={profile.user_id}
+                  isOwner={true}
+                />
               </div>
             </section>
           </div>

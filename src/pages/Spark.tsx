@@ -77,18 +77,19 @@ const Circle = () => {
       }
     };
 
-    // Failsafe: ensure loading is never stuck for more than 15 seconds
+    // Failsafe: ensure loading is never stuck for more than 10 seconds
     maxLoadTimeout = setTimeout(() => {
       if (isMounted && loading) {
         console.warn('[Spark] Max load timeout reached, forcing loading to false');
         setLoading(false);
+        // Show a less alarming message
         toast({
-          title: "Loading timeout",
-          description: "Feed took too long to load. Please refresh the page.",
-          variant: "destructive"
+          title: "Taking longer than expected",
+          description: "Try refreshing or switching tabs",
+          variant: "default"
         });
       }
-    }, 15000);
+    }, 10000); // Reduced to 10 seconds
 
     loadFeed();
     
@@ -565,9 +566,11 @@ const Circle = () => {
     }
   };
 
-  const fetchSparkFeed = async (tab: 'for-you' | 'following' | 'communities' = 'for-you') => {
+  const fetchSparkFeed = async (tab: 'for-you' | 'following' = 'for-you') => {
     try {
       console.log('[Spark] fetchSparkFeed started for tab:', tab);
+      setLoading(true);
+      
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
@@ -584,33 +587,49 @@ const Circle = () => {
 
       console.log('[Spark] User found:', user.id);
 
-      // Route to appropriate feed based on tab
-      if (tab === 'following') {
-        await fetchFollowingFeed(user.id);
-      } else if (tab === 'communities') {
-        await fetchCommunitiesFeed(user.id);
-      } else {
-        // For You tab - use AI feed with caching
-        const cached = getCachedFeed<SparkItem[]>(user.id);
-        if (cached && cached.length > 0) {
-          console.log('[Spark] Using cached feed with', cached.length, 'items');
-          setSparkFeed(cached);
-          setLoading(false);
-          // Still refresh in background for new content with AI
-          fetchAIFeed(user.id).catch(err => console.error('[Spark] Background refresh failed:', err));
-          return;
-        }
-        
-        console.log('[Spark] No cache, fetching fresh AI feed...');
-        await fetchAIFeed(user.id);
-      }
-    } catch (error) {
-      console.error('[Spark] Error in fetchSparkFeed:', error);
-      toast({
-        title: "Error loading feed",
-        description: "Please try again",
-        variant: "destructive"
+      // Set a timeout for the entire fetch operation
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 8000); // 8 second timeout
       });
+
+      // Route to appropriate feed based on tab with caching for 'for-you'
+      const fetchPromise = async () => {
+        if (tab === 'following') {
+          await fetchFollowingFeed(user.id);
+        } else {
+          // For You tab - use AI feed with caching
+          const cached = getCachedFeed<SparkItem[]>(user.id);
+          if (cached && cached.length > 0) {
+            console.log('[Spark] Using cached feed with', cached.length, 'items');
+            setSparkFeed(cached);
+            setLoading(false);
+            return;
+          }
+          
+          console.log('[Spark] No cache, fetching fresh AI feed...');
+          await fetchAIFeed(user.id);
+        }
+      };
+
+      await Promise.race([fetchPromise(), timeoutPromise]);
+    } catch (error: any) {
+      console.error('[Spark] Error in fetchSparkFeed:', error);
+      
+      // Show user-friendly error
+      if (error.message === 'Request timeout') {
+        toast({
+          title: "Loading slowly",
+          description: "Using limited content",
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Error loading feed",
+          description: "Please try again",
+          variant: "destructive"
+        });
+      }
+      
       setSparkFeed([]);
       setLoading(false);
     }

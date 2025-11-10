@@ -50,9 +50,7 @@ export default function Community() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchCommunities();
-    }
+    fetchCommunities();
   }, [user]);
 
   useEffect(() => {
@@ -64,18 +62,24 @@ export default function Community() {
   }, [communityId]);
 
   const fetchCommunities = async () => {
-    if (!user) return;
-
     setLoading(true);
     try {
       // Get all public communities
       const { data: allCommunities, error: commError } = await supabase
         .from('communities')
-        .select('*')
+        .select('id, name, description, image_url, cover_url, member_count, is_official, is_private, category, location')
+        .eq('is_private', false)
         .order('is_official', { ascending: false })
         .order('member_count', { ascending: false });
 
       if (commError) throw commError;
+
+      if (!user) {
+        // If not logged in, show all communities as not joined
+        setCommunities((allCommunities || []).map(c => ({ ...c, is_member: false })));
+        setMyCommunities([]);
+        return;
+      }
 
       // Get user's memberships
       const { data: memberships } = await supabase

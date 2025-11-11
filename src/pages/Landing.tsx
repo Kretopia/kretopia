@@ -73,17 +73,17 @@ const Landing = () => {
           </div>
           
           <div className="flex justify-center gap-4">
-            <Link to="/auth">
-              <Button size="xl" className="text-lg px-12 py-6 shadow-glow hover:-translate-y-1 transition-all">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Find Collaborators Now
-              </Button>
-            </Link>
+              <Link to="/auth">
+                <Button size="xl" className="text-lg px-12 py-6 shadow-glow hover:-translate-y-1 transition-all">
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Get Started Free
+                </Button>
+              </Link>
           </div>
           
           {/* Social proof */}
           <div className="mt-8 text-center">
-            <p className="text-sm text-muted-foreground mb-4">Join professional creators already on the platform</p>
+            <p className="text-sm text-muted-foreground mb-4">Join <span className="font-semibold text-foreground">500+ creators</span> building together</p>
             <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium text-muted-foreground">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
@@ -98,6 +98,84 @@ const Landing = () => {
                 <span>Built-in Workspace</span>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Communities Showcase Section */}
+      <section className="px-6 py-20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+              <Users className="h-4 w-4" />
+              <span>Active Communities</span>
+            </div>
+            <h2 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+              Join Thriving{" "}
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Creator Communities
+              </span>
+            </h2>
+            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
+              Connect with creators in your city. Share work. Find collaborators. Build together.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 mb-8">
+            <Link to="/community">
+              <Card className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
+                      <Users className="h-8 w-8 text-primary-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1">ThriveIN Bali</h3>
+                      <p className="text-sm text-muted-foreground">Official community • 200+ members</p>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    The main hub for creators in Bali. Events, collaborations, and daily inspiration.
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-primary">
+                    <Sparkles className="h-4 w-4" />
+                    <span>Join community →</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/community">
+              <Card className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-secondary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-secondary to-accent flex items-center justify-center flex-shrink-0">
+                      <Trophy className="h-8 w-8 text-primary-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1">Bali Cre8ives</h3>
+                      <p className="text-sm text-muted-foreground">Official community • 150+ members</p>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    Focus on challenges, portfolio building, and skill sharing for Bali creators.
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-secondary">
+                    <Sparkles className="h-4 w-4" />
+                    <span>Join community →</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          <div className="text-center">
+            <Link to="/community">
+              <Button size="lg" variant="outline">
+                <Users className="mr-2 h-5 w-5" />
+                Explore All Communities
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

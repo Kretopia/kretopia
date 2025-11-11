@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User, Flame } from "lucide-react";
+import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User, Flame, Trophy } from "lucide-react";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -159,6 +159,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         <Button 
                           variant="ghost" 
                           className="justify-start gap-3 h-12 w-full"
+                          onClick={() => handleNavigation("/discover")}
+                        >
+                          <Compass className="h-5 w-5" />
+                          Discover
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12 w-full"
                           onClick={() => handleNavigation("/circle")}
                         >
                           <Users className="h-5 w-5" />
@@ -167,18 +175,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         <Button 
                           variant="ghost" 
                           className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/projects")}
+                          onClick={() => handleNavigation("/cre8")}
                         >
-                          <FolderKanban className="h-5 w-5" />
-                          Desk
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/community")}
-                        >
-                          <Users className="h-5 w-5" />
-                          Community
+                          <Zap className="h-5 w-5" />
+                          Cre8
                         </Button>
                         
                         <Separator className="my-3" />
@@ -206,9 +206,27 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/community")}
+                    >
+                      <Users className="h-5 w-5" />
+                      Community
+                    </Button>
+
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
+                      onClick={() => handleNavigation("/projects")}
+                    >
+                      <FolderKanban className="h-5 w-5" />
+                      Desk
+                    </Button>
+
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12"
                       onClick={() => handleNavigation("/cre8")}
                     >
-                      <Zap className="h-5 w-5" />
+                      <Trophy className="h-5 w-5" />
                       Cre8
                     </Button>
 

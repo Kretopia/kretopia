@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Users, Compass } from "lucide-react";
 
 export const HeroSection = () => {
   return (
@@ -20,31 +20,27 @@ export const HeroSection = () => {
           </div>
           
           <h1 className="mb-6 sm:mb-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight px-2">
+            Find Collaborators, Win Challenges,{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Find Your Next{" "}
-            </span>
-            <span className="text-foreground">
-              Creative Collaborator
+              Get Brand Deals
             </span>
           </h1>
           
           <p className="mx-auto mb-8 sm:mb-12 max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-muted-foreground px-4">
-            Connect with nearby creators. Collaborate in real-time workspaces.{" "}
-            <span className="font-semibold text-foreground">Win creative challenges. Get matched with brands.</span>
-            <br className="hidden sm:block" />
-            Everything you need to thrive as a creator—in one platform.
+            The all-in-one platform where creators discover nearby talent, compete in creative challenges, and match with brand opportunities.{" "}
+            <span className="font-semibold text-foreground">Stop juggling 5 tools</span>—collaborate, create, and get paid in one place.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 px-4 sm:flex-row">
             <Link to="/auth" className="w-full sm:w-auto">
               <Button variant="hero" size="xl" className="w-full sm:w-auto shadow-glow transition-smooth hover:-translate-y-1">
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Build Your Profile
+                Get Started Free
               </Button>
             </Link>
-            <Link to="/discover" className="w-full sm:w-auto">
+            <Link to="/community" className="w-full sm:w-auto">
               <Button variant="outline" size="xl" className="w-full sm:w-auto border-2">
-                See How It Works
+                Explore Communities
               </Button>
             </Link>
           </div>

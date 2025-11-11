@@ -277,38 +277,32 @@ const ProfileContent = () => {
         </div>
 
         {/* Tabbed Content */}
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full grid grid-cols-4 h-auto mb-6 sticky top-[180px] z-10 bg-background">
-            <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center gap-1 py-2 text-xs sm:text-sm">
-              <LayoutGrid className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="portfolio" className="flex flex-col sm:flex-row items-center gap-1 py-2 text-xs sm:text-sm">
+        <Tabs defaultValue="work" className="w-full">
+          <TabsList className="w-full grid grid-cols-3 h-auto mb-6 sticky top-[180px] z-10 bg-background">
+            <TabsTrigger value="work" className="flex flex-col sm:flex-row items-center gap-1 py-2 text-xs sm:text-sm">
               <BriefcaseIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Work</span>
+              <span>Work</span>
             </TabsTrigger>
             <TabsTrigger value="shop" className="flex flex-col sm:flex-row items-center gap-1 py-2 text-xs sm:text-sm">
               <ShoppingBag className="h-4 w-4" />
-              <span className="hidden sm:inline">Shop</span>
+              <span>Shop</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="flex flex-col sm:flex-row items-center gap-1 py-2 text-xs sm:text-sm">
               <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Stats</span>
+              <span>Stats</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-4">
-            <ProfileCompletionProgress 
-              completion={checkProfileCompletion(profile, portfolioItems.length)}
-            />
-            
-            <ProfileVisibilityBanner
-              isVisible={checkProfileCompletion(profile, portfolioItems.length).percentage === 100}
-              missingFields={checkProfileCompletion(profile, portfolioItems.length).missingFields}
-            />
-
-            <DiscoverReadyBanner portfolioCount={portfolioItems.length} />
+          {/* Work Tab - Portfolio First */}
+          <TabsContent value="work" className="space-y-4">
+            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
+              <h2 className="text-xl font-bold mb-4">Portfolio</h2>
+              <PortfolioSection 
+                items={portfolioItems} 
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
+            </div>
 
             <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
               <AboutSection
@@ -343,20 +337,6 @@ const ProfileContent = () => {
               <h2 className="text-xl font-bold mb-4">Contact & Links</h2>
               <SocialLinksSection 
                 profile={profile}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            </div>
-
-            <InviteCodesCard />
-          </TabsContent>
-
-          {/* Portfolio/Work Tab */}
-          <TabsContent value="portfolio" className="space-y-4">
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Portfolio</h2>
-              <PortfolioSection 
-                items={portfolioItems} 
                 isOwnProfile={true}
                 onRefresh={fetchData}
               />

@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2, Globe } from "lucide-react";
+import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2, Globe, Flame, Trophy } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
@@ -22,10 +22,7 @@ import { WorkspacePreviewStep } from "@/components/onboarding/WorkspacePreviewSt
 const STEPS = [
   { id: 1, title: "Profile", icon: Users },
   { id: 2, title: "Skills", icon: Award },
-  { id: 3, title: "Portfolio", icon: Briefcase },
-  { id: 4, title: "Preview", icon: Briefcase },
-  { id: 5, title: "Connect", icon: Sparkles },
-  { id: 6, title: "Success", icon: Star },
+  { id: 3, title: "Done", icon: Sparkles },
 ];
 
 interface Skill {
@@ -221,52 +218,10 @@ export default function Onboarding() {
         return;
       }
       
-      if (selectedSkills.length < 3) {
-        toast({
-          title: "💡 Pro tip",
-          description: "Adding 3+ skills increases your match rate by 60%!",
-        });
-      }
-      
-      // Update onboarding step in database
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        
-        const { error } = await supabase
-          .from("profiles")
-          .update({ 
-            onboarding_step: 3,
-            professional_skills: selectedSkills.map(skill => ({
-              skill,
-              level: 3,
-              category: "General"
-            })) as any
-          })
-          .eq("user_id", user.id);
-        
-        if (error) {
-          console.error("Profile update error:", error);
-          throw error;
-        }
-      } catch (error) {
-        console.error("Error updating profile:", error);
-        toast({
-          title: "Update failed",
-          description: "Failed to save your progress. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      analytics.onboardingStep(2, "skills_added");
+      // Complete onboarding and go straight to Spark
+      await completeOnboarding();
+      return;
     }
-
-    // Step 3 is portfolio (handled by AddPortfolioStep component)
-    // Step 4 is matched profiles  
-    // Step 5 is connection success
 
     setCurrentStep(currentStep + 1);
   };
@@ -405,7 +360,7 @@ export default function Onboarding() {
     }
   };
 
-  const progress = (currentStep / 6) * 100;
+  const progress = (currentStep / 3) * 100;
 
   return (
     <>
@@ -442,8 +397,8 @@ export default function Onboarding() {
                 <Sparkles className="h-4 w-4" />
                 <span>Earn +100 XP for completing</span>
               </div>
-              <h2 className="text-3xl font-bold mb-2">Let's Build Your Creative Profile</h2>
-              <p className="text-muted-foreground">Get matched with nearby collaborators and brand opportunities in under 2 minutes</p>
+              <h2 className="text-3xl font-bold mb-2">Let's Get You Started</h2>
+              <p className="text-muted-foreground">Takes 60 seconds • Start discovering creators immediately</p>
               
               <Button 
                 variant="outline" 
@@ -578,55 +533,71 @@ export default function Onboarding() {
           </div>
         )}
 
-        {currentStep === 3 && userId && (
-          <AddPortfolioStep 
-            userId={userId}
-            onComplete={async () => {
-              try {
-                const { analytics } = await import("@/lib/analytics");
-                analytics.onboardingStep(3, "portfolio_added");
-                
-                const { error } = await supabase
-                  .from("profiles")
-                  .update({ onboarding_step: 4 })
-                  .eq("user_id", userId);
-                
-                if (error) throw error;
-                
-                setCurrentStep(4);
-              } catch (error) {
-                console.error("Error updating onboarding step:", error);
-                toast({
-                  title: "Error",
-                  description: "Failed to save progress. Please try again.",
-                  variant: "destructive",
-                });
-              }
-            }}
-          />
+        {currentStep === 3 && (
+          <div className="space-y-6 text-center">
+            <div className="mb-4">
+              <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary mb-4">
+                <Sparkles className="h-10 w-10 text-primary-foreground" />
+              </div>
+              <h2 className="text-3xl font-bold mb-2">You're All Set! 🎉</h2>
+              <p className="text-muted-foreground">
+                Your profile is ready. You can add portfolio items anytime from your profile.
+              </p>
+            </div>
+            
+            <div className="rounded-xl border bg-muted/50 p-6 space-y-3 text-left">
+              <h3 className="font-semibold text-lg mb-3">What's Next?</h3>
+              <div className="flex items-start gap-3">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Flame className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">Explore Spark Feed</p>
+                  <p className="text-sm text-muted-foreground">See what creators are sharing</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Briefcase className="h-4 w-4 text-secondary" />
+                </div>
+                <div>
+                  <p className="font-medium">Swipe on Gigs</p>
+                  <p className="text-sm text-muted-foreground">Find collaborations & brand deals</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Award className="h-4 w-4 text-accent" />
+                </div>
+                <div>
+                  <p className="font-medium">Join a Challenge</p>
+                  <p className="text-sm text-muted-foreground">Win prizes & build your portfolio</p>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              size="lg"
+              onClick={completeOnboarding}
+              disabled={loading}
+              className="w-full gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Setting up...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-5 w-5" />
+                  Start Exploring
+                </>
+              )}
+            </Button>
+          </div>
         )}
 
-        {currentStep === 4 && (
-          <WorkspacePreviewStep />
-        )}
-
-        {currentStep === 5 && (
-          <MatchedProfilesStep 
-            onComplete={(count) => {
-              setConnectionCount(count);
-              setCurrentStep(6);
-            }} 
-          />
-        )}
-
-        {currentStep === 6 && (
-          <ConnectionSuccessStep
-            connectionCount={connectionCount}
-            onComplete={completeOnboarding}
-          />
-        )}
-
-        {currentStep !== 3 && currentStep !== 4 && currentStep !== 5 && currentStep !== 6 && (
+        {currentStep !== 3 && (
           <div className="flex gap-3 mt-8">
             {currentStep > 1 && (
               <Button
@@ -650,23 +621,6 @@ export default function Onboarding() {
               ) : (
                 "Continue"
               )}
-            </Button>
-          </div>
-        )}
-
-        {currentStep === 4 && (
-          <div className="flex gap-3 mt-8">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep(currentStep - 1)}
-            >
-              Back
-            </Button>
-            <Button
-              onClick={() => setCurrentStep(5)}
-              className="flex-1"
-            >
-              Got it! Show Me Matches
             </Button>
           </div>
         )}

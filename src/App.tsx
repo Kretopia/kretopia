@@ -144,7 +144,7 @@ const AppContent = () => {
             <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
             <Route path="/cre8" element={<ProtectedRoute><Cre8 /></ProtectedRoute>} />
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
-            <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+            <Route path="/community" element={<Community />} />
             <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
             <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

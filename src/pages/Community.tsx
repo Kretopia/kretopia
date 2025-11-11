@@ -135,7 +135,11 @@ export default function Community() {
   };
 
   const handleJoinCommunity = async (id: string) => {
-    if (!user) return;
+    if (!user) {
+      toast.error("Please sign in to join communities");
+      navigate('/auth');
+      return;
+    }
 
     try {
       const { error } = await supabase

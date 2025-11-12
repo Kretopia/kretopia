@@ -23,12 +23,13 @@ export const ActivityFeed = () => {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
+        // Set timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 5000)
+        );
+
         // Fetch all data in parallel for faster loading
-        const [
-          { data: profiles },
-          { data: opportunities },
-          { data: portfolio }
-        ] = await Promise.all([
+        const dataPromise = Promise.all([
           supabase
             .from("profiles")
             .select("user_id, full_name, avatar_url, role, created_at")
@@ -46,6 +47,12 @@ export const ActivityFeed = () => {
             .order("created_at", { ascending: false })
             .limit(3)
         ]);
+
+        const [
+          { data: profiles },
+          { data: opportunities },
+          { data: portfolio }
+        ] = await Promise.race([dataPromise, timeoutPromise]) as any;
 
         const allActivities: ActivityItem[] = [];
 
@@ -93,6 +100,8 @@ export const ActivityFeed = () => {
         setActivities(allActivities.slice(0, 8));
       } catch (error) {
         console.error("Error fetching activities:", error);
+        // Show empty state on error instead of infinite loading
+        setActivities([]);
       } finally {
         setLoading(false);
       }

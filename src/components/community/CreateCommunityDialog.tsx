@@ -68,6 +68,14 @@ export function CreateCommunityDialog({ open, onOpenChange, onSuccess }: CreateC
 
       if (memberError) throw memberError;
 
+      // Track community creation
+      const { trackEvent } = await import("@/lib/analytics");
+      await trackEvent({
+        eventName: 'community_created',
+        eventCategory: 'engagement',
+        properties: { is_private: formData.is_private }
+      });
+
       toast.success("Community created!");
       setFormData({ name: "", description: "", location: "", category: "", is_private: false });
       onOpenChange(false);

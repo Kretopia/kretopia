@@ -32,6 +32,14 @@ export const BookmarkButton = ({
     }
 
     await toggleSave();
+    
+    // Track opportunity save/unsave
+    const { trackEvent } = await import("@/lib/analytics");
+    await trackEvent({
+      eventName: isSaved ? 'opportunity_unsaved' : 'opportunity_saved',
+      eventCategory: 'opportunities',
+      properties: { opportunity_id: opportunityId }
+    });
   };
 
   return (

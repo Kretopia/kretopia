@@ -152,6 +152,14 @@ export default function Community() {
 
       if (error) throw error;
 
+      // Track community join
+      const { trackEvent } = await import("@/lib/analytics");
+      await trackEvent({
+        eventName: 'community_joined',
+        eventCategory: 'engagement',
+        properties: { community_id: id }
+      });
+
       toast.success("Joined community!");
       fetchCommunities();
     } catch (error) {
@@ -160,7 +168,15 @@ export default function Community() {
     }
   };
 
-  const handleViewCommunity = (id: string) => {
+  const handleViewCommunity = async (id: string) => {
+    // Track community view
+    const { trackEvent } = await import("@/lib/analytics");
+    await trackEvent({
+      eventName: 'community_viewed',
+      eventCategory: 'engagement',
+      properties: { community_id: id }
+    });
+    
     navigate(`/community?id=${id}`);
   };
 

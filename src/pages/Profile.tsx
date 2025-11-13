@@ -184,6 +184,11 @@ const ProfileContent = () => {
     setIsEditOpen(false);
     setGalleryFiles([]);
     setGalleryPreviews([]);
+    
+    // Track profile update
+    const { analytics } = await import("@/lib/analytics");
+    analytics.profileUpdate("profile_fields");
+    
     toast({
       title: "Success",
       description: "Profile updated successfully",

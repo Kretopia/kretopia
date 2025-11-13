@@ -73,7 +73,14 @@ const Landing = () => {
           </div>
           
           <div className="flex justify-center gap-4">
-              <Link to="/auth">
+              <Link to="/auth" onClick={async () => {
+                const { trackEvent } = await import("@/lib/analytics");
+                await trackEvent({
+                  eventName: 'cta_clicked',
+                  eventCategory: 'engagement',
+                  properties: { cta_location: 'hero_signup', cta_text: 'Get Started Free' }
+                });
+              }}>
                 <Button size="xl" className="text-lg px-12 py-6 shadow-glow hover:-translate-y-1 transition-all">
                   <Sparkles className="mr-2 h-5 w-5" />
                   Get Started Free

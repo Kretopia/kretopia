@@ -136,6 +136,14 @@ export function CommunityFeed({ communityId }: CommunityFeedProps) {
 
       if (error) throw error;
 
+      // Track community post
+      const { trackEvent } = await import("@/lib/analytics");
+      await trackEvent({
+        eventName: 'community_post_created',
+        eventCategory: 'engagement',
+        properties: { community_id: communityId }
+      });
+
       setNewPost("");
       toast.success("Posted!");
     } catch (error) {

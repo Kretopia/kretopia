@@ -149,6 +149,20 @@ export const DirectMessageDialog = ({
       // Track message sent
       analytics.messageSent(recipientId);
 
+      // Send push notification to receiver
+      const { data: senderProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', currentUserId)
+        .single();
+
+      const { notifyMessage } = await import("@/lib/pushNotifications");
+      await notifyMessage(
+        recipientId,
+        senderProfile?.full_name || 'Someone',
+        messageContent
+      );
+
     } catch (error) {
       console.error('Error sending message:', error);
       toast({

@@ -223,10 +223,11 @@ const Messages = () => {
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return;
 
+    const messageContent = newMessage.trim();
     const { error } = await supabase.from("messages").insert({
       sender_id: currentUserId,
       receiver_id: selectedConversation,
-      content: newMessage.trim(),
+      content: messageContent,
       read: false,
     });
 
@@ -237,6 +238,22 @@ const Messages = () => {
         variant: "destructive",
       });
       return;
+    }
+
+    // Send push notification to receiver
+    const { data: senderProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('user_id', currentUserId)
+      .single();
+
+    if (senderProfile) {
+      const { notifyMessage } = await import("@/lib/pushNotifications");
+      await notifyMessage(
+        selectedConversation,
+        senderProfile.full_name || 'Someone',
+        messageContent
+      );
     }
 
     setNewMessage("");

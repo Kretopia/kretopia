@@ -114,6 +114,22 @@ export const ApplyToOpportunityDialog = ({
     const { analytics } = await import("@/lib/analytics");
     analytics.opportunityApply(opportunityId);
 
+    // Notify opportunity creator via push notification
+    const { data: opportunity } = await supabase
+      .from('opportunities')
+      .select('created_by, title')
+      .eq('id', opportunityId)
+      .single();
+
+    if (opportunity) {
+      const { notifyOpportunity } = await import("@/lib/pushNotifications");
+      await notifyOpportunity(
+        opportunity.created_by,
+        opportunity.title,
+        opportunityId
+      );
+    }
+
     toast({
       title: "Application submitted!",
       description: "The opportunity creator will review your application",

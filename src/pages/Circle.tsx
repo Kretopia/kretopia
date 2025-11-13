@@ -321,6 +321,15 @@ export default function Circle() {
 
         analytics.match(currentCard.user_id);
 
+        // Send push notifications to both users
+        const { notifyMatch } = await import("@/lib/pushNotifications");
+        await notifyMatch(
+          user.id, 
+          currentCard.user_id, 
+          senderProfile?.full_name || 'A creator',
+          currentCard.name
+        );
+
         setCurrentMatchIndex(prev => prev + 1);
         swipeGestures.resetSwipe();
 

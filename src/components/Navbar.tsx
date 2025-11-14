@@ -146,121 +146,77 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
-                    {/* Main Navigation - Only show on lg+ screens (hidden on mobile where BottomNav shows these) */}
-                    <div className="hidden lg:flex lg:flex-col lg:gap-1">
+                    {/* Core Navigation */}
+                    <div className="space-y-1">
                       <Button
-                          variant="ghost" 
-                          className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/spark")}
-                        >
-                          <Flame className="h-5 w-5" />
-                          Spark
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/discover")}
-                        >
-                          <Compass className="h-5 w-5" />
-                          Discover
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/circle")}
-                        >
-                          <Users className="h-5 w-5" />
-                          Circle
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/cre8")}
-                        >
-                          <Zap className="h-5 w-5" />
-                          Cre8
-                        </Button>
-                        
-                        <Separator className="my-3" />
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12 w-full"
+                        onClick={() => handleNavigation("/profile")}
+                      >
+                        <User className="h-5 w-5" />
+                        My Profile
+                      </Button>
+
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12 w-full"
+                        onClick={() => handleNavigation("/community")}
+                      >
+                        <Users className="h-5 w-5" />
+                        Communities
+                      </Button>
+
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12 w-full"
+                        onClick={() => handleNavigation("/projects")}
+                      >
+                        <FolderKanban className="h-5 w-5" />
+                        Desk
+                      </Button>
                     </div>
 
-                    <Button
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/profile")}
-                    >
-                      <User className="h-5 w-5" />
-                      My Profile
-                    </Button>
+                    <Separator className="my-3" />
 
-                    {/* Discover renamed to Gigs */}
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/discover")}
-                    >
-                      <Compass className="h-5 w-5" />
-                      Gigs
-                    </Button>
+                    {/* Tools & Features */}
+                    <div className="space-y-1">
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12 w-full"
+                        onClick={() => handleNavigation("/marketplace")}
+                      >
+                        <Briefcase className="h-5 w-5" />
+                        Marketplace
+                      </Button>
 
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/community")}
-                    >
-                      <Users className="h-5 w-5" />
-                      Community
-                    </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12 w-full"
+                        onClick={() => handleNavigation("/manage-opportunities")}
+                      >
+                        <Compass className="h-5 w-5" />
+                        My Opportunities
+                      </Button>
 
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/projects")}
-                    >
-                      <FolderKanban className="h-5 w-5" />
-                      Desk
-                    </Button>
+                      <Button
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12 w-full"
+                        onClick={() => {
+                          setIsOpen(false);
+                          setIsSupportOpen(true);
+                        }}
+                      >
+                        <Zap className="h-5 w-5" />
+                        AI Assistant
+                      </Button>
+                    </div>
 
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/cre8")}
-                    >
-                      <Trophy className="h-5 w-5" />
-                      Cre8
-                    </Button>
+                    <Separator className="my-3" />
 
+                    {/* Settings */}
                     <Button 
                       variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/marketplace")}
-                    >
-                      <Briefcase className="h-5 w-5" />
-                      Marketplace
-                    </Button>
-
-                    <Button
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => {
-                        setIsOpen(false);
-                        setIsSupportOpen(true);
-                      }}
-                    >
-                      <Zap className="h-5 w-5" />
-                      AI Assistant
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
-                      onClick={() => handleNavigation("/manage-opportunities")}
-                    >
-                      <Briefcase className="h-5 w-5" />
-                      My Opportunities
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12"
+                      className="justify-start gap-3 h-12 w-full"
                       onClick={() => handleNavigation("/settings")}
                     >
                       <Settings className="h-5 w-5" />

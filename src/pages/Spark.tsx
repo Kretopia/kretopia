@@ -21,7 +21,8 @@ import {
   UserPlus,
   Send,
   Play,
-  Bookmark
+  Bookmark,
+  Paperclip
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -220,21 +221,37 @@ const Circle = () => {
         return;
       }
 
-      // Fetch content from user and connections only - only posts, not portfolio items
-      const { data: feedPostsData, error: feedPostsError } = await supabase
-        .from('feed_posts')
-        .select('id, user_id, content, media_urls, media_type, created_at')
-        .in('user_id', userIdsToFetch)
-        .order('created_at', { ascending: false })
-        .limit(30);
+      // Fetch content from user and connections
+      const [feedPostsData, portfolioData] = await Promise.all([
+        supabase
+          .from('feed_posts')
+          .select('id, user_id, content, media_urls, media_type, created_at')
+          .in('user_id', userIdsToFetch)
+          .order('created_at', { ascending: false })
+          .limit(20),
+        supabase
+          .from('portfolio_items')
+          .select('id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at')
+          .in('user_id', userIdsToFetch)
+          .order('created_at', { ascending: false })
+          .limit(15)
+      ]);
+      
+      const feedPostsError = feedPostsData.error;
+      const portfolioError = portfolioData.error;
 
       console.log('[Spark] Following feed data fetched:', {
-        posts: { count: feedPostsData?.length || 0, error: feedPostsError }
+        posts: { count: feedPostsData?.data?.length || 0, error: feedPostsError },
+        portfolio: { count: portfolioData?.data?.length || 0, error: portfolioError }
       });
 
-      const feedPosts = feedPostsData || [];
+      const feedPosts = feedPostsData.data || [];
+      const portfolioItems = portfolioData.data || [];
       
-      const allUserIds = feedPosts.map(item => item.user_id);
+      const allUserIds = [
+        ...feedPosts.map(item => item.user_id),
+        ...portfolioItems.map(item => item.user_id)
+      ];
 
       if (allUserIds.length === 0) {
         setSparkFeed([]);
@@ -250,11 +267,18 @@ const Circle = () => {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      const allContent = feedPosts.map(item => ({ 
-        ...item, 
-        activity_type: 'feed_post', 
-        profile: profileMap.get(item.user_id) 
-      }));
+      const allContent = [
+        ...feedPosts.map(item => ({ 
+          ...item, 
+          activity_type: 'feed_post', 
+          profile: profileMap.get(item.user_id) 
+        })),
+        ...portfolioItems.map(item => ({ 
+          ...item, 
+          activity_type: 'portfolio', 
+          profile: profileMap.get(item.user_id) 
+        }))
+      ];
 
       const filteredContent = allContent
         .filter(item => item.profile?.full_name)
@@ -393,14 +417,20 @@ const Circle = () => {
 
       const communityIds = memberships?.map(m => m.community_id) || [];
 
-      // Fetch content from user and connections - only posts, not portfolio items
-      const [feedPostsData, communityPostsData] = await Promise.all([
+      // Fetch content from user and connections
+      const [feedPostsData, portfolioData, communityPostsData] = await Promise.all([
         supabase
           .from('feed_posts')
           .select('id, user_id, content, media_urls, media_type, created_at')
           .in('user_id', userIdsToFetch)
           .order('created_at', { ascending: false })
-          .limit(20),
+          .limit(15),
+        supabase
+          .from('portfolio_items')
+          .select('id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at')
+          .in('user_id', userIdsToFetch)
+          .order('created_at', { ascending: false })
+          .limit(15),
         // Fetch community posts from joined communities
         communityIds.length > 0 
           ? supabase
@@ -408,12 +438,13 @@ const Circle = () => {
               .select('id, user_id, community_id, content, media_urls, media_type, created_at')
               .in('community_id', communityIds)
               .order('created_at', { ascending: false })
-              .limit(20)
+              .limit(15)
           : Promise.resolve({ data: [], error: null })
       ]);
 
       console.log('[Spark] Raw data fetched:', {
         posts: { count: feedPostsData?.data?.length || 0, error: feedPostsData.error },
+        portfolio: { count: portfolioData?.data?.length || 0, error: portfolioData.error },
         community: { count: communityPostsData?.data?.length || 0, error: communityPostsData.error }
       });
       
@@ -427,14 +458,16 @@ const Circle = () => {
 
       // Get all user IDs from content
       const feedPosts = feedPostsData.data || [];
+      const portfolioItems = portfolioData.data || [];
       const communityPosts = communityPostsData.data || [];
       
       const allUserIds = [
         ...feedPosts.map(item => item.user_id),
+        ...portfolioItems.map(item => item.user_id),
         ...communityPosts.map(item => item.user_id)
       ];
 
-      console.log('[Spark] Total items before profile fetch:', feedPosts.length + communityPosts.length);
+      console.log('[Spark] Total items before profile fetch:', feedPosts.length + portfolioItems.length + communityPosts.length);
       console.log('[Spark] Unique user IDs:', [...new Set(allUserIds)].length);
 
       if (allUserIds.length === 0) {
@@ -464,6 +497,11 @@ const Circle = () => {
         ...feedPosts.map(item => ({ 
           ...item, 
           activity_type: 'feed_post',
+          profile: profileMap.get(item.user_id) 
+        })),
+        ...portfolioItems.map(item => ({ 
+          ...item, 
+          activity_type: 'portfolio',
           profile: profileMap.get(item.user_id) 
         })),
         ...communityPosts.map(item => ({ 
@@ -756,14 +794,14 @@ const Circle = () => {
         .delete()
         .eq('id', existing.id);
       
-      sonnerToast.success("Removed from saved sparks");
+      sonnerToast.success("Unclipped!");
     } else {
       // Add bookmark
       await supabase
         .from('saved_sparks')
         .insert([{ user_id: user.id, item_type: itemType, item_id: itemId }]);
       
-      sonnerToast.success("Saved to your sparks!");
+      sonnerToast.success("Clipped! View in your collection");
     }
 
     // Update local state
@@ -1205,7 +1243,7 @@ const Circle = () => {
                 size="sm"
                 onClick={() => handleBookmark(item.id, item.type)}
               >
-                <Bookmark className={`h-5 w-5 ${item.isSaved ? 'fill-current' : ''}`} />
+                <Paperclip className={`h-5 w-5 ${item.isSaved ? 'fill-current' : ''}`} />
               </Button>
             </div>
 
@@ -1279,8 +1317,8 @@ const Circle = () => {
               variant="outline"
               className="gap-2"
             >
-              <Bookmark className="h-4 w-4" />
-              <span className="hidden sm:inline">Saved</span>
+              <Paperclip className="h-4 w-4" />
+              <span className="hidden sm:inline">Clipped</span>
             </Button>
           </div>
 

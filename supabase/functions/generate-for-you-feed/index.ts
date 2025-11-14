@@ -57,7 +57,7 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    // Fetch only feed posts - not portfolio items
+    // Fetch feed posts
     const { data: feedPostsData } = await supabase
       .from("feed_posts")
       .select(`
@@ -74,12 +74,37 @@ serve(async (req) => {
         )
       `)
       .order("created_at", { ascending: false })
-      .limit(30);
+      .limit(20);
 
-    // Only feed posts - simplified
-    const allContent = (feedPostsData || [])
-      .map(item => ({ ...item, activity_type: 'feed_post' }))
-      .filter(item => item.user_id && item.profiles); // Include all content with valid profiles
+    // Fetch portfolio items
+    const { data: portfolioData } = await supabase
+      .from("portfolio_items")
+      .select(`
+        id,
+        user_id,
+        title,
+        description,
+        media_url,
+        media_type,
+        thumbnail_url,
+        embed_code,
+        tags,
+        view_count,
+        created_at,
+        profiles:user_id (
+          full_name,
+          avatar_url,
+          role
+        )
+      `)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    // Combine all content types
+    const allContent = [
+      ...(feedPostsData || []).map(item => ({ ...item, activity_type: 'feed_post' })),
+      ...(portfolioData || []).map(item => ({ ...item, activity_type: 'portfolio_item' }))
+    ].filter(item => item.user_id && item.profiles); // Include all content with valid profiles
 
     // Skip AI for now to improve performance - just return chronologically sorted content
     const diverseFeed = allContent

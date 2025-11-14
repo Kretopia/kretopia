@@ -57,52 +57,29 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    // Fetch only essential content - much less data for faster response
-    const [portfolioData, feedPostsData] = await Promise.all([
-      supabase
-        .from("portfolio_items")
-        .select(`
-          id,
-          user_id,
-          title,
-          description,
-          media_url,
-          media_type,
-          thumbnail_url,
-          created_at,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role
-          )
-        `)
-        .order("created_at", { ascending: false })
-        .limit(15), // Further reduced
-      
-      supabase
-        .from("feed_posts")
-        .select(`
-          id,
-          user_id,
-          content,
-          media_urls,
-          media_type,
-          created_at,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            role
-          )
-        `)
-        .order("created_at", { ascending: false })
-        .limit(15) // Further reduced
-    ]);
+    // Fetch only feed posts - not portfolio items
+    const { data: feedPostsData } = await supabase
+      .from("feed_posts")
+      .select(`
+        id,
+        user_id,
+        content,
+        media_urls,
+        media_type,
+        created_at,
+        profiles:user_id (
+          full_name,
+          avatar_url,
+          role
+        )
+      `)
+      .order("created_at", { ascending: false })
+      .limit(30);
 
-    // Combine all content - simplified
-    const allContent = [
-      ...(portfolioData.data || []).map(item => ({ ...item, activity_type: 'portfolio' })),
-      ...(feedPostsData.data || []).map(item => ({ ...item, activity_type: 'feed_post' }))
-    ].filter(item => item.user_id && item.profiles); // Include all content with valid profiles
+    // Only feed posts - simplified
+    const allContent = (feedPostsData || [])
+      .map(item => ({ ...item, activity_type: 'feed_post' }))
+      .filter(item => item.user_id && item.profiles); // Include all content with valid profiles
 
     // Skip AI for now to improve performance - just return chronologically sorted content
     const diverseFeed = allContent

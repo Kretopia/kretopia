@@ -220,34 +220,21 @@ const Circle = () => {
         return;
       }
 
-      // Fetch content from user and connections only
-      const [portfolioData, feedPostsData] = await Promise.all([
-        supabase
-          .from('portfolio_items')
-          .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
-          .in('user_id', userIdsToFetch)
-          .order('created_at', { ascending: false })
-          .limit(20),
-        supabase
-          .from('feed_posts')
-          .select('id, user_id, content, media_urls, media_type, created_at')
-          .in('user_id', userIdsToFetch)
-          .order('created_at', { ascending: false })
-          .limit(20)
-      ]);
+      // Fetch content from user and connections only - only posts, not portfolio items
+      const { data: feedPostsData, error: feedPostsError } = await supabase
+        .from('feed_posts')
+        .select('id, user_id, content, media_urls, media_type, created_at')
+        .in('user_id', userIdsToFetch)
+        .order('created_at', { ascending: false })
+        .limit(30);
 
       console.log('[Spark] Following feed data fetched:', {
-        portfolio: { count: portfolioData?.data?.length || 0, error: portfolioData.error },
-        posts: { count: feedPostsData?.data?.length || 0, error: feedPostsData.error }
+        posts: { count: feedPostsData?.length || 0, error: feedPostsError }
       });
 
-      const portfolioItems = portfolioData.data || [];
-      const feedPosts = feedPostsData.data || [];
+      const feedPosts = feedPostsData || [];
       
-      const allUserIds = [
-        ...portfolioItems.map(item => item.user_id),
-        ...feedPosts.map(item => item.user_id)
-      ];
+      const allUserIds = feedPosts.map(item => item.user_id);
 
       if (allUserIds.length === 0) {
         setSparkFeed([]);
@@ -263,18 +250,11 @@ const Circle = () => {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      const allContent = [
-        ...portfolioItems.map(item => ({ 
-          ...item, 
-          activity_type: 'portfolio', 
-          profile: profileMap.get(item.user_id) 
-        })),
-        ...feedPosts.map(item => ({ 
-          ...item, 
-          activity_type: 'feed_post', 
-          profile: profileMap.get(item.user_id) 
-        }))
-      ];
+      const allContent = feedPosts.map(item => ({ 
+        ...item, 
+        activity_type: 'feed_post', 
+        profile: profileMap.get(item.user_id) 
+      }));
 
       const filteredContent = allContent
         .filter(item => item.profile?.full_name)
@@ -413,20 +393,14 @@ const Circle = () => {
 
       const communityIds = memberships?.map(m => m.community_id) || [];
 
-      // Fetch content from user and connections
-      const [portfolioData, feedPostsData, communityPostsData] = await Promise.all([
-        supabase
-          .from('portfolio_items')
-          .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
-          .in('user_id', userIdsToFetch)
-          .order('created_at', { ascending: false })
-          .limit(15),
+      // Fetch content from user and connections - only posts, not portfolio items
+      const [feedPostsData, communityPostsData] = await Promise.all([
         supabase
           .from('feed_posts')
           .select('id, user_id, content, media_urls, media_type, created_at')
           .in('user_id', userIdsToFetch)
           .order('created_at', { ascending: false })
-          .limit(15),
+          .limit(20),
         // Fetch community posts from joined communities
         communityIds.length > 0 
           ? supabase
@@ -434,19 +408,14 @@ const Circle = () => {
               .select('id, user_id, community_id, content, media_urls, media_type, created_at')
               .in('community_id', communityIds)
               .order('created_at', { ascending: false })
-              .limit(15)
+              .limit(20)
           : Promise.resolve({ data: [], error: null })
       ]);
 
       console.log('[Spark] Raw data fetched:', {
-        portfolio: { count: portfolioData?.data?.length || 0, error: portfolioData.error },
         posts: { count: feedPostsData?.data?.length || 0, error: feedPostsData.error },
         community: { count: communityPostsData?.data?.length || 0, error: communityPostsData.error }
       });
-
-      if (portfolioData.error) {
-        console.error('[Spark] Portfolio error:', portfolioData.error);
-      }
       
       if (feedPostsData.error) {
         console.error('[Spark] Feed posts error:', feedPostsData.error);
@@ -457,17 +426,15 @@ const Circle = () => {
       }
 
       // Get all user IDs from content
-      const portfolioItems = portfolioData.data || [];
       const feedPosts = feedPostsData.data || [];
       const communityPosts = communityPostsData.data || [];
       
       const allUserIds = [
-        ...portfolioItems.map(item => item.user_id),
         ...feedPosts.map(item => item.user_id),
         ...communityPosts.map(item => item.user_id)
       ];
 
-      console.log('[Spark] Total items before profile fetch:', portfolioItems.length + feedPosts.length);
+      console.log('[Spark] Total items before profile fetch:', feedPosts.length + communityPosts.length);
       console.log('[Spark] Unique user IDs:', [...new Set(allUserIds)].length);
 
       if (allUserIds.length === 0) {
@@ -494,14 +461,9 @@ const Circle = () => {
 
       // Combine content and attach profiles
       const allContent = [
-        ...portfolioItems.map(item => ({ 
-          ...item, 
-          activity_type: 'portfolio', 
-          profile: profileMap.get(item.user_id) 
-        })),
         ...feedPosts.map(item => ({ 
           ...item, 
-          activity_type: 'feed_post', 
+          activity_type: 'feed_post',
           profile: profileMap.get(item.user_id) 
         })),
         ...communityPosts.map(item => ({ 
@@ -1350,7 +1312,7 @@ const Circle = () => {
                   <p className="text-muted-foreground mb-4">
                     AI-powered feed will show personalized content based on your interests
                   </p>
-                  <Button onClick={() => navigate('/discover')}>
+                  <Button onClick={() => navigate('/circle')}>
                     Explore Creators
                   </Button>
                 </Card>

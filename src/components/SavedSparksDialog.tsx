@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Bookmark, Award, Newspaper, Briefcase, FileText } from "lucide-react";
+import { Paperclip, Award, Newspaper, Briefcase, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 interface SavedSparksDialogProps {
@@ -34,7 +34,7 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
             case 'portfolio': {
               const { data: itemData } = await supabase
                 .from('portfolio_items')
-                .select('*')
+                .select('*, profiles:user_id(full_name, avatar_url, role)')
                 .eq('id', saved.item_id)
                 .single();
               details = itemData;
@@ -43,7 +43,7 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
             case 'award': {
               const { data: itemData } = await supabase
                 .from('awards')
-                .select('*')
+                .select('*, profiles:user_id(full_name, avatar_url, role)')
                 .eq('id', saved.item_id)
                 .single();
               details = itemData;
@@ -52,7 +52,7 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
             case 'press': {
               const { data: itemData } = await supabase
                 .from('press_links')
-                .select('*')
+                .select('*, profiles:user_id(full_name, avatar_url, role)')
                 .eq('id', saved.item_id)
                 .single();
               details = itemData;
@@ -61,7 +61,7 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
             case 'credit': {
               const { data: itemData } = await supabase
                 .from('credits')
-                .select('*')
+                .select('*, profiles:user_id(full_name, avatar_url, role)')
                 .eq('id', saved.item_id)
                 .single();
               details = itemData;
@@ -70,7 +70,7 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
             case 'post': {
               const { data: itemData } = await supabase
                 .from('feed_posts')
-                .select('*')
+                .select('*, profiles:user_id(full_name, avatar_url, role)')
                 .eq('id', saved.item_id)
                 .single();
               details = itemData;
@@ -99,11 +99,11 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
       .eq('item_id', itemId);
 
     if (error) {
-      toast.error("Failed to remove saved spark");
+      toast.error("Failed to unclip item");
       return;
     }
 
-    toast.success("Removed from saved sparks");
+    toast.success("Unclipped!");
     refetch();
   };
 
@@ -131,8 +131,8 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Bookmark className="h-5 w-5" />
-            Saved Sparks
+            <Paperclip className="h-5 w-5" />
+            Clipped Items
           </DialogTitle>
         </DialogHeader>
 
@@ -141,7 +141,7 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
             <div className="text-center py-8 text-muted-foreground">Loading...</div>
           ) : savedSparks?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No saved sparks yet. Start saving posts for inspiration!
+              No clipped items yet. Start clipping posts and work for inspiration!
             </div>
           ) : (
             savedSparks?.map((item) => (
@@ -166,7 +166,7 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
                   size="sm"
                   onClick={() => handleUnsave(item.item_type, item.item_id)}
                 >
-                  <Bookmark className="h-4 w-4 fill-current" />
+                  <Paperclip className="h-4 w-4 fill-current" />
                 </Button>
               </div>
             ))

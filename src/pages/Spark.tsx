@@ -516,10 +516,14 @@ const Circle = () => {
       const filteredContent = allContent
         .filter(item => {
           const hasProfile = item.profile?.full_name;
+          const isNotNewUser = item.profile?.full_name !== "New User";
           if (!hasProfile) {
             console.log('[Spark] Filtered out item - no profile:', item.id);
           }
-          return hasProfile;
+          if (!isNotNewUser) {
+            console.log('[Spark] Filtered out "New User" post:', item.id);
+          }
+          return hasProfile && isNotNewUser;
         })
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 20);

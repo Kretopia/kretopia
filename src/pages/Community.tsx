@@ -72,6 +72,8 @@ export default function Community() {
         .order('is_official', { ascending: false })
         .order('member_count', { ascending: false });
 
+      console.log('[Community] Fetched communities:', allCommunities?.length || 0);
+
       if (commError) throw commError;
 
       if (!user) {
@@ -95,8 +97,14 @@ export default function Community() {
         is_member: membershipIds.has(comm.id)
       }));
 
-      setCommunities(communitiesWithMembership.filter(c => !c.is_member));
-      setMyCommunities(communitiesWithMembership.filter(c => c.is_member));
+      const discoverCommunities = communitiesWithMembership.filter(c => !c.is_member);
+      const joinedCommunities = communitiesWithMembership.filter(c => c.is_member);
+
+      console.log('[Community] Discover communities:', discoverCommunities.length, discoverCommunities.map(c => c.name));
+      console.log('[Community] My communities:', joinedCommunities.length, joinedCommunities.map(c => c.name));
+
+      setCommunities(discoverCommunities);
+      setMyCommunities(joinedCommunities);
     } catch (error) {
       console.error('Error fetching communities:', error);
       toast.error('Failed to load communities');

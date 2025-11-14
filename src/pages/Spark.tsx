@@ -228,13 +228,13 @@ const Circle = () => {
           .select('id, user_id, content, media_urls, media_type, created_at')
           .in('user_id', userIdsToFetch)
           .order('created_at', { ascending: false })
-          .limit(20),
+          .limit(50),
         supabase
           .from('portfolio_items')
           .select('id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at')
           .in('user_id', userIdsToFetch)
           .order('created_at', { ascending: false })
-          .limit(15)
+          .limit(50)
       ]);
       
       const feedPostsError = feedPostsData.error;
@@ -405,7 +405,7 @@ const Circle = () => {
       const { data: allProfiles } = await supabase
         .from('public_profiles')
         .select('user_id')
-        .limit(100);
+        .limit(500);
 
       const userIdsToFetch = allProfiles?.map(p => p.user_id) || [userId];
 
@@ -424,13 +424,13 @@ const Circle = () => {
           .select('id, user_id, content, media_urls, media_type, created_at')
           .in('user_id', userIdsToFetch)
           .order('created_at', { ascending: false })
-          .limit(15),
+          .limit(100),
         supabase
           .from('portfolio_items')
           .select('id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at')
           .in('user_id', userIdsToFetch)
           .order('created_at', { ascending: false })
-          .limit(15),
+          .limit(100),
         // Fetch community posts from joined communities
         communityIds.length > 0 
           ? supabase
@@ -438,7 +438,7 @@ const Circle = () => {
               .select('id, user_id, community_id, content, media_urls, media_type, created_at')
               .in('community_id', communityIds)
               .order('created_at', { ascending: false })
-              .limit(15)
+              .limit(50)
           : Promise.resolve({ data: [], error: null })
       ]);
 
@@ -516,17 +516,13 @@ const Circle = () => {
       const filteredContent = allContent
         .filter(item => {
           const hasProfile = item.profile?.full_name;
-          const isNotNewUser = item.profile?.full_name !== "New User";
           if (!hasProfile) {
             console.log('[Spark] Filtered out item - no profile:', item.id);
           }
-          if (!isNotNewUser) {
-            console.log('[Spark] Filtered out "New User" post:', item.id);
-          }
-          return hasProfile && isNotNewUser;
+          return hasProfile;
         })
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 20);
+        .slice(0, 100);
 
       console.log('[Spark] Content after filtering:', filteredContent.length);
 

@@ -74,7 +74,7 @@ serve(async (req) => {
         )
       `)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(100);
 
     // Fetch portfolio items
     const { data: portfolioData } = await supabase
@@ -98,7 +98,7 @@ serve(async (req) => {
         )
       `)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(100);
 
     // Combine all content types
     const allContent = [
@@ -109,7 +109,7 @@ serve(async (req) => {
     // Skip AI for now to improve performance - just return chronologically sorted content
     const diverseFeed = allContent
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 20); // Reduced to 20 items
+      .slice(0, 100);
 
     const result = { feed: diverseFeed, aiRecommended: false };
     

@@ -161,13 +161,13 @@ const Circle = () => {
         // Transform AI feed items to SparkItem format
         const transformedFeed = feedData.feed.map((item: any) => ({
           id: item.id,
-          type: item.type,
-          user: item.user_profile ? {
-            id: item.user_profile.user_id,
-            name: item.user_profile.full_name,
-            avatar: item.user_profile.avatar_url,
-            role: item.user_profile.role,
-            location: item.user_profile.location
+          type: item.activity_type || 'feed_post',
+          user: item.profiles ? {
+            id: item.user_id,
+            name: item.profiles.full_name,
+            avatar: item.profiles.avatar_url,
+            role: item.profiles.role,
+            location: item.profiles.location
           } : {
             id: item.user_id,
             name: 'Unknown User',
@@ -179,7 +179,7 @@ const Circle = () => {
           reactions: item.reaction_count || 0,
           hasReacted: false,
           isSaved: false
-        }));
+        })).filter(item => item.user.name !== 'Unknown User');
 
         setSparkFeed(transformedFeed);
         setCachedFeed(userId, transformedFeed);

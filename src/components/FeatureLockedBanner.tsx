@@ -5,16 +5,16 @@ import { useNavigate } from "react-router-dom";
 
 interface FeatureLockedBannerProps {
   feature: string;
-  tier: "creator_pro";
+  tier: "pro" | "studio";
   description?: string;
 }
 
 export function FeatureLockedBanner({ feature, tier, description }: FeatureLockedBannerProps) {
   const navigate = useNavigate();
 
-  const Icon = Crown;
-  const tierName = "Creator Pro";
-  const color = "text-yellow-600";
+  const Icon = tier === "studio" ? Crown : Sparkles;
+  const tierName = tier === "studio" ? "Studio" : "Pro";
+  const color = tier === "studio" ? "text-yellow-600" : "text-blue-600";
 
   return (
     <Alert className="border-primary/50 bg-primary/5">

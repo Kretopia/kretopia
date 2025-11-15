@@ -3,7 +3,7 @@
  * Based on Beta Roadmap requirements
  */
 
-export type SubscriptionTier = "free" | "creator_pro";
+export type SubscriptionTier = "free" | "pro" | "studio";
 
 export interface TierLimits {
   swipesPerDay: number; // -1 = unlimited
@@ -19,17 +19,28 @@ export interface TierLimits {
 
 export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   free: {
-    swipesPerDay: 10,
+    swipesPerDay: 30,
     maxProjects: 1,
     canUndoSwipe: false,
     canVerifyProfile: false,
     hasFeaturedProfile: false,
-    hasAIRecommendations: true,
-    aiRecommendationsPerDay: 3, // Limited to 3 AI insights per day
+    hasAIRecommendations: false,
+    aiRecommendationsPerDay: 0,
     hasPriorityMatching: false,
-    partnerDiscounts: 5,
+    partnerDiscounts: 0,
   },
-  creator_pro: {
+  pro: {
+    swipesPerDay: -1, // unlimited
+    maxProjects: 5,
+    canUndoSwipe: true,
+    canVerifyProfile: true,
+    hasFeaturedProfile: false,
+    hasAIRecommendations: true,
+    aiRecommendationsPerDay: 10,
+    hasPriorityMatching: false,
+    partnerDiscounts: 10,
+  },
+  studio: {
     swipesPerDay: -1, // unlimited
     maxProjects: -1, // unlimited
     canUndoSwipe: true,
@@ -82,8 +93,9 @@ export const canCreateProject = (
  */
 export const getTierDisplayName = (tier: SubscriptionTier): string => {
   const names: Record<SubscriptionTier, string> = {
-    free: "Thriver",
-    creator_pro: "Creator Pro",
+    free: "Spark",
+    pro: "Pro",
+    studio: "Studio",
   };
   return names[tier];
 };
@@ -107,16 +119,32 @@ export const getUpgradeMessage = (
   feature: keyof TierLimits,
   currentTier: SubscriptionTier
 ): string => {
-  const messages: Record<keyof TierLimits, string> = {
-    swipesPerDay: "Upgrade to Creator Pro for unlimited daily swipes",
-    maxProjects: "Upgrade to Creator Pro for unlimited projects",
-    canUndoSwipe: "Upgrade to Creator Pro to undo swipes",
-    canVerifyProfile: "Upgrade to Creator Pro to get verified",
-    hasFeaturedProfile: "Upgrade to Creator Pro for a featured profile with 3x visibility",
-    hasAIRecommendations: "All tiers have AI features! Upgrade to Creator Pro for unlimited",
-    aiRecommendationsPerDay: "Upgrade to Creator Pro for unlimited AI match insights",
-    hasPriorityMatching: "Upgrade to Creator Pro for priority matching algorithm",
-    partnerDiscounts: "Upgrade to Creator Pro for 15% partner discounts",
-  };
-  return messages[feature] || "Upgrade to Creator Pro to unlock this feature";
+  if (currentTier === "free") {
+    const messages: Record<keyof TierLimits, string> = {
+      swipesPerDay: "Upgrade to Pro for unlimited daily swipes",
+      maxProjects: "Upgrade to Pro for 5 active projects",
+      canUndoSwipe: "Upgrade to Pro to undo swipes",
+      canVerifyProfile: "Upgrade to Pro to get verified",
+      hasFeaturedProfile: "Upgrade to Studio for a featured profile with 3x visibility",
+      hasAIRecommendations: "Upgrade to Pro for AI match recommendations",
+      aiRecommendationsPerDay: "Upgrade to Pro for 10 AI recommendations/day",
+      hasPriorityMatching: "Upgrade to Studio for priority matching algorithm",
+      partnerDiscounts: "Upgrade to Pro for 10% partner discounts",
+    };
+    return messages[feature] || "Upgrade to Pro to unlock this feature";
+  } else if (currentTier === "pro") {
+    const messages: Record<keyof TierLimits, string> = {
+      swipesPerDay: "Already unlimited on Pro",
+      maxProjects: "Upgrade to Studio for unlimited projects",
+      canUndoSwipe: "Already included on Pro",
+      canVerifyProfile: "Already included on Pro",
+      hasFeaturedProfile: "Upgrade to Studio for a featured profile with 3x visibility",
+      hasAIRecommendations: "Already included on Pro",
+      aiRecommendationsPerDay: "Upgrade to Studio for unlimited AI recommendations",
+      hasPriorityMatching: "Upgrade to Studio for priority matching algorithm",
+      partnerDiscounts: "Upgrade to Studio for 15% partner discounts",
+    };
+    return messages[feature] || "Upgrade to Studio to unlock this feature";
+  }
+  return "Feature unlocked on your current tier";
 };

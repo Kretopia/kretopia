@@ -15,8 +15,14 @@ interface UpgradeDialogProps {
 }
 
 const TIER_INFO = {
-  creator_pro: {
-    name: "Creator Pro",
+  pro: {
+    name: "Pro",
+    price: "$9",
+    icon: Sparkles,
+    color: "from-blue-500 to-cyan-500",
+  },
+  studio: {
+    name: "Studio",
     price: "$29",
     icon: Crown,
     color: "from-yellow-500 to-orange-500",
@@ -33,20 +39,32 @@ export function UpgradeDialog({
 }: UpgradeDialogProps) {
   const navigate = useNavigate();
 
-  const tierInfo = TIER_INFO.creator_pro;
+  // Determine which tier to suggest based on current tier
+  const suggestedTier = currentTier === "free" ? "pro" : "studio";
+  const tierInfo = TIER_INFO[suggestedTier];
   const Icon = tierInfo.icon;
 
-  const defaultBenefits = [
+  const defaultBenefits = suggestedTier === "pro" ? [
     "Unlimited daily swipes & matches",
-    "Unlimited AI recommendations",
+    "5 active projects",
+    "10 AI recommendations/day",
+    "3 undo swipes/day",
+    "Profile verification badge",
+    "Unlimited portfolio items",
+    "Advanced filters",
+    "10% partner discounts",
+    "Read receipts",
+  ] : [
+    "Everything in Pro",
     "Unlimited projects",
+    "Unlimited AI recommendations",
+    "Unlimited undo swipes",
     "Featured profile (3x visibility)",
     "Priority matching algorithm",
-    "Profile verification badge",
-    "Undo swipe feature",
-    "15% partner discounts",
-    "Advanced analytics",
+    "Advanced analytics dashboard",
+    "15-20% partner discounts",
     "Early access to features",
+    "Dedicated support",
   ];
 
   const displayBenefits = benefits.length > 0 ? benefits : defaultBenefits;

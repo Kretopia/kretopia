@@ -11,30 +11,44 @@ import { SUBSCRIPTION_PRODUCTS } from "@/lib/subscriptionConfig";
 // Subscription tiers configuration
 const SUBSCRIPTION_TIERS = [
   {
-    name: "Thriver",
+    name: "Spark",
     tier: "free",
     price: "$0",
     priceId: null,
     productId: null,
     icon: Zap,
+    description: "Perfect for getting started",
     features: [
-      "10 swipes/day",
-      "3 AI recommendations/day",
+      "30 swipes/day",
+      "Unlimited browsing",
       "1 active project",
       "Direct messaging",
-      "Portfolio showcase",
-      "5% partner discounts",
+      "Portfolio (up to 10 items)",
+      "Basic profile",
+      "Community access",
+      "Cre8 participation",
     ],
   },
   {
-    name: SUBSCRIPTION_PRODUCTS.creator_pro.name,
-    tier: SUBSCRIPTION_PRODUCTS.creator_pro.tier,
-    price: `$${SUBSCRIPTION_PRODUCTS.creator_pro.price}`,
-    priceId: SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
-    productId: SUBSCRIPTION_PRODUCTS.creator_pro.productId,
-    icon: Crown,
+    name: SUBSCRIPTION_PRODUCTS.pro.name,
+    tier: SUBSCRIPTION_PRODUCTS.pro.tier,
+    price: `$${SUBSCRIPTION_PRODUCTS.pro.price}`,
+    priceId: SUBSCRIPTION_PRODUCTS.pro.priceId,
+    productId: SUBSCRIPTION_PRODUCTS.pro.productId,
+    icon: Sparkles,
     popular: true,
-    features: SUBSCRIPTION_PRODUCTS.creator_pro.features,
+    description: "For active creators",
+    features: SUBSCRIPTION_PRODUCTS.pro.features,
+  },
+  {
+    name: SUBSCRIPTION_PRODUCTS.studio.name,
+    tier: SUBSCRIPTION_PRODUCTS.studio.tier,
+    price: `$${SUBSCRIPTION_PRODUCTS.studio.price}`,
+    priceId: SUBSCRIPTION_PRODUCTS.studio.priceId,
+    productId: SUBSCRIPTION_PRODUCTS.studio.productId,
+    icon: Crown,
+    description: "For serious professionals",
+    features: SUBSCRIPTION_PRODUCTS.studio.features,
   },
 ];
 
@@ -141,29 +155,28 @@ export default function Subscription() {
 
   if (checkingSubscription) {
     return (
-      <div className="container mx-auto py-8 flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="container mx-auto px-4 py-16">
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">
-          Choose Your{" "}
-          <span className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            Membership
-          </span>
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Start free and upgrade as you grow. Unlock powerful features and partner benefits.
+        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
+        <p className="text-xl text-muted-foreground">
+          Unlock the full potential of ThriveIN
         </p>
-      </div>
-
-      {currentTier !== "free" && (
-        <div className="mb-8 text-center">
-          <Button onClick={handleManageSubscription} disabled={loading === "portal"} variant="outline">
+        {currentTier !== "free" && (
+          <Button
+            onClick={handleManageSubscription}
+            variant="outline"
+            className="mt-4"
+            disabled={loading === "portal"}
+          >
             {loading === "portal" ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -173,88 +186,95 @@ export default function Subscription() {
               "Manage Subscription"
             )}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {SUBSCRIPTION_TIERS.map((tier) => {
-          const isCurrentPlan = currentTier === tier.tier;
           const Icon = tier.icon;
-          
+          const isCurrentTier = tier.tier === currentTier;
+          const isLoading = loading === tier.priceId;
+
           return (
             <Card
               key={tier.tier}
               className={`relative ${
-                tier.popular ? "border-primary shadow-lg scale-105" : ""
-              } ${isCurrentPlan ? "border-green-500 shadow-xl" : ""}`}
+                tier.popular
+                  ? "border-primary shadow-lg scale-105"
+                  : isCurrentTier
+                  ? "border-green-500"
+                  : ""
+              }`}
             >
               {tier.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-primary">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    Most Popular
-                  </Badge>
-                </div>
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  Most Popular
+                </Badge>
               )}
-              {isCurrentPlan && (
-                <div className="absolute -top-4 right-4">
-                  <Badge className="bg-green-500">Your Plan</Badge>
-                </div>
+              {isCurrentTier && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500">
+                  Your Plan
+                </Badge>
               )}
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2.5 rounded-lg bg-primary/10">
-                    <Icon className="h-6 w-6 text-primary" />
+
+              <CardHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <Icon className={`h-8 w-8 ${tier.tier === 'studio' ? 'text-yellow-600' : tier.tier === 'pro' ? 'text-blue-600' : 'text-muted-foreground'}`} />
+                  <div className="text-right">
+                    <div className="text-3xl font-bold">{tier.price}</div>
+                    {tier.tier !== "free" && (
+                      <div className="text-sm text-muted-foreground">/month</div>
+                    )}
                   </div>
-                  <CardTitle className="text-xl sm:text-2xl">{tier.name}</CardTitle>
                 </div>
-                <CardDescription className="flex items-baseline gap-1">
-                  <span className="text-3xl sm:text-4xl font-bold">{tier.price}</span>
-                  <span className="text-sm text-muted-foreground">/month</span>
-                </CardDescription>
+                <CardTitle>{tier.name}</CardTitle>
+                <CardDescription>{tier.description}</CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
-                <ul className="space-y-2.5">
+
+              <CardContent>
+                <ul className="space-y-3">
                   {tier.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2.5">
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm leading-relaxed">{feature}</span>
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
               </CardContent>
+
               <CardFooter>
-                <Button
-                  className="w-full"
-                  onClick={() => handleSubscribe(tier.priceId, tier.tier)}
-                  disabled={loading === tier.priceId || isCurrentPlan}
-                  variant={tier.popular ? "default" : "outline"}
-                >
-                  {loading === tier.priceId ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : isCurrentPlan ? (
-                    "Current Plan"
-                  ) : tier.priceId ? (
-                    "Subscribe"
-                  ) : (
-                    "Free Forever"
-                  )}
-                </Button>
+                {isCurrentTier ? (
+                  <Button className="w-full" variant="outline" disabled>
+                    Current Plan
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full"
+                    onClick={() => handleSubscribe(tier.priceId, tier.tier)}
+                    disabled={isLoading || tier.tier === "free"}
+                    variant={tier.popular ? "default" : "outline"}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : tier.tier === "free" ? (
+                      "Current Plan"
+                    ) : (
+                      `Upgrade to ${tier.name}`
+                    )}
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           );
         })}
       </div>
 
-      <div className="mt-12 text-center text-sm text-muted-foreground space-y-2 px-4">
-        <p>All paid plans include access to ThriveDesk collaboration tools and milestone payments.</p>
-        <p>
-          <strong>Partner Perks:</strong> Enjoy exclusive discounts from our partner network based on your tier.
-        </p>
-        <p className="font-semibold">Cancel anytime. No hidden fees.</p>
+      <div className="mt-12 text-center text-sm text-muted-foreground">
+        <p>All plans include secure payments and 24/7 support</p>
+        <p className="mt-2">Cancel anytime • No hidden fees</p>
       </div>
     </div>
   );

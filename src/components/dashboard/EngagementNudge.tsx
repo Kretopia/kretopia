@@ -85,7 +85,7 @@ export const EngagementNudge = () => {
       const today = new Date().toDateString();
       const lastReset = new Date(profile.last_swipe_reset).toDateString();
       const dailySwipesUsed = today === lastReset ? profile.daily_swipes : 0;
-      const subscriptionTier = (profile.subscription_tier || 'free') as 'free' | 'creator_pro';
+      const subscriptionTier = (profile.subscription_tier || 'free') as 'free' | 'pro' | 'studio';
       const swipesRemaining = getRemainingSwipes(subscriptionTier, dailySwipesUsed);
 
       // Only show swipes nudge if not unlimited and has swipes remaining

@@ -11,18 +11,27 @@ interface FeeStructureProps {
 export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
   const tiers = [
     {
-      name: "Thriver",
+      name: "Spark",
       tier: "free",
       icon: CheckCircle,
       fee: PLATFORM_FEES.free,
       color: "bg-gray-500",
-      features: ["Limited swipes & AI", "Basic payment processing", "Standard support", "5% partner discounts"],
+      features: ["Limited swipes & AI", "Basic payment processing", "Standard support"],
     },
     {
-      name: "Creator Pro",
-      tier: "creator_pro",
+      name: "Pro",
+      tier: "pro",
+      icon: Zap,
+      fee: PLATFORM_FEES.pro,
+      color: "bg-gradient-to-r from-blue-500 to-cyan-500",
+      price: "$9/mo",
+      features: ["10% platform fee", "VIP support", "Advanced features", "10% partner discounts"],
+    },
+    {
+      name: "Studio",
+      tier: "studio",
       icon: Crown,
-      fee: PLATFORM_FEES.creator_pro,
+      fee: PLATFORM_FEES.studio,
       color: "bg-gradient-to-r from-primary to-purple-500",
       price: "$29/mo",
       features: ["Lowest platform fees", "VIP support", "All features unlimited", "15% partner discounts"],

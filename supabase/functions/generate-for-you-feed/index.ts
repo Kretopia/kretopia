@@ -41,24 +41,8 @@ serve(async (req) => {
 
     console.log("Generating fresh feed for user:", userId);
 
-    // Get user's interests, role, and engagement history
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, bio, professional_skills, passion_skills, location")
-      .eq("user_id", userId)
-      .single();
-
-    // Get user's recent engagements to understand preferences
-    const { data: recentLikes } = await supabase
-      .from("activity_engagements")
-      .select("activity_id, activity_type")
-      .eq("user_id", userId)
-      .eq("engagement_type", "like")
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    // Fetch feed posts
-    const { data: feedPostsData } = await supabase
+    // Fetch feed posts (limit to recent 30 for performance)
+    const { data: feedPostsData, error: feedError } = await supabase
       .from("feed_posts")
       .select(`
         id,
@@ -73,11 +57,16 @@ serve(async (req) => {
           role
         )
       `)
+      .neq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(30);
 
-    // Fetch portfolio items
-    const { data: portfolioData } = await supabase
+    if (feedError) {
+      console.error("Error fetching feed posts:", feedError);
+    }
+
+    // Fetch portfolio items (limit to recent 30 for performance)
+    const { data: portfolioData, error: portfolioError } = await supabase
       .from("portfolio_items")
       .select(`
         id,
@@ -97,19 +86,33 @@ serve(async (req) => {
           role
         )
       `)
+      .neq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(30);
 
-    // Combine all content types
+    if (portfolioError) {
+      console.error("Error fetching portfolio items:", portfolioError);
+    }
+
+    // Combine all content types and filter for valid profiles
     const allContent = [
       ...(feedPostsData || []).map(item => ({ ...item, activity_type: 'feed_post' })),
       ...(portfolioData || []).map(item => ({ ...item, activity_type: 'portfolio_item' }))
-    ].filter(item => item.user_id && item.profiles); // Include all content with valid profiles
+    ].filter(item => {
+      // Ensure we have user_id and a valid profile object/array
+      if (!item.user_id || !item.profiles) return false;
+      
+      // Handle both array and object returns from Supabase
+      const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
+      return profile && profile.full_name;
+    });
 
-    // Skip AI for now to improve performance - just return chronologically sorted content
+    console.log("Total content items:", allContent.length);
+
+    // Return chronologically sorted content
     const diverseFeed = allContent
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 100);
+      .slice(0, 50);
 
     const result = { feed: diverseFeed, aiRecommended: false };
     

@@ -41,22 +41,10 @@ serve(async (req) => {
 
     console.log("Generating fresh feed for user:", userId);
 
-    // Fetch feed posts (limit to recent 30 for performance)
+    // Fetch feed posts WITHOUT joins first
     const { data: feedPostsData, error: feedError } = await supabase
       .from("feed_posts")
-      .select(`
-        id,
-        user_id,
-        content,
-        media_urls,
-        media_type,
-        created_at,
-        profiles:user_id (
-          full_name,
-          avatar_url,
-          role
-        )
-      `)
+      .select("id, user_id, content, media_urls, media_type, created_at")
       .neq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(30);
@@ -65,27 +53,10 @@ serve(async (req) => {
       console.error("Error fetching feed posts:", feedError);
     }
 
-    // Fetch portfolio items (limit to recent 30 for performance)
+    // Fetch portfolio items WITHOUT joins first
     const { data: portfolioData, error: portfolioError } = await supabase
       .from("portfolio_items")
-      .select(`
-        id,
-        user_id,
-        title,
-        description,
-        media_url,
-        media_type,
-        thumbnail_url,
-        embed_code,
-        tags,
-        view_count,
-        created_at,
-        profiles:user_id (
-          full_name,
-          avatar_url,
-          role
-        )
-      `)
+      .select("id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at")
       .neq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(30);
@@ -94,20 +65,62 @@ serve(async (req) => {
       console.error("Error fetching portfolio items:", portfolioError);
     }
 
-    // Combine all content types and filter for valid profiles
-    const allContent = [
-      ...(feedPostsData || []).map(item => ({ ...item, activity_type: 'feed_post' })),
-      ...(portfolioData || []).map(item => ({ ...item, activity_type: 'portfolio_item' }))
-    ].filter(item => {
-      // Ensure we have user_id and a valid profile object/array
-      if (!item.user_id || !item.profiles) return false;
-      
-      // Handle both array and object returns from Supabase
-      const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
-      return profile && profile.full_name;
+    console.log("Raw content fetched:", {
+      feedPosts: feedPostsData?.length || 0,
+      portfolioItems: portfolioData?.length || 0
     });
 
-    console.log("Total content items:", allContent.length);
+    // Collect all user IDs
+    const allUserIds = [
+      ...(feedPostsData || []).map(item => item.user_id),
+      ...(portfolioData || []).map(item => item.user_id)
+    ];
+
+    if (allUserIds.length === 0) {
+      console.log("No content found for feed");
+      const result = { feed: [], aiRecommended: false };
+      feedCache.set(userId, { data: result, timestamp: now });
+      return new Response(
+        JSON.stringify(result),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Fetch profiles separately for all user IDs
+    const { data: profilesData, error: profilesError } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, avatar_url, role")
+      .in("user_id", [...new Set(allUserIds)]);
+
+    if (profilesError) {
+      console.error("Error fetching profiles:", profilesError);
+    }
+
+    console.log("Profiles fetched:", profilesData?.length || 0);
+
+    // Create a profile map for easy lookup
+    const profileMap = new Map(
+      (profilesData || []).map(profile => [profile.user_id, profile])
+    );
+
+    // Combine all content types and attach profiles
+    const allContent = [
+      ...(feedPostsData || []).map(item => ({ 
+        ...item, 
+        activity_type: 'feed_post',
+        profiles: profileMap.get(item.user_id)
+      })),
+      ...(portfolioData || []).map(item => ({ 
+        ...item, 
+        activity_type: 'portfolio_item',
+        profiles: profileMap.get(item.user_id)
+      }))
+    ].filter(item => {
+      // Only include items with valid profiles
+      return item.profiles && item.profiles.full_name;
+    });
+
+    console.log("Content items with profiles:", allContent.length);
 
     // Return chronologically sorted content
     const diverseFeed = allContent

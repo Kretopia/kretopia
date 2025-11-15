@@ -991,46 +991,123 @@ const Circle = () => {
           {/* Content based on type */}
           {item.type === 'portfolio' && (
             <div>
-              {(item.content.thumbnail_url || item.content.media_url) && (
-                <>
-                  {item.content.media_type === 'video' || item.content.media_url?.match(/\.(mp4|mov|avi|webm)$/i) ? (
-                    <div 
-                      className="relative w-full rounded-md mb-2 max-h-96 cursor-pointer group"
-                      onClick={() => setSelectedMedia({
-                        title: item.content.title,
-                        description: item.content.description,
-                        media_type: 'video',
-                        media_url: item.content.media_url
-                      })}
-                    >
-                      <img 
-                        src={item.content.thumbnail_url || item.content.media_url} 
-                        alt={item.content.title}
-                        className="w-full h-full object-cover rounded-md"
+              {(() => {
+                // Handle YouTube embeds
+                if (item.content.media_url?.includes('youtube.com') || item.content.media_url?.includes('youtu.be')) {
+                  const videoId = item.content.media_url.includes('youtu.be') 
+                    ? item.content.media_url.split('youtu.be/')[1]?.split('?')[0]
+                    : new URL(item.content.media_url).searchParams.get('v');
+                  
+                  return videoId ? (
+                    <div className="relative w-full mb-2 rounded-md overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        className="absolute top-0 left-0 w-full h-full"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Play className="h-16 w-16 text-white" fill="white" />
-                      </div>
                     </div>
-                  ) : item.content.media_type === 'audio' || item.content.media_url?.match(/\.(mp3|wav|ogg|m4a)$/i) ? (
+                  ) : null;
+                }
+                
+                // Handle Spotify embeds
+                if (item.content.media_url?.includes('spotify.com')) {
+                  const spotifyId = item.content.media_url.split('spotify.com/')[1];
+                  return spotifyId ? (
                     <div className="w-full mb-2">
-                      <audio 
-                        controls 
-                        className="w-full"
-                      >
-                        <source src={item.content.media_url} />
-                        Your browser does not support the audio element.
-                      </audio>
+                      <iframe
+                        src={`https://open.spotify.com/embed/${spotifyId}`}
+                        width="100%"
+                        height="152"
+                        frameBorder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                      />
                     </div>
-                  ) : (
+                  ) : null;
+                }
+
+                // Handle Vimeo embeds
+                if (item.content.media_url?.includes('vimeo.com')) {
+                  const vimeoId = item.content.media_url.split('vimeo.com/')[1]?.split('?')[0];
+                  return vimeoId ? (
+                    <div className="relative w-full mb-2 rounded-md overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                      <iframe
+                        src={`https://player.vimeo.com/video/${vimeoId}`}
+                        className="absolute top-0 left-0 w-full h-full"
+                        allowFullScreen
+                        allow="autoplay; fullscreen; picture-in-picture"
+                      />
+                    </div>
+                  ) : null;
+                }
+
+                // Handle SoundCloud embeds
+                if (item.content.media_url?.includes('soundcloud.com')) {
+                  return (
+                    <div className="w-full mb-2">
+                      <iframe
+                        width="100%"
+                        height="166"
+                        scrolling="no"
+                        frameBorder="no"
+                        allow="autoplay"
+                        src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(item.content.media_url)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`}
+                      />
+                    </div>
+                  );
+                }
+                
+                // Handle direct media files
+                if (item.content.thumbnail_url || item.content.media_url) {
+                  if (item.content.media_type === 'video' || item.content.media_url?.match(/\.(mp4|mov|avi|webm)$/i)) {
+                    return (
+                      <div 
+                        className="relative w-full rounded-md mb-2 max-h-96 cursor-pointer group"
+                        onClick={() => setSelectedMedia({
+                          title: item.content.title,
+                          description: item.content.description,
+                          media_type: 'video',
+                          media_url: item.content.media_url
+                        })}
+                      >
+                        <img 
+                          src={item.content.thumbnail_url || item.content.media_url} 
+                          alt={item.content.title}
+                          className="w-full h-full object-cover rounded-md"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Play className="h-16 w-16 text-white" fill="white" />
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  if (item.content.media_type === 'audio' || item.content.media_url?.match(/\.(mp3|wav|ogg|m4a)$/i)) {
+                    return (
+                      <div className="w-full mb-2">
+                        <audio 
+                          controls 
+                          className="w-full"
+                        >
+                          <source src={item.content.media_url} />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </div>
+                    );
+                  }
+                  
+                  return (
                     <img 
                       src={item.content.thumbnail_url || item.content.media_url} 
                       alt={item.content.title}
                       className="w-full h-auto object-cover rounded-md mb-2 max-h-96"
                     />
-                  )}
-                </>
-              )}
+                  );
+                }
+                
+                return null;
+              })()}
               <h3 className="font-semibold text-lg">{item.content.title}</h3>
               {item.content.description && (
                 <p className="text-sm text-muted-foreground mt-1">{item.content.description}</p>

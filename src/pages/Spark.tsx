@@ -151,42 +151,52 @@ const Circle = () => {
 
       if (feedError) {
         console.error('[Spark] AI feed generation error:', feedError);
+        console.error('[Spark] Error details:', JSON.stringify(feedError));
         // Fallback to basic feed if AI fails
         return await fetchBasicFeed(userId);
       }
 
       if (feedData?.feed && Array.isArray(feedData.feed)) {
         console.log('[Spark] AI feed generated successfully:', feedData.feed.length, 'items');
+        console.log('[Spark] Sample item:', feedData.feed[0]);
         
         // Transform AI feed items to SparkItem format
-        const transformedFeed = feedData.feed.map((item: any) => ({
-          id: item.id,
-          type: item.activity_type || 'feed_post',
-          user: item.profiles ? {
-            id: item.user_id,
-            name: item.profiles.full_name,
-            avatar: item.profiles.avatar_url,
-            role: item.profiles.role,
-            location: item.profiles.location
-          } : {
-            id: item.user_id,
-            name: 'Unknown User',
-            avatar: '',
-            role: ''
-          },
-          content: item,
-          created_at: item.created_at,
-          reactions: item.reaction_count || 0,
-          hasReacted: false,
-          isSaved: false
-        })).filter(item => item.user.name !== 'Unknown User');
+        const transformedFeed = feedData.feed.map((item: any) => {
+          // Handle both array and object profile returns
+          const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
+          
+          return {
+            id: item.id,
+            type: item.activity_type || 'feed_post',
+            user: profile ? {
+              id: item.user_id,
+              name: profile.full_name,
+              avatar: profile.avatar_url,
+              role: profile.role,
+              location: profile.location
+            } : {
+              id: item.user_id,
+              name: 'Unknown User',
+              avatar: '',
+              role: ''
+            },
+            content: item,
+            created_at: item.created_at,
+            reactions: item.reaction_count || 0,
+            hasReacted: false,
+            isSaved: false
+          };
+        }).filter(item => item.user.name !== 'Unknown User');
 
+        console.log('[Spark] Transformed feed items:', transformedFeed.length);
+        
         setSparkFeed(transformedFeed);
         setCachedFeed(userId, transformedFeed);
         setLoading(false);
         return transformedFeed;
       }
 
+      console.log('[Spark] No feed data returned, falling back to basic feed');
       // Fallback if no feed data
       return await fetchBasicFeed(userId);
     } catch (error) {

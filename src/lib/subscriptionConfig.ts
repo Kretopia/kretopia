@@ -6,8 +6,8 @@ export const SUBSCRIPTION_PRODUCTS = {
     name: "Pro",
     tier: "pro" as const,
     price: 9,
-    priceId: "price_NEEDS_TO_BE_CREATED", // User needs to create this in Stripe
-    productId: "prod_NEEDS_TO_BE_CREATED",
+    priceId: "price_1STdNBJvOS7zG18hf0UV0jGz",
+    productId: "prod_TQULXkXJzX87a7",
     features: [
       "Unlimited swipes & matches",
       "5 active projects",

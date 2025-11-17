@@ -7,8 +7,9 @@ import { SmartConnectionSuggestions } from "@/components/circle/SmartConnectionS
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { MatchFeed } from "@/components/circle/MatchFeed";
 import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SEO } from "@/components/SEO";
-import { Users, Sparkles, UserPlus, Zap, Loader2, Heart } from "lucide-react";
+import { Users, Sparkles, UserPlus, Zap, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CreatorFilters, type CreatorFilterState } from "@/components/discover/CreatorFilters";
@@ -16,45 +17,17 @@ import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDi
 import { useUndoSwipe } from "@/hooks/useUndoSwipe";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
-import { getRemainingSwipes, type SubscriptionTier } from "@/lib/subscriptionLimits";
+import { type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { useToast } from "@/hooks/use-toast";
+import { useCircleData } from "@/hooks/useCircleData";
 
-interface Connection {
-  user_id: string;
-  full_name: string;
-  role: string;
-  bio: string | null;
-  avatar_url: string | null;
-  location: string | null;
-  badge: string;
-  level: number;
-}
-
-interface CreatorCard {
-  id: string;
-  user_id: string;
-  name: string;
-  title: string;
-  location: string;
-  image: string;
-  description: string;
-  badge?: string;
-  level?: number;
-}
+// Interfaces moved to useCircleData hook
 
 export default function Circle() {
   const { user, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("suggestions");
-  const [connections, setConnections] = useState<Connection[]>([]);
-  const [loading, setLoading] = useState(false);
-  
-  // Match tab state
-  const [matchCards, setMatchCards] = useState<CreatorCard[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
-  const [matchLoading, setMatchLoading] = useState(false);
-  const [featuredCreator, setFeaturedCreator] = useState<CreatorCard | null>(null);
-  const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const [creatorFilters, setCreatorFilters] = useState<CreatorFilterState>({
@@ -69,6 +42,20 @@ export default function Circle() {
   const subscriptionTier = subscriptionInfo.tier as SubscriptionTier;
   const { undosRemaining, trackSwipe, undoLastSwipe, checkUndosRemaining } = useUndoSwipe(subscriptionTier);
   
+  // Use custom hook for data fetching
+  const {
+    connections,
+    matchCards,
+    featuredCreator,
+    loading,
+    matchLoading,
+    dailySwipesLeft,
+    fetchConnections,
+    fetchMatchCreators,
+    updateSwipeCount,
+    setDailySwipesLeft
+  } = useCircleData(user?.id, subscriptionTier);
+  
   const swipeGestures = useSwipeGestures({
     onSwipeLeft: () => handleSwipe("left"),
     onSwipeRight: () => handleSwipe("right")
@@ -77,11 +64,11 @@ export default function Circle() {
   useEffect(() => {
     if (!user) return;
     
-    // Only fetch when tab becomes active, not on every filter change
+    // Only fetch when tab becomes active
     if (activeTab === "network") {
-      fetchMyNetwork();
+      fetchConnections();
     } else if (activeTab === "match") {
-      fetchMatchCreators();
+      fetchMatchCreators(creatorFilters);
     }
   }, [activeTab, user?.id]);
 
@@ -89,165 +76,7 @@ export default function Circle() {
     checkUndosRemaining();
   }, []);
 
-  const fetchMyNetwork = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      // Get accepted connections
-      const { data: connectionsData } = await supabase
-        .from('connections')
-        .select('connected_user_id, user_id')
-        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
-        .eq('status', 'accepted');
-
-      if (!connectionsData || connectionsData.length === 0) {
-        setConnections([]);
-        return;
-      }
-
-      // Get the other user's ID from each connection
-      const connectedUserIds = connectionsData.map(c => 
-        c.user_id === user.id ? c.connected_user_id : c.user_id
-      );
-
-      // Fetch profiles for all connected users
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, badge, level')
-        .in('user_id', connectedUserIds);
-
-      setConnections(profiles || []);
-    } catch (error) {
-      console.error('Error fetching network:', error);
-      toast.error('Failed to load your network');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchMatchCreators = async () => {
-    if (!user) return;
-    
-    setMatchLoading(true);
-    try {
-      // Get user's profile and swipe data
-      const [profileResult, swipesResult, connectionsResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
-        supabase.from('swipes').select('target_id, target_type').eq('user_id', user.id),
-        supabase.from('connections').select('user_id, connected_user_id').or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`).eq('status', 'accepted')
-      ]);
-
-      const userProfile = profileResult.data;
-      if (userProfile) {
-        const remaining = getRemainingSwipes(subscriptionTier, userProfile.daily_swipes || 0);
-        setDailySwipesLeft(remaining === -1 ? 999 : remaining);
-      }
-
-      const swipedIds = new Set(swipesResult.data?.map(s => s.target_id) || []);
-      const connectedUserIds = new Set(
-        connectionsResult.data?.map(conn => 
-          conn.user_id === user.id ? conn.connected_user_id : conn.user_id
-        ) || []
-      );
-
-      // Fetch creators with optimized query - smaller initial limit
-      let profilesQuery = supabase
-        .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge')
-        .neq('user_id', user.id)
-        .not('full_name', 'is', null)
-        .not('bio', 'is', null)
-        .not('avatar_url', 'is', null)
-        .limit(20); // Reduced limit for faster loading
-
-      if (creatorFilters.role !== 'all') {
-        profilesQuery = profilesQuery.eq('role', creatorFilters.role);
-      }
-      
-      const { data: profiles, error: profilesError } = await profilesQuery;
-      
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        setMatchCards([]);
-        return;
-      }
-
-      // Filter profiles
-      const basicProfiles = (profiles || []).filter(profile => 
-        !connectedUserIds.has(profile.user_id) &&
-        !swipedIds.has(profile.user_id) &&
-        profile.full_name && 
-        profile.full_name !== 'New User' && 
-        profile.role && 
-        profile.avatar_url &&
-        profile.bio &&
-        profile.bio.length > 20
-      );
-
-      // Check skills
-      const profilesWithSkills = basicProfiles.filter(profile => {
-        const professionalSkills = Array.isArray(profile.professional_skills) ? profile.professional_skills.length : 0;
-        const passionSkills = Array.isArray(profile.passion_skills) ? profile.passion_skills.length : 0;
-        return (professionalSkills + passionSkills) >= 2;
-      });
-
-      // Get portfolio count - only if we have profiles
-      let profilesWithPortfolio = profilesWithSkills;
-      
-      if (profilesWithSkills.length > 0) {
-        const profileIds = profilesWithSkills.map(p => p.user_id);
-        const { data: portfolioCounts } = await supabase
-          .from('portfolio_items')
-          .select('user_id')
-          .in('user_id', profileIds)
-          .limit(100); // Limit portfolio query
-        
-        const portfolioMap = new Map<string, number>();
-        portfolioCounts?.forEach(item => {
-          portfolioMap.set(item.user_id, (portfolioMap.get(item.user_id) || 0) + 1);
-        });
-
-        // Filter with portfolio
-        profilesWithPortfolio = profilesWithSkills.filter(profile => 
-          (portfolioMap.get(profile.user_id) || 0) >= 1
-        );
-      }
-      
-      // If no profiles with portfolio, just show profiles with skills
-      if (profilesWithPortfolio.length === 0) {
-        profilesWithPortfolio = profilesWithSkills.slice(0, 10);
-      }
-
-      const creatorCards: CreatorCard[] = profilesWithPortfolio.map(profile => ({
-        id: profile.user_id,
-        user_id: profile.user_id,
-        name: profile.full_name,
-        title: profile.role,
-        location: profile.location || 'Remote',
-        image: profile.avatar_url || '',
-        description: profile.bio || 'Creative professional',
-        badge: profile.badge,
-        level: profile.level
-      }));
-
-      // Set featured creator (OG badge)
-      const ogCreators = creatorCards.filter(c => c.badge === 'og');
-      const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : creatorCards[0];
-      
-      if (featuredCandidate) {
-        setFeaturedCreator(featuredCandidate);
-        setMatchCards(creatorCards.filter(c => c.id !== featuredCandidate.id));
-      } else {
-        setMatchCards(creatorCards);
-      }
-    } catch (error) {
-      console.error('Error fetching match creators:', error);
-      toast.error('Failed to load creators');
-    } finally {
-      setMatchLoading(false);
-    }
-  };
+  // Removed - logic moved to useCircleData hook
 
   const handleSwipe = async (direction: "left" | "right") => {
     const currentCard = matchCards[currentMatchIndex];
@@ -269,18 +98,8 @@ export default function Circle() {
       return;
     }
 
-    // Update swipe count
-    const { data: currentProfile } = await supabase
-      .from('profiles')
-      .select('daily_swipes')
-      .eq('user_id', user.id)
-      .single();
-    
-    if (currentProfile) {
-      await supabase.from('profiles').update({ daily_swipes: (currentProfile.daily_swipes || 0) + 1 }).eq('user_id', user.id);
-    }
-    
-    setDailySwipesLeft(prev => prev - 1);
+    // Update swipe count via hook
+    await updateSwipeCount();
 
     const { data: swipeData } = await supabase.from('swipes').insert({
       user_id: user.id,

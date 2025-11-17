@@ -44,112 +44,127 @@ export const useDiscoverData = (
       setError(null);
 
       try {
-        // Fetch user profile for swipe count
-        const { data: userProfile } = await supabase
-          .from("profiles")
-          .select("daily_swipes")
-          .eq("user_id", userId)
-          .maybeSingle();
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Request timeout")), 10000)
+        );
 
-        if (userProfile) {
-          const remaining = getRemainingSwipes(
-            subscriptionTier,
-            userProfile.daily_swipes || 0
-          );
-          setDailySwipesLeft(remaining === -1 ? 999 : remaining);
-        }
+        const fetchPromise = async () => {
+          // Fetch in parallel for speed
+          const [profileResult, swipesResult, oppsResult] = await Promise.all([
+            supabase
+              .from("profiles")
+              .select("daily_swipes")
+              .eq("user_id", userId)
+              .maybeSingle(),
+            supabase
+              .from("swipes")
+              .select("target_id")
+              .eq("user_id", userId)
+              .eq("target_type", "opportunity"),
+            supabase
+              .from("opportunities")
+              .select("id, title, type, location, compensation, tags, description, image_url, created_by, created_at, skills")
+              .eq("status", "active")
+              .neq("created_by", userId)
+              .order("created_at", { ascending: false })
+              .limit(30)
+          ]);
 
-        // Get swiped opportunity IDs to exclude
-        const { data: swipedData } = await supabase
-          .from("swipes")
-          .select("target_id")
-          .eq("user_id", userId)
-          .eq("target_type", "opportunity");
-
-        const swipedIds = swipedData?.map((s) => s.target_id) || [];
-
-        // Build optimized query
-        let query = supabase
-          .from("opportunities")
-          .select("id, title, type, location, compensation, tags, description, image_url, created_by, created_at, skills")
-          .eq("status", "active")
-          .neq("created_by", userId)
-          .limit(50);
-
-        // Exclude swiped opportunities in the query
-        if (swipedIds.length > 0) {
-          query = query.not("id", "in", `(${swipedIds.join(",")})`);
-        }
-
-        // Apply filters
-        if (filters.type !== "all") {
-          query = query.eq("type", filters.type);
-        }
-
-        if (filters.location !== "all") {
-          if (filters.location === "remote") {
-            query = query.or("location.ilike.%remote%,location.is.null");
-          } else {
-            query = query.ilike("location", `%${filters.location}%`);
+          // Update swipes left
+          if (profileResult.data) {
+            const remaining = getRemainingSwipes(
+              subscriptionTier,
+              profileResult.data.daily_swipes || 0
+            );
+            setDailySwipesLeft(remaining === -1 ? 999 : remaining);
           }
-        }
 
-        if (filters.remote) {
-          query = query.or("location.ilike.%remote%,location.is.null");
-        }
+          // Get swiped IDs set
+          const swipedIds = new Set(swipesResult.data?.map((s) => s.target_id) || []);
 
-        if (filters.compensation !== "all") {
-          query = query.ilike("compensation", `%${filters.compensation}%`);
-        }
+          if (oppsResult.error) throw oppsResult.error;
 
-        const { data: opps, error: oppsError } = await query;
+          // Filter out swiped opportunities
+          let filteredOpps = (oppsResult.data || []).filter(
+            (opp) => !swipedIds.has(opp.id)
+          );
 
-        if (oppsError) throw oppsError;
+          // Apply filters
+          if (filters.type !== "all") {
+            filteredOpps = filteredOpps.filter((opp) => opp.type === filters.type);
+          }
 
-        // Apply client-side filters
-        let filteredOpps = opps || [];
+          if (filters.location !== "all") {
+            if (filters.location === "remote") {
+              filteredOpps = filteredOpps.filter(
+                (opp) => !opp.location || opp.location.toLowerCase().includes("remote")
+              );
+            } else {
+              filteredOpps = filteredOpps.filter((opp) =>
+                opp.location?.toLowerCase().includes(filters.location.toLowerCase())
+              );
+            }
+          }
 
-        // Search filter
-        if (filters.search) {
-          const searchLower = filters.search.toLowerCase();
-          filteredOpps = filteredOpps.filter(
-            (opp) =>
-              opp.title.toLowerCase().includes(searchLower) ||
-              opp.description.toLowerCase().includes(searchLower) ||
+          if (filters.remote) {
+            filteredOpps = filteredOpps.filter(
+              (opp) => !opp.location || opp.location.toLowerCase().includes("remote")
+            );
+          }
+
+          if (filters.compensation !== "all") {
+            filteredOpps = filteredOpps.filter((opp) =>
+              opp.compensation?.toLowerCase().includes(filters.compensation.toLowerCase())
+            );
+          }
+
+          // Search filter
+          if (filters.search) {
+            const searchLower = filters.search.toLowerCase();
+            filteredOpps = filteredOpps.filter(
+              (opp) =>
+                opp.title.toLowerCase().includes(searchLower) ||
+                opp.description.toLowerCase().includes(searchLower) ||
+                opp.tags?.some((tag: string) =>
+                  tag.toLowerCase().includes(searchLower)
+                )
+            );
+          }
+
+          // Skills filter
+          if (filters.skills.length > 0) {
+            filteredOpps = filteredOpps.filter((opp) =>
+              filters.skills.some((skill) =>
+                opp.skills?.some((oppSkill: string) =>
+                  oppSkill.toLowerCase().includes(skill.toLowerCase())
+                )
+              )
+            );
+          }
+
+          // Urgent filter
+          if (filters.urgent) {
+            filteredOpps = filteredOpps.filter((opp) =>
               opp.tags?.some((tag: string) =>
-                tag.toLowerCase().includes(searchLower)
+                tag.toLowerCase().includes("urgent")
               )
-          );
-        }
+            );
+          }
 
-        // Skills filter
-        if (filters.skills.length > 0) {
-          filteredOpps = filteredOpps.filter((opp) =>
-            filters.skills.some((skill) =>
-              opp.skills?.some((oppSkill: string) =>
-                oppSkill.toLowerCase().includes(skill.toLowerCase())
-              )
-            )
-          );
-        }
+          // Sort
+          if (filters.sortBy === "compensation") {
+            filteredOpps.sort((a, b) => {
+              const aComp = parseInt(a.compensation?.replace(/\D/g, "") || "0");
+              const bComp = parseInt(b.compensation?.replace(/\D/g, "") || "0");
+              return bComp - aComp;
+            });
+          }
 
-        // Urgent filter
-        if (filters.urgent) {
-          filteredOpps = filteredOpps.filter((opp) =>
-            opp.tags?.some((tag: string) =>
-              tag.toLowerCase().includes("urgent")
-            )
-          );
-        }
+          return filteredOpps;
+        };
 
-        // Sort
-        if (filters.sortBy === "compensation") {
-          filteredOpps.sort((a, b) => {
-            const aComp = parseInt(a.compensation?.replace(/\D/g, "") || "0");
-            const bComp = parseInt(b.compensation?.replace(/\D/g, "") || "0");
-            return bComp - aComp;
-          });
-        }
+        const filteredOpps = await Promise.race([fetchPromise(), timeoutPromise]) as any[];
 
         // Transform to cards
         const cards: OpportunityCard[] = filteredOpps.map((opp) => ({
@@ -170,8 +185,13 @@ export const useDiscoverData = (
         setOpportunities(cards);
       } catch (error: any) {
         console.error("[useDiscoverData] Error:", error);
-        setError("Failed to load opportunities");
-        toast.error("Failed to load opportunities");
+        if (error.message === "Request timeout") {
+          setError("Loading took too long. Please try again.");
+          toast.error("Loading timeout - Please refresh");
+        } else {
+          setError("Failed to load opportunities");
+          toast.error("Failed to load opportunities");
+        }
         setOpportunities([]);
       } finally {
         setLoading(false);

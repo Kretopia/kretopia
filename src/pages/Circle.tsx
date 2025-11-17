@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { SmartConnectionSuggestions } from "@/components/circle/SmartConnectionSuggestions";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { MatchFeed } from "@/components/circle/MatchFeed";
@@ -340,15 +341,19 @@ export default function Circle() {
             </div>
 
             {connections.length === 0 && !loading ? (
-              <EmptyState
-                icon={Users}
-                title="No connections yet"
-                description="Start building your network by connecting with creators in the Suggestions tab"
-                action={{
-                  label: "Explore Suggestions",
-                  onClick: () => setActiveTab("suggestions")
-                }}
-              />
+              <div className="text-center py-12">
+                <div className="mb-6 p-6 rounded-full bg-primary/10 inline-flex">
+                  <Users className="h-12 w-12 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">Build Your Network</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  Start swiping on creators in the Match tab to build meaningful connections and grow your creative network.
+                </p>
+                <Button size="lg" onClick={() => setActiveTab("match")} className="gap-2">
+                  <Heart className="h-5 w-5" />
+                  Start Matching
+                </Button>
+              </div>
             ) : (
               <ConnectionList
                 connections={connections}

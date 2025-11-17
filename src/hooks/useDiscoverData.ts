@@ -44,9 +44,9 @@ export const useDiscoverData = (
       setError(null);
 
       try {
-        // Create a timeout promise
+        // Increased timeout to 18s for better reliability
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Request timeout")), 10000)
+          setTimeout(() => reject(new Error("Request timeout")), 18000)
         );
 
         const fetchPromise = async () => {
@@ -68,7 +68,7 @@ export const useDiscoverData = (
               .eq("status", "active")
               .neq("created_by", userId)
               .order("created_at", { ascending: false })
-              .limit(30)
+              .limit(50) // Increased from 30 for more options
           ]);
 
           // Update swipes left

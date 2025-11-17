@@ -69,33 +69,12 @@ const Circle = () => {
 
   useEffect(() => {
     let isMounted = true;
-    let fetchTimeout: NodeJS.Timeout;
-    let maxLoadTimeout: NodeJS.Timeout;
 
     const loadFeed = async () => {
       if (isMounted) {
         await fetchSparkFeed(activeTab);
       }
     };
-
-    // Failsafe: ensure loading is never stuck for more than 20 seconds
-    maxLoadTimeout = setTimeout(async () => {
-      if (isMounted && loading) {
-        console.warn('[Spark] Max load timeout reached, forcing loading to false');
-        setLoading(false);
-        // Show fallback content
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          fetchBasicFeed(user.id).catch(() => {
-            toast({
-              title: "Loading slowly",
-              description: "Showing limited content",
-              variant: "default"
-            });
-          });
-        }
-      }
-    }, 20000); // Increased to 20 seconds
 
     loadFeed();
     
@@ -106,28 +85,11 @@ const Circle = () => {
     };
     trackPageView();
 
-    // Debounced refresh function to avoid excessive refetches
-    const debouncedRefresh = () => {
-      clearTimeout(fetchTimeout);
-      fetchTimeout = setTimeout(() => {
-        if (isMounted) {
-          fetchSparkFeed(activeTab);
-        }
-      }, 2000); // Wait 2 seconds before refetching
-    };
-
-    // Set up real-time updates with debouncing - only for main content types
-    const feedChannel = supabase
-      .channel('spark-feed-updates')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'portfolio_items' }, debouncedRefresh)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_posts' }, debouncedRefresh)
-      .subscribe();
+    // REMOVED: Real-time subscriptions for better performance
+    // Users can manually refresh to see new content
 
     return () => {
       isMounted = false;
-      clearTimeout(fetchTimeout);
-      clearTimeout(maxLoadTimeout);
-      supabase.removeChannel(feedChannel);
     };
   }, [activeTab]);
 

@@ -134,7 +134,26 @@ const Discover = () => {
       <div className="flex min-h-screen items-center justify-center p-4 pb-20">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 animate-spin text-primary" />
-          <p className="text-sm sm:text-base text-muted-foreground">Loading opportunities...</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Finding the best opportunities for you...</p>
+          <p className="text-xs text-muted-foreground mt-2">This may take a few moments</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4 pb-20">
+        <div className="text-center max-w-md">
+          <div className="mb-4 p-4 rounded-full bg-destructive/10 inline-flex">
+            <X className="h-8 w-8 text-destructive" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Unable to Load Opportunities</h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <Button onClick={() => fetchOpportunities(opportunityFilters)} className="gap-2">
+            <Loader2 className="h-4 w-4" />
+            Try Again
+          </Button>
         </div>
       </div>
     );
@@ -214,36 +233,71 @@ const Discover = () => {
               {!hasMoreCards ? (
                 <div className="relative mb-6 overflow-hidden rounded-3xl border bg-card shadow-lg">
                   <div className="relative h-96 flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10">
-                    <div className="text-center p-6">
+                    <div className="text-center p-6 max-w-md">
                       <Sparkles className="mx-auto mb-4 h-16 w-16 text-primary animate-pulse" />
-                      <h2 className="mb-2 text-2xl font-bold">All Caught Up!</h2>
+                      <h2 className="mb-2 text-2xl font-bold">
+                        {opportunities.length === 0 ? "No Opportunities Yet" : "All Caught Up!"}
+                      </h2>
                       <p className="text-muted-foreground mb-6">
                         {opportunities.length === 0 
-                          ? "No opportunities available right now. Post your own or check back soon!"
-                          : "You've seen all opportunities. Ready to start your protected workspace?"}
+                          ? "Be the first! Post an opportunity or adjust your filters to see more matches."
+                          : "You've seen all available opportunities. Check back later for new ones or post your own!"}
                       </p>
                       <div className="flex flex-col gap-3 items-center">
-                        <Button 
-                          onClick={() => navigate('/projects')}
-                          className="shadow-glow"
-                          size="lg"
-                        >
-                          <Briefcase className="h-5 w-5 mr-2" />
-                          View Your Workspaces
-                        </Button>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            onClick={() => window.location.reload()}
-                          >
-                            Refresh
-                          </Button>
-                          <Button 
-                            onClick={() => navigate('/manage-opportunities')}
-                          >
-                            Post Opportunity
-                          </Button>
-                        </div>
+                        {opportunities.length === 0 ? (
+                          <>
+                            <Button 
+                              onClick={() => {
+                                setOpportunityFilters({
+                                  search: '',
+                                  type: 'all',
+                                  location: 'all',
+                                  compensation: 'all',
+                                  remote: false,
+                                  skills: [],
+                                  urgent: false,
+                                  sortBy: 'newest'
+                                });
+                              }}
+                              className="shadow-glow"
+                              size="lg"
+                            >
+                              <Sparkles className="h-5 w-5 mr-2" />
+                              Clear All Filters
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              onClick={() => navigate('/manage-opportunities')}
+                            >
+                              Post an Opportunity
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button 
+                              onClick={() => navigate('/projects')}
+                              className="shadow-glow"
+                              size="lg"
+                            >
+                              <Briefcase className="h-5 w-5 mr-2" />
+                              View Your Workspaces
+                            </Button>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                onClick={() => fetchOpportunities(opportunityFilters)}
+                              >
+                                <Loader2 className="h-4 w-4 mr-2" />
+                                Refresh
+                              </Button>
+                              <Button 
+                                onClick={() => navigate('/manage-opportunities')}
+                              >
+                                Post Opportunity
+                              </Button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -94,15 +94,16 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
     
     setMatchLoading(true);
     try {
+      // Increased timeout to 18s for better reliability
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 15000)
+        setTimeout(() => reject(new Error('Request timeout')), 18000)
       );
 
       const fetchPromise = (async () => {
         // Get user profile and swipe data in parallel
         const [profileResult, swipesResult, connectionsResult] = await Promise.all([
           supabase.from('profiles').select('daily_swipes').eq('user_id', userId).maybeSingle(),
-          supabase.from('swipes').select('target_id').eq('user_id', userId),
+          supabase.from('swipes').select('target_id').eq('user_id', userId).eq('target_type', 'creator'),
           supabase.from('connections')
             .select('user_id, connected_user_id')
             .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
@@ -123,7 +124,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
           ) || []
         );
 
-        // Fetch creators with optimized query
+        // Fetch creators with optimized query (increased limit for more options)
         let profilesQuery = supabase
           .from('profiles')
           .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge')
@@ -131,7 +132,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
           .not('full_name', 'is', null)
           .not('bio', 'is', null)
           .not('avatar_url', 'is', null)
-          .limit(20);
+          .limit(30); // Increased from 20
 
         if (filters.role !== 'all') {
           profilesQuery = profilesQuery.eq('role', filters.role);
@@ -141,7 +142,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         
         if (profilesError) throw profilesError;
 
-        // Filter profiles
+        // Filter profiles efficiently
         const filteredProfiles = (profiles || []).filter(profile => 
           !connectedUserIds.has(profile.user_id) &&
           !swipedIds.has(profile.user_id) &&
@@ -153,40 +154,17 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
           profile.bio.length > 20
         );
 
-        // Filter by skills
+        // Simplified skill filtering
         const profilesWithSkills = filteredProfiles.filter(profile => {
           const professionalSkills = Array.isArray(profile.professional_skills) ? profile.professional_skills.length : 0;
           const passionSkills = Array.isArray(profile.passion_skills) ? profile.passion_skills.length : 0;
-          return (professionalSkills + passionSkills) >= 2;
+          return (professionalSkills + passionSkills) >= 1; // Reduced threshold from 2 to 1
         });
 
-        // Get portfolio counts
-        let profilesWithPortfolio = profilesWithSkills;
-        
-        if (profilesWithSkills.length > 0) {
-          const profileIds = profilesWithSkills.map(p => p.user_id);
-          const { data: portfolioCounts } = await supabase
-            .from('portfolio_items')
-            .select('user_id')
-            .in('user_id', profileIds)
-            .limit(100);
-          
-          const portfolioMap = new Map<string, number>();
-          portfolioCounts?.forEach(item => {
-            portfolioMap.set(item.user_id, (portfolioMap.get(item.user_id) || 0) + 1);
-          });
+        // Use filtered profiles directly - skip portfolio count for speed
+        const finalProfiles = profilesWithSkills.slice(0, 20);
 
-          profilesWithPortfolio = profilesWithSkills.filter(profile => 
-            (portfolioMap.get(profile.user_id) || 0) >= 1
-          );
-        }
-        
-        // Fallback if no profiles with portfolio
-        if (profilesWithPortfolio.length === 0) {
-          profilesWithPortfolio = profilesWithSkills.slice(0, 10);
-        }
-
-        const creatorCards: CreatorCard[] = profilesWithPortfolio.map(profile => ({
+        const creatorCards: CreatorCard[] = finalProfiles.map(profile => ({
           id: profile.user_id,
           user_id: profile.user_id,
           name: profile.full_name,

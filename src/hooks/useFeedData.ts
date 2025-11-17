@@ -232,7 +232,7 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
         return;
       }
 
-      // Check cache first
+      // Check cache first (faster UX)
       const cachedData = getCachedFeed<SparkItem[]>(user.id + activeTab);
       if (cachedData) {
         console.log('[useFeedData] Using cached feed');
@@ -241,31 +241,45 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
         return;
       }
 
-      let feedData: SparkItem[] = [];
+      // Add timeout protection (18 seconds)
+      const timeoutPromise = new Promise<SparkItem[]>((_, reject) => {
+        setTimeout(() => reject(new Error("Loading timed out. Please refresh.")), 18000);
+      });
 
-      if (activeTab === 'for-you') {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+      const fetchPromise = async (): Promise<SparkItem[]> => {
+        let feedData: SparkItem[] = [];
 
-        try {
-          feedData = await fetchAIFeed(user.id, profile);
-        } catch (aiError) {
-          console.warn('[useFeedData] AI feed failed, using basic feed');
+        if (activeTab === 'for-you') {
+          // Skip AI feed for now - use basic feed for reliability
+          // AI feed causes timeouts and can be added back after optimization
           feedData = await fetchBasicFeed(user.id);
+        } else {
+          feedData = await fetchFollowingFeed(user.id);
         }
-      } else {
-        feedData = await fetchFollowingFeed(user.id);
-      }
 
+        return feedData;
+      };
+
+      const feedData = await Promise.race([fetchPromise(), timeoutPromise]);
       setFeed(feedData);
       setCachedFeed(user.id + activeTab, feedData);
     } catch (err: any) {
       console.error('[useFeedData] Error loading feed:', err);
-      setError(err.message);
-      toast.error("Failed to load feed");
+      setError(err.message || "Failed to load feed");
+      
+      // Try to show fallback content
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const fallback = await fetchBasicFeed(user.id);
+          setFeed(fallback);
+          toast("Showing limited content. Pull to refresh.", {
+            description: "Some features temporarily unavailable"
+          });
+        }
+      } catch {
+        toast.error("Failed to load feed. Please refresh the page.");
+      }
     } finally {
       setLoading(false);
     }

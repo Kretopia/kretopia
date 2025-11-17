@@ -78,19 +78,24 @@ const Circle = () => {
       }
     };
 
-    // Failsafe: ensure loading is never stuck for more than 10 seconds
-    maxLoadTimeout = setTimeout(() => {
+    // Failsafe: ensure loading is never stuck for more than 20 seconds
+    maxLoadTimeout = setTimeout(async () => {
       if (isMounted && loading) {
         console.warn('[Spark] Max load timeout reached, forcing loading to false');
         setLoading(false);
-        // Show a less alarming message
-        toast({
-          title: "Taking longer than expected",
-          description: "Try refreshing or switching tabs",
-          variant: "default"
-        });
+        // Show fallback content
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          fetchBasicFeed(user.id).catch(() => {
+            toast({
+              title: "Loading slowly",
+              description: "Showing limited content",
+              variant: "default"
+            });
+          });
+        }
       }
-    }, 10000); // Reduced to 10 seconds
+    }, 20000); // Increased to 20 seconds
 
     loadFeed();
     
@@ -139,15 +144,18 @@ const Circle = () => {
         .single();
 
       // Call the edge function for AI-powered feed generation
+      console.log('[Spark] Invoking generate-for-you-feed edge function...');
       const { data: feedData, error: feedError } = await supabase.functions.invoke(
         'generate-for-you-feed',
         {
           body: {
             userId,
-            profile
+            userProfile: profile, // Match edge function parameter name
+            profile // Keep both for compatibility
           }
         }
       );
+      console.log('[Spark] Edge function response:', { hasData: !!feedData, error: feedError });
 
       if (feedError) {
         console.error('[Spark] AI feed generation error:', feedError);
@@ -607,7 +615,7 @@ const Circle = () => {
 
       // Set a timeout for the entire fetch operation
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 8000); // 8 second timeout
+        setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
       });
 
       // Route to appropriate feed based on tab with caching for 'for-you'

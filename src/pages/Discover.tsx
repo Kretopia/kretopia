@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { X, Sparkles, MapPin, DollarSign, CheckCircle2, Zap, Briefcase, Loader2 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorMessage } from "@/components/ui/error-message";
+import { X, Sparkles, MapPin, DollarSign, CheckCircle2, Zap, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,29 +14,14 @@ import { CreditPromptDialog } from "@/components/discover/CreditPromptDialog";
 import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
 import { useUndoSwipe } from "@/hooks/useUndoSwipe";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
-import { getRemainingSwipes, type SubscriptionTier } from "@/lib/subscriptionLimits";
+import { type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { UpgradeDialog } from "@/components/UpgradeDialog";
 import { SEO } from "@/components/SEO";
-
-interface Card {
-  id: string;
-  name: string;
-  title: string;
-  location: string;
-  image: string;
-  tags: string[];
-  compensation?: string;
-  description: string;
-  created_by?: string;
-  created_at?: string;
-}
+import { useDiscoverData, type OpportunityCard } from "@/hooks/useDiscoverData";
 
 const Discover = () => {
-  const { subscriptionInfo } = useAuth();
-  const [cards, setCards] = useState<Card[]>([]);
+  const { subscriptionInfo, user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
   const [showCreditPrompt, setShowCreditPrompt] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState({ name: "", description: "" });
@@ -44,6 +31,16 @@ const Discover = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { undosRemaining, trackSwipe, undoLastSwipe, checkUndosRemaining } = useUndoSwipe(subscriptionTier);
+
+  const {
+    opportunities,
+    loading,
+    error,
+    dailySwipesLeft,
+    setDailySwipesLeft,
+    fetchOpportunities,
+    updateSwipeCount,
+  } = useDiscoverData(user?.id, subscriptionTier);
 
   const swipeGestures = useSwipeGestures({
     onSwipeLeft: () => handleSwipe("left"),

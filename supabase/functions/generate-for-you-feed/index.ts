@@ -22,11 +22,15 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const { userId, userProfile } = await req.json();
+    const { userId, userProfile, profile } = await req.json();
+    const actualProfile = userProfile || profile;
 
     if (!userId) {
+      console.error("Missing userId in request");
       throw new Error("User ID is required");
     }
+    
+    console.log("Processing feed request for user:", userId);
 
     // Check cache first
     const cached = feedCache.get(userId);

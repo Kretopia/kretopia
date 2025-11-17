@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorMessage } from "@/components/ui/error-message";
-import { X, Sparkles, MapPin, DollarSign, CheckCircle2, Zap, Briefcase } from "lucide-react";
+import { X, Sparkles, MapPin, DollarSign, CheckCircle2, Zap, Briefcase, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,188 +73,12 @@ const Discover = () => {
   }, [location.state]);
 
   useEffect(() => {
-    let isMounted = true;
-    let timeoutId: NodeJS.Timeout;
-    
-    const fetchData = async () => {
-      timeoutId = setTimeout(() => {
-        if (isMounted) {
-          console.error('[Discover] Query timeout after 10 seconds');
-          setLoading(false);
-          toast({
-            title: "Loading timeout",
-            description: "Please refresh the page",
-            variant: "destructive"
-          });
-        }
-      }, 10000);
-
-      try {
-        console.log('[Discover] Starting to fetch data...');
-        
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!isMounted) {
-          clearTimeout(timeoutId);
-          return;
-        }
-        if (!user) {
-          console.error('[Discover] No authenticated user');
-          clearTimeout(timeoutId);
-          setLoading(false);
-          return;
-        }
-      
-        setLoading(true);
-        console.log('[Discover] User authenticated:', user.id);
-
-        const [
-          profileResult,
-          swipesResult
-        ] = await Promise.all([
-          supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
-          supabase.from('swipes').select('target_id, target_type').eq('user_id', user.id)
-        ]);
-      
-        if (!isMounted) return;
-      
-        const userProfile = profileResult.data;
-      
-        if (userProfile) {
-          const remaining = getRemainingSwipes(subscriptionTier, userProfile.daily_swipes || 0);
-          setDailySwipesLeft(remaining === -1 ? 999 : remaining);
-        }
-
-        const swipedIds = new Set(swipesResult.data?.map(s => s.target_id) || []);
-
-        console.log('[Discover] Fetching opportunities...');
-        let opportunitiesQuery = supabase
-          .from('opportunities')
-          .select('id, title, type, location, compensation, tags, description, image_url, created_by, created_at, skills')
-          .eq('status', 'active')
-          .neq('created_by', user.id);
-
-        // Apply type filter
-        if (opportunityFilters.type !== 'all') {
-          opportunitiesQuery = opportunitiesQuery.eq('type', opportunityFilters.type);
-        }
-
-        // Apply location filter
-        if (opportunityFilters.location !== 'all') {
-          if (opportunityFilters.location === 'remote') {
-            opportunitiesQuery = opportunitiesQuery.or('location.ilike.%remote%,location.is.null');
-          } else {
-            opportunitiesQuery = opportunitiesQuery.ilike('location', `%${opportunityFilters.location}%`);
-          }
-        }
-
-        // Apply remote filter
-        if (opportunityFilters.remote) {
-          opportunitiesQuery = opportunitiesQuery.or('location.ilike.%remote%,location.is.null');
-        }
-
-        // Apply compensation filter
-        if (opportunityFilters.compensation !== 'all') {
-          opportunitiesQuery = opportunitiesQuery.ilike('compensation', `%${opportunityFilters.compensation}%`);
-        }
-
-        const { data: opportunities, error: opportunitiesError } = await opportunitiesQuery.limit(20);
-        
-        if (opportunitiesError) {
-          console.error('[Discover] Error fetching opportunities:', opportunitiesError);
-        }
-        
-        console.log('[Discover] Fetched opportunities:', opportunities?.length || 0);
-
-        // Filter out already swiped opportunities
-        let filteredOpportunities = (opportunities || []).filter(opp => !swipedIds.has(opp.id));
-
-        // Apply client-side search filter
-        if (opportunityFilters.search) {
-          const searchLower = opportunityFilters.search.toLowerCase();
-          filteredOpportunities = filteredOpportunities.filter(opp => 
-            opp.title.toLowerCase().includes(searchLower) ||
-            opp.description.toLowerCase().includes(searchLower) ||
-            opp.tags?.some((tag: string) => tag.toLowerCase().includes(searchLower))
-          );
-        }
-
-        // Apply client-side skills filter
-        if (opportunityFilters.skills.length > 0) {
-          filteredOpportunities = filteredOpportunities.filter(opp =>
-            opportunityFilters.skills.some(skill =>
-              opp.skills?.some((oppSkill: string) => 
-                oppSkill.toLowerCase().includes(skill.toLowerCase())
-              )
-            )
-          );
-        }
-
-        // Apply urgent filter
-        if (opportunityFilters.urgent) {
-          filteredOpportunities = filteredOpportunities.filter(opp =>
-            opp.tags?.some((tag: string) => tag.toLowerCase().includes('urgent'))
-          );
-        }
-
-        const opportunityCards: Card[] = filteredOpportunities.map(opp => ({
-          id: opp.id,
-          name: opp.title,
-          title: opp.type.charAt(0).toUpperCase() + opp.type.slice(1),
-          location: opp.location || 'Remote',
-          image: opp.image_url || `https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=500&fit=crop`,
-          tags: opp.tags || [],
-          compensation: opp.compensation,
-          description: opp.description,
-          created_by: opp.created_by,
-          created_at: opp.created_at,
-        }));
-
-        // Apply sorting
-        if (opportunityFilters.sortBy === 'newest') {
-          opportunityCards.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-        } else if (opportunityFilters.sortBy === 'oldest') {
-          opportunityCards.sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
-        } else if (opportunityFilters.sortBy === 'urgent') {
-          opportunityCards.sort((a, b) => {
-            const aUrgent = a.tags?.some(tag => tag.toLowerCase().includes('urgent')) ? 1 : 0;
-            const bUrgent = b.tags?.some(tag => tag.toLowerCase().includes('urgent')) ? 1 : 0;
-            return bUrgent - aUrgent;
-          });
-        }
-
-        console.log('[Discover] Created opportunity cards:', opportunityCards.length);
-        setCards(opportunityCards);
-      
-        if (isMounted) {
-          console.log('[Discover] Finished fetching data, setting loading to false');
-          clearTimeout(timeoutId);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('[Discover] Error in fetchData:', error);
-        if (isMounted) {
-          clearTimeout(timeoutId);
-          setLoading(false);
-          toast({
-            title: "Error loading data",
-            description: "Please try refreshing the page",
-            variant: "destructive"
-          });
-        }
-      }
-    };
-
-    fetchData();
+    fetchOpportunities(opportunityFilters);
     checkUndosRemaining();
-    
-    return () => {
-      isMounted = false;
-      clearTimeout(timeoutId);
-    };
-  }, [opportunityFilters, subscriptionTier]);
+  }, [opportunityFilters, fetchOpportunities, checkUndosRemaining]);
 
   const handleSwipe = async (direction: "left" | "right") => {
-    const currentCard = cards[currentIndex];
+    const currentCard = opportunities[currentIndex];
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -316,9 +140,9 @@ const Discover = () => {
     );
   }
 
-  const currentCard = currentIndex < cards.length ? cards[currentIndex] : null;
-  const nextCard = currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
-  const hasMoreCards = currentIndex < cards.length;
+  const currentCard = currentIndex < opportunities.length ? opportunities[currentIndex] : null;
+  const nextCard = currentIndex + 1 < opportunities.length ? opportunities[currentIndex + 1] : null;
+  const hasMoreCards = currentIndex < opportunities.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24 md:pb-8">
@@ -383,7 +207,7 @@ const Discover = () => {
 
               {hasMoreCards && (
                 <div className="mb-3 text-center text-sm text-muted-foreground">
-                  {currentIndex + 1} / {cards.length}
+                  {currentIndex + 1} / {opportunities.length}
                 </div>
               )}
 
@@ -394,7 +218,7 @@ const Discover = () => {
                       <Sparkles className="mx-auto mb-4 h-16 w-16 text-primary animate-pulse" />
                       <h2 className="mb-2 text-2xl font-bold">All Caught Up!</h2>
                       <p className="text-muted-foreground mb-6">
-                        {cards.length === 0 
+                        {opportunities.length === 0 
                           ? "No opportunities available right now. Post your own or check back soon!"
                           : "You've seen all opportunities. Ready to start your protected workspace?"}
                       </p>

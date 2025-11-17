@@ -44,137 +44,46 @@ export const useDiscoverData = (
       setError(null);
 
       try {
-        // Increased timeout to 18s for better reliability
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Request timeout")), 18000)
-        );
+        console.log("[useDiscoverData] Starting fetch...");
+        
+        // SIMPLIFIED: Just get opportunities, no complex filtering
+        const { data: opportunities, error: oppsError } = await supabase
+          .from("opportunities")
+          .select("id, title, type, location, compensation, tags, description, image_url, created_by, created_at")
+          .eq("status", "active")
+          .neq("created_by", userId)
+          .order("created_at", { ascending: false })
+          .limit(20); // Reduced to 20 for speed
 
-        const fetchPromise = async () => {
-          // Fetch in parallel for speed
-          const [profileResult, swipesResult, oppsResult] = await Promise.all([
-            supabase
-              .from("profiles")
-              .select("daily_swipes")
-              .eq("user_id", userId)
-              .maybeSingle(),
-            supabase
-              .from("swipes")
-              .select("target_id")
-              .eq("user_id", userId)
-              .eq("target_type", "opportunity"),
-            supabase
-              .from("opportunities")
-              .select("id, title, type, location, compensation, tags, description, image_url, created_by, created_at, skills")
-              .eq("status", "active")
-              .neq("created_by", userId)
-              .order("created_at", { ascending: false })
-              .limit(50) // Increased from 30 for more options
-          ]);
+        if (oppsError) {
+          console.error("[useDiscoverData] Query error:", oppsError);
+          throw oppsError;
+        }
 
-          // Update swipes left
-          if (profileResult.data) {
-            const remaining = getRemainingSwipes(
-              subscriptionTier,
-              profileResult.data.daily_swipes || 0
-            );
-            setDailySwipesLeft(remaining === -1 ? 999 : remaining);
-          }
+        console.log("[useDiscoverData] Fetched opportunities:", opportunities?.length || 0);
 
-          // Get swiped IDs set
-          const swipedIds = new Set(swipesResult.data?.map((s) => s.target_id) || []);
-
-          if (oppsResult.error) throw oppsResult.error;
-
-          // Filter out swiped opportunities
-          let filteredOpps = (oppsResult.data || []).filter(
-            (opp) => !swipedIds.has(opp.id)
+        // Simple client-side filtering
+        let filtered = opportunities || [];
+        
+        if (filters.type !== "all") {
+          filtered = filtered.filter(o => o.type === filters.type);
+        }
+        
+        if (filters.search) {
+          const search = filters.search.toLowerCase();
+          filtered = filtered.filter(o => 
+            o.title.toLowerCase().includes(search) ||
+            o.description.toLowerCase().includes(search)
           );
-
-          // Apply filters
-          if (filters.type !== "all") {
-            filteredOpps = filteredOpps.filter((opp) => opp.type === filters.type);
-          }
-
-          if (filters.location !== "all") {
-            if (filters.location === "remote") {
-              filteredOpps = filteredOpps.filter(
-                (opp) => !opp.location || opp.location.toLowerCase().includes("remote")
-              );
-            } else {
-              filteredOpps = filteredOpps.filter((opp) =>
-                opp.location?.toLowerCase().includes(filters.location.toLowerCase())
-              );
-            }
-          }
-
-          if (filters.remote) {
-            filteredOpps = filteredOpps.filter(
-              (opp) => !opp.location || opp.location.toLowerCase().includes("remote")
-            );
-          }
-
-          if (filters.compensation !== "all") {
-            filteredOpps = filteredOpps.filter((opp) =>
-              opp.compensation?.toLowerCase().includes(filters.compensation.toLowerCase())
-            );
-          }
-
-          // Search filter
-          if (filters.search) {
-            const searchLower = filters.search.toLowerCase();
-            filteredOpps = filteredOpps.filter(
-              (opp) =>
-                opp.title.toLowerCase().includes(searchLower) ||
-                opp.description.toLowerCase().includes(searchLower) ||
-                opp.tags?.some((tag: string) =>
-                  tag.toLowerCase().includes(searchLower)
-                )
-            );
-          }
-
-          // Skills filter
-          if (filters.skills.length > 0) {
-            filteredOpps = filteredOpps.filter((opp) =>
-              filters.skills.some((skill) =>
-                opp.skills?.some((oppSkill: string) =>
-                  oppSkill.toLowerCase().includes(skill.toLowerCase())
-                )
-              )
-            );
-          }
-
-          // Urgent filter
-          if (filters.urgent) {
-            filteredOpps = filteredOpps.filter((opp) =>
-              opp.tags?.some((tag: string) =>
-                tag.toLowerCase().includes("urgent")
-              )
-            );
-          }
-
-          // Sort
-          if (filters.sortBy === "compensation") {
-            filteredOpps.sort((a, b) => {
-              const aComp = parseInt(a.compensation?.replace(/\D/g, "") || "0");
-              const bComp = parseInt(b.compensation?.replace(/\D/g, "") || "0");
-              return bComp - aComp;
-            });
-          }
-
-          return filteredOpps;
-        };
-
-        const filteredOpps = await Promise.race([fetchPromise(), timeoutPromise]) as any[];
+        }
 
         // Transform to cards
-        const cards: OpportunityCard[] = filteredOpps.map((opp) => ({
+        const cards: OpportunityCard[] = filtered.map((opp) => ({
           id: opp.id,
           name: opp.title,
           title: opp.type.charAt(0).toUpperCase() + opp.type.slice(1),
           location: opp.location || "Remote",
-          image:
-            opp.image_url ||
-            `https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=500&fit=crop`,
+          image: opp.image_url || `https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=500&fit=crop`,
           tags: opp.tags || [],
           compensation: opp.compensation,
           description: opp.description,
@@ -182,16 +91,13 @@ export const useDiscoverData = (
           created_at: opp.created_at,
         }));
 
+        console.log("[useDiscoverData] Transformed cards:", cards.length);
         setOpportunities(cards);
+        setDailySwipesLeft(999); // Simplified for beta
       } catch (error: any) {
         console.error("[useDiscoverData] Error:", error);
-        if (error.message === "Request timeout") {
-          setError("Loading took too long. Please try again.");
-          toast.error("Loading timeout - Please refresh");
-        } else {
-          setError("Failed to load opportunities");
-          toast.error("Failed to load opportunities");
-        }
+        setError("Failed to load opportunities");
+        toast.error("Failed to load opportunities");
         setOpportunities([]);
       } finally {
         setLoading(false);

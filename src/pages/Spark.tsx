@@ -93,85 +93,51 @@ const Circle = () => {
     };
   }, [activeTab]);
 
-  // Simplified feed fetch - skip AI edge function for speed
+  // ULTRA SIMPLIFIED feed fetch - minimal queries
   const fetchForYouFeed = async (userId: string) => {
-    console.log('[Spark] Fetching For You feed for user:', userId);
+    console.log('[Spark] Fetching For You feed...');
     
     try {
-      // Fetch recent content from ALL users (limit 20 each for speed)
-      const [postsData, portfolioData] = await Promise.all([
-        supabase
-          .from('feed_posts')
-          .select('id, user_id, content, media_urls, media_type, created_at, tags')
-          .neq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(20),
-        supabase
-          .from('portfolio_items')
-          .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
-          .neq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(20)
-      ]);
+      // Just get portfolio items - simplest query
+      const { data: portfolio, error } = await supabase
+        .from('portfolio_items')
+        .select('id, user_id, title, description, media_url, media_type, thumbnail_url, created_at')
+        .order('created_at', { ascending: false })
+        .limit(15); // Small limit for speed
 
-      const posts = postsData.data || [];
-      const portfolio = portfolioData.data || [];
-      
-      // Get unique user IDs
-      const userIds = [...new Set([
-        ...posts.map(p => p.user_id),
-        ...portfolio.map(p => p.user_id)
-      ])];
+      if (error) throw error;
 
-      if (userIds.length === 0) {
+      console.log('[Spark] Fetched portfolio:', portfolio?.length || 0);
+
+      if (!portfolio || portfolio.length === 0) {
         setSparkFeed([]);
         setLoading(false);
         return;
       }
 
-      // Fetch all profiles at once
+      // Get profiles for these items only
+      const userIds = [...new Set(portfolio.map(p => p.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, full_name, avatar_url, role, location')
+        .select('user_id, full_name, avatar_url, role')
         .in('user_id', userIds);
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-      // Combine and transform
-      const allItems: SparkItem[] = [
-        ...posts.map(post => {
-          const profile = profileMap.get(post.user_id);
-          return profile ? {
-            id: post.id,
-            type: 'post' as const,
-            user: {
-              id: post.user_id,
-              name: profile.full_name,
-              avatar: profile.avatar_url || '',
-              role: profile.role || 'Creator',
-              location: profile.location
-            },
-            content: post,
-            created_at: post.created_at,
-            reactions: 0,
-            hasReacted: false,
-            isSaved: false,
-            showComments: false,
-            comments: [],
-            commentText: ''
-          } : null;
-        }),
-        ...portfolio.map(item => {
+      // Transform to feed items
+      const items: SparkItem[] = portfolio
+        .map(item => {
           const profile = profileMap.get(item.user_id);
-          return profile ? {
+          if (!profile || !profile.full_name) return null;
+          
+          return {
             id: item.id,
             type: 'portfolio' as const,
             user: {
               id: item.user_id,
               name: profile.full_name,
               avatar: profile.avatar_url || '',
-              role: profile.role || 'Creator',
-              location: profile.location
+              role: profile.role || 'Creator'
             },
             content: item,
             created_at: item.created_at,
@@ -181,19 +147,16 @@ const Circle = () => {
             showComments: false,
             comments: [],
             commentText: ''
-          } : null;
+          };
         })
-      ].filter(Boolean) as SparkItem[];
+        .filter(Boolean) as SparkItem[];
 
-      // Sort by date
-      allItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      console.log('[Spark] Feed loaded:', allItems.length, 'items');
-      setSparkFeed(allItems);
-      setCachedFeed(userId, allItems);
+      console.log('[Spark] Feed items:', items.length);
+      setSparkFeed(items);
+      setCachedFeed(userId, items);
       setLoading(false);
     } catch (error) {
-      console.error('[Spark] Error fetching For You feed:', error);
+      console.error('[Spark] Error:', error);
       setSparkFeed([]);
       setLoading(false);
     }
@@ -421,31 +384,24 @@ const Circle = () => {
 
       console.log('[Spark] User found:', user.id);
 
-      // Set a timeout for the entire fetch operation
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 20000); // 20 second timeout
-      });
+      // Removed timeout - let queries complete naturally with simplified logic
 
       // Route to appropriate feed based on tab with caching
-      const fetchPromise = async () => {
-        if (tab === 'following') {
-          await fetchFollowingFeed(user.id);
-        } else {
-          // For You tab - check cache first
-          const cached = getCachedFeed<SparkItem[]>(user.id);
-          if (cached && cached.length > 0) {
-            console.log('[Spark] Using cached feed with', cached.length, 'items');
-            setSparkFeed(cached);
-            setLoading(false);
-            return;
-          }
-          
-          console.log('[Spark] No cache, fetching fresh feed...');
-          await fetchForYouFeed(user.id);
+      if (tab === 'following') {
+        await fetchFollowingFeed(user.id);
+      } else {
+        // For You tab - check cache first
+        const cached = getCachedFeed<SparkItem[]>(user.id);
+        if (cached && cached.length > 0) {
+          console.log('[Spark] Using cached feed with', cached.length, 'items');
+          setSparkFeed(cached);
+          setLoading(false);
+          return;
         }
-      };
-
-      await Promise.race([fetchPromise(), timeoutPromise]);
+        
+        console.log('[Spark] No cache, fetching fresh feed...');
+        await fetchForYouFeed(user.id);
+      }
     } catch (error: any) {
       console.error('[Spark] Error in fetchSparkFeed:', error);
       

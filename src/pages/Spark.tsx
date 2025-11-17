@@ -165,9 +165,17 @@ const Circle = () => {
           // Handle both array and object profile returns
           const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
           
+          // Map activity_type to our SparkItem type format
+          let itemType = 'post';
+          if (item.activity_type === 'portfolio_item') {
+            itemType = 'portfolio';
+          } else if (item.activity_type === 'feed_post') {
+            itemType = 'post';
+          }
+          
           return {
             id: item.id,
-            type: item.activity_type || 'feed_post',
+            type: itemType,
             user: profile ? {
               id: item.user_id,
               name: profile.full_name,

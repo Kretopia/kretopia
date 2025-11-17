@@ -44,150 +44,134 @@ export const useDiscoverData = (
       setError(null);
 
       try {
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Request timeout")), 8000)
-        );
+        // Fetch user profile for swipe count
+        const { data: userProfile } = await supabase
+          .from("profiles")
+          .select("daily_swipes")
+          .eq("user_id", userId)
+          .maybeSingle();
 
-        const fetchPromise = (async () => {
-          // Fetch user profile and swipes in parallel
-          const [profileResult, swipesResult] = await Promise.all([
-            supabase
-              .from("profiles")
-              .select("daily_swipes")
-              .eq("user_id", userId)
-              .maybeSingle(),
-            supabase
-              .from("swipes")
-              .select("target_id")
-              .eq("user_id", userId)
-              .eq("target_type", "opportunity"),
-          ]);
-
-          // Update swipes left
-          const userProfile = profileResult.data;
-          if (userProfile) {
-            const remaining = getRemainingSwipes(
-              subscriptionTier,
-              userProfile.daily_swipes || 0
-            );
-            setDailySwipesLeft(remaining === -1 ? 999 : remaining);
-          }
-
-          const swipedIds = new Set(
-            swipesResult.data?.map((s) => s.target_id) || []
+        if (userProfile) {
+          const remaining = getRemainingSwipes(
+            subscriptionTier,
+            userProfile.daily_swipes || 0
           );
+          setDailySwipesLeft(remaining === -1 ? 999 : remaining);
+        }
 
-          // Build optimized query
-          let query = supabase
-            .from("opportunities")
-            .select(
-              "id, title, type, location, compensation, tags, description, image_url, created_by, created_at, skills"
-            )
-            .eq("status", "active")
-            .neq("created_by", userId)
-            .limit(20);
+        // Get swiped opportunity IDs to exclude
+        const { data: swipedData } = await supabase
+          .from("swipes")
+          .select("target_id")
+          .eq("user_id", userId)
+          .eq("target_type", "opportunity");
 
-          // Apply filters
-          if (filters.type !== "all") {
-            query = query.eq("type", filters.type);
-          }
+        const swipedIds = swipedData?.map((s) => s.target_id) || [];
 
-          if (filters.location !== "all") {
-            if (filters.location === "remote") {
-              query = query.or("location.ilike.%remote%,location.is.null");
-            } else {
-              query = query.ilike("location", `%${filters.location}%`);
-            }
-          }
+        // Build optimized query
+        let query = supabase
+          .from("opportunities")
+          .select("id, title, type, location, compensation, tags, description, image_url, created_by, created_at, skills")
+          .eq("status", "active")
+          .neq("created_by", userId)
+          .limit(50);
 
-          if (filters.remote) {
+        // Exclude swiped opportunities in the query
+        if (swipedIds.length > 0) {
+          query = query.not("id", "in", `(${swipedIds.join(",")})`);
+        }
+
+        // Apply filters
+        if (filters.type !== "all") {
+          query = query.eq("type", filters.type);
+        }
+
+        if (filters.location !== "all") {
+          if (filters.location === "remote") {
             query = query.or("location.ilike.%remote%,location.is.null");
+          } else {
+            query = query.ilike("location", `%${filters.location}%`);
           }
+        }
 
-          if (filters.compensation !== "all") {
-            query = query.ilike("compensation", `%${filters.compensation}%`);
-          }
+        if (filters.remote) {
+          query = query.or("location.ilike.%remote%,location.is.null");
+        }
 
-          const { data: opps, error: oppsError } = await query;
+        if (filters.compensation !== "all") {
+          query = query.ilike("compensation", `%${filters.compensation}%`);
+        }
 
-          if (oppsError) throw oppsError;
+        const { data: opps, error: oppsError } = await query;
 
-          // Filter out swiped opportunities and apply client-side filters
-          let filteredOpps = (opps || []).filter(
-            (opp) => !swipedIds.has(opp.id)
-          );
+        if (oppsError) throw oppsError;
 
-          // Search filter
-          if (filters.search) {
-            const searchLower = filters.search.toLowerCase();
-            filteredOpps = filteredOpps.filter(
-              (opp) =>
-                opp.title.toLowerCase().includes(searchLower) ||
-                opp.description.toLowerCase().includes(searchLower) ||
-                opp.tags?.some((tag: string) =>
-                  tag.toLowerCase().includes(searchLower)
-                )
-            );
-          }
+        // Apply client-side filters
+        let filteredOpps = opps || [];
 
-          // Skills filter
-          if (filters.skills.length > 0) {
-            filteredOpps = filteredOpps.filter((opp) =>
-              filters.skills.some((skill) =>
-                opp.skills?.some((oppSkill: string) =>
-                  oppSkill.toLowerCase().includes(skill.toLowerCase())
-                )
-              )
-            );
-          }
-
-          // Urgent filter
-          if (filters.urgent) {
-            filteredOpps = filteredOpps.filter((opp) =>
+        // Search filter
+        if (filters.search) {
+          const searchLower = filters.search.toLowerCase();
+          filteredOpps = filteredOpps.filter(
+            (opp) =>
+              opp.title.toLowerCase().includes(searchLower) ||
+              opp.description.toLowerCase().includes(searchLower) ||
               opp.tags?.some((tag: string) =>
-                tag.toLowerCase().includes("urgent")
+                tag.toLowerCase().includes(searchLower)
               )
-            );
-          }
+          );
+        }
 
-          // Sort
-          if (filters.sortBy === "compensation") {
-            filteredOpps.sort((a, b) => {
-              const aComp = parseInt(a.compensation?.replace(/\D/g, "") || "0");
-              const bComp = parseInt(b.compensation?.replace(/\D/g, "") || "0");
-              return bComp - aComp;
-            });
-          }
+        // Skills filter
+        if (filters.skills.length > 0) {
+          filteredOpps = filteredOpps.filter((opp) =>
+            filters.skills.some((skill) =>
+              opp.skills?.some((oppSkill: string) =>
+                oppSkill.toLowerCase().includes(skill.toLowerCase())
+              )
+            )
+          );
+        }
 
-          // Transform to cards
-          const cards: OpportunityCard[] = filteredOpps.map((opp) => ({
-            id: opp.id,
-            name: opp.title,
-            title: opp.type.charAt(0).toUpperCase() + opp.type.slice(1),
-            location: opp.location || "Remote",
-            image:
-              opp.image_url ||
-              `https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=500&fit=crop`,
-            tags: opp.tags || [],
-            compensation: opp.compensation,
-            description: opp.description,
-            created_by: opp.created_by,
-            created_at: opp.created_at,
-          }));
+        // Urgent filter
+        if (filters.urgent) {
+          filteredOpps = filteredOpps.filter((opp) =>
+            opp.tags?.some((tag: string) =>
+              tag.toLowerCase().includes("urgent")
+            )
+          );
+        }
 
-          setOpportunities(cards);
-        })();
+        // Sort
+        if (filters.sortBy === "compensation") {
+          filteredOpps.sort((a, b) => {
+            const aComp = parseInt(a.compensation?.replace(/\D/g, "") || "0");
+            const bComp = parseInt(b.compensation?.replace(/\D/g, "") || "0");
+            return bComp - aComp;
+          });
+        }
 
-        await Promise.race([fetchPromise, timeoutPromise]);
+        // Transform to cards
+        const cards: OpportunityCard[] = filteredOpps.map((opp) => ({
+          id: opp.id,
+          name: opp.title,
+          title: opp.type.charAt(0).toUpperCase() + opp.type.slice(1),
+          location: opp.location || "Remote",
+          image:
+            opp.image_url ||
+            `https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=500&fit=crop`,
+          tags: opp.tags || [],
+          compensation: opp.compensation,
+          description: opp.description,
+          created_by: opp.created_by,
+          created_at: opp.created_at,
+        }));
+
+        setOpportunities(cards);
       } catch (error: any) {
         console.error("[useDiscoverData] Error:", error);
-        if (error.message === "Request timeout") {
-          setError("Loading took too long. Please try again.");
-          toast.error("Loading timeout - Please try again");
-        } else {
-          setError("Failed to load opportunities");
-          toast.error("Failed to load opportunities");
-        }
+        setError("Failed to load opportunities");
+        toast.error("Failed to load opportunities");
         setOpportunities([]);
       } finally {
         setLoading(false);

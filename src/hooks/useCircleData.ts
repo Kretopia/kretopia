@@ -94,106 +94,69 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
     
     setMatchLoading(true);
     try {
-      // Increased timeout to 18s for better reliability
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 18000)
+      console.log('[useCircleData] Starting fetch...');
+      
+      // SIMPLIFIED: Just get profiles with basic info
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, role, bio, avatar_url, location, badge, level')
+        .neq('user_id', userId)
+        .not('full_name', 'is', null)
+        .not('bio', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(20); // Reduced to 20 for speed
+
+      if (profilesError) {
+        console.error('[useCircleData] Query error:', profilesError);
+        throw profilesError;
+      }
+
+      console.log('[useCircleData] Fetched profiles:', profiles?.length || 0);
+
+      // Simple filtering
+      let filtered = profiles || [];
+      
+      if (filters.role !== 'all') {
+        filtered = filtered.filter(p => p.role === filters.role);
+      }
+
+      // Filter out profiles with no name/bio
+      filtered = filtered.filter(p => 
+        p.full_name && 
+        p.full_name !== 'New User' && 
+        p.bio && 
+        p.bio.length > 20
       );
 
-      const fetchPromise = (async () => {
-        // Get user profile and swipe data in parallel
-        const [profileResult, swipesResult, connectionsResult] = await Promise.all([
-          supabase.from('profiles').select('daily_swipes').eq('user_id', userId).maybeSingle(),
-          supabase.from('swipes').select('target_id').eq('user_id', userId).eq('target_type', 'creator'),
-          supabase.from('connections')
-            .select('user_id, connected_user_id')
-            .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
-            .eq('status', 'accepted')
-        ]);
+      const creatorCards: CreatorCard[] = filtered.map(profile => ({
+        id: profile.user_id,
+        user_id: profile.user_id,
+        name: profile.full_name,
+        title: profile.role,
+        location: profile.location || 'Remote',
+        image: profile.avatar_url || '',
+        description: profile.bio || 'Creative professional',
+        badge: profile.badge,
+        level: profile.level
+      }));
 
-        // Update swipes left
-        const userProfile = profileResult.data;
-        if (userProfile) {
-          const remaining = getRemainingSwipes(subscriptionTier, userProfile.daily_swipes || 0);
-          setDailySwipesLeft(remaining === -1 ? 999 : remaining);
-        }
+      console.log('[useCircleData] Transformed cards:', creatorCards.length);
 
-        const swipedIds = new Set(swipesResult.data?.map(s => s.target_id) || []);
-        const connectedUserIds = new Set(
-          connectionsResult.data?.map(conn => 
-            conn.user_id === userId ? conn.connected_user_id : conn.user_id
-          ) || []
-        );
-
-        // Fetch creators with optimized query (increased limit for more options)
-        let profilesQuery = supabase
-          .from('profiles')
-          .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, level, badge')
-          .neq('user_id', userId)
-          .not('full_name', 'is', null)
-          .not('bio', 'is', null)
-          .not('avatar_url', 'is', null)
-          .limit(30); // Increased from 20
-
-        if (filters.role !== 'all') {
-          profilesQuery = profilesQuery.eq('role', filters.role);
-        }
-        
-        const { data: profiles, error: profilesError } = await profilesQuery;
-        
-        if (profilesError) throw profilesError;
-
-        // Filter profiles efficiently
-        const filteredProfiles = (profiles || []).filter(profile => 
-          !connectedUserIds.has(profile.user_id) &&
-          !swipedIds.has(profile.user_id) &&
-          profile.full_name && 
-          profile.full_name !== 'New User' && 
-          profile.role && 
-          profile.avatar_url &&
-          profile.bio &&
-          profile.bio.length > 20
-        );
-
-        // Simplified skill filtering
-        const profilesWithSkills = filteredProfiles.filter(profile => {
-          const professionalSkills = Array.isArray(profile.professional_skills) ? profile.professional_skills.length : 0;
-          const passionSkills = Array.isArray(profile.passion_skills) ? profile.passion_skills.length : 0;
-          return (professionalSkills + passionSkills) >= 1; // Reduced threshold from 2 to 1
-        });
-
-        // Use filtered profiles directly - skip portfolio count for speed
-        const finalProfiles = profilesWithSkills.slice(0, 20);
-
-        const creatorCards: CreatorCard[] = finalProfiles.map(profile => ({
-          id: profile.user_id,
-          user_id: profile.user_id,
-          name: profile.full_name,
-          title: profile.role,
-          location: profile.location || 'Remote',
-          image: profile.avatar_url || '',
-          description: profile.bio || 'Creative professional',
-          badge: profile.badge,
-          level: profile.level
-        }));
-
-        // Set featured creator (OG badge priority)
-        const ogCreators = creatorCards.filter(c => c.badge === 'og');
-        const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : creatorCards[0];
-        
-        if (featuredCandidate) {
-          setFeaturedCreator(featuredCandidate);
-          setMatchCards(creatorCards.filter(c => c.id !== featuredCandidate.id));
-        } else {
-          setMatchCards(creatorCards);
-        }
-      })();
-
-      await Promise.race([fetchPromise, timeoutPromise]);
+      // Set featured creator (OG badge priority)
+      const ogCreators = creatorCards.filter(c => c.badge === 'og');
+      const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : creatorCards[0];
+      
+      if (featuredCandidate) {
+        setFeaturedCreator(featuredCandidate);
+        setMatchCards(creatorCards.filter(c => c.id !== featuredCandidate.id));
+      } else {
+        setMatchCards(creatorCards);
+      }
+      
+      setDailySwipesLeft(999); // Simplified for beta
     } catch (error: any) {
       console.error('[useCircleData] Error fetching match creators:', error);
-      if (error.message !== 'Request timeout') {
-        toast.error('Failed to load creators');
-      }
+      toast.error('Failed to load creators');
       setMatchCards([]);
     } finally {
       setMatchLoading(false);

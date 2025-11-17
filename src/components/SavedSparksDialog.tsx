@@ -21,70 +21,63 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
         .from('saved_sparks')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50); // Limit initial load
 
       if (error) throw error;
 
-      // Fetch details for each saved item
-      const itemsWithDetails = await Promise.all(
-        data.map(async (saved) => {
-          let details: any = null;
-          
-          switch (saved.item_type) {
-            case 'portfolio': {
-              const { data: itemData } = await supabase
-                .from('portfolio_items')
-                .select('*, profiles:user_id(full_name, avatar_url, role)')
-                .eq('id', saved.item_id)
-                .single();
-              details = itemData;
-              break;
-            }
-            case 'award': {
-              const { data: itemData } = await supabase
-                .from('awards')
-                .select('*, profiles:user_id(full_name, avatar_url, role)')
-                .eq('id', saved.item_id)
-                .single();
-              details = itemData;
-              break;
-            }
-            case 'press': {
-              const { data: itemData } = await supabase
-                .from('press_links')
-                .select('*, profiles:user_id(full_name, avatar_url, role)')
-                .eq('id', saved.item_id)
-                .single();
-              details = itemData;
-              break;
-            }
-            case 'credit': {
-              const { data: itemData } = await supabase
-                .from('credits')
-                .select('*, profiles:user_id(full_name, avatar_url, role)')
-                .eq('id', saved.item_id)
-                .single();
-              details = itemData;
-              break;
-            }
-            case 'post': {
-              const { data: itemData } = await supabase
-                .from('feed_posts')
-                .select('*, profiles:user_id(full_name, avatar_url, role)')
-                .eq('id', saved.item_id)
-                .single();
-              details = itemData;
-              break;
-            }
-          }
+      // Group saved items by type for batch fetching
+      const groupedByType: Record<string, string[]> = {};
+      data.forEach(saved => {
+        if (!groupedByType[saved.item_type]) {
+          groupedByType[saved.item_type] = [];
+        }
+        groupedByType[saved.item_type].push(saved.item_id);
+      });
 
-          return { ...saved, details };
-        })
-      );
+      // Batch fetch all items by type
+      const detailsMap: Record<string, any> = {};
+      
+      await Promise.all([
+        groupedByType['portfolio'] && supabase
+          .from('portfolio_items')
+          .select('id, title, media_url, thumbnail_url, profiles:user_id(full_name, avatar_url)')
+          .in('id', groupedByType['portfolio'])
+          .then(({ data }) => data?.forEach(item => detailsMap[item.id] = item)),
+        
+        groupedByType['award'] && supabase
+          .from('awards')
+          .select('id, title, organization, profiles:user_id(full_name, avatar_url)')
+          .in('id', groupedByType['award'])
+          .then(({ data }) => data?.forEach(item => detailsMap[item.id] = item)),
+        
+        groupedByType['press'] && supabase
+          .from('press_links')
+          .select('id, title, url, profiles:user_id(full_name, avatar_url)')
+          .in('id', groupedByType['press'])
+          .then(({ data }) => data?.forEach(item => detailsMap[item.id] = item)),
+        
+        groupedByType['credit'] && supabase
+          .from('credits')
+          .select('id, project_name, role, profiles:user_id(full_name, avatar_url)')
+          .in('id', groupedByType['credit'])
+          .then(({ data }) => data?.forEach(item => detailsMap[item.id] = item)),
+        
+        groupedByType['post'] && supabase
+          .from('feed_posts')
+          .select('id, content, profiles:user_id(full_name, avatar_url)')
+          .in('id', groupedByType['post'])
+          .then(({ data }) => data?.forEach(item => detailsMap[item.id] = item)),
+      ]);
 
-      return itemsWithDetails.filter(item => item.details);
+      // Map details to saved items
+      return data.map(saved => ({
+        ...saved,
+        details: detailsMap[saved.item_id]
+      })).filter(item => item.details);
     },
     enabled: open,
+    staleTime: 30000, // Cache for 30 seconds
   });
 
   const handleUnsave = async (itemType: string, itemId: string) => {

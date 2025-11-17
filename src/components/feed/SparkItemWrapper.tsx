@@ -49,7 +49,10 @@ export const SparkItemWrapper = ({ children, itemId, itemType }: SparkItemWrappe
       return;
     }
 
+    // Optimistic update for immediate feedback
+    setIsClipped(!isClipped);
     setIsLoading(true);
+    
     try {
       if (isClipped) {
         await supabase
@@ -59,7 +62,6 @@ export const SparkItemWrapper = ({ children, itemId, itemType }: SparkItemWrappe
           .eq('item_id', itemId)
           .eq('item_type', getItemTypeForDb(itemType));
         
-        setIsClipped(false);
         toast.success("Removed from clipped");
       } else {
         await supabase
@@ -70,10 +72,11 @@ export const SparkItemWrapper = ({ children, itemId, itemType }: SparkItemWrappe
             item_type: getItemTypeForDb(itemType)
           });
         
-        setIsClipped(true);
         toast.success("Clipped! View in your collection");
       }
     } catch (error) {
+      // Revert on error
+      setIsClipped(isClipped);
       console.error('Error clipping item:', error);
       toast.error("Failed to clip item");
     } finally {
@@ -90,12 +93,16 @@ export const SparkItemWrapper = ({ children, itemId, itemType }: SparkItemWrappe
         onClick={handleClip}
         disabled={isLoading}
         className={cn(
-          "absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity",
-          "bg-background/80 backdrop-blur-sm hover:bg-background/90",
-          isClipped && "opacity-100 text-primary"
+          "absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200",
+          "bg-background/80 backdrop-blur-sm hover:bg-background/90 hover:scale-110",
+          isClipped && "opacity-100 text-primary scale-110",
+          isLoading && "animate-pulse"
         )}
       >
-        <Paperclip className={cn("h-5 w-5", isClipped && "fill-current")} />
+        <Paperclip className={cn(
+          "h-5 w-5 transition-all duration-200", 
+          isClipped && "fill-current rotate-12"
+        )} />
       </Button>
     </div>
   );

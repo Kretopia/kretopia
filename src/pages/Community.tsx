@@ -21,6 +21,7 @@ import {
   Lock
 } from "lucide-react";
 import { toast } from "sonner";
+import { useCommunityData } from "@/hooks/useCommunityData";
 
 interface Community {
   id: string;
@@ -43,15 +44,18 @@ export default function Community() {
   const communityId = searchParams.get('id');
   
   const [activeTab, setActiveTab] = useState("discover");
-  const [communities, setCommunities] = useState<Community[]>([]);
-  const [myCommunities, setMyCommunities] = useState<Community[]>([]);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
-  const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-
-  useEffect(() => {
-    fetchCommunities();
-  }, [user]);
+  
+  const { 
+    communities, 
+    myCommunities, 
+    loading, 
+    error,
+    joinCommunity: joinCommunityAction,
+    leaveCommunity: leaveCommunityAction,
+    refetch
+  } = useCommunityData(user?.id);
 
   useEffect(() => {
     if (communityId) {
@@ -61,57 +65,7 @@ export default function Community() {
     }
   }, [communityId]);
 
-  const fetchCommunities = async () => {
-    setLoading(true);
-    try {
-      // Get all public communities
-      const { data: allCommunities, error: commError } = await supabase
-        .from('communities')
-        .select('id, name, description, image_url, cover_url, member_count, is_official, is_private, category, location')
-        .eq('is_private', false)
-        .order('is_official', { ascending: false })
-        .order('member_count', { ascending: false });
-
-      console.log('[Community] Fetched communities:', allCommunities?.length || 0);
-
-      if (commError) throw commError;
-
-      if (!user) {
-        // If not logged in, show all communities as not joined
-        setCommunities((allCommunities || []).map(c => ({ ...c, is_member: false })));
-        setMyCommunities([]);
-        return;
-      }
-
-      // Get user's memberships
-      const { data: memberships } = await supabase
-        .from('community_members')
-        .select('community_id')
-        .eq('user_id', user.id);
-
-      const membershipIds = new Set(memberships?.map(m => m.community_id) || []);
-
-      // Mark which communities user is member of
-      const communitiesWithMembership = (allCommunities || []).map(comm => ({
-        ...comm,
-        is_member: membershipIds.has(comm.id)
-      }));
-
-      const discoverCommunities = communitiesWithMembership.filter(c => !c.is_member);
-      const joinedCommunities = communitiesWithMembership.filter(c => c.is_member);
-
-      console.log('[Community] Discover communities:', discoverCommunities.length, discoverCommunities.map(c => c.name));
-      console.log('[Community] My communities:', joinedCommunities.length, joinedCommunities.map(c => c.name));
-
-      setCommunities(discoverCommunities);
-      setMyCommunities(joinedCommunities);
-    } catch (error) {
-      console.error('Error fetching communities:', error);
-      toast.error('Failed to load communities');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Removed - now handled by useCommunityData hook
 
   const loadCommunityDetail = async (id: string) => {
     try {
@@ -169,7 +123,7 @@ export default function Community() {
       });
 
       toast.success("Joined community!");
-      fetchCommunities();
+      refetch();
     } catch (error) {
       console.error('Error joining community:', error);
       toast.error('Failed to join community');
@@ -384,7 +338,7 @@ export default function Community() {
       <CreateCommunityDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        onSuccess={fetchCommunities}
+        onSuccess={refetch}
       />
     </div>
   );

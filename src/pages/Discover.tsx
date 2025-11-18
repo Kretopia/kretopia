@@ -75,7 +75,7 @@ const Discover = () => {
   useEffect(() => {
     fetchOpportunities(opportunityFilters);
     checkUndosRemaining();
-  }, [opportunityFilters, fetchOpportunities, checkUndosRemaining]);
+  }, [opportunityFilters]);
 
   const handleSwipe = async (direction: "left" | "right") => {
     const currentCard = opportunities[currentIndex];

@@ -92,10 +92,23 @@ const Discover = () => {
     if (dailySwipesLeft <= 0) {
       setUpgradeFeature({
         name: "Unlimited Swipes",
-        description: "You've reached your daily swipe limit. Upgrade to Thriver for unlimited daily swipes!"
+        description: "You've reached your daily swipe limit. Upgrade to Pro or Studio for unlimited swipes!"
       });
       setShowUpgradeDialog(true);
       return;
+    }
+
+    // Show prompt when approaching limit (5 swipes left)
+    if (dailySwipesLeft === 5 && subscriptionTier === 'free') {
+      toast({
+        title: "Only 5 swipes left today!",
+        description: "Upgrade to Pro for unlimited swipes",
+        action: (
+          <Button variant="outline" size="sm" onClick={() => navigate('/subscription')}>
+            Upgrade
+          </Button>
+        )
+      });
     }
 
     const { data: currentProfile } = await supabase

@@ -47,6 +47,7 @@ import { VerificationAppealDialog } from "@/components/profile/VerificationAppea
 import { ProfileActions } from "@/components/profile/ProfileActions";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 
+import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 
 const ProfileContent = () => {
@@ -426,6 +427,8 @@ const ProfileContent = () => {
 
           {/* Stats Tab */}
           <TabsContent value="stats" className="space-y-4">
+            <SubscriptionPromptCard currentTier={(profile.subscription_tier || 'free') as 'free' | 'pro' | 'studio'} />
+            
             <TierProgressCard currentPoints={profile.xp || 0} />
             
             <ProfileOptimizationHub 

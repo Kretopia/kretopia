@@ -403,37 +403,50 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+          <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
             <PricingCard
-              name="Thriver"
+              name="Spark"
               price="$0"
               period="/forever"
               features={[
-                "10 swipes per day",
-                "3 AI recommendations/day",
+                "30 swipes/day",
+                "Basic matching",
                 "1 active project",
-                "Direct messaging",
                 "Portfolio showcase",
-                "5% partner discounts",
+                "Community access",
               ]}
-              cta="Get Started"
+              cta="Get Started Free"
               ctaLink="/auth"
             />
             <PricingCard
-              name="Creator Pro"
-              price="$29"
+              name="Pro"
+              price="$9"
               period="/month"
               popular
               features={[
-                "Unlimited swipes & matches",
-                "Unlimited AI recommendations",
-                "Unlimited projects",
-                "Featured profile (3x visibility)",
-                "Priority matching algorithm",
-                "Profile verification badge",
-                "15% partner discounts",
+                "Unlimited swipes",
+                "5 active projects",
+                "10 AI recommendations/day",
+                "Profile verification",
+                "Advanced filters",
+                "10% partner discounts",
               ]}
-              cta="Subscribe"
+              cta="Upgrade to Pro"
+              ctaLink="/subscription"
+            />
+            <PricingCard
+              name="Studio"
+              price="$29"
+              period="/month"
+              features={[
+                "Everything in Pro",
+                "Unlimited projects",
+                "Unlimited AI matches",
+                "Featured profile (3x visibility)",
+                "Priority algorithm",
+                "15-20% partner discounts",
+              ]}
+              cta="Go Studio"
               ctaLink="/subscription"
             />
           </div>

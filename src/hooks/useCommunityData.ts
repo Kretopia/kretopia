@@ -29,21 +29,41 @@ export const useCommunityData = (userId: string | undefined) => {
     try {
       console.log('[useCommunityData] Starting fetch...');
       
-      // Fetch all public communities
-      const { data: allCommunities, error: commError } = await supabase
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 5000)
+      );
+      
+      // Fetch all public communities with timeout
+      const fetchPromise = supabase
         .from('communities')
         .select('id, name, description, image_url, cover_url, member_count, is_official, is_private, category, location')
         .eq('is_private', false)
         .order('is_official', { ascending: false })
-        .order('member_count', { ascending: false });
+        .order('member_count', { ascending: false })
+        .limit(20);
+
+      const { data: allCommunities, error: commError } = await Promise.race([
+        fetchPromise,
+        timeoutPromise
+      ]) as any;
 
       if (commError) throw commError;
 
       console.log('[useCommunityData] Fetched communities:', allCommunities?.length || 0);
 
+      // Always show communities, even if not logged in
+      if (!allCommunities || allCommunities.length === 0) {
+        console.warn('[useCommunityData] No communities found');
+        setCommunities([]);
+        setMyCommunities([]);
+        setLoading(false);
+        return;
+      }
+
       if (!userId) {
         // Not logged in - show all communities as not joined
-        setCommunities((allCommunities || []).map(c => ({ ...c, is_member: false })));
+        setCommunities(allCommunities.map(c => ({ ...c, is_member: false })));
         setMyCommunities([]);
         setLoading(false);
         return;
@@ -57,7 +77,11 @@ export const useCommunityData = (userId: string | undefined) => {
 
       if (memberError) {
         console.warn('[useCommunityData] Failed to fetch memberships:', memberError);
-        // Continue without membership info rather than failing
+        // Show communities without membership info
+        setCommunities(allCommunities.map(c => ({ ...c, is_member: false })));
+        setMyCommunities([]);
+        setLoading(false);
+        return;
       }
 
       const membershipIds = new Set(memberships?.map(m => m.community_id) || []);
@@ -78,7 +102,13 @@ export const useCommunityData = (userId: string | undefined) => {
     } catch (err: any) {
       console.error('[useCommunityData] Error:', err);
       setError(err.message || 'Failed to load communities');
-      toast.error('Failed to load communities');
+      // Don't show toast on timeout - just show empty state
+      if (!err.message?.includes('timeout')) {
+        toast.error('Failed to load communities');
+      }
+      // Set empty arrays so UI shows empty state instead of infinite loading
+      setCommunities([]);
+      setMyCommunities([]);
     } finally {
       setLoading(false);
     }

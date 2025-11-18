@@ -29,43 +29,56 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
   const fetchBasicFeed = async (userId: string) => {
     console.log('[useFeedData] Fetching basic feed');
     
-    const { data: posts } = await supabase
-      .from('feed_posts')
-      .select('id, user_id, content, media_urls, media_type, created_at, tags')
-      .neq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    const postUserIds = posts?.map(p => p.user_id) || [];
-    const { data: postProfiles } = postUserIds.length > 0 ? await supabase
-      .from('profiles')
-      .select('user_id, full_name, avatar_url, role')
-      .in('user_id', postUserIds) : { data: [] };
-    
-    const postProfileMap = new Map<string, { user_id: string; full_name: string; avatar_url: string | null; role: string }>(
-      (postProfiles || []).map(p => [p.user_id, p] as [string, typeof p])
+    // Add 5-second timeout for entire operation
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Request timeout')), 5000)
     );
-
-    const { data: portfolio } = await supabase
-      .from('portfolio_items')
-      .select('id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at')
-      .neq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    const portfolioUserIds = portfolio?.map(p => p.user_id) || [];
-    const { data: portfolioProfiles } = portfolioUserIds.length > 0 ? await supabase
-      .from('profiles')
-      .select('user_id, full_name, avatar_url, role')
-      .in('user_id', portfolioUserIds) : { data: [] };
     
-    const portfolioProfileMap = new Map<string, { user_id: string; full_name: string; avatar_url: string | null; role: string }>(
-      (portfolioProfiles || []).map(p => [p.user_id, p] as [string, typeof p])
-    );
+    const fetchPromise = (async () => {
+      // Fetch posts and portfolio in parallel
+      const [postsResult, portfolioResult] = await Promise.all([
+        supabase
+          .from('feed_posts')
+          .select('id, user_id, content, media_urls, media_type, created_at, tags')
+          .neq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(20),
+        supabase
+          .from('portfolio_items')
+          .select('id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at')
+          .neq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(20)
+      ]);
+
+      const posts = postsResult.data || [];
+      const portfolio = portfolioResult.data || [];
+
+      // Get unique user IDs from both
+      const allUserIds = [...new Set([
+        ...posts.map(p => p.user_id),
+        ...portfolio.map(p => p.user_id)
+      ])];
+
+      // Fetch all profiles in one query
+      const { data: allProfiles } = allUserIds.length > 0 ? await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role')
+        .in('user_id', allUserIds) : { data: [] };
+      
+      const profileMap = new Map<string, { user_id: string; full_name: string; avatar_url: string | null; role: string }>(
+        (allProfiles || []).map(p => [p.user_id, p] as [string, typeof p])
+      );
+
+      return { posts, portfolio, profileMap };
+    })();
+
+    const result = await Promise.race([fetchPromise, timeoutPromise]) as any;
+    const { posts, portfolio, profileMap } = result;
 
     const allItems = [
       ...(posts || []).map(post => {
-        const profile = postProfileMap.get(post.user_id);
+        const profile = profileMap.get(post.user_id);
         return {
           id: post.id,
           type: 'post' as const,
@@ -80,7 +93,7 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
         };
       }),
       ...(portfolio || []).map(item => {
-        const profile = portfolioProfileMap.get(item.user_id);
+        const profile = profileMap.get(item.user_id);
         return {
           id: item.id,
           type: 'portfolio' as const,
@@ -138,6 +151,7 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
   const fetchFollowingFeed = async (userId: string) => {
     console.log('[useFeedData] Fetching following feed');
     
+    // Fetch connections and their posts/portfolio in parallel
     const { data: connections } = await supabase
       .from('connections')
       .select('connected_user_id')
@@ -150,43 +164,44 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
       return [];
     }
 
-    const { data: posts } = await supabase
-      .from('feed_posts')
-      .select('id, user_id, content, media_urls, media_type, created_at, tags')
-      .in('user_id', connectionIds)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    // Fetch posts and portfolio in parallel
+    const [postsResult, portfolioResult] = await Promise.all([
+      supabase
+        .from('feed_posts')
+        .select('id, user_id, content, media_urls, media_type, created_at, tags')
+        .in('user_id', connectionIds)
+        .order('created_at', { ascending: false })
+        .limit(20),
+      supabase
+        .from('portfolio_items')
+        .select('id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at')
+        .in('user_id', connectionIds)
+        .order('created_at', { ascending: false })
+        .limit(20)
+    ]);
 
-    const postUserIds = posts?.map(p => p.user_id) || [];
-    const { data: postProfiles } = postUserIds.length > 0 ? await supabase
+    const posts = postsResult.data || [];
+    const portfolio = portfolioResult.data || [];
+
+    // Get unique user IDs
+    const allUserIds = [...new Set([
+      ...posts.map(p => p.user_id),
+      ...portfolio.map(p => p.user_id)
+    ])];
+
+    // Fetch all profiles in one query
+    const { data: allProfiles } = allUserIds.length > 0 ? await supabase
       .from('profiles')
       .select('user_id, full_name, avatar_url, role')
-      .in('user_id', postUserIds) : { data: [] };
+      .in('user_id', allUserIds) : { data: [] };
     
-    const postProfileMap = new Map<string, { user_id: string; full_name: string; avatar_url: string | null; role: string }>(
-      (postProfiles || []).map(p => [p.user_id, p] as [string, typeof p])
-    );
-
-    const { data: portfolio } = await supabase
-      .from('portfolio_items')
-      .select('id, user_id, title, description, media_url, media_type, thumbnail_url, embed_code, tags, view_count, created_at')
-      .in('user_id', connectionIds)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    const portfolioUserIds = portfolio?.map(p => p.user_id) || [];
-    const { data: portfolioProfiles } = portfolioUserIds.length > 0 ? await supabase
-      .from('profiles')
-      .select('user_id, full_name, avatar_url, role')
-      .in('user_id', portfolioUserIds) : { data: [] };
-    
-    const portfolioProfileMap = new Map<string, { user_id: string; full_name: string; avatar_url: string | null; role: string }>(
-      (portfolioProfiles || []).map(p => [p.user_id, p] as [string, typeof p])
+    const profileMap = new Map<string, { user_id: string; full_name: string; avatar_url: string | null; role: string }>(
+      (allProfiles || []).map(p => [p.user_id, p] as [string, typeof p])
     );
 
     const allItems = [
       ...(posts || []).map(post => {
-        const profile = postProfileMap.get(post.user_id);
+        const profile = profileMap.get(post.user_id);
         return {
           id: post.id,
           type: 'post' as const,
@@ -201,7 +216,7 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
         };
       }),
       ...(portfolio || []).map(item => {
-        const profile = portfolioProfileMap.get(item.user_id);
+        const profile = profileMap.get(item.user_id);
         return {
           id: item.id,
           type: 'portfolio' as const,
@@ -241,9 +256,9 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
         return;
       }
 
-      // Add timeout protection (18 seconds)
+      // Add timeout protection (5 seconds)
       const timeoutPromise = new Promise<SparkItem[]>((_, reject) => {
-        setTimeout(() => reject(new Error("Loading timed out. Please refresh.")), 18000);
+        setTimeout(() => reject(new Error("Loading timed out. Please refresh.")), 5000);
       });
 
       const fetchPromise = async (): Promise<SparkItem[]> => {

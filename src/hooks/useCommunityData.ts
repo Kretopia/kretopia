@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -22,7 +22,7 @@ export const useCommunityData = (userId: string | undefined) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCommunities = async () => {
+  const fetchCommunities = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -82,7 +82,7 @@ export const useCommunityData = (userId: string | undefined) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   const joinCommunity = async (communityId: string) => {
     if (!userId) {
@@ -147,7 +147,7 @@ export const useCommunityData = (userId: string | undefined) => {
 
   useEffect(() => {
     fetchCommunities();
-  }, [userId]);
+  }, [fetchCommunities]);
 
   return {
     communities,

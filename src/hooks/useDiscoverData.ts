@@ -46,14 +46,23 @@ export const useDiscoverData = (
       try {
         console.log("[useDiscoverData] Starting fetch...");
         
-        // SIMPLIFIED: Just get opportunities, no complex filtering
-        const { data: opportunities, error: oppsError } = await supabase
+        // Add 5-second timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), 5000)
+        );
+        
+        const fetchPromise = supabase
           .from("opportunities")
           .select("id, title, type, location, compensation, tags, description, image_url, created_by, created_at")
           .eq("status", "active")
           .neq("created_by", userId)
           .order("created_at", { ascending: false })
-          .limit(20); // Reduced to 20 for speed
+          .limit(20);
+
+        const { data: opportunities, error: oppsError } = await Promise.race([
+          fetchPromise,
+          timeoutPromise
+        ]) as any;
 
         if (oppsError) {
           console.error("[useDiscoverData] Query error:", oppsError);
@@ -96,8 +105,11 @@ export const useDiscoverData = (
         setDailySwipesLeft(999); // Simplified for beta
       } catch (error: any) {
         console.error("[useDiscoverData] Error:", error);
-        setError("Failed to load opportunities");
-        toast.error("Failed to load opportunities");
+        setError(error.message || "Failed to load opportunities");
+        // Don't show toast on timeout
+        if (!error.message?.includes('timeout')) {
+          toast.error("Failed to load opportunities");
+        }
         setOpportunities([]);
       } finally {
         setLoading(false);

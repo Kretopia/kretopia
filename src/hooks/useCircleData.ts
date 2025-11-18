@@ -48,7 +48,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
     setLoading(true);
     try {
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 10000)
+        setTimeout(() => reject(new Error('Request timeout')), 5000)
       );
 
       const fetchPromise = (async () => {

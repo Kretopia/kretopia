@@ -29,24 +29,14 @@ export const useCommunityData = (userId: string | undefined) => {
     try {
       console.log('[useCommunityData] Starting fetch...');
       
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      // Fetch all public communities with timeout
-      const fetchPromise = supabase
+      // Fetch all public communities (no auth required for public communities)
+      const { data: allCommunities, error: commError } = await supabase
         .from('communities')
         .select('id, name, description, image_url, cover_url, member_count, is_official, is_private, category, location')
         .eq('is_private', false)
         .order('is_official', { ascending: false })
         .order('member_count', { ascending: false })
         .limit(20);
-
-      const { data: allCommunities, error: commError } = await Promise.race([
-        fetchPromise,
-        timeoutPromise
-      ]) as any;
 
       if (commError) throw commError;
 

@@ -131,7 +131,7 @@ export const SettingsTab = () => {
 
       const { data: reviews } = await supabase
         .from('reviews')
-        .select('*')
+        .select('id, profile_id, reviewer_id, reviewer_name, reviewer_role, reviewer_company, reviewer_avatar_url, rating, review_text, project_name, collaboration_type, is_endorsed, is_verified, status, created_at, updated_at')
         .eq('profile_id', user.id);
 
       const userData = {

@@ -78,7 +78,7 @@ export const useProfileData = () => {
 
       // Load remaining data in background (non-blocking)
       Promise.all([
-        supabase.from('reviews').select('*').eq('profile_id', user.id).order('created_at', { ascending: false }).limit(10),
+        supabase.from('reviews').select('id, profile_id, reviewer_id, reviewer_name, reviewer_role, reviewer_company, reviewer_avatar_url, rating, review_text, project_name, collaboration_type, is_endorsed, is_verified, status, created_at, updated_at').eq('profile_id', user.id).order('created_at', { ascending: false }).limit(10),
         supabase.from('industry_stats').select('*').eq('user_id', user.id).order('display_order', { ascending: true }),
         supabase.from('credits').select('*').eq('user_id', user.id).order('year', { ascending: false }).limit(10),
         supabase.from('awards').select('*').eq('user_id', user.id).order('year', { ascending: false }).limit(10),

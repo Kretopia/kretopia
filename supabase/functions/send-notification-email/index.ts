@@ -10,8 +10,11 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest' | 'activity-digest' | 'streak-warning' | 'swipe' | 'onboarding-reminder';
+  type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest' | 'activity-digest' | 'streak-warning' | 'swipe' | 'onboarding-reminder' | 'general';
   data: {
+    notificationTitle?: string;
+    notificationMessage?: string;
+    actionUrl?: string;
     userName?: string;
     opportunityTitle?: string;
     opportunityUrl?: string;
@@ -243,6 +246,22 @@ const generateEmailContent = (type: string, data: any) => {
             <a href="${data.onboardingUrl || baseUrl + '/onboarding'}" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Complete Your Profile</a>
             <p>It only takes 2 minutes! 🚀</p>
             <p style="color: #666; margin-top: 30px;">We're excited to see you thrive!<br>The ThriveIN Team</p>
+          </div>
+        `
+      };
+    
+    case 'general':
+      return {
+        subject: data.notificationTitle || "Update from ThriveIN",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8B5CF6;">${data.notificationTitle || "Platform Update"} 🎉</h1>
+            <p>Hi ${data.userName || 'there'},</p>
+            <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; color: #333; white-space: pre-wrap;">${data.notificationMessage || "We have an important update for you."}</p>
+            </div>
+            ${data.actionUrl ? `<a href="${data.actionUrl}" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Learn More</a>` : ''}
+            <p style="color: #666; margin-top: 30px;">Best regards,<br>The ThriveIN Team</p>
           </div>
         `
       };

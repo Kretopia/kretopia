@@ -58,6 +58,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const TestEmails = lazy(() => import("./pages/TestEmails"));
+const AdminBroadcast = lazy(() => import("./pages/AdminBroadcast"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
@@ -175,6 +176,7 @@ const AppContent = () => {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />
             <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
+            <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
             <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
             <Route path="/waitlist-admin" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

@@ -29,14 +29,24 @@ export const useCommunityData = (userId: string | undefined) => {
     try {
       console.log('[useCommunityData] Starting fetch...');
       
+      // Add 5-second timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 5000)
+      );
+      
       // Fetch all public communities (no auth required for public communities)
-      const { data: allCommunities, error: commError } = await supabase
+      const communityPromise = supabase
         .from('communities')
         .select('id, name, description, image_url, cover_url, member_count, is_official, is_private, category, location')
         .eq('is_private', false)
         .order('is_official', { ascending: false })
         .order('member_count', { ascending: false })
         .limit(20);
+
+      const { data: allCommunities, error: commError } = await Promise.race([
+        communityPromise,
+        timeoutPromise
+      ]) as any;
 
       if (commError) throw commError;
 
@@ -60,10 +70,15 @@ export const useCommunityData = (userId: string | undefined) => {
       }
 
       // Fetch user's memberships separately
-      const { data: memberships, error: memberError } = await supabase
+      const membershipPromise = supabase
         .from('community_members')
         .select('community_id')
         .eq('user_id', userId);
+
+      const { data: memberships, error: memberError } = await Promise.race([
+        membershipPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Membership fetch timeout')), 5000))
+      ]) as any;
 
       if (memberError) {
         console.warn('[useCommunityData] Failed to fetch memberships:', memberError);

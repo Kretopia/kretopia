@@ -20,15 +20,15 @@ export const HeroSection = () => {
           </div>
           
           <h1 className="mb-6 sm:mb-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight px-2">
-            Find Collaborators, Win Challenges,{" "}
+            Tired of Juggling 5 Tools for{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Get Brand Deals
+              One Collaboration?
             </span>
           </h1>
           
           <p className="mx-auto mb-8 sm:mb-12 max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-muted-foreground px-4">
-            The all-in-one platform where creators discover nearby talent, compete in creative challenges, and match with brand opportunities.{" "}
-            <span className="font-semibold text-foreground">Stop juggling 5 tools</span>—collaborate, create, and get paid in one place.
+            Bali creators waste 10+ hours a week on Slack, Trello, Google Drive, and PayPal just to manage projects. Miss opportunities buried in Facebook groups. Can't find collaborators who are actually nearby.{" "}
+            <span className="font-semibold text-foreground">ThriveIN replaces your entire messy workflow</span>—smart matching, integrated workspace, and brands come to you.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 px-4 sm:flex-row">
@@ -49,15 +49,15 @@ export const HeroSection = () => {
           <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm text-muted-foreground px-4">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-primary" />
-              <span className="font-medium">Find Collaborators Nearby</span>
+              <span className="font-medium">Stop Scrolling Facebook Groups</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-secondary" />
-              <span className="font-medium">AI Smart Matching</span>
+              <span className="font-medium">Ditch $50/mo Tool Chaos</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-accent" />
-              <span className="font-medium">Plus Brand Opportunities</span>
+              <span className="font-medium">Brands Come to You</span>
             </div>
           </div>
         </div>

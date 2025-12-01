@@ -300,9 +300,10 @@ export const useFeedData = (activeTab: 'for-you' | 'following') => {
     }
   };
 
-  useEffect(() => {
-    loadFeed();
-  }, [activeTab]);
+  // DISABLED: Spark feed is hidden in MVP
+  // useEffect(() => {
+  //   loadFeed();
+  // }, [activeTab]);
 
   return { feed, loading, error, refetch: loadFeed };
 };

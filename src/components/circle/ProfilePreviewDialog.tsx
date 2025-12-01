@@ -106,11 +106,17 @@ export const ProfilePreviewDialog = ({
                     Skills
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {skills.slice(0, 12).map((skill: any, index: number) => (
-                      <Badge key={index} variant="secondary">
-                        {typeof skill === 'string' ? skill : skill.name || skill}
-                      </Badge>
-                    ))}
+                    {skills.slice(0, 12).map((skill: any, index: number) => {
+                      const skillText = typeof skill === 'string' 
+                        ? skill 
+                        : skill.skill || skill.name || '';
+                      
+                      return skillText ? (
+                        <Badge key={index} variant="secondary">
+                          {skillText}
+                        </Badge>
+                      ) : null;
+                    })}
                   </div>
                 </div>
               )}

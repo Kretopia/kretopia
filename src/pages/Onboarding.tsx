@@ -18,6 +18,7 @@ import { MatchedProfilesStep } from "@/components/onboarding/MatchedProfilesStep
 import { ConnectionSuccessStep } from "@/components/onboarding/ConnectionSuccessStep";
 import { AddPortfolioStep } from "@/components/onboarding/AddPortfolioStep";
 import { WorkspacePreviewStep } from "@/components/onboarding/WorkspacePreviewStep";
+import { useAuth } from "@/hooks/useAuth";
 
 const STEPS = [
   { id: 1, title: "Profile", icon: Users },
@@ -42,6 +43,7 @@ const QUICK_SKILLS = [
 export default function Onboarding() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [connectionCount, setConnectionCount] = useState(0);
@@ -63,8 +65,10 @@ export default function Onboarding() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
   useEffect(() => {
-    checkOnboardingStatus();
-  }, []);
+    if (user) {
+      checkOnboardingStatus();
+    }
+  }, [user]);
 
   const handleImportData = (data: any) => {
     const updatedProfile = { ...profile };
@@ -87,7 +91,6 @@ export default function Onboarding() {
   };
 
   const checkOnboardingStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
       return;
@@ -174,7 +177,6 @@ export default function Onboarding() {
       
       // Update onboarding step in database
       try {
-        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           throw new Error("User not authenticated");
         }
@@ -227,11 +229,10 @@ export default function Onboarding() {
   };
 
   const uploadAvatar = async (croppedImage: Blob) => {
+    if (!user) return;
+    
     setUploadingAvatar(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const fileName = `${user.id}-${Math.random()}.jpg`;
       const filePath = `${fileName}`;
 
@@ -289,11 +290,10 @@ export default function Onboarding() {
   };
 
   const completeOnboarding = async () => {
+    if (!user) throw new Error("Not authenticated");
+    
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
       // Convert simple skill strings to the format expected by the database
       const skillObjects = selectedSkills.map(skill => ({
         skill,

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import jsPDF from 'jspdf';
 
 // Context & Hooks
@@ -67,6 +68,7 @@ const ProfileContent = () => {
   } = useProfileContext();
 
   const { toast } = useToast();
+  const { user } = useAuth();
   const { fetchData } = useProfileData();
   const { uploadAvatar, isUploading: isUploadingAvatar } = useAvatarUpload();
 
@@ -113,7 +115,6 @@ const ProfileContent = () => {
   };
 
   const handleEditSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const isCompany = profile?.account_type === 'company';

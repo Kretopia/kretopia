@@ -31,6 +31,7 @@ export default function Circle() {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
+  const [swipedCardIds, setSwipedCardIds] = useState<Set<string>>(new Set());
   const [creatorFilters, setCreatorFilters] = useState<CreatorFilterState>({
     role: 'all',
     minFollowers: 0,
@@ -80,7 +81,8 @@ export default function Circle() {
   // Removed - logic moved to useCircleData hook
 
   const handleSwipe = async (direction: "left" | "right") => {
-    const currentCard = matchCards[currentMatchIndex];
+    const availableCards = matchCards.filter(card => !swipedCardIds.has(card.id));
+    const currentCard = availableCards[0];
     if (!user || !currentCard) return;
 
     // Track swipe
@@ -93,11 +95,14 @@ export default function Circle() {
     if (dailySwipesLeft <= 0) {
       toastHook({
         title: "Daily limit reached",
-        description: "Upgrade to Thriver for unlimited swipes!",
+        description: "Upgrade to Pro for unlimited swipes!",
         variant: "destructive"
       });
       return;
     }
+
+    // Mark card as swiped immediately
+    setSwipedCardIds(prev => new Set(prev).add(currentCard.id));
 
     // Update swipe count via hook
     await updateSwipeCount();
@@ -150,7 +155,6 @@ export default function Circle() {
           currentCard.name
         );
 
-        setCurrentMatchIndex(prev => prev + 1);
         swipeGestures.resetSwipe();
 
         setMatchedUser({
@@ -194,7 +198,7 @@ export default function Circle() {
       toast.success(`Interest sent to ${currentCard.name}! 💫`);
     }
     
-    setCurrentMatchIndex(prev => prev + 1);
+    swipeGestures.resetSwipe();
   };
 
   const handleMessage = (userId: string) => {
@@ -289,44 +293,60 @@ export default function Circle() {
 
               {/* Swipe Cards */}
               <div className="max-w-md mx-auto w-full">
-                {currentMatchIndex < matchCards.length && (
-                  <div className="mb-3 text-center text-sm text-muted-foreground">
-                    {currentMatchIndex + 1} / {matchCards.length}
-                  </div>
-                )}
+                {(() => {
+                  const availableCards = matchCards.filter(card => !swipedCardIds.has(card.id));
+                  const remainingCount = availableCards.length;
+                  const totalCount = matchCards.length;
+                  
+                  return (
+                    <>
+                      {remainingCount > 0 && (
+                        <div className="mb-3 text-center text-sm text-muted-foreground">
+                          {totalCount - remainingCount + 1} / {totalCount}
+                        </div>
+                      )}
 
-                <MatchFeed
-                  cards={matchCards}
-                  currentIndex={currentMatchIndex}
-                  loading={matchLoading}
-                  dragOffset={swipeGestures.dragOffset}
-                  swipeDirection={swipeGestures.swipeDirection}
-                  isDragging={swipeGestures.isDragging}
-                  onSwipeLeft={() => handleSwipe("left")}
-                  onSwipeRight={() => handleSwipe("right")}
-                  onDragStart={swipeGestures.handleDragStart}
-                  onDragMove={swipeGestures.handleDragMove}
-                  onDragEnd={swipeGestures.handleDragEnd}
-                  cardRef={swipeGestures.cardRef}
-                />
+                      <MatchFeed
+                        cards={availableCards}
+                        currentIndex={0}
+                        loading={matchLoading}
+                        dragOffset={swipeGestures.dragOffset}
+                        swipeDirection={swipeGestures.swipeDirection}
+                        isDragging={swipeGestures.isDragging}
+                        onSwipeLeft={() => handleSwipe("left")}
+                        onSwipeRight={() => handleSwipe("right")}
+                        onDragStart={swipeGestures.handleDragStart}
+                        onDragMove={swipeGestures.handleDragMove}
+                        onDragEnd={swipeGestures.handleDragEnd}
+                        cardRef={swipeGestures.cardRef}
+                      />
 
-                {/* Undo button */}
-                {undosRemaining > 0 && currentMatchIndex > 0 && currentMatchIndex < matchCards.length && (
-                  <div className="mt-24">
-                    <UndoSwipeButton
-                      onClick={async () => {
-                        const undone = await undoLastSwipe();
-                        if (undone) {
-                          setCurrentMatchIndex(Math.max(0, currentMatchIndex - 1));
-                          swipeGestures.resetSwipe();
-                        }
-                      }}
-                      disabled={swipeGestures.isDragging}
-                      userTier={subscriptionTier}
-                      undosRemaining={undosRemaining}
-                    />
-                  </div>
-                )}
+                      {/* Undo button */}
+                      {undosRemaining > 0 && swipedCardIds.size > 0 && remainingCount > 0 && (
+                        <div className="mt-24">
+                          <UndoSwipeButton
+                            onClick={async () => {
+                              const undone = await undoLastSwipe();
+                              if (undone) {
+                                // Remove the last swiped card ID
+                                setSwipedCardIds(prev => {
+                                  const newSet = new Set(prev);
+                                  const lastId = Array.from(prev).pop();
+                                  if (lastId) newSet.delete(lastId);
+                                  return newSet;
+                                });
+                                swipeGestures.resetSwipe();
+                              }
+                            }}
+                            disabled={swipeGestures.isDragging}
+                            userTier={subscriptionTier}
+                            undosRemaining={undosRemaining}
+                          />
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </TabsContent>

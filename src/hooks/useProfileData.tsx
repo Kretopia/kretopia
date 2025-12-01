@@ -27,7 +27,16 @@ export const useProfileData = () => {
       setIsLoading(true);
       console.log('[Profile] Getting user...');
       
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      // Add 10-second timeout for auth
+      const authPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Auth timeout')), 10000)
+      );
+      
+      const { data: { user }, error: userError } = await Promise.race([
+        authPromise,
+        timeoutPromise
+      ]) as any;
       
       if (userError) {
         console.error('[Profile] Error getting user:', userError);
@@ -168,7 +177,16 @@ export const useProfileData = () => {
       console.log('[Profile] initProfile called');
       
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        // Add 10-second timeout for auth
+        const authPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth timeout')), 10000)
+        );
+        
+        const { data: { user }, error } = await Promise.race([
+          authPromise,
+          timeoutPromise
+        ]) as any;
         
         if (!mounted) return;
         

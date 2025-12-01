@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Info, Trash2, Archive, MessageCircle, ArrowRight } from "lucide-react";
+import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Info, Trash2, Archive, MessageCircle, ArrowRight, Briefcase } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { Card } from "@/components/ui/card";
+import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
 
 interface Conversation {
   conversation_id: string;
@@ -74,10 +75,23 @@ const Messages = () => {
     avatar: string;
     role?: string;
   } | null>(null);
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
+  const [matchId, setMatchId] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
 
   useEffect(() => {
     if (user?.id) {
       setCurrentUserId(user.id);
+      
+      // Fetch current user's role
+      supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data) setCurrentUserRole(data.role);
+        });
     }
   }, [user]);
 
@@ -533,6 +547,12 @@ const Messages = () => {
                     <DropdownMenuItem onClick={() => navigate(`/profile/${otherUser.id}`)}>
                       View Profile
                     </DropdownMenuItem>
+                    {matchId && (
+                      <DropdownMenuItem onClick={() => setShowProjectDialog(true)}>
+                        <Briefcase className="h-4 w-4 mr-2" />
+                        Start Project Together
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem className="text-destructive">
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete Conversation
@@ -676,6 +696,22 @@ const Messages = () => {
             <p className="text-sm">Send messages to creators you've connected with</p>
           </div>
         </div>
+      )}
+
+      {/* Start Project Dialog */}
+      {otherUser && matchId && (
+        <StartProjectFromMatchDialog
+          open={showProjectDialog}
+          onOpenChange={setShowProjectDialog}
+          matchedUser={{
+            id: otherUser.id,
+            name: otherUser.name,
+            role: otherUser.role || 'Creator',
+            avatar: otherUser.avatar
+          }}
+          matchId={matchId}
+          currentUserRole={currentUserRole}
+        />
       )}
     </div>
   );

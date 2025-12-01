@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Shield } from "lucide-react";
+import { LogOut, Menu, Settings } from "lucide-react";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -27,31 +27,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const location = useLocation();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const isLandingPage = location.pathname === "/";
-
-  useEffect(() => {
-    if (user) {
-      checkAdminStatus();
-    }
-  }, [user]);
-
-  const checkAdminStatus = async () => {
-    if (!user?.id) return;
-    
-    try {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      
-      setIsAdmin(!!data);
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
@@ -148,17 +124,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Settings className="h-5 w-5" />
                       Settings
                     </Button>
-                    
-                    {isAdmin && (
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 text-primary"
-                        onClick={() => handleNavigation("/admin")}
-                      >
-                        <Shield className="h-5 w-5" />
-                        Admin Panel
-                      </Button>
-                    )}
                     
                     <Separator className="my-3" />
                     

@@ -61,16 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       fetchingRef.current = true;
       
-      // Add 10-second timeout for auth
-      const authPromise = supabase.auth.getUser();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Auth timeout')), 10000)
-      );
-      
-      const { data: { user } } = await Promise.race([
-        authPromise,
-        timeoutPromise
-      ]) as any;
+      const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) return;
 

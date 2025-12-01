@@ -157,7 +157,7 @@ const AppContent = () => {
             <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
             <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
             <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-            {/* <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} /> */}
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
             <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
             <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />

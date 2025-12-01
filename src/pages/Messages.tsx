@@ -112,22 +112,24 @@ const Messages = () => {
 
   const fetchConnections = async () => {
     try {
-      // Add 5-second timeout
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      // Batch all connection queries in parallel
-      const dataPromise = Promise.all([
-        supabase.from("connections").select("connected_user_id").eq("user_id", currentUserId).eq("status", "accepted"),
-        supabase.from("connections").select("user_id").eq("connected_user_id", currentUserId).eq("status", "accepted"),
-        supabase.from("matches").select("user1_id, user2_id").or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`).eq("status", "active")
+      // Batch all connection queries in parallel (no artificial timeout)
+      const [outgoingResult, incomingResult, matchesResult] = await Promise.all([
+        supabase
+          .from("connections")
+          .select("connected_user_id")
+          .eq("user_id", currentUserId)
+          .eq("status", "accepted"),
+        supabase
+          .from("connections")
+          .select("user_id")
+          .eq("connected_user_id", currentUserId)
+          .eq("status", "accepted"),
+        supabase
+          .from("matches")
+          .select("user1_id, user2_id")
+          .or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`)
+          .eq("status", "active"),
       ]);
-      
-      const [outgoingResult, incomingResult, matchesResult] = await Promise.race([
-        dataPromise,
-        timeoutPromise
-      ]) as any;
 
       const connectedIds = new Set<string>();
       outgoingResult.data?.forEach((c) => connectedIds.add(c.connected_user_id));
@@ -144,21 +146,11 @@ const Messages = () => {
 
   const fetchConversations = async () => {
     try {
-      // Add 5-second timeout
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      const dataPromise = supabase
+      const { data, error } = await supabase
         .from("conversation_list")
         .select("*")
         .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
         .order("created_at", { ascending: false });
-      
-      const { data, error } = await Promise.race([
-        dataPromise,
-        timeoutPromise
-      ]) as any;
 
       if (error) {
         console.error("Error fetching conversations:", error);
@@ -174,23 +166,21 @@ const Messages = () => {
 
   const fetchMessages = async (userId: string) => {
     try {
-      // Add 5-second timeout
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      // Batch messages and profile fetch in parallel
-      const dataPromise = Promise.all([
-        supabase.from("messages").select("*").or(
-          `and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`
-        ).order("created_at", { ascending: true }),
-        supabase.from("profiles").select("full_name, avatar_url, role").eq("user_id", userId).maybeSingle()
+      // Batch messages and profile fetch in parallel (no artificial timeout)
+      const [messagesResult, profileResult] = await Promise.all([
+        supabase
+          .from("messages")
+          .select("*")
+          .or(
+            `and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`
+          )
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("profiles")
+          .select("full_name, avatar_url, role")
+          .eq("user_id", userId)
+          .maybeSingle(),
       ]);
-      
-      const [messagesResult, profileResult] = await Promise.race([
-        dataPromise,
-        timeoutPromise
-      ]) as any;
 
       if (messagesResult.error) {
         console.error("Error fetching messages:", messagesResult.error);

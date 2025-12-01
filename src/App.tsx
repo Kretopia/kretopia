@@ -130,55 +130,43 @@ const AppContent = () => {
       <div className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
+            {/* Active MVP Routes */}
             <Route path="/" element={<DefaultRoute />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/accept-invite/:projectId" element={<AcceptInvite />} />
-            <Route path="/opportunity/:id" element={<OpportunityDetail />} />
-            <Route path="/review" element={<SubmitReview />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-            <Route path="/company-onboarding" element={<ProtectedRoute><CompanyOnboarding /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
-            <Route path="/spark" element={<Navigate to="/circle" replace />} />
-            <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+            
+            {/* Core Feature Pages - Only 4 Active */}
+            <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/:userId" element={<PublicProfile />} />
-            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-            <Route path="/cre8" element={<ProtectedRoute><Cre8 /></ProtectedRoute>} />
-            <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-            <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-            <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-            <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-            <Route path="/storage" element={<ProtectedRoute><StorageManagement /></ProtectedRoute>} />
-            <Route path="/earn-credits" element={<ProtectedRoute><EarnCredits /></ProtectedRoute>} />
-            <Route path="/membership" element={<ProtectedRoute><Membership /></ProtectedRoute>} />
-            <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
-            <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
-            <Route path="/support-dashboard" element={<ProtectedRoute><SupportDashboard /></ProtectedRoute>} />
-            <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
-            <Route path="/partner-submit" element={<PartnerSubmit />} />
-            <Route path="/endorse" element={<EndorseSkill />} />
+            
+            {/* Subscription & Payment Routes */}
+            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
-            <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
-            <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-            <Route path="/project-templates" element={<ProtectedRoute><ProjectTemplates /></ProtectedRoute>} />
-            <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
+            
+            {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
-            <Route path="/community-guidelines" element={<CommunityGuidelines />} />
-            <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
-            <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
-            <Route path="/test-runner" element={<ProtectedRoute><TestRunner /></ProtectedRoute>} />
-            <Route path="/waitlist-admin" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
+            
+            {/* Redirect old routes to Circle */}
+            <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
+            <Route path="/spark" element={<Navigate to="/circle" replace />} />
+            <Route path="/discover" element={<Navigate to="/circle" replace />} />
+            <Route path="/community" element={<Navigate to="/circle" replace />} />
+            <Route path="/cre8" element={<Navigate to="/circle" replace />} />
+            <Route path="/connect" element={<Navigate to="/circle" replace />} />
+            <Route path="/marketplace" element={<Navigate to="/circle" replace />} />
+            <Route path="/projects" element={<Navigate to="/circle" replace />} />
+            <Route path="/desk/:projectId" element={<Navigate to="/circle" replace />} />
+            <Route path="/analytics" element={<Navigate to="/circle" replace />} />
+            <Route path="/leaderboard" element={<Navigate to="/circle" replace />} />
+            <Route path="/membership" element={<Navigate to="/circle" replace />} />
+            <Route path="/earn-credits" element={<Navigate to="/circle" replace />} />
+            
+            {/* 404 - Catch all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

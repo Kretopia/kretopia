@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getRemainingSwipes, type SubscriptionTier } from "@/lib/subscriptionLimits";
+import { getRemainingSwipes, type SubscriptionTier, TIER_LIMITS } from "@/lib/subscriptionLimits";
 import { toast } from "sonner";
 
 interface Connection {
@@ -181,7 +181,35 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         setMatchCards(cardsWithAI);
       }
       
-      setDailySwipesLeft(999); // Simplified for beta
+      // Calculate remaining swipes based on subscription tier
+      const maxSwipes = TIER_LIMITS[subscriptionTier].swipesPerDay;
+      
+      // Get user's daily swipe count from profile
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('daily_swipes, last_swipe_reset')
+        .eq('user_id', userId)
+        .single();
+      
+      const today = new Date().toDateString();
+      const lastReset = userProfile?.last_swipe_reset ? new Date(userProfile.last_swipe_reset).toDateString() : null;
+      
+      // Reset swipes if it's a new day
+      if (lastReset !== today) {
+        await supabase
+          .from('profiles')
+          .update({ 
+            daily_swipes: 0, 
+            last_swipe_reset: new Date().toISOString() 
+          })
+          .eq('user_id', userId);
+        
+        setDailySwipesLeft(maxSwipes === -1 ? 999 : maxSwipes);
+      } else {
+        const swipesUsed = userProfile?.daily_swipes || 0;
+        const remaining = getRemainingSwipes(subscriptionTier, swipesUsed);
+        setDailySwipesLeft(remaining === -1 ? 999 : remaining);
+      }
     } catch (error: any) {
       console.error('[useCircleData] Error fetching match creators:', error);
       toast.error('Failed to load creators');

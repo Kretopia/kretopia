@@ -97,7 +97,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2">
-        <Link to={user ? "/spark" : "/"} className="flex items-center gap-2 sm:gap-3" aria-label="ThriveIN Home">
+        <Link to={user ? "/circle" : "/"} className="flex items-center gap-2 sm:gap-3" aria-label="ThriveIN Home">
           <img 
             src={thriveinIcon} 
             alt="ThriveIN Icon" 
@@ -184,8 +184,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </Link>
             </>
           ) : user && isLandingPage ? (
-            <Link to="/spark">
-              <Button variant="gradient">Go to Spark</Button>
+            <Link to="/circle">
+              <Button variant="gradient">Start Matching</Button>
             </Link>
           ) : null}
         </div>

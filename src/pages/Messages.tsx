@@ -375,7 +375,7 @@ const Messages = () => {
                   : "Message requests from non-connections will appear here"}
               </p>
               {!searchQuery && activeTab === "primary" && (
-                <Button onClick={() => navigate("/discover")} size="sm" className="gap-2">
+                <Button onClick={() => navigate("/circle")} size="sm" className="gap-2">
                   Discover Creators
                   <ArrowRight className="h-4 w-4" />
                 </Button>

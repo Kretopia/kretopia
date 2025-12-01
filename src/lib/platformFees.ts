@@ -1,8 +1,7 @@
 // Platform fee structure based on subscription tier
 export const PLATFORM_FEES = {
   free: 0.15,   // 15%
-  pro: 0.10,    // 10%
-  studio: 0.05, // 5%
+  pro: 0.08,    // 8% (reduced for Pro value)
 } as const;
 
 export type SubscriptionTier = keyof typeof PLATFORM_FEES;
@@ -10,7 +9,8 @@ export type SubscriptionTier = keyof typeof PLATFORM_FEES;
 export const getPlatformFeePercentage = (tier: string | null): number => {
   if (!tier || tier === 'free') return PLATFORM_FEES.free;
   if (tier === 'pro') return PLATFORM_FEES.pro;
-  if (tier === 'studio') return PLATFORM_FEES.studio;
+  // Legacy studio tier maps to pro
+  if (tier === 'studio') return PLATFORM_FEES.pro;
   return PLATFORM_FEES.free; // Default to free tier
 };
 

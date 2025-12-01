@@ -20,13 +20,10 @@ const SUBSCRIPTION_TIERS = [
     description: "Perfect for getting started",
     features: [
       "30 swipes/day",
-      "Unlimited browsing",
-      "1 active project",
+      "Basic profile",
       "Direct messaging",
       "Portfolio (up to 10 items)",
-      "Basic profile",
-      "Community access",
-      "Cre8 participation",
+      "Browse matches",
     ],
   },
   {
@@ -37,18 +34,8 @@ const SUBSCRIPTION_TIERS = [
     productId: SUBSCRIPTION_PRODUCTS.pro.productId,
     icon: Sparkles,
     popular: true,
-    description: "For active creators",
+    description: "For serious creators",
     features: SUBSCRIPTION_PRODUCTS.pro.features,
-  },
-  {
-    name: SUBSCRIPTION_PRODUCTS.studio.name,
-    tier: SUBSCRIPTION_PRODUCTS.studio.tier,
-    price: `$${SUBSCRIPTION_PRODUCTS.studio.price}`,
-    priceId: SUBSCRIPTION_PRODUCTS.studio.priceId,
-    productId: SUBSCRIPTION_PRODUCTS.studio.productId,
-    icon: Crown,
-    description: "For serious professionals",
-    features: SUBSCRIPTION_PRODUCTS.studio.features,
   },
 ];
 
@@ -189,7 +176,7 @@ export default function Subscription() {
         )}
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {SUBSCRIPTION_TIERS.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;

@@ -162,7 +162,7 @@ export default function Membership() {
       {/* Back Button */}
       <Button
         variant="ghost"
-        onClick={() => navigate("/spark")}
+        onClick={() => navigate("/circle")}
         className="gap-2 mb-4"
       >
         <ArrowLeft className="h-4 w-4" />

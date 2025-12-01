@@ -98,7 +98,7 @@ export default function CompanyOnboarding() {
     }
 
     if (profile?.onboarding_completed) {
-      navigate("/spark");
+      navigate("/circle");
     }
   };
 
@@ -181,7 +181,7 @@ export default function CompanyOnboarding() {
       if (error) throw error;
 
       toast.success("Welcome to ThriveIN! 🎉");
-      navigate("/spark");
+      navigate("/circle");
     } catch (error) {
       console.error("Error completing onboarding:", error);
       toast.error("Failed to complete onboarding");

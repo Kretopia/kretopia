@@ -102,7 +102,7 @@ export default function Onboarding() {
       .single();
 
     if (profileData?.onboarding_completed) {
-      navigate("/spark");
+      navigate("/circle");
       return;
     }
     
@@ -347,7 +347,7 @@ export default function Onboarding() {
         description: "Your profile is ready. Let's start collaborating!",
       });
 
-      navigate("/spark");
+      navigate("/circle");
     } catch (error) {
       console.error("Onboarding error:", error);
       toast({

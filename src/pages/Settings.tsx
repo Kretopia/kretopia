@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -28,6 +29,7 @@ interface NotificationPreferences {
 const Settings = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -58,14 +60,15 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchNotificationPreferences();
-  }, []);
+    if (user) {
+      fetchNotificationPreferences();
+    }
+  }, [user]);
 
   const fetchNotificationPreferences = async () => {
+    if (!user) return;
+    
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { data, error } = await supabase
         .from('notification_preferences')
         .select('*')
@@ -93,11 +96,10 @@ const Settings = () => {
   };
 
   const saveNotificationPreferences = async () => {
+    if (!user) return;
+    
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const { error } = await supabase
         .from('notification_preferences')
         .upsert({
@@ -208,11 +210,10 @@ const Settings = () => {
   };
 
   const handleExportData = async () => {
+    if (!user) throw new Error("Not authenticated");
+    
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -262,11 +263,10 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = async () => {
+    if (!user) throw new Error("Not authenticated");
+    
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
       const { error } = await supabase.auth.admin.deleteUser(user.id);
       
       if (error) throw error;

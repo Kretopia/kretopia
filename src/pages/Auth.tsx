@@ -85,10 +85,9 @@ const Auth = () => {
   }, [user, navigate, redirectTo, searchParams, connectUserId]);
 
   const handleAutoConnect = async (targetUserId: string) => {
+    if (!user) return;
+    
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       // Check if connection already exists
       const { data: existingConnection } = await supabase
         .from('connections')

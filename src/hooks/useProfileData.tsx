@@ -22,16 +22,29 @@ export const useProfileData = () => {
   } = useProfileContext();
 
   const fetchData = async () => {
+    console.log('[Profile] fetchData called');
     try {
       setIsLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      console.log('[Profile] Getting user...');
+      
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('[Profile] Error getting user:', userError);
         setIsLoading(false);
         return;
       }
       
+      if (!user) {
+        console.error('[Profile] No user found');
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('[Profile] User found:', user.id);
       setCurrentUserId(user.id);
 
+      console.log('[Profile] Loading core profile data...');
       // Load core profile data first (fast)
       const [profileResult, connectionsResult, portfolioResult] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
@@ -40,6 +53,7 @@ export const useProfileData = () => {
       ]);
 
       const { data, error } = profileResult;
+      console.log('[Profile] Profile result:', { data, error });
       
       if (error) {
         console.error('[Profile] Error loading profile:', error);
@@ -63,6 +77,7 @@ export const useProfileData = () => {
         return;
       }
 
+      console.log('[Profile] Setting profile data...');
       setProfile({ ...data, section_order: data.section_order });
       setUserBadge(data.badge || 'beta');
 
@@ -74,6 +89,7 @@ export const useProfileData = () => {
       setPortfolioItems(portfolioResult.data || []);
       
       // Stop loading - show UI immediately
+      console.log('[Profile] Setting isLoading to false');
       setIsLoading(false);
 
       // Load remaining data in background (non-blocking)
@@ -120,10 +136,17 @@ export const useProfileData = () => {
   };
 
   useEffect(() => {
+    console.log('[Profile] useEffect triggered');
     const initProfile = async () => {
+      console.log('[Profile] initProfile called');
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('[Profile] No user in useEffect');
+        setIsLoading(false);
+        return;
+      }
       
+      console.log('[Profile] Calling fetchData from useEffect');
       fetchData();
     };
     

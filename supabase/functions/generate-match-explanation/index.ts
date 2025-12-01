@@ -66,7 +66,32 @@ Analyze compatibility and generate match explanation.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        response_format: { type: "json_object" }
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "generate_match_score",
+              description: "Generate a compatibility score and reasons for two creators",
+              parameters: {
+                type: "object",
+                properties: {
+                  score: {
+                    type: "number",
+                    description: "Compatibility score between 70-99"
+                  },
+                  reasons: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "3-4 specific reasons why they're compatible"
+                  }
+                },
+                required: ["score", "reasons"],
+                additionalProperties: false
+              }
+            }
+          }
+        ],
+        tool_choice: { type: "function", function: { name: "generate_match_score" } }
       }),
     });
 
@@ -89,8 +114,13 @@ Analyze compatibility and generate match explanation.`;
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
-    const parsed = JSON.parse(content);
+    const toolCall = data.choices[0].message.tool_calls?.[0];
+    
+    if (!toolCall || !toolCall.function) {
+      throw new Error("No tool call returned from AI");
+    }
+
+    const parsed = JSON.parse(toolCall.function.arguments);
 
     return new Response(
       JSON.stringify({

@@ -124,9 +124,10 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         .order('created_at', { ascending: false })
         .limit(50); // Fetch more to compensate for filtered users
 
-      // Exclude already-swiped users
+      // Exclude already-swiped users (using proper array syntax)
       if (swipedUserIds.length > 0) {
-        query = query.not('user_id', 'in', `(${swipedUserIds.join(',')})`);
+        // Use .not() with proper array format for Supabase
+        query = query.filter('user_id', 'not.in', `(${swipedUserIds.join(',')})`);
       }
 
       const { data: profiles, error: profilesError } = await query;

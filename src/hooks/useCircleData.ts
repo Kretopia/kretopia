@@ -24,6 +24,8 @@ interface CreatorCard {
   description: string;
   badge?: string;
   level?: number;
+  matchScore?: number;
+  matchReasons?: string[];
 }
 
 interface CreatorFilters {
@@ -96,10 +98,17 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
     try {
       console.log('[useCircleData] Starting fetch...');
       
+      // Get current user profile for AI matching
+      const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, role, bio, professional_skills, location')
+        .eq('user_id', userId)
+        .single();
+
       // SIMPLIFIED: Just get profiles with basic info
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, badge, level')
+        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills')
         .neq('user_id', userId)
         .not('full_name', 'is', null)
         .not('bio', 'is', null)
@@ -128,29 +137,61 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         p.bio.length > 20
       );
 
-      const creatorCards: CreatorCard[] = filtered.map(profile => ({
-        id: profile.user_id,
-        user_id: profile.user_id,
-        name: profile.full_name,
-        title: profile.role,
-        location: profile.location || 'Remote',
-        image: profile.avatar_url || '',
-        description: profile.bio || 'Creative professional',
-        badge: profile.badge,
-        level: profile.level
-      }));
+      // Generate AI match explanations for each profile
+      const cardsWithAI = await Promise.all(
+        filtered.map(async (profile) => {
+          try {
+            const { data: aiMatch } = await supabase.functions.invoke('generate-match-explanation', {
+              body: {
+                currentUser: currentUserProfile,
+                targetUser: profile
+              }
+            });
 
-      console.log('[useCircleData] Transformed cards:', creatorCards.length);
+            return {
+              id: profile.user_id,
+              user_id: profile.user_id,
+              name: profile.full_name,
+              title: profile.role,
+              location: profile.location || 'Remote',
+              image: profile.avatar_url || '',
+              description: profile.bio || 'Creative professional',
+              badge: profile.badge,
+              level: profile.level,
+              matchScore: aiMatch?.score || 85,
+              matchReasons: aiMatch?.reasons || []
+            };
+          } catch (aiError) {
+            console.error('[useCircleData] AI match error:', aiError);
+            // Return card without AI insights if generation fails
+            return {
+              id: profile.user_id,
+              user_id: profile.user_id,
+              name: profile.full_name,
+              title: profile.role,
+              location: profile.location || 'Remote',
+              image: profile.avatar_url || '',
+              description: profile.bio || 'Creative professional',
+              badge: profile.badge,
+              level: profile.level,
+              matchScore: 85,
+              matchReasons: []
+            };
+          }
+        })
+      );
+
+      console.log('[useCircleData] Transformed cards with AI:', cardsWithAI.length);
 
       // Set featured creator (OG badge priority)
-      const ogCreators = creatorCards.filter(c => c.badge === 'og');
-      const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : creatorCards[0];
+      const ogCreators = cardsWithAI.filter(c => c.badge === 'og');
+      const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : cardsWithAI[0];
       
       if (featuredCandidate) {
         setFeaturedCreator(featuredCandidate);
-        setMatchCards(creatorCards.filter(c => c.id !== featuredCandidate.id));
+        setMatchCards(cardsWithAI.filter(c => c.id !== featuredCandidate.id));
       } else {
-        setMatchCards(creatorCards);
+        setMatchCards(cardsWithAI);
       }
       
       setDailySwipesLeft(999); // Simplified for beta

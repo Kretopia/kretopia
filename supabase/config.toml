@@ -65,3 +65,6 @@ verify_jwt = true
 
 [functions.update-verification-score]
 verify_jwt = true
+
+[functions.generate-match-explanation]
+verify_jwt = true

@@ -52,7 +52,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   
-  const redirectTo = searchParams.get("redirect") || "/spark";
+  const redirectTo = searchParams.get("redirect") || "/circle";
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 
@@ -97,12 +97,12 @@ const Auth = () => {
         .maybeSingle();
 
       if (existingConnection) {
-        toast({
-          title: "Already Connected",
-          description: "You're already connected with this user",
-        });
-        navigate('/spark');
-        return;
+      toast({
+        title: "Already Connected",
+        description: "You're already connected with this user",
+      });
+      navigate('/circle');
+      return;
       }
 
       // Get target user's profile
@@ -128,7 +128,7 @@ const Auth = () => {
         description: `Request sent to ${targetProfile?.full_name || 'user'}`,
       });
 
-      navigate('/spark');
+      navigate('/circle');
     } catch (error) {
       console.error('Auto-connect error:', error);
       toast({
@@ -389,12 +389,12 @@ const Auth = () => {
     } else {
       toast({
         title: "Password Reset Successful",
-        description: "Your password has been updated. Redirecting to Spark...",
+        description: "Your password has been updated. Start matching!",
       });
       
-      // Redirect to Spark after a short delay
+      // Redirect to Circle after a short delay
       setTimeout(() => {
-        navigate("/spark");
+        navigate("/circle");
       }, 1500);
     }
 
@@ -411,30 +411,28 @@ const Auth = () => {
             <Sparkles className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="mb-2 text-3xl sm:text-4xl font-bold">
-            {isPasswordReset ? "Reset Your Password" : "Welcome to ThriveIN"}
+            {isPasswordReset ? "Reset Your Password" : "Find Your Next Collaborator"}
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             {isPasswordReset 
               ? "Enter your new password below to complete the reset process" 
-              : searchParams.get("redirect")?.includes("/opportunity/") 
-                ? "Create an account to apply for this opportunity" 
-                : "The complete platform for creative collaboration"}
+              : "Swipe through verified creators. Match instantly. Start creating together."}
           </p>
           {!isPasswordReset && (
             <div className="mt-4 flex flex-col items-center gap-2">
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  🤝 Find Collaborators
+                  ❤️ Swipe & Match
                 </span>
                 <span className="flex items-center gap-1">
-                  🏆 Win Challenges
+                  💼 Verified Portfolios
                 </span>
                 <span className="flex items-center gap-1">
-                  💼 Get Brand Deals
+                  💬 Direct Messaging
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                🚀 Setup takes under 2 minutes • Free to start
+                🚀 Setup takes 2 minutes • Start matching instantly
               </p>
             </div>
           )}
@@ -642,9 +640,9 @@ const Auth = () => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Step {signupStep} of {totalSteps}</span>
                 <span className="text-sm text-muted-foreground">
-                  {signupStep === 1 && "Choose your path"}
+                  {signupStep === 1 && "I am a..."}
                   {signupStep === 2 && "Your email"}
-                  {signupStep === 3 && "Secure your account"}
+                  {signupStep === 3 && "Create password"}
                 </span>
               </div>
               <Progress value={(signupStep / totalSteps) * 100} className="h-2" />
@@ -659,9 +657,9 @@ const Auth = () => {
                       <Sparkles className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-sm mb-1">AI-Verified Creator Platform</h4>
+                      <h4 className="font-semibold text-sm mb-1">Smart Matching for Creators</h4>
                       <p className="text-xs text-muted-foreground">
-                        Your profile will be verified by AI to ensure quality and industry fit.
+                        Swipe through verified creators with real portfolios. Match instantly and start collaborating.
                       </p>
                     </div>
                   </div>
@@ -683,7 +681,7 @@ const Auth = () => {
                         <div className="flex-1">
                           <div className="font-semibold mb-1">Creator / Creative</div>
                           <div className="text-sm text-muted-foreground">
-                            Individual professional looking to showcase work and connect
+                            Find collaborators, showcase your portfolio, and match with other creators
                           </div>
                         </div>
                       </div>
@@ -702,7 +700,7 @@ const Auth = () => {
                         <div className="flex-1">
                           <div className="font-semibold mb-1">Brand / Venue / Company</div>
                           <div className="text-sm text-muted-foreground">
-                            Business looking to hire talent and post opportunities
+                            Discover and connect with talented creators for your projects
                           </div>
                         </div>
                       </div>

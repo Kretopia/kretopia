@@ -75,11 +75,18 @@ export const MatchFeed = ({
 
   if (!currentCard) {
     return (
-      <EmptyState
-        icon={Sparkles}
-        title="All caught up!"
-        description="You've seen all available creators. Check back later for more!"
-      />
+      <div className="text-center py-12">
+        <div className="mb-6 p-6 rounded-full bg-primary/10 inline-flex">
+          <Sparkles className="h-12 w-12 text-primary" />
+        </div>
+        <h3 className="text-2xl font-bold mb-3">All Caught Up!</h3>
+        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+          You've seen all available creators. Check back later for more matches!
+        </p>
+        <Button onClick={() => window.location.reload()} variant="outline">
+          Refresh
+        </Button>
+      </div>
     );
   }
 

@@ -280,10 +280,54 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { to, type, data }: EmailRequest = await req.json();
+    const body = await req.json();
+    let to = body.to;
+    const type = body.type;
+    let data = body.data || {};
+    
+    // If recipientId is provided, fetch email and user info from database
+    if (body.recipientId && !to) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      
+      const profileResponse = await fetch(
+        `${supabaseUrl}/rest/v1/profiles?user_id=eq.${body.recipientId}&select=full_name`,
+        {
+          headers: {
+            'apikey': supabaseServiceKey,
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          }
+        }
+      );
+      
+      const profiles = await profileResponse.json();
+      const profile = profiles[0];
+      
+      // Fetch email from auth.users using admin endpoint
+      const userResponse = await fetch(
+        `${supabaseUrl}/auth/v1/admin/users/${body.recipientId}`,
+        {
+          headers: {
+            'apikey': supabaseServiceKey,
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          }
+        }
+      );
+      
+      const user = await userResponse.json();
+      to = user.email;
+      
+      // Add userName to data
+      data.userName = profile?.full_name || 'there';
+      
+      // For match emails, add the matched user's name
+      if (type === 'match' && body.data?.matchedUserName) {
+        data.matchName = body.data.matchedUserName;
+      }
+    }
     
     if (!to || !type) {
-      throw new Error("Missing required fields: to, type");
+      throw new Error("Missing required fields: to or recipientId, type");
     }
 
     const { subject, html } = generateEmailContent(type, data);

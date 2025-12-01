@@ -159,6 +159,33 @@ export default function Circle() {
           currentCard.name
         );
 
+        // Send email notifications to both users
+        try {
+          await supabase.functions.invoke('send-notification-email', {
+            body: {
+              recipientId: currentCard.user_id,
+              type: 'match',
+              data: {
+                matchedUserName: senderProfile?.full_name || 'A creator',
+                matchedUserRole: senderProfile?.role || 'Creative Professional'
+              }
+            }
+          });
+
+          await supabase.functions.invoke('send-notification-email', {
+            body: {
+              recipientId: user.id,
+              type: 'match',
+              data: {
+                matchedUserName: currentCard.name,
+                matchedUserRole: currentCard.title
+              }
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send match email notifications:', emailError);
+        }
+
         swipeGestures.resetSwipe();
 
         setMatchedUser({

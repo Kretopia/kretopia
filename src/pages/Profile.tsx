@@ -282,33 +282,19 @@ const ProfileContent = () => {
           />
         </div>
 
-        {/* Tabbed Content */}
-        <Tabs defaultValue="work" className="w-full">
-          <TabsList className="w-full grid grid-cols-3 h-auto mb-6 sticky top-[180px] z-10 bg-background">
-            <TabsTrigger value="work" className="flex flex-col sm:flex-row items-center gap-1 py-2 text-xs sm:text-sm">
-              <BriefcaseIcon className="h-4 w-4" />
-              <span>Work</span>
-            </TabsTrigger>
-            <TabsTrigger value="shop" className="flex flex-col sm:flex-row items-center gap-1 py-2 text-xs sm:text-sm">
-              <ShoppingBag className="h-4 w-4" />
-              <span>Shop</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex flex-col sm:flex-row items-center gap-1 py-2 text-xs sm:text-sm">
-              <TrendingUp className="h-4 w-4" />
-              <span>Stats</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Work Tab - Portfolio First */}
-          <TabsContent value="work" className="space-y-4">
+        {/* Simplified Content - Portfolio First */}
+        <div className="space-y-4">
+            {/* Portfolio Section */}
             <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Portfolio</h2>
+              <h2 className="text-xl font-bold mb-4">My Work</h2>
               <PortfolioSection 
                 items={portfolioItems} 
                 isOwnProfile={true}
                 onRefresh={fetchData}
               />
             </div>
+            
+            {/* About Section */}
 
             <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
               <AboutSection
@@ -339,8 +325,9 @@ const ProfileContent = () => {
               </div>
             )}
 
+            {/* Contact */}
             <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Contact & Links</h2>
+              <h2 className="text-xl font-bold mb-4">Contact</h2>
               <SocialLinksSection 
                 profile={profile}
                 isOwnProfile={true}
@@ -413,65 +400,7 @@ const ProfileContent = () => {
                 )}
               </div>
             </div>
-          </TabsContent>
-
-          {/* Shop/Products Tab */}
-          <TabsContent value="shop" className="space-y-4">
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <DigitalProductsSection 
-                userId={profile.user_id}
-                isOwner={true}
-              />
-            </div>
-          </TabsContent>
-
-          {/* Stats Tab */}
-          <TabsContent value="stats" className="space-y-4">
-            <SubscriptionPromptCard currentTier={(profile.subscription_tier || 'free') as 'free' | 'pro' | 'studio'} />
-            
-            <TierProgressCard currentPoints={profile.xp || 0} />
-            
-            <ProfileOptimizationHub 
-              completion={checkProfileCompletion(profile, portfolioItems.length)}
-              viewCount={profile.avg_views || 0}
-              matchRate={0}
-              profileViews={profile.avg_views || 0}
-            />
-
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <ReviewsSection 
-                reviews={reviews} 
-                isOwnProfile={true}
-                profileUserId={profile.user_id}
-                onRefresh={fetchData}
-              />
-            </div>
-
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Social Metrics</h2>
-              {(profile.youtube_subscribers || profile.instagram_followers || 
-                profile.tiktok_followers || profile.spotify_listeners || 
-                profile.twitter_followers || profile.linkedin_connections) ? (
-                <SocialStatsSection
-                  youtubeSubscribers={profile.youtube_subscribers}
-                  instagramFollowers={profile.instagram_followers}
-                  tiktokFollowers={profile.tiktok_followers}
-                  spotifyListeners={profile.spotify_listeners}
-                  twitterFollowers={profile.twitter_followers}
-                  linkedinConnections={profile.linkedin_connections}
-                  verifiedMetrics={profile.verified_metrics}
-                />
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">Add your social media stats to showcase your reach</p>
-                  <Button variant="outline" size="sm" onClick={() => setIsEditOpen(true)} className="mt-4">
-                    Add Stats
-                  </Button>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
 
       {/* Dialogs */}

@@ -80,16 +80,24 @@ export const MatchFeed = ({
   }
 
   return (
-    <div className="relative h-[500px] w-full">
-      {/* Next Card (Background) */}
+    <div className="relative w-full max-w-sm mx-auto" style={{ height: '70vh', minHeight: '600px', maxHeight: '700px' }}>
+      {/* Tinder-Style Card Stack */}
+      
+      {/* Next Card Preview (Subtle) */}
       {nextCard && (
-        <div className="absolute inset-0">
-          <div className="relative h-full w-full opacity-50 scale-95">
-            <img
-              src={nextCard.image}
-              alt={nextCard.name}
-              className="absolute inset-0 h-full w-full object-cover rounded-2xl"
-            />
+        <div className="absolute inset-0 -z-10 scale-[0.92] opacity-30 pointer-events-none">
+          <div className="relative h-full overflow-hidden rounded-3xl shadow-2xl">
+            {nextCard.image ? (
+              <img
+                src={nextCard.image}
+                alt={nextCard.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10 text-8xl">
+                👤
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -107,68 +115,86 @@ export const MatchFeed = ({
         onTouchStart={onDragStart}
         onTouchMove={onDragMove}
         onTouchEnd={onDragEnd}
-        className="absolute inset-0 h-full w-full"
+        className="absolute inset-0 rounded-3xl z-10"
       >
-        <div className="relative h-full">
-          <img
-            src={currentCard.image}
-            alt={currentCard.name}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+        <div className="relative h-full overflow-hidden rounded-3xl shadow-2xl">
+          {/* Full Image Background */}
+          <div className="absolute inset-0">
+            {currentCard.image ? (
+              <img
+                src={currentCard.image}
+                alt={currentCard.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 text-8xl">
+                👤
+              </div>
+            )}
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+          </div>
           
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          
-          {/* Content */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold">{currentCard.name}</h2>
-                  {currentCard.badge && (
-                    <Badge className={`${getBadgeColor(currentCard.badge)} text-white`}>
-                      {currentCard.badge.toUpperCase()}
-                    </Badge>
-                  )}
-                  {currentCard.level && currentCard.level > 0 && (
-                    <Badge variant="secondary" className="gap-1">
-                      <Star className="h-3 w-3" />
-                      Lv {currentCard.level}
-                    </Badge>
-                  )}
+          {/* Top Badges */}
+          <div className="absolute top-6 right-6 flex flex-col gap-2 z-10">
+            {currentCard.badge && (
+              <Badge 
+                className={`${getBadgeColor(currentCard.badge)} text-white font-bold shadow-2xl text-sm px-3 py-1`}
+              >
+                {currentCard.badge.toUpperCase()}
+              </Badge>
+            )}
+            {currentCard.level && currentCard.level > 1 && (
+              <Badge className="bg-white/20 backdrop-blur-md text-white border-white/30 gap-1">
+                <Star className="h-3 w-3" />
+                Lv {currentCard.level}
+              </Badge>
+            )}
+          </div>
+
+          {/* Bottom Content */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 pb-8 text-white z-10">
+            <div className="space-y-2">
+              <h3 className="text-3xl font-bold drop-shadow-lg">{currentCard.name}</h3>
+              <p className="text-lg font-medium text-white/90 drop-shadow-md">{currentCard.title}</p>
+              
+              {currentCard.location && (
+                <div className="flex items-center gap-1 text-white/80">
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm font-medium">{currentCard.location}</span>
                 </div>
-                <p className="text-lg text-white/90 mb-2">{currentCard.title}</p>
-                {currentCard.location && (
-                  <div className="flex items-center gap-1 text-sm text-white/70 mb-3">
-                    <MapPin className="h-4 w-4" />
-                    <span>{currentCard.location}</span>
-                  </div>
-                )}
-                <p className="text-sm text-white/80 line-clamp-2">
+              )}
+              
+              {currentCard.description && (
+                <p className="text-sm text-white/80 line-clamp-2 mt-2 drop-shadow-md">
                   {currentCard.description}
                 </p>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </SwipeCard>
 
-      {/* Action Buttons */}
-      <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 flex gap-4">
+      {/* Action Buttons - Tinder Style */}
+      <div className="absolute -bottom-24 left-1/2 transform -translate-x-1/2 flex items-center gap-8 z-20">
         <Button
           size="lg"
           variant="outline"
           onClick={onSwipeLeft}
-          className="h-14 w-14 rounded-full border-2 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+          className="h-20 w-20 rounded-full border-4 border-red-500 bg-white hover:bg-red-500 hover:scale-110 transition-all shadow-2xl hover:shadow-red-500/50 group"
+          aria-label="Pass"
         >
-          <X className="h-6 w-6" />
+          <X className="h-10 w-10 text-red-500 group-hover:text-white transition-colors" />
         </Button>
         <Button
           size="lg"
+          variant="outline"
           onClick={onSwipeRight}
-          className="h-14 w-14 rounded-full bg-green-500 hover:bg-green-600 text-white"
+          className="h-20 w-20 rounded-full border-4 border-green-500 bg-white hover:bg-green-500 hover:scale-110 transition-all shadow-2xl hover:shadow-green-500/50 group"
+          aria-label="Like"
         >
-          <Heart className="h-6 w-6" />
+          <Heart className="h-10 w-10 text-green-500 group-hover:text-white fill-current transition-colors" />
         </Button>
       </div>
     </div>

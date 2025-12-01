@@ -1,12 +1,11 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Zap, Shield, Wallet, Briefcase, FileText, Users, FolderKanban, LayoutDashboard, Compass, MessageCircle, User, Flame, Trophy } from "lucide-react";
+import { LogOut, Menu, Settings, Shield } from "lucide-react";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
-import { SupportDialog } from "@/components/SupportDialog";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -29,7 +28,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isSupportOpen, setIsSupportOpen] = useState(false);
   const isLandingPage = location.pathname === "/";
 
   useEffect(() => {
@@ -117,15 +115,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
         <div className="flex items-center gap-2 sm:gap-4">
           {user && !isLandingPage && (
             <>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-10 w-10 relative"
-                onClick={() => navigate("/messages")}
-                aria-label="Messages"
-              >
-                <MessageCircle className="h-5 w-5" />
-              </Button>
               <NotificationCenter />
             </>
           )}
@@ -146,70 +135,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
-                    {/* Core Navigation */}
-                    <div className="space-y-1">
-                      <Button
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/profile")}
-                      >
-                        <User className="h-5 w-5" />
-                        My Profile
-                      </Button>
-
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/community")}
-                      >
-                        <Users className="h-5 w-5" />
-                        Communities
-                      </Button>
-
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/projects")}
-                      >
-                        <FolderKanban className="h-5 w-5" />
-                        Desk
-                      </Button>
-                    </div>
-
-                    <Separator className="my-3" />
-
-                    {/* Tools & Features */}
-                    <div className="space-y-1">
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/marketplace")}
-                      >
-                        <Briefcase className="h-5 w-5" />
-                        Marketplace
-                      </Button>
-
-                      <Button 
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => handleNavigation("/manage-opportunities")}
-                      >
-                        <Compass className="h-5 w-5" />
-                        My Opportunities
-                      </Button>
-
-                      <Button
-                        variant="ghost" 
-                        className="justify-start gap-3 h-12 w-full"
-                        onClick={() => {
-                          setIsOpen(false);
-                          setIsSupportOpen(true);
-                        }}
-                      >
-                        <Zap className="h-5 w-5" />
-                        AI Assistant
-                      </Button>
-                    </div>
+                    {/* Empty - All features hidden for MVP focus */}
 
                     <Separator className="my-3" />
 
@@ -264,7 +190,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           ) : null}
         </div>
       </div>
-      <SupportDialog open={isSupportOpen} onOpenChange={setIsSupportOpen} />
+      
     </nav>
   );
 });

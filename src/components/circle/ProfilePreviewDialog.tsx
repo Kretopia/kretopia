@@ -192,15 +192,10 @@ export const ProfilePreviewDialog = ({
                 </div>
               )}
 
-              {/* View Full Profile Button */}
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => window.open(`/profile/${userId}`, '_blank')}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View Full Profile
-              </Button>
+              {/* Action to close and return to matching */}
+              <div className="text-center text-sm text-muted-foreground">
+                Close to swipe on this profile
+              </div>
             </div>
           ) : null}
         </ScrollArea>

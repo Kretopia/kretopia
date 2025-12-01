@@ -19,27 +19,27 @@ export const HeroSection = () => {
             <span className="font-medium">AI-Powered Collaboration Network</span>
           </div>
           
-          <h1 className="mb-6 sm:mb-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight px-2">
+          <h1 className="mb-4 sm:mb-6 md:mb-8 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight sm:leading-[1.1] tracking-tight px-4">
             Tired of Juggling 5 Tools for{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               One Collaboration?
             </span>
           </h1>
           
-          <p className="mx-auto mb-8 sm:mb-12 max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-muted-foreground px-4">
-            Bali creators waste 10+ hours a week on Slack, Trello, Google Drive, and PayPal just to manage projects. Miss opportunities buried in Facebook groups. Can't find collaborators who are actually nearby.{" "}
+          <p className="mx-auto mb-6 sm:mb-8 md:mb-12 max-w-2xl text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed text-muted-foreground px-6 sm:px-4">
+            Creators waste 10+ hours a week on Slack, Trello, Google Drive, and PayPal just to manage projects. Miss opportunities buried in Facebook groups. Can't find collaborators who are actually nearby.{" "}
             <span className="font-semibold text-foreground">ThriveIN replaces your entire messy workflow</span>—smart matching, integrated workspace, and brands come to you.
           </p>
           
-          <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 px-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-3 px-6 sm:px-4 w-full max-w-md sm:max-w-none sm:flex-row">
             <Link to="/auth" className="w-full sm:w-auto">
-              <Button variant="hero" size="xl" className="w-full sm:w-auto shadow-glow transition-smooth hover:-translate-y-1">
+              <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 shadow-glow transition-smooth hover:-translate-y-1 text-base sm:text-lg">
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Get Started Free
               </Button>
             </Link>
             <Link to="/community" className="w-full sm:w-auto">
-              <Button variant="outline" size="xl" className="w-full sm:w-auto border-2">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto sm:px-8 border-2 text-base sm:text-lg">
                 Explore Communities
               </Button>
             </Link>

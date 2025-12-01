@@ -5,9 +5,9 @@ export const SUBSCRIPTION_PRODUCTS = {
   pro: {
     name: "Pro",
     tier: "pro" as const,
-    price: 12, // Updated competitive pricing
-    priceId: "price_1STdNBJvOS7zG18hf0UV0jGz", // Will need new Stripe price for $12
-    productId: "prod_TQULXkXJzX87a7",
+    price: 12,
+    priceId: "price_1SZYrBJvOS7zG18hDW2eE4NG",
+    productId: "prod_TWc5tpvPKjy8hG",
     features: [
       "Unlimited swipes & matches",
       "AI match explanations",

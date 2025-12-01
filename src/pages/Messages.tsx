@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ const Messages = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
   
@@ -74,8 +76,10 @@ const Messages = () => {
   } | null>(null);
 
   useEffect(() => {
-    fetchCurrentUser();
-  }, []);
+    if (user?.id) {
+      setCurrentUserId(user.id);
+    }
+  }, [user]);
 
   useEffect(() => {
     let isMounted = true;
@@ -105,31 +109,6 @@ const Messages = () => {
     }
   }, [selectedConversation, currentUserId]);
 
-  const fetchCurrentUser = async () => {
-    try {
-      // Add 10-second timeout for auth
-      const authPromise = supabase.auth.getUser();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Auth timeout')), 10000)
-      );
-      
-      const { data: { user } } = await Promise.race([
-        authPromise,
-        timeoutPromise
-      ]) as any;
-      
-      if (user) {
-        setCurrentUserId(user.id);
-      }
-    } catch (error) {
-      console.error('[Messages] Error fetching user:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load user data",
-        variant: "destructive",
-      });
-    }
-  };
 
   const fetchConnections = async () => {
     try {

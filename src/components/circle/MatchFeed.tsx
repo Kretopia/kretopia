@@ -6,6 +6,7 @@ import { SwipeCard } from "@/components/ui/swipe-card";
 import { MapPin, Star, X, Heart, Sparkles, User } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
+import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 
 interface CreatorCard {
   id: string;
@@ -60,6 +61,7 @@ export const MatchFeed = ({
   cardRef
 }: MatchFeedProps) => {
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
+  const [showMatchExplanation, setShowMatchExplanation] = useState(false);
   
   if (loading) {
     return (
@@ -167,8 +169,14 @@ export const MatchFeed = ({
               )}
             </div>
             {currentCard.matchScore && (
-              <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0 font-bold px-4 py-2 text-base shadow-2xl">
-                ✨ {currentCard.matchScore}% Match
+              <Badge 
+                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0 font-bold px-4 py-2 text-lg shadow-2xl cursor-pointer hover:scale-105 transition-transform"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMatchExplanation(true);
+                }}
+              >
+                ✨ {currentCard.matchScore}%
               </Badge>
             )}
           </div>
@@ -190,23 +198,6 @@ export const MatchFeed = ({
                 <p className="text-sm text-white/80 line-clamp-2 mt-2 drop-shadow-md">
                   {currentCard.description}
                 </p>
-              )}
-
-              {/* AI Match Explanation */}
-              {currentCard.matchReasons && currentCard.matchReasons.length > 0 && (
-                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 mt-4">
-                  <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                    🎯 Why You're a Perfect Match:
-                  </h4>
-                  <ul className="space-y-2">
-                    {currentCard.matchReasons.map((reason, idx) => (
-                      <li key={idx} className="text-white/90 text-sm flex items-start gap-2">
-                        <span className="text-pink-400 mt-0.5 flex-shrink-0">•</span>
-                        <span>{reason}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               )}
 
               {/* View Profile Button */}
@@ -255,6 +246,15 @@ export const MatchFeed = ({
         onOpenChange={(open) => !open && setPreviewUserId(null)}
         userId={previewUserId || ''}
         userName={currentCard.name}
+      />
+
+      {/* Match Explanation Dialog */}
+      <MatchExplanationDialog
+        open={showMatchExplanation}
+        onOpenChange={setShowMatchExplanation}
+        match={currentCard}
+        onConnect={onSwipeRight}
+        onPass={onSwipeLeft}
       />
     </div>
   );

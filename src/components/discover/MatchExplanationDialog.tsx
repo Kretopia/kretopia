@@ -12,6 +12,8 @@ interface MatchExplanationDialogProps {
     title: string;
     location: string;
     image: string;
+    matchScore?: number;
+    matchReasons?: string[];
     ai_match_score?: number;
     match_reasons?: string[];
   };
@@ -26,8 +28,8 @@ export const MatchExplanationDialog = ({
   onConnect,
   onPass
 }: MatchExplanationDialogProps) => {
-  const score = match.ai_match_score || 70;
-  const reasons = match.match_reasons || ["Great collaboration potential", "Complementary skills", "Active in the community"];
+  const score = match.matchScore || match.ai_match_score || 70;
+  const reasons = match.matchReasons || match.match_reasons || ["Great collaboration potential", "Complementary skills", "Active in the community"];
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "from-green-500 to-emerald-500";

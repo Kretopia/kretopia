@@ -40,11 +40,15 @@ export default function Connect() {
   const [userLevel, setUserLevel] = useState(1);
   const [isPremium, setIsPremium] = useState(false);
   const [filters, setFilters] = useState<CreatorFilterState>({
+    search: '',
     role: 'all',
+    location: 'all',
     minFollowers: 0,
     verified: false,
     level: 'all',
-    badge: 'all'
+    badge: 'all',
+    sortBy: 'recommended',
+    activeOnly: false
   });
 
   useEffect(() => {

@@ -93,17 +93,19 @@ export default function Circle() {
     const { analytics } = await import("@/lib/analytics");
     analytics.swipe(direction, currentCard.user_id);
 
-    // Animation
-    await swipeGestures.animateSwipe(direction);
-
-    if (dailySwipesLeft <= 0) {
+    // Check swipe limits BEFORE animation
+    if (subscriptionTier === 'free' && dailySwipesLeft <= 0) {
       toastHook({
         title: "Daily limit reached",
         description: "Upgrade to Pro for unlimited swipes!",
         variant: "destructive"
       });
+      navigate('/subscription');
       return;
     }
+
+    // Animation
+    await swipeGestures.animateSwipe(direction);
 
     // Mark card as swiped immediately
     setSwipedCardIds(prev => new Set(prev).add(currentCard.id));
@@ -300,13 +302,13 @@ export default function Circle() {
                   onClick={() => dailySwipesLeft <= 3 && navigate('/subscription')}
                 >
                   <Zap className="h-3 w-3" />
-                  <span>{dailySwipesLeft}/10 swipes today</span>
+                  <span>{dailySwipesLeft}/30 swipes today</span>
                   {dailySwipesLeft <= 3 && <span className="hidden sm:inline">• Upgrade for unlimited</span>}
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="gap-1 text-xs">
                   <Sparkles className="h-3 w-3" />
-                  <span>Unlimited swipes</span>
+                  <span>Unlimited swipes ✨</span>
                 </Badge>
               )}
             </div>

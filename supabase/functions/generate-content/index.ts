@@ -11,7 +11,8 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, type } = await req.json();
+    const body = await req.json();
+    const { type, messages: rawMessages, prompt } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
@@ -19,6 +20,20 @@ serve(async (req) => {
     }
 
     console.log('Generating content for type:', type);
+
+    // Normalize messages: support both { messages } and { prompt }
+    let messages = rawMessages as any[] | undefined;
+    if ((!messages || !Array.isArray(messages)) && typeof prompt === 'string' && prompt.trim().length > 0) {
+      messages = [{ role: 'user', content: prompt }];
+    }
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      console.warn('[generate-content] No valid messages or prompt provided, returning fallback content');
+      return new Response(
+        JSON.stringify({ content: 'No AI content generated because no prompt was provided.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Use different models based on content type
     const isImageGeneration = type === 'image';

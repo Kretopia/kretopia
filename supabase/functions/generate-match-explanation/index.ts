@@ -1,0 +1,119 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { currentUser, targetUser } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    const systemPrompt = `You are a professional matchmaking AI for creative collaborators. Analyze two creator profiles and generate a compatibility score with specific reasons.
+
+Your response must be a JSON object with this EXACT structure:
+{
+  "score": 85,
+  "reasons": [
+    "Complementary skills: Their videography fills your need for visual storytelling",
+    "Super close by: Only 2.3km away in Canggu—easy to meet and work together",
+    "Shared vision: Both focused on creative storytelling and building a portfolio",
+    "Timeline fits: They're flexible and looking to start within 2 weeks"
+  ]
+}
+
+Rules:
+- Score must be 70-99 (high matches only)
+- Include 3-4 specific, actionable reasons
+- Focus on: complementary skills, location proximity, shared interests, portfolio alignment
+- Be concise and specific
+- Use enthusiastic but professional tone`;
+
+    const userPrompt = `Current User Profile:
+Name: ${currentUser.full_name}
+Role: ${currentUser.role || "Creative"}
+Skills: ${currentUser.professional_skills?.join(", ") || "Not specified"}
+Location: ${currentUser.location || "Not specified"}
+Bio: ${currentUser.bio || "Not specified"}
+
+Target User Profile:
+Name: ${targetUser.full_name}
+Role: ${targetUser.role || "Creative"}
+Skills: ${targetUser.professional_skills?.join(", ") || "Not specified"}
+Location: ${targetUser.location || "Not specified"}
+Bio: ${targetUser.bio || "Not specified"}
+
+Analyze compatibility and generate match explanation.`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        response_format: { type: "json_object" }
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI credits depleted. Please add credits to continue." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const errorText = await response.text();
+      console.error("AI Gateway error:", response.status, errorText);
+      throw new Error(`AI Gateway error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    const parsed = JSON.parse(content);
+
+    return new Response(
+      JSON.stringify({
+        score: parsed.score,
+        reasons: parsed.reasons
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Error in generate-match-explanation:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : "Unknown error",
+        // Fallback match data
+        score: 85,
+        reasons: [
+          "Complementary skills that align well",
+          "Great potential for collaboration",
+          "Similar creative interests",
+          "Compatible work styles"
+        ]
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});

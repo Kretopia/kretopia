@@ -17,6 +17,8 @@ interface CreatorCard {
   description: string;
   badge?: string;
   level?: number;
+  matchScore?: number;
+  matchReasons?: string[];
 }
 
 interface MatchFeedProps {
@@ -148,18 +150,25 @@ export const MatchFeed = ({
           </div>
           
           {/* Top Badges */}
-          <div className="absolute top-6 right-6 flex flex-col gap-2 z-10">
-            {currentCard.badge && (
-              <Badge 
-                className={`${getBadgeColor(currentCard.badge)} text-white font-bold shadow-2xl text-sm px-3 py-1`}
-              >
-                {currentCard.badge.toUpperCase()}
-              </Badge>
-            )}
-            {currentCard.level && currentCard.level > 1 && (
-              <Badge className="bg-white/20 backdrop-blur-md text-white border-white/30 gap-1">
-                <Star className="h-3 w-3" />
-                Lv {currentCard.level}
+          <div className="absolute top-6 left-6 right-6 flex justify-between items-start z-10">
+            <div className="flex flex-col gap-2">
+              {currentCard.badge && (
+                <Badge 
+                  className={`${getBadgeColor(currentCard.badge)} text-white font-bold shadow-2xl text-sm px-3 py-1`}
+                >
+                  {currentCard.badge.toUpperCase()}
+                </Badge>
+              )}
+              {currentCard.level && currentCard.level > 1 && (
+                <Badge className="bg-white/20 backdrop-blur-md text-white border-white/30 gap-1">
+                  <Star className="h-3 w-3" />
+                  Lv {currentCard.level}
+                </Badge>
+              )}
+            </div>
+            {currentCard.matchScore && (
+              <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0 font-bold px-4 py-2 text-base shadow-2xl">
+                ✨ {currentCard.matchScore}% Match
               </Badge>
             )}
           </div>
@@ -181,6 +190,23 @@ export const MatchFeed = ({
                 <p className="text-sm text-white/80 line-clamp-2 mt-2 drop-shadow-md">
                   {currentCard.description}
                 </p>
+              )}
+
+              {/* AI Match Explanation */}
+              {currentCard.matchReasons && currentCard.matchReasons.length > 0 && (
+                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 mt-4">
+                  <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                    🎯 Why You're a Perfect Match:
+                  </h4>
+                  <ul className="space-y-2">
+                    {currentCard.matchReasons.map((reason, idx) => (
+                      <li key={idx} className="text-white/90 text-sm flex items-start gap-2">
+                        <span className="text-pink-400 mt-0.5 flex-shrink-0">•</span>
+                        <span>{reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
 
               {/* View Profile Button */}

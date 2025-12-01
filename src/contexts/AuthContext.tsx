@@ -14,7 +14,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   subscriptionInfo: SubscriptionInfo;
-  checkSubscription: (forceSync?: boolean) => Promise<void>;
+  checkSubscription: (userId: string, forceSync?: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,17 +55,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return null;
   };
 
-  const checkSubscription = async (forceSync = false) => {
+  const checkSubscription = async (userId: string, forceSync = false) => {
     if (fetchingRef.current) return;
     
     try {
       fetchingRef.current = true;
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) return;
 
-      const cached = subscriptionCache.get(user.id);
+      const cached = subscriptionCache.get(userId);
       const now = Date.now();
       
       if (!forceSync && cached && (now - cached.timestamp) < CACHE_DURATION) {
@@ -74,10 +70,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Fetch from DB immediately (fast)
-      const subInfo = await fetchSubscriptionFromDB(user.id);
+      const subInfo = await fetchSubscriptionFromDB(userId);
       if (subInfo) {
         setSubscriptionInfo(subInfo);
-        subscriptionCache.set(user.id, { data: subInfo, timestamp: now });
+        subscriptionCache.set(userId, { data: subInfo, timestamp: now });
       }
 
       // Sync with Stripe in background (don't await - non-blocking)
@@ -99,7 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let isMounted = true;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!isMounted) return;
         
         setSession(session);
@@ -107,7 +103,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         
         if (session?.user && event === 'SIGNED_IN') {
-          await checkSubscription(true);
+          // Defer subscription check to avoid calling Supabase inside callback
+          const userId = session.user.id;
+          setTimeout(() => {
+            checkSubscription(userId, true);
+          }, 0);
         }
       }
     );
@@ -123,7 +123,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         // Load subscription data in background (non-blocking)
         if (session?.user) {
-          fetchSubscriptionFromDB(session.user.id)
+          const userId = session.user.id;
+          fetchSubscriptionFromDB(userId)
             .then(subInfo => {
               if (isMounted && subInfo) {
                 setSubscriptionInfo(subInfo);

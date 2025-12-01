@@ -142,6 +142,9 @@ const AppContent = () => {
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
+            {/* ThriveDesk - Lightweight Project Workspace */}
+            <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
+            
             {/* Subscription & Payment Routes */}
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
@@ -160,7 +163,6 @@ const AppContent = () => {
             <Route path="/connect" element={<Navigate to="/circle" replace />} />
             <Route path="/marketplace" element={<Navigate to="/circle" replace />} />
             <Route path="/projects" element={<Navigate to="/circle" replace />} />
-            <Route path="/desk/:projectId" element={<Navigate to="/circle" replace />} />
             <Route path="/analytics" element={<Navigate to="/circle" replace />} />
             <Route path="/leaderboard" element={<Navigate to="/circle" replace />} />
             <Route path="/membership" element={<Navigate to="/circle" replace />} />

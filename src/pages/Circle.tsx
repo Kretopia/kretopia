@@ -74,6 +74,8 @@ export default function Circle() {
     if (activeTab === "network") {
       fetchConnections();
     } else if (activeTab === "match") {
+      // Clear swiped cards state when fetching fresh profiles
+      setSwipedCardIds(new Set());
       fetchMatchCreators(creatorFilters);
     }
   }, [activeTab, user?.id]);
@@ -113,16 +115,23 @@ export default function Circle() {
     // Update swipe count via hook
     await updateSwipeCount();
 
-    const { data: swipeData } = await supabase.from('swipes').insert({
+    const { data: swipeData, error: swipeError } = await supabase.from('swipes').insert({
       user_id: user.id,
-      target_id: currentCard.id,
+      target_id: currentCard.user_id, // Fixed: use user_id, not card id
       target_type: 'creator',
       direction,
       is_super_like: false,
     }).select().single();
 
+    if (swipeError) {
+      console.error('[Circle] Failed to create swipe:', swipeError);
+      toast.error('Failed to record swipe');
+      return;
+    }
+
     if (swipeData) {
       trackSwipe(swipeData as any);
+      console.log('[Circle] Swipe recorded:', { target: currentCard.user_id, direction });
     }
 
     if (direction === "right") {

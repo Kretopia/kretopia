@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { MessageCircle, User, Users } from "lucide-react";
+import { MessageCircle, User, Users, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 
@@ -14,6 +14,7 @@ const BottomNav = memo(() => {
   const navItems = [
     { path: "/circle", icon: Users, label: "Match" },
     { path: "/profile", icon: User, label: "Profile" },
+    { path: "/desk", icon: Briefcase, label: "Desk" },
     { path: "/messages", icon: MessageCircle, label: "Messages" },
   ];
 

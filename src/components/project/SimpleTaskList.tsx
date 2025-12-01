@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +22,20 @@ interface SimpleTaskListProps {
   currentUserId: string;
 }
 
+interface OptimisticTask extends Task {
+  isOptimistic?: boolean;
+}
+
 export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId }: SimpleTaskListProps) => {
   const { toast } = useToast();
   const [newTask, setNewTask] = useState("");
   const [adding, setAdding] = useState(false);
+  const [optimisticTasks, setOptimisticTasks] = useState<OptimisticTask[]>(tasks);
+
+  // Sync optimistic tasks with props when they change from parent
+  useEffect(() => {
+    setOptimisticTasks(tasks);
+  }, [tasks]);
 
   const handleAddTask = async () => {
     if (!newTask.trim()) return;
@@ -64,6 +74,15 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
   const handleToggleTask = async (taskId: string, currentStatus: string | null) => {
     const newStatus = currentStatus === 'done' ? 'todo' : 'done';
     
+    // Optimistic update - update UI immediately
+    setOptimisticTasks(prev => 
+      prev.map(task => 
+        task.id === taskId 
+          ? { ...task, status: newStatus, isOptimistic: true }
+          : task
+      )
+    );
+    
     try {
       const { error } = await supabase
         .from('project_tasks')
@@ -72,9 +91,14 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
 
       if (error) throw error;
 
+      // Update parent data in background
       onTasksChanged();
     } catch (error: any) {
       console.error('Toggle task error:', error);
+      
+      // Rollback optimistic update on error
+      setOptimisticTasks(tasks);
+      
       toast({
         title: "Failed to update task",
         description: error.message,
@@ -83,8 +107,8 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
     }
   };
 
-  const completedCount = tasks.filter(t => t.status === 'done').length;
-  const totalCount = tasks.length;
+  const completedCount = optimisticTasks.filter(t => t.status === 'done').length;
+  const totalCount = optimisticTasks.length;
 
   return (
     <Card>
@@ -116,7 +140,7 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
         </div>
 
         {/* Task list */}
-        {tasks.length === 0 ? (
+        {optimisticTasks.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <CheckSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p>No tasks yet</p>
@@ -125,7 +149,7 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
         ) : (
           <ScrollArea className="max-h-[50vh] md:max-h-[400px]">
             <div className="space-y-2 pr-4">
-            {tasks.map((task) => (
+            {optimisticTasks.map((task) => (
               <div
                 key={task.id}
                 className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"

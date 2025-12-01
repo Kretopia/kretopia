@@ -156,7 +156,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    console.error('[AuthContext] useAuth called outside AuthProvider. Returning safe defaults.');
+    return {
+      user: null,
+      session: null,
+      loading: false,
+      subscriptionInfo: {
+        tier: 'free',
+        subscribed: false,
+        product_id: null,
+        subscription_end: null,
+      },
+      checkSubscription: async () => {
+        // no-op fallback
+        return;
+      },
+    } as AuthContextType;
   }
   return context;
 };

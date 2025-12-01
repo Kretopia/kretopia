@@ -106,68 +106,131 @@ const Messages = () => {
   }, [selectedConversation, currentUserId]);
 
   const fetchCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setCurrentUserId(user.id);
+    try {
+      // Add 10-second timeout for auth
+      const authPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Auth timeout')), 10000)
+      );
+      
+      const { data: { user } } = await Promise.race([
+        authPromise,
+        timeoutPromise
+      ]) as any;
+      
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    } catch (error) {
+      console.error('[Messages] Error fetching user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load user data",
+        variant: "destructive",
+      });
     }
   };
 
   const fetchConnections = async () => {
-    // Batch all connection queries in parallel
-    const [outgoingResult, incomingResult, matchesResult] = await Promise.all([
-      supabase.from("connections").select("connected_user_id").eq("user_id", currentUserId).eq("status", "accepted"),
-      supabase.from("connections").select("user_id").eq("connected_user_id", currentUserId).eq("status", "accepted"),
-      supabase.from("matches").select("user1_id, user2_id").or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`).eq("status", "active")
-    ]);
+    try {
+      // Add 5-second timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 5000)
+      );
+      
+      // Batch all connection queries in parallel
+      const dataPromise = Promise.all([
+        supabase.from("connections").select("connected_user_id").eq("user_id", currentUserId).eq("status", "accepted"),
+        supabase.from("connections").select("user_id").eq("connected_user_id", currentUserId).eq("status", "accepted"),
+        supabase.from("matches").select("user1_id, user2_id").or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`).eq("status", "active")
+      ]);
+      
+      const [outgoingResult, incomingResult, matchesResult] = await Promise.race([
+        dataPromise,
+        timeoutPromise
+      ]) as any;
 
-    const connectedIds = new Set<string>();
-    outgoingResult.data?.forEach((c) => connectedIds.add(c.connected_user_id));
-    incomingResult.data?.forEach((c) => connectedIds.add(c.user_id));
-    matchesResult.data?.forEach((m) => {
-      connectedIds.add(m.user1_id === currentUserId ? m.user2_id : m.user1_id);
-    });
+      const connectedIds = new Set<string>();
+      outgoingResult.data?.forEach((c) => connectedIds.add(c.connected_user_id));
+      incomingResult.data?.forEach((c) => connectedIds.add(c.user_id));
+      matchesResult.data?.forEach((m) => {
+        connectedIds.add(m.user1_id === currentUserId ? m.user2_id : m.user1_id);
+      });
 
-    setConnections(connectedIds);
+      setConnections(connectedIds);
+    } catch (error) {
+      console.error('[Messages] Error fetching connections:', error);
+    }
   };
 
   const fetchConversations = async () => {
-    const { data, error } = await supabase
-      .from("conversation_list")
-      .select("*")
-      .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
-      .order("created_at", { ascending: false });
+    try {
+      // Add 5-second timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 5000)
+      );
+      
+      const dataPromise = supabase
+        .from("conversation_list")
+        .select("*")
+        .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+        .order("created_at", { ascending: false });
+      
+      const { data, error } = await Promise.race([
+        dataPromise,
+        timeoutPromise
+      ]) as any;
 
-    if (error) {
-      console.error("Error fetching conversations:", error);
-      return;
+      if (error) {
+        console.error("Error fetching conversations:", error);
+        return;
+      }
+
+      setConversations(data || []);
+    } catch (error) {
+      console.error('[Messages] Error fetching conversations:', error);
+      setConversations([]);
     }
-
-    setConversations(data || []);
   };
 
   const fetchMessages = async (userId: string) => {
-    // Batch messages and profile fetch in parallel
-    const [messagesResult, profileResult] = await Promise.all([
-      supabase.from("messages").select("*").or(
-        `and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`
-      ).order("created_at", { ascending: true }),
-      supabase.from("profiles").select("full_name, avatar_url, role").eq("user_id", userId).maybeSingle()
-    ]);
+    try {
+      // Add 5-second timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 5000)
+      );
+      
+      // Batch messages and profile fetch in parallel
+      const dataPromise = Promise.all([
+        supabase.from("messages").select("*").or(
+          `and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`
+        ).order("created_at", { ascending: true }),
+        supabase.from("profiles").select("full_name, avatar_url, role").eq("user_id", userId).maybeSingle()
+      ]);
+      
+      const [messagesResult, profileResult] = await Promise.race([
+        dataPromise,
+        timeoutPromise
+      ]) as any;
 
-    if (messagesResult.error) {
-      console.error("Error fetching messages:", messagesResult.error);
-      return;
-    }
+      if (messagesResult.error) {
+        console.error("Error fetching messages:", messagesResult.error);
+        return;
+      }
 
-    setMessages(messagesResult.data || []);
+      setMessages(messagesResult.data || []);
 
-    if (profileResult.data) {
-      setOtherUser({
-        id: userId,
-        name: profileResult.data.full_name,
-        avatar: profileResult.data.avatar_url,
-        role: profileResult.data.role,
-      });
+      if (profileResult.data) {
+        setOtherUser({
+          id: userId,
+          name: profileResult.data.full_name,
+          avatar: profileResult.data.avatar_url,
+          role: profileResult.data.role,
+        });
+      }
+    } catch (error) {
+      console.error('[Messages] Error fetching messages:', error);
+      setMessages([]);
     }
   };
 

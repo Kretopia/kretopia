@@ -168,16 +168,7 @@ export const useProfileData = () => {
       console.log('[Profile] initProfile called');
       
       try {
-        // Add timeout to auth call
-        const authPromise = supabase.auth.getUser();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth timeout')), 5000)
-        );
-        
-        const { data: { user }, error } = await Promise.race([
-          authPromise,
-          timeoutPromise
-        ]) as any;
+        const { data: { user }, error } = await supabase.auth.getUser();
         
         if (!mounted) return;
         
@@ -193,7 +184,7 @@ export const useProfileData = () => {
           return;
         }
         
-        console.log('[Profile] Calling fetchData from useEffect');
+        console.log('[Profile] User found, calling fetchData:', user.id);
         fetchData();
       } catch (error) {
         console.error('[Profile] Error in initProfile:', error);

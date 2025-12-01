@@ -27,16 +27,20 @@ export const useProfileData = () => {
       setIsLoading(true);
       console.log('[Profile] Getting user...');
       
-      // Add 10-second timeout for auth
-      const authPromise = supabase.auth.getUser();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Auth timeout')), 10000)
-      );
+      // Auth calls are local and should not be timed out
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      const { data: { user }, error: userError } = await Promise.race([
-        authPromise,
-        timeoutPromise
-      ]) as any;
+      if (userError) {
+        console.error('[Profile] Error getting user:', userError);
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!user) {
+        console.error('[Profile] No user found');
+        setIsLoading(false);
+        return;
+      }
       
       if (userError) {
         console.error('[Profile] Error getting user:', userError);
@@ -177,16 +181,8 @@ export const useProfileData = () => {
       console.log('[Profile] initProfile called');
       
       try {
-        // Add 10-second timeout for auth
-        const authPromise = supabase.auth.getUser();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth timeout')), 10000)
-        );
-        
-        const { data: { user }, error } = await Promise.race([
-          authPromise,
-          timeoutPromise
-        ]) as any;
+        // Auth calls are local and should not be timed out
+        const { data: { user }, error } = await supabase.auth.getUser();
         
         if (!mounted) return;
         

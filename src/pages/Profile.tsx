@@ -17,13 +17,12 @@ import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
-import { SocialLinksSection } from "@/components/profile/SocialLinksSection";
+import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { InviteCodesCard } from "@/components/profile/InviteCodesCard";
 import { SkillsSection } from "@/components/profile/SkillsSection";
 import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { CreditsSection } from "@/components/profile/CreditsSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
-import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
 import { ProfileQRDialog } from "@/components/profile/ProfileQRDialog";
@@ -325,15 +324,16 @@ const ProfileContent = () => {
               </div>
             )}
 
-            {/* Connect - Social Links */}
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Connect</h2>
-              <SocialLinksSection 
-                profile={profile}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            </div>
+            {/* Social Stats */}
+            <SocialStatsSection 
+              youtubeSubscribers={profile.youtube_subscribers}
+              instagramFollowers={profile.instagram_followers}
+              tiktokFollowers={profile.tiktok_followers}
+              spotifyListeners={profile.spotify_listeners}
+              twitterFollowers={profile.twitter_followers}
+              linkedinConnections={profile.linkedin_connections}
+              verifiedMetrics={profile.social_verified}
+            />
 
             {portfolioItems.length > 0 && (
               <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">

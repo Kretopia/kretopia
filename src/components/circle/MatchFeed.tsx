@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SwipeCard } from "@/components/ui/swipe-card";
-import { MapPin, Star, X, Heart, Sparkles } from "lucide-react";
+import { MapPin, Star, X, Heart, Sparkles, User } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
 
 interface CreatorCard {
   id: string;
@@ -55,6 +57,8 @@ export const MatchFeed = ({
   onDragEnd,
   cardRef
 }: MatchFeedProps) => {
+  const [previewUserId, setPreviewUserId] = useState<string | null>(null);
+  
   if (loading) {
     return (
       <div className="relative h-[500px] w-full flex items-center justify-center">
@@ -155,7 +159,7 @@ export const MatchFeed = ({
 
           {/* Bottom Content */}
           <div className="absolute bottom-0 left-0 right-0 p-6 pb-8 text-white z-10">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h3 className="text-3xl font-bold drop-shadow-lg">{currentCard.name}</h3>
               <p className="text-lg font-medium text-white/90 drop-shadow-md">{currentCard.title}</p>
               
@@ -171,6 +175,20 @@ export const MatchFeed = ({
                   {currentCard.description}
                 </p>
               )}
+
+              {/* View Profile Button */}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPreviewUserId(currentCard.user_id);
+                }}
+                className="mt-3 bg-white/20 hover:bg-white/30 backdrop-blur-md border-white/30 text-white"
+              >
+                <User className="h-4 w-4 mr-2" />
+                View Profile
+              </Button>
             </div>
           </div>
         </div>
@@ -197,6 +215,14 @@ export const MatchFeed = ({
           <Heart className="h-10 w-10 text-green-500 group-hover:text-white fill-current transition-colors" />
         </Button>
       </div>
+
+      {/* Profile Preview Dialog */}
+      <ProfilePreviewDialog
+        open={!!previewUserId}
+        onOpenChange={(open) => !open && setPreviewUserId(null)}
+        userId={previewUserId || ''}
+        userName={currentCard.name}
+      />
     </div>
   );
 };

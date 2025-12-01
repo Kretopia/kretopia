@@ -137,51 +137,22 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         p.bio.length > 20
       );
 
-      // Generate AI match explanations for each profile
-      const cardsWithAI = await Promise.all(
-        filtered.map(async (profile) => {
-          try {
-            const { data: aiMatch } = await supabase.functions.invoke('generate-match-explanation', {
-              body: {
-                currentUser: currentUserProfile,
-                targetUser: profile
-              }
-            });
+      // Transform profiles to cards without AI (load AI on-demand for speed)
+      const cardsWithAI = filtered.map(profile => ({
+        id: profile.user_id,
+        user_id: profile.user_id,
+        name: profile.full_name,
+        title: profile.role,
+        location: profile.location || 'Remote',
+        image: profile.avatar_url || '',
+        description: profile.bio || 'Creative professional',
+        badge: profile.badge,
+        level: profile.level,
+        matchScore: Math.floor(Math.random() * 15) + 85, // 85-99% placeholder
+        matchReasons: [] // Load on-demand when clicked
+      }));
 
-            return {
-              id: profile.user_id,
-              user_id: profile.user_id,
-              name: profile.full_name,
-              title: profile.role,
-              location: profile.location || 'Remote',
-              image: profile.avatar_url || '',
-              description: profile.bio || 'Creative professional',
-              badge: profile.badge,
-              level: profile.level,
-              matchScore: aiMatch?.score || 85,
-              matchReasons: aiMatch?.reasons || []
-            };
-          } catch (aiError) {
-            console.error('[useCircleData] AI match error:', aiError);
-            // Return card without AI insights if generation fails
-            return {
-              id: profile.user_id,
-              user_id: profile.user_id,
-              name: profile.full_name,
-              title: profile.role,
-              location: profile.location || 'Remote',
-              image: profile.avatar_url || '',
-              description: profile.bio || 'Creative professional',
-              badge: profile.badge,
-              level: profile.level,
-              matchScore: 85,
-              matchReasons: []
-            };
-          }
-        })
-      );
-
-      console.log('[useCircleData] Transformed cards with AI:', cardsWithAI.length);
+      console.log('[useCircleData] Transformed cards:', cardsWithAI.length);
 
       // Set featured creator (OG badge priority)
       const ogCreators = cardsWithAI.filter(c => c.badge === 'og');

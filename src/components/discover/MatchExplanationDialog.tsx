@@ -1,13 +1,16 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, MapPin, Briefcase, Heart } from "lucide-react";
+import { Sparkles, MapPin, Briefcase, Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MatchExplanationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   match: {
+    user_id?: string;
     name: string;
     title: string;
     location: string;
@@ -28,8 +31,62 @@ export const MatchExplanationDialog = ({
   onConnect,
   onPass
 }: MatchExplanationDialogProps) => {
-  const score = match.matchScore || match.ai_match_score || 70;
-  const reasons = match.matchReasons || match.match_reasons || ["Great collaboration potential", "Complementary skills", "Active in the community"];
+  const [loading, setLoading] = useState(false);
+  const [aiScore, setAiScore] = useState<number | null>(null);
+  const [aiReasons, setAiReasons] = useState<string[]>([]);
+  
+  const score = aiScore || match.matchScore || match.ai_match_score || 85;
+  const reasons = aiReasons.length > 0 ? aiReasons : (match.matchReasons || match.match_reasons || []);
+
+  // Generate AI explanation when dialog opens
+  useEffect(() => {
+    const generateExplanation = async () => {
+      if (!open || !match.user_id || (aiReasons.length > 0)) return;
+      
+      setLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Get current user profile
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, role, bio, professional_skills, location')
+          .eq('user_id', user.id)
+          .single();
+
+        // Get target user profile
+        const { data: targetProfile } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, role, bio, professional_skills, location')
+          .eq('user_id', match.user_id)
+          .single();
+
+        if (!currentProfile || !targetProfile) return;
+
+        // Call AI edge function
+        const { data: aiMatch } = await supabase.functions.invoke('generate-match-explanation', {
+          body: {
+            currentUser: currentProfile,
+            targetUser: targetProfile
+          }
+        });
+
+        if (aiMatch) {
+          setAiScore(aiMatch.score || 85);
+          setAiReasons(aiMatch.reasons || []);
+        }
+      } catch (error) {
+        console.error('[MatchExplanationDialog] Error generating AI explanation:', error);
+        // Use placeholder on error
+        setAiReasons(["Great collaboration potential", "Complementary skills", "Similar interests"]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    generateExplanation();
+  }, [open, match.user_id]);
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "from-green-500 to-emerald-500";
@@ -90,14 +147,20 @@ export const MatchExplanationDialog = ({
               <Heart className="h-4 w-4 text-primary" />
               Why you'll work great together:
             </h4>
-            <ul className="space-y-2">
-              {reasons.map((reason, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm p-2 rounded-lg bg-primary/5">
-                  <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                  <span>{reason}</span>
-                </li>
-              ))}
-            </ul>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {reasons.map((reason, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm p-2 rounded-lg bg-primary/5">
+                    <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span>{reason}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Actions */}

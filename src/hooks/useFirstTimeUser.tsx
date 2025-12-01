@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export const useFirstTimeUser = () => {
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     checkFirstTimeUser();
-  }, []);
+  }, [user]);
 
   const checkFirstTimeUser = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: profile } = await supabase

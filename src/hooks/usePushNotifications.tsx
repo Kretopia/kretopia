@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
@@ -8,6 +9,7 @@ export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -50,7 +52,6 @@ export function usePushNotifications() {
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource
       });
 
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       // Save subscription to database
@@ -89,7 +90,6 @@ export function usePushNotifications() {
       if (subscription) {
         await subscription.unsubscribe();
         
-        const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           await supabase
             .from('push_subscriptions')

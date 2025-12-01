@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -19,104 +19,18 @@ interface Community {
 export const useCommunityData = (userId: string | undefined) => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [myCommunities, setMyCommunities] = useState<Community[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Disabled - no auto-fetch
   const [error, setError] = useState<string | null>(null);
 
   const fetchCommunities = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      console.log('[useCommunityData] Starting fetch...');
-      
-      // Add 5-second timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-      
-      // Fetch all public communities (no auth required for public communities)
-      const communityPromise = supabase
-        .from('communities')
-        .select('id, name, description, image_url, cover_url, member_count, is_official, is_private, category, location')
-        .eq('is_private', false)
-        .order('is_official', { ascending: false })
-        .order('member_count', { ascending: false })
-        .limit(20);
+    // DISABLED: Communities are hidden in MVP
+    setLoading(false);
+    return;
+  }, [userId]);
 
-      const { data: allCommunities, error: commError } = await Promise.race([
-        communityPromise,
-        timeoutPromise
-      ]) as any;
-
-      if (commError) throw commError;
-
-      console.log('[useCommunityData] Fetched communities:', allCommunities?.length || 0);
-
-      // Always show communities, even if not logged in
-      if (!allCommunities || allCommunities.length === 0) {
-        console.warn('[useCommunityData] No communities found');
-        setCommunities([]);
-        setMyCommunities([]);
-        setLoading(false);
-        return;
-      }
-
-      if (!userId) {
-        // Not logged in - show all communities as not joined
-        setCommunities(allCommunities.map(c => ({ ...c, is_member: false })));
-        setMyCommunities([]);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch user's memberships separately
-      const membershipPromise = supabase
-        .from('community_members')
-        .select('community_id')
-        .eq('user_id', userId);
-
-      const { data: memberships, error: memberError } = await Promise.race([
-        membershipPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Membership fetch timeout')), 5000))
-      ]) as any;
-
-      if (memberError) {
-        console.warn('[useCommunityData] Failed to fetch memberships:', memberError);
-        // Show communities without membership info
-        setCommunities(allCommunities.map(c => ({ ...c, is_member: false })));
-        setMyCommunities([]);
-        setLoading(false);
-        return;
-      }
-
-      const membershipIds = new Set(memberships?.map(m => m.community_id) || []);
-
-      // Mark which communities user is member of
-      const communitiesWithMembership = (allCommunities || []).map(comm => ({
-        ...comm,
-        is_member: membershipIds.has(comm.id)
-      }));
-
-      const discoverCommunities = communitiesWithMembership.filter(c => !c.is_member);
-      const joinedCommunities = communitiesWithMembership.filter(c => c.is_member);
-
-      console.log('[useCommunityData] Discover:', discoverCommunities.length, 'My:', joinedCommunities.length);
-
-      setCommunities(discoverCommunities);
-      setMyCommunities(joinedCommunities);
-    } catch (err: any) {
-      console.error('[useCommunityData] Error:', err);
-      setError(err.message || 'Failed to load communities');
-      // Don't show toast on timeout - just show empty state
-      if (!err.message?.includes('timeout')) {
-        toast.error('Failed to load communities');
-      }
-      // Set empty arrays so UI shows empty state instead of infinite loading
-      setCommunities([]);
-      setMyCommunities([]);
-    } finally {
-      setLoading(false);
-    }
+  const fetchMyCommunities = useCallback(async () => {
+    // DISABLED: Communities are hidden in MVP
+    return;
   }, [userId]);
 
   const joinCommunity = async (communityId: string) => {
@@ -136,7 +50,6 @@ export const useCommunityData = (userId: string | undefined) => {
 
       if (error) throw error;
 
-      // Update local state optimistically
       const community = communities.find(c => c.id === communityId);
       if (community) {
         setCommunities(prev => prev.filter(c => c.id !== communityId));
@@ -164,7 +77,6 @@ export const useCommunityData = (userId: string | undefined) => {
 
       if (error) throw error;
 
-      // Update local state optimistically
       const community = myCommunities.find(c => c.id === communityId);
       if (community) {
         setMyCommunities(prev => prev.filter(c => c.id !== communityId));
@@ -180,9 +92,10 @@ export const useCommunityData = (userId: string | undefined) => {
     }
   };
 
-  useEffect(() => {
-    fetchCommunities();
-  }, [fetchCommunities]);
+  // DISABLED: Auto-fetch removed for MVP
+  // useEffect(() => {
+  //   fetchCommunities();
+  // }, [fetchCommunities]);
 
   return {
     communities,

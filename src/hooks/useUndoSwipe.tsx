@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const MAX_DAILY_UNDOS: Record<string, number> = {
   free: 0,
@@ -19,15 +20,17 @@ interface SwipeRecord {
 export const useUndoSwipe = (userTier: string) => {
   const [undosRemaining, setUndosRemaining] = useState(0);
   const [lastSwipe, setLastSwipe] = useState<SwipeRecord | null>(null);
+  const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    checkUndosRemaining();
-  }, [userTier]);
+    if (user) {
+      checkUndosRemaining();
+    }
+  }, [user, userTier]);
 
   const checkUndosRemaining = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const today = new Date();
@@ -63,7 +66,6 @@ export const useUndoSwipe = (userTier: string) => {
       return null;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
     try {

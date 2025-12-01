@@ -31,6 +31,7 @@ const Community = lazy(() => import("./pages/Community"));
 const Connect = lazy(() => import("./pages/Connect"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
+const ProjectsList = lazy(() => import("./pages/ProjectsList"));
 const Projects = lazy(() => import("./pages/Projects"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Subscription = lazy(() => import("./pages/Subscription"));
@@ -119,8 +120,8 @@ const AppContent = () => {
   const location = useLocation();
   const { user } = useAuth();
   
-  // Don't add bottom padding when on individual project pages
-  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk/');
+  // Don't add bottom padding when on individual project pages or desk list
+  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk');
   
   return (
     <div className="h-full overflow-auto">
@@ -143,6 +144,7 @@ const AppContent = () => {
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             
             {/* ThriveDesk - Lightweight Project Workspace */}
+            <Route path="/desk" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             
             {/* Subscription & Payment Routes */}

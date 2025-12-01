@@ -35,13 +35,21 @@ export const MatchExplanationDialog = ({
   const [aiScore, setAiScore] = useState<number | null>(null);
   const [aiReasons, setAiReasons] = useState<string[]>([]);
   
-  const score = aiScore || match.matchScore || match.ai_match_score || 85;
+  // Reset AI data whenever we open for a different match
+  useEffect(() => {
+    if (open) {
+      setAiScore(null);
+      setAiReasons([]);
+    }
+  }, [open, match.user_id]);
+  
+  const score = aiScore ?? match.matchScore ?? match.ai_match_score ?? 85;
   const reasons = aiReasons.length > 0 ? aiReasons : (match.matchReasons || match.match_reasons || []);
 
   // Generate AI explanation when dialog opens
   useEffect(() => {
     const generateExplanation = async () => {
-      if (!open || !match.user_id || (aiReasons.length > 0)) return;
+      if (!open || !match.user_id) return;
       
       setLoading(true);
       try {
@@ -73,13 +81,17 @@ export const MatchExplanationDialog = ({
         });
 
         if (aiMatch) {
-          setAiScore(aiMatch.score || 85);
-          setAiReasons(aiMatch.reasons || []);
+          setAiScore(aiMatch.score ?? 85);
+          setAiReasons(aiMatch.reasons ?? []);
         }
       } catch (error) {
         console.error('[MatchExplanationDialog] Error generating AI explanation:', error);
         // Use placeholder on error
-        setAiReasons(["Great collaboration potential", "Complementary skills", "Similar interests"]);
+        setAiReasons([
+          "Great collaboration potential based on your actual skills and roles",
+          "Complementary strengths that can create strong projects",
+          "Similar creative interests and goals"
+        ]);
       } finally {
         setLoading(false);
       }

@@ -29,8 +29,8 @@ export default function PaymentCanceled() {
             <Button onClick={() => navigate("/subscription")} className="w-full">
               View Plans Again
             </Button>
-            <Button onClick={() => navigate("/spark")} variant="outline" className="w-full">
-              Back to Spark
+            <Button onClick={() => navigate("/circle")} variant="outline" className="w-full">
+              Back to Match
             </Button>
           </div>
         </CardContent>

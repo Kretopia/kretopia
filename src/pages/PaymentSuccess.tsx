@@ -113,11 +113,11 @@ export default function PaymentSuccess() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Button onClick={() => navigate("/discover")} className="w-full">
-              Start Discovering
+            <Button onClick={() => navigate("/circle")} className="w-full">
+              Start Matching
             </Button>
-            <Button onClick={() => navigate("/spark")} variant="outline" className="w-full">
-              Go to Spark
+            <Button onClick={() => navigate("/profile")} variant="outline" className="w-full">
+              View My Profile
             </Button>
           </div>
         </CardContent>

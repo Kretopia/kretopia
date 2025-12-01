@@ -373,13 +373,13 @@ export default function Circle() {
           onOpenChange={(open) => {
             setShowMatchCelebration(open);
             if (!open) {
-              navigate('/spark');
+              navigate('/messages');
             }
           }}
           matchedUser={matchedUser}
           onSendMessage={() => {
             setShowMatchCelebration(false);
-            navigate('/spark');
+            navigate('/messages');
           }}
         />
       )}

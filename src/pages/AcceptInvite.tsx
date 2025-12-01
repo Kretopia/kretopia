@@ -85,7 +85,7 @@ const AcceptInvite = () => {
           description: error.message || "Failed to process invitation",
           variant: "destructive",
         });
-        navigate("/spark");
+        navigate("/circle");
       } finally {
         setProcessing(false);
       }
@@ -99,7 +99,7 @@ const AcceptInvite = () => {
         description: "Missing required information",
         variant: "destructive",
       });
-      navigate("/spark");
+      navigate("/circle");
     }
   }, [user, projectId, email, navigate, toast]);
 

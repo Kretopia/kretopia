@@ -97,10 +97,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Redirect to Spark after login instead of Dashboard
+// Redirect to Circle (Match) after login
 const DefaultRoute = () => {
   const { user } = useAuth();
-  return user ? <Navigate to="/spark" replace /> : <Landing />;
+  return user ? <Navigate to="/circle" replace /> : <Landing />;
 };
 
 // Track page views
@@ -137,7 +137,8 @@ const AppContent = () => {
             <Route path="/review" element={<SubmitReview />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/company-onboarding" element={<ProtectedRoute><CompanyOnboarding /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<Navigate to="/spark" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
+            <Route path="/spark" element={<Navigate to="/circle" replace />} />
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/:userId" element={<PublicProfile />} />

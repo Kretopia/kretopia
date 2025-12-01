@@ -67,19 +67,44 @@ export const useProfileData = () => {
       }
 
       if (!data) {
-        console.error('[Profile] No profile data returned');
-        toast({
-          title: "Error",
-          description: "Profile not found",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
+        console.warn('[Profile] No profile data returned, creating default profile');
 
-      console.log('[Profile] Setting profile data...');
-      setProfile({ ...data, section_order: data.section_order });
-      setUserBadge(data.badge || 'beta');
+        const defaultFullName = (user.user_metadata as any)?.full_name || 'New User';
+        const accountType = ((user.user_metadata as any)?.account_type as any) || 'individual';
+
+        const { data: createdProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            full_name: defaultFullName,
+            role: accountType === 'company' ? 'Company' : 'Creator',
+            account_type: accountType,
+            onboarding_completed: false,
+            onboarding_step: 0,
+          })
+          .select('*')
+          .maybeSingle();
+
+        if (createError || !createdProfile) {
+          console.error('[Profile] Error creating default profile:', createError);
+          toast({
+            title: 'Error',
+            description: 'Profile not found and could not be created',
+            variant: 'destructive',
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('[Profile] Default profile created:', createdProfile.id);
+        setProfile({ ...createdProfile, section_order: createdProfile.section_order });
+        setUserBadge(createdProfile.badge || 'beta');
+        // Continue with the rest of the data loading using the new profile
+      } else {
+        console.log('[Profile] Setting profile data...');
+        setProfile({ ...data, section_order: data.section_order });
+        setUserBadge(data.badge || 'beta');
+      }
 
       setStats(prev => ({
         ...prev,

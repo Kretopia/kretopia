@@ -22,6 +22,7 @@ const ThriveDesk = () => {
   const [files, setFiles] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("chat");
 
   useEffect(() => {
     if (projectId && user) {
@@ -208,7 +209,7 @@ const ThriveDesk = () => {
     <div className="container max-w-6xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">
       <SimpleProjectHeader project={project} collaborators={collaborators} />
 
-      <Tabs defaultValue="chat" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>

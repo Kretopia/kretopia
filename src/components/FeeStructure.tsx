@@ -16,7 +16,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
       icon: CheckCircle,
       fee: PLATFORM_FEES.free,
       color: "bg-gray-500",
-      features: ["Limited swipes & AI", "Basic payment processing", "Standard support"],
+      features: ["30 swipes/day", "Basic payment processing", "15% platform fee", "Standard support"],
     },
     {
       name: "Pro",
@@ -24,17 +24,8 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
       icon: Zap,
       fee: PLATFORM_FEES.pro,
       color: "bg-gradient-to-r from-blue-500 to-cyan-500",
-      price: "$9/mo",
-      features: ["10% platform fee", "VIP support", "Advanced features", "10% partner discounts"],
-    },
-    {
-      name: "Studio",
-      tier: "studio",
-      icon: Crown,
-      fee: PLATFORM_FEES.studio,
-      color: "bg-gradient-to-r from-primary to-purple-500",
-      price: "$29/mo",
-      features: ["Lowest platform fees", "VIP support", "All features unlimited", "15% partner discounts"],
+      price: "$12/mo",
+      features: ["8% platform fee", "Unlimited swipes", "Priority support", "All features unlocked"],
     },
   ];
 

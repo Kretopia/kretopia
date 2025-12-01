@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Briefcase, Plus, Search, FolderKanban, Clock, CheckCircle2, AlertCircle, DollarSign } from "lucide-react";
-import { canCreateProject, type SubscriptionTier } from "@/lib/subscriptionLimits";
+import { type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { UpgradeDialog } from "@/components/UpgradeDialog";
 
 interface Project {
@@ -164,11 +164,7 @@ const Projects = () => {
   };
 
   const handleOpenCreateDialog = () => {
-    // Check project limit before opening dialog
-    if (!canCreateProject(subscriptionTier, projects.length)) {
-      setShowUpgradeDialog(true);
-      return;
-    }
+    // Projects feature not part of MVP, but keeping the dialog functional
     setCreateDialogOpen(true);
   };
 

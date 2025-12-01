@@ -67,7 +67,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   };
 
   return (
-    <Card className="flex flex-col h-[600px]">
+    <Card className="flex flex-col h-[70vh] md:h-[600px]">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />

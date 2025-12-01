@@ -146,7 +146,7 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
             <p className="text-sm mt-1">Upload files to share with your collaborator</p>
           </div>
         ) : (
-          <ScrollArea className="h-[300px]">
+          <ScrollArea className="h-[50vh] md:h-[300px]">
             <div className="space-y-2">
               {files.map((file) => (
                 <div

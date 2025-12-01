@@ -202,10 +202,10 @@ const ThriveDesk = () => {
     );
   }
 
-  const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const completedTasks = tasks.filter(t => t.status === 'done').length;
 
   return (
-    <div className="container max-w-6xl mx-auto py-6 px-4 space-y-6">
+    <div className="container max-w-6xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">
       <SimpleProjectHeader project={project} collaborators={collaborators} />
 
       <Tabs defaultValue="chat" className="w-full">

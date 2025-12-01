@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckSquare, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -61,7 +62,7 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
   };
 
   const handleToggleTask = async (taskId: string, currentStatus: string | null) => {
-    const newStatus = currentStatus === 'completed' ? 'todo' : 'completed';
+    const newStatus = currentStatus === 'done' ? 'todo' : 'done';
     
     try {
       const { error } = await supabase
@@ -82,7 +83,7 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
     }
   };
 
-  const completedCount = tasks.filter(t => t.status === 'completed').length;
+  const completedCount = tasks.filter(t => t.status === 'done').length;
   const totalCount = tasks.length;
 
   return (
@@ -122,19 +123,20 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
             <p className="text-sm mt-1">Add tasks to track your project progress</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <ScrollArea className="max-h-[50vh] md:max-h-[400px]">
+            <div className="space-y-2 pr-4">
             {tasks.map((task) => (
               <div
                 key={task.id}
                 className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
               >
                 <Checkbox
-                  checked={task.status === 'completed'}
+                  checked={task.status === 'done'}
                   onCheckedChange={() => handleToggleTask(task.id, task.status)}
                 />
                 <span
                   className={`flex-1 text-sm ${
-                    task.status === 'completed'
+                    task.status === 'done'
                       ? 'line-through text-muted-foreground'
                       : ''
                   }`}
@@ -142,8 +144,9 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
                   {task.title}
                 </span>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ScrollArea>
         )}
       </CardContent>
     </Card>

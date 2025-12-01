@@ -33,11 +33,15 @@ export default function Circle() {
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const [swipedCardIds, setSwipedCardIds] = useState<Set<string>>(new Set());
   const [creatorFilters, setCreatorFilters] = useState<CreatorFilterState>({
+    search: '',
     role: 'all',
+    location: 'all',
     minFollowers: 0,
     verified: false,
     level: 'all',
-    badge: 'all'
+    badge: 'all',
+    sortBy: 'recommended',
+    activeOnly: false
   });
   
   const { toast: toastHook } = useToast();

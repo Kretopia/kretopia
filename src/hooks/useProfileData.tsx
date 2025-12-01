@@ -137,17 +137,45 @@ export const useProfileData = () => {
 
   useEffect(() => {
     console.log('[Profile] useEffect triggered');
+    let mounted = true;
+    
     const initProfile = async () => {
       console.log('[Profile] initProfile called');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('[Profile] No user in useEffect');
-        setIsLoading(false);
-        return;
-      }
       
-      console.log('[Profile] Calling fetchData from useEffect');
-      fetchData();
+      try {
+        // Add timeout to auth call
+        const authPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth timeout')), 5000)
+        );
+        
+        const { data: { user }, error } = await Promise.race([
+          authPromise,
+          timeoutPromise
+        ]) as any;
+        
+        if (!mounted) return;
+        
+        if (error) {
+          console.error('[Profile] Auth error:', error);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!user) {
+          console.log('[Profile] No user in useEffect');
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log('[Profile] Calling fetchData from useEffect');
+        fetchData();
+      } catch (error) {
+        console.error('[Profile] Error in initProfile:', error);
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
     };
     
     initProfile();
@@ -168,6 +196,7 @@ export const useProfileData = () => {
       .subscribe();
 
     return () => {
+      mounted = false;
       clearTimeout(updateTimeout);
       supabase.removeChannel(channel);
     };

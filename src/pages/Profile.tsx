@@ -325,9 +325,9 @@ const ProfileContent = () => {
               </div>
             )}
 
-            {/* Contact */}
+            {/* Connect - Social Links */}
             <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Contact</h2>
+              <h2 className="text-xl font-bold mb-4">Connect</h2>
               <SocialLinksSection 
                 profile={profile}
                 isOwnProfile={true}

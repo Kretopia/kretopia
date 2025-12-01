@@ -18,22 +18,48 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Helper function to extract skills from Json type (can be array or object)
+    const extractSkills = (skills: any): string[] => {
+      if (!skills) return [];
+      if (Array.isArray(skills)) return skills;
+      if (typeof skills === 'object') return Object.keys(skills);
+      return [];
+    };
+
+    const currentSkills = extractSkills(currentUser.professional_skills);
+    const targetSkills = extractSkills(targetUser.professional_skills);
+
+    console.log('[generate-match-explanation] Current user:', {
+      name: currentUser.full_name,
+      role: currentUser.role,
+      skills: currentSkills,
+      location: currentUser.location
+    });
+    console.log('[generate-match-explanation] Target user:', {
+      name: targetUser.full_name,
+      role: targetUser.role,
+      skills: targetSkills,
+      location: targetUser.location
+    });
+
     const systemPrompt = `You are a professional matchmaking AI for creative collaborators. Analyze two creator profiles and generate a compatibility score with specific reasons.
+
+CRITICAL: You MUST use the EXACT names, skills, locations, and bios provided in the user profiles. Do NOT make up information or use generic placeholders.
 
 Your response must be a JSON object with this EXACT structure:
 {
   "score": 85,
   "reasons": [
     "Complementary skills: Their videography fills your need for visual storytelling",
-    "Super close by: Only 2.3km away in Canggu—easy to meet and work together",
-    "Shared vision: Both focused on creative storytelling and building a portfolio",
-    "Timeline fits: They're flexible and looking to start within 2 weeks"
+    "Super close by: Both in Brooklyn—easy to meet and work together",
+    "Shared vision: Both focused on creative storytelling and building a portfolio"
   ]
 }
 
 Rules:
 - Score must be 70-99 (high matches only)
 - Include 3-4 specific, actionable reasons
+- Use the ACTUAL user data provided (names, skills, locations, bios)
 - Focus on: complementary skills, location proximity, shared interests, portfolio alignment
 - Be concise and specific
 - Use enthusiastic but professional tone`;
@@ -41,16 +67,18 @@ Rules:
     const userPrompt = `Current User Profile:
 Name: ${currentUser.full_name}
 Role: ${currentUser.role || "Creative"}
-Skills: ${currentUser.professional_skills?.join(", ") || "Not specified"}
+Skills: ${currentSkills.join(", ") || "Not specified"}
 Location: ${currentUser.location || "Not specified"}
 Bio: ${currentUser.bio || "Not specified"}
 
 Target User Profile:
 Name: ${targetUser.full_name}
 Role: ${targetUser.role || "Creative"}
-Skills: ${targetUser.professional_skills?.join(", ") || "Not specified"}
+Skills: ${targetSkills.join(", ") || "Not specified"}
 Location: ${targetUser.location || "Not specified"}
 Bio: ${targetUser.bio || "Not specified"}
+
+IMPORTANT: Generate match reasons using the ACTUAL names, skills, and locations above. Do NOT use placeholder names or made-up information.
 
 Analyze compatibility and generate match explanation.`;
 

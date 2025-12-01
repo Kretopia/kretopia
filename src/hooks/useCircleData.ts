@@ -105,15 +105,31 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         .eq('user_id', userId)
         .single();
 
-      // SIMPLIFIED: Just get profiles with basic info
-      const { data: profiles, error: profilesError } = await supabase
+      // Get all users current user has already swiped on
+      const { data: existingSwipes } = await supabase
+        .from('swipes')
+        .select('target_id')
+        .eq('user_id', userId);
+
+      const swipedUserIds = existingSwipes?.map(s => s.target_id) || [];
+      console.log('[useCircleData] Already swiped on:', swipedUserIds.length, 'users');
+
+      // SIMPLIFIED: Get profiles excluding already-swiped users
+      let query = supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills')
         .neq('user_id', userId)
         .not('full_name', 'is', null)
         .not('bio', 'is', null)
         .order('created_at', { ascending: false })
-        .limit(20); // Reduced to 20 for speed
+        .limit(50); // Fetch more to compensate for filtered users
+
+      // Exclude already-swiped users
+      if (swipedUserIds.length > 0) {
+        query = query.not('user_id', 'in', `(${swipedUserIds.join(',')})`);
+      }
+
+      const { data: profiles, error: profilesError } = await query;
 
       if (profilesError) {
         console.error('[useCircleData] Query error:', profilesError);

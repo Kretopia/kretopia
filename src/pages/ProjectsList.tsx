@@ -24,15 +24,43 @@ const ProjectsList = () => {
     try {
       setLoading(true);
       
-      // Get projects where user is creator or collaborator
-      const { data: projectsData, error } = await supabase
+      // Get projects where user is creator
+      const { data: createdProjects, error: createdError } = await supabase
         .from('projects')
         .select('*')
-        .or(`created_by.eq.${user?.id},id.in.(select project_id from project_collaborators where user_id=${user?.id} and status='accepted')`)
-        .order('updated_at', { ascending: false });
+        .eq('created_by', user?.id);
 
-      if (error) throw error;
-      setProjects(projectsData || []);
+      if (createdError) throw createdError;
+
+      // Get projects where user is collaborator
+      const { data: collabData, error: collabError } = await supabase
+        .from('project_collaborators')
+        .select('project_id')
+        .eq('user_id', user?.id)
+        .eq('status', 'accepted');
+
+      if (collabError) throw collabError;
+
+      // Get the actual project details for collaborations
+      let collabProjects: any[] = [];
+      if (collabData && collabData.length > 0) {
+        const projectIds = collabData.map(c => c.project_id);
+        const { data: projects, error: projectsError } = await supabase
+          .from('projects')
+          .select('*')
+          .in('id', projectIds);
+        
+        if (projectsError) throw projectsError;
+        collabProjects = projects || [];
+      }
+
+      // Combine and deduplicate
+      const allProjects = [...(createdProjects || []), ...collabProjects];
+      const uniqueProjects = Array.from(
+        new Map(allProjects.map(p => [p.id, p])).values()
+      ).sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+      setProjects(uniqueProjects);
     } catch (error: any) {
       console.error('Error fetching projects:', error);
       toast({

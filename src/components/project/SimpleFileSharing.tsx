@@ -110,8 +110,21 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
     }
   };
 
-  const handleDownload = (file: ProjectFile) => {
-    window.open(file.file_url, '_blank');
+  const handleFileClick = (file: ProjectFile) => {
+    // For images, open in new tab for preview
+    if (file.file_type?.startsWith('image/')) {
+      window.open(file.file_url, '_blank');
+      return;
+    }
+    
+    // For other files, trigger download
+    const link = document.createElement('a');
+    link.href = file.file_url;
+    link.download = file.file_name;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -151,7 +164,8 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
               {files.map((file) => (
                 <div
                   key={file.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => handleFileClick(file)}
                 >
                   <div className="text-muted-foreground">
                     {getFileIcon(file.file_type)}
@@ -165,7 +179,10 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDownload(file)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFileClick(file);
+                    }}
                   >
                     <Download className="h-4 w-4" />
                   </Button>

@@ -110,21 +110,42 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
     }
   };
 
-  const handleFileClick = (file: ProjectFile) => {
-    // For images, open in new tab for preview
-    if (file.file_type?.startsWith('image/')) {
-      window.open(file.file_url, '_blank');
-      return;
+  const handleFileClick = async (file: ProjectFile) => {
+    try {
+      // Extract the file path from the URL
+      const url = new URL(file.file_url);
+      const pathParts = url.pathname.split('/');
+      const filePath = pathParts.slice(pathParts.indexOf('project-files') + 1).join('/');
+      
+      // Generate a signed URL (1 hour expiry)
+      const { data, error } = await supabase.storage
+        .from('project-files')
+        .createSignedUrl(filePath, 3600);
+
+      if (error) throw error;
+
+      // For images, open in new tab for preview
+      if (file.file_type?.startsWith('image/')) {
+        window.open(data.signedUrl, '_blank');
+        return;
+      }
+      
+      // For other files, trigger download
+      const link = document.createElement('a');
+      link.href = data.signedUrl;
+      link.download = file.file_name;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error accessing file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to access file. Please try again.",
+        variant: "destructive",
+      });
     }
-    
-    // For other files, trigger download
-    const link = document.createElement('a');
-    link.href = file.file_url;
-    link.download = file.file_name;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (

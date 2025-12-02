@@ -34,7 +34,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.send-weekly-digest]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-content]
 verify_jwt = true

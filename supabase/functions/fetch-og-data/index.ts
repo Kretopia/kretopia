@@ -1,10 +1,40 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// SSRF protection: blocked hosts
+const BLOCKED_HOSTS = [
+  'localhost', '127.0.0.1', '0.0.0.0',
+  '169.254.169.254', // AWS/GCP metadata
+  '10.', '172.16.', '192.168.' // Private IP ranges
+];
+
+// Input validation schema
+const RequestSchema = z.object({
+  url: z.string()
+    .url('Invalid URL format')
+    .max(2048, 'URL too long')
+    .refine(
+      (url) => {
+        try {
+          const parsed = new URL(url);
+          // Only allow HTTP(S)
+          if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+            return false;
+          }
+          // Block internal IPs
+          return !BLOCKED_HOSTS.some(h => parsed.hostname.includes(h));
+        } catch {
+          return false;
+        }
+      },
+      'Internal or invalid URLs not allowed'
+    )
+});
 
 interface OpenGraphData {
   title?: string;
@@ -21,24 +51,21 @@ serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json();
-
-    if (!url) {
+    // Parse and validate input
+    const rawData = await req.json();
+    const validationResult = RequestSchema.safeParse(rawData);
+    
+    if (!validationResult.success) {
       return new Response(
-        JSON.stringify({ error: "URL is required" }),
+        JSON.stringify({ 
+          error: "Invalid input", 
+          details: validationResult.error.errors 
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Validate URL format
-    try {
-      new URL(url);
-    } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid URL format" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const { url } = validationResult.data;
 
     console.log("Fetching Open Graph data for:", url);
 

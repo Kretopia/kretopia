@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -8,10 +9,29 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Input validation schema
+const EmailRequestSchema = z.object({
+  to: z.string()
+    .email('Invalid email format')
+    .max(255, 'Email too long')
+    .optional(),
+  recipientId: z.string().uuid('Invalid recipient ID').optional(),
+  type: z.enum([
+    'welcome', 'opportunity', 'match', 're-engagement', 'application', 
+    'weekly-digest', 'activity-digest', 'streak-warning', 'swipe', 
+    'onboarding-reminder', 'general'
+  ]),
+  data: z.record(z.any()).optional()
+}).refine(
+  (data) => data.to || data.recipientId,
+  { message: "Either 'to' or 'recipientId' must be provided" }
+);
+
 interface EmailRequest {
-  to: string;
+  to?: string;
+  recipientId?: string;
   type: 'welcome' | 'opportunity' | 'match' | 're-engagement' | 'application' | 'weekly-digest' | 'activity-digest' | 'streak-warning' | 'swipe' | 'onboarding-reminder' | 'general';
-  data: {
+  data?: {
     notificationTitle?: string;
     notificationMessage?: string;
     actionUrl?: string;
@@ -280,7 +300,21 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const body = await req.json();
+    // Parse and validate input
+    const rawData = await req.json();
+    const validationResult = EmailRequestSchema.safeParse(rawData);
+    
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid input", 
+          details: validationResult.error.errors 
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const body = validationResult.data;
     let to = body.to;
     const type = body.type;
     let data = body.data || {};
@@ -335,7 +369,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending ${type} email to ${to}`);
 
     const emailResponse = await resend.emails.send({
-      from: "ThriveIN <onboarding@resend.dev>", // Update this with your verified domain
+      from: "ThriveIN <onboarding@resend.dev>",
       to: [to],
       subject,
       html,

@@ -61,6 +61,8 @@ export const EventCategory = {
   ENGAGEMENT: 'engagement',
   ONBOARDING: 'onboarding',
   COLLABORATION: 'collaboration',
+  PROJECT: 'project',
+  PAYWALL: 'paywall',
 } as const;
 
 // Common event tracking functions
@@ -117,11 +119,39 @@ export const analytics = {
       properties: { direction, target_user_id: targetUserId },
     }),
 
+  undoSwipe: (targetUserId: string) =>
+    trackEvent({
+      eventName: 'undo_swipe',
+      eventCategory: EventCategory.DISCOVERY,
+      properties: { target_user_id: targetUserId },
+    }),
+
+  swipeLimitHit: (currentTier: string) =>
+    trackEvent({
+      eventName: 'swipe_limit_hit',
+      eventCategory: EventCategory.PAYWALL,
+      properties: { current_tier: currentTier, limit: 30 },
+    }),
+
   match: (matchedUserId?: string) =>
     trackEvent({
       eventName: 'match_created',
       eventCategory: EventCategory.DISCOVERY,
       properties: { matched_user_id: matchedUserId },
+    }),
+
+  matchExplanationViewed: (targetUserId: string, matchScore: number) =>
+    trackEvent({
+      eventName: 'match_explanation_viewed',
+      eventCategory: EventCategory.DISCOVERY,
+      properties: { target_user_id: targetUserId, match_score: matchScore },
+    }),
+
+  profilePreview: (targetUserId: string, source: 'match_card' | 'search' | 'message') =>
+    trackEvent({
+      eventName: 'profile_preview',
+      eventCategory: EventCategory.DISCOVERY,
+      properties: { target_user_id: targetUserId, source },
     }),
 
   // Opportunity events
@@ -168,12 +198,26 @@ export const analytics = {
       properties: { from_tier: fromTier, to_tier: toTier },
     }),
 
+  paywallViewed: (feature: string, currentTier: string) =>
+    trackEvent({
+      eventName: 'paywall_viewed',
+      eventCategory: EventCategory.PAYWALL,
+      properties: { feature, current_tier: currentTier },
+    }),
+
   // Messaging events
-  messageSent: (recipientId?: string) =>
+  messageSent: (recipientId?: string, source?: 'match' | 'direct' | 'project') =>
     trackEvent({
       eventName: 'message_sent',
       eventCategory: EventCategory.MESSAGING,
-      properties: { recipient_id: recipientId },
+      properties: { recipient_id: recipientId, source },
+    }),
+
+  conversationStarted: (recipientId: string, source: 'match' | 'profile') =>
+    trackEvent({
+      eventName: 'conversation_started',
+      eventCategory: EventCategory.MESSAGING,
+      properties: { recipient_id: recipientId, source },
     }),
 
   // Onboarding events
@@ -204,10 +248,45 @@ export const analytics = {
       properties: { target_user_id: targetUserId },
     }),
 
-  projectCreated: (projectId: string, matchId?: string) =>
+  projectCreated: (projectId: string, matchId?: string, collaboratorCount?: number) =>
     trackEvent({
       eventName: 'project_created',
-      eventCategory: EventCategory.COLLABORATION,
-      properties: { project_id: projectId, match_id: matchId },
+      eventCategory: EventCategory.PROJECT,
+      properties: { project_id: projectId, match_id: matchId, collaborator_count: collaboratorCount },
+    }),
+
+  projectFileShared: (projectId: string, fileType: string) =>
+    trackEvent({
+      eventName: 'project_file_shared',
+      eventCategory: EventCategory.PROJECT,
+      properties: { project_id: projectId, file_type: fileType },
+    }),
+
+  projectTaskCompleted: (projectId: string) =>
+    trackEvent({
+      eventName: 'project_task_completed',
+      eventCategory: EventCategory.PROJECT,
+      properties: { project_id: projectId },
+    }),
+
+  projectChatMessage: (projectId: string) =>
+    trackEvent({
+      eventName: 'project_chat_message',
+      eventCategory: EventCategory.PROJECT,
+      properties: { project_id: projectId },
+    }),
+
+  portfolioItemAdded: (mediaType: string) =>
+    trackEvent({
+      eventName: 'portfolio_item_added',
+      eventCategory: EventCategory.PROFILE,
+      properties: { media_type: mediaType },
+    }),
+
+  profileViewed: (profileUserId: string, source: 'match' | 'public' | 'search' | 'message') =>
+    trackEvent({
+      eventName: 'profile_viewed',
+      eventCategory: EventCategory.PROFILE,
+      properties: { profile_user_id: profileUserId, source },
     }),
 };

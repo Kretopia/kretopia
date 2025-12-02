@@ -152,6 +152,9 @@ const AppContent = () => {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             
+            {/* Admin Analytics */}
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+            
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
@@ -165,7 +168,6 @@ const AppContent = () => {
             <Route path="/connect" element={<Navigate to="/circle" replace />} />
             <Route path="/marketplace" element={<Navigate to="/circle" replace />} />
             <Route path="/projects" element={<Navigate to="/circle" replace />} />
-            <Route path="/analytics" element={<Navigate to="/circle" replace />} />
             <Route path="/leaderboard" element={<Navigate to="/circle" replace />} />
             <Route path="/membership" element={<Navigate to="/circle" replace />} />
             <Route path="/earn-credits" element={<Navigate to="/circle" replace />} />

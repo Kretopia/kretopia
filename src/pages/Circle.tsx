@@ -97,6 +97,9 @@ export default function Circle() {
 
     // Check swipe limits BEFORE animation
     if (subscriptionTier === 'free' && dailySwipesLeft <= 0) {
+      // Track swipe limit hit
+      analytics.swipeLimitHit(subscriptionTier);
+      
       toastHook({
         title: "Daily limit reached",
         description: "Upgrade to Pro for unlimited swipes!",

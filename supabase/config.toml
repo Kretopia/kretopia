@@ -1,5 +1,8 @@
 project_id = "kwmcocsitwssrtzkdojh"
 
+[functions.test-email-system]
+verify_jwt = false
+
 [functions.seed-communities]
 verify_jwt = true
 

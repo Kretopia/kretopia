@@ -78,6 +78,8 @@ export const useUndoSwipe = (userTier: string) => {
       if (deleteError) throw deleteError;
 
       // Track the undo action
+      const { analytics } = await import("@/lib/analytics");
+      analytics.undoSwipe(lastSwipe.target_id);
       await supabase.from('swipes').insert({
         user_id: user.id,
         target_id: lastSwipe.target_id,

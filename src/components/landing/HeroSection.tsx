@@ -1,6 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Users, Compass } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export const HeroSection = () => {
   return (
@@ -16,45 +16,39 @@ export const HeroSection = () => {
           {/* Badge with animation */}
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105 hover:shadow-glow">
             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-primary animate-pulse" />
-            <span className="font-medium">AI-Powered Collaboration Network</span>
+            <span className="font-medium">The swipe-to-collaborate app</span>
           </div>
           
           <h1 className="mb-4 sm:mb-6 md:mb-8 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight sm:leading-[1.1] tracking-tight px-4">
-            Scrolling Through{" "}
+            Tired of Scrolling{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Endless Profiles
+              Endless Profiles?
             </span>
-            {" "}Looking for the Right Collaborator?
           </h1>
           
-          <p className="mx-auto mb-6 sm:mb-8 md:mb-12 max-w-2xl text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed text-muted-foreground px-6 sm:px-4">
-            Finding the right creative partner shouldn't feel like dating in the dark. You waste hours searching LinkedIn, Instagram DMs, and Facebook groups—never knowing if they're the right fit.{" "}
-            <span className="font-semibold text-foreground">ThriveIN uses AI to match you with verified creators</span> based on skills, style, and past work. Swipe. Match. Collaborate.
+          <p className="mx-auto mb-2 sm:mb-3 max-w-3xl text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold leading-tight text-foreground px-6 sm:px-4">
+            Find collaborators in minutes with AI-powered matching.
+          </p>
+          
+          <p className="mx-auto mb-6 sm:mb-8 md:mb-12 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
+            The swipe-to-collaborate app for videographers, photographers, designers & creative professionals.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-3 px-6 sm:px-4 w-full max-w-md sm:max-w-none sm:flex-row">
             <Link to="/auth" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 shadow-glow transition-smooth hover:-translate-y-1 text-base sm:text-lg">
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Start Matching Free
+                Start Free — Get Your First Matches Today
               </Button>
             </Link>
           </div>
           
           {/* Trust indicators */}
-          <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm text-muted-foreground px-4">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary" />
-              <span className="font-medium">AI-Powered Matching</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-secondary" />
-              <span className="font-medium">Verified Portfolios</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-accent" />
-              <span className="font-medium">Zero Guesswork</span>
-            </div>
+          <div className="mt-6 sm:mt-8 flex flex-col items-center justify-center text-xs sm:text-sm text-muted-foreground px-4">
+            <p className="flex items-center gap-2">
+              <Sparkles className="h-3 w-3 text-primary" />
+              30 free swipes daily • No credit card
+            </p>
           </div>
         </div>
       </div>

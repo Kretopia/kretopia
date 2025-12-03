@@ -124,7 +124,7 @@ export default function Circle() {
         .insert({
           user_id: user.id,
           target_id: currentCard.user_id,
-          target_type: 'creator',
+          target_type: 'profile',
           direction,
           is_super_like: false,
         })

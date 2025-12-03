@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -14,11 +15,17 @@ import {
   Award,
   ArrowUp,
   ArrowDown,
+  Mail,
+  CheckCircle,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 
 const Analytics = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [emailTesting, setEmailTesting] = useState(false);
+  const [emailTestResult, setEmailTestResult] = useState<any>(null);
   const [analytics, setAnalytics] = useState<any>({
     profileViews: 0,
     profileViewsChange: 0,
@@ -104,6 +111,35 @@ const Analytics = () => {
     setLoading(false);
   };
 
+  const testEmailSystem = async () => {
+    setEmailTesting(true);
+    setEmailTestResult(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('test-email-system', {
+        body: { sendTestEmail: true }
+      });
+      
+      if (error) throw error;
+      
+      setEmailTestResult(data);
+      toast({
+        title: data.success ? "Email System Working!" : "Email Test Failed",
+        description: data.message || (data.success ? "Test email sent successfully" : "Check the results below"),
+        variant: data.success ? "default" : "destructive",
+      });
+    } catch (error: any) {
+      setEmailTestResult({ success: false, message: error.message });
+      toast({
+        title: "Error testing email",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setEmailTesting(false);
+    }
+  };
+
   const StatCard = ({ icon: Icon, title, value, change, trend }: any) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -150,6 +186,68 @@ const Analytics = () => {
             Track your performance and engagement on the platform
           </p>
         </div>
+
+        {/* Email System Test */}
+        <Card className="mb-6 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Email System Test
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Test the email automation system to ensure welcome emails, digests, and notifications are working.
+            </p>
+            <Button 
+              onClick={testEmailSystem} 
+              disabled={emailTesting}
+              className="w-full sm:w-auto"
+            >
+              {emailTesting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                <>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Test Email System
+                </>
+              )}
+            </Button>
+            
+            {emailTestResult && (
+              <div className={`p-4 rounded-lg ${emailTestResult.success ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {emailTestResult.success ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-red-500" />
+                  )}
+                  <span className={`font-medium ${emailTestResult.success ? 'text-green-500' : 'text-red-500'}`}>
+                    {emailTestResult.success ? 'All Tests Passed!' : 'Test Failed'}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">{emailTestResult.message}</p>
+                {emailTestResult.checks && (
+                  <div className="space-y-1 text-sm">
+                    {Object.entries(emailTestResult.checks).map(([key, value]: [string, any]) => (
+                      <div key={key} className="flex items-center gap-2">
+                        {value ? (
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-red-500" />
+                        )}
+                        <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

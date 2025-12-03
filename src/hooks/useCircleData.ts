@@ -108,8 +108,28 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         console.error('[useCircleData] Error fetching swipes:', swipeError);
       }
 
+      // Get all users current user is already connected with
+      const { data: existingConnections, error: connectionError } = await supabase
+        .from('connections')
+        .select('connected_user_id, user_id')
+        .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
+        .eq('status', 'accepted');
+
+      if (connectionError) {
+        console.error('[useCircleData] Error fetching connections:', connectionError);
+      }
+
+      // Build set of user IDs to exclude (swiped + connected)
       const swipedUserIds = new Set(existingSwipes?.map(s => s.target_id) || []);
+      const connectedUserIds = new Set(
+        (existingConnections || []).map(c => 
+          c.user_id === userId ? c.connected_user_id : c.user_id
+        )
+      );
+      const excludedUserIds = new Set([...swipedUserIds, ...connectedUserIds]);
+      
       console.log('[useCircleData] Already swiped on:', swipedUserIds.size, 'users');
+      console.log('[useCircleData] Already connected with:', connectedUserIds.size, 'users');
 
       // Fetch all potential profiles
       const { data: profiles, error: profilesError } = await supabase
@@ -127,8 +147,9 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
 
       console.log('[useCircleData] Raw profiles fetched:', profiles?.length || 0);
 
-      // Filter out already-swiped users in JavaScript (more reliable than Supabase syntax)
-      let filtered = (profiles || []).filter(p => !swipedUserIds.has(p.user_id));
+      // Filter out already-swiped and already-connected users
+      let filtered = (profiles || []).filter(p => !excludedUserIds.has(p.user_id));
+      console.log('[useCircleData] After filtering excluded:', filtered.length);
       console.log('[useCircleData] After filtering swiped:', filtered.length);
       
       // Apply role filter

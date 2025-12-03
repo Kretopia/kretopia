@@ -42,7 +42,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
   const [featuredCreator, setFeaturedCreator] = useState<CreatorCard | null>(null);
   const [loading, setLoading] = useState(false);
   const [matchLoading, setMatchLoading] = useState(false);
-  const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(20);
+  const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(30);
 
   const fetchConnections = useCallback(async () => {
     if (!userId) return;
@@ -96,96 +96,102 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
     
     setMatchLoading(true);
     try {
-      console.log('[useCircleData] Starting fetch...');
+      console.log('[useCircleData] Starting fetch for user:', userId);
       
-      // Get current user profile for AI matching
-      const { data: currentUserProfile } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, role, bio, professional_skills, location')
-        .eq('user_id', userId)
-        .single();
-
       // Get all users current user has already swiped on
-      const { data: existingSwipes } = await supabase
+      const { data: existingSwipes, error: swipeError } = await supabase
         .from('swipes')
         .select('target_id')
         .eq('user_id', userId);
 
-      const swipedUserIds = existingSwipes?.map(s => s.target_id) || [];
-      console.log('[useCircleData] Already swiped on:', swipedUserIds.length, 'users');
+      if (swipeError) {
+        console.error('[useCircleData] Error fetching swipes:', swipeError);
+      }
 
-      // SIMPLIFIED: Get profiles excluding already-swiped users
-      let query = supabase
+      const swipedUserIds = new Set(existingSwipes?.map(s => s.target_id) || []);
+      console.log('[useCircleData] Already swiped on:', swipedUserIds.size, 'users');
+
+      // Fetch all potential profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills')
         .neq('user_id', userId)
         .not('full_name', 'is', null)
-        .not('bio', 'is', null)
         .order('created_at', { ascending: false })
-        .limit(50); // Fetch more to compensate for filtered users
-
-      // Exclude already-swiped users (using proper array syntax)
-      if (swipedUserIds.length > 0) {
-        // Use .not() with proper array format for Supabase
-        query = query.filter('user_id', 'not.in', `(${swipedUserIds.join(',')})`);
-      }
-
-      const { data: profiles, error: profilesError } = await query;
+        .limit(100);
 
       if (profilesError) {
         console.error('[useCircleData] Query error:', profilesError);
         throw profilesError;
       }
 
-      console.log('[useCircleData] Fetched profiles:', profiles?.length || 0);
+      console.log('[useCircleData] Raw profiles fetched:', profiles?.length || 0);
 
-      // Simple filtering
-      let filtered = profiles || [];
+      // Filter out already-swiped users in JavaScript (more reliable than Supabase syntax)
+      let filtered = (profiles || []).filter(p => !swipedUserIds.has(p.user_id));
+      console.log('[useCircleData] After filtering swiped:', filtered.length);
       
-      if (filters.role !== 'all') {
+      // Apply role filter
+      if (filters.role && filters.role !== 'all') {
         filtered = filtered.filter(p => p.role === filters.role);
       }
 
-      // Filter out profiles with no name/bio
+      // Filter profiles with meaningful content
       filtered = filtered.filter(p => 
         p.full_name && 
         p.full_name !== 'New User' && 
         p.bio && 
-        p.bio.length > 20
+        p.bio.length > 10
       );
 
-      // Transform profiles to cards without AI (load AI on-demand for speed)
-      const cardsWithAI = filtered.map(profile => ({
-        id: profile.user_id,
+      console.log('[useCircleData] After quality filter:', filtered.length);
+
+      // Transform profiles to cards
+      const cards: CreatorCard[] = filtered.map(profile => ({
+        id: profile.user_id, // Use user_id as card id for consistent tracking
         user_id: profile.user_id,
-        name: profile.full_name,
-        title: profile.role,
+        name: profile.full_name || 'Creator',
+        title: profile.role || 'Creative',
         location: profile.location || 'Remote',
         image: profile.avatar_url || '',
-        description: profile.bio || 'Creative professional',
+        description: profile.bio || '',
         badge: profile.badge,
         level: profile.level,
-        matchScore: Math.floor(Math.random() * 15) + 85, // 85-99% placeholder
-        matchReasons: [] // Load on-demand when clicked
+        matchScore: Math.floor(Math.random() * 15) + 85, // 85-99%
+        matchReasons: []
       }));
 
-      console.log('[useCircleData] Transformed cards:', cardsWithAI.length);
+      console.log('[useCircleData] Final cards:', cards.length);
 
       // Set featured creator (OG badge priority)
-      const ogCreators = cardsWithAI.filter(c => c.badge === 'og');
-      const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : cardsWithAI[0];
+      const ogCreators = cards.filter(c => c.badge === 'og');
+      const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : cards[0];
       
       if (featuredCandidate) {
         setFeaturedCreator(featuredCandidate);
-        setMatchCards(cardsWithAI.filter(c => c.id !== featuredCandidate.id));
-      } else {
-        setMatchCards(cardsWithAI);
+        // Don't filter out featured - include all cards
       }
       
-      // Calculate remaining swipes based on subscription tier
+      setMatchCards(cards);
+      
+      // Calculate remaining swipes
+      await updateSwipesRemaining();
+      
+    } catch (error: any) {
+      console.error('[useCircleData] Error fetching match creators:', error);
+      toast.error('Failed to load creators');
+      setMatchCards([]);
+    } finally {
+      setMatchLoading(false);
+    }
+  }, [userId, subscriptionTier]);
+
+  const updateSwipesRemaining = useCallback(async () => {
+    if (!userId) return;
+
+    try {
       const maxSwipes = TIER_LIMITS[subscriptionTier].swipesPerDay;
       
-      // Get user's daily swipe count from profile
       const { data: userProfile } = await supabase
         .from('profiles')
         .select('daily_swipes, last_swipe_reset')
@@ -211,12 +217,8 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         const remaining = getRemainingSwipes(subscriptionTier, swipesUsed);
         setDailySwipesLeft(remaining === -1 ? 999 : remaining);
       }
-    } catch (error: any) {
-      console.error('[useCircleData] Error fetching match creators:', error);
-      toast.error('Failed to load creators');
-      setMatchCards([]);
-    } finally {
-      setMatchLoading(false);
+    } catch (error) {
+      console.error('[useCircleData] Error checking swipes:', error);
     }
   }, [userId, subscriptionTier]);
 
@@ -231,9 +233,10 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         .single();
       
       if (currentProfile) {
+        const newCount = (currentProfile.daily_swipes || 0) + 1;
         await supabase
           .from('profiles')
-          .update({ daily_swipes: (currentProfile.daily_swipes || 0) + 1 })
+          .update({ daily_swipes: newCount })
           .eq('user_id', userId);
         
         setDailySwipesLeft(prev => Math.max(0, prev - 1));
@@ -242,6 +245,11 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
       console.error('[useCircleData] Error updating swipe count:', error);
     }
   }, [userId]);
+
+  // Remove a card from the local state after swiping
+  const removeCard = useCallback((cardId: string) => {
+    setMatchCards(prev => prev.filter(card => card.id !== cardId));
+  }, []);
 
   return {
     connections,
@@ -253,6 +261,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
     fetchConnections,
     fetchMatchCreators,
     updateSwipeCount,
-    setDailySwipesLeft
+    setDailySwipesLeft,
+    removeCard
   };
 };

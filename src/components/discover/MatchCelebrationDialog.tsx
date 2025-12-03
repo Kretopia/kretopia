@@ -145,7 +145,9 @@ export const MatchCelebrationDialog = ({
                 className="flex-1"
                 onClick={() => {
                   onOpenChange(false);
-                  navigate('/spark');
+                  if (matchedUser.userId) {
+                    navigate(`/profile/${matchedUser.userId}`);
+                  }
                 }}
               >
                 View Profile

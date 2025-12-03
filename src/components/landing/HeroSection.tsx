@@ -38,7 +38,8 @@ export const HeroSection = () => {
             <Link to="/auth" className="w-full sm:w-auto">
               <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 shadow-glow transition-smooth hover:-translate-y-1 text-base sm:text-lg">
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Start Free — Get Your First Matches Today
+                <span className="sm:hidden">Start Free</span>
+                <span className="hidden sm:inline">Start Free — Get Your First Matches Today</span>
               </Button>
             </Link>
           </div>

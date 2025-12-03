@@ -302,6 +302,10 @@ const Messages = () => {
       );
     }
 
+    // Track message sent
+    const { analytics } = await import("@/lib/analytics");
+    analytics.messageSent(selectedConversation, 'direct');
+
     setNewMessage("");
   };
 

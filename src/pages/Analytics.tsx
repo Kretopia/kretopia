@@ -39,10 +39,53 @@ const Analytics = () => {
     portfolioViewsChange: 0,
     avgEngagement: 0,
   });
+  const [funnelData, setFunnelData] = useState({
+    pageViews: 0,
+    signups: 0,
+    onboardingStarts: 0,
+    onboardingCompletes: 0,
+    swipes: 0,
+    matches: 0,
+    messages: 0,
+    paywallViews: 0,
+    subscriptions: 0,
+  });
 
   useEffect(() => {
     fetchAnalytics();
+    fetchFunnelData();
   }, []);
+
+  const fetchFunnelData = async () => {
+    try {
+      // Get counts for each funnel stage
+      const [pageViews, signups, onboardingStarts, onboardingCompletes, swipes, matches, messages, paywallViews, subscriptions] = await Promise.all([
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'page_view'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'sign_up'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'onboarding_started'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'onboarding_completed'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'swipe'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'match_created'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'message_sent'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'paywall_viewed'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'subscription_started'),
+      ]);
+      
+      setFunnelData({
+        pageViews: pageViews.count || 0,
+        signups: signups.count || 0,
+        onboardingStarts: onboardingStarts.count || 0,
+        onboardingCompletes: onboardingCompletes.count || 0,
+        swipes: swipes.count || 0,
+        matches: matches.count || 0,
+        messages: messages.count || 0,
+        paywallViews: paywallViews.count || 0,
+        subscriptions: subscriptions.count || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching funnel data:', error);
+    }
+  };
 
   const fetchAnalytics = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -246,6 +289,48 @@ const Analytics = () => {
                 )}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Conversion Funnel */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Conversion Funnel
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[
+                { label: 'Page Views', value: funnelData.pageViews, color: 'bg-blue-500' },
+                { label: 'Sign Ups', value: funnelData.signups, color: 'bg-green-500' },
+                { label: 'Onboarding Started', value: funnelData.onboardingStarts, color: 'bg-yellow-500' },
+                { label: 'Onboarding Completed', value: funnelData.onboardingCompletes, color: 'bg-orange-500' },
+                { label: 'Swipes', value: funnelData.swipes, color: 'bg-pink-500' },
+                { label: 'Matches', value: funnelData.matches, color: 'bg-red-500' },
+                { label: 'Messages Sent', value: funnelData.messages, color: 'bg-purple-500' },
+                { label: 'Paywall Views', value: funnelData.paywallViews, color: 'bg-indigo-500' },
+                { label: 'Subscriptions', value: funnelData.subscriptions, color: 'bg-emerald-500' },
+              ].map((step, index) => {
+                const maxValue = Math.max(funnelData.pageViews, 1);
+                const percentage = Math.round((step.value / maxValue) * 100);
+                return (
+                  <div key={step.label}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>{step.label}</span>
+                      <span className="font-medium">{step.value}</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div 
+                        className={`${step.color} h-2 rounded-full transition-all`} 
+                        style={{ width: `${Math.max(percentage, 2)}%` }} 
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
 

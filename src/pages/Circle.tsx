@@ -77,6 +77,13 @@ export default function Circle() {
     if (user?.id) {
       checkUndosRemaining();
       fetchMatchCreators(creatorFilters);
+      
+      // Track page view
+      const trackPage = async () => {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.pageView("circle");
+      };
+      trackPage();
     }
   }, [user?.id]);
 

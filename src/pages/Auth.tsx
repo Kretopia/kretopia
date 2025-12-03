@@ -58,6 +58,13 @@ const Auth = () => {
 
   // Redirect if already authenticated & fetch opportunities count & pre-fill invite code
   useEffect(() => {
+    // Track page view
+    const trackPage = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.pageView("auth");
+    };
+    trackPage();
+    
     if (user) {
       // Handle auto-connect if user just logged in with connect parameter
       if (connectUserId) {
@@ -212,6 +219,10 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
+      // Track OAuth attempt
+      const { analytics } = await import("@/lib/analytics");
+      analytics.signIn('google');
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -234,6 +245,10 @@ const Auth = () => {
   const handleAppleSignIn = async () => {
     setLoading(true);
     try {
+      // Track OAuth attempt
+      const { analytics } = await import("@/lib/analytics");
+      analytics.signIn('apple');
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
         options: {

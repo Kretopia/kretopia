@@ -226,6 +226,10 @@ const PublicProfile = () => {
     const loadData = async () => {
       if (isMounted) {
         await fetchData();
+        
+        // Track profile view
+        const { analytics } = await import("@/lib/analytics");
+        analytics.profileViewed(userId || '', 'public');
       }
     };
     

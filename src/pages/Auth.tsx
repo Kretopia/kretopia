@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Chrome } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Chrome, Apple } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import {
@@ -224,6 +224,28 @@ const Auth = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to sign in with Google",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: `${window.location.origin}${redirectTo}`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in with Apple",
         variant: "destructive",
       });
     } finally {
@@ -504,17 +526,30 @@ const Auth = () => {
           </form>
         ) : (
           <>
-            {/* Google Sign In - Primary CTA */}
-            <Button
-              onClick={handleGoogleSignIn}
-              variant="outline"
-              size="lg"
-              className="w-full mb-4 border-2"
-              disabled={loading}
-            >
-              <Chrome className="mr-2 h-5 w-5" />
-              Continue with Google
-            </Button>
+            {/* Social Sign In Options */}
+            <div className="flex flex-col gap-3 mb-4">
+              <Button
+                onClick={handleGoogleSignIn}
+                variant="outline"
+                size="lg"
+                className="w-full border-2"
+                disabled={loading}
+              >
+                <Chrome className="mr-2 h-5 w-5" />
+                Continue with Google
+              </Button>
+              
+              <Button
+                onClick={handleAppleSignIn}
+                variant="outline"
+                size="lg"
+                className="w-full border-2"
+                disabled={loading}
+              >
+                <Apple className="mr-2 h-5 w-5" />
+                Continue with Apple
+              </Button>
+            </div>
 
             <div className="relative mb-4">
               <div className="absolute inset-0 flex items-center">

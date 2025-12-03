@@ -152,9 +152,10 @@ const AppContent = () => {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             
-            {/* Admin Analytics */}
+            {/* Admin Routes */}
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            
+            <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
+
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />

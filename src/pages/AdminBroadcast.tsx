@@ -5,18 +5,34 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Send, Bell } from "lucide-react";
+import { Loader2, Send, Bell, TestTube } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 const AdminBroadcast = () => {
-  const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
-  const [link, setLink] = useState("");
+  const [title, setTitle] = useState("We've Made ThriveIN Even Better!");
+  const [message, setMessage] = useState(`Hey there! 👋
+
+We've been working hard on ThriveIN and just shipped some exciting updates:
+
+✨ AI-powered matching - Find your perfect collaborator faster
+📁 ThriveDesk workspace - Manage projects with your matches  
+🎯 Improved matching experience - Better profiles, smoother swiping
+
+Your next creative collaboration is waiting. Come back and:
+• Upload your portfolio to get discovered
+• Swipe to find your perfect match
+• Start collaborating on amazing projects
+
+See you inside!
+The ThriveIN Team`);
+  const [link, setLink] = useState("/circle");
+  const [testEmail, setTestEmail] = useState("");
   const [sendEmail, setSendEmail] = useState(true);
   const [sendInApp, setSendInApp] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [testLoading, setTestLoading] = useState(false);
   const [userCount, setUserCount] = useState(0);
 
   // Get user count on mount
@@ -30,6 +46,42 @@ const AdminBroadcast = () => {
     fetchUserCount();
   }, []);
 
+  const sendTestEmail = async () => {
+    if (!testEmail) {
+      toast.error("Please enter a test email address");
+      return;
+    }
+
+    if (!title || !message) {
+      toast.error("Please enter both title and message");
+      return;
+    }
+
+    setTestLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-notification-email', {
+        body: {
+          to: testEmail,
+          type: 'general',
+          data: {
+            userName: 'Test User',
+            notificationTitle: title,
+            notificationMessage: message,
+            actionUrl: link.startsWith('/') ? `https://thrivein.app${link}` : (link || 'https://thrivein.app')
+          }
+        }
+      });
+
+      if (error) throw error;
+      toast.success(`Test email sent to ${testEmail}!`);
+    } catch (error: any) {
+      console.error('Test email error:', error);
+      toast.error(error.message || "Failed to send test email");
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
   const broadcastNotification = async () => {
     if (!title || !message) {
       toast.error("Please enter both title and message");
@@ -41,9 +93,13 @@ const AdminBroadcast = () => {
       return;
     }
 
+    // Confirm before sending to all users
+    const confirmed = window.confirm(`Are you sure you want to send this broadcast to ${userCount} users?`);
+    if (!confirmed) return;
+
     setLoading(true);
     try {
-      // Get all users
+      // Get all users with their emails via recipientId approach
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name');
@@ -72,31 +128,20 @@ const AdminBroadcast = () => {
 
             if (notifError) {
               console.error('In-app notification error:', notifError);
-              errorCount++;
-              continue;
             }
           }
 
-          // Send email notification if enabled
+          // Send email notification if enabled - use recipientId instead of to
           if (sendEmail) {
-            // Get user email
-            const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(profile.user_id);
-            
-            if (userError || !user?.email) {
-              console.error('Could not get user email:', userError);
-              errorCount++;
-              continue;
-            }
-
             const { error: emailError } = await supabase.functions.invoke('send-notification-email', {
               body: {
-                to: user.email,
+                recipientId: profile.user_id,
                 type: 'general',
                 data: {
                   userName: profile.full_name || 'Creator',
                   notificationTitle: title,
                   notificationMessage: message,
-                  actionUrl: link || 'https://thrivein.app'
+                  actionUrl: link.startsWith('/') ? `https://thrivein.app${link}` : (link || 'https://thrivein.app')
                 }
               }
             });
@@ -117,10 +162,6 @@ const AdminBroadcast = () => {
 
       toast.success(`Broadcast sent to ${successCount} users! ${errorCount > 0 ? `(${errorCount} failed)` : ''}`);
       
-      // Reset form
-      setTitle("");
-      setMessage("");
-      setLink("");
     } catch (error: any) {
       console.error('Error broadcasting:', error);
       toast.error(error.message || "Failed to broadcast notification");
@@ -161,7 +202,7 @@ const AdminBroadcast = () => {
                 placeholder="We've added amazing new features to help you collaborate better..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                rows={5}
+                rows={12}
               />
             </div>
 
@@ -169,12 +210,12 @@ const AdminBroadcast = () => {
               <Label htmlFor="link">Action Link (optional)</Label>
               <Input
                 id="link"
-                placeholder="/spark"
+                placeholder="/circle"
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Relative path (e.g., /spark) or full URL
+                Relative path (e.g., /circle) or full URL
               </p>
             </div>
 
@@ -199,7 +240,7 @@ const AdminBroadcast = () => {
                 <div className="space-y-0.5">
                   <Label htmlFor="email">Email Notification</Label>
                   <p className="text-xs text-muted-foreground">
-                    Send to user's email address
+                    Send to user email address
                   </p>
                 </div>
                 <Switch
@@ -208,6 +249,36 @@ const AdminBroadcast = () => {
                   onCheckedChange={setSendEmail}
                 />
               </div>
+            </div>
+
+            {/* Test Email Section */}
+            <div className="space-y-3 p-4 border border-dashed rounded-lg bg-muted/30">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <TestTube className="h-4 w-4" />
+                Send Test Email First
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="your@email.com"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={sendTestEmail} 
+                  disabled={testLoading}
+                  variant="outline"
+                >
+                  {testLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Send Test"
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Test the email before sending to all users
+              </p>
             </div>
 
             <Button 
@@ -224,13 +295,13 @@ const AdminBroadcast = () => {
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
-                  Send Broadcast
+                  Send Broadcast to {userCount} Users
                 </>
               )}
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              This will send to all {userCount} registered users
+              ⚠️ This will send to all {userCount} registered users. Test first!
             </p>
           </CardContent>
         </Card>

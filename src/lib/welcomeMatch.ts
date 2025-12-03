@@ -1,86 +1,40 @@
 import { supabase } from "@/integrations/supabase/client";
 
-// Welcome match system - ensures new users experience the "wow moment" quickly
+// Founder account - all new users connect with this account automatically
+const FOUNDER_USER_ID = "ef429714-ea32-4f08-a4f9-ef0226f1804b";
+
+// Welcome match system - ensures new users connect with the founder
 export async function checkAndCreateWelcomeMatch(userId: string): Promise<{
   hasWelcomeMatch: boolean;
   matchedWithCommunity?: boolean;
 }> {
   try {
-    // Check if user already has any matches
-    const { data: existingMatches, error: matchError } = await supabase
-      .from('matches')
-      .select('id')
-      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-      .limit(1);
-
-    if (matchError) {
-      console.error('[WelcomeMatch] Error checking existing matches:', matchError);
-      return { hasWelcomeMatch: false };
-    }
-
-    // User already has matches - no need for welcome match
-    if (existingMatches && existingMatches.length > 0) {
+    // Don't create a match with yourself
+    if (userId === FOUNDER_USER_ID) {
       return { hasWelcomeMatch: true };
     }
 
-    // Check if user is brand new (created in last 7 days)
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('created_at, full_name')
-      .eq('user_id', userId)
-      .single();
+    // Check if user already has a connection with founder
+    const { data: existingConnection, error: connectionError } = await supabase
+      .from('connections')
+      .select('id')
+      .or(`and(user_id.eq.${userId},connected_user_id.eq.${FOUNDER_USER_ID}),and(user_id.eq.${FOUNDER_USER_ID},connected_user_id.eq.${userId})`)
+      .limit(1);
 
-    if (profileError || !profile) {
-      console.error('[WelcomeMatch] Error fetching profile:', profileError);
+    if (connectionError) {
+      console.error('[WelcomeMatch] Error checking existing connection:', connectionError);
       return { hasWelcomeMatch: false };
     }
 
-    const createdAt = new Date(profile.created_at);
-    const daysSinceCreation = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
-
-    // Only offer welcome match to users in their first 7 days
-    if (daysSinceCreation > 7) {
-      return { hasWelcomeMatch: false };
+    // Already connected with founder
+    if (existingConnection && existingConnection.length > 0) {
+      return { hasWelcomeMatch: true };
     }
 
-    // Find active community members or OG/Beta users who have opted into welcoming new users
-    // Priority: OG members > Beta members > Active users with high ratings
-    const { data: welcomeProfiles, error: welcomeError } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, avatar_url, role, badge')
-      .neq('user_id', userId)
-      .eq('onboarding_completed', true)
-      .in('badge', ['og', 'beta'])
-      .limit(5);
-
-    if (welcomeError || !welcomeProfiles || welcomeProfiles.length === 0) {
-      // Fallback: try any active user
-      const { data: fallbackProfiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, role')
-        .neq('user_id', userId)
-        .eq('onboarding_completed', true)
-        .not('avatar_url', 'is', null)
-        .order('created_at', { ascending: true })
-        .limit(3);
-
-      if (!fallbackProfiles || fallbackProfiles.length === 0) {
-        return { hasWelcomeMatch: false };
-      }
-
-      // Use first active user
-      const welcomer = fallbackProfiles[0];
-      await createBidirectionalMatch(userId, welcomer.user_id);
-      
-      console.log('[WelcomeMatch] Created welcome match with fallback user:', welcomer.full_name);
-      return { hasWelcomeMatch: true, matchedWithCommunity: true };
-    }
-
-    // Pick random OG/Beta member
-    const welcomer = welcomeProfiles[Math.floor(Math.random() * welcomeProfiles.length)];
-    await createBidirectionalMatch(userId, welcomer.user_id);
+    // Create bidirectional connection with founder
+    await createBidirectionalConnection(userId, FOUNDER_USER_ID);
     
-    console.log('[WelcomeMatch] Created welcome match with:', welcomer.full_name, `(${welcomer.badge})`);
+    console.log('[WelcomeMatch] Created welcome connection with founder for user:', userId);
     return { hasWelcomeMatch: true, matchedWithCommunity: true };
 
   } catch (error) {
@@ -89,14 +43,14 @@ export async function checkAndCreateWelcomeMatch(userId: string): Promise<{
   }
 }
 
-async function createBidirectionalMatch(userId1: string, userId2: string) {
-  // Create bidirectional swipes
-  await supabase.from('swipes').insert([
-    { user_id: userId1, target_id: userId2, direction: 'right', target_type: 'creator' },
-    { user_id: userId2, target_id: userId1, direction: 'right', target_type: 'creator' }
+async function createBidirectionalConnection(userId1: string, userId2: string) {
+  // Create bidirectional connections (accepted status)
+  await supabase.from('connections').insert([
+    { user_id: userId1, connected_user_id: userId2, status: 'accepted' },
+    { user_id: userId2, connected_user_id: userId1, status: 'accepted' }
   ]);
 
-  // Create the match
+  // Create a match record
   await supabase.from('matches').insert({
     user1_id: userId1,
     user2_id: userId2,
@@ -105,22 +59,22 @@ async function createBidirectionalMatch(userId1: string, userId2: string) {
   });
 
   // Send welcome notification to new user
-  const { data: welcomerProfile } = await supabase
+  const { data: founderProfile } = await supabase
     .from('profiles')
     .select('full_name, avatar_url, role')
     .eq('user_id', userId2)
     .single();
 
-  if (welcomerProfile) {
+  if (founderProfile) {
     await supabase.from('notifications').insert({
       user_id: userId1,
-      title: "🎉 Your First Match!",
-      message: `Welcome to ThriveIN! ${welcomerProfile.full_name} wants to connect with you. Say hello!`,
+      title: "🎉 Welcome to ThriveIN!",
+      message: `You're now connected with ${founderProfile.full_name}, the founder! Say hello and start your creative journey.`,
       type: 'match',
       category: 'collaboration',
       priority: 'high',
       link: '/messages',
-      image_url: welcomerProfile.avatar_url
+      image_url: founderProfile.avatar_url
     });
   }
 }

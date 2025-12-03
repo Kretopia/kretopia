@@ -312,6 +312,17 @@ export default function Onboarding() {
         })
         .eq("user_id", user.id);
 
+      // Create welcome match for new users to ensure "wow moment"
+      try {
+        const { checkAndCreateWelcomeMatch } = await import("@/lib/welcomeMatch");
+        const welcomeResult = await checkAndCreateWelcomeMatch(user.id);
+        if (welcomeResult.matchedWithCommunity) {
+          console.log("[Onboarding] Welcome match created for new user");
+        }
+      } catch (welcomeError) {
+        console.error("[Onboarding] Welcome match error (non-blocking):", welcomeError);
+      }
+
       // Trigger AI verification
       try {
         const { data: portfolioItems } = await supabase

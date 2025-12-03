@@ -192,14 +192,23 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
     try {
       const maxSwipes = TIER_LIMITS[subscriptionTier].swipesPerDay;
       
-      const { data: userProfile } = await supabase
+      const { data: userProfile, error } = await supabase
         .from('profiles')
         .select('daily_swipes, last_swipe_reset')
         .eq('user_id', userId)
         .single();
       
-      const today = new Date().toDateString();
-      const lastReset = userProfile?.last_swipe_reset ? new Date(userProfile.last_swipe_reset).toDateString() : null;
+      if (error) {
+        console.error('[useCircleData] Error fetching swipe data:', error);
+        return;
+      }
+      
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+      const lastReset = userProfile?.last_swipe_reset 
+        ? new Date(userProfile.last_swipe_reset).toISOString().split('T')[0] 
+        : null;
+      
+      console.log('[useCircleData] Swipe check - today:', today, 'lastReset:', lastReset, 'dailySwipes:', userProfile?.daily_swipes);
       
       // Reset swipes if it's a new day
       if (lastReset !== today) {
@@ -211,11 +220,15 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
           })
           .eq('user_id', userId);
         
-        setDailySwipesLeft(maxSwipes === -1 ? 999 : maxSwipes);
+        const newRemaining = maxSwipes === -1 ? 999 : maxSwipes;
+        console.log('[useCircleData] New day - resetting to:', newRemaining);
+        setDailySwipesLeft(newRemaining);
       } else {
         const swipesUsed = userProfile?.daily_swipes || 0;
         const remaining = getRemainingSwipes(subscriptionTier, swipesUsed);
-        setDailySwipesLeft(remaining === -1 ? 999 : remaining);
+        const displayRemaining = remaining === -1 ? 999 : remaining;
+        console.log('[useCircleData] Same day - swipesUsed:', swipesUsed, 'remaining:', displayRemaining);
+        setDailySwipesLeft(displayRemaining);
       }
     } catch (error) {
       console.error('[useCircleData] Error checking swipes:', error);
@@ -239,7 +252,12 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
           .update({ daily_swipes: newCount })
           .eq('user_id', userId);
         
-        setDailySwipesLeft(prev => Math.max(0, prev - 1));
+        console.log('[useCircleData] Swipe count updated to:', newCount);
+        setDailySwipesLeft(prev => {
+          const newRemaining = Math.max(0, prev - 1);
+          console.log('[useCircleData] Daily swipes left updated:', prev, '->', newRemaining);
+          return newRemaining;
+        });
       }
     } catch (error) {
       console.error('[useCircleData] Error updating swipe count:', error);

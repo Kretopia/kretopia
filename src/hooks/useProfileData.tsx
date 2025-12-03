@@ -141,6 +141,10 @@ export const useProfileData = () => {
           return;
         }
         
+        // Track page view
+        const { analytics } = await import("@/lib/analytics");
+        analytics.pageView("profile");
+        
         // Pass userId to avoid duplicate auth call in fetchData
         fetchData(user.id);
       } catch (error) {

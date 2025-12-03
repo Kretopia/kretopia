@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 
 export const HeroSection = () => {
+  const handleCtaClick = async () => {
+    const { analytics } = await import("@/lib/analytics");
+    analytics.ctaClick("hero_start_free", "landing_hero");
+  };
+  
   return (
     <section className="relative overflow-hidden px-4 py-12 sm:px-6 sm:py-16 md:py-24 lg:py-32">
       {/* Animated background gradients */}
@@ -35,7 +40,7 @@ export const HeroSection = () => {
           </p>
           
           <div className="flex flex-col items-center justify-center gap-3 px-6 sm:px-4 w-full max-w-md sm:max-w-none sm:flex-row">
-            <Link to="/auth" className="w-full sm:w-auto">
+            <Link to="/auth" className="w-full sm:w-auto" onClick={handleCtaClick}>
               <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 shadow-glow transition-smooth hover:-translate-y-1 text-base sm:text-lg">
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="sm:hidden">Start Free</span>

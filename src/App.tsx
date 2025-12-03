@@ -153,6 +153,7 @@ const AppContent = () => {
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             
             {/* Admin Routes */}
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
 

@@ -289,4 +289,42 @@ export const analytics = {
       eventCategory: EventCategory.PROFILE,
       properties: { profile_user_id: profileUserId, source },
     }),
+
+  // CTA button clicks
+  ctaClick: (ctaName: string, location: string) =>
+    trackEvent({
+      eventName: 'cta_click',
+      eventCategory: EventCategory.ENGAGEMENT,
+      properties: { cta_name: ctaName, location },
+    }),
+
+  // Feature usage
+  featureUsed: (featureName: string, details?: Record<string, any>) =>
+    trackEvent({
+      eventName: 'feature_used',
+      eventCategory: EventCategory.ENGAGEMENT,
+      properties: { feature: featureName, ...details },
+    }),
+
+  // Error tracking
+  errorOccurred: (errorType: string, errorMessage: string, context?: string) =>
+    trackEvent({
+      eventName: 'error_occurred',
+      eventCategory: EventCategory.ENGAGEMENT,
+      properties: { error_type: errorType, error_message: errorMessage, context },
+    }),
+
+  // Session tracking
+  sessionStart: () =>
+    trackEvent({
+      eventName: 'session_start',
+      eventCategory: EventCategory.ENGAGEMENT,
+    }),
+
+  sessionEnd: (duration: number) =>
+    trackEvent({
+      eventName: 'session_end',
+      eventCategory: EventCategory.ENGAGEMENT,
+      properties: { duration_seconds: duration },
+    }),
 };

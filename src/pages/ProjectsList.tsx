@@ -17,6 +17,13 @@ const ProjectsList = () => {
   useEffect(() => {
     if (user) {
       fetchProjects();
+      
+      // Track page view
+      const trackPage = async () => {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.pageView("projects_list");
+      };
+      trackPage();
     }
   }, [user]);
 

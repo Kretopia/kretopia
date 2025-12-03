@@ -78,6 +78,15 @@ const Messages = () => {
   const [showProjectDialog, setShowProjectDialog] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
+  
+  // Track page view
+  useEffect(() => {
+    const trackPageView = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.pageView("messages");
+    };
+    trackPageView();
+  }, []);
 
   useEffect(() => {
     if (user?.id) {

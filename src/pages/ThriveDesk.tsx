@@ -28,10 +28,11 @@ const ThriveDesk = () => {
     if (projectId && user) {
       fetchProjectData();
       
-      // Track project view
+      // Track project workspace view
       const trackProjectView = async () => {
         const { analytics } = await import("@/lib/analytics");
-        analytics.profileViewed(projectId, 'match');
+        analytics.pageView("thrivedesk");
+        analytics.featureUsed("thrivedesk_opened", { project_id: projectId });
       };
       trackProjectView();
     }

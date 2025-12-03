@@ -62,6 +62,13 @@ const Settings = () => {
   useEffect(() => {
     if (user) {
       fetchNotificationPreferences();
+      
+      // Track page view
+      const trackPage = async () => {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.pageView("settings");
+      };
+      trackPage();
     }
   }, [user]);
 

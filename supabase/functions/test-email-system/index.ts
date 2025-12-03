@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { Resend } from "npm:resend@4.0.0";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -83,7 +83,7 @@ serve(async (req) => {
       `,
     });
 
-    console.log("[TEST-EMAIL] ✓ Email sent successfully:", emailResult.id);
+    console.log("[TEST-EMAIL] ✓ Email sent successfully:", (emailResult as any).id);
 
     // Test 7: Test notification-email edge function
     const notificationTest = await supabase.functions.invoke('send-notification-email', {
@@ -118,7 +118,7 @@ serve(async (req) => {
           notification_function: !notificationTest.error,
         },
         test_email_sent_to: user.email,
-        email_id: emailResult.id,
+        email_id: (emailResult as any).id,
       }),
       {
         status: 200,

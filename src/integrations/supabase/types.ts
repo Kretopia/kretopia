@@ -3939,6 +3939,201 @@ export type Database = {
         }
         Relationships: []
       }
+      public_reviews: {
+        Row: {
+          collaboration_type: string | null
+          created_at: string | null
+          id: string | null
+          is_endorsed: boolean | null
+          is_verified: boolean | null
+          profile_id: string | null
+          project_name: string | null
+          rating: number | null
+          review_text: string | null
+          reviewer_avatar_url: string | null
+          reviewer_company: string | null
+          reviewer_id: string | null
+          reviewer_name: string | null
+          reviewer_role: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          collaboration_type?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_endorsed?: boolean | null
+          is_verified?: boolean | null
+          profile_id?: string | null
+          project_name?: string | null
+          rating?: number | null
+          review_text?: string | null
+          reviewer_avatar_url?: string | null
+          reviewer_company?: string | null
+          reviewer_id?: string | null
+          reviewer_name?: string | null
+          reviewer_role?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          collaboration_type?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_endorsed?: boolean | null
+          is_verified?: boolean | null
+          profile_id?: string | null
+          project_name?: string | null
+          rating?: number | null
+          review_text?: string | null
+          reviewer_avatar_url?: string | null
+          reviewer_company?: string | null
+          reviewer_id?: string | null
+          reviewer_name?: string | null
+          reviewer_role?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      public_skill_endorsements: {
+        Row: {
+          created_at: string | null
+          endorser_company: string | null
+          endorser_name: string | null
+          id: string | null
+          proficiency_level: string | null
+          profile_id: string | null
+          project_name: string | null
+          relationship: string | null
+          request_id: string | null
+          skill_name: string | null
+          testimonial: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          endorser_company?: string | null
+          endorser_name?: string | null
+          id?: string | null
+          proficiency_level?: string | null
+          profile_id?: string | null
+          project_name?: string | null
+          relationship?: string | null
+          request_id?: string | null
+          skill_name?: string | null
+          testimonial?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          endorser_company?: string | null
+          endorser_name?: string | null
+          id?: string | null
+          proficiency_level?: string | null
+          profile_id?: string | null
+          project_name?: string | null
+          relationship?: string | null
+          request_id?: string | null
+          skill_name?: string | null
+          testimonial?: string | null
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "skill_endorsement_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skill_endorsement_counts: {
         Row: {
           average_level: number | null

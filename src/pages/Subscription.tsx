@@ -48,6 +48,13 @@ export default function Subscription() {
 
   useEffect(() => {
     checkSubscription();
+    
+    // Track paywall view
+    const trackPaywall = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.paywallViewed('subscription_page', currentTier);
+    };
+    trackPaywall();
   }, []);
 
   const checkSubscription = async () => {
@@ -83,6 +90,10 @@ export default function Subscription() {
       });
       return;
     }
+
+    // Track subscription attempt
+    const { analytics } = await import("@/lib/analytics");
+    analytics.subscriptionStart(tier);
 
     try {
       setLoading(priceId);

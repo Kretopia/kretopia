@@ -27,6 +27,13 @@ const ThriveDesk = () => {
   useEffect(() => {
     if (projectId && user) {
       fetchProjectData();
+      
+      // Track project view
+      const trackProjectView = async () => {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.profileViewed(projectId, 'match');
+      };
+      trackProjectView();
     }
   }, [projectId, user]);
 

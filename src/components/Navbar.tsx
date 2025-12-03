@@ -1,7 +1,8 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -86,6 +87,35 @@ const Navbar = memo(({ user }: NavbarProps) => {
             BETA
           </Badge>
         </Link>
+
+        {/* Desktop Navigation */}
+        {user && !isLandingPage && (
+          <div className="hidden lg:flex items-center gap-1">
+            {[
+              { path: "/circle", icon: Users, label: "Match" },
+              { path: "/profile", icon: User, label: "Profile" },
+              { path: "/desk", icon: Briefcase, label: "Desk" },
+              { path: "/messages", icon: MessageCircle, label: "Messages" },
+            ].map(({ path, icon: Icon, label }) => {
+              const isActive = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-smooth text-sm font-medium",
+                    isActive 
+                      ? "bg-primary/10 text-primary" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
 
         <div className="flex items-center gap-2 sm:gap-4">

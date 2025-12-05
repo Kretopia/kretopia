@@ -1383,6 +1383,7 @@ export type Database = {
           push_messages: boolean | null
           push_opportunities: boolean | null
           push_projects: boolean | null
+          unsubscribe_token: string | null
           updated_at: string
           user_id: string
         }
@@ -1398,6 +1399,7 @@ export type Database = {
           push_messages?: boolean | null
           push_opportunities?: boolean | null
           push_projects?: boolean | null
+          unsubscribe_token?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1413,6 +1415,7 @@ export type Database = {
           push_messages?: boolean | null
           push_opportunities?: boolean | null
           push_projects?: boolean | null
+          unsubscribe_token?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -4240,6 +4243,7 @@ export type Database = {
       generate_invoice_number: { Args: never; Returns: string }
       generate_membership_number: { Args: never; Returns: string }
       generate_secure_token: { Args: never; Returns: string }
+      generate_unsubscribe_token: { Args: never; Returns: string }
       get_endorsement_request_by_token: {
         Args: { token_param: string }
         Returns: {

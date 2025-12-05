@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,13 +19,34 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
+  RefreshCw,
+  BarChart3,
+  Zap,
 } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import { format, subDays } from "date-fns";
+
+const CHART_COLORS = ['hsl(var(--primary))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+
+interface DailyActivity {
+  date: string;
+  events: number;
+  users: number;
+}
+
+interface EventBreakdown {
+  category: string;
+  count: number;
+}
 
 const Analytics = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [emailTesting, setEmailTesting] = useState(false);
   const [emailTestResult, setEmailTestResult] = useState<any>(null);
+  const [dailyActivity, setDailyActivity] = useState<DailyActivity[]>([]);
+  const [eventBreakdown, setEventBreakdown] = useState<EventBreakdown[]>([]);
   const [analytics, setAnalytics] = useState<any>({
     profileViews: 0,
     profileViewsChange: 0,
@@ -38,6 +59,8 @@ const Analytics = () => {
     portfolioViews: 0,
     portfolioViewsChange: 0,
     avgEngagement: 0,
+    totalUsers: 0,
+    activeToday: 0,
   });
   const [funnelData, setFunnelData] = useState({
     pageViews: 0,
@@ -52,9 +75,92 @@ const Analytics = () => {
   });
 
   useEffect(() => {
-    fetchAnalytics();
-    fetchFunnelData();
+    fetchAllData();
   }, []);
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchAnalytics(),
+      fetchFunnelData(),
+      fetchDailyActivity(),
+      fetchEventBreakdown()
+    ]);
+    setLoading(false);
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchAllData();
+    setRefreshing(false);
+    toast({ title: "Analytics refreshed" });
+  };
+
+  const fetchDailyActivity = async () => {
+    try {
+      const days = 7;
+      const startDate = subDays(new Date(), days);
+      
+      const { data } = await supabase
+        .from('analytics_events')
+        .select('created_at, user_id')
+        .gte('created_at', startDate.toISOString())
+        .order('created_at', { ascending: true });
+
+      if (data) {
+        const dailyMap = new Map<string, { events: number; users: Set<string> }>();
+        
+        for (let i = 0; i <= days; i++) {
+          const date = format(subDays(new Date(), days - i), 'yyyy-MM-dd');
+          dailyMap.set(date, { events: 0, users: new Set() });
+        }
+
+        data.forEach(event => {
+          const date = format(new Date(event.created_at!), 'yyyy-MM-dd');
+          const day = dailyMap.get(date);
+          if (day) {
+            day.events++;
+            if (event.user_id) day.users.add(event.user_id);
+          }
+        });
+
+        const activity = Array.from(dailyMap.entries()).map(([date, { events, users }]) => ({
+          date: format(new Date(date), 'MMM dd'),
+          events,
+          users: users.size
+        }));
+
+        setDailyActivity(activity);
+      }
+    } catch (error) {
+      console.error('Error fetching daily activity:', error);
+    }
+  };
+
+  const fetchEventBreakdown = async () => {
+    try {
+      const { data } = await supabase
+        .from('analytics_events')
+        .select('event_category');
+
+      if (data) {
+        const categoryCount = new Map<string, number>();
+        data.forEach(event => {
+          const cat = event.event_category || 'other';
+          categoryCount.set(cat, (categoryCount.get(cat) || 0) + 1);
+        });
+
+        const breakdown = Array.from(categoryCount.entries())
+          .map(([category, count]) => ({ category, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 6);
+
+        setEventBreakdown(breakdown);
+      }
+    } catch (error) {
+      console.error('Error fetching event breakdown:', error);
+    }
+  };
 
   const fetchFunnelData = async () => {
     try {
@@ -92,6 +198,19 @@ const Analytics = () => {
     if (!user) return;
 
     try {
+      // Fetch total users count
+      const { count: totalUsers } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+
+      // Fetch active users today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const { count: activeToday } = await supabase
+        .from('analytics_events')
+        .select('user_id', { count: 'exact', head: true })
+        .gte('created_at', today.toISOString());
+
       // Fetch profile data
       const { data: profile } = await supabase
         .from("profiles")
@@ -142,6 +261,8 @@ const Analytics = () => {
         portfolioViews: totalPortfolioViews,
         portfolioViewsChange: 20,
         avgEngagement: ((connectionsCount || 0) / Math.max(profile?.xp || 1, 1) * 100).toFixed(1),
+        totalUsers: totalUsers || 0,
+        activeToday: activeToday || 0,
       });
     } catch (error: any) {
       toast({
@@ -223,11 +344,73 @@ const Analytics = () => {
     <div className="min-h-screen bg-background pb-16 lg:pb-0">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">
-            Track your performance and engagement on the platform
-          </p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
+            <p className="text-muted-foreground">
+              Track your performance and engagement on the platform
+            </p>
+          </div>
+          <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
+
+        {/* Key Platform Metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{analytics.totalUsers}</p>
+                  <p className="text-xs text-muted-foreground">Total Users</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-green-500/10">
+                  <Eye className="h-4 w-4 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{analytics.activeToday}</p>
+                  <p className="text-xs text-muted-foreground">Active Today</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-pink-500/10">
+                  <Zap className="h-4 w-4 text-pink-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{funnelData.swipes}</p>
+                  <p className="text-xs text-muted-foreground">Total Swipes</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-500/10">
+                  <Heart className="h-4 w-4 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{funnelData.matches}</p>
+                  <p className="text-xs text-muted-foreground">Total Matches</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Email System Test */}
@@ -330,6 +513,114 @@ const Analytics = () => {
                   </div>
                 );
               })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Daily Activity Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Daily Activity (7 days)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dailyActivity}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="date" className="text-xs" />
+                    <YAxis className="text-xs" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                    <Bar dataKey="events" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Events" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Event Breakdown Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Event Categories</CardTitle>
+              <CardDescription>Distribution of tracked events</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 flex items-center">
+                <ResponsiveContainer width="50%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={eventBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="count"
+                    >
+                      {eventBreakdown.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex-1 space-y-2">
+                  {eventBreakdown.map((item, index) => (
+                    <div key={item.category} className="flex items-center gap-2 text-sm">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                      />
+                      <span className="capitalize">{item.category}</span>
+                      <span className="text-muted-foreground ml-auto">{item.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Active Users Line Chart */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Active Users Trend</CardTitle>
+            <CardDescription>Unique users per day over the last 7 days</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dailyActivity}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="users" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={2}
+                    dot={{ fill: 'hsl(var(--primary))' }}
+                    name="Users"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>

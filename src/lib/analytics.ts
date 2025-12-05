@@ -10,6 +10,9 @@ const getSessionId = (): string => {
   return sessionId;
 };
 
+// Performance timing helper
+const pageLoadTimes = new Map<string, number>();
+
 interface TrackEventParams {
   eventName: string;
   eventCategory: string;
@@ -46,6 +49,25 @@ export const trackEvent = async ({
   } catch (error) {
     // Silently fail - don't break the app if analytics fails
     console.error('Analytics tracking error:', error);
+  }
+};
+
+// Start page load timing
+export const startPageTiming = (pageName: string) => {
+  pageLoadTimes.set(pageName, performance.now());
+};
+
+// End page load timing and track
+export const endPageTiming = async (pageName: string) => {
+  const startTime = pageLoadTimes.get(pageName);
+  if (startTime) {
+    const loadTime = Math.round(performance.now() - startTime);
+    pageLoadTimes.delete(pageName);
+    await trackEvent({
+      eventName: 'page_load_time',
+      eventCategory: 'performance',
+      properties: { pageName, loadTimeMs: loadTime }
+    });
   }
 };
 

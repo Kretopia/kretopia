@@ -48,14 +48,18 @@ export default function Subscription() {
 
   useEffect(() => {
     checkSubscription();
-    
-    // Track paywall view
-    const trackPaywall = async () => {
-      const { analytics } = await import("@/lib/analytics");
-      analytics.paywallViewed('subscription_page', currentTier);
-    };
-    trackPaywall();
   }, []);
+
+  // Track paywall view only after subscription check completes
+  useEffect(() => {
+    if (!checkingSubscription) {
+      const trackPaywall = async () => {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.paywallViewed('subscription_page', currentTier);
+      };
+      trackPaywall();
+    }
+  }, [checkingSubscription, currentTier]);
 
   const checkSubscription = async () => {
     try {

@@ -65,6 +65,7 @@ const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const TestRunner = lazy(() => import("./pages/TestRunner"));
 const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -160,6 +161,7 @@ const AppContent = () => {
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             
             {/* Redirect old routes to Circle */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />

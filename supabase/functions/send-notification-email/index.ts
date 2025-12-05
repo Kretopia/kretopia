@@ -66,8 +66,10 @@ interface EmailRequest {
   };
 }
 
-const generateEmailContent = (type: string, data: any) => {
+const generateEmailContent = (type: string, data: any, unsubscribeToken?: string) => {
   const baseUrl = 'https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com';
+  const unsubscribeUrl = unsubscribeToken ? `${baseUrl}/unsubscribe?token=${unsubscribeToken}` : `${baseUrl}/notification-settings`;
+  const unsubscribeFooter = `<p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #8B5CF6;">Unsubscribe</a> or manage your <a href="${baseUrl}/notification-settings" style="color: #8B5CF6;">notification preferences</a>.</p>`;
   
   switch (type) {
     case 'welcome':
@@ -79,12 +81,13 @@ const generateEmailContent = (type: string, data: any) => {
             <p>We're thrilled to have you join our creative community!</p>
             <p>Here's what you can do next:</p>
             <ul>
-              <li>Complete your profile to attract better opportunities</li>
-              <li>Browse available opportunities on the Discover page</li>
-              <li>Start connecting with other creatives</li>
+              <li>Complete your profile to attract collaborators</li>
+              <li>Start swiping to find your perfect match</li>
+              <li>Connect with other creatives</li>
             </ul>
-            <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Get Started</a>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Get Started</a>
             <p style="color: #666; margin-top: 30px;">Best regards,<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -117,6 +120,7 @@ const generateEmailContent = (type: string, data: any) => {
             <p>This is a great opportunity to start a collaboration!</p>
             <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Connection</a>
             <p style="color: #666; margin-top: 30px;">Happy collaborating!<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -130,12 +134,13 @@ const generateEmailContent = (type: string, data: any) => {
             <p>Hi ${data.userName},</p>
             <p>It's been a while since we've seen you! There's a lot happening in the ThriveIN community:</p>
             <ul>
-              <li>New opportunities matching your skills</li>
               <li>New creatives waiting to connect</li>
+              <li>Potential collaborators for your projects</li>
               <li>Projects looking for talent like you</li>
             </ul>
-            <a href="${baseUrl}/discover" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Explore Now</a>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Explore Now</a>
             <p style="color: #666; margin-top: 30px;">We'd love to see you back!<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -148,8 +153,9 @@ const generateEmailContent = (type: string, data: any) => {
             <h1 style="color: #8B5CF6;">Application Status Update</h1>
             <p>Hi ${data.userName},</p>
             <p>Your application for "${data.projectName}" has been updated to: <strong>${data.applicationStatus}</strong></p>
-            <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Details</a>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Details</a>
             <p style="color: #666; margin-top: 30px;">Best of luck!<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -165,16 +171,16 @@ const generateEmailContent = (type: string, data: any) => {
       `).join('') || '';
       
       return {
-        subject: `This Week's Top Opportunities - ${data.opportunityCount} New Postings 🌟`,
+        subject: `Your Weekly ThriveIN Update 🌟`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">Your Weekly Opportunity Digest</h1>
+            <h1 style="color: #8B5CF6;">Your Weekly ThriveIN Update</h1>
             <p>Hi ${data.userName},</p>
-            <p>Here are <strong>${data.opportunityCount} new opportunities</strong> posted this week that might interest you:</p>
-            ${opportunitiesList}
-            <a href="${baseUrl}/discover" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Browse All Opportunities</a>
+            <p>Here's what's been happening this week:</p>
+            ${opportunitiesList || '<p>Check out new creators to match with!</p>'}
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Start Matching</a>
             <p style="color: #666; margin-top: 30px;">Keep creating!<br>The ThriveIN Team</p>
-            <p style="color: #999; font-size: 12px; margin-top: 20px;">Don't want weekly digests? Update your <a href="${baseUrl}/notification-settings" style="color: #8B5CF6;">notification preferences</a>.</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -204,8 +210,9 @@ const generateEmailContent = (type: string, data: any) => {
             <ul style="line-height: 1.8; margin: 20px 0;">
               ${activityItems.join('')}
             </ul>
-            <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Check Your Notifications</a>
-            <p style="color: #666; margin-top: 30px;">Don't miss out on opportunities!<br>The ThriveIN Team</p>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Check Your Notifications</a>
+            <p style="color: #666; margin-top: 30px;">Don't miss out on connections!<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -223,8 +230,9 @@ const generateEmailContent = (type: string, data: any) => {
             <p>Hi ${data.userName},</p>
             <p>You've maintained an impressive <strong>${data.streakCount}-day streak</strong>, but it's about to break!</p>
             <p>${freezeMessage}</p>
-            <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Visit ThriveIN Now</a>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Visit ThriveIN Now</a>
             <p style="color: #666; margin-top: 30px;">Keep the momentum going!<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -239,8 +247,9 @@ const generateEmailContent = (type: string, data: any) => {
             ${data.swiperAvatar ? `<div style="text-align: center; margin: 20px 0;"><img src="${data.swiperAvatar}" alt="Profile" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;"></div>` : ''}
             <p><strong>${data.swiperName}</strong> (${data.swiperRole}) wants to connect with you on ThriveIN!</p>
             <p>Check out their profile and swipe right to match and start collaborating together.</p>
-            <a href="${baseUrl}/discover" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">See Who's Interested</a>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">See Who's Interested</a>
             <p style="color: #666; margin-top: 30px;">Don't miss out on new connections!<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -258,7 +267,7 @@ const generateEmailContent = (type: string, data: any) => {
               <p style="margin: 0; color: #333; font-weight: bold;">Complete your profile to:</p>
               <ul style="margin: 10px 0; padding-left: 20px; color: #666;">
                 <li>✨ Connect with other creators</li>
-                <li>🎯 Get matched with opportunities</li>
+                <li>🎯 Get matched with collaborators</li>
                 <li>🚀 Start collaborating on projects</li>
                 <li>🎁 Earn your first 100 XP</li>
               </ul>
@@ -266,6 +275,7 @@ const generateEmailContent = (type: string, data: any) => {
             <a href="${data.onboardingUrl || baseUrl + '/onboarding'}" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Complete Your Profile</a>
             <p>It only takes 2 minutes! 🚀</p>
             <p style="color: #666; margin-top: 30px;">We're excited to see you thrive!<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -282,6 +292,7 @@ const generateEmailContent = (type: string, data: any) => {
             </div>
             ${data.actionUrl ? `<a href="${data.actionUrl}" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Learn More</a>` : ''}
             <p style="color: #666; margin-top: 30px;">Best regards,<br>The ThriveIN Team</p>
+            ${unsubscribeFooter}
           </div>
         `
       };
@@ -318,6 +329,7 @@ const handler = async (req: Request): Promise<Response> => {
     let to = body.to;
     const type = body.type;
     let data = body.data || {};
+    let unsubscribeToken: string | undefined;
     
     // If recipientId is provided, fetch email and user info from database
     if (body.recipientId && !to) {
@@ -351,6 +363,25 @@ const handler = async (req: Request): Promise<Response> => {
       const user = await userResponse.json();
       to = user.email;
       
+      // Fetch unsubscribe token
+      try {
+        const prefsResponse = await fetch(
+          `${supabaseUrl}/rest/v1/notification_preferences?user_id=eq.${body.recipientId}&select=unsubscribe_token`,
+          {
+            headers: {
+              'apikey': supabaseServiceKey,
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            }
+          }
+        );
+        const prefs = await prefsResponse.json();
+        if (prefs[0]?.unsubscribe_token) {
+          unsubscribeToken = prefs[0].unsubscribe_token;
+        }
+      } catch (e) {
+        console.log("Could not fetch unsubscribe token:", e);
+      }
+      
       // Add userName to data
       data.userName = profile?.full_name || 'there';
       
@@ -364,7 +395,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing required fields: to or recipientId, type");
     }
 
-    const { subject, html } = generateEmailContent(type, data);
+    const { subject, html } = generateEmailContent(type, data, unsubscribeToken);
 
     console.log(`Sending ${type} email to ${to}`);
 

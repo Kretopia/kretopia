@@ -16,11 +16,9 @@ interface NotificationPreferences {
   email_matches: boolean;
   email_messages: boolean;
   email_projects: boolean;
-  email_opportunities: boolean;
   push_matches: boolean;
   push_messages: boolean;
   push_projects: boolean;
-  push_opportunities: boolean;
   in_app_all: boolean;
 }
 
@@ -30,11 +28,9 @@ const NotificationSettings = () => {
     email_matches: true,
     email_messages: true,
     email_projects: true,
-    email_opportunities: true,
     push_matches: true,
     push_messages: true,
     push_projects: true,
-    push_opportunities: true,
     in_app_all: true,
   });
   const [loading, setLoading] = useState(true);
@@ -63,11 +59,9 @@ const NotificationSettings = () => {
           email_matches: data.email_matches,
           email_messages: data.email_messages,
           email_projects: data.email_projects,
-          email_opportunities: data.email_opportunities,
           push_matches: data.push_matches,
           push_messages: data.push_messages,
           push_projects: data.push_projects,
-          push_opportunities: data.push_opportunities,
           in_app_all: data.in_app_all,
         });
       }
@@ -100,11 +94,9 @@ const NotificationSettings = () => {
           email_matches: preferences.email_matches,
           email_messages: preferences.email_messages,
           email_projects: preferences.email_projects,
-          email_opportunities: preferences.email_opportunities,
           push_matches: preferences.push_matches,
           push_messages: preferences.push_messages,
           push_projects: preferences.push_projects,
-          push_opportunities: preferences.push_opportunities,
           in_app_all: preferences.in_app_all,
           updated_at: new Date().toISOString()
         }, {
@@ -259,20 +251,6 @@ const NotificationSettings = () => {
                   onCheckedChange={(checked) => updatePreference('email_projects', checked)}
                 />
               </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <Label htmlFor="email_opportunities" className="flex flex-col gap-1">
-                  <span>New Opportunities</span>
-                  <span className="font-normal text-sm text-muted-foreground">
-                    New opportunities matching your profile
-                  </span>
-                </Label>
-                <Switch
-                  id="email_opportunities"
-                  checked={preferences.email_opportunities}
-                  onCheckedChange={(checked) => updatePreference('email_opportunities', checked)}
-                />
-              </div>
             </CardContent>
           </Card>
 
@@ -334,20 +312,6 @@ const NotificationSettings = () => {
                   id="push_projects"
                   checked={preferences.push_projects}
                   onCheckedChange={(checked) => updatePreference('push_projects', checked)}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <Label htmlFor="push_opportunities" className="flex flex-col gap-1">
-                  <span>New Opportunities</span>
-                  <span className="font-normal text-sm text-muted-foreground">
-                    Don't miss matching opportunities
-                  </span>
-                </Label>
-                <Switch
-                  id="push_opportunities"
-                  checked={preferences.push_opportunities}
-                  onCheckedChange={(checked) => updatePreference('push_opportunities', checked)}
                 />
               </div>
             </CardContent>

@@ -72,6 +72,11 @@ export const useProfileData = () => {
 
       setProfile({ ...data, section_order: data.section_order });
       setUserBadge(data.badge || 'beta');
+      
+      // Track profile page view
+      import("@/lib/analytics").then(({ analytics }) => {
+        analytics.pageView("profile");
+      });
 
       setStats(prev => ({
         ...prev,

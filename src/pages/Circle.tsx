@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -71,14 +71,7 @@ export default function Circle() {
     }
   }, [user?.id]);
 
-  // Fetch connections when network tab is active
-  useEffect(() => {
-    if (activeTab === 'network' && user?.id) {
-      fetchConnections();
-    }
-  }, [activeTab, user?.id]);
-
-  const fetchConnections = async () => {
+  const fetchConnections = useCallback(async () => {
     if (!user?.id) return;
     setConnectionsLoading(true);
     
@@ -127,13 +120,21 @@ export default function Circle() {
         console.error('[Circle] Error fetching profiles:', error);
       }
 
+      console.log('[Circle] Fetched connection profiles:', profiles?.length);
       setConnections(profiles || []);
     } catch (error) {
       console.error('[Circle] Error fetching connections:', error);
     } finally {
       setConnectionsLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  // Fetch connections when network tab is active
+  useEffect(() => {
+    if (activeTab === 'network' && user?.id) {
+      fetchConnections();
+    }
+  }, [activeTab, user?.id, fetchConnections]);
 
   const handleMatch = (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
     setMatchedUser(matchedUserData);

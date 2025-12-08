@@ -2133,6 +2133,7 @@ export type Database = {
           instagram_followers: number | null
           instagram_url: string | null
           invite_code_used: string | null
+          invited_by: string | null
           job_title: string | null
           last_active_date: string | null
           last_swipe_reset: string | null
@@ -2222,6 +2223,7 @@ export type Database = {
           instagram_followers?: number | null
           instagram_url?: string | null
           invite_code_used?: string | null
+          invited_by?: string | null
           job_title?: string | null
           last_active_date?: string | null
           last_swipe_reset?: string | null
@@ -2311,6 +2313,7 @@ export type Database = {
           instagram_followers?: number | null
           instagram_url?: string | null
           invite_code_used?: string | null
+          invited_by?: string | null
           job_title?: string | null
           last_active_date?: string | null
           last_swipe_reset?: string | null
@@ -4274,6 +4277,13 @@ export type Database = {
           connection_id: string
           full_name: string
           role: string
+        }[]
+      }
+      get_network_stats: {
+        Args: { p_user_id: string }
+        Returns: {
+          connection_count: number
+          degree: number
         }[]
       }
       get_own_profile_sensitive_data: {

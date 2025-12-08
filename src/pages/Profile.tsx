@@ -286,24 +286,6 @@ const ProfileContent = () => {
             }}
             onShare={handleShare}
           />
-          
-          <ProfileActions
-            onShare={handleShare}
-            onEdit={() => {
-              setEditForm({
-                full_name: profile.full_name || "",
-                role: profile.role || "",
-                bio: profile.bio || "",
-                location: profile.location || "",
-                avatar_url: profile.avatar_url || "",
-                company_size: profile.company_size || "",
-                collab_intent: (profile as any).collab_intent || "seeking_collaborators",
-              });
-              setIsEditOpen(true);
-            }}
-            onDownload={handleDownloadEPK}
-            isOwner={true}
-          />
         </div>
 
         {/* Profile Visibility Banner */}

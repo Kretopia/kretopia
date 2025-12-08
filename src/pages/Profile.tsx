@@ -354,11 +354,6 @@ const ProfileContent = () => {
               verifiedMetrics={profile.social_verified}
             />
 
-            {portfolioItems.length > 0 && (
-              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-                <PortfolioAnalytics userId={profile.user_id} />
-              </div>
-            )}
 
             {industryStats.length > 0 && (
               <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">

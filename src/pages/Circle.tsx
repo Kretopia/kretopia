@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { ForYouFeed } from "@/components/circle/ForYouFeed";
 import { BrowseCreators } from "@/components/circle/BrowseCreators";
+import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
-import { Users, Sparkles, Search as SearchIcon } from "lucide-react";
+import { InviteDialog } from "@/components/InviteDialog";
+import { Users, Sparkles, Search as SearchIcon, UserPlus } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
@@ -24,6 +26,7 @@ export default function Circle() {
   const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
   const [connections, setConnections] = useState<any[]>([]);
   const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
   // Check user's profile visibility
   useEffect(() => {
@@ -80,34 +83,49 @@ export default function Circle() {
     setConnectionsLoading(true);
     
     try {
-      // Get all connections (both directions)
+      // Get all connections (both directions) - accepted OR where other user initiated
       const [outgoingResult, incomingResult] = await Promise.all([
         supabase
           .from('connections')
-          .select('connected_user_id')
-          .eq('user_id', user.id)
-          .eq('status', 'accepted'),
+          .select('connected_user_id, status')
+          .eq('user_id', user.id),
         supabase
           .from('connections')
-          .select('user_id')
+          .select('user_id, status')
           .eq('connected_user_id', user.id)
-          .eq('status', 'accepted')
       ]);
 
       const connectedIds = new Set<string>();
-      outgoingResult.data?.forEach(c => connectedIds.add(c.connected_user_id));
-      incomingResult.data?.forEach(c => connectedIds.add(c.user_id));
+      
+      // Add accepted connections from both directions
+      outgoingResult.data?.forEach(c => {
+        if (c.status === 'accepted') {
+          connectedIds.add(c.connected_user_id);
+        }
+      });
+      incomingResult.data?.forEach(c => {
+        if (c.status === 'accepted') {
+          connectedIds.add(c.user_id);
+        }
+      });
+
+      console.log('[Circle] Found connections:', connectedIds.size);
 
       if (connectedIds.size === 0) {
         setConnections([]);
+        setConnectionsLoading(false);
         return;
       }
 
-      // Fetch profiles
-      const { data: profiles } = await supabase
+      // Fetch profiles for connected users
+      const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('user_id, full_name, avatar_url, role, location, level, xp')
+        .select('user_id, full_name, avatar_url, role, location, level, xp, bio, badge')
         .in('user_id', Array.from(connectedIds));
+
+      if (error) {
+        console.error('[Circle] Error fetching profiles:', error);
+      }
 
       setConnections(profiles || []);
     } catch (error) {
@@ -180,33 +198,45 @@ export default function Circle() {
           </TabsContent>
 
           {/* My Network Tab */}
-          <TabsContent value="network" className="space-y-4">
-            <div className="mb-4">
-              <p className="text-muted-foreground">
-                {connections.length} connection{connections.length !== 1 ? 's' : ''}
-              </p>
-            </div>
+          <TabsContent value="network" className="space-y-6">
+            {/* 6 Degrees Visualization - Always show */}
+            <NetworkVisualization onInvite={() => setShowInvite(true)} />
 
-            {connections.length === 0 && !connectionsLoading ? (
-              <div className="text-center py-12">
-                <div className="mb-6 p-6 rounded-full bg-primary/10 inline-flex">
-                  <Users className="h-12 w-12 text-primary" />
+            {/* Connection List */}
+            {connections.length > 0 && (
+              <>
+                <div className="border-t pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold">Your Connections</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {connections.length} connection{connections.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  <ConnectionList
+                    connections={connections}
+                    loading={connectionsLoading}
+                    onMessage={handleMessage}
+                  />
                 </div>
-                <h3 className="text-xl font-bold mb-3">No Connections Yet</h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Check out your daily picks or browse creators to start connecting!
+              </>
+            )}
+
+            {connections.length === 0 && !connectionsLoading && (
+              <div className="text-center py-6 border-t">
+                <p className="text-muted-foreground mb-4">
+                  Start connecting with creators to grow your network!
                 </p>
-                <Button onClick={() => setActiveTab("foryou")} className="gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  View Today's Picks
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button onClick={() => setActiveTab("foryou")} variant="outline" className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    View Today's Picks
+                  </Button>
+                  <Button onClick={() => setShowInvite(true)} className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Invite Creators
+                  </Button>
+                </div>
               </div>
-            ) : (
-              <ConnectionList
-                connections={connections}
-                loading={connectionsLoading}
-                onMessage={handleMessage}
-              />
             )}
           </TabsContent>
         </Tabs>
@@ -229,6 +259,9 @@ export default function Circle() {
           }}
         />
       )}
+
+      {/* Invite Dialog */}
+      <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
     </div>
   );
 }

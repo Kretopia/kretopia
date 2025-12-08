@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Heart, Loader2, Filter, Users, Eye } from "lucide-react";
+import { Search, MapPin, Heart, Loader2, Filter, Users, Eye, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
-import { EmptyState } from "@/components/ui/empty-state";
+import { InviteDialog } from "@/components/InviteDialog";
 import {
   Select,
   SelectContent,
@@ -40,6 +40,7 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
   const [connectedIds, setConnectedIds] = useState<Set<string>>(new Set());
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [showInvite, setShowInvite] = useState(false);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -275,11 +276,30 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
 
       {/* Creators Grid */}
       {filteredCreators.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="No creators found"
-          description="Try adjusting your filters"
-        />
+        <div className="text-center py-12">
+          <div className="mb-6 p-6 rounded-full bg-muted/50 inline-flex">
+            <Users className="h-12 w-12 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-bold mb-3">No creators found</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Try adjusting your filters or invite more creators to the platform!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="outline" onClick={() => {
+              setSearch('');
+              setRoleFilter('all');
+              setLocationFilter('all');
+              setIntentFilter('all');
+            }}>
+              Clear Filters
+            </Button>
+            <Button onClick={() => setShowInvite(true)} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Invite Creators
+            </Button>
+          </div>
+          <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
+        </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {filteredCreators.map((creator) => {

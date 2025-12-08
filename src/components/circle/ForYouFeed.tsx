@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2 } from "lucide-react";
+import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SwipeCard } from "@/components/ui/swipe-card";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
+import { InviteDialog } from "@/components/InviteDialog";
 
 interface ForYouCreator {
   user_id: string;
@@ -37,6 +38,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
   const [lastSwiped, setLastSwiped] = useState<ForYouCreator | null>(null);
+  const [showInvite, setShowInvite] = useState(false);
 
   const DAILY_LIMIT = 10;
 
@@ -295,15 +297,27 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
   if (!currentCreator || currentIndex >= picks.length) {
     return (
-      <EmptyState
-        icon={Sparkles}
-        title="All caught up!"
-        description={`You've viewed all ${DAILY_LIMIT} picks for today. Come back tomorrow for fresh recommendations!`}
-        action={{
-          label: "Browse All Creators",
-          onClick: () => navigate('/circle?tab=browse')
-        }}
-      />
+      <>
+        <div className="text-center py-12">
+          <div className="mb-6 p-6 rounded-full bg-primary/10 inline-flex">
+            <Sparkles className="h-12 w-12 text-primary" />
+          </div>
+          <h3 className="text-xl font-bold mb-3">All caught up!</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            You've viewed all {DAILY_LIMIT} picks for today. Invite more creators to grow your network!
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="outline" onClick={() => navigate('/circle?tab=browse')}>
+              Browse All Creators
+            </Button>
+            <Button onClick={() => setShowInvite(true)} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Invite Creators
+            </Button>
+          </div>
+        </div>
+        <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
+      </>
     );
   }
 

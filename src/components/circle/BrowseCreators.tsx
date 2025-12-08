@@ -72,12 +72,12 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
   const [proMembersOnly, setProMembersOnly] = useState(false);
 
   // Filter options derived from shared constants
-  const roleOptions = [
+  const roleFilterOptions = [
     { value: 'all', label: 'All Roles' },
     ...ROLE_OPTIONS.filter(r => r.value !== 'Other'),
   ];
 
-  const locationOptions = [
+  const locationFilterOptions = [
     { value: 'all', label: 'All Locations' },
     ...LOCATION_OPTIONS.filter(l => l.value !== 'Other'),
   ];
@@ -367,7 +367,7 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
                     <SelectValue placeholder="Role" />
                   </SelectTrigger>
                   <SelectContent>
-                    {roleOptions.map(opt => (
+                    {roleFilterOptions.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -378,7 +378,7 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
                     <SelectValue placeholder="Location" />
                   </SelectTrigger>
                   <SelectContent>
-                    {locationOptions.map(opt => (
+                    {locationFilterOptions.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>

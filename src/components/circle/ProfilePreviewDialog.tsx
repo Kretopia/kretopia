@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 interface ProfilePreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userId: string;
-  userName: string;
+  userId: string | null;
+  userName?: string;
 }
 
 export const ProfilePreviewDialog = ({
@@ -23,6 +23,7 @@ export const ProfilePreviewDialog = ({
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile-preview', userId],
     queryFn: async () => {
+      if (!userId) return null;
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -38,6 +39,7 @@ export const ProfilePreviewDialog = ({
   const { data: portfolioItems = [] } = useQuery({
     queryKey: ['portfolio-preview', userId],
     queryFn: async () => {
+      if (!userId) return [];
       const { data, error } = await supabase
         .from('portfolio_items')
         .select('*')
@@ -46,7 +48,7 @@ export const ProfilePreviewDialog = ({
         .limit(6);
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: open && !!userId
   });

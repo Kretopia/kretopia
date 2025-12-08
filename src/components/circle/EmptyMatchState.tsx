@@ -25,10 +25,10 @@ export const EmptyMatchState = ({ onRefresh }: EmptyMatchStateProps) => {
 
       {/* Secondary Actions */}
       <div className="space-y-3 px-4">
-        <div className="mb-4 p-4 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 inline-flex">
+        <div className="mb-4 p-4 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 inline-flex" aria-hidden="true">
           <Sparkles className="h-8 w-8 text-primary" />
         </div>
-        <h4 className="font-semibold text-lg">All Caught Up!</h4>
+        <h4 className="font-semibold text-lg" id="empty-state-heading">All Caught Up!</h4>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
           You've swiped through all available creators. New creators join daily!
         </p>

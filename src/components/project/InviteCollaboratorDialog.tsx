@@ -60,7 +60,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         .from("matches")
         .select("user1_id, user2_id")
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-        .eq("status", "active");
+        .eq("status", "matched");
 
       const connectedIds = new Set<string>();
       outgoing?.forEach((c) => connectedIds.add(c.connected_user_id));

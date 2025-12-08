@@ -8,7 +8,7 @@ import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDi
 import { CollabIntentBadge } from "@/components/profile/CollabIntentSelector";
 import { EmptyMatchState } from "./EmptyMatchState";
 import { SkeletonMatchCard } from "@/components/ui/skeleton-card";
-
+import { cn } from "@/lib/utils";
 interface CreatorCard {
   id: string;
   user_id: string;
@@ -95,7 +95,7 @@ export const MatchFeed = ({
   }
 
   return (
-    <div className="relative w-full max-w-sm mx-auto" style={{ height: '70vh', minHeight: '600px', maxHeight: '700px' }}>
+    <div className="relative w-full max-w-sm mx-auto px-2 sm:px-0" style={{ height: 'calc(70vh - env(safe-area-inset-bottom, 0px))', minHeight: '500px', maxHeight: '650px' }}>
       {/* Tinder-Style Card Stack */}
       
       {/* Next Card Preview (Subtle) */}
@@ -222,25 +222,35 @@ export const MatchFeed = ({
         </div>
       </SwipeCard>
 
-      {/* Action Buttons - Tinder Style */}
-      <div className="absolute -bottom-24 left-1/2 transform -translate-x-1/2 flex items-center gap-8 z-20">
+      {/* Action Buttons - Mobile-optimized */}
+      <div className="absolute -bottom-20 sm:-bottom-24 left-1/2 transform -translate-x-1/2 flex items-center gap-6 sm:gap-8 z-20">
         <Button
           size="lg"
           variant="outline"
           onClick={onSwipeLeft}
-          className="h-20 w-20 rounded-full border-4 border-red-500 bg-white hover:bg-red-500 hover:scale-110 transition-all shadow-2xl hover:shadow-red-500/50 group"
+          className={cn(
+            "h-16 w-16 sm:h-20 sm:w-20 rounded-full border-4 border-destructive bg-card shadow-2xl",
+            "hover:bg-destructive hover:scale-110 active:scale-95",
+            "transition-all duration-200 group touch-manipulation"
+          )}
+          style={{ WebkitTapHighlightColor: 'transparent' }}
           aria-label="Pass"
         >
-          <X className="h-10 w-10 text-red-500 group-hover:text-white transition-colors" />
+          <X className="h-8 w-8 sm:h-10 sm:w-10 text-destructive group-hover:text-destructive-foreground transition-colors" />
         </Button>
         <Button
           size="lg"
           variant="outline"
           onClick={onSwipeRight}
-          className="h-20 w-20 rounded-full border-4 border-green-500 bg-white hover:bg-green-500 hover:scale-110 transition-all shadow-2xl hover:shadow-green-500/50 group"
+          className={cn(
+            "h-16 w-16 sm:h-20 sm:w-20 rounded-full border-4 border-green-500 bg-card shadow-2xl",
+            "hover:bg-green-500 hover:scale-110 active:scale-95",
+            "transition-all duration-200 group touch-manipulation"
+          )}
+          style={{ WebkitTapHighlightColor: 'transparent' }}
           aria-label="Like"
         >
-          <Heart className="h-10 w-10 text-green-500 group-hover:text-white fill-current transition-colors" />
+          <Heart className="h-8 w-8 sm:h-10 sm:w-10 text-green-500 group-hover:text-white fill-current transition-colors" />
         </Button>
       </div>
 

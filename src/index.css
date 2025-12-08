@@ -84,6 +84,19 @@ All colors MUST be HSL.
   }
 }
 
+/* Safe area utilities for mobile devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -96,8 +109,17 @@ All colors MUST be HSL.
     font-feature-settings: 'rlig' 1, 'calt' 1;
     /* Handle safe areas for mobile devices with notches */
     padding-bottom: env(safe-area-inset-bottom);
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
+    /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
   }
 
+  /* Improved touch handling */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
   #root {
     min-height: 100vh;
   }

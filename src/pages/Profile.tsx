@@ -40,7 +40,7 @@ import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteD
 import { ProfileEditDialog } from "@/components/profile/ProfileEditDialog";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ProfileHero } from "@/components/profile/ProfileHero";
-import { AboutSection } from "@/components/profile/AboutSection";
+
 import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { VerificationProgress } from "@/components/profile/VerificationProgress";
@@ -312,22 +312,6 @@ const ProfileContent = () => {
                 items={portfolioItems} 
                 isOwnProfile={true}
                 onRefresh={fetchData}
-              />
-            </div>
-            
-            {/* About Section */}
-
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <AboutSection
-                bio={profile.bio}
-                jobTitle={profile.role}
-                industry={profile.industry}
-                skills={[
-                  ...(Array.isArray(profile.professional_skills) ? profile.professional_skills : []),
-                  ...(Array.isArray(profile.passion_skills) ? profile.passion_skills : [])
-                ]}
-                responseTime={stats.responseRate}
-                isOwnProfile={true}
               />
             </div>
 

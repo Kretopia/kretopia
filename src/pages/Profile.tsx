@@ -87,6 +87,7 @@ const ProfileContent = () => {
     location: "",
     avatar_url: "",
     company_size: "",
+    collab_intent: "seeking_collaborators",
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -133,6 +134,7 @@ const ProfileContent = () => {
       bio: editForm.bio,
       location: editForm.location,
       avatar_url: editForm.avatar_url,
+      collab_intent: editForm.collab_intent,
     };
 
     // Upload gallery images for company accounts
@@ -270,13 +272,35 @@ const ProfileContent = () => {
             profile={profile}
             stats={stats}
             isOwnProfile={true}
-            onEdit={() => setIsEditOpen(true)}
+            onEdit={() => {
+              setEditForm({
+                full_name: profile.full_name || "",
+                role: profile.role || "",
+                bio: profile.bio || "",
+                location: profile.location || "",
+                avatar_url: profile.avatar_url || "",
+                company_size: profile.company_size || "",
+                collab_intent: (profile as any).collab_intent || "seeking_collaborators",
+              });
+              setIsEditOpen(true);
+            }}
             onShare={handleShare}
           />
           
           <ProfileActions
             onShare={handleShare}
-            onEdit={() => setIsEditOpen(true)}
+            onEdit={() => {
+              setEditForm({
+                full_name: profile.full_name || "",
+                role: profile.role || "",
+                bio: profile.bio || "",
+                location: profile.location || "",
+                avatar_url: profile.avatar_url || "",
+                company_size: profile.company_size || "",
+                collab_intent: (profile as any).collab_intent || "seeking_collaborators",
+              });
+              setIsEditOpen(true);
+            }}
             onDownload={handleDownloadEPK}
             isOwner={true}
           />

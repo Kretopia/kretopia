@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Globe, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { checkProfileCompletion, ProfileCompletionStatus } from "@/lib/profileCompletion";
 import { Database } from "@/integrations/supabase/types";
+import { CollabIntentSelector, CollabIntentValue } from "./CollabIntentSelector";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -24,6 +25,7 @@ interface ProfileEditDialogProps {
     location: string;
     avatar_url: string;
     company_size: string;
+    collab_intent: string;
   };
   onFormChange: (form: any) => void;
   onSave: () => void;
@@ -185,6 +187,14 @@ export const ProfileEditDialog = ({
               {getFieldStatus("Bio") === 'incomplete' && " - A detailed bio increases profile views by 60%"}
             </p>
           </FieldWrapper>
+
+          {/* Collab Intent Selector */}
+          <div className="border-t pt-4">
+            <CollabIntentSelector 
+              value={editForm.collab_intent}
+              onChange={(value) => onFormChange({ ...editForm, collab_intent: value })}
+            />
+          </div>
 
           {/* Missing Fields Reminder */}
           {completion.missingFields.length > 0 && (

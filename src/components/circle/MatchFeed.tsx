@@ -7,6 +7,7 @@ import { MapPin, Star, X, Heart, Sparkles, User } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
+import { CollabIntentBadge } from "@/components/profile/CollabIntentSelector";
 
 interface CreatorCard {
   id: string;
@@ -20,6 +21,7 @@ interface CreatorCard {
   level?: number;
   matchScore?: number;
   matchReasons?: string[];
+  collab_intent?: string;
 }
 
 interface MatchFeedProps {
@@ -163,6 +165,10 @@ export const MatchFeed = ({
           {/* Top Badges */}
           <div className="absolute top-6 left-6 right-6 flex justify-between items-start z-10">
             <div className="flex flex-col gap-2">
+              {/* Collab Intent Badge - Primary */}
+              {currentCard.collab_intent && (
+                <CollabIntentBadge intent={currentCard.collab_intent} size="md" />
+              )}
               {currentCard.badge && (
                 <Badge 
                   className={`${getBadgeColor(currentCard.badge)} text-white font-bold shadow-2xl text-sm px-3 py-1`}

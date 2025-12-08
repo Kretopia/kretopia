@@ -2113,6 +2113,7 @@ export type Database = {
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
+          collab_intent: string | null
           company_about: string | null
           company_address: string | null
           company_images: Json | null
@@ -2153,6 +2154,7 @@ export type Database = {
           press_links: Json | null
           professional_skills: Json | null
           project_credits: number | null
+          rate_range: string | null
           review_share_token: string | null
           role: string
           section_order: Json | null
@@ -2200,6 +2202,7 @@ export type Database = {
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          collab_intent?: string | null
           company_about?: string | null
           company_address?: string | null
           company_images?: Json | null
@@ -2240,6 +2243,7 @@ export type Database = {
           press_links?: Json | null
           professional_skills?: Json | null
           project_credits?: number | null
+          rate_range?: string | null
           review_share_token?: string | null
           role: string
           section_order?: Json | null
@@ -2287,6 +2291,7 @@ export type Database = {
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          collab_intent?: string | null
           company_about?: string | null
           company_address?: string | null
           company_images?: Json | null
@@ -2327,6 +2332,7 @@ export type Database = {
           press_links?: Json | null
           professional_skills?: Json | null
           project_credits?: number | null
+          rate_range?: string | null
           review_share_token?: string | null
           role?: string
           section_order?: Json | null

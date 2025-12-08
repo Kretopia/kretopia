@@ -78,33 +78,6 @@ export function AboutSection({
         </div>
       </div>
 
-      {/* Skills & Expertise */}
-      {skills.length > 0 && (
-        <div>
-          <h3 className="text-xl font-semibold mb-4">Skills & Expertise</h3>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill, index) => {
-              const skillName = typeof skill === 'string' ? skill : skill.name;
-              const skillLevel = typeof skill === 'object' ? skill.level : undefined;
-              
-              return (
-                <Badge 
-                  key={index} 
-                  variant="secondary"
-                  className="gap-1"
-                >
-                  {skillName}
-                  {skillLevel && (
-                    <span className="text-xs opacity-70">
-                      {"★".repeat(skillLevel)}
-                    </span>
-                  )}
-                </Badge>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

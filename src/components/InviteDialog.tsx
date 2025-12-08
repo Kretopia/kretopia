@@ -49,9 +49,9 @@ export const InviteDialog = ({ open, onOpenChange }: InviteDialogProps) => {
   const copyInviteCode = async (code: string) => {
     try {
       const inviteUrl = `https://www.thrivein.io/auth?invite=${code}`;
-      const inviteMessage = `🎨 Join my circle on ThriveIN!
+      const inviteMessage = `🎨 Join my creative circle on ThriveIN!
 
-Connect with creatives and content creators, discover exciting opportunities, and collaborate on projects together.
+Find your perfect collaborator with AI-powered matching. Swipe, match, and create together.
 
 ${inviteUrl}`;
       

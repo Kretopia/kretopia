@@ -61,51 +61,63 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log('Attempting to send email via Resend...');
-    const emailResponse = await resend.emails.send({
-      from: "ThriveIN <onboarding@resend.dev>",
-      to: [email],
-      subject: `You're invited to collaborate on "${projectTitle}" 🎯`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #8B5CF6;">Project Collaboration Invitation 🎯</h1>
-          <p>Hi there!</p>
-          <p><strong>${inviterName}</strong> has invited you to collaborate on their project:</p>
-          <div style="background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%); padding: 24px; border-radius: 12px; margin: 24px 0; text-align: center;">
-            <h2 style="color: white; margin: 0; font-size: 24px;">${projectTitle}</h2>
+    // Try to send email, but don't fail if it doesn't work (domain may not be verified)
+    let emailSent = false;
+    let emailError = null;
+    
+    try {
+      console.log('Attempting to send email via Resend...');
+      const emailResponse = await resend.emails.send({
+        from: "ThriveIN <onboarding@resend.dev>",
+        to: [email],
+        subject: `You're invited to collaborate on "${projectTitle}" 🎯`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8B5CF6;">Project Collaboration Invitation 🎯</h1>
+            <p>Hi there!</p>
+            <p><strong>${inviterName}</strong> has invited you to collaborate on their project:</p>
+            <div style="background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%); padding: 24px; border-radius: 12px; margin: 24px 0; text-align: center;">
+              <h2 style="color: white; margin: 0; font-size: 24px;">${projectTitle}</h2>
+            </div>
+            <p style="margin: 24px 0;">This is an opportunity to work together on an exciting creative project using ThriveDesk - our collaborative project workspace with:</p>
+            <ul style="line-height: 2;">
+              <li>📋 Task management</li>
+              <li>💰 Milestone payments & escrow</li>
+              <li>💬 Real-time messaging</li>
+              <li>📁 File sharing</li>
+              <li>⏱️ Time tracking</li>
+              <li>📊 Progress tracking</li>
+            </ul>
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${projectUrl}" style="display: inline-block; padding: 16px 32px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">View Project & Accept Invitation</a>
+            </div>
+            <p style="color: #666; margin-top: 32px; font-size: 14px;">If you don't have a ThriveIN account yet, you'll be able to create one when you click the button above.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
+            <p style="color: #999; font-size: 12px;">
+              This invitation was sent by ${inviterName} via ThriveIN. If you weren't expecting this invitation, you can safely ignore this email.
+            </p>
           </div>
-          <p style="margin: 24px 0;">This is an opportunity to work together on an exciting creative project using ThriveDesk - our collaborative project workspace with:</p>
-          <ul style="line-height: 2;">
-            <li>📋 Task management</li>
-            <li>💰 Milestone payments & escrow</li>
-            <li>💬 Real-time messaging</li>
-            <li>📁 File sharing</li>
-            <li>⏱️ Time tracking</li>
-            <li>📊 Progress tracking</li>
-          </ul>
-          <div style="text-align: center; margin: 32px 0;">
-            <a href="${projectUrl}" style="display: inline-block; padding: 16px 32px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">View Project & Accept Invitation</a>
-          </div>
-          <p style="color: #666; margin-top: 32px; font-size: 14px;">If you don't have a ThriveIN account yet, you'll be able to create one when you click the button above.</p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
-          <p style="color: #999; font-size: 12px;">
-            This invitation was sent by ${inviterName} via ThriveIN. If you weren't expecting this invitation, you can safely ignore this email.
-          </p>
-        </div>
-      `,
-    });
+        `,
+      });
 
-    if (emailResponse.error) {
-      console.error("Resend API error:", emailResponse.error);
-      throw new Error(`Resend API error: ${JSON.stringify(emailResponse.error)}`);
+      if (emailResponse.error) {
+        console.warn("Resend API error (non-fatal):", emailResponse.error);
+        emailError = emailResponse.error;
+      } else {
+        console.log("Invitation email sent successfully:", emailResponse);
+        emailSent = true;
+      }
+    } catch (emailErr: any) {
+      console.warn("Email sending failed (non-fatal):", emailErr.message);
+      emailError = emailErr.message;
     }
 
-    console.log("Invitation email sent successfully:", emailResponse);
-
+    // Return success - in-app notification was created, email is optional
     return new Response(JSON.stringify({ 
       success: true, 
-      data: emailResponse,
-      message: 'Invitation sent successfully'
+      emailSent,
+      emailError: emailError ? String(emailError) : null,
+      message: emailSent ? 'Invitation sent successfully' : 'In-app notification sent (email delivery pending domain verification)'
     }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },

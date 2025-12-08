@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SwipeCard } from "@/components/ui/swipe-card";
 import { MapPin, Star, X, Heart, Sparkles, User } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
 import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { CollabIntentBadge } from "@/components/profile/CollabIntentSelector";
+import { EmptyMatchState } from "./EmptyMatchState";
 
 interface CreatorCard {
   id: string;
@@ -80,29 +79,7 @@ export const MatchFeed = ({
   const nextCard = currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
 
   if (!currentCard) {
-    return (
-      <div className="text-center py-12">
-        <div className="mb-6 p-6 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 inline-flex animate-pulse">
-          <Sparkles className="h-12 w-12 text-primary" />
-        </div>
-        <h3 className="text-2xl font-bold mb-3">All Caught Up! 🎉</h3>
-        <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-          You've swiped through all available creators for now. 
-        </p>
-        <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-          New creators join daily. In the meantime, check your messages for any matches waiting for you!
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button onClick={() => window.location.reload()} variant="outline" className="gap-2">
-            <Sparkles className="h-4 w-4" />
-            Refresh Feed
-          </Button>
-          <Button onClick={() => window.location.href = '/messages'} className="gap-2">
-            Check Messages
-          </Button>
-        </div>
-      </div>
-    );
+    return <EmptyMatchState onRefresh={() => window.location.reload()} />;
   }
 
   return (

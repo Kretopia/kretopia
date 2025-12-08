@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, MapPin, Users } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
+import { MessageCircle, MapPin } from "lucide-react";
+import { NetworkVisualization } from "./NetworkVisualization";
+import { InviteDialog } from "@/components/InviteDialog";
 
 interface Connection {
   user_id: string;
@@ -32,6 +34,8 @@ const getBadgeColor = (badge: string) => {
 };
 
 export const ConnectionList = ({ connections, loading, onMessage }: ConnectionListProps) => {
+  const [showInvite, setShowInvite] = useState(false);
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -52,11 +56,10 @@ export const ConnectionList = ({ connections, loading, onMessage }: ConnectionLi
 
   if (connections.length === 0) {
     return (
-      <EmptyState
-        icon={Users}
-        title="No connections yet"
-        description="Start matching with creators to build your network!"
-      />
+      <>
+        <NetworkVisualization onInvite={() => setShowInvite(true)} />
+        <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
+      </>
     );
   }
 

@@ -131,7 +131,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
       console.log('[useCircleData] Already swiped on:', swipedUserIds.size, 'users');
       console.log('[useCircleData] Already connected with:', connectedUserIds.size, 'users');
 
-      // Fetch all potential profiles
+      // Fetch all potential profiles WITH portfolio count for quality filtering
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills')
@@ -150,22 +150,41 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
       // Filter out already-swiped and already-connected users
       let filtered = (profiles || []).filter(p => !excludedUserIds.has(p.user_id));
       console.log('[useCircleData] After filtering excluded:', filtered.length);
-      console.log('[useCircleData] After filtering swiped:', filtered.length);
       
       // Apply role filter
       if (filters.role && filters.role !== 'all') {
         filtered = filtered.filter(p => p.role === filters.role);
       }
 
-      // Filter profiles with meaningful content
+      // QUALITY FILTER: Only show profiles that meet discovery requirements
+      // - Must have avatar (profile picture)
+      // - Must have bio (20+ chars)
+      // - Portfolio count checked separately below
       filtered = filtered.filter(p => 
-        p.full_name && 
-        p.full_name !== 'New User' && 
+        p.avatar_url && 
         p.bio && 
-        p.bio.length > 10
+        p.bio.length >= 20
       );
 
-      console.log('[useCircleData] After quality filter:', filtered.length);
+      console.log('[useCircleData] After quality filter (avatar + bio):', filtered.length);
+
+      // Fetch portfolio counts for remaining profiles to complete quality check
+      const userIds = filtered.map(p => p.user_id);
+      const { data: portfolioCounts } = await supabase
+        .from('portfolio_items')
+        .select('user_id')
+        .in('user_id', userIds);
+
+      // Build map of user_id -> portfolio count
+      const portfolioCountMap = new Map<string, number>();
+      portfolioCounts?.forEach(item => {
+        portfolioCountMap.set(item.user_id, (portfolioCountMap.get(item.user_id) || 0) + 1);
+      });
+
+      // Final filter: must have at least 1 portfolio item
+      filtered = filtered.filter(p => (portfolioCountMap.get(p.user_id) || 0) >= 1);
+
+      console.log('[useCircleData] After portfolio filter:', filtered.length);
 
       // Transform profiles to cards
       const cards: CreatorCard[] = filtered.map(profile => ({

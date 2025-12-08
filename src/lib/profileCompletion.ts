@@ -44,32 +44,38 @@ export const checkProfileCompletion = (profile: Profile, portfolioCount: number 
 };
 
 // Helper to check if a profile meets minimum discovery requirements
-// This is used to filter profiles in Discover - stricter than just completion
+// This is used to filter profiles in Discover - QUALITY OVER QUANTITY
+// Only profiles meeting these requirements appear in Circle/matching
 export const meetsDiscoveryRequirements = (profile: Profile, portfolioCount: number = 0): boolean => {
-  // Must have all critical fields
-  const hasBasicInfo = profile.full_name && 
-                       profile.full_name !== 'New User' && 
-                       profile.role && 
-                       profile.role !== 'Creator' &&
-                       profile.bio && 
-                       profile.bio.length > 20 &&
-                       profile.avatar_url &&
-                       profile.location;
+  // Must have profile picture
+  const hasAvatar = !!profile.avatar_url;
   
-  // Must have at least 3 skills
-  const professionalSkills = profile.professional_skills ? 
-    (Array.isArray(profile.professional_skills) ? profile.professional_skills.length : Object.keys(profile.professional_skills).length) : 0;
-  const passionSkills = profile.passion_skills ? 
-    (Array.isArray(profile.passion_skills) ? profile.passion_skills.length : Object.keys(profile.passion_skills).length) : 0;
-  const hasSkills = (professionalSkills + passionSkills) >= 3;
+  // Must have meaningful bio (20+ characters)
+  const hasBio = profile.bio && profile.bio.length >= 20;
   
   // Must have at least 1 portfolio item
   const hasPortfolio = portfolioCount >= 1;
   
-  // Must have at least one social/web link
-  const hasSocialLink = !!(profile.website || profile.linkedin_url || profile.instagram_url || profile.twitter_url);
+  return hasAvatar && hasBio && hasPortfolio;
+};
+
+// Get the specific missing requirements for discovery
+export const getDiscoveryMissingFields = (profile: Profile, portfolioCount: number = 0): string[] => {
+  const missing: string[] = [];
   
-  return hasBasicInfo && hasSkills && hasPortfolio && hasSocialLink;
+  if (!profile.avatar_url) {
+    missing.push('Profile Picture');
+  }
+  
+  if (!profile.bio || profile.bio.length < 20) {
+    missing.push('Bio (20+ characters)');
+  }
+  
+  if (portfolioCount < 1) {
+    missing.push('At least 1 Portfolio Item');
+  }
+  
+  return missing;
 };
 
 export const PROFILE_COMPLETION_XP = 50;

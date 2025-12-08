@@ -25,6 +25,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { ROLE_OPTIONS, LOCATION_OPTIONS } from "@/components/profile/ProfileEditDialog";
 
 interface BrowseCreator {
   user_id: string;
@@ -70,38 +71,15 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
   const [minFollowers, setMinFollowers] = useState(0);
   const [proMembersOnly, setProMembersOnly] = useState(false);
 
-  // Curated filter options
+  // Filter options derived from shared constants
   const roleOptions = [
     { value: 'all', label: 'All Roles' },
-    { value: 'photographer', label: 'Photographer' },
-    { value: 'videographer', label: 'Videographer' },
-    { value: 'musician', label: 'Musician / Producer' },
-    { value: 'content-creator', label: 'Content Creator' },
-    { value: 'designer', label: 'Designer' },
-    { value: 'writer', label: 'Writer / Copywriter' },
-    { value: 'developer', label: 'Developer' },
-    { value: 'marketing', label: 'Marketing / Brand' },
-    { value: 'model', label: 'Model / Talent' },
-    { value: 'filmmaker', label: 'Filmmaker / Director' },
-    { value: 'animator', label: 'Animator / Motion' },
-    { value: 'podcaster', label: 'Podcaster' },
-    { value: 'influencer', label: 'Influencer' },
+    ...ROLE_OPTIONS.filter(r => r.value !== 'Other'),
   ];
 
   const locationOptions = [
     { value: 'all', label: 'All Locations' },
-    { value: 'bali', label: 'Bali, Indonesia' },
-    { value: 'jakarta', label: 'Jakarta, Indonesia' },
-    { value: 'singapore', label: 'Singapore' },
-    { value: 'thailand', label: 'Thailand' },
-    { value: 'vietnam', label: 'Vietnam' },
-    { value: 'malaysia', label: 'Malaysia' },
-    { value: 'philippines', label: 'Philippines' },
-    { value: 'australia', label: 'Australia' },
-    { value: 'europe', label: 'Europe' },
-    { value: 'usa', label: 'United States' },
-    { value: 'uk', label: 'United Kingdom' },
-    { value: 'remote', label: 'Remote / Worldwide' },
+    ...LOCATION_OPTIONS.filter(l => l.value !== 'Other'),
   ];
 
   useEffect(() => {

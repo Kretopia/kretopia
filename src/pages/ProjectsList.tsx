@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Loader2, Plus, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 const ProjectsList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -71,6 +71,9 @@ const ProjectsList = () => {
           New Project
         </Button>
       </div>
+
+      {/* Show pending invitations at the top */}
+      <MyPendingInvitations />
 
       {projects.length === 0 ? (
         <Card>

@@ -41,26 +41,39 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
   const loadConnectedUsers = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log("No user found for loading connections");
+        return;
+      }
 
-      // Get all accepted connections
-      const { data: outgoing } = await supabase
+      console.log("Loading connections for user:", user.id);
+
+      // Get all accepted connections where user is the initiator
+      const { data: outgoing, error: outgoingError } = await supabase
         .from("connections")
         .select("connected_user_id")
         .eq("user_id", user.id)
         .eq("status", "accepted");
 
-      const { data: incoming } = await supabase
+      console.log("Outgoing connections:", outgoing, outgoingError);
+
+      // Get all accepted connections where user is the recipient
+      const { data: incoming, error: incomingError } = await supabase
         .from("connections")
         .select("user_id")
         .eq("connected_user_id", user.id)
         .eq("status", "accepted");
 
-      const { data: matches } = await supabase
+      console.log("Incoming connections:", incoming, incomingError);
+
+      // Get all matches
+      const { data: matches, error: matchesError } = await supabase
         .from("matches")
         .select("user1_id, user2_id")
         .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
         .eq("status", "matched");
+
+      console.log("Matches:", matches, matchesError);
 
       const connectedIds = new Set<string>();
       outgoing?.forEach((c) => connectedIds.add(c.connected_user_id));
@@ -69,13 +82,22 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         connectedIds.add(m.user1_id === user.id ? m.user2_id : m.user1_id);
       });
 
+      // Remove current user from the set (in case of self-references)
+      connectedIds.delete(user.id);
+
+      console.log("Connected user IDs:", Array.from(connectedIds));
+
       if (connectedIds.size > 0) {
-        const { data: profiles } = await supabase
+        const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
           .select("user_id, full_name, avatar_url, role, professional_skills")
           .in("user_id", Array.from(connectedIds));
 
+        console.log("Loaded profiles:", profiles, profilesError);
         setConnectedUsers(profiles || []);
+      } else {
+        console.log("No connected IDs found");
+        setConnectedUsers([]);
       }
     } catch (error) {
       console.error("Error loading connected users:", error);

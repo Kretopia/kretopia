@@ -345,7 +345,8 @@ const Messages = () => {
 
   const filteredConversations = conversations.filter((conv) => {
     const partner = getConversationPartner(conv);
-    const matchesSearch = partner.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const partnerName = partner.name || '';
+    const matchesSearch = partnerName.toLowerCase().includes(searchQuery.toLowerCase());
     const isConnected = isConnectionAccepted(partner.id);
     
     if (activeTab === "primary") {

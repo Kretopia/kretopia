@@ -215,7 +215,11 @@ const ThriveDesk = () => {
 
   return (
     <div className="container max-w-6xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">
-      <SimpleProjectHeader project={project} collaborators={collaborators} />
+      <SimpleProjectHeader 
+        project={project} 
+        collaborators={collaborators} 
+        onCollaboratorsChanged={fetchProjectData}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">

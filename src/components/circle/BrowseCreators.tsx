@@ -70,8 +70,39 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
   const [minFollowers, setMinFollowers] = useState(0);
   const [proMembersOnly, setProMembersOnly] = useState(false);
 
-  const [roles, setRoles] = useState<string[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
+  // Curated filter options
+  const roleOptions = [
+    { value: 'all', label: 'All Roles' },
+    { value: 'photographer', label: 'Photographer' },
+    { value: 'videographer', label: 'Videographer' },
+    { value: 'musician', label: 'Musician / Producer' },
+    { value: 'content-creator', label: 'Content Creator' },
+    { value: 'designer', label: 'Designer' },
+    { value: 'writer', label: 'Writer / Copywriter' },
+    { value: 'developer', label: 'Developer' },
+    { value: 'marketing', label: 'Marketing / Brand' },
+    { value: 'model', label: 'Model / Talent' },
+    { value: 'filmmaker', label: 'Filmmaker / Director' },
+    { value: 'animator', label: 'Animator / Motion' },
+    { value: 'podcaster', label: 'Podcaster' },
+    { value: 'influencer', label: 'Influencer' },
+  ];
+
+  const locationOptions = [
+    { value: 'all', label: 'All Locations' },
+    { value: 'bali', label: 'Bali, Indonesia' },
+    { value: 'jakarta', label: 'Jakarta, Indonesia' },
+    { value: 'singapore', label: 'Singapore' },
+    { value: 'thailand', label: 'Thailand' },
+    { value: 'vietnam', label: 'Vietnam' },
+    { value: 'malaysia', label: 'Malaysia' },
+    { value: 'philippines', label: 'Philippines' },
+    { value: 'australia', label: 'Australia' },
+    { value: 'europe', label: 'Europe' },
+    { value: 'usa', label: 'United States' },
+    { value: 'uk', label: 'United Kingdom' },
+    { value: 'remote', label: 'Remote / Worldwide' },
+  ];
 
   useEffect(() => {
     if (user?.id) {
@@ -140,12 +171,6 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
         .limit(100);
 
       setCreators(data || []);
-
-      // Extract unique roles and locations for filters
-      const uniqueRoles = [...new Set(data?.map(c => c.role).filter(Boolean))];
-      const uniqueLocations = [...new Set(data?.map(c => c.location).filter(Boolean))];
-      setRoles(uniqueRoles as string[]);
-      setLocations(uniqueLocations as string[]);
     } catch (error) {
       console.error('[Browse] Error loading creators:', error);
     } finally {
@@ -269,9 +294,18 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
         return false;
       }
       
-      // Basic filters
-      if (roleFilter !== 'all' && creator.role !== roleFilter) return false;
-      if (locationFilter !== 'all' && !creator.location?.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+      // Role filter - match against user's role field (case-insensitive partial match)
+      if (roleFilter !== 'all') {
+        const roleMatch = creator.role?.toLowerCase().includes(roleFilter.toLowerCase());
+        if (!roleMatch) return false;
+      }
+      
+      // Location filter - match against user's location field (case-insensitive partial match)
+      if (locationFilter !== 'all') {
+        const locationMatch = creator.location?.toLowerCase().includes(locationFilter.toLowerCase());
+        if (!locationMatch) return false;
+      }
+      
       if (intentFilter !== 'all' && creator.collab_intent !== intentFilter) return false;
       
       // Premium filters (only apply if user is premium)
@@ -355,9 +389,8 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
                     <SelectValue placeholder="Role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Roles</SelectItem>
-                    {roles.map(role => (
-                      <SelectItem key={role} value={role}>{role}</SelectItem>
+                    {roleOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -367,9 +400,8 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
                     <SelectValue placeholder="Location" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    {locations.map(loc => (
-                      <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                    {locationOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

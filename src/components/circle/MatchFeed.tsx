@@ -7,6 +7,7 @@ import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { CollabIntentBadge } from "@/components/profile/CollabIntentSelector";
 import { EmptyMatchState } from "./EmptyMatchState";
+import { SkeletonMatchCard } from "@/components/ui/skeleton-card";
 
 interface CreatorCard {
   id: string;
@@ -66,10 +67,21 @@ export const MatchFeed = ({
   
   if (loading) {
     return (
-      <div className="relative h-[500px] w-full flex items-center justify-center">
-        <div className="animate-pulse text-center">
-          <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Finding creators...</p>
+      <div className="relative w-full max-w-sm mx-auto" style={{ height: '70vh', minHeight: '600px', maxHeight: '700px' }}>
+        <div className="relative h-full overflow-hidden rounded-3xl">
+          <SkeletonMatchCard />
+          <div className="absolute bottom-0 left-0 right-0 p-6 pb-8">
+            <div className="space-y-3">
+              <div className="h-8 w-40 bg-muted/50 rounded animate-pulse" />
+              <div className="h-5 w-32 bg-muted/50 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-muted/50 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+        {/* Skeleton action buttons */}
+        <div className="absolute -bottom-24 left-1/2 transform -translate-x-1/2 flex items-center gap-8 z-20">
+          <div className="h-20 w-20 rounded-full border-4 border-muted bg-card animate-pulse" />
+          <div className="h-20 w-20 rounded-full border-4 border-muted bg-card animate-pulse" />
         </div>
       </div>
     );

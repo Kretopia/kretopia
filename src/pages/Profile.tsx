@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import jsPDF from 'jspdf';
+import { SkeletonProfile } from "@/components/ui/skeleton-card";
 
 // Context & Hooks
 import { ProfileProvider, useProfileContext } from "@/contexts/ProfileContext";
@@ -225,8 +226,10 @@ const ProfileContent = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen pb-20 md:pb-6 bg-background">
+        <div className="container mx-auto px-3 sm:px-4 max-w-7xl">
+          <SkeletonProfile />
+        </div>
       </div>
     );
   }

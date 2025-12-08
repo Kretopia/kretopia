@@ -20,9 +20,8 @@ const MyAnalytics = () => {
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-6">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/profile")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

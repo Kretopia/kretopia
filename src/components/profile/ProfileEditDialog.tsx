@@ -6,10 +6,45 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Globe, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { checkProfileCompletion, ProfileCompletionStatus } from "@/lib/profileCompletion";
 import { Database } from "@/integrations/supabase/types";
 import { CollabIntentSelector, CollabIntentValue } from "./CollabIntentSelector";
+
+// Standardized options - must match filter options in BrowseCreators.tsx
+export const ROLE_OPTIONS = [
+  { value: 'Photographer', label: 'Photographer' },
+  { value: 'Videographer', label: 'Videographer' },
+  { value: 'Musician', label: 'Musician / Producer' },
+  { value: 'Content Creator', label: 'Content Creator' },
+  { value: 'Designer', label: 'Designer' },
+  { value: 'Writer', label: 'Writer / Copywriter' },
+  { value: 'Developer', label: 'Developer' },
+  { value: 'Marketing', label: 'Marketing / Brand' },
+  { value: 'Model', label: 'Model / Talent' },
+  { value: 'Filmmaker', label: 'Filmmaker / Director' },
+  { value: 'Animator', label: 'Animator / Motion' },
+  { value: 'Podcaster', label: 'Podcaster' },
+  { value: 'Influencer', label: 'Influencer' },
+  { value: 'Other', label: 'Other' },
+];
+
+export const LOCATION_OPTIONS = [
+  { value: 'Bali, Indonesia', label: 'Bali, Indonesia' },
+  { value: 'Jakarta, Indonesia', label: 'Jakarta, Indonesia' },
+  { value: 'Singapore', label: 'Singapore' },
+  { value: 'Thailand', label: 'Thailand' },
+  { value: 'Vietnam', label: 'Vietnam' },
+  { value: 'Malaysia', label: 'Malaysia' },
+  { value: 'Philippines', label: 'Philippines' },
+  { value: 'Australia', label: 'Australia' },
+  { value: 'Europe', label: 'Europe' },
+  { value: 'United States', label: 'United States' },
+  { value: 'United Kingdom', label: 'United Kingdom' },
+  { value: 'Remote', label: 'Remote / Worldwide' },
+  { value: 'Other', label: 'Other' },
+];
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -42,6 +77,9 @@ export const ProfileEditDialog = ({
   onSave,
   onQuickFill,
 }: ProfileEditDialogProps) => {
+  const [showCustomRole, setShowCustomRole] = useState(false);
+  const [showCustomLocation, setShowCustomLocation] = useState(false);
+
   // Calculate completion based on current form state
   const getCurrentCompletion = (): ProfileCompletionStatus => {
     const tempProfile = {
@@ -60,6 +98,9 @@ export const ProfileEditDialog = ({
   const getFieldStatus = (fieldLabel: string) => {
     return completion.completedFields.includes(fieldLabel) ? 'complete' : 'incomplete';
   };
+
+  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === editForm.role);
+  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === editForm.location);
 
   const FieldWrapper = ({ label, children, fieldLabel }: { label: string; children: React.ReactNode; fieldLabel: string }) => {
     const status = getFieldStatus(fieldLabel);
@@ -147,12 +188,48 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Role/Title" fieldLabel="Role/Title">
-            <Input
-              id="role"
-              value={editForm.role}
-              onChange={(e) => onFormChange({ ...editForm, role: e.target.value })}
-              placeholder="e.g., Filmmaker, Designer, Musician"
-            />
+            {showCustomRole || (!isRoleInOptions && editForm.role) ? (
+              <div className="space-y-2">
+                <Input
+                  id="role"
+                  value={editForm.role}
+                  onChange={(e) => onFormChange({ ...editForm, role: e.target.value })}
+                  placeholder="Enter your role"
+                />
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setShowCustomRole(false);
+                    onFormChange({ ...editForm, role: '' });
+                  }}
+                >
+                  Choose from list instead
+                </Button>
+              </div>
+            ) : (
+              <Select 
+                value={editForm.role || undefined}
+                onValueChange={(value) => {
+                  if (value === 'Other') {
+                    setShowCustomRole(true);
+                    onFormChange({ ...editForm, role: '' });
+                  } else {
+                    onFormChange({ ...editForm, role: value });
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLE_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {getFieldStatus("Role/Title") === 'incomplete' && (
               <p className="text-xs text-muted-foreground mt-1">
                 Your role helps others understand what you do
@@ -161,12 +238,48 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Location" fieldLabel="Location">
-            <Input
-              id="location"
-              value={editForm.location}
-              onChange={(e) => onFormChange({ ...editForm, location: e.target.value })}
-              placeholder="e.g., Los Angeles, CA"
-            />
+            {showCustomLocation || (!isLocationInOptions && editForm.location) ? (
+              <div className="space-y-2">
+                <Input
+                  id="location"
+                  value={editForm.location}
+                  onChange={(e) => onFormChange({ ...editForm, location: e.target.value })}
+                  placeholder="Enter your location"
+                />
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setShowCustomLocation(false);
+                    onFormChange({ ...editForm, location: '' });
+                  }}
+                >
+                  Choose from list instead
+                </Button>
+              </div>
+            ) : (
+              <Select 
+                value={editForm.location || undefined}
+                onValueChange={(value) => {
+                  if (value === 'Other') {
+                    setShowCustomLocation(true);
+                    onFormChange({ ...editForm, location: '' });
+                  } else {
+                    onFormChange({ ...editForm, location: value });
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LOCATION_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {getFieldStatus("Location") === 'incomplete' && (
               <p className="text-xs text-muted-foreground mt-1">
                 Location helps with local collaboration opportunities

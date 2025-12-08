@@ -9,7 +9,7 @@ import { ConnectionList } from "@/components/circle/ConnectionList";
 import { MatchFeed } from "@/components/circle/MatchFeed";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
-import { Users, Sparkles, Heart, Zap } from "lucide-react";
+import { Users, Sparkles, Heart, Zap, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CreatorFilters, type CreatorFilterState } from "@/components/discover/CreatorFilters";
@@ -21,6 +21,13 @@ import { type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { useToast } from "@/hooks/use-toast";
 import { useCircleData } from "@/hooks/useCircleData";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export default function Circle() {
   const { user, subscriptionInfo } = useAuth();
@@ -30,6 +37,7 @@ export default function Circle() {
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const [isProcessingSwipe, setIsProcessingSwipe] = useState(false);
   const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [creatorFilters, setCreatorFilters] = useState<CreatorFilterState>({
     search: '',
     role: 'all',
@@ -345,23 +353,55 @@ export default function Circle() {
 
           {/* Match Tab */}
           <TabsContent value="match" className="space-y-4">
-            {/* Swipes Counter */}
-            <div className="flex justify-center mb-2">
-              {subscriptionTier === 'free' ? (
-                <Badge 
-                  variant={dailySwipesLeft <= 5 ? "destructive" : "secondary"} 
-                  className="gap-1 cursor-pointer"
-                  onClick={() => dailySwipesLeft <= 5 && navigate('/subscription')}
-                >
-                  <Zap className="h-3 w-3" />
-                  {dailySwipesLeft}/30 swipes left
-                </Badge>
-              ) : (
-                <Badge variant="secondary" className="gap-1">
-                  <Sparkles className="h-3 w-3" />
-                  Unlimited ✨
-                </Badge>
-              )}
+            {/* Swipes Counter + Mobile Filter Button */}
+            <div className="flex items-center justify-between mb-2">
+              {/* Mobile Filter Button */}
+              <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="lg:hidden gap-2">
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Filters
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-4">
+                    <CreatorFilters
+                      filters={creatorFilters}
+                      onFilterChange={(newFilters) => {
+                        setCreatorFilters(newFilters);
+                        setShowMobileFilters(false);
+                      }}
+                      isPremium={subscriptionTier !== 'free'}
+                      userLevel={1}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+              
+              {/* Swipes Badge */}
+              <div className="flex-1 flex justify-center">
+                {subscriptionTier === 'free' ? (
+                  <Badge 
+                    variant={dailySwipesLeft <= 5 ? "destructive" : "secondary"} 
+                    className="gap-1 cursor-pointer"
+                    onClick={() => dailySwipesLeft <= 5 && navigate('/subscription')}
+                  >
+                    <Zap className="h-3 w-3" />
+                    {dailySwipesLeft}/30 swipes left
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Unlimited ✨
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Spacer for balance on mobile */}
+              <div className="w-[80px] lg:hidden" />
             </div>
 
             <div className="grid lg:grid-cols-[250px_1fr] gap-6">

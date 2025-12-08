@@ -34,6 +34,7 @@ const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ProjectsList = lazy(() => import("./pages/ProjectsList"));
 const Projects = lazy(() => import("./pages/Projects"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const MyAnalytics = lazy(() => import("./pages/MyAnalytics"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const EarnCredits = lazy(() => import("./pages/EarnCredits"));
 const Membership = lazy(() => import("./pages/Membership"));
@@ -143,6 +144,7 @@ const AppContent = () => {
             <Route path="/profile/:userId" element={<PublicProfile />} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/my-analytics" element={<ProtectedRoute><MyAnalytics /></ProtectedRoute>} />
             
             {/* ThriveDesk - Lightweight Project Workspace */}
             <Route path="/desk" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />

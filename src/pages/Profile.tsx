@@ -416,27 +416,7 @@ const ProfileContent = () => {
               </div>
             </div>
 
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Download className="h-5 w-5" />
-                Media Kit
-              </h2>
-              <p className="text-muted-foreground text-sm mb-4">
-                Download your professional media kit and assets.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Button onClick={handleDownloadEPK} className="gap-2" size="sm">
-                  <FileText className="h-4 w-4" />
-                  Download EPK
-                </Button>
-                {portfolioItems.length > 0 && (
-                  <Button onClick={handleDownloadPhotos} variant="outline" className="gap-2" size="sm">
-                    <Download className="h-4 w-4" />
-                    Download Photos
-                  </Button>
-                )}
-              </div>
-            </div>
+            {/* Media Kit section hidden for now - to be improved later */}
         </div>
       </div>
 

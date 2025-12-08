@@ -376,6 +376,7 @@ export default function Circle() {
                       }}
                       isPremium={subscriptionTier !== 'free'}
                       userLevel={1}
+                      inlineMode={true}
                     />
                   </div>
                 </SheetContent>

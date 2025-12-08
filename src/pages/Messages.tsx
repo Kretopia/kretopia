@@ -460,7 +460,7 @@ const Messages = () => {
                       <Avatar className="h-14 w-14 border-2 border-background">
                         <AvatarImage src={partner.avatar} />
                         <AvatarFallback className="text-lg">
-                          {partner.name
+                          {(partner.name || 'U')
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
@@ -477,7 +477,7 @@ const Messages = () => {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <p className="font-semibold truncate">{partner.name}</p>
+                        <p className="font-semibold truncate">{partner.name || 'Unknown'}</p>
                         <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
                           {formatDistanceToNow(new Date(conv.created_at), {
                             addSuffix: true,
@@ -537,7 +537,7 @@ const Messages = () => {
                 >
                   <AvatarImage src={otherUser.avatar} />
                   <AvatarFallback className="text-lg">
-                    {otherUser.name
+                    {(otherUser.name || 'U')
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
@@ -545,7 +545,7 @@ const Messages = () => {
                 </Avatar>
                 <div className="flex-1 cursor-pointer" onClick={() => navigate(`/profile/${otherUser.id}`)}>
                   <h3 className="font-semibold hover:underline">
-                    {otherUser.name}
+                    {otherUser.name || 'Unknown'}
                   </h3>
                   {otherUser.role && (
                     <p className="text-sm text-muted-foreground">{otherUser.role}</p>
@@ -585,7 +585,7 @@ const Messages = () => {
                 <div className="flex-1 space-y-2">
                   <p className="text-sm font-medium">Message Request</p>
                   <p className="text-sm text-muted-foreground">
-                    {otherUser.name} isn't in your connections yet. Be careful about what you share.
+                    {otherUser.name || 'This user'} isn't in your connections yet. Be careful about what you share.
                   </p>
                   <div className="flex gap-2">
                     <Button size="sm" variant="default">Accept Request</Button>
@@ -604,10 +604,10 @@ const Messages = () => {
                   <Avatar className="h-20 w-20 mb-4">
                     <AvatarImage src={otherUser?.avatar} />
                     <AvatarFallback className="text-2xl">
-                      {otherUser?.name.split(" ").map((n) => n[0]).join("")}
+                      {(otherUser?.name || 'U').split(" ").map((n) => n[0]).join("")}
                     </AvatarFallback>
                   </Avatar>
-                  <h3 className="text-lg font-semibold mb-1">{otherUser?.name}</h3>
+                  <h3 className="text-lg font-semibold mb-1">{otherUser?.name || 'Unknown'}</h3>
                   {otherUser?.role && (
                     <p className="text-sm text-muted-foreground mb-4">{otherUser.role}</p>
                   )}
@@ -637,7 +637,7 @@ const Messages = () => {
                         <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage src={otherUser?.avatar} />
                           <AvatarFallback className="text-xs">
-                            {otherUser?.name.split(" ").map((n) => n[0]).join("")}
+                            {(otherUser?.name || 'U').split(" ").map((n) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                       )}
@@ -719,7 +719,7 @@ const Messages = () => {
           onOpenChange={setShowProjectDialog}
           matchedUser={{
             id: otherUser.id,
-            name: otherUser.name,
+            name: otherUser.name || 'Unknown',
             role: otherUser.role || 'Creator',
             avatar: otherUser.avatar
           }}

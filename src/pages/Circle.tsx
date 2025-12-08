@@ -8,6 +8,7 @@ import { SmartConnectionSuggestions } from "@/components/circle/SmartConnectionS
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { MatchFeed } from "@/components/circle/MatchFeed";
 import { SEO } from "@/components/SEO";
+import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { Users, Sparkles, Heart, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ import { UndoSwipeButton } from "@/components/discover/UndoSwipeButton";
 import { type SubscriptionTier } from "@/lib/subscriptionLimits";
 import { useToast } from "@/hooks/use-toast";
 import { useCircleData } from "@/hooks/useCircleData";
+import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 
 export default function Circle() {
   const { user, subscriptionInfo } = useAuth();
@@ -27,6 +29,7 @@ export default function Circle() {
   const [showMatchCelebration, setShowMatchCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const [isProcessingSwipe, setIsProcessingSwipe] = useState(false);
+  const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
   const [creatorFilters, setCreatorFilters] = useState<CreatorFilterState>({
     search: '',
     role: 'all',
@@ -60,6 +63,38 @@ export default function Circle() {
     onSwipeLeft: () => !isProcessingSwipe && handleSwipe("left"),
     onSwipeRight: () => !isProcessingSwipe && handleSwipe("right")
   });
+
+  // Check user's profile visibility
+  useEffect(() => {
+    const checkProfileVisibility = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('avatar_url, bio')
+          .eq('user_id', user.id)
+          .single();
+        
+        const { count: portfolioCount } = await supabase
+          .from('portfolio_items')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        
+        if (profile) {
+          const missingFields = getDiscoveryMissingFields(profile as any, portfolioCount || 0);
+          setProfileVisibility({
+            isVisible: missingFields.length === 0,
+            missingFields
+          });
+        }
+      } catch (error) {
+        console.error('[Circle] Error checking profile visibility:', error);
+      }
+    };
+    
+    checkProfileVisibility();
+  }, [user?.id]);
 
   // Load data when tab changes
   useEffect(() => {
@@ -281,6 +316,12 @@ export default function Circle() {
       </div>
 
       <div className="container mx-auto px-4 py-4">
+        {/* Profile Visibility Banner */}
+        <ProfileVisibilityBanner 
+          isVisible={profileVisibility.isVisible} 
+          missingFields={profileVisibility.missingFields} 
+        />
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="suggestions" className="gap-2">

@@ -48,7 +48,7 @@ import { ProfileActions } from "@/components/profile/ProfileActions";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 
 import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
-import { checkProfileCompletion } from "@/lib/profileCompletion";
+import { checkProfileCompletion, getDiscoveryMissingFields, meetsDiscoveryRequirements } from "@/lib/profileCompletion";
 
 const ProfileContent = () => {
   const {
@@ -281,6 +281,18 @@ const ProfileContent = () => {
             isOwner={true}
           />
         </div>
+
+        {/* Profile Visibility Banner */}
+        {(() => {
+          const missingFields = getDiscoveryMissingFields(profile as any, portfolioItems.length);
+          const isVisible = missingFields.length === 0;
+          return (
+            <ProfileVisibilityBanner 
+              isVisible={isVisible} 
+              missingFields={missingFields} 
+            />
+          );
+        })()}
 
         {/* Simplified Content - Portfolio First */}
         <div className="space-y-4">

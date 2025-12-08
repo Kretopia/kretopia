@@ -11,6 +11,7 @@ import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { OnboardingTour } from "./components/OnboardingTour";
+import { SkipLink } from "./components/ui/skip-link";
 import { analytics } from "@/lib/analytics";
 
 // Lazy load active page components
@@ -95,10 +96,11 @@ const AppContent = () => {
   
   return (
     <div className="h-full overflow-auto">
+      <SkipLink />
       <PageViewTracker />
       <Navbar user={user} />
       {user && <BottomNav />}
-      <div className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
+      <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Active MVP Routes */}
@@ -150,7 +152,7 @@ const AppContent = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-      </div>
+      </main>
     </div>
   );
 };

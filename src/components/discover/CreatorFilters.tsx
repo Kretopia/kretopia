@@ -25,9 +25,10 @@ interface CreatorFiltersProps {
   onFilterChange: (filters: CreatorFilterState) => void;
   isPremium: boolean;
   userLevel: number;
+  inlineMode?: boolean; // When true, renders filter content directly without sheet wrapper
 }
 
-export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel }: CreatorFiltersProps) => {
+export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel, inlineMode = false }: CreatorFiltersProps) => {
   const clearFilters = () => {
     onFilterChange({
       search: '',
@@ -255,6 +256,11 @@ export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel }
       )}
     </div>
   );
+
+  // If inlineMode is true, just render the filter content directly
+  if (inlineMode) {
+    return <FilterContent />;
+  }
 
   return (
     <>

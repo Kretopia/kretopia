@@ -79,7 +79,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       analytics.swipe(direction, currentCreator.user_id);
 
       if (direction === 'right') {
-        // Check for mutual match
+        // Check for mutual match (they already swiped right on us)
         const { data: theirSwipe } = await supabase
           .from('swipes')
           .select('id')
@@ -89,7 +89,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           .maybeSingle();
 
         if (theirSwipe) {
-          // Create match
+          // It's a match! Create match record
           await supabase.from('matches').insert({
             user1_id: user!.id,
             user2_id: currentCreator.user_id,
@@ -97,10 +97,18 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             status: 'active',
           });
 
-          await supabase.from('connections').insert([
+          // Update existing pending connections to accepted, or create new ones
+          // First, update any pending connections from either direction
+          await supabase
+            .from('connections')
+            .update({ status: 'accepted' })
+            .or(`and(user_id.eq.${user!.id},connected_user_id.eq.${currentCreator.user_id}),and(user_id.eq.${currentCreator.user_id},connected_user_id.eq.${user!.id})`);
+
+          // Insert connections if they don't exist (upsert-like behavior)
+          await supabase.from('connections').upsert([
             { user_id: user!.id, connected_user_id: currentCreator.user_id, status: 'accepted' },
             { user_id: currentCreator.user_id, connected_user_id: user!.id, status: 'accepted' }
-          ]);
+          ], { onConflict: 'user_id,connected_user_id', ignoreDuplicates: true });
 
           onMatch({
             name: currentCreator.full_name,
@@ -109,6 +117,13 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             userId: currentCreator.user_id,
           });
         } else {
+          // No match yet, create pending connection from us to them
+          await supabase.from('connections').upsert({
+            user_id: user!.id, 
+            connected_user_id: currentCreator.user_id, 
+            status: 'pending'
+          }, { onConflict: 'user_id,connected_user_id', ignoreDuplicates: true });
+          
           toast.success(`Interest sent to ${currentCreator.full_name}! 💫`);
         }
       }
@@ -173,10 +188,11 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       const swipedIds = allSwiped?.map(s => s.target_id) || [];
       console.log('[ForYou] Swiped IDs:', swipedIds);
       
-      // Get connections to exclude (check both directions)
+      // Get ACCEPTED connections only to exclude (pending = one person swiped, waiting for other)
       const { data: connections } = await supabase
         .from('connections')
         .select('connected_user_id, user_id')
+        .eq('status', 'accepted')
         .or(`user_id.eq.${user!.id},connected_user_id.eq.${user!.id}`);
       
       const connectedIds = connections?.map(c => 

@@ -42,12 +42,16 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const [lastSwiped, setLastSwiped] = useState<ForYouCreator | null>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
+  const [userTier, setUserTier] = useState<string>('free');
   
   // Filters
   const [filters, setFilters] = useState<ConnectFilters>({
     role: 'all',
     location: 'all',
     collabIntent: 'all',
+    verifiedOnly: false,
+    minFollowers: 'all',
+    experienceLevel: 'all',
   });
 
   const DAILY_LIMIT = 20;
@@ -149,9 +153,14 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       // Get current user's profile for matching
       const { data: currentProfile } = await supabase
         .from('profiles')
-        .select('role, location, professional_skills, collab_intent')
+        .select('role, location, professional_skills, collab_intent, subscription_tier')
         .eq('user_id', user!.id)
         .single();
+
+      // Set user tier for Pro filter access
+      if (currentProfile?.subscription_tier) {
+        setUserTier(currentProfile.subscription_tier);
+      }
 
       // Get already swiped users today
       const today = new Date();
@@ -327,6 +336,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           filters={filters}
           onFiltersChange={setFilters}
           activeFilterCount={activeFilterCount}
+          isPro={userTier === 'pro' || userTier === 'studio'}
         />
         
         <div className="text-center py-12">
@@ -344,7 +354,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {activeFilterCount > 0 && (
-              <Button variant="outline" onClick={() => setFilters({ role: 'all', location: 'all', collabIntent: 'all' })}>
+              <Button variant="outline" onClick={() => setFilters({ role: 'all', location: 'all', collabIntent: 'all', verifiedOnly: false, minFollowers: 'all', experienceLevel: 'all' })}>
                 Clear Filters
               </Button>
             )}
@@ -369,6 +379,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           filters={filters}
           onFiltersChange={setFilters}
           activeFilterCount={activeFilterCount}
+          isPro={userTier === 'pro' || userTier === 'studio'}
         />
       </div>
       

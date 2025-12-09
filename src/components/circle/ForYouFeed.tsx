@@ -150,6 +150,8 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const loadDailyPicks = async () => {
     setLoading(true);
     try {
+      console.log('[ForYou] Loading picks for user:', user!.id);
+      
       // Get current user's profile for matching
       const { data: currentProfile } = await supabase
         .from('profiles')
@@ -162,13 +164,14 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         setUserTier(currentProfile.subscription_tier);
       }
 
-      // Get ALL previously swiped users (not just today)
+      // Get ALL previously swiped users
       const { data: allSwiped } = await supabase
         .from('swipes')
         .select('target_id')
         .eq('user_id', user!.id);
 
       const swipedIds = allSwiped?.map(s => s.target_id) || [];
+      console.log('[ForYou] Swiped IDs:', swipedIds);
       
       // Get connections to exclude (check both directions)
       const { data: connections } = await supabase
@@ -179,36 +182,50 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       const connectedIds = connections?.map(c => 
         c.user_id === user!.id ? c.connected_user_id : c.user_id
       ) || [];
-      const excludeIds = [...swipedIds, ...connectedIds, user!.id];
+      console.log('[ForYou] Connected IDs:', connectedIds);
+      
+      const excludeIds = [...new Set([...swipedIds, ...connectedIds, user!.id])]; // Use Set to dedupe
+      console.log('[ForYou] Total exclude IDs:', excludeIds);
 
-      // Get curated picks with visibility requirements
-      let query = supabase
+      // First get ALL profiles with basic requirements
+      const { data: allProfiles, error: profileError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, professional_skills')
+        .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, professional_skills, onboarding_completed')
         .not('avatar_url', 'is', null)
+        .neq('avatar_url', '')
         .not('bio', 'is', null)
         .neq('bio', '')
-        .limit(50); // Fetch more, then filter
+        .eq('onboarding_completed', true)
+        .limit(100);
 
-      // Apply filters
+      if (profileError) {
+        console.error('[ForYou] Profile query error:', profileError);
+        setPicks([]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('[ForYou] All profiles found:', allProfiles?.length);
+
+      // Filter out excluded users in JavaScript (more reliable than Supabase filter syntax)
+      let candidates = allProfiles?.filter(p => !excludeIds.includes(p.user_id)) || [];
+      
+      console.log('[ForYou] After exclusion:', candidates.length);
+
+      // Apply user filters
       if (filters.role !== 'all') {
-        query = query.eq('role', filters.role);
+        candidates = candidates.filter(p => p.role === filters.role);
       }
       if (filters.location !== 'all') {
-        query = query.eq('location', filters.location);
+        candidates = candidates.filter(p => p.location === filters.location);
       }
       if (filters.collabIntent !== 'all') {
-        query = query.eq('collab_intent', filters.collabIntent);
+        candidates = candidates.filter(p => p.collab_intent === filters.collabIntent);
       }
 
-      // Exclude already swiped, connected, and self using filter
-      if (excludeIds.length > 0) {
-        query = query.filter('user_id', 'not.in', `(${excludeIds.join(',')})`);
-      }
+      console.log('[ForYou] After filters:', candidates.length, candidates.map(c => c.full_name));
 
-      const { data: candidates } = await query;
-
-      if (!candidates || candidates.length === 0) {
+      if (candidates.length === 0) {
         setPicks([]);
         setLoading(false);
         return;

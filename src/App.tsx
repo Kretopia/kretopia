@@ -18,6 +18,8 @@ import { analytics } from "@/lib/analytics";
 const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
+const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Circle = lazy(() => import("./pages/Circle"));
@@ -134,6 +136,10 @@ const AppContent = () => {
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            
+            {/* Public Access Pages (No Auth Required) */}
+            <Route path="/endorse" element={<EndorseSkill />} />
+            <Route path="/submit-review" element={<SubmitReview />} />
             
             {/* Redirect old routes to Circle */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />

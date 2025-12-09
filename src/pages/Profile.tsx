@@ -380,6 +380,16 @@ const ProfileContent = () => {
               </div>
             </div>
 
+            {/* Reviews Section */}
+            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
+              <ReviewsSection 
+                reviews={reviews}
+                isOwnProfile={true}
+                profileUserId={profile.user_id}
+                onRefresh={fetchData}
+              />
+            </div>
+
             {/* Media Kit section hidden for now - to be improved later */}
         </div>
       </div>

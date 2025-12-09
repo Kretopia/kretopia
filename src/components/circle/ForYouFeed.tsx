@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus, Lightbulb } from "lucide-react";
+import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus, Lightbulb, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -43,6 +43,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const [showInvite, setShowInvite] = useState(false);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
   const [userTier, setUserTier] = useState<string>('free');
+  const [debugInfo, setDebugInfo] = useState<string>('');
   
   // Filters
   const [filters, setFilters] = useState<ConnectFilters>({
@@ -98,13 +99,12 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           });
 
           // Update existing pending connections to accepted, or create new ones
-          // First, update any pending connections from either direction
           await supabase
             .from('connections')
             .update({ status: 'accepted' })
             .or(`and(user_id.eq.${user!.id},connected_user_id.eq.${currentCreator.user_id}),and(user_id.eq.${currentCreator.user_id},connected_user_id.eq.${user!.id})`);
 
-          // Insert connections if they don't exist (upsert-like behavior)
+          // Insert connections if they don't exist
           await supabase.from('connections').upsert([
             { user_id: user!.id, connected_user_id: currentCreator.user_id, status: 'accepted' },
             { user_id: currentCreator.user_id, connected_user_id: user!.id, status: 'accepted' }
@@ -156,137 +156,161 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     dragThreshold: 60
   });
 
-  useEffect(() => {
-    if (user?.id) {
-      loadDailyPicks();
-    }
-  }, [user?.id, filters]);
-
-  const loadDailyPicks = async () => {
+  const loadDailyPicks = useCallback(async () => {
+    if (!user?.id) return;
+    
     setLoading(true);
+    setDebugInfo('Loading...');
+    
     try {
-      console.log('[ForYou] Loading picks for user:', user!.id);
+      console.log('[ForYou] ========== LOADING PICKS ==========');
+      console.log('[ForYou] Current user ID:', user.id);
       
-      // Get current user's profile for matching
+      // Step 1: Get current user's profile
       const { data: currentProfile } = await supabase
         .from('profiles')
         .select('role, location, professional_skills, collab_intent, subscription_tier')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .single();
 
-      // Set user tier for Pro filter access
       if (currentProfile?.subscription_tier) {
         setUserTier(currentProfile.subscription_tier);
       }
 
-      // Get ALL previously swiped users by this user
-      const { data: allSwiped, error: swipeError } = await supabase
+      // Step 2: Get ALL swipes this user has made
+      const { data: mySwipes } = await supabase
         .from('swipes')
         .select('target_id')
-        .eq('user_id', user!.id);
+        .eq('user_id', user.id);
 
-      if (swipeError) {
-        console.error('[ForYou] Swipes query error:', swipeError);
-      }
+      const swipedUserIds = mySwipes?.map(s => s.target_id) || [];
+      console.log('[ForYou] User has swiped on:', swipedUserIds.length, 'profiles');
 
-      const swipedIds = allSwiped?.map(s => s.target_id) || [];
-      console.log('[ForYou] User swiped on these IDs:', swipedIds);
-      
-      // Get ONLY accepted connections (pending means waiting for the other person to swipe)
-      const { data: acceptedConnections, error: connError } = await supabase
+      // Step 3: Get ONLY accepted connections (not pending - pending means waiting for reciprocation)
+      const { data: acceptedConns } = await supabase
         .from('connections')
-        .select('connected_user_id, user_id, status')
+        .select('user_id, connected_user_id')
         .eq('status', 'accepted');
 
-      if (connError) {
-        console.error('[ForYou] Connections query error:', connError);
-      }
-
-      // Filter to only connections involving current user
-      const myConnections = acceptedConnections?.filter(c => 
-        c.user_id === user!.id || c.connected_user_id === user!.id
+      // Filter to only MY accepted connections
+      const myAcceptedConnections = acceptedConns?.filter(c => 
+        c.user_id === user.id || c.connected_user_id === user.id
       ) || [];
       
-      const connectedIds = myConnections.map(c => 
-        c.user_id === user!.id ? c.connected_user_id : c.user_id
+      const connectedUserIds = myAcceptedConnections.map(c => 
+        c.user_id === user.id ? c.connected_user_id : c.user_id
       );
-      console.log('[ForYou] Accepted connection IDs:', connectedIds);
-      
-      // Build exclusion list: only swipedIds + connectedIds + self
-      const excludeIds = [...new Set([...swipedIds, ...connectedIds, user!.id])];
-      console.log('[ForYou] Total exclude IDs:', excludeIds);
-      console.log('[ForYou] Exclude count:', excludeIds.length);
+      console.log('[ForYou] User is connected to:', connectedUserIds.length, 'profiles');
 
-      // Get ALL eligible profiles with basic requirements
+      // Step 4: Build the exclusion list
+      const excludeSet = new Set([
+        ...swipedUserIds,
+        ...connectedUserIds,
+        user.id // Always exclude self
+      ]);
+      const excludeIds = Array.from(excludeSet);
+      console.log('[ForYou] Total exclusion list:', excludeIds.length, 'IDs');
+      console.log('[ForYou] Exclusion IDs:', excludeIds);
+
+      // Step 5: Get ALL profiles that meet basic criteria
       const { data: allProfiles, error: profileError } = await supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, professional_skills, onboarding_completed')
-        .not('avatar_url', 'is', null)
-        .neq('avatar_url', '')
-        .not('bio', 'is', null)
-        .neq('bio', '')
         .eq('onboarding_completed', true)
+        .not('avatar_url', 'is', null)
+        .not('bio', 'is', null)
         .limit(100);
 
       if (profileError) {
         console.error('[ForYou] Profile query error:', profileError);
+        setDebugInfo('Error loading profiles');
         setPicks([]);
         setLoading(false);
         return;
       }
 
-      console.log('[ForYou] All eligible profiles:', allProfiles?.length, allProfiles?.map(p => ({ id: p.user_id, name: p.full_name })));
+      console.log('[ForYou] All eligible profiles from DB:', allProfiles?.length);
+      allProfiles?.forEach(p => {
+        console.log(`[ForYou]   - ${p.full_name} (${p.user_id})`);
+      });
 
-      // Filter out excluded users in JavaScript (more reliable)
-      let candidates = allProfiles?.filter(p => {
-        const isExcluded = excludeIds.includes(p.user_id);
-        if (isExcluded) {
-          console.log(`[ForYou] Excluding ${p.full_name} (${p.user_id})`);
+      // Step 6: Filter out excluded IDs in JavaScript (more reliable than Supabase)
+      // Also filter out empty avatar/bio strings
+      const candidates = allProfiles?.filter(p => {
+        // Check if excluded
+        if (excludeSet.has(p.user_id)) {
+          console.log(`[ForYou] EXCLUDING (already swiped/connected/self): ${p.full_name}`);
+          return false;
         }
-        return !isExcluded;
+        // Check avatar not empty
+        if (!p.avatar_url || p.avatar_url.trim() === '') {
+          console.log(`[ForYou] EXCLUDING (no avatar): ${p.full_name}`);
+          return false;
+        }
+        // Check bio not empty
+        if (!p.bio || p.bio.trim() === '') {
+          console.log(`[ForYou] EXCLUDING (no bio): ${p.full_name}`);
+          return false;
+        }
+        console.log(`[ForYou] KEEPING: ${p.full_name}`);
+        return true;
       }) || [];
-      
-      console.log('[ForYou] After exclusion, candidates:', candidates.length, candidates.map(c => c.full_name));
 
-      // Apply user filters
+      console.log('[ForYou] After exclusion, candidates:', candidates.length);
+      candidates.forEach(c => console.log(`[ForYou]   Candidate: ${c.full_name}`));
+      
+      setDebugInfo(`Found ${candidates.length} candidates after filtering`);
+
+      // Step 7: Apply user filters if set
+      let filteredCandidates = [...candidates];
+      
       if (filters.role !== 'all') {
-        candidates = candidates.filter(p => p.role === filters.role);
+        filteredCandidates = filteredCandidates.filter(p => 
+          p.role?.toLowerCase().includes(filters.role.toLowerCase())
+        );
       }
       if (filters.location !== 'all') {
-        candidates = candidates.filter(p => p.location === filters.location);
+        filteredCandidates = filteredCandidates.filter(p => 
+          p.location?.toLowerCase().includes(filters.location.toLowerCase())
+        );
       }
       if (filters.collabIntent !== 'all') {
-        candidates = candidates.filter(p => p.collab_intent === filters.collabIntent);
+        filteredCandidates = filteredCandidates.filter(p => p.collab_intent === filters.collabIntent);
       }
 
-      console.log('[ForYou] After filters:', candidates.length, candidates.map(c => c.full_name));
+      console.log('[ForYou] After user filters:', filteredCandidates.length);
 
-      if (candidates.length === 0) {
+      if (filteredCandidates.length === 0) {
+        console.log('[ForYou] No candidates left after filtering!');
         setPicks([]);
+        setCurrentIndex(0);
         setLoading(false);
         return;
       }
 
-      // Score and rank candidates
-      const scoredPicks = candidates.map(candidate => {
+      // Step 8: Score and rank candidates
+      const scoredPicks = filteredCandidates.map(candidate => {
         let score = 70;
         const reasons: string[] = [];
 
+        // Location match
         if (candidate.location && currentProfile?.location && 
             candidate.location.toLowerCase() === currentProfile.location.toLowerCase()) {
           score += 10;
           reasons.push(`📍 Based in ${candidate.location}`);
         }
 
+        // Complementary roles
         if (candidate.role && currentProfile?.role) {
           const complementaryPairs: Record<string, string[]> = {
             'Photographer': ['Model', 'Videographer', 'Content Creator'],
             'Videographer': ['Photographer', 'Music Producer', 'Content Creator'],
             'Music Producer': ['Vocalist', 'Songwriter', 'Videographer'],
             'Content Creator': ['Photographer', 'Videographer', 'Graphic Designer'],
+            'Entrepreneur': ['Content Creator', 'Photographer', 'Videographer', 'Graphic Designer'],
           };
           const complementary = complementaryPairs[currentProfile.role] || [];
-          if (complementary.includes(candidate.role)) {
+          if (complementary.some(role => candidate.role?.includes(role))) {
             score += 15;
             reasons.push(`🎯 Complementary skill: ${candidate.role}`);
           } else if (candidate.role === currentProfile.role) {
@@ -295,19 +319,21 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           }
         }
 
+        // Collaboration intent match
         if (candidate.collab_intent && currentProfile?.collab_intent) {
-          const intentMatch = {
+          const intentMatch: Record<string, string> = {
             'looking_to_hire': 'available_for_hire',
             'available_for_hire': 'looking_to_hire',
             'seeking_collaborators': 'seeking_collaborators',
             'open_to_trade': 'open_to_trade',
           };
-          if (intentMatch[currentProfile.collab_intent as keyof typeof intentMatch] === candidate.collab_intent) {
+          if (intentMatch[currentProfile.collab_intent] === candidate.collab_intent) {
             score += 10;
             reasons.push('🤝 Matching collaboration goals');
           }
         }
 
+        // Add some randomness to prevent same order
         score += Math.floor(Math.random() * 10);
 
         if (reasons.length === 0) {
@@ -321,29 +347,41 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         };
       });
 
+      // Sort by score descending
       scoredPicks.sort((a, b) => b.match_score - a.match_score);
-      setPicks(scoredPicks.slice(0, DAILY_LIMIT));
+      
+      const finalPicks = scoredPicks.slice(0, DAILY_LIMIT);
+      console.log('[ForYou] Final picks:', finalPicks.length);
+      finalPicks.forEach(p => console.log(`[ForYou]   Pick: ${p.full_name} (score: ${p.match_score})`));
+      
+      setPicks(finalPicks);
       setCurrentIndex(0);
+      setDebugInfo(`Loaded ${finalPicks.length} picks`);
     } catch (error) {
       console.error('[ForYou] Error loading picks:', error);
+      setDebugInfo('Error: ' + String(error));
       toast.error('Failed to load recommendations');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, filters]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadDailyPicks();
+    }
+  }, [user?.id, loadDailyPicks]);
 
   const handleUndo = async () => {
     if (!lastSwiped) return;
     
     try {
-      // Delete the last swipe
       await supabase
         .from('swipes')
         .delete()
         .eq('user_id', user!.id)
         .eq('target_id', lastSwiped.user_id);
       
-      // Re-add to picks
       setPicks(prev => {
         const newPicks = [...prev];
         newPicks.splice(currentIndex, 0, lastSwiped);
@@ -368,7 +406,6 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     return labels[intent] || intent;
   };
 
-  // Calculate active filter count
   const activeFilterCount = [filters.role, filters.location, filters.collabIntent].filter(f => f !== 'all').length;
 
   if (loading) {
@@ -383,7 +420,6 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   if (!currentCreator || currentIndex >= picks.length) {
     return (
       <>
-        {/* Filters - show even in empty state */}
         <ConnectFiltersComponent 
           filters={filters}
           onFiltersChange={setFilters}
@@ -410,11 +446,17 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
                 Clear Filters
               </Button>
             )}
+            <Button variant="outline" onClick={loadDailyPicks} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
             <Button onClick={() => setShowInvite(true)} className="gap-2">
               <UserPlus className="h-4 w-4" />
               Invite Creators
             </Button>
           </div>
+          {/* Debug info for testing */}
+          <p className="text-xs text-muted-foreground mt-4">{debugInfo}</p>
         </div>
         <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
       </>
@@ -487,149 +529,136 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
           
           {/* Content */}
-          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
-            {/* Match Score Badge - Clickable for AI Explanation */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMatchExplanation(true);
-              }}
-              className="absolute top-4 right-4 cursor-pointer group"
-            >
-              <Badge className="bg-primary text-primary-foreground px-3 py-1.5 text-sm gap-1.5 group-hover:bg-primary/90 transition-colors">
-                <Lightbulb className="h-3.5 w-3.5" />
-                {currentCreator.match_score}% match
-              </Badge>
-            </button>
+          <div className="absolute inset-0 flex flex-col justify-between p-6">
+            {/* Top section - Match score */}
+            <div className="flex justify-between items-start">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-black/30 text-white hover:bg-black/50 backdrop-blur-sm"
+                onClick={() => setPreviewUserId(currentCreator.user_id)}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Profile
+              </Button>
+              
+              {/* Clickable match score badge */}
+              <button
+                onClick={() => setShowMatchExplanation(true)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/80 to-purple-500/80 text-white text-sm font-bold backdrop-blur-sm hover:from-primary hover:to-purple-500 transition-all cursor-pointer"
+              >
+                <Sparkles className="h-3 w-3" />
+                {currentCreator.match_score}% Match
+              </button>
+            </div>
 
-            {/* View Profile Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white"
-              onClick={(e) => {
-                e.stopPropagation();
-                setPreviewUserId(currentCreator.user_id);
-              }}
-            >
-              <Eye className="h-5 w-5" />
-            </Button>
+            {/* Bottom section - Info and actions */}
+            <div className="space-y-4">
+              {/* User info */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12 border-2 border-white/30">
+                    <AvatarImage src={currentCreator.avatar_url} />
+                    <AvatarFallback>{currentCreator.full_name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">{currentCreator.full_name}</h2>
+                    <p className="text-white/80">{currentCreator.role}</p>
+                  </div>
+                </div>
 
-            {/* Creator Info */}
-            <div className="space-y-3">
-              <div>
-                <h2 className="text-2xl font-bold">{currentCreator.full_name || 'Unknown Creator'}</h2>
-                <p className="text-lg text-white/80">{currentCreator.role || 'Creator'}</p>
+                {/* Location and collab intent */}
+                <div className="flex flex-wrap gap-2">
+                  {currentCreator.location && (
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {currentCreator.location}
+                    </Badge>
+                  )}
+                  {currentCreator.collab_intent && (
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                      {getCollabIntentLabel(currentCreator.collab_intent)}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Bio preview */}
+                <p className="text-white/70 text-sm line-clamp-2">{currentCreator.bio}</p>
               </div>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2">
-                {currentCreator.location && (
-                  <Badge variant="secondary" className="bg-white/20 text-white border-0 gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {currentCreator.location}
-                  </Badge>
+              {/* Action buttons */}
+              <div className="flex items-center justify-center gap-6 pt-2">
+                {lastSwiped && (
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="h-12 w-12 rounded-full bg-white/10 border-white/30 text-white hover:bg-white/20"
+                    onClick={handleUndo}
+                    disabled={actionLoading}
+                  >
+                    <Undo2 className="h-5 w-5" />
+                  </Button>
                 )}
-                {currentCreator.collab_intent && (
-                  <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                    {getCollabIntentLabel(currentCreator.collab_intent)}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Match Reasons */}
-              <div className="space-y-1 pt-2 border-t border-white/20">
-                <p className="text-xs text-white/60 uppercase tracking-wide">Why you match</p>
-                {currentCreator.match_reasons.map((reason, i) => (
-                  <p key={i} className="text-sm text-white/90">{reason}</p>
-                ))}
+                
+                <Button
+                  size="icon"
+                  className="h-16 w-16 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-lg"
+                  onClick={() => handleSwipe('left')}
+                  disabled={actionLoading}
+                >
+                  <X className="h-8 w-8" />
+                </Button>
+                
+                <Button
+                  size="icon"
+                  className="h-16 w-16 rounded-full bg-green-500 hover:bg-green-600 text-white shadow-lg"
+                  onClick={() => handleSwipe('right')}
+                  disabled={actionLoading}
+                >
+                  <Heart className="h-8 w-8" />
+                </Button>
               </div>
             </div>
           </div>
         </SwipeCard>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-4">
-        {/* Undo */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-12 w-12 rounded-full"
-          onClick={handleUndo}
-          disabled={!lastSwiped || actionLoading}
-        >
-          <Undo2 className="h-5 w-5" />
-        </Button>
-
-        {/* Pass */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-16 w-16 rounded-full border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={() => {
-            animateSwipe('left');
-          }}
-          disabled={actionLoading}
-        >
-          <X className="h-8 w-8" />
-        </Button>
-
-        {/* Like */}
-        <Button
-          size="icon"
-          className="h-16 w-16 rounded-full bg-green-500 hover:bg-green-600 text-white"
-          onClick={() => {
-            animateSwipe('right');
-          }}
-          disabled={actionLoading}
-        >
-          {actionLoading ? (
-            <Loader2 className="h-8 w-8 animate-spin" />
-          ) : (
-            <Heart className="h-8 w-8 fill-current" />
-          )}
-        </Button>
-
-        {/* View Profile */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-12 w-12 rounded-full"
-          onClick={() => setPreviewUserId(currentCreator.user_id)}
-        >
-          <Eye className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* Swipe Hint */}
-      <p className="text-xs text-muted-foreground mt-4">
-        Swipe or use buttons • Drag left to pass, right to connect
-      </p>
-
       {/* Profile Preview Dialog */}
-      <ProfilePreviewDialog
-        userId={previewUserId}
-        open={!!previewUserId}
-        onOpenChange={(open) => !open && setPreviewUserId(null)}
-      />
+      {previewUserId && (
+        <ProfilePreviewDialog
+          userId={previewUserId}
+          open={!!previewUserId}
+          onOpenChange={(open) => !open && setPreviewUserId(null)}
+        />
+      )}
 
-      {/* AI Match Explanation Dialog */}
-      <MatchExplanationDialog
-        open={showMatchExplanation}
-        onOpenChange={setShowMatchExplanation}
-        match={{
-          user_id: currentCreator.user_id,
-          name: currentCreator.full_name || 'Creator',
-          title: currentCreator.role || 'Creator',
-          location: currentCreator.location || '',
-          image: currentCreator.avatar_url || '',
-          matchScore: currentCreator.match_score,
-          matchReasons: currentCreator.match_reasons,
-        }}
-        onConnect={() => animateSwipe('right')}
-        onPass={() => animateSwipe('left')}
-      />
+      {/* Match Explanation Dialog */}
+      {showMatchExplanation && currentCreator && (
+        <MatchExplanationDialog
+          open={showMatchExplanation}
+          onOpenChange={setShowMatchExplanation}
+          match={{
+            user_id: currentCreator.user_id,
+            name: currentCreator.full_name,
+            title: currentCreator.role,
+            location: currentCreator.location || '',
+            image: currentCreator.avatar_url,
+            matchScore: currentCreator.match_score,
+            matchReasons: currentCreator.match_reasons,
+          }}
+          onConnect={() => {
+            setShowMatchExplanation(false);
+            handleSwipe('right');
+          }}
+          onPass={() => {
+            setShowMatchExplanation(false);
+            handleSwipe('left');
+          }}
+        />
+      )}
+
+      {/* Invite Dialog */}
+      <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
     </div>
   );
 };

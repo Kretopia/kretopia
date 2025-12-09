@@ -315,20 +315,18 @@ const ProfileContent = () => {
               />
             </div>
 
-            {((Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0) || 
-              (Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0)) && (
-              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-                <SkillsSection
-                  professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
-                  passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
-                  jobTitle={profile.job_title}
-                  industry={profile.industry}
-                  isOwnProfile={true}
-                  userId={profile.user_id}
-                  onRefresh={fetchData}
-                />
-              </div>
-            )}
+            {/* Skills Section - Always show for own profile so users can add skills */}
+            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
+              <SkillsSection
+                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
+                jobTitle={profile.job_title}
+                industry={profile.industry}
+                isOwnProfile={true}
+                userId={profile.user_id}
+                onRefresh={fetchData}
+              />
+            </div>
 
             {/* Social Stats */}
             <SocialStatsSection 

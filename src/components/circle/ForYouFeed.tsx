@@ -174,13 +174,15 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
       const swipedIds = swipedToday?.map(s => s.target_id) || [];
       
-      // Get connections to exclude
+      // Get connections to exclude (check both directions)
       const { data: connections } = await supabase
         .from('connections')
-        .select('connected_user_id')
-        .eq('user_id', user!.id);
+        .select('connected_user_id, user_id')
+        .or(`user_id.eq.${user!.id},connected_user_id.eq.${user!.id}`);
       
-      const connectedIds = connections?.map(c => c.connected_user_id) || [];
+      const connectedIds = connections?.map(c => 
+        c.user_id === user!.id ? c.connected_user_id : c.user_id
+      ) || [];
       const excludeIds = [...swipedIds, ...connectedIds, user!.id];
 
       // Get curated picks with visibility requirements
@@ -189,7 +191,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, professional_skills')
         .not('avatar_url', 'is', null)
         .not('bio', 'is', null)
-        .gt('bio', '')
+        .neq('bio', '')
         .limit(50); // Fetch more, then filter
 
       // Apply filters

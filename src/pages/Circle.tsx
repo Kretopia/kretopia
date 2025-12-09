@@ -172,7 +172,7 @@ export default function Circle() {
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="foryou" className="gap-2">
               <Sparkles className="h-4 w-4" />
-              For You
+              Connect
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-2">
               <Users className="h-4 w-4" />

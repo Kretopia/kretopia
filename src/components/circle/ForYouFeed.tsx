@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus } from "lucide-react";
+import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SwipeCard } from "@/components/ui/swipe-card";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 import { InviteDialog } from "@/components/InviteDialog";
+import { ConnectFiltersComponent, ConnectFilters } from "./ConnectFilters";
+import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 
 interface ForYouCreator {
   user_id: string;
@@ -39,8 +41,16 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
   const [lastSwiped, setLastSwiped] = useState<ForYouCreator | null>(null);
   const [showInvite, setShowInvite] = useState(false);
+  const [showMatchExplanation, setShowMatchExplanation] = useState(false);
+  
+  // Filters
+  const [filters, setFilters] = useState<ConnectFilters>({
+    role: 'all',
+    location: 'all',
+    collabIntent: 'all',
+  });
 
-  const DAILY_LIMIT = 10;
+  const DAILY_LIMIT = 20;
 
   const currentCreator = picks[currentIndex];
   const remainingPicks = picks.length - currentIndex;
@@ -131,7 +141,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     if (user?.id) {
       loadDailyPicks();
     }
-  }, [user?.id]);
+  }, [user?.id, filters]);
 
   const loadDailyPicks = async () => {
     setLoading(true);
@@ -171,7 +181,18 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         .not('avatar_url', 'is', null)
         .not('bio', 'is', null)
         .gt('bio', '')
-        .limit(DAILY_LIMIT);
+        .limit(50); // Fetch more, then filter
+
+      // Apply filters
+      if (filters.role !== 'all') {
+        query = query.eq('role', filters.role);
+      }
+      if (filters.location !== 'all') {
+        query = query.eq('location', filters.location);
+      }
+      if (filters.collabIntent !== 'all') {
+        query = query.eq('collab_intent', filters.collabIntent);
+      }
 
       if (excludeIds.length > 0) {
         query = query.not('user_id', 'in', `(${excludeIds.join(',')})`);
@@ -286,11 +307,14 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     return labels[intent] || intent;
   };
 
+  // Calculate active filter count
+  const activeFilterCount = [filters.role, filters.location, filters.collabIntent].filter(f => f !== 'all').length;
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Curating your daily picks...</p>
+        <p className="text-muted-foreground">Finding your best matches...</p>
       </div>
     );
   }
@@ -298,18 +322,32 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   if (!currentCreator || currentIndex >= picks.length) {
     return (
       <>
+        {/* Filters - show even in empty state */}
+        <ConnectFiltersComponent 
+          filters={filters}
+          onFiltersChange={setFilters}
+          activeFilterCount={activeFilterCount}
+        />
+        
         <div className="text-center py-12">
           <div className="mb-6 p-6 rounded-full bg-primary/10 inline-flex">
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
-          <h3 className="text-xl font-bold mb-3">All caught up!</h3>
+          <h3 className="text-xl font-bold mb-3">
+            {activeFilterCount > 0 ? 'No matches with these filters' : 'All caught up!'}
+          </h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            You've viewed all {DAILY_LIMIT} picks for today. Invite more creators to grow your network!
+            {activeFilterCount > 0 
+              ? 'Try adjusting your filters to see more creators.'
+              : `You've viewed all picks for today. Invite more creators to grow your network!`
+            }
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button variant="outline" onClick={() => navigate('/circle?tab=browse')}>
-              Browse All Creators
-            </Button>
+            {activeFilterCount > 0 && (
+              <Button variant="outline" onClick={() => setFilters({ role: 'all', location: 'all', collabIntent: 'all' })}>
+                Clear Filters
+              </Button>
+            )}
             <Button onClick={() => setShowInvite(true)} className="gap-2">
               <UserPlus className="h-4 w-4" />
               Invite Creators
@@ -325,15 +363,24 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
   return (
     <div className="flex flex-col items-center">
+      {/* Filters */}
+      <div className="w-full max-w-sm mb-4">
+        <ConnectFiltersComponent 
+          filters={filters}
+          onFiltersChange={setFilters}
+          activeFilterCount={activeFilterCount}
+        />
+      </div>
+      
       {/* Stats Bar */}
       <div className="w-full max-w-sm mb-4 flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">Today's Picks</span>
+          <span className="text-sm font-medium">Your Matches</span>
         </div>
         <Badge variant="secondary" className="gap-1">
           <Clock className="h-3 w-3" />
-          {remainingPicks}/{DAILY_LIMIT} left
+          {remainingPicks} left
         </Badge>
       </div>
 
@@ -378,10 +425,19 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           
           {/* Content */}
           <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
-            {/* Match Score Badge */}
-            <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 text-sm">
-              {currentCreator.match_score}% match
-            </Badge>
+            {/* Match Score Badge - Clickable for AI Explanation */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMatchExplanation(true);
+              }}
+              className="absolute top-4 right-4 cursor-pointer group"
+            >
+              <Badge className="bg-primary text-primary-foreground px-3 py-1.5 text-sm gap-1.5 group-hover:bg-primary/90 transition-colors">
+                <Lightbulb className="h-3.5 w-3.5" />
+                {currentCreator.match_score}% match
+              </Badge>
+            </button>
 
             {/* View Profile Button */}
             <Button
@@ -493,6 +549,23 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         userId={previewUserId}
         open={!!previewUserId}
         onOpenChange={(open) => !open && setPreviewUserId(null)}
+      />
+
+      {/* AI Match Explanation Dialog */}
+      <MatchExplanationDialog
+        open={showMatchExplanation}
+        onOpenChange={setShowMatchExplanation}
+        match={{
+          user_id: currentCreator.user_id,
+          name: currentCreator.full_name || 'Creator',
+          title: currentCreator.role || 'Creator',
+          location: currentCreator.location || '',
+          image: currentCreator.avatar_url || '',
+          matchScore: currentCreator.match_score,
+          matchReasons: currentCreator.match_reasons,
+        }}
+        onConnect={() => animateSwipe('right')}
+        onPass={() => animateSwipe('left')}
       />
     </div>
   );

@@ -10,20 +10,20 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2, Globe, Flame, Trophy } from "lucide-react";
+import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2, Globe, Flame, Trophy, Image, AlertCircle, CheckCircle2, Eye, EyeOff, SkipForward } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
-import { MatchedProfilesStep } from "@/components/onboarding/MatchedProfilesStep";
-import { ConnectionSuccessStep } from "@/components/onboarding/ConnectionSuccessStep";
 import { AddPortfolioStep } from "@/components/onboarding/AddPortfolioStep";
-import { WorkspacePreviewStep } from "@/components/onboarding/WorkspacePreviewStep";
 import { useAuth } from "@/hooks/useAuth";
+import { ROLE_OPTIONS, LOCATION_OPTIONS } from "@/components/profile/ProfileEditDialog";
 
 const STEPS = [
-  { id: 1, title: "Profile", icon: Users },
-  { id: 2, title: "Skills", icon: Award },
-  { id: 3, title: "Done", icon: Sparkles },
+  { id: 1, title: "Profile", icon: Users, required: true },
+  { id: 2, title: "Bio", icon: Briefcase, required: true },
+  { id: 3, title: "Portfolio", icon: Image, required: true },
+  { id: 4, title: "Skills", icon: Award, required: false },
+  { id: 5, title: "Done", icon: Sparkles, required: false },
 ];
 
 interface Skill {
@@ -46,14 +46,16 @@ export default function Onboarding() {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [connectionCount, setConnectionCount] = useState(0);
   const [userId, setUserId] = useState<string>("");
+  const [showCustomRole, setShowCustomRole] = useState(false);
+  const [showCustomLocation, setShowCustomLocation] = useState(false);
   
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState<string>("");
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
   
   const [profile, setProfile] = useState({
     full_name: "",
@@ -63,6 +65,12 @@ export default function Onboarding() {
   });
   
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+
+  // Calculate visibility status
+  const hasAvatar = !!avatarUrl;
+  const hasBio = profile.bio.length >= 20;
+  const hasPortfolio = portfolioItems.length > 0;
+  const isVisible = hasAvatar && hasBio && hasPortfolio;
 
   useEffect(() => {
     if (user) {
@@ -124,8 +132,18 @@ export default function Onboarding() {
       
       // Resume from last step if they've started
       if (profileData.onboarding_step && profileData.onboarding_step > 1) {
-        setCurrentStep(profileData.onboarding_step);
+        setCurrentStep(Math.min(profileData.onboarding_step, 5));
       }
+    }
+
+    // Load existing portfolio items
+    const { data: existingPortfolio } = await supabase
+      .from("portfolio_items")
+      .select("id, title, description, media_url, media_type")
+      .eq("user_id", user.id);
+    
+    if (existingPortfolio && existingPortfolio.length > 0) {
+      setPortfolioItems(existingPortfolio);
     }
     
     // Track onboarding start if not already started
@@ -148,7 +166,7 @@ export default function Onboarding() {
     const { analytics } = await import("@/lib/analytics");
     
     if (currentStep === 1) {
-      // Relaxed validation - only require name and role
+      // Validate name, role, and avatar
       if (!profile.full_name?.trim()) {
         toast({
           title: "Name is required",
@@ -161,42 +179,33 @@ export default function Onboarding() {
       if (!profile.role?.trim()) {
         toast({
           title: "Role is required",
-          description: "Please enter your role or profession",
+          description: "Please select or enter your role",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!avatarUrl) {
+        toast({
+          title: "Profile photo required",
+          description: "Please upload a profile photo to be visible to other creators",
           variant: "destructive",
         });
         return;
       }
       
-      // Bio is now optional but encouraged
-      if (!profile.bio?.trim()) {
-        toast({
-          title: "Quick tip! ✨",
-          description: "Adding a bio helps you get 2x more connections. You can add it later!",
-        });
-      }
-      
-      // Update onboarding step in database
+      // Save profile data
       try {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        
-        console.log("Updating profile:", { ...profile, onboarding_step: 2 });
-        
-        const { error } = await supabase
+        await supabase
           .from("profiles")
           .update({ 
             onboarding_step: 2,
-            ...profile
+            full_name: profile.full_name,
+            role: profile.role,
           })
-          .eq("user_id", user.id);
+          .eq("user_id", user!.id);
         
-        if (error) {
-          console.error("Profile update error:", error);
-          throw error;
-        }
-        
-        console.log("Profile updated successfully");
+        analytics.onboardingStep(1, "profile_basics_complete");
       } catch (error) {
         console.error("Error updating profile:", error);
         toast({
@@ -206,26 +215,96 @@ export default function Onboarding() {
         });
         return;
       }
-      
-      analytics.onboardingStep(1, "profile_complete");
     }
 
     if (currentStep === 2) {
-      if (selectedSkills.length === 0) {
+      // Validate bio length
+      if (profile.bio.length < 20) {
         toast({
-          title: "Add at least one skill",
-          description: "Skills help us match you with the right opportunities",
+          title: "Bio too short",
+          description: `Please write at least 20 characters about yourself (${20 - profile.bio.length} more needed)`,
           variant: "destructive",
         });
         return;
       }
       
-      // Complete onboarding and go straight to Spark
+      // Save bio and location
+      try {
+        await supabase
+          .from("profiles")
+          .update({ 
+            onboarding_step: 3,
+            bio: profile.bio,
+            location: profile.location,
+          })
+          .eq("user_id", user!.id);
+        
+        analytics.onboardingStep(2, "bio_complete");
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        return;
+      }
+    }
+
+    if (currentStep === 3) {
+      // Portfolio step - handled by AddPortfolioStep component
+      if (portfolioItems.length === 0) {
+        toast({
+          title: "Portfolio required",
+          description: "Add at least one portfolio item to be visible to other creators",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      await supabase
+        .from("profiles")
+        .update({ onboarding_step: 4 })
+        .eq("user_id", user!.id);
+      
+      analytics.onboardingStep(3, "portfolio_complete");
+    }
+
+    if (currentStep === 4) {
+      // Skills step - at least 1 required
+      if (selectedSkills.length === 0) {
+        toast({
+          title: "Add at least one skill",
+          description: "Skills help AI match you with the right collaborators",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Complete onboarding
       await completeOnboarding();
       return;
     }
 
     setCurrentStep(currentStep + 1);
+  };
+
+  const handleSkip = async () => {
+    const { analytics } = await import("@/lib/analytics");
+    
+    // Show warning about visibility
+    toast({
+      title: "⚠️ Profile won't be visible",
+      description: "Complete all required steps to appear in search results",
+    });
+    
+    // Skip to next step but save current progress
+    if (currentStep === 3) {
+      await supabase
+        .from("profiles")
+        .update({ onboarding_step: 4 })
+        .eq("user_id", user!.id);
+      setCurrentStep(4);
+      analytics.onboardingStep(3, "portfolio_skipped");
+    } else if (currentStep === 4) {
+      // Skip skills and complete
+      await completeOnboarding();
+    }
   };
 
   const uploadAvatar = async (croppedImage: Blob) => {
@@ -289,6 +368,11 @@ export default function Onboarding() {
     );
   };
 
+  const handlePortfolioComplete = async (items: any[]) => {
+    setPortfolioItems(items);
+    setCurrentStep(4);
+  };
+
   const completeOnboarding = async () => {
     if (!user) throw new Error("Not authenticated");
     
@@ -305,9 +389,9 @@ export default function Onboarding() {
         .from("profiles")
         .update({
           ...profile,
-          professional_skills: skillObjects as any,
+          professional_skills: skillObjects.length > 0 ? skillObjects as any : null,
           onboarding_completed: true,
-          onboarding_step: 4,
+          onboarding_step: 5,
           xp: 100, // Award all XP at once
         })
         .eq("user_id", user.id);
@@ -325,17 +409,12 @@ export default function Onboarding() {
 
       // Trigger AI verification
       try {
-        const { data: portfolioItems } = await supabase
-          .from("portfolio_items")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id);
-
         const verificationData = {
           fullName: profile.full_name,
           role: profile.role,
           bio: profile.bio,
           location: profile.location,
-          portfolioItems: portfolioItems || 0,
+          portfolioItems: portfolioItems.length,
           socialLinks: {},
           accountType: "individual" as const,
         };
@@ -347,7 +426,6 @@ export default function Onboarding() {
         console.log("Profile verification submitted");
       } catch (verifyError) {
         console.error("Verification error (non-blocking):", verifyError);
-        // Don't block onboarding if verification fails
       }
 
       const { analytics } = await import("@/lib/analytics");
@@ -355,7 +433,9 @@ export default function Onboarding() {
 
       toast({
         title: "🎉 Welcome to ThriveIN!",
-        description: "Your profile is ready. Let's start collaborating!",
+        description: isVisible 
+          ? "Your profile is visible! Start discovering creators."
+          : "Complete your profile to become visible to others.",
       });
 
       navigate("/circle");
@@ -371,7 +451,43 @@ export default function Onboarding() {
     }
   };
 
-  const progress = (currentStep / 3) * 100;
+  const progress = (currentStep / 5) * 100;
+
+  // Visibility checklist component
+  const VisibilityChecklist = () => (
+    <div className="rounded-lg border bg-muted/30 p-4 space-y-2 mb-6">
+      <div className="flex items-center gap-2 text-sm font-medium mb-3">
+        {isVisible ? (
+          <>
+            <Eye className="h-4 w-4 text-green-500" />
+            <span className="text-green-600">Your profile will be visible</span>
+          </>
+        ) : (
+          <>
+            <EyeOff className="h-4 w-4 text-amber-500" />
+            <span className="text-amber-600">Complete these to be visible:</span>
+          </>
+        )}
+      </div>
+      <div className="space-y-1.5 text-sm">
+        <div className={`flex items-center gap-2 ${hasAvatar ? 'text-green-600' : 'text-muted-foreground'}`}>
+          {hasAvatar ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          Profile photo
+        </div>
+        <div className={`flex items-center gap-2 ${hasBio ? 'text-green-600' : 'text-muted-foreground'}`}>
+          {hasBio ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          Bio (20+ characters)
+        </div>
+        <div className={`flex items-center gap-2 ${hasPortfolio ? 'text-green-600' : 'text-muted-foreground'}`}>
+          {hasPortfolio ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          At least 1 portfolio item
+        </div>
+      </div>
+    </div>
+  );
+
+  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === profile.role);
+  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === profile.location);
 
   return (
     <>
@@ -380,27 +496,34 @@ export default function Onboarding() {
         description="Set up your creator profile on ThriveIN. Connect with fellow creators, discover opportunities, and start collaborating on amazing projects."
       />
       <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl p-8">
-        <div className="mb-8">
+      <Card className="w-full max-w-2xl p-6 sm:p-8">
+        <div className="mb-6">
           <Progress value={progress} className="h-2 mb-4" />
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
             {STEPS.map((step) => {
               const Icon = step.icon;
+              const isComplete = currentStep > step.id;
+              const isCurrent = currentStep === step.id;
               return (
                 <div
                   key={step.id}
                   className={`flex flex-col items-center ${
-                    step.id === currentStep ? "text-primary" : ""
+                    isCurrent ? "text-primary" : isComplete ? "text-green-500" : ""
                   }`}
                 >
-                  <Icon className="h-6 w-6 mb-1" />
-                  <span>{step.title}</span>
+                  {isComplete ? (
+                    <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 mb-1" />
+                  ) : (
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 mb-1" />
+                  )}
+                  <span className="hidden sm:inline">{step.title}</span>
                 </div>
               );
             })}
           </div>
         </div>
 
+        {/* Step 1: Profile Basics + Avatar */}
         {currentStep === 1 && (
           <div className="space-y-6">
             <div className="text-center">
@@ -408,8 +531,8 @@ export default function Onboarding() {
                 <Sparkles className="h-4 w-4" />
                 <span>Earn +100 XP for completing</span>
               </div>
-              <h2 className="text-3xl font-bold mb-2">Let's Get You Started</h2>
-              <p className="text-muted-foreground">Takes 60 seconds • Start discovering creators immediately</p>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">Let's Get You Started</h2>
+              <p className="text-muted-foreground">Complete these basics to be discovered by other creators</p>
               
               <Button 
                 variant="outline" 
@@ -422,14 +545,21 @@ export default function Onboarding() {
               </Button>
             </div>
 
-            {/* Optional Photo Upload - Inline */}
+            <VisibilityChecklist />
+
+            {/* Photo Upload - Required */}
             <div className="flex flex-col items-center gap-3 py-4 border-y">
-              <Avatar className="h-24 w-24 ring-2 ring-primary/20">
-                <AvatarImage src={avatarUrl} className="object-cover" />
-                <AvatarFallback>
-                  <Camera className="h-10 w-10 text-muted-foreground" />
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className={`h-24 w-24 ring-2 ${avatarUrl ? 'ring-green-500' : 'ring-primary/20'}`}>
+                  <AvatarImage src={avatarUrl} className="object-cover" />
+                  <AvatarFallback>
+                    <Camera className="h-10 w-10 text-muted-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+                {avatarUrl && (
+                  <CheckCircle2 className="absolute -bottom-1 -right-1 h-6 w-6 text-green-500 bg-background rounded-full" />
+                )}
+              </div>
               <input
                 type="file"
                 id="avatar-upload"
@@ -441,14 +571,21 @@ export default function Onboarding() {
                 }}
               />
               <Button
-                variant="outline"
+                variant={avatarUrl ? "outline" : "default"}
                 size="sm"
                 onClick={() => document.getElementById('avatar-upload')?.click()}
                 disabled={uploadingAvatar}
               >
-                <Upload className="h-4 w-4 mr-2" />
-                {avatarUrl ? "Change Photo" : "Add Photo (Optional)"}
+                {uploadingAvatar ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4 mr-2" />
+                )}
+                {avatarUrl ? "Change Photo" : "Add Photo *"}
               </Button>
+              {!avatarUrl && (
+                <p className="text-xs text-amber-600">Required for visibility</p>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -461,53 +598,157 @@ export default function Onboarding() {
                   placeholder="Your name"
                 />
               </div>
+              
               <div>
                 <Label htmlFor="role">Your Role *</Label>
-                <Input
-                  id="role"
-                  value={profile.role}
-                  onChange={(e) => setProfile({ ...profile, role: e.target.value })}
-                  placeholder="e.g., Content Creator, Videographer, Designer"
-                />
-              </div>
-              <div>
-                <Label htmlFor="bio">
-                  About You 
-                  <span className="text-xs text-muted-foreground ml-2">(Optional but recommended)</span>
-                </Label>
-                <p className="text-xs text-muted-foreground mb-2">
-                  ⭐ Profiles with bios get 2x more connections! Share what you do and what you're looking for.
-                </p>
-                <Textarea
-                  id="bio"
-                  value={profile.bio}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 1000) {
-                      setProfile({ ...profile, bio: e.target.value });
-                    }
-                  }}
-                  placeholder="I'm a videographer specializing in music videos and brand content. Looking to collaborate with musicians and creative directors..."
-                  rows={3}
-                  maxLength={1000}
-                />
-                <p className="text-xs text-muted-foreground text-right mt-1">
-                  {profile.bio.length}/1000 characters
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="location">Location (Optional)</Label>
-                <Input
-                  id="location"
-                  value={profile.location}
-                  onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                  placeholder="City, Country"
-                />
+                {showCustomRole || (!isRoleInOptions && profile.role) ? (
+                  <div className="space-y-2">
+                    <Input
+                      id="role"
+                      value={profile.role}
+                      onChange={(e) => setProfile({ ...profile, role: e.target.value })}
+                      placeholder="Enter your role"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setShowCustomRole(false);
+                        setProfile({ ...profile, role: '' });
+                      }}
+                    >
+                      Choose from list
+                    </Button>
+                  </div>
+                ) : (
+                  <Select 
+                    value={profile.role || undefined}
+                    onValueChange={(value) => {
+                      if (value === 'Other') {
+                        setShowCustomRole(true);
+                        setProfile({ ...profile, role: '' });
+                      } else {
+                        setProfile({ ...profile, role: value });
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROLE_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
           </div>
         )}
 
+        {/* Step 2: Bio + Location */}
         {currentStep === 2 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">Tell Us About Yourself</h2>
+              <p className="text-muted-foreground">A good bio helps you get discovered</p>
+            </div>
+
+            <VisibilityChecklist />
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="bio">
+                  About You *
+                  <span className={`text-xs ml-2 ${profile.bio.length >= 20 ? 'text-green-600' : 'text-amber-600'}`}>
+                    ({profile.bio.length}/20 minimum)
+                  </span>
+                </Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  What do you do? What are you looking for? Share your creative journey!
+                </p>
+                <Textarea
+                  id="bio"
+                  value={profile.bio}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 500) {
+                      setProfile({ ...profile, bio: e.target.value });
+                    }
+                  }}
+                  placeholder="I'm a videographer specializing in music videos and brand content. Looking to collaborate with musicians and creative directors in Bali..."
+                  rows={4}
+                  maxLength={500}
+                  className={profile.bio.length >= 20 ? 'border-green-500 focus:ring-green-500' : ''}
+                />
+                <p className="text-xs text-muted-foreground text-right mt-1">
+                  {profile.bio.length}/500 characters
+                </p>
+              </div>
+              
+              <div>
+                <Label htmlFor="location">Location (Optional)</Label>
+                {showCustomLocation || (!isLocationInOptions && profile.location) ? (
+                  <div className="space-y-2">
+                    <Input
+                      id="location"
+                      value={profile.location}
+                      onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                      placeholder="City, Country"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setShowCustomLocation(false);
+                        setProfile({ ...profile, location: '' });
+                      }}
+                    >
+                      Choose from list
+                    </Button>
+                  </div>
+                ) : (
+                  <Select 
+                    value={profile.location || undefined}
+                    onValueChange={(value) => {
+                      if (value === 'Other') {
+                        setShowCustomLocation(true);
+                        setProfile({ ...profile, location: '' });
+                      } else {
+                        setProfile({ ...profile, location: value });
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOCATION_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Portfolio */}
+        {currentStep === 3 && (
+          <div className="space-y-6">
+            <VisibilityChecklist />
+            <AddPortfolioStep 
+              userId={userId} 
+              onComplete={handlePortfolioComplete}
+            />
+          </div>
+        )}
+
+        {/* Step 4: Skills */}
+        {currentStep === 4 && (
           <div className="space-y-6">
             <div className="text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/20 bg-secondary/5 px-4 py-2 text-sm font-medium text-secondary">
@@ -515,8 +756,10 @@ export default function Onboarding() {
                 <span>AI uses these to match you</span>
               </div>
               <h2 className="text-2xl font-bold mb-2">What are your top skills?</h2>
-              <p className="text-muted-foreground">Select 3-5 skills (you can always add more later)</p>
+              <p className="text-muted-foreground">Select at least 1 skill (you can always add more later)</p>
             </div>
+
+            <VisibilityChecklist />
 
             <div className="flex flex-wrap gap-2">
               {QUICK_SKILLS.map((skill) => (
@@ -544,7 +787,8 @@ export default function Onboarding() {
           </div>
         )}
 
-        {currentStep === 3 && (
+        {/* Step 5: Success */}
+        {currentStep === 5 && (
           <div className="space-y-6 text-center">
             <div className="mb-4">
               <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary mb-4">
@@ -552,40 +796,13 @@ export default function Onboarding() {
               </div>
               <h2 className="text-3xl font-bold mb-2">You're All Set! 🎉</h2>
               <p className="text-muted-foreground">
-                Your profile is ready. You can add portfolio items anytime from your profile.
+                {isVisible 
+                  ? "Your profile is visible to other creators!"
+                  : "Complete the remaining items to become visible"}
               </p>
             </div>
             
-            <div className="rounded-xl border bg-muted/50 p-6 space-y-3 text-left">
-              <h3 className="font-semibold text-lg mb-3">What's Next?</h3>
-              <div className="flex items-start gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Flame className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">Explore Spark Feed</p>
-                  <p className="text-sm text-muted-foreground">See what creators are sharing</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Briefcase className="h-4 w-4 text-secondary" />
-                </div>
-                <div>
-                  <p className="font-medium">Swipe on Gigs</p>
-                  <p className="text-sm text-muted-foreground">Find collaborations & brand deals</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Award className="h-4 w-4 text-accent" />
-                </div>
-                <div>
-                  <p className="font-medium">Join a Challenge</p>
-                  <p className="text-sm text-muted-foreground">Win prizes & build your portfolio</p>
-                </div>
-              </div>
-            </div>
+            <VisibilityChecklist />
 
             <Button
               size="lg"
@@ -608,7 +825,8 @@ export default function Onboarding() {
           </div>
         )}
 
-        {currentStep !== 3 && (
+        {/* Navigation Buttons */}
+        {currentStep !== 5 && currentStep !== 3 && (
           <div className="flex gap-3 mt-8">
             {currentStep > 1 && (
               <Button
@@ -629,9 +847,32 @@ export default function Onboarding() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Setting up...
                 </>
+              ) : currentStep === 4 ? (
+                "Complete Setup"
               ) : (
                 "Continue"
               )}
+            </Button>
+          </div>
+        )}
+
+        {/* Step 3 has its own navigation from AddPortfolioStep */}
+        {currentStep === 3 && (
+          <div className="flex justify-between mt-4 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep(2)}
+              disabled={loading}
+            >
+              Back
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleSkip}
+              className="text-muted-foreground"
+            >
+              <SkipForward className="h-4 w-4 mr-2" />
+              Skip for now
             </Button>
           </div>
         )}

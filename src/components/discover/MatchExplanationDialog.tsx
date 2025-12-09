@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, MapPin, Briefcase, Heart, Loader2 } from "lucide-react";
+import { Sparkles, MapPin, Briefcase, Heart, Loader2, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,12 +73,17 @@ export const MatchExplanationDialog = ({
         if (!currentProfile || !targetProfile) return;
 
         // Call AI edge function
-        const { data: aiMatch } = await supabase.functions.invoke('generate-match-explanation', {
+        const { data: aiMatch, error } = await supabase.functions.invoke('generate-match-explanation', {
           body: {
             currentUser: currentProfile,
             targetUser: targetProfile
           }
         });
+
+        if (error) {
+          console.error('[MatchExplanationDialog] Edge function error:', error);
+          throw error;
+        }
 
         if (aiMatch) {
           setAiScore(aiMatch.score ?? 85);
@@ -86,12 +91,12 @@ export const MatchExplanationDialog = ({
         }
       } catch (error) {
         console.error('[MatchExplanationDialog] Error generating AI explanation:', error);
-        // Use placeholder on error
-        setAiReasons([
-          "Great collaboration potential based on your actual skills and roles",
-          "Complementary strengths that can create strong projects",
-          "Similar creative interests and goals"
-        ]);
+        // Use fallback reasons based on available data
+        const fallbackReasons = [];
+        if (match.title) fallbackReasons.push(`${match.title} with complementary creative skills`);
+        if (match.location) fallbackReasons.push(`Based in ${match.location}`);
+        fallbackReasons.push("Great collaboration potential based on your profiles");
+        setAiReasons(fallbackReasons);
       } finally {
         setLoading(false);
       }
@@ -117,11 +122,11 @@ export const MatchExplanationDialog = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Why This Match?
+            <Lightbulb className="h-5 w-5 text-primary" />
+            AI Match Analysis
           </DialogTitle>
           <DialogDescription>
-            AI-powered compatibility analysis
+            Why you and {match.name} would work great together
           </DialogDescription>
         </DialogHeader>
 
@@ -138,17 +143,19 @@ export const MatchExplanationDialog = ({
                 <Briefcase className="h-3 w-3" />
                 {match.title}
               </p>
-              <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                <MapPin className="h-3 w-3" />
-                {match.location}
-              </p>
+              {match.location && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                  <MapPin className="h-3 w-3" />
+                  {match.location}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Match Score */}
           <div className="text-center space-y-2">
-            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br ${getScoreColor(score)} text-white`}>
-              <div className="text-3xl font-bold">{score}%</div>
+            <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br ${getScoreColor(score)} text-white shadow-lg`}>
+              <div className="text-2xl font-bold">{score}%</div>
             </div>
             <p className="text-sm font-medium">{getScoreLabel(score)}</p>
           </div>
@@ -156,18 +163,21 @@ export const MatchExplanationDialog = ({
           {/* Match Reasons */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
-              <Heart className="h-4 w-4 text-primary" />
-              Why you'll work great together:
+              <Sparkles className="h-4 w-4 text-primary" />
+              Why you'll work great together
             </h4>
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <div className="flex items-center justify-center py-6">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <p className="text-xs text-muted-foreground">AI analyzing compatibility...</p>
+                </div>
               </div>
             ) : (
               <ul className="space-y-2">
                 {reasons.map((reason, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm p-2 rounded-lg bg-primary/5">
-                    <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <li key={index} className="flex items-start gap-2 text-sm p-2 rounded-lg bg-primary/5 border border-primary/10">
+                    <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     <span>{reason}</span>
                   </li>
                 ))}
@@ -188,14 +198,13 @@ export const MatchExplanationDialog = ({
               Pass
             </Button>
             <Button 
-              variant="gradient" 
-              className="flex-1"
+              className="flex-1 bg-green-500 hover:bg-green-600"
               onClick={() => {
                 onConnect();
                 onOpenChange(false);
               }}
             >
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Heart className="h-4 w-4 mr-2 fill-current" />
               Connect
             </Button>
           </div>

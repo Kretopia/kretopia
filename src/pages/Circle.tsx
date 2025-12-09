@@ -5,12 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { ForYouFeed } from "@/components/circle/ForYouFeed";
-import { BrowseCreators } from "@/components/circle/BrowseCreators";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
-import { Users, Sparkles, Search as SearchIcon, UserPlus } from "lucide-react";
+import { Users, Sparkles, UserPlus } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
@@ -170,32 +169,20 @@ export default function Circle() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="foryou" className="gap-2">
               <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">For You</span>
-              <span className="sm:hidden">For You</span>
-            </TabsTrigger>
-            <TabsTrigger value="browse" className="gap-2">
-              <SearchIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Browse</span>
-              <span className="sm:hidden">Browse</span>
+              For You
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-2">
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Network</span>
-              <span className="sm:hidden">Network</span>
+              Network
             </TabsTrigger>
           </TabsList>
 
           {/* For You Tab - AI curated daily picks */}
           <TabsContent value="foryou" className="space-y-4">
             <ForYouFeed onMatch={handleMatch} />
-          </TabsContent>
-
-          {/* Browse Tab - Full directory with filters */}
-          <TabsContent value="browse" className="space-y-4">
-            <BrowseCreators onMatch={handleMatch} />
           </TabsContent>
 
           {/* My Network Tab */}

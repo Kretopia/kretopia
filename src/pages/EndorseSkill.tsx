@@ -248,8 +248,13 @@ export default function EndorseSkill() {
         </CardHeader>
         <CardContent className="space-y-4">
           {skills.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No skills to endorse yet
+            <div className="text-center py-8 space-y-3">
+              <p className="text-muted-foreground">
+                {profileData?.full_name} hasn't added any skills to their profile yet.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Please let them know they need to add skills in their profile settings before requesting endorsements.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">

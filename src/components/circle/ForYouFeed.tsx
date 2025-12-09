@@ -162,17 +162,13 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         setUserTier(currentProfile.subscription_tier);
       }
 
-      // Get already swiped users today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const { data: swipedToday } = await supabase
+      // Get ALL previously swiped users (not just today)
+      const { data: allSwiped } = await supabase
         .from('swipes')
         .select('target_id')
-        .eq('user_id', user!.id)
-        .gte('created_at', today.toISOString());
+        .eq('user_id', user!.id);
 
-      const swipedIds = swipedToday?.map(s => s.target_id) || [];
+      const swipedIds = allSwiped?.map(s => s.target_id) || [];
       
       // Get connections to exclude (check both directions)
       const { data: connections } = await supabase
@@ -205,8 +201,9 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         query = query.eq('collab_intent', filters.collabIntent);
       }
 
+      // Exclude already swiped, connected, and self using filter
       if (excludeIds.length > 0) {
-        query = query.not('user_id', 'in', `(${excludeIds.join(',')})`);
+        query = query.filter('user_id', 'not.in', `(${excludeIds.join(',')})`);
       }
 
       const { data: candidates } = await query;

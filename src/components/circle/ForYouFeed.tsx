@@ -179,31 +179,45 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         setUserTier(currentProfile.subscription_tier);
       }
 
-      // Get ALL previously swiped users
-      const { data: allSwiped } = await supabase
+      // Get ALL previously swiped users by this user
+      const { data: allSwiped, error: swipeError } = await supabase
         .from('swipes')
         .select('target_id')
         .eq('user_id', user!.id);
 
-      const swipedIds = allSwiped?.map(s => s.target_id) || [];
-      console.log('[ForYou] Swiped IDs:', swipedIds);
-      
-      // Get ACCEPTED connections only to exclude (pending = one person swiped, waiting for other)
-      const { data: connections } = await supabase
-        .from('connections')
-        .select('connected_user_id, user_id')
-        .eq('status', 'accepted')
-        .or(`user_id.eq.${user!.id},connected_user_id.eq.${user!.id}`);
-      
-      const connectedIds = connections?.map(c => 
-        c.user_id === user!.id ? c.connected_user_id : c.user_id
-      ) || [];
-      console.log('[ForYou] Connected IDs:', connectedIds);
-      
-      const excludeIds = [...new Set([...swipedIds, ...connectedIds, user!.id])]; // Use Set to dedupe
-      console.log('[ForYou] Total exclude IDs:', excludeIds);
+      if (swipeError) {
+        console.error('[ForYou] Swipes query error:', swipeError);
+      }
 
-      // First get ALL profiles with basic requirements
+      const swipedIds = allSwiped?.map(s => s.target_id) || [];
+      console.log('[ForYou] User swiped on these IDs:', swipedIds);
+      
+      // Get ONLY accepted connections (pending means waiting for the other person to swipe)
+      const { data: acceptedConnections, error: connError } = await supabase
+        .from('connections')
+        .select('connected_user_id, user_id, status')
+        .eq('status', 'accepted');
+
+      if (connError) {
+        console.error('[ForYou] Connections query error:', connError);
+      }
+
+      // Filter to only connections involving current user
+      const myConnections = acceptedConnections?.filter(c => 
+        c.user_id === user!.id || c.connected_user_id === user!.id
+      ) || [];
+      
+      const connectedIds = myConnections.map(c => 
+        c.user_id === user!.id ? c.connected_user_id : c.user_id
+      );
+      console.log('[ForYou] Accepted connection IDs:', connectedIds);
+      
+      // Build exclusion list: only swipedIds + connectedIds + self
+      const excludeIds = [...new Set([...swipedIds, ...connectedIds, user!.id])];
+      console.log('[ForYou] Total exclude IDs:', excludeIds);
+      console.log('[ForYou] Exclude count:', excludeIds.length);
+
+      // Get ALL eligible profiles with basic requirements
       const { data: allProfiles, error: profileError } = await supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, professional_skills, onboarding_completed')
@@ -221,12 +235,18 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         return;
       }
 
-      console.log('[ForYou] All profiles found:', allProfiles?.length);
+      console.log('[ForYou] All eligible profiles:', allProfiles?.length, allProfiles?.map(p => ({ id: p.user_id, name: p.full_name })));
 
-      // Filter out excluded users in JavaScript (more reliable than Supabase filter syntax)
-      let candidates = allProfiles?.filter(p => !excludeIds.includes(p.user_id)) || [];
+      // Filter out excluded users in JavaScript (more reliable)
+      let candidates = allProfiles?.filter(p => {
+        const isExcluded = excludeIds.includes(p.user_id);
+        if (isExcluded) {
+          console.log(`[ForYou] Excluding ${p.full_name} (${p.user_id})`);
+        }
+        return !isExcluded;
+      }) || [];
       
-      console.log('[ForYou] After exclusion:', candidates.length);
+      console.log('[ForYou] After exclusion, candidates:', candidates.length, candidates.map(c => c.full_name));
 
       // Apply user filters
       if (filters.role !== 'all') {

@@ -4388,18 +4388,12 @@ export type Database = {
       get_endorsement_request_by_token: {
         Args: { token_param: string }
         Returns: {
-          completed_at: string
           created_at: string
-          endorser_email: string
-          endorser_name: string
-          expires_at: string
           id: string
           personal_message: string
           profile_id: string
-          project_name: string
           share_token: string
           skill_name: string
-          status: string
         }[]
       }
       get_mutual_connections: {

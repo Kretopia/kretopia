@@ -157,13 +157,17 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   });
 
   const loadDailyPicks = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log('[ForYou] No user, skipping load');
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     setDebugInfo('Loading...');
     
     try {
-      console.log('[ForYou] ========== LOADING PICKS ==========');
+      console.log('[ForYou] ========== LOADING PICKS v2 ==========');
       console.log('[ForYou] Current user ID:', user.id);
       
       // Step 1: Get current user's profile
@@ -456,7 +460,11 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             </Button>
           </div>
           {/* Debug info for testing */}
-          <p className="text-xs text-muted-foreground mt-4">{debugInfo}</p>
+          <div className="mt-4 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground max-w-md mx-auto">
+            <p><strong>Debug:</strong> {debugInfo || 'No info'}</p>
+            <p className="mt-1">Picks loaded: {picks.length} | Current index: {currentIndex}</p>
+            <p className="mt-1">User: {user?.id?.slice(0, 8)}...</p>
+          </div>
         </div>
         <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
       </>

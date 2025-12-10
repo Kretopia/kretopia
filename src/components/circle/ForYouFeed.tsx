@@ -31,6 +31,54 @@ interface ForYouFeedProps {
   onMatch: (user: { name: string; avatar: string; role: string; userId: string }) => void;
 }
 
+// Demo cards for preview when no real candidates exist
+const DEMO_CARDS: ForYouCreator[] = [
+  {
+    user_id: 'demo-1',
+    full_name: 'Maya Chen',
+    role: 'Photographer',
+    bio: 'Award-winning portrait and lifestyle photographer based in Bali. Specializing in natural light and authentic moments. Love collaborating with brands and creators!',
+    avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
+    location: 'Bali, Indonesia',
+    collab_intent: 'seeking_collaborators',
+    match_score: 92,
+    match_reasons: ['📍 Based in Bali, Indonesia', '🎯 Complementary skill: Photographer', '🤝 Matching collaboration goals'],
+  },
+  {
+    user_id: 'demo-2',
+    full_name: 'Alex Rivera',
+    role: 'Videographer',
+    bio: 'Cinematic storyteller & drone pilot. Creating visual narratives for brands and creators across Southeast Asia. Let\'s make something epic together!',
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    location: 'Canggu, Bali',
+    collab_intent: 'available_for_hire',
+    match_score: 87,
+    match_reasons: ['📍 Based in Canggu, Bali', '🎯 Complementary skill: Videographer'],
+  },
+  {
+    user_id: 'demo-3',
+    full_name: 'Sophie Laurent',
+    role: 'Content Creator',
+    bio: 'Lifestyle & travel content creator with 250k followers. Always looking for talented photographers and videographers for brand collaborations!',
+    avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
+    location: 'Ubud, Bali',
+    collab_intent: 'looking_to_hire',
+    match_score: 85,
+    match_reasons: ['📍 Based in Ubud, Bali', '💼 Looking to hire creators'],
+  },
+  {
+    user_id: 'demo-4',
+    full_name: 'Jordan Kim',
+    role: 'Music Producer',
+    bio: 'Lo-fi beats & ambient soundscapes. Creating custom music for videos, podcasts, and brand content. Open to trades with visual creators!',
+    avatar_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400',
+    location: 'Seminyak, Bali',
+    collab_intent: 'open_to_trade',
+    match_score: 78,
+    match_reasons: ['🔄 Open to trade collaborations', '✨ Fellow creative in Bali'],
+  },
+];
+
 export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -44,6 +92,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
   const [userTier, setUserTier] = useState<string>('free');
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const [demoMode, setDemoMode] = useState(false);
   
   // Filters
   const [filters, setFilters] = useState<ConnectFilters>({
@@ -57,11 +106,21 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
   const DAILY_LIMIT = 20;
 
-  const currentCreator = picks[currentIndex];
-  const remainingPicks = picks.length - currentIndex;
+  const currentCreator = demoMode ? DEMO_CARDS[currentIndex] : picks[currentIndex];
+  const remainingPicks = demoMode ? DEMO_CARDS.length - currentIndex : picks.length - currentIndex;
 
   const handleSwipe = async (direction: 'left' | 'right') => {
     if (!currentCreator || actionLoading) return;
+    
+    // Demo mode: just advance index without DB calls
+    if (demoMode) {
+      setCurrentIndex(prev => prev + 1);
+      if (direction === 'right') {
+        toast.success(`Demo: Interest sent to ${currentCreator.full_name}! 💫`);
+      }
+      resetSwipe();
+      return;
+    }
     
     setActionLoading(true);
     
@@ -454,8 +513,8 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     );
   }
 
-  // Empty state
-  if (!currentCreator) {
+  // Empty state - show demo mode option
+  if (!currentCreator && !demoMode) {
     return (
       <>
         <div className="flex flex-col items-center justify-center py-12 px-4">
@@ -473,6 +532,16 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
+            <Button 
+              onClick={() => {
+                setDemoMode(true);
+                setCurrentIndex(0);
+              }} 
+              className="gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              Preview Demo
+            </Button>
           </div>
           {/* Debug info */}
           <div className="mt-4 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground max-w-md">
@@ -485,18 +554,72 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     );
   }
 
+  // Demo mode end state
+  if (demoMode && currentIndex >= DEMO_CARDS.length) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <EmptyState
+          icon={Sparkles}
+          title="Demo Complete!"
+          description="That's how the swipe experience looks. Exit demo to see real creators."
+        />
+        <div className="mt-6 flex gap-3">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setDemoMode(false);
+              setCurrentIndex(0);
+            }} 
+            className="gap-2"
+          >
+            Exit Demo
+          </Button>
+          <Button 
+            onClick={() => setCurrentIndex(0)} 
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Restart Demo
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex flex-col h-full">
-        {/* Filters */}
-        <div className="mb-4">
-          <ConnectFiltersComponent 
-            filters={filters}
-            onFiltersChange={setFilters}
-            activeFilterCount={Object.values(filters).filter(v => v !== 'all' && v !== false).length}
-            isPro={userTier !== 'free'}
-          />
-        </div>
+        {/* Demo Mode Banner */}
+        {demoMode && (
+          <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Demo Mode - Preview Only</span>
+            </div>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => {
+                setDemoMode(false);
+                setCurrentIndex(0);
+              }}
+            >
+              Exit Demo
+            </Button>
+          </div>
+        )}
+
+        {/* Filters - hide in demo mode */}
+        {!demoMode && (
+          <div className="mb-4">
+            <ConnectFiltersComponent 
+              filters={filters}
+              onFiltersChange={setFilters}
+              activeFilterCount={Object.values(filters).filter(v => v !== 'all' && v !== false).length}
+              isPro={userTier !== 'free'}
+            />
+          </div>
+        )}
 
         {/* Swipe Card */}
         <div className="flex-1 relative mb-4">

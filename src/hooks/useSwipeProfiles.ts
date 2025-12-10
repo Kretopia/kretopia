@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SwipeProfile {
@@ -18,12 +18,13 @@ export interface SwipeProfile {
 
 export function useSwipeProfiles(currentUserId: string | undefined) {
   const [profiles, setProfiles] = useState<SwipeProfile[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
   const fetchProfiles = useCallback(async () => {
     if (!currentUserId) {
-      console.log('[useSwipeProfiles] No current user ID');
+      console.log('[useSwipeProfiles] No current user ID, waiting...');
       return;
     }
 
@@ -124,6 +125,7 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
       const shuffled = filtered.sort(() => Math.random() - 0.5);
 
       setProfiles(shuffled);
+      setHasFetched(true);
       console.log('[useSwipeProfiles] Final profiles:', shuffled.length);
 
     } catch (err: any) {
@@ -133,6 +135,16 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
       setLoading(false);
     }
   }, [currentUserId]);
+
+  // Auto-fetch when currentUserId becomes available
+  useEffect(() => {
+    if (currentUserId && !hasFetched) {
+      console.log('[useSwipeProfiles] Auto-fetching for user:', currentUserId);
+      fetchProfiles();
+    } else if (!currentUserId) {
+      setLoading(false); // Stop loading if no user
+    }
+  }, [currentUserId, hasFetched, fetchProfiles]);
 
   const removeProfile = useCallback((userId: string) => {
     setProfiles(prev => prev.filter(p => p.user_id !== userId));

@@ -3,9 +3,10 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, MapPin } from "lucide-react";
+import { MessageCircle, MapPin, ChevronRight, Eye } from "lucide-react";
 import { NetworkVisualization } from "./NetworkVisualization";
 import { InviteDialog } from "@/components/InviteDialog";
+import { useNavigate } from "react-router-dom";
 
 interface Connection {
   user_id: string;
@@ -35,6 +36,11 @@ const getBadgeColor = (badge: string) => {
 
 export const ConnectionList = ({ connections, loading, onMessage }: ConnectionListProps) => {
   const [showInvite, setShowInvite] = useState(false);
+  const navigate = useNavigate();
+
+  const handleViewProfile = (userId: string) => {
+    navigate(`/profile/${userId}`);
+  };
 
   if (loading) {
     return (
@@ -64,11 +70,15 @@ export const ConnectionList = ({ connections, loading, onMessage }: ConnectionLi
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {connections.map((connection) => (
-        <Card key={connection.user_id} className="p-4 hover:shadow-lg transition-shadow">
-          <div className="flex items-start gap-4">
-            <Avatar className="h-16 w-16 border-2 border-primary">
+        <Card 
+          key={connection.user_id} 
+          className="p-4 hover:shadow-lg transition-all hover:border-primary/30 cursor-pointer group"
+          onClick={() => handleViewProfile(connection.user_id)}
+        >
+          <div className="flex items-center gap-4">
+            <Avatar className="h-14 w-14 border-2 border-primary/50 group-hover:border-primary transition-colors">
               <AvatarImage src={connection.avatar_url || undefined} />
               <AvatarFallback>
                 {connection.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??'}
@@ -76,44 +86,41 @@ export const ConnectionList = ({ connections, loading, onMessage }: ConnectionLi
             </Avatar>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold truncate">{connection.full_name}</h3>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h3 className="font-semibold truncate group-hover:text-primary transition-colors">
+                  {connection.full_name}
+                </h3>
                 {connection.badge && (
-                  <Badge className={`${getBadgeColor(connection.badge)} text-white text-xs px-2 py-0`}>
+                  <Badge className={`${getBadgeColor(connection.badge)} text-white text-xs px-1.5 py-0`}>
                     {connection.badge.toUpperCase()}
-                  </Badge>
-                )}
-                {connection.level > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    Lv {connection.level}
                   </Badge>
                 )}
               </div>
               
-              <p className="text-sm text-muted-foreground mb-2">{connection.role}</p>
+              <p className="text-sm text-muted-foreground truncate">{connection.role}</p>
               
               {connection.location && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                   <MapPin className="h-3 w-3" />
-                  <span>{connection.location}</span>
+                  <span className="truncate">{connection.location}</span>
                 </div>
               )}
-              
-              {connection.bio && (
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                  {connection.bio}
-                </p>
-              )}
-              
+            </div>
+
+            <div className="flex items-center gap-2">
               <Button 
-                onClick={() => onMessage(connection.user_id)} 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMessage(connection.user_id);
+                }} 
                 size="sm"
                 variant="outline"
-                className="gap-2"
+                className="gap-1.5"
               >
                 <MessageCircle className="h-4 w-4" />
-                Message
+                <span className="hidden sm:inline">Message</span>
               </Button>
+              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
           </div>
         </Card>

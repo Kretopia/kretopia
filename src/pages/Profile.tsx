@@ -2,10 +2,11 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag } from "lucide-react";
+import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag, Lock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import jsPDF from 'jspdf';
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
 
@@ -50,8 +51,10 @@ import { DigitalProductsSection } from "@/components/profile/DigitalProductsSect
 
 import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
 import { checkProfileCompletion, getDiscoveryMissingFields, meetsDiscoveryRequirements } from "@/lib/profileCompletion";
+import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 
 const ProfileContent = () => {
+  const navigate = useNavigate();
   const {
     profile,
     portfolioItems,
@@ -67,6 +70,10 @@ const ProfileContent = () => {
     currentUserId,
     isLoading,
   } = useProfileContext();
+
+  // Get user's subscription tier
+  const userTier: SubscriptionTier = (profile?.subscription_tier as SubscriptionTier) || "free";
+  const hasAdvancedProfile = TIER_LIMITS[userTier].hasAdvancedProfile;
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -351,30 +358,96 @@ const ProfileContent = () => {
               </div>
             )}
 
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Experience & Credits</h2>
-              <CreditsSection 
-                userId={profile.user_id}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
+            {/* Pro Feature: Experience & Credits */}
+            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Experience & Credits</h2>
+                {!hasAdvancedProfile && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
+                    <Crown className="h-3 w-3" />
+                    Pro
+                  </Badge>
+                )}
+              </div>
+              {hasAdvancedProfile ? (
+                <CreditsSection 
+                  userId={profile.user_id}
+                  isOwnProfile={true}
+                  onRefresh={fetchData}
+                />
+              ) : (
+                <div className="text-center py-8">
+                  <Lock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground mb-4">Upgrade to Pro to add your professional credits</p>
+                  <Button onClick={() => navigate("/subscription")} className="gap-2">
+                    <Crown className="h-4 w-4" />
+                    Upgrade to Pro
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-                <PressLinksSection 
-                  userId={profile.user_id}
-                  isOwnProfile={true}
-                  onRefresh={fetchData}
-                />
+              {/* Pro Feature: Press Links */}
+              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm relative">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    Press Coverage
+                    {!hasAdvancedProfile && (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                        <Crown className="h-3 w-3" />
+                        Pro
+                      </Badge>
+                    )}
+                  </h3>
+                </div>
+                {hasAdvancedProfile ? (
+                  <PressLinksSection 
+                    userId={profile.user_id}
+                    isOwnProfile={true}
+                    onRefresh={fetchData}
+                  />
+                ) : (
+                  <div className="text-center py-6">
+                    <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
+                    <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                      <Crown className="h-3 w-3" />
+                      Unlock
+                    </Button>
+                  </div>
+                )}
               </div>
 
-              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-                <AwardsSection 
-                  userId={profile.user_id}
-                  isOwnProfile={true}
-                  onRefresh={fetchData}
-                />
+              {/* Pro Feature: Awards */}
+              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm relative">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    Awards
+                    {!hasAdvancedProfile && (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                        <Crown className="h-3 w-3" />
+                        Pro
+                      </Badge>
+                    )}
+                  </h3>
+                </div>
+                {hasAdvancedProfile ? (
+                  <AwardsSection 
+                    userId={profile.user_id}
+                    isOwnProfile={true}
+                    onRefresh={fetchData}
+                  />
+                ) : (
+                  <div className="text-center py-6">
+                    <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
+                    <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                      <Crown className="h-3 w-3" />
+                      Unlock
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 

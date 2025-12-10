@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin } from "lucide-react";
+import { Sparkles, Globe } from "lucide-react";
 
 export const LaunchingInBaliSection = () => {
   return (
@@ -11,8 +11,8 @@ export const LaunchingInBaliSection = () => {
           
           <div className="relative text-primary-foreground">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm">
-              <MapPin className="h-4 w-4" />
-              <span>Launching in Bali</span>
+              <Globe className="h-4 w-4" />
+              <span>Join Creators Worldwide</span>
             </div>
             
             <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold">
@@ -20,7 +20,7 @@ export const LaunchingInBaliSection = () => {
             </h2>
             
             <p className="mb-8 text-base sm:text-lg opacity-90 max-w-2xl mx-auto">
-              Join the first wave of creators ditching Facebook groups and endless DMs for instant, AI-powered matches. Early members building the future of creator collaboration.
+              Join thousands of creators ditching Facebook groups and endless DMs for instant, AI-powered matches. Be part of the future of creator collaboration.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">

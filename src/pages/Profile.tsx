@@ -319,6 +319,7 @@ const ProfileContent = () => {
                 items={portfolioItems} 
                 isOwnProfile={true}
                 onRefresh={fetchData}
+                subscriptionTier={userTier}
               />
             </div>
 

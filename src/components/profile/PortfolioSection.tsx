@@ -4,10 +4,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Upload, ExternalLink, Trash2, Eye, Play } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, Eye, Play, Lock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaPlayerModal } from "./MediaPlayerModal";
+import { useNavigate } from "react-router-dom";
+import { TIER_LIMITS, canAddPortfolioItem, SubscriptionTier } from "@/lib/subscriptionLimits";
 import { getMediaThumbnail, parseMediaUrl } from "@/lib/mediaUtils";
 
 interface PortfolioItem {
@@ -26,9 +28,10 @@ interface PortfolioSectionProps {
   items: PortfolioItem[];
   isOwnProfile: boolean;
   onRefresh: () => void;
+  subscriptionTier?: SubscriptionTier;
 }
 
-export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSectionProps) => {
+export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionTier = "free" }: PortfolioSectionProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [fetchingData, setFetchingData] = useState(false);
@@ -47,6 +50,11 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
     tags: ""
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  const tierLimits = TIER_LIMITS[subscriptionTier];
+  const canAddMore = canAddPortfolioItem(subscriptionTier, items.length);
+  const isAtLimit = !canAddMore && tierLimits.maxPortfolioItems !== -1;
 
   const fetchPlatformData = async (url: string) => {
     if (!url.trim()) {
@@ -209,8 +217,28 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
   return (
     <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-lg md:text-xl font-semibold">Portfolio</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg md:text-xl font-semibold">Portfolio</h3>
+          {tierLimits.maxPortfolioItems !== -1 && isOwnProfile && (
+            <span className="text-xs text-muted-foreground">
+              {items.length}/{tierLimits.maxPortfolioItems}
+            </span>
+          )}
+        </div>
         {isOwnProfile && (
+          isAtLimit ? (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs md:text-sm border-primary/50"
+              onClick={() => navigate('/subscription')}
+            >
+              <Lock className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+              <Crown className="h-3 w-3 md:h-4 md:w-4 mr-1 text-primary" />
+              <span className="hidden sm:inline">Upgrade for More</span>
+              <span className="sm:hidden">Upgrade</span>
+            </Button>
+          ) : (
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
               <Button variant="gradient" size="sm" className="text-xs md:text-sm">
@@ -388,7 +416,8 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh }: PortfolioSe
               </div>
             </DialogContent>
           </Dialog>
-      )}
+          )
+        )}
       </div>
 
       {items.length === 0 && !isOwnProfile ? null : items.length === 0 ? (

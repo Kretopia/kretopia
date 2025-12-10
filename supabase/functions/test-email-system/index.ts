@@ -60,7 +60,7 @@ serve(async (req) => {
 
     // Test 6: Send test email via Resend
     const emailResult = await resend.emails.send({
-      from: "ThriveIN <onboarding@resend.dev>",
+      from: "ThriveIN <noreply@thrivein.app>",
       to: [user.email],
       subject: "🎉 ThriveIN Email System Test",
       html: `

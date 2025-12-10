@@ -4449,11 +4449,11 @@ export type Database = {
         Returns: undefined
       }
       use_invite_code:
+        | { Args: { code: string; user_email: string }; Returns: boolean }
         | {
             Args: { code: string; new_user_id?: string; user_email: string }
             Returns: boolean
           }
-        | { Args: { code: string; user_email: string }; Returns: boolean }
       user_has_project_access: {
         Args: { project_id_param: string; user_id_param: string }
         Returns: boolean

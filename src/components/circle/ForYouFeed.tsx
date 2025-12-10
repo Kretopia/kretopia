@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus, Lightbulb, RefreshCw } from "lucide-react";
+import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -167,7 +167,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     setDebugInfo('Loading...');
     
     try {
-      console.log('[ForYou] ========== LOADING PICKS v2 ==========');
+      console.log('[ForYou] ========== LOADING PICKS v3 ==========');
       console.log('[ForYou] Current user ID:', user.id);
       
       // Step 1: Get current user's profile
@@ -187,8 +187,8 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         .select('target_id')
         .eq('user_id', user.id);
 
-      const swipedUserIds = mySwipes?.map(s => s.target_id) || [];
-      console.log('[ForYou] User has swiped on:', swipedUserIds.length, 'profiles');
+      const swipedUserIds = new Set(mySwipes?.map(s => s.target_id) || []);
+      console.log('[ForYou] User has swiped on:', swipedUserIds.size, 'profiles');
 
       // Step 3: Get ONLY accepted connections (not pending - pending means waiting for reciprocation)
       const { data: acceptedConns } = await supabase
@@ -197,33 +197,19 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         .eq('status', 'accepted');
 
       // Filter to only MY accepted connections
-      const myAcceptedConnections = acceptedConns?.filter(c => 
-        c.user_id === user.id || c.connected_user_id === user.id
-      ) || [];
-      
-      const connectedUserIds = myAcceptedConnections.map(c => 
-        c.user_id === user.id ? c.connected_user_id : c.user_id
-      );
-      console.log('[ForYou] User is connected to:', connectedUserIds.length, 'profiles');
+      const connectedUserIds = new Set<string>();
+      acceptedConns?.forEach(c => {
+        if (c.user_id === user.id) connectedUserIds.add(c.connected_user_id);
+        if (c.connected_user_id === user.id) connectedUserIds.add(c.user_id);
+      });
+      console.log('[ForYou] User is connected to:', connectedUserIds.size, 'profiles');
 
-      // Step 4: Build the exclusion list
-      const excludeSet = new Set([
-        ...swipedUserIds,
-        ...connectedUserIds,
-        user.id // Always exclude self
-      ]);
-      const excludeIds = Array.from(excludeSet);
-      console.log('[ForYou] Total exclusion list:', excludeIds.length, 'IDs');
-      console.log('[ForYou] Exclusion IDs:', excludeIds);
-
-      // Step 5: Get ALL profiles that meet basic criteria
+      // Step 4: Get ALL profiles with onboarding complete (we'll filter the rest in JS)
       const { data: allProfiles, error: profileError } = await supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, professional_skills, onboarding_completed')
         .eq('onboarding_completed', true)
-        .not('avatar_url', 'is', null)
-        .not('bio', 'is', null)
-        .limit(100);
+        .limit(200);
 
       if (profileError) {
         console.error('[ForYou] Profile query error:', profileError);
@@ -233,39 +219,48 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         return;
       }
 
-      console.log('[ForYou] All eligible profiles from DB:', allProfiles?.length);
-      allProfiles?.forEach(p => {
-        console.log(`[ForYou]   - ${p.full_name} (${p.user_id})`);
+      console.log('[ForYou] Raw profiles from DB:', allProfiles?.length);
+
+      // Step 5: Filter in JavaScript for reliability
+      const candidates = (allProfiles || []).filter(p => {
+        // Exclude self
+        if (p.user_id === user.id) {
+          console.log(`[ForYou] SKIP self: ${p.full_name}`);
+          return false;
+        }
+        
+        // Exclude already swiped
+        if (swipedUserIds.has(p.user_id)) {
+          console.log(`[ForYou] SKIP swiped: ${p.full_name}`);
+          return false;
+        }
+        
+        // Exclude accepted connections
+        if (connectedUserIds.has(p.user_id)) {
+          console.log(`[ForYou] SKIP connected: ${p.full_name}`);
+          return false;
+        }
+        
+        // Check has avatar (not null and not empty)
+        if (!p.avatar_url || p.avatar_url.trim() === '') {
+          console.log(`[ForYou] SKIP no avatar: ${p.full_name}`);
+          return false;
+        }
+        
+        // Check has bio (not null and at least 20 chars)
+        if (!p.bio || p.bio.trim().length < 20) {
+          console.log(`[ForYou] SKIP short bio: ${p.full_name}`);
+          return false;
+        }
+        
+        console.log(`[ForYou] ✓ KEEP: ${p.full_name}`);
+        return true;
       });
 
-      // Step 6: Filter out excluded IDs in JavaScript (more reliable than Supabase)
-      // Also filter out empty avatar/bio strings
-      const candidates = allProfiles?.filter(p => {
-        // Check if excluded
-        if (excludeSet.has(p.user_id)) {
-          console.log(`[ForYou] EXCLUDING (already swiped/connected/self): ${p.full_name}`);
-          return false;
-        }
-        // Check avatar not empty
-        if (!p.avatar_url || p.avatar_url.trim() === '') {
-          console.log(`[ForYou] EXCLUDING (no avatar): ${p.full_name}`);
-          return false;
-        }
-        // Check bio not empty
-        if (!p.bio || p.bio.trim() === '') {
-          console.log(`[ForYou] EXCLUDING (no bio): ${p.full_name}`);
-          return false;
-        }
-        console.log(`[ForYou] KEEPING: ${p.full_name}`);
-        return true;
-      }) || [];
+      console.log('[ForYou] Candidates after filtering:', candidates.length);
+      setDebugInfo(`Found ${candidates.length} matches`);
 
-      console.log('[ForYou] After exclusion, candidates:', candidates.length);
-      candidates.forEach(c => console.log(`[ForYou]   Candidate: ${c.full_name}`));
-      
-      setDebugInfo(`Found ${candidates.length} candidates after filtering`);
-
-      // Step 7: Apply user filters if set
+      // Step 6: Apply user filters if set
       let filteredCandidates = [...candidates];
       
       if (filters.role !== 'all') {
@@ -292,14 +287,14 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         return;
       }
 
-      // Step 8: Score and rank candidates
+      // Step 7: Score and rank candidates
       const scoredPicks = filteredCandidates.map(candidate => {
         let score = 70;
         const reasons: string[] = [];
 
         // Location match
         if (candidate.location && currentProfile?.location && 
-            candidate.location.toLowerCase() === currentProfile.location.toLowerCase()) {
+            candidate.location.toLowerCase().includes(currentProfile.location.toLowerCase().split(',')[0])) {
           score += 10;
           reasons.push(`📍 Based in ${candidate.location}`);
         }
@@ -311,7 +306,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             'Videographer': ['Photographer', 'Music Producer', 'Content Creator'],
             'Music Producer': ['Vocalist', 'Songwriter', 'Videographer'],
             'Content Creator': ['Photographer', 'Videographer', 'Graphic Designer'],
-            'Entrepreneur': ['Content Creator', 'Photographer', 'Videographer', 'Graphic Designer'],
+            'Entrepreneur': ['Content Creator', 'Photographer', 'Videographer', 'Graphic Designer', 'Brand Designer'],
           };
           const complementary = complementaryPairs[currentProfile.role] || [];
           if (complementary.some(role => candidate.role?.includes(role))) {
@@ -348,122 +343,121 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           ...candidate,
           match_score: Math.min(score, 99),
           match_reasons: reasons.slice(0, 3)
-        };
+        } as ForYouCreator;
       });
 
       // Sort by score descending
       scoredPicks.sort((a, b) => b.match_score - a.match_score);
-      
+
+      // Take top N picks
       const finalPicks = scoredPicks.slice(0, DAILY_LIMIT);
       console.log('[ForYou] Final picks:', finalPicks.length);
-      finalPicks.forEach(p => console.log(`[ForYou]   Pick: ${p.full_name} (score: ${p.match_score})`));
-      
+      finalPicks.forEach(p => console.log(`[ForYou]   - ${p.full_name} (${p.match_score}%)`));
+
       setPicks(finalPicks);
       setCurrentIndex(0);
-      setDebugInfo(`Loaded ${finalPicks.length} picks`);
+      
     } catch (error) {
       console.error('[ForYou] Error loading picks:', error);
-      setDebugInfo('Error: ' + String(error));
-      toast.error('Failed to load recommendations');
+      setDebugInfo('Error loading profiles');
+      setPicks([]);
     } finally {
       setLoading(false);
     }
   }, [user?.id, filters]);
 
   useEffect(() => {
-    if (user?.id) {
-      loadDailyPicks();
-    }
-  }, [user?.id, loadDailyPicks]);
+    loadDailyPicks();
+  }, [loadDailyPicks]);
 
   const handleUndo = async () => {
-    if (!lastSwiped) return;
-    
+    if (!lastSwiped || userTier === 'free') {
+      if (userTier === 'free') {
+        toast.error('Upgrade to Pro to undo swipes!');
+        navigate('/subscription');
+      }
+      return;
+    }
+
     try {
       await supabase
         .from('swipes')
         .delete()
         .eq('user_id', user!.id)
         .eq('target_id', lastSwiped.user_id);
-      
-      setPicks(prev => {
-        const newPicks = [...prev];
-        newPicks.splice(currentIndex, 0, lastSwiped);
-        return newPicks;
-      });
-      
+
+      await supabase
+        .from('connections')
+        .delete()
+        .eq('user_id', user!.id)
+        .eq('connected_user_id', lastSwiped.user_id);
+
+      setPicks(prev => [lastSwiped, ...prev.slice(currentIndex)]);
+      setCurrentIndex(0);
       setLastSwiped(null);
-      toast.success('Undo successful!');
+      toast.success('Swipe undone!');
     } catch (error) {
       console.error('[ForYou] Undo error:', error);
+      toast.error('Could not undo swipe');
     }
   };
 
-  const getCollabIntentLabel = (intent: string) => {
-    const labels: Record<string, string> = {
-      'looking_to_hire': '💼 Hiring',
-      'available_for_hire': '✋ Available',
-      'open_to_trade': '🔄 Trade',
-      'seeking_collaborators': '🤝 Collaborating',
-      'just_networking': '👋 Networking',
-    };
-    return labels[intent] || intent;
+  const handleLike = async () => {
+    if (!currentCreator) return;
+    await animateSwipe('right');
+    await handleSwipe('right');
   };
 
-  const activeFilterCount = [filters.role, filters.location, filters.collabIntent].filter(f => f !== 'all').length;
+  const handlePass = async () => {
+    if (!currentCreator) return;
+    await animateSwipe('left');
+    await handleSwipe('left');
+  };
+
+  const getCollabIntentLabel = (intent: string | null) => {
+    const labels: Record<string, string> = {
+      'looking_to_hire': '💼 Hiring',
+      'available_for_hire': '✋ For Hire',
+      'open_to_trade': '🔄 Trade',
+      'seeking_collaborators': '🤝 Collab',
+      'just_networking': '👋 Networking',
+    };
+    return intent ? labels[intent] : null;
+  };
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Finding your best matches...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Finding your matches...</p>
       </div>
     );
   }
 
-  if (!currentCreator || currentIndex >= picks.length) {
+  // Empty state
+  if (!currentCreator) {
     return (
       <>
-        <ConnectFiltersComponent 
-          filters={filters}
-          onFiltersChange={setFilters}
-          activeFilterCount={activeFilterCount}
-          isPro={userTier === 'pro' || userTier === 'studio'}
-        />
-        
-        <div className="text-center py-12">
-          <div className="mb-6 p-6 rounded-full bg-primary/10 inline-flex">
-            <Sparkles className="h-12 w-12 text-primary" />
-          </div>
-          <h3 className="text-xl font-bold mb-3">
-            {activeFilterCount > 0 ? 'No matches with these filters' : 'All caught up!'}
-          </h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            {activeFilterCount > 0 
-              ? 'Try adjusting your filters to see more creators.'
-              : `You've viewed all picks for today. Invite more creators to grow your network!`
-            }
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {activeFilterCount > 0 && (
-              <Button variant="outline" onClick={() => setFilters({ role: 'all', location: 'all', collabIntent: 'all', verifiedOnly: false, minFollowers: 'all', experienceLevel: 'all' })}>
-                Clear Filters
-              </Button>
-            )}
+        <div className="flex flex-col items-center justify-center py-12 px-4">
+          <EmptyState
+            icon={Sparkles}
+            title="All Caught Up!"
+            description="You've seen all available creators. Invite more creators to join!"
+            action={{
+              label: "Invite Creators",
+              onClick: () => setShowInvite(true)
+            }}
+          />
+          <div className="mt-6 flex gap-3">
             <Button variant="outline" onClick={loadDailyPicks} className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            <Button onClick={() => setShowInvite(true)} className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              Invite Creators
-            </Button>
           </div>
-          {/* Debug info for testing */}
-          <div className="mt-4 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground max-w-md mx-auto">
-            <p><strong>Debug:</strong> {debugInfo || 'No info'}</p>
-            <p className="mt-1">Picks loaded: {picks.length} | Current index: {currentIndex}</p>
-            <p className="mt-1">User: {user?.id?.slice(0, 8)}...</p>
+          {/* Debug info */}
+          <div className="mt-4 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground max-w-md">
+            <p><strong>Debug v3:</strong> {debugInfo || 'No info'}</p>
+            <p className="mt-1">Picks: {picks.length} | Index: {currentIndex} | User: {user?.id?.slice(0, 8)}...</p>
           </div>
         </div>
         <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
@@ -471,202 +465,189 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     );
   }
 
-  const nextCreator = picks[currentIndex + 1];
-
   return (
-    <div className="flex flex-col items-center">
-      {/* Filters */}
-      <div className="w-full max-w-sm mb-4">
-        <ConnectFiltersComponent 
-          filters={filters}
-          onFiltersChange={setFilters}
-          activeFilterCount={activeFilterCount}
-          isPro={userTier === 'pro' || userTier === 'studio'}
-        />
-      </div>
-      
-      {/* Stats Bar */}
-      <div className="w-full max-w-sm mb-4 flex items-center justify-between px-2">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium">Your Matches</span>
+    <>
+      <div className="flex flex-col h-full">
+        {/* Filters */}
+        <div className="mb-4">
+          <ConnectFiltersComponent 
+            filters={filters}
+            onFiltersChange={setFilters}
+            activeFilterCount={Object.values(filters).filter(v => v !== 'all' && v !== false).length}
+            isPro={userTier !== 'free'}
+          />
         </div>
-        <Badge variant="secondary" className="gap-1">
-          <Clock className="h-3 w-3" />
-          {remainingPicks} left
-        </Badge>
-      </div>
 
-      {/* Card Stack */}
-      <div className="relative w-full max-w-sm h-[500px] mb-6">
-        {/* Next card preview */}
-        {nextCreator && (
-          <div 
-            className="absolute inset-0 rounded-2xl overflow-hidden opacity-50 scale-95"
-            style={{ 
-              backgroundImage: `url(${nextCreator.avatar_url})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'blur(2px)'
-            }}
-          />
-        )}
-
-        {/* Current swipe card */}
-        <SwipeCard
-          ref={cardRef}
-          dragOffset={dragOffset}
-          swipeDirection={swipeDirection}
-          isDragging={isDragging}
-          onMouseDown={handleDragStart}
-          onMouseMove={handleDragMove}
-          onMouseUp={handleDragEnd}
-          onMouseLeave={handleDragEnd}
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
-          className="absolute inset-0 rounded-2xl overflow-hidden"
-        >
-          {/* Background Image */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${currentCreator.avatar_url})` }}
-          />
-          
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-          
-          {/* Content */}
-          <div className="absolute inset-0 flex flex-col justify-between p-6">
-            {/* Top section - Match score */}
-            <div className="flex justify-between items-start">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="bg-black/30 text-white hover:bg-black/50 backdrop-blur-sm"
-                onClick={() => setPreviewUserId(currentCreator.user_id)}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                View Profile
-              </Button>
-              
-              {/* Clickable match score badge */}
-              <button
-                onClick={() => setShowMatchExplanation(true)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/80 to-purple-500/80 text-white text-sm font-bold backdrop-blur-sm hover:from-primary hover:to-purple-500 transition-all cursor-pointer"
-              >
-                <Sparkles className="h-3 w-3" />
-                {currentCreator.match_score}% Match
-              </button>
+        {/* Swipe Card */}
+        <div className="flex-1 relative mb-4">
+          <SwipeCard
+            ref={cardRef}
+            dragOffset={dragOffset}
+            isDragging={isDragging}
+            swipeDirection={swipeDirection}
+            onMouseDown={handleDragStart}
+            onMouseMove={handleDragMove}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+            onTouchStart={handleDragStart}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
+            showOverlay={true}
+            className="absolute inset-0"
+          >
+            {/* Card Background */}
+            <div className="absolute inset-0 rounded-xl overflow-hidden">
+              {currentCreator.avatar_url ? (
+                <img 
+                  src={currentCreator.avatar_url} 
+                  alt={currentCreator.full_name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             </div>
 
-            {/* Bottom section - Info and actions */}
-            <div className="space-y-4">
-              {/* User info */}
-              <div className="space-y-2">
+            {/* Card Content */}
+            <div className="relative z-10 h-full flex flex-col justify-end p-5">
+              {/* AI Match Score Badge */}
+              <button
+                onClick={() => setShowMatchExplanation(true)}
+                className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-colors"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-yellow-400" />
+                <span className="text-sm font-semibold">{currentCreator.match_score}%</span>
+              </button>
+
+              {/* Profile Info */}
+              <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 border-2 border-white/30">
+                  <Avatar className="h-12 w-12 ring-2 ring-white/20">
                     <AvatarImage src={currentCreator.avatar_url} />
                     <AvatarFallback>{currentCreator.full_name?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">{currentCreator.full_name}</h2>
-                    <p className="text-white/80">{currentCreator.role}</p>
+                    <h3 className="text-xl font-bold text-white">{currentCreator.full_name}</h3>
+                    <p className="text-white/80 text-sm">{currentCreator.role}</p>
                   </div>
                 </div>
 
-                {/* Location and collab intent */}
+                {/* Location & Intent */}
                 <div className="flex flex-wrap gap-2">
                   {currentCreator.location && (
-                    <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                    <Badge variant="secondary" className="bg-white/10 text-white border-0">
                       <MapPin className="h-3 w-3 mr-1" />
                       {currentCreator.location}
                     </Badge>
                   )}
-                  {currentCreator.collab_intent && (
-                    <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                  {getCollabIntentLabel(currentCreator.collab_intent) && (
+                    <Badge variant="secondary" className="bg-white/10 text-white border-0">
                       {getCollabIntentLabel(currentCreator.collab_intent)}
                     </Badge>
                   )}
                 </div>
 
-                {/* Bio preview */}
-                <p className="text-white/70 text-sm line-clamp-2">{currentCreator.bio}</p>
-              </div>
+                {/* Bio Preview */}
+                <p className="text-white/70 text-sm line-clamp-2">
+                  {currentCreator.bio}
+                </p>
 
-              {/* Action buttons */}
-              <div className="flex items-center justify-center gap-6 pt-2">
-                {lastSwiped && (
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    className="h-12 w-12 rounded-full bg-white/10 border-white/30 text-white hover:bg-white/20"
-                    onClick={handleUndo}
-                    disabled={actionLoading}
-                  >
-                    <Undo2 className="h-5 w-5" />
-                  </Button>
-                )}
-                
+                {/* Match Reasons */}
+                <div className="flex flex-wrap gap-1.5">
+                  {currentCreator.match_reasons?.slice(0, 2).map((reason, i) => (
+                    <span key={i} className="text-xs text-white/60 bg-white/5 px-2 py-1 rounded-full">
+                      {reason}
+                    </span>
+                  ))}
+                </div>
+
+                {/* View Profile Button */}
                 <Button
-                  size="icon"
-                  className="h-16 w-16 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-lg"
-                  onClick={() => handleSwipe('left')}
-                  disabled={actionLoading}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/80 hover:text-white hover:bg-white/10 w-fit"
+                  onClick={() => setPreviewUserId(currentCreator.user_id)}
                 >
-                  <X className="h-8 w-8" />
-                </Button>
-                
-                <Button
-                  size="icon"
-                  className="h-16 w-16 rounded-full bg-green-500 hover:bg-green-600 text-white shadow-lg"
-                  onClick={() => handleSwipe('right')}
-                  disabled={actionLoading}
-                >
-                  <Heart className="h-8 w-8" />
+                  <Eye className="h-4 w-4 mr-2" />
+                  View Full Profile
                 </Button>
               </div>
             </div>
+          </SwipeCard>
+
+          {/* Remaining count */}
+          <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm text-white/80 text-sm">
+            <Clock className="h-3.5 w-3.5" />
+            {remainingPicks} left today
           </div>
-        </SwipeCard>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-center gap-4 py-4">
+          <Button
+            size="lg"
+            variant="outline"
+            className="h-16 w-16 rounded-full border-2 border-muted-foreground/30 hover:border-red-500 hover:bg-red-500/10"
+            onClick={handlePass}
+            disabled={actionLoading}
+          >
+            <X className="h-7 w-7 text-muted-foreground" />
+          </Button>
+          
+          {lastSwiped && userTier !== 'free' && (
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-12 w-12 rounded-full border-2"
+              onClick={handleUndo}
+            >
+              <Undo2 className="h-5 w-5" />
+            </Button>
+          )}
+          
+          <Button
+            size="lg"
+            className="h-16 w-16 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg"
+            onClick={handleLike}
+            disabled={actionLoading}
+          >
+            <Heart className="h-7 w-7 text-white" fill="white" />
+          </Button>
+        </div>
       </div>
 
       {/* Profile Preview Dialog */}
-      {previewUserId && (
-        <ProfilePreviewDialog
-          userId={previewUserId}
-          open={!!previewUserId}
-          onOpenChange={(open) => !open && setPreviewUserId(null)}
-        />
-      )}
+      <ProfilePreviewDialog
+        userId={previewUserId}
+        open={!!previewUserId}
+        onOpenChange={(open) => !open && setPreviewUserId(null)}
+      />
 
       {/* Match Explanation Dialog */}
-      {showMatchExplanation && currentCreator && (
-        <MatchExplanationDialog
-          open={showMatchExplanation}
-          onOpenChange={setShowMatchExplanation}
-          match={{
-            user_id: currentCreator.user_id,
-            name: currentCreator.full_name,
-            title: currentCreator.role,
-            location: currentCreator.location || '',
-            image: currentCreator.avatar_url,
-            matchScore: currentCreator.match_score,
-            matchReasons: currentCreator.match_reasons,
-          }}
-          onConnect={() => {
-            setShowMatchExplanation(false);
-            handleSwipe('right');
-          }}
-          onPass={() => {
-            setShowMatchExplanation(false);
-            handleSwipe('left');
-          }}
-        />
-      )}
+      <MatchExplanationDialog
+        open={showMatchExplanation}
+        onOpenChange={setShowMatchExplanation}
+        match={{
+          user_id: currentCreator?.user_id,
+          name: currentCreator?.full_name || '',
+          title: currentCreator?.role || '',
+          location: currentCreator?.location || '',
+          image: currentCreator?.avatar_url || '',
+          matchScore: currentCreator?.match_score || 0,
+          matchReasons: currentCreator?.match_reasons || []
+        }}
+        onConnect={() => {
+          setShowMatchExplanation(false);
+          handleLike();
+        }}
+        onPass={() => {
+          setShowMatchExplanation(false);
+          handlePass();
+        }}
+      />
 
-      {/* Invite Dialog */}
       <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
-    </div>
+    </>
   );
 };

@@ -1,7 +1,11 @@
-import { Palette, Brain, MessageSquare, Zap, Crown } from "lucide-react";
+import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified } from "lucide-react";
 
 export const WhyCreatorsChooseSection = () => {
   const features = [
+    {
+      icon: <Shield className="h-5 w-5" />,
+      text: "AI-verified credentials: Grammy, IMDB, Spotify checked"
+    },
     {
       icon: <Palette className="h-5 w-5" />,
       text: "Portfolio-first: judge talent by work, not hype"
@@ -55,9 +59,36 @@ export const WhyCreatorsChooseSection = () => {
           ))}
         </div>
 
+        {/* Verification tiers */}
+        <div className="mt-12 sm:mt-16">
+          <div className="p-6 sm:p-8 rounded-2xl bg-muted/50 border border-border/50">
+            <h3 className="mb-4 text-xl sm:text-2xl font-bold text-center">The Industry-Standard for Credibility</h3>
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
+              <div className="p-3 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <Verified className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-blue-500 mb-2" />
+                <div className="font-semibold text-blue-500 text-sm sm:text-base">Verified</div>
+                <p className="text-xs text-muted-foreground mt-1">Complete profile</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                <Award className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-purple-500 mb-2" />
+                <div className="font-semibold text-purple-500 text-sm sm:text-base">Industry</div>
+                <p className="text-xs text-muted-foreground mt-1">IMDB / Credits</p>
+              </div>
+              <div className="p-3 sm:p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                <Crown className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-yellow-500 mb-2" />
+                <div className="font-semibold text-yellow-500 text-sm sm:text-base">Elite</div>
+                <p className="text-xs text-muted-foreground mt-1">Grammy / Oscar</p>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              AI verifies credentials against IMDB, Spotify, Grammy, Billboard & more
+            </p>
+          </div>
+        </div>
+
         {/* Made for creators */}
-        <div className="mt-12 sm:mt-16 text-center">
-          <div className="inline-block p-6 sm:p-8 rounded-2xl bg-muted/50 border border-border/50">
+        <div className="mt-8 sm:mt-12 text-center">
+          <div className="inline-block p-6 sm:p-8 rounded-2xl bg-muted/30 border border-border/30">
             <h3 className="mb-3 text-xl sm:text-2xl font-bold">Made for Creators Who Are Done Waiting</h3>
             <p className="max-w-3xl text-sm sm:text-base text-muted-foreground">
               For videographers, editors, photographers, designers, writers, podcasters, musicians, brand builders & founders who want to move now — not "someday."

@@ -21,7 +21,7 @@ export const HeroSection = () => {
           {/* Badge with animation */}
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105 hover:shadow-glow">
             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-primary animate-pulse" />
-            <span className="font-medium">The swipe-to-collaborate app</span>
+            <span className="font-medium">AI-Verified Professionals Only</span>
           </div>
           
           <h1 className="mb-4 sm:mb-6 md:mb-8 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight sm:leading-[1.1] tracking-tight px-4">
@@ -50,10 +50,13 @@ export const HeroSection = () => {
           </div>
           
           {/* Trust indicators */}
-          <div className="mt-6 sm:mt-8 flex flex-col items-center justify-center text-xs sm:text-sm text-muted-foreground px-4">
+          <div className="mt-6 sm:mt-8 flex flex-col items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground px-4">
             <p className="flex items-center gap-2">
               <Sparkles className="h-3 w-3 text-primary" />
               30 free swipes daily • No credit card
+            </p>
+            <p className="text-xs text-muted-foreground/80">
+              Join Grammy winners, IMDB-credited filmmakers & verified creators
             </p>
           </div>
         </div>

@@ -62,7 +62,7 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
       ]);
       console.log('[useSwipeProfiles] Already connected:', connectedIds.size);
 
-      // Step 3: Fetch all profiles except current user
+      // Step 3: Fetch all profiles except current user (no avatar filter - show all)
       const { data: allProfiles, error: profileError } = await supabase
         .from('profiles')
         .select(`
@@ -79,8 +79,7 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
           collab_intent
         `)
         .neq('user_id', currentUserId)
-        .not('avatar_url', 'is', null)
-        .limit(50);
+        .limit(100);
 
       if (profileError) {
         console.error('[useSwipeProfiles] Profile fetch error:', profileError);
@@ -89,10 +88,8 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
 
       console.log('[useSwipeProfiles] Total profiles fetched:', allProfiles?.length);
 
-      // Step 4: Filter out swiped and connected users
+      // Step 4: Filter out only swiped and connected users (show all others)
       let filtered = (allProfiles || []).filter(p => {
-        // Must have valid avatar URL
-        if (!p.avatar_url || !p.avatar_url.startsWith('http')) return false;
         // Not already swiped
         if (swipedIds.has(p.user_id)) return false;
         // Not already connected

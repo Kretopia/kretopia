@@ -622,7 +622,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         )}
 
         {/* Swipe Card */}
-        <div className="flex-1 relative mb-4">
+        <div className="relative mb-4 min-h-[400px] h-[60vh] max-h-[500px]">
           <SwipeCard
             ref={cardRef}
             dragOffset={dragOffset}
@@ -636,7 +636,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             onTouchMove={handleDragMove}
             onTouchEnd={handleDragEnd}
             showOverlay={true}
-            className="absolute inset-0"
+            className="absolute inset-0 rounded-xl"
           >
             {/* Card Background */}
             <div className="absolute inset-0 rounded-xl overflow-hidden">

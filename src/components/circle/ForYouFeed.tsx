@@ -221,7 +221,20 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
       console.log('[ForYou] Raw profiles from DB:', allProfiles?.length);
 
-      // Step 5: Filter in JavaScript for reliability
+      // Step 5: Get portfolio counts for all users
+      const { data: portfolioCounts } = await supabase
+        .from('portfolio_items')
+        .select('user_id');
+      
+      // Build a map of user_id -> portfolio count
+      const portfolioCountMap = new Map<string, number>();
+      portfolioCounts?.forEach(item => {
+        const count = portfolioCountMap.get(item.user_id) || 0;
+        portfolioCountMap.set(item.user_id, count + 1);
+      });
+      console.log('[ForYou] Users with portfolios:', portfolioCountMap.size);
+
+      // Step 6: Filter in JavaScript for reliability
       const candidates = (allProfiles || []).filter(p => {
         // Exclude self
         if (p.user_id === user.id) {
@@ -253,7 +266,14 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           return false;
         }
         
-        console.log(`[ForYou] ✓ KEEP: ${p.full_name}`);
+        // Check has at least 1 portfolio item
+        const portfolioCount = portfolioCountMap.get(p.user_id) || 0;
+        if (portfolioCount < 1) {
+          console.log(`[ForYou] SKIP no portfolio: ${p.full_name}`);
+          return false;
+        }
+        
+        console.log(`[ForYou] ✓ KEEP: ${p.full_name} (${portfolioCount} portfolio items)`);
         return true;
       });
 

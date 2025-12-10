@@ -2,24 +2,39 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MapPin, Briefcase, Award, Users, ExternalLink } from "lucide-react";
+import { MapPin, Briefcase, Award, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+
+interface DemoProfile {
+  full_name: string;
+  role: string;
+  bio: string;
+  avatar_url: string;
+  location: string;
+  collab_intent: string;
+  match_score: number;
+  match_reasons: string[];
+}
 
 interface ProfilePreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string | null;
   userName?: string;
+  demoProfile?: DemoProfile | null;
 }
 
 export const ProfilePreviewDialog = ({
   open,
   onOpenChange,
   userId,
-  userName
+  userName,
+  demoProfile
 }: ProfilePreviewDialogProps) => {
+  // Check if this is a demo profile (non-UUID)
+  const isDemo = userId?.startsWith('demo-') || !!demoProfile;
+  
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile-preview', userId],
     queryFn: async () => {
@@ -33,7 +48,7 @@ export const ProfilePreviewDialog = ({
       if (error) throw error;
       return data;
     },
-    enabled: open && !!userId
+    enabled: open && !!userId && !isDemo
   });
 
   const { data: portfolioItems = [] } = useQuery({
@@ -50,53 +65,81 @@ export const ProfilePreviewDialog = ({
       if (error) throw error;
       return data || [];
     },
-    enabled: open && !!userId
+    enabled: open && !!userId && !isDemo
   });
 
+  // Use demo profile data or real profile data
+  const displayProfile = isDemo && demoProfile ? {
+    full_name: demoProfile.full_name,
+    role: demoProfile.role,
+    bio: demoProfile.bio,
+    avatar_url: demoProfile.avatar_url,
+    location: demoProfile.location,
+    professional_skills: ['Creative Direction', 'Content Strategy', 'Brand Development'],
+    passion_skills: [] as string[],
+    instagram_followers: 25000,
+    youtube_subscribers: 5000,
+    tiktok_followers: 15000,
+    spotify_listeners: 0,
+  } : profile;
+
   const skills = [
-    ...(Array.isArray(profile?.professional_skills) ? profile.professional_skills : []),
-    ...(Array.isArray(profile?.passion_skills) ? profile.passion_skills : [])
+    ...(Array.isArray(displayProfile?.professional_skills) ? displayProfile.professional_skills : []),
+    ...(Array.isArray(displayProfile?.passion_skills) ? displayProfile.passion_skills : [])
   ];
+  
+  // Demo portfolio items
+  const demoPortfolioItems = isDemo ? [
+    { id: 'demo-p1', title: 'Brand Campaign', thumbnail_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300' },
+    { id: 'demo-p2', title: 'Product Shoot', thumbnail_url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300' },
+    { id: 'demo-p3', title: 'Lifestyle Content', thumbnail_url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300' },
+    { id: 'demo-p4', title: 'Travel Series', thumbnail_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300' },
+  ] : portfolioItems;
+  
+  const displayPortfolio = isDemo ? demoPortfolioItems : portfolioItems;
+  const showLoading = !isDemo && isLoading;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Profile Preview</DialogTitle>
+          <DialogTitle>
+            {isDemo ? '👀 Demo Profile Preview' : 'Profile Preview'}
+          </DialogTitle>
         </DialogHeader>
         
         <ScrollArea className="h-[70vh] pr-4">
-          {isLoading ? (
+          {showLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-pulse text-muted-foreground">Loading profile...</div>
             </div>
-          ) : profile ? (
+          ) : displayProfile ? (
             <div className="space-y-6">
               {/* Header */}
               <div className="flex items-start gap-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={profile.avatar_url || undefined} />
+                  <AvatarImage src={displayProfile.avatar_url || undefined} />
                   <AvatarFallback className="text-2xl">
-                    {profile.full_name?.[0] || userName[0]}
+                    {displayProfile.full_name?.[0] || userName?.[0] || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold">{profile.full_name}</h3>
-                  <p className="text-muted-foreground font-medium">{profile.role}</p>
-                  {profile.location && (
+                  <h3 className="text-2xl font-bold">{displayProfile.full_name}</h3>
+                  <p className="text-muted-foreground font-medium">{displayProfile.role}</p>
+                  {displayProfile.location && (
                     <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
                       <MapPin className="h-3 w-3" />
-                      {profile.location}
+                      {displayProfile.location}
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Bio */}
-              {profile.bio && (
+              {displayProfile.bio && (
                 <div>
                   <h4 className="font-semibold mb-2">About</h4>
-                  <p className="text-sm text-muted-foreground">{profile.bio}</p>
+                  <p className="text-sm text-muted-foreground">{displayProfile.bio}</p>
                 </div>
               )}
 
@@ -124,14 +167,14 @@ export const ProfilePreviewDialog = ({
               )}
 
               {/* Portfolio */}
-              {portfolioItems.length > 0 && (
+              {displayPortfolio.length > 0 && (
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
                     <Award className="h-4 w-4" />
                     Recent Work
                   </h4>
                   <div className="grid grid-cols-2 gap-3">
-                    {portfolioItems.map((item: any) => (
+                    {displayPortfolio.map((item: any) => (
                       <div
                         key={item.id}
                         className="aspect-square rounded-lg overflow-hidden bg-muted group relative"
@@ -159,35 +202,35 @@ export const ProfilePreviewDialog = ({
               )}
 
               {/* Social Stats */}
-              {(profile.instagram_followers || profile.youtube_subscribers || profile.tiktok_followers || profile.spotify_listeners) && (
+              {(displayProfile.instagram_followers || displayProfile.youtube_subscribers || displayProfile.tiktok_followers || displayProfile.spotify_listeners) && (
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
                     <Users className="h-4 w-4" />
                     Social Reach
                   </h4>
                   <div className="grid grid-cols-2 gap-3">
-                    {profile.instagram_followers && (
+                    {displayProfile.instagram_followers && (
                       <div className="rounded-lg border p-3">
                         <p className="text-xs text-muted-foreground">Instagram</p>
-                        <p className="text-lg font-bold">{(profile.instagram_followers / 1000).toFixed(1)}K</p>
+                        <p className="text-lg font-bold">{(displayProfile.instagram_followers / 1000).toFixed(1)}K</p>
                       </div>
                     )}
-                    {profile.youtube_subscribers && (
+                    {displayProfile.youtube_subscribers && (
                       <div className="rounded-lg border p-3">
                         <p className="text-xs text-muted-foreground">YouTube</p>
-                        <p className="text-lg font-bold">{(profile.youtube_subscribers / 1000).toFixed(1)}K</p>
+                        <p className="text-lg font-bold">{(displayProfile.youtube_subscribers / 1000).toFixed(1)}K</p>
                       </div>
                     )}
-                    {profile.tiktok_followers && (
+                    {displayProfile.tiktok_followers && (
                       <div className="rounded-lg border p-3">
                         <p className="text-xs text-muted-foreground">TikTok</p>
-                        <p className="text-lg font-bold">{(profile.tiktok_followers / 1000).toFixed(1)}K</p>
+                        <p className="text-lg font-bold">{(displayProfile.tiktok_followers / 1000).toFixed(1)}K</p>
                       </div>
                     )}
-                    {profile.spotify_listeners && (
+                    {displayProfile.spotify_listeners && (
                       <div className="rounded-lg border p-3">
                         <p className="text-xs text-muted-foreground">Spotify</p>
-                        <p className="text-lg font-bold">{(profile.spotify_listeners / 1000).toFixed(1)}K</p>
+                        <p className="text-lg font-bold">{(displayProfile.spotify_listeners / 1000).toFixed(1)}K</p>
                       </div>
                     )}
                   </div>

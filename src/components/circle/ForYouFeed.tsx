@@ -150,7 +150,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
       if (direction === 'right') {
         // Check for mutual match (they already swiped right on us)
-        const { data: theirSwipe } = await supabase
+        const { data: theirSwipe, error: swipeCheckError } = await supabase
           .from('swipes')
           .select('id')
           .eq('user_id', currentCreator.user_id)
@@ -158,40 +158,91 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           .eq('direction', 'right')
           .maybeSingle();
 
+        console.log('[ForYou] Checking if they swiped on us:', { theirSwipe, swipeCheckError });
+
         if (theirSwipe) {
+          console.log('[ForYou] 🎉 MUTUAL MATCH DETECTED!');
+          
           // It's a match! Create match record
-          await supabase.from('matches').insert({
+          const { error: matchError } = await supabase.from('matches').insert({
             user1_id: user!.id,
             user2_id: currentCreator.user_id,
             match_type: 'creator',
             status: 'active',
           });
+          
+          if (matchError) {
+            console.error('[ForYou] Error creating match:', matchError);
+          }
 
-          // Update existing pending connections to accepted, or create new ones
-          await supabase
-            .from('connections')
-            .update({ status: 'accepted' })
-            .or(`and(user_id.eq.${user!.id},connected_user_id.eq.${currentCreator.user_id}),and(user_id.eq.${currentCreator.user_id},connected_user_id.eq.${user!.id})`);
+          // Create/update connections as accepted
+          const { error: conn1Error } = await supabase.from('connections').upsert({
+            user_id: user!.id, 
+            connected_user_id: currentCreator.user_id, 
+            status: 'accepted'
+          }, { onConflict: 'user_id,connected_user_id' });
+          
+          if (conn1Error) {
+            console.error('[ForYou] Error creating connection 1:', conn1Error);
+          }
 
-          // Insert connections if they don't exist
-          await supabase.from('connections').upsert([
-            { user_id: user!.id, connected_user_id: currentCreator.user_id, status: 'accepted' },
-            { user_id: currentCreator.user_id, connected_user_id: user!.id, status: 'accepted' }
-          ], { onConflict: 'user_id,connected_user_id', ignoreDuplicates: true });
+          const { error: conn2Error } = await supabase.from('connections').upsert({
+            user_id: currentCreator.user_id, 
+            connected_user_id: user!.id, 
+            status: 'accepted'
+          }, { onConflict: 'user_id,connected_user_id' });
+          
+          if (conn2Error) {
+            console.error('[ForYou] Error creating connection 2:', conn2Error);
+          }
 
+          // Send notifications to both users
+          const { data: myProfile } = await supabase
+            .from('profiles')
+            .select('full_name, role')
+            .eq('user_id', user!.id)
+            .single();
+
+          // Notify the other user about the match
+          await supabase.from('notifications').insert({
+            user_id: currentCreator.user_id,
+            type: 'match',
+            title: "It's a Match! 🎉",
+            message: `You and ${myProfile?.full_name || 'a creator'} both want to connect!`,
+            link: `/messages?user=${user!.id}`,
+          });
+
+          // Notify current user about the match
+          await supabase.from('notifications').insert({
+            user_id: user!.id,
+            type: 'match',
+            title: "It's a Match! 🎉",
+            message: `You and ${currentCreator.full_name} both want to connect!`,
+            link: `/messages?user=${currentCreator.user_id}`,
+          });
+
+          // Trigger the match celebration
           onMatch({
             name: currentCreator.full_name,
             avatar: currentCreator.avatar_url,
             role: currentCreator.role,
             userId: currentCreator.user_id,
           });
+          
+          toast.success(`It's a Match! 🎉`, { description: `You and ${currentCreator.full_name} both want to connect!` });
         } else {
+          console.log('[ForYou] No mutual swipe yet, creating pending connection');
+          
           // No match yet, create pending connection from us to them
-          await supabase.from('connections').upsert({
+          const { error: pendingError } = await supabase.from('connections').upsert({
             user_id: user!.id, 
             connected_user_id: currentCreator.user_id, 
             status: 'pending'
-          }, { onConflict: 'user_id,connected_user_id', ignoreDuplicates: true });
+          }, { onConflict: 'user_id,connected_user_id' });
+          
+          if (pendingError) {
+            console.error('[ForYou] Error creating pending connection:', pendingError);
+          }
           
           toast.success(`Interest sent to ${currentCreator.full_name}! 💫`);
         }
@@ -251,7 +302,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     setDebugInfo('Loading...');
     
     try {
-      console.log('[ForYou] ========== LOADING PICKS v3 ==========');
+      console.log('[ForYou] ========== LOADING PICKS v4 ==========');
       console.log('[ForYou] Current user ID:', user.id);
       
       // Step 1: Get current user's profile
@@ -286,19 +337,27 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       }
 
       // Step 2: Get ALL swipes this user has made
-      const { data: mySwipes } = await supabase
+      const { data: mySwipes, error: swipeError } = await supabase
         .from('swipes')
         .select('target_id')
         .eq('user_id', user.id);
+
+      if (swipeError) {
+        console.error('[ForYou] Error fetching swipes:', swipeError);
+      }
 
       const swipedUserIds = new Set(mySwipes?.map(s => s.target_id) || []);
       console.log('[ForYou] User has swiped on:', swipedUserIds.size, 'profiles');
 
       // Step 3: Get ONLY accepted connections (not pending - pending means waiting for reciprocation)
-      const { data: acceptedConns } = await supabase
+      const { data: acceptedConns, error: connError } = await supabase
         .from('connections')
         .select('user_id, connected_user_id')
         .eq('status', 'accepted');
+
+      if (connError) {
+        console.error('[ForYou] Error fetching connections:', connError);
+      }
 
       // Filter to only MY accepted connections
       const connectedUserIds = new Set<string>();
@@ -308,12 +367,42 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       });
       console.log('[ForYou] User is connected to:', connectedUserIds.size, 'profiles');
 
-      // Step 4: Get ALL profiles with onboarding complete (we'll filter the rest in JS)
+      // Step 4: Get users who have at least 1 portfolio item (this is the key filter)
+      const { data: usersWithPortfolio, error: portfolioError } = await supabase
+        .from('portfolio_items')
+        .select('user_id');
+      
+      if (portfolioError) {
+        console.error('[ForYou] Error fetching portfolio items:', portfolioError);
+      }
+      
+      // Build a set of user_ids who have portfolio items
+      const portfolioUserIds = new Set<string>();
+      const portfolioCountMap = new Map<string, number>();
+      usersWithPortfolio?.forEach(item => {
+        portfolioUserIds.add(item.user_id);
+        const count = portfolioCountMap.get(item.user_id) || 0;
+        portfolioCountMap.set(item.user_id, count + 1);
+      });
+      console.log('[ForYou] Users with portfolios:', portfolioUserIds.size, Array.from(portfolioUserIds));
+
+      // Step 5: Get profiles ONLY for users who have portfolios (pre-filter in query)
+      const portfolioUserArray = Array.from(portfolioUserIds);
+      
+      if (portfolioUserArray.length === 0) {
+        console.log('[ForYou] No users with portfolios found!');
+        setPicks([]);
+        setCurrentIndex(0);
+        setDebugInfo('No creators with portfolios');
+        setLoading(false);
+        return;
+      }
+
       const { data: allProfiles, error: profileError } = await supabase
         .from('profiles')
         .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, professional_skills, onboarding_completed')
         .eq('onboarding_completed', true)
-        .limit(200);
+        .in('user_id', portfolioUserArray);
 
       if (profileError) {
         console.error('[ForYou] Profile query error:', profileError);
@@ -323,20 +412,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         return;
       }
 
-      console.log('[ForYou] Raw profiles from DB:', allProfiles?.length);
-
-      // Step 5: Get portfolio counts for all users
-      const { data: portfolioCounts } = await supabase
-        .from('portfolio_items')
-        .select('user_id');
-      
-      // Build a map of user_id -> portfolio count
-      const portfolioCountMap = new Map<string, number>();
-      portfolioCounts?.forEach(item => {
-        const count = portfolioCountMap.get(item.user_id) || 0;
-        portfolioCountMap.set(item.user_id, count + 1);
-      });
-      console.log('[ForYou] Users with portfolios:', portfolioCountMap.size);
+      console.log('[ForYou] Profiles with portfolios:', allProfiles?.length);
 
       // Step 6: Filter in JavaScript for reliability
       const candidates = (allProfiles || []).filter(p => {
@@ -370,13 +446,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           return false;
         }
         
-        // Check has at least 1 portfolio item
         const portfolioCount = portfolioCountMap.get(p.user_id) || 0;
-        if (portfolioCount < 1) {
-          console.log(`[ForYou] SKIP no portfolio: ${p.full_name}`);
-          return false;
-        }
-        
         console.log(`[ForYou] ✓ KEEP: ${p.full_name} (${portfolioCount} portfolio items)`);
         return true;
       });
@@ -384,7 +454,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       console.log('[ForYou] Candidates after filtering:', candidates.length);
       setDebugInfo(`Found ${candidates.length} matches`);
 
-      // Step 6: Apply user filters if set
+      // Step 7: Apply user filters if set
       let filteredCandidates = [...candidates];
       
       if (filters.role !== 'all') {
@@ -411,7 +481,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         return;
       }
 
-      // Step 7: Score and rank candidates
+      // Step 8: Score and rank candidates
       const scoredPicks = filteredCandidates.map(candidate => {
         let score = 70;
         const reasons: string[] = [];
@@ -456,27 +526,30 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           }
         }
 
-        // Add some randomness to prevent same order
-        score += Math.floor(Math.random() * 10);
-
+        // Always add at least one reason
         if (reasons.length === 0) {
-          reasons.push(`Active ${candidate.role || 'creator'} in the community`);
+          reasons.push('✨ Active creator on ThriveIN');
         }
 
         return {
-          ...candidate,
-          match_score: Math.min(score, 99),
-          match_reasons: reasons.slice(0, 3)
-        } as ForYouCreator;
+          user_id: candidate.user_id,
+          full_name: candidate.full_name || 'Creator',
+          role: candidate.role || 'Creator',
+          bio: candidate.bio || '',
+          avatar_url: candidate.avatar_url || '',
+          location: candidate.location || 'Remote',
+          collab_intent: candidate.collab_intent || '',
+          match_score: Math.min(99, score),
+          match_reasons: reasons,
+        };
       });
 
       // Sort by score descending
       scoredPicks.sort((a, b) => b.match_score - a.match_score);
 
-      // Take top N picks
-      const finalPicks = scoredPicks.slice(0, 50); // Fetch up to 50 candidates
-      console.log('[ForYou] Final picks:', finalPicks.length);
-      finalPicks.forEach(p => console.log(`[ForYou]   - ${p.full_name} (${p.match_score}%)`));
+      // Take top 20
+      const finalPicks = scoredPicks.slice(0, 20);
+      console.log('[ForYou] Final picks:', finalPicks.length, finalPicks.map(p => p.full_name));
 
       setPicks(finalPicks);
       setCurrentIndex(0);

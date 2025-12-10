@@ -1,0 +1,149 @@
+import { useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface SwipeProfile {
+  user_id: string;
+  full_name: string;
+  role: string;
+  bio: string | null;
+  avatar_url: string | null;
+  location: string | null;
+  level: number;
+  professional_skills: any;
+  passion_skills: any;
+  badge: string | null;
+  collab_intent: string | null;
+  portfolio_count?: number;
+}
+
+export function useSwipeProfiles(currentUserId: string | undefined) {
+  const [profiles, setProfiles] = useState<SwipeProfile[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchProfiles = useCallback(async () => {
+    if (!currentUserId) {
+      console.log('[useSwipeProfiles] No current user ID');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('[useSwipeProfiles] Fetching profiles for user:', currentUserId);
+
+      // Step 1: Get users already swiped on
+      const { data: swipedData } = await supabase
+        .from('swipes')
+        .select('target_id')
+        .eq('user_id', currentUserId)
+        .eq('target_type', 'profile');
+
+      const swipedIds = new Set(swipedData?.map(s => s.target_id) || []);
+      console.log('[useSwipeProfiles] Already swiped:', swipedIds.size);
+
+      // Step 2: Get accepted connections (exclude from feed)
+      const { data: connectionsOut } = await supabase
+        .from('connections')
+        .select('connected_user_id')
+        .eq('user_id', currentUserId)
+        .eq('status', 'accepted');
+
+      const { data: connectionsIn } = await supabase
+        .from('connections')
+        .select('user_id')
+        .eq('connected_user_id', currentUserId)
+        .eq('status', 'accepted');
+
+      const connectedIds = new Set([
+        ...(connectionsOut?.map(c => c.connected_user_id) || []),
+        ...(connectionsIn?.map(c => c.user_id) || [])
+      ]);
+      console.log('[useSwipeProfiles] Already connected:', connectedIds.size);
+
+      // Step 3: Fetch all profiles except current user
+      const { data: allProfiles, error: profileError } = await supabase
+        .from('profiles')
+        .select(`
+          user_id,
+          full_name,
+          role,
+          bio,
+          avatar_url,
+          location,
+          level,
+          professional_skills,
+          passion_skills,
+          badge,
+          collab_intent
+        `)
+        .neq('user_id', currentUserId)
+        .not('avatar_url', 'is', null)
+        .limit(50);
+
+      if (profileError) {
+        console.error('[useSwipeProfiles] Profile fetch error:', profileError);
+        throw profileError;
+      }
+
+      console.log('[useSwipeProfiles] Total profiles fetched:', allProfiles?.length);
+
+      // Step 4: Filter out swiped and connected users
+      let filtered = (allProfiles || []).filter(p => {
+        // Must have valid avatar URL
+        if (!p.avatar_url || !p.avatar_url.startsWith('http')) return false;
+        // Not already swiped
+        if (swipedIds.has(p.user_id)) return false;
+        // Not already connected
+        if (connectedIds.has(p.user_id)) return false;
+        return true;
+      });
+
+      console.log('[useSwipeProfiles] After filtering:', filtered.length);
+
+      // Step 5: Get portfolio counts for filtered profiles
+      if (filtered.length > 0) {
+        const userIds = filtered.map(p => p.user_id);
+        const { data: portfolioData } = await supabase
+          .from('portfolio_items')
+          .select('user_id')
+          .in('user_id', userIds);
+
+        const portfolioCounts = new Map<string, number>();
+        portfolioData?.forEach(item => {
+          portfolioCounts.set(item.user_id, (portfolioCounts.get(item.user_id) || 0) + 1);
+        });
+
+        filtered = filtered.map(p => ({
+          ...p,
+          portfolio_count: portfolioCounts.get(p.user_id) || 0
+        }));
+      }
+
+      // Step 6: Shuffle for variety
+      const shuffled = filtered.sort(() => Math.random() - 0.5);
+
+      setProfiles(shuffled);
+      console.log('[useSwipeProfiles] Final profiles:', shuffled.length);
+
+    } catch (err: any) {
+      console.error('[useSwipeProfiles] Error:', err);
+      setError(err.message || 'Failed to load profiles');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUserId]);
+
+  const removeProfile = useCallback((userId: string) => {
+    setProfiles(prev => prev.filter(p => p.user_id !== userId));
+  }, []);
+
+  return {
+    profiles,
+    loading,
+    error,
+    fetchProfiles,
+    removeProfile
+  };
+}

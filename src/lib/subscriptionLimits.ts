@@ -19,7 +19,7 @@ export interface TierLimits {
 export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   free: {
     swipesPerDay: 30,
-    maxPortfolioItems: 10,
+    maxPortfolioItems: 5,
     canUndoSwipe: false,
     undoSwipesPerDay: 0,
     canVerifyProfile: false,

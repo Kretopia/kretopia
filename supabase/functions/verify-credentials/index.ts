@@ -52,8 +52,52 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
-    const { profileData, socialLinks } = await req.json();
-    const { fullName, role, bio } = profileData;
+    const body = await req.json();
+    
+    // Handle both call patterns:
+    // 1. Direct: { profileData: { fullName, role, bio }, socialLinks }
+    // 2. From Onboarding: { userId } - need to fetch profile data
+    let fullName: string;
+    let role: string;
+    let bio: string;
+    let socialLinks: Record<string, string> = {};
+
+    if (body.profileData) {
+      // Called from CredentialVerificationCard with profile data
+      fullName = body.profileData.fullName || '';
+      role = body.profileData.role || '';
+      bio = body.profileData.bio || '';
+      socialLinks = body.socialLinks || {};
+    } else {
+      // Called from Onboarding - fetch profile data from database
+      const { data: profileData, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('full_name, role, bio, spotify_url, youtube_url, imdb_url, instagram_url, linkedin_url')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError || !profileData) {
+        console.error('[VERIFY-CREDENTIALS] Profile fetch error:', profileError);
+        return new Response(
+          JSON.stringify({ 
+            error: "Profile not found",
+            tier: "verified"
+          }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      fullName = profileData.full_name || '';
+      role = profileData.role || '';
+      bio = profileData.bio || '';
+      socialLinks = {
+        spotify: profileData.spotify_url || '',
+        youtube: profileData.youtube_url || '',
+        imdb: profileData.imdb_url || '',
+        instagram: profileData.instagram_url || '',
+        linkedin: profileData.linkedin_url || '',
+      };
+    }
 
     console.log(`[VERIFY-CREDENTIALS] Starting enhanced verification for ${user.id}`);
 

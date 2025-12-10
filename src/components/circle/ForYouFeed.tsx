@@ -299,16 +299,14 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     }
     
     setLoading(true);
-    setDebugInfo('Loading...');
+    console.log('[ForYou] ========== LOADING PICKS ==========');
+    console.log('[ForYou] Current user ID:', user.id);
     
     try {
-      console.log('[ForYou] ========== LOADING PICKS v4 ==========');
-      console.log('[ForYou] Current user ID:', user.id);
-      
-      // Step 1: Get current user's profile
+      // Step 1: Get current user's profile and update swipe count
       const { data: currentProfile } = await supabase
         .from('profiles')
-        .select('role, location, professional_skills, collab_intent, subscription_tier, daily_swipes, last_swipe_reset')
+        .select('role, location, collab_intent, subscription_tier, daily_swipes, last_swipe_reset')
         .eq('user_id', user.id)
         .single();
 
@@ -324,7 +322,6 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         : null;
       
       if (lastReset !== today) {
-        // New day - reset swipes
         await supabase
           .from('profiles')
           .update({ daily_swipes: 0, last_swipe_reset: new Date().toISOString() })
@@ -336,125 +333,62 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         setDailySwipesLeft(remaining === -1 ? 999 : remaining);
       }
 
-      // Step 2: Get ALL swipes this user has made
-      const { data: mySwipes, error: swipeError } = await supabase
-        .from('swipes')
-        .select('target_id')
-        .eq('user_id', user.id);
+      // Step 2: Fetch ALL data in parallel for speed
+      const [swipesResult, connectionsResult, portfolioResult, profilesResult] = await Promise.all([
+        // Get swipes this user has made
+        supabase.from('swipes').select('target_id').eq('user_id', user.id),
+        // Get accepted connections only
+        supabase.from('connections').select('user_id, connected_user_id').eq('status', 'accepted'),
+        // Get all portfolio items to find users with portfolios
+        supabase.from('portfolio_items').select('user_id'),
+        // Get all profiles with onboarding completed
+        supabase.from('profiles').select('user_id, full_name, role, bio, avatar_url, location, collab_intent, onboarding_completed')
+          .eq('onboarding_completed', true)
+      ]);
 
-      if (swipeError) {
-        console.error('[ForYou] Error fetching swipes:', swipeError);
-      }
-
-      const swipedUserIds = new Set(mySwipes?.map(s => s.target_id) || []);
+      // Build exclusion sets
+      const swipedUserIds = new Set(swipesResult.data?.map(s => s.target_id) || []);
       console.log('[ForYou] User has swiped on:', swipedUserIds.size, 'profiles');
 
-      // Step 3: Get ONLY accepted connections (not pending - pending means waiting for reciprocation)
-      const { data: acceptedConns, error: connError } = await supabase
-        .from('connections')
-        .select('user_id, connected_user_id')
-        .eq('status', 'accepted');
-
-      if (connError) {
-        console.error('[ForYou] Error fetching connections:', connError);
-      }
-
-      // Filter to only MY accepted connections
       const connectedUserIds = new Set<string>();
-      acceptedConns?.forEach(c => {
+      connectionsResult.data?.forEach(c => {
         if (c.user_id === user.id) connectedUserIds.add(c.connected_user_id);
         if (c.connected_user_id === user.id) connectedUserIds.add(c.user_id);
       });
       console.log('[ForYou] User is connected to:', connectedUserIds.size, 'profiles');
 
-      // Step 4: Get users who have at least 1 portfolio item (this is the key filter)
-      const { data: usersWithPortfolio, error: portfolioError } = await supabase
-        .from('portfolio_items')
-        .select('user_id');
-      
-      if (portfolioError) {
-        console.error('[ForYou] Error fetching portfolio items:', portfolioError);
-      }
-      
-      // Build a set of user_ids who have portfolio items
+      // Build portfolio user set
       const portfolioUserIds = new Set<string>();
       const portfolioCountMap = new Map<string, number>();
-      usersWithPortfolio?.forEach(item => {
+      portfolioResult.data?.forEach(item => {
         portfolioUserIds.add(item.user_id);
-        const count = portfolioCountMap.get(item.user_id) || 0;
-        portfolioCountMap.set(item.user_id, count + 1);
+        portfolioCountMap.set(item.user_id, (portfolioCountMap.get(item.user_id) || 0) + 1);
       });
-      console.log('[ForYou] Users with portfolios:', portfolioUserIds.size, Array.from(portfolioUserIds));
+      console.log('[ForYou] Users with portfolios:', portfolioUserIds.size);
 
-      // Step 5: Get profiles ONLY for users who have portfolios (pre-filter in query)
-      const portfolioUserArray = Array.from(portfolioUserIds);
-      
-      if (portfolioUserArray.length === 0) {
-        console.log('[ForYou] No users with portfolios found!');
-        setPicks([]);
-        setCurrentIndex(0);
-        setDebugInfo('No creators with portfolios');
-        setLoading(false);
-        return;
-      }
+      // Step 3: Filter candidates
+      const allProfiles = profilesResult.data || [];
+      console.log('[ForYou] Total profiles fetched:', allProfiles.length);
 
-      const { data: allProfiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, professional_skills, onboarding_completed')
-        .eq('onboarding_completed', true)
-        .in('user_id', portfolioUserArray);
-
-      if (profileError) {
-        console.error('[ForYou] Profile query error:', profileError);
-        setDebugInfo('Error loading profiles');
-        setPicks([]);
-        setLoading(false);
-        return;
-      }
-
-      console.log('[ForYou] Profiles with portfolios:', allProfiles?.length);
-
-      // Step 6: Filter in JavaScript for reliability
-      const candidates = (allProfiles || []).filter(p => {
+      const candidates = allProfiles.filter(p => {
         // Exclude self
-        if (p.user_id === user.id) {
-          console.log(`[ForYou] SKIP self: ${p.full_name}`);
-          return false;
-        }
-        
+        if (p.user_id === user.id) return false;
         // Exclude already swiped
-        if (swipedUserIds.has(p.user_id)) {
-          console.log(`[ForYou] SKIP swiped: ${p.full_name}`);
-          return false;
-        }
-        
+        if (swipedUserIds.has(p.user_id)) return false;
         // Exclude accepted connections
-        if (connectedUserIds.has(p.user_id)) {
-          console.log(`[ForYou] SKIP connected: ${p.full_name}`);
-          return false;
-        }
-        
-        // Check has avatar (not null and not empty)
-        if (!p.avatar_url || p.avatar_url.trim() === '') {
-          console.log(`[ForYou] SKIP no avatar: ${p.full_name}`);
-          return false;
-        }
-        
-        // Check has bio (not null and at least 20 chars)
-        if (!p.bio || p.bio.trim().length < 20) {
-          console.log(`[ForYou] SKIP short bio: ${p.full_name}`);
-          return false;
-        }
-        
-        const portfolioCount = portfolioCountMap.get(p.user_id) || 0;
-        console.log(`[ForYou] ✓ KEEP: ${p.full_name} (${portfolioCount} portfolio items)`);
+        if (connectedUserIds.has(p.user_id)) return false;
+        // Must have avatar
+        if (!p.avatar_url || p.avatar_url.trim() === '') return false;
+        // Must have bio (20+ chars)
+        if (!p.bio || p.bio.trim().length < 20) return false;
+        // Must have at least 1 portfolio item
+        if (!portfolioUserIds.has(p.user_id)) return false;
         return true;
       });
 
-      console.log('[ForYou] Candidates after filtering:', candidates.length);
-      setDebugInfo(`Found ${candidates.length} matches`);
+      console.log('[ForYou] Candidates after filtering:', candidates.length, candidates.map(c => c.full_name));
 
-      // Step 7: Apply user filters if set
+      // Step 4: Apply user filters
       let filteredCandidates = [...candidates];
       
       if (filters.role !== 'all') {
@@ -473,24 +407,19 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
       console.log('[ForYou] After user filters:', filteredCandidates.length);
 
-      if (filteredCandidates.length === 0) {
-        console.log('[ForYou] No candidates left after filtering!');
-        setPicks([]);
-        setCurrentIndex(0);
-        setLoading(false);
-        return;
-      }
-
-      // Step 8: Score and rank candidates
+      // Step 5: Score and rank candidates
       const scoredPicks = filteredCandidates.map(candidate => {
         let score = 70;
         const reasons: string[] = [];
 
         // Location match
-        if (candidate.location && currentProfile?.location && 
-            candidate.location.toLowerCase().includes(currentProfile.location.toLowerCase().split(',')[0])) {
-          score += 10;
-          reasons.push(`📍 Based in ${candidate.location}`);
+        if (candidate.location && currentProfile?.location) {
+          const candLoc = candidate.location.toLowerCase();
+          const userLoc = currentProfile.location.toLowerCase().split(',')[0];
+          if (candLoc.includes(userLoc)) {
+            score += 10;
+            reasons.push(`📍 Based in ${candidate.location}`);
+          }
         }
 
         // Complementary roles
@@ -526,7 +455,6 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           }
         }
 
-        // Always add at least one reason
         if (reasons.length === 0) {
           reasons.push('✨ Active creator on ThriveIN');
         }
@@ -553,6 +481,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
       setPicks(finalPicks);
       setCurrentIndex(0);
+      setDebugInfo(`Found ${finalPicks.length} matches`);
       
     } catch (error) {
       console.error('[ForYou] Error loading picks:', error);

@@ -160,35 +160,14 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         filtered = filtered.filter(p => p.role === filters.role);
       }
 
-      // QUALITY FILTER: Only show profiles that meet discovery requirements
-      // - Must have avatar (profile picture)
-      // - Must have bio (20+ chars)
-      // - Portfolio count checked separately below
+      // QUALITY FILTER: Only show profiles with valid avatars
+      // Portfolio and bio requirements removed for MVP to allow discovery
       filtered = filtered.filter(p => 
         p.avatar_url && 
-        p.bio && 
-        p.bio.length >= 20
+        p.avatar_url.startsWith('http') // Must be valid URL
       );
 
-      console.log('[useCircleData] After quality filter (avatar + bio):', filtered.length);
-
-      // Fetch portfolio counts for remaining profiles to complete quality check
-      const userIds = filtered.map(p => p.user_id);
-      const { data: portfolioCounts } = await supabase
-        .from('portfolio_items')
-        .select('user_id')
-        .in('user_id', userIds);
-
-      // Build map of user_id -> portfolio count
-      const portfolioCountMap = new Map<string, number>();
-      portfolioCounts?.forEach(item => {
-        portfolioCountMap.set(item.user_id, (portfolioCountMap.get(item.user_id) || 0) + 1);
-      });
-
-      // Final filter: must have at least 1 portfolio item
-      filtered = filtered.filter(p => (portfolioCountMap.get(p.user_id) || 0) >= 1);
-
-      console.log('[useCircleData] After portfolio filter:', filtered.length);
+      console.log('[useCircleData] After quality filter:', filtered.length);
 
       // Transform profiles to cards
       const cards: CreatorCard[] = filtered.map(profile => ({

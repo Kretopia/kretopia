@@ -57,8 +57,8 @@ export const ConnectFeed = ({ onMatch }: ConnectFeedProps) => {
 
   // Load creators on mount
   useEffect(() => {
-    if (user?.id) {
-      console.log('[ConnectFeed] Loading creators for user:', user.id);
+    if (user?.id && subscriptionTier) {
+      console.log('[ConnectFeed] Loading creators for user:', user.id, 'tier:', subscriptionTier);
       fetchMatchCreators({ 
         role: 'all', 
         minFollowers: 0, 
@@ -67,7 +67,9 @@ export const ConnectFeed = ({ onMatch }: ConnectFeedProps) => {
         badge: 'all' 
       });
     }
-  }, [user?.id, fetchMatchCreators]);
+  }, [user?.id, subscriptionTier, fetchMatchCreators]);
+
+  console.log('[ConnectFeed] Render state - cards:', matchCards.length, 'loading:', matchLoading);
 
   const recordSwipe = async (targetId: string, direction: 'left' | 'right') => {
     if (!user?.id) return { isMatch: false };

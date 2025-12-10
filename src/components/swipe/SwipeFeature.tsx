@@ -24,12 +24,9 @@ export function SwipeFeature({ onMatch }: SwipeFeatureProps) {
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [swipeHistory, setSwipeHistory] = useState<SwipeProfile[]>([]);
 
-  // Fetch profiles on mount
+  // Get current user's profile for the match modal
   useEffect(() => {
     if (user?.id) {
-      fetchProfiles();
-      
-      // Get current user's profile for the match modal
       supabase
         .from('profiles')
         .select('avatar_url, full_name')
@@ -39,7 +36,7 @@ export function SwipeFeature({ onMatch }: SwipeFeatureProps) {
           setCurrentUserProfile(data);
         });
     }
-  }, [user?.id, fetchProfiles]);
+  }, [user?.id]);
 
   const handleSwipe = useCallback(async (profile: SwipeProfile, direction: 'left' | 'right') => {
     console.log('[SwipeFeature] Swiping', direction, 'on', profile.full_name);

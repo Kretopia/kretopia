@@ -6,9 +6,9 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface AchievementBadgesProps {
+export interface AchievementBadgesProps {
   achievements: string[];
-  tier?: 'verified' | 'industry' | 'elite';
+  tier?: 'verified' | 'industry' | 'elite' | string;
   size?: 'sm' | 'md' | 'lg';
   showAll?: boolean;
   maxDisplay?: number;
@@ -176,12 +176,19 @@ const iconSizes = {
 };
 
 export function AchievementBadges({ 
-  achievements, 
+  achievements = [], 
   tier,
   size = 'md',
   showAll = false,
   maxDisplay = 3
 }: AchievementBadgesProps) {
+  // Early return if no achievements and no tier
+  if (achievements.length === 0 && !tier) {
+    return null;
+  }
+  
+  // Normalize tier to match config keys
+  const normalizedTier = tier as 'verified' | 'industry' | 'elite' | undefined;
   // Sort achievements by priority
   const sortedAchievements = [...achievements].sort((a, b) => {
     const priorityA = ACHIEVEMENT_CONFIG[a]?.priority ?? 10;
@@ -199,22 +206,22 @@ export function AchievementBadges({
     <TooltipProvider>
       <div className="flex flex-wrap gap-1.5 items-center">
         {/* Tier Badge */}
-        {tier && TIER_CONFIG[tier] && (
+        {normalizedTier && TIER_CONFIG[normalizedTier] && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge 
                 variant="outline" 
-                className={`${sizeClasses[size]} ${TIER_CONFIG[tier].bgColor} ${TIER_CONFIG[tier].color} border`}
+                className={`${sizeClasses[size]} ${TIER_CONFIG[normalizedTier].bgColor} ${TIER_CONFIG[normalizedTier].color} border`}
               >
                 {(() => {
-                  const TierIcon = TIER_CONFIG[tier].icon;
+                  const TierIcon = TIER_CONFIG[normalizedTier].icon;
                   return <TierIcon className={iconSizes[size]} />;
                 })()}
-                <span className="font-semibold">{TIER_CONFIG[tier].label}</span>
+                <span className="font-semibold">{TIER_CONFIG[normalizedTier].label}</span>
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{TIER_CONFIG[tier].label} Creator</p>
+              <p>{TIER_CONFIG[normalizedTier].label} Creator</p>
             </TooltipContent>
           </Tooltip>
         )}

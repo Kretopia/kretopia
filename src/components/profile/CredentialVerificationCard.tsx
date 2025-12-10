@@ -11,23 +11,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AchievementBadges } from "./AchievementBadges";
 
-interface CredentialVerificationCardProps {
+export interface CredentialVerificationCardProps {
   userId: string;
-  fullName: string;
-  role: string;
-  bio: string;
-  socialLinks: Record<string, string>;
-  currentTier?: 'verified' | 'industry' | 'elite';
+  fullName?: string;
+  role?: string;
+  bio?: string;
+  socialLinks?: Record<string, string>;
+  currentTier?: 'verified' | 'industry' | 'elite' | string;
   currentAchievements?: string[];
-  onVerificationComplete?: (result: any) => void;
+  onVerificationComplete?: (result?: any) => void;
 }
 
 export function CredentialVerificationCard({
   userId,
-  fullName,
-  role,
-  bio,
-  socialLinks,
+  fullName = '',
+  role = '',
+  bio = '',
+  socialLinks = {},
   currentTier,
   currentAchievements = [],
   onVerificationComplete

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
-import { ForYouFeed } from "@/components/circle/ForYouFeed";
+import { ConnectFeed } from "@/components/circle/ConnectFeed";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
@@ -180,9 +180,9 @@ export default function Circle() {
             </TabsTrigger>
           </TabsList>
 
-          {/* For You Tab - AI curated daily picks */}
+          {/* Connect Tab - Swipe to match */}
           <TabsContent value="foryou" className="space-y-4">
-            <ForYouFeed onMatch={handleMatch} />
+            <ConnectFeed onMatch={handleMatch} />
           </TabsContent>
 
           {/* My Network Tab */}

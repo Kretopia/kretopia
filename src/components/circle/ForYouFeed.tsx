@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus, RefreshCw } from "lucide-react";
+import { Sparkles, Heart, X, Clock, Loader2, MapPin, Eye, Undo2, UserPlus, RefreshCw, Crown, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 import { InviteDialog } from "@/components/InviteDialog";
 import { ConnectFiltersComponent, ConnectFilters } from "./ConnectFilters";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
+import { TIER_LIMITS, getRemainingSwipes, SubscriptionTier } from "@/lib/subscriptionLimits";
 
 interface ForYouCreator {
   user_id: string;
@@ -90,9 +91,10 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const [lastSwiped, setLastSwiped] = useState<ForYouCreator | null>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
-  const [userTier, setUserTier] = useState<string>('free');
+  const [userTier, setUserTier] = useState<SubscriptionTier>('free');
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [demoMode, setDemoMode] = useState(false);
+  const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(30);
   
   // Filters
   const [filters, setFilters] = useState<ConnectFilters>({
@@ -104,7 +106,8 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     experienceLevel: 'all',
   });
 
-  const DAILY_LIMIT = 20;
+  const maxSwipes = TIER_LIMITS[userTier].swipesPerDay;
+  const isSwipeLimitReached = maxSwipes !== -1 && dailySwipesLeft <= 0;
 
   const currentCreator = demoMode ? DEMO_CARDS[currentIndex] : picks[currentIndex];
   const remainingPicks = demoMode ? DEMO_CARDS.length - currentIndex : picks.length - currentIndex;
@@ -119,6 +122,13 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         toast.success(`Demo: Interest sent to ${currentCreator.full_name}! 💫`);
       }
       resetSwipe();
+      return;
+    }
+    
+    // Check swipe limit for non-Pro users
+    if (isSwipeLimitReached) {
+      toast.error("Daily swipe limit reached!");
+      navigate('/subscription');
       return;
     }
     
@@ -187,6 +197,21 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         }
       }
 
+      // Update swipe count
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('daily_swipes')
+        .eq('user_id', user!.id)
+        .single();
+      
+      const newSwipeCount = (profileData?.daily_swipes || 0) + 1;
+      await supabase
+        .from('profiles')
+        .update({ daily_swipes: newSwipeCount })
+        .eq('user_id', user!.id);
+      
+      setDailySwipesLeft(prev => Math.max(0, prev - 1));
+
       setLastSwiped(currentCreator);
       setCurrentIndex(prev => prev + 1);
     } catch (error) {
@@ -232,12 +257,32 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       // Step 1: Get current user's profile
       const { data: currentProfile } = await supabase
         .from('profiles')
-        .select('role, location, professional_skills, collab_intent, subscription_tier')
+        .select('role, location, professional_skills, collab_intent, subscription_tier, daily_swipes, last_swipe_reset')
         .eq('user_id', user.id)
         .single();
 
       if (currentProfile?.subscription_tier) {
-        setUserTier(currentProfile.subscription_tier);
+        setUserTier(currentProfile.subscription_tier as SubscriptionTier);
+      }
+      
+      // Update swipes remaining
+      const tier = (currentProfile?.subscription_tier || 'free') as SubscriptionTier;
+      const today = new Date().toISOString().split('T')[0];
+      const lastReset = currentProfile?.last_swipe_reset 
+        ? new Date(currentProfile.last_swipe_reset).toISOString().split('T')[0] 
+        : null;
+      
+      if (lastReset !== today) {
+        // New day - reset swipes
+        await supabase
+          .from('profiles')
+          .update({ daily_swipes: 0, last_swipe_reset: new Date().toISOString() })
+          .eq('user_id', user.id);
+        setDailySwipesLeft(TIER_LIMITS[tier].swipesPerDay === -1 ? 999 : TIER_LIMITS[tier].swipesPerDay);
+      } else {
+        const swipesUsed = currentProfile?.daily_swipes || 0;
+        const remaining = getRemainingSwipes(tier, swipesUsed);
+        setDailySwipesLeft(remaining === -1 ? 999 : remaining);
       }
 
       // Step 2: Get ALL swipes this user has made
@@ -429,7 +474,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       scoredPicks.sort((a, b) => b.match_score - a.match_score);
 
       // Take top N picks
-      const finalPicks = scoredPicks.slice(0, DAILY_LIMIT);
+      const finalPicks = scoredPicks.slice(0, 50); // Fetch up to 50 candidates
       console.log('[ForYou] Final picks:', finalPicks.length);
       finalPicks.forEach(p => console.log(`[ForYou]   - ${p.full_name} (${p.match_score}%)`));
 
@@ -509,6 +554,31 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
         <p className="text-muted-foreground">Finding your matches...</p>
+      </div>
+    );
+  }
+
+  // Swipe limit reached state
+  if (isSwipeLimitReached && !demoMode) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6">
+          <Lock className="h-10 w-10 text-primary" />
+        </div>
+        <h3 className="text-xl font-bold mb-2">Daily Limit Reached</h3>
+        <p className="text-muted-foreground text-center mb-6 max-w-sm">
+          You've used all {maxSwipes} swipes for today. Upgrade to Pro for unlimited swipes!
+        </p>
+        <Button 
+          onClick={() => navigate('/subscription')}
+          className="gap-2 bg-gradient-to-r from-primary to-primary/80"
+        >
+          <Crown className="h-4 w-4" />
+          Upgrade to Pro
+        </Button>
+        <p className="text-xs text-muted-foreground mt-4">
+          Swipes reset at midnight
+        </p>
       </div>
     );
   }

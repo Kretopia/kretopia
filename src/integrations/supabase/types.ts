@@ -2105,6 +2105,7 @@ export type Database = {
       profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
+          achievement_badges: string[] | null
           available_invites: number | null
           avatar_url: string | null
           average_rating: number | null
@@ -2186,7 +2187,9 @@ export type Database = {
           verification_notes: string | null
           verification_score: number | null
           verification_status: string | null
+          verification_tier: string | null
           verified_at: string | null
+          verified_credentials: Json | null
           verified_metrics: boolean | null
           website: string | null
           xp: number | null
@@ -2195,6 +2198,7 @@ export type Database = {
         }
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
+          achievement_badges?: string[] | null
           available_invites?: number | null
           avatar_url?: string | null
           average_rating?: number | null
@@ -2276,7 +2280,9 @@ export type Database = {
           verification_notes?: string | null
           verification_score?: number | null
           verification_status?: string | null
+          verification_tier?: string | null
           verified_at?: string | null
+          verified_credentials?: Json | null
           verified_metrics?: boolean | null
           website?: string | null
           xp?: number | null
@@ -2285,6 +2291,7 @@ export type Database = {
         }
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
+          achievement_badges?: string[] | null
           available_invites?: number | null
           avatar_url?: string | null
           average_rating?: number | null
@@ -2366,7 +2373,9 @@ export type Database = {
           verification_notes?: string | null
           verification_score?: number | null
           verification_status?: string | null
+          verification_tier?: string | null
           verified_at?: string | null
+          verified_credentials?: Json | null
           verified_metrics?: boolean | null
           website?: string | null
           xp?: number | null

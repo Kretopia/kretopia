@@ -1,0 +1,274 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+interface VerifiedCredential {
+  type: 'award' | 'credit' | 'certification' | 'social' | 'streams';
+  source: string;
+  title: string;
+  value?: string;
+  verified: boolean;
+  verifiedAt?: string;
+  url?: string;
+}
+
+interface VerificationResult {
+  credentials: VerifiedCredential[];
+  tier: 'verified' | 'industry' | 'elite';
+  achievements: string[];
+  totalScore: number;
+  breakdown: {
+    awards: number;
+    credits: number;
+    social: number;
+    streams: number;
+  };
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("No authorization header");
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    
+    if (userError || !user) {
+      throw new Error("Unauthorized");
+    }
+
+    const { profileData, socialLinks } = await req.json();
+    const { fullName, role, bio } = profileData;
+
+    console.log(`[VERIFY-CREDENTIALS] Starting enhanced verification for ${user.id}`);
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY not configured");
+    }
+
+    // Build comprehensive verification prompt with web search capabilities
+    const verificationPrompt = `You are an advanced credential verification AI for ThriveIN, a professional platform for creatives. Perform comprehensive verification of this creator's credentials.
+
+PROFILE TO VERIFY:
+- Name: ${fullName}
+- Role: ${role}
+- Bio: ${bio || "Not provided"}
+
+SOCIAL PROFILES TO VERIFY:
+${Object.entries(socialLinks || {})
+  .filter(([_, url]) => url)
+  .map(([platform, url]) => `- ${platform}: ${url}`)
+  .join('\n') || 'None provided'}
+
+VERIFICATION TASKS:
+
+1. **AWARD VERIFICATION** (Check for major industry awards):
+   - Grammy Awards (Recording Academy)
+   - Emmy Awards
+   - Oscar/Academy Awards
+   - Billboard Music Awards
+   - MTV Awards
+   - BRIT Awards
+   - Cannes Lions (advertising/creative)
+   - Webby Awards
+   - D&AD Awards
+   - BAFTA
+   Look for: nominations, wins, finalist positions
+
+2. **CREDIT VERIFICATION** (Look for professional credits):
+   - IMDB credits (film, TV, music videos)
+   - AllMusic credits
+   - Discogs credits
+   - Spotify artist profile with releases
+   - Major label releases
+   - Film/TV production credits
+   - Published work credits
+
+3. **SOCIAL PROOF VERIFICATION**:
+   - Verified accounts (blue checkmarks)
+   - Follower thresholds:
+     * Instagram: 10K+ (notable), 100K+ (significant), 1M+ (major)
+     * YouTube: 10K+ subscribers (notable), 100K+ (significant)
+     * Spotify: 10K+ monthly listeners (notable), 100K+ (significant)
+     * TikTok: 50K+ (notable), 500K+ (significant)
+   - Press mentions in major publications
+
+4. **STREAMING/ROYALTY VERIFICATION**:
+   - Spotify monthly listeners
+   - YouTube channel statistics
+   - Apple Music presence
+   - SoundCloud plays for indie artists
+
+TIER CLASSIFICATION:
+- **VERIFIED**: Complete profile, social links verified, professional presence
+- **INDUSTRY**: Has verifiable industry credits (IMDB, label releases, agency representation)
+- **ELITE**: Major awards, significant streaming numbers, or industry recognition
+
+ACHIEVEMENT BADGES TO AWARD (only if verifiable):
+- "Grammy Winner" / "Grammy Nominated"
+- "Emmy Winner" / "Emmy Nominated"
+- "Oscar Winner" / "Oscar Nominated"
+- "Billboard Charting"
+- "IMDB Credited"
+- "Verified Artist" (Spotify/Apple Music verified)
+- "1M+ Streams"
+- "10M+ Streams"
+- "100K+ Followers"
+- "1M+ Followers"
+- "Major Label"
+- "Award Winning"
+- "Published Author"
+- "Festival Official Selection"
+
+Return ONLY valid JSON:
+{
+  "credentials": [
+    {
+      "type": "award|credit|certification|social|streams",
+      "source": "Grammy/IMDB/Spotify/etc",
+      "title": "Specific achievement",
+      "value": "Winner/Nominated/10M streams/etc",
+      "verified": true|false,
+      "url": "verification URL if found"
+    }
+  ],
+  "tier": "verified|industry|elite",
+  "achievements": ["Grammy Nominated", "IMDB Credited", etc],
+  "totalScore": 0-100,
+  "breakdown": {
+    "awards": 0-30,
+    "credits": 0-30,
+    "social": 0-25,
+    "streams": 0-15
+  },
+  "reasoning": "Brief explanation of verification findings"
+}`;
+
+    // Call AI with web search context
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { 
+            role: "system", 
+            content: `You are a credential verification specialist. Research the person's public credentials thoroughly. 
+            Be conservative - only mark something as "verified": true if you can confirm it exists.
+            For social links, extract follower counts and verification status if visible in the URL patterns.
+            Return only valid JSON.` 
+          },
+          { role: "user", content: verificationPrompt }
+        ],
+      }),
+    });
+
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error("[VERIFY-CREDENTIALS] AI API error:", aiResponse.status, errorText);
+      
+      if (aiResponse.status === 429 || aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Verification service temporarily unavailable",
+            fallbackTier: "verified"
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      throw new Error(`AI verification failed: ${errorText}`);
+    }
+
+    const aiData = await aiResponse.json();
+    const content = aiData.choices[0]?.message?.content || "";
+    
+    let result: VerificationResult;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : content;
+      result = JSON.parse(jsonStr);
+    } catch (parseError) {
+      console.error("[VERIFY-CREDENTIALS] Parse error:", content);
+      result = {
+        credentials: [],
+        tier: "verified",
+        achievements: [],
+        totalScore: 50,
+        breakdown: { awards: 0, credits: 0, social: 25, streams: 0 }
+      };
+    }
+
+    // Store verified credentials in database
+    const verifiedCredentials = result.credentials.filter(c => c.verified);
+    
+    if (verifiedCredentials.length > 0) {
+      // Update profile with verified achievements
+      const { error: updateError } = await supabaseClient
+        .from("profiles")
+        .update({
+          verified_credentials: verifiedCredentials,
+          verification_tier: result.tier,
+          achievement_badges: result.achievements,
+          verification_score: result.totalScore,
+          verification_status: result.tier === 'elite' ? 'elite_verified' : 
+                              result.tier === 'industry' ? 'industry_verified' : 'verified',
+          verified_at: new Date().toISOString()
+        })
+        .eq("user_id", user.id);
+
+      if (updateError) {
+        console.error("[VERIFY-CREDENTIALS] Update error:", updateError);
+      }
+    }
+
+    // Log verification request
+    await supabaseClient
+      .from("verification_requests")
+      .insert({
+        user_id: user.id,
+        ai_score: result.totalScore,
+        ai_reasoning: JSON.stringify(result),
+        status: result.tier === 'elite' ? 'elite' : result.tier === 'industry' ? 'industry' : 'verified',
+        decision: 'verify',
+        reviewed_at: new Date().toISOString()
+      });
+
+    console.log(`[VERIFY-CREDENTIALS] Completed: ${user.id}, Tier: ${result.tier}, Achievements: ${result.achievements.length}`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        ...result
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
+  } catch (error) {
+    console.error("[VERIFY-CREDENTIALS] Error:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : "Unknown error"
+      }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});

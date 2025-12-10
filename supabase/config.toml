@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.send-streak-warning]
 verify_jwt = false
+
+[functions.verify-credentials]
+verify_jwt = true

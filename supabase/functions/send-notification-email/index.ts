@@ -400,7 +400,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending ${type} email to ${to}`);
 
     const emailResponse = await resend.emails.send({
-      from: "ThriveIN <onboarding@resend.dev>",
+      from: "ThriveIN <noreply@thrivein.app>",
       to: [to],
       subject,
       html,

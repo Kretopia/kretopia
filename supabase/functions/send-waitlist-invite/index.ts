@@ -93,7 +93,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'ThriveIN <noreply@thrivein.net>',
+        from: 'ThriveIN <noreply@thrivein.app>',
         to: [to],
         subject: '🎉 Welcome to ThriveIN - Your Invite Code Inside',
         html,

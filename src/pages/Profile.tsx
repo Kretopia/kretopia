@@ -48,6 +48,8 @@ import { VerificationProgress } from "@/components/profile/VerificationProgress"
 import { VerificationAppealDialog } from "@/components/profile/VerificationAppealDialog";
 import { ProfileActions } from "@/components/profile/ProfileActions";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
+import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
+import { AchievementBadges } from "@/components/profile/AchievementBadges";
 
 import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
 import { checkProfileCompletion, getDiscoveryMissingFields, meetsDiscoveryRequirements } from "@/lib/profileCompletion";
@@ -309,6 +311,30 @@ const ProfileContent = () => {
             />
           );
         })()}
+
+        {/* Achievement Badges - Show verified credentials */}
+        <AchievementBadges 
+          achievements={profile.achievement_badges || []}
+          tier={profile.verification_tier || undefined}
+        />
+
+        {/* Credential Verification Card */}
+        <CredentialVerificationCard 
+          userId={profile.user_id}
+          fullName={profile.full_name}
+          role={profile.role || ''}
+          bio={profile.bio || ''}
+          socialLinks={{
+            spotify: profile.spotify_url || '',
+            youtube: profile.youtube_url || '',
+            imdb: profile.imdb_url || '',
+            instagram: profile.instagram_url || '',
+            linkedin: profile.linkedin_url || '',
+          }}
+          currentTier={profile.verification_tier || undefined}
+          currentAchievements={profile.achievement_badges || []}
+          onVerificationComplete={fetchData}
+        />
 
         {/* Simplified Content - Portfolio First */}
         <div className="space-y-4">

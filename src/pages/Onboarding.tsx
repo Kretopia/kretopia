@@ -407,7 +407,7 @@ export default function Onboarding() {
         console.error("[Onboarding] Welcome match error (non-blocking):", welcomeError);
       }
 
-      // Trigger AI verification
+      // Trigger AI verification (basic profile verification)
       try {
         const verificationData = {
           fullName: profile.full_name,
@@ -426,6 +426,16 @@ export default function Onboarding() {
         console.log("Profile verification submitted");
       } catch (verifyError) {
         console.error("Verification error (non-blocking):", verifyError);
+      }
+
+      // Trigger deep credential verification (AI vetting against external sources)
+      try {
+        await supabase.functions.invoke("verify-credentials", {
+          body: { userId: user.id },
+        });
+        console.log("Deep credential verification initiated");
+      } catch (credError) {
+        console.error("Credential verification error (non-blocking):", credError);
       }
 
       const { analytics } = await import("@/lib/analytics");

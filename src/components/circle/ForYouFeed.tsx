@@ -543,11 +543,6 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
               Preview Demo
             </Button>
           </div>
-          {/* Debug info */}
-          <div className="mt-4 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground max-w-md">
-            <p><strong>Debug v3:</strong> {debugInfo || 'No info'}</p>
-            <p className="mt-1">Picks: {picks.length} | Index: {currentIndex} | User: {user?.id?.slice(0, 8)}...</p>
-          </div>
         </div>
         <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
       </>

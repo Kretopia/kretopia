@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SwipeCard } from "@/components/ui/swipe-card";
-import { MapPin, Star, X, Heart, Sparkles, User } from "lucide-react";
+import { MapPin, Star, X, Heart, Sparkles, User, Verified, Crown, Shield } from "lucide-react";
 import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { CollabIntentBadge } from "@/components/profile/CollabIntentSelector";
@@ -22,6 +22,9 @@ interface CreatorCard {
   matchScore?: number;
   matchReasons?: string[];
   collab_intent?: string;
+  verification_tier?: string;
+  verification_status?: string;
+  achievement_badges?: string[];
 }
 
 interface MatchFeedProps {
@@ -45,6 +48,34 @@ const getBadgeColor = (badge: string) => {
     case 'beta': return 'bg-blue-500';
     case 'vip': return 'bg-yellow-500';
     default: return 'bg-gray-500';
+  }
+};
+
+const getVerificationBadge = (tier: string | undefined, status: string | undefined) => {
+  // Only show badge if status is 'verified'
+  if (status !== 'verified' || !tier) return null;
+  
+  switch (tier) {
+    case 'elite':
+      return {
+        icon: Crown,
+        label: 'Elite',
+        className: 'bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0'
+      };
+    case 'industry':
+      return {
+        icon: Star,
+        label: 'Industry',
+        className: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0'
+      };
+    case 'verified':
+      return {
+        icon: Verified,
+        label: 'Verified',
+        className: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0'
+      };
+    default:
+      return null;
   }
 };
 
@@ -154,7 +185,21 @@ export const MatchFeed = ({
           {/* Top Badges */}
           <div className="absolute top-6 left-6 right-6 flex justify-between items-start z-10">
             <div className="flex flex-col gap-2">
-              {/* Collab Intent Badge - Primary */}
+              {/* Verification Badge - Primary */}
+              {(() => {
+                const verificationBadge = getVerificationBadge(currentCard.verification_tier, currentCard.verification_status);
+                if (verificationBadge) {
+                  const VerificationIcon = verificationBadge.icon;
+                  return (
+                    <Badge className={`${verificationBadge.className} font-bold shadow-2xl text-sm px-3 py-1`}>
+                      <VerificationIcon className="h-3 w-3 mr-1" />
+                      {verificationBadge.label}
+                    </Badge>
+                  );
+                }
+                return null;
+              })()}
+              {/* Collab Intent Badge */}
               {currentCard.collab_intent && (
                 <CollabIntentBadge intent={currentCard.collab_intent} size="md" />
               )}
@@ -188,7 +233,12 @@ export const MatchFeed = ({
           {/* Bottom Content */}
           <div className="absolute bottom-0 left-0 right-0 p-6 pb-8 text-white z-10">
             <div className="space-y-3">
-              <h3 className="text-3xl font-bold drop-shadow-lg">{currentCard.name}</h3>
+              <h3 className="text-3xl font-bold drop-shadow-lg flex items-center gap-2">
+                {currentCard.name}
+                {currentCard.verification_status === 'verified' && (
+                  <Verified className="h-6 w-6 text-blue-400" />
+                )}
+              </h3>
               <p className="text-lg font-medium text-white/90 drop-shadow-md">{currentCard.title}</p>
               
               {currentCard.location && (

@@ -27,6 +27,9 @@ interface CreatorCard {
   matchScore?: number;
   matchReasons?: string[];
   collab_intent?: string;
+  verification_tier?: string;
+  verification_status?: string;
+  achievement_badges?: string[];
 }
 
 interface CreatorFilters {
@@ -135,7 +138,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
       // Fetch all potential profiles WITH portfolio count for quality filtering
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills, collab_intent')
+        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills, collab_intent, verification_tier, verification_status, achievement_badges')
         .neq('user_id', userId)
         .not('full_name', 'is', null)
         .order('created_at', { ascending: false })
@@ -200,7 +203,10 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         level: profile.level,
         matchScore: Math.floor(Math.random() * 15) + 85, // 85-99%
         matchReasons: [],
-        collab_intent: profile.collab_intent
+        collab_intent: profile.collab_intent,
+        verification_tier: profile.verification_tier,
+        verification_status: profile.verification_status,
+        achievement_badges: profile.achievement_badges as string[] || []
       }));
 
       console.log('[useCircleData] Final cards:', cards.length);

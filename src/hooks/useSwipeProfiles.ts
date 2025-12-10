@@ -18,13 +18,18 @@ export interface SwipeProfile {
 
 export function useSwipeProfiles(currentUserId: string | undefined) {
   const [profiles, setProfiles] = useState<SwipeProfile[]>([]);
-  const [loading, setLoading] = useState(true); // Start with loading true
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
 
+  console.log('[useSwipeProfiles] Hook called with userId:', currentUserId, 'hasFetched:', hasFetched, 'loading:', loading);
+
   const fetchProfiles = useCallback(async () => {
+    console.log('[useSwipeProfiles] fetchProfiles called, userId:', currentUserId);
+    
     if (!currentUserId) {
-      console.log('[useSwipeProfiles] No current user ID, waiting...');
+      console.log('[useSwipeProfiles] No current user ID, returning early');
+      setLoading(false);
       return;
     }
 
@@ -32,14 +37,18 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
     setError(null);
 
     try {
-      console.log('[useSwipeProfiles] Fetching profiles for user:', currentUserId);
+      console.log('[useSwipeProfiles] Starting fetch for user:', currentUserId);
 
       // Step 1: Get users already swiped on
-      const { data: swipedData } = await supabase
+      const { data: swipedData, error: swipeError } = await supabase
         .from('swipes')
         .select('target_id')
         .eq('user_id', currentUserId)
         .eq('target_type', 'profile');
+
+      if (swipeError) {
+        console.error('[useSwipeProfiles] Swipe query error:', swipeError);
+      }
 
       const swipedIds = new Set(swipedData?.map(s => s.target_id) || []);
       console.log('[useSwipeProfiles] Already swiped:', swipedIds.size);
@@ -138,11 +147,16 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
 
   // Auto-fetch when currentUserId becomes available
   useEffect(() => {
+    console.log('[useSwipeProfiles] useEffect triggered - userId:', currentUserId, 'hasFetched:', hasFetched);
+    
     if (currentUserId && !hasFetched) {
-      console.log('[useSwipeProfiles] Auto-fetching for user:', currentUserId);
+      console.log('[useSwipeProfiles] Triggering auto-fetch for user:', currentUserId);
       fetchProfiles();
     } else if (!currentUserId) {
-      setLoading(false); // Stop loading if no user
+      console.log('[useSwipeProfiles] No userId, stopping loading');
+      setLoading(false);
+    } else {
+      console.log('[useSwipeProfiles] Already fetched, not re-fetching');
     }
   }, [currentUserId, hasFetched, fetchProfiles]);
 

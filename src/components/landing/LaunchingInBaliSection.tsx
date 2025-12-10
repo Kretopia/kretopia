@@ -31,7 +31,8 @@ export const LaunchingInBaliSection = () => {
                   className="w-full sm:w-auto border-2 border-white/70 bg-white hover:bg-white/90 text-primary backdrop-blur-sm font-semibold"
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
-                  Create Your Free Account
+                  <span className="sm:hidden">Get Started Free</span>
+                  <span className="hidden sm:inline">Create Your Free Account</span>
                 </Button>
               </Link>
             </div>

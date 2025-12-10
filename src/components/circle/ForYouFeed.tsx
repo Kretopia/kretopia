@@ -765,6 +765,16 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         userId={previewUserId}
         open={!!previewUserId}
         onOpenChange={(open) => !open && setPreviewUserId(null)}
+        demoProfile={demoMode && currentCreator ? {
+          full_name: currentCreator.full_name,
+          role: currentCreator.role,
+          bio: currentCreator.bio,
+          avatar_url: currentCreator.avatar_url,
+          location: currentCreator.location,
+          collab_intent: currentCreator.collab_intent,
+          match_score: currentCreator.match_score,
+          match_reasons: currentCreator.match_reasons,
+        } : null}
       />
 
       {/* Match Explanation Dialog */}

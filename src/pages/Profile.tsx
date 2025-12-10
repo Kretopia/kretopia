@@ -312,11 +312,13 @@ const ProfileContent = () => {
           );
         })()}
 
-        {/* Achievement Badges - Show verified credentials */}
-        <AchievementBadges 
-          achievements={profile.achievement_badges || []}
-          tier={profile.verification_tier || undefined}
-        />
+        {/* Achievement Badges - Show verified credentials (tier shown in ProfileHero, don't duplicate) */}
+        {(profile.achievement_badges?.length > 0) && (
+          <AchievementBadges 
+            achievements={profile.achievement_badges || []}
+            showAll={false}
+          />
+        )}
 
         {/* Credential Verification Card */}
         <CredentialVerificationCard 

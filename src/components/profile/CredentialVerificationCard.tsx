@@ -102,38 +102,24 @@ export function CredentialVerificationCard({
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              Credential Verification
-            </CardTitle>
-            <CardDescription>
-              Verify your professional credentials and achievements
-            </CardDescription>
-          </div>
-          {displayTier && (
-            <Badge 
-              className={`bg-gradient-to-r ${getTierColor(displayTier)} text-white border-0`}
-            >
-              {(() => {
-                const TierIcon = getTierIcon(displayTier);
-                return <TierIcon className="w-3 h-3 mr-1" />;
-              })()}
-              {displayTier.charAt(0).toUpperCase() + displayTier.slice(1)}
-            </Badge>
-          )}
+        <div>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Shield className="w-5 h-5 text-primary" />
+            Credential Verification
+          </CardTitle>
+          <CardDescription>
+            Verify your professional credentials and achievements
+          </CardDescription>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Current Achievements */}
+        {/* Current Achievements - only show if there are achievements beyond the tier */}
         {displayAchievements.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Your Achievements</p>
             <AchievementBadges 
               achievements={displayAchievements} 
-              tier={displayTier}
               showAll
             />
           </div>

@@ -13,9 +13,14 @@ interface SwipeFeatureProps {
 }
 
 export function SwipeFeature({ onMatch }: SwipeFeatureProps) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  
+  console.log('[SwipeFeature] Render - user:', user?.id, 'authLoading:', authLoading);
+  
   const { profiles, loading, error, fetchProfiles, removeProfile } = useSwipeProfiles(user?.id);
   const { recordSwipe } = useSwipeActions(user?.id);
+  
+  console.log('[SwipeFeature] Profiles:', profiles.length, 'Loading:', loading, 'Error:', error);
 
   const [selectedProfile, setSelectedProfile] = useState<SwipeProfile | null>(null);
   const [showPreview, setShowPreview] = useState(false);

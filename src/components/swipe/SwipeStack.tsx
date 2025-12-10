@@ -22,7 +22,6 @@ export function SwipeStack({
   canUndo = false,
   loading = false
 }: SwipeStackProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -30,8 +29,11 @@ export function SwipeStack({
   const dragStartRef = useRef({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const currentProfile = profiles[currentIndex];
-  const nextProfile = profiles[currentIndex + 1];
+  // Use first profile in the array as current (array shrinks as profiles are removed)
+  const currentProfile = profiles[0];
+  const nextProfile = profiles[1];
+
+  console.log('[SwipeStack] Profiles count:', profiles.length, 'Current:', currentProfile?.full_name);
 
   const SWIPE_THRESHOLD = 100;
   const DRAG_THRESHOLD = 50;
@@ -85,7 +87,7 @@ export function SwipeStack({
 
     setTimeout(() => {
       onSwipe(currentProfile, direction);
-      setCurrentIndex(prev => prev + 1);
+      // Profile is removed from array by parent, no need to track index
       resetPosition();
       setIsAnimating(false);
     }, 300);
@@ -293,7 +295,7 @@ export function SwipeStack({
 
       {/* Counter */}
       <p className="text-sm text-muted-foreground mt-2">
-        {currentIndex + 1} of {profiles.length} creators
+        {profiles.length} creators available
       </p>
     </div>
   );

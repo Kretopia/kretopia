@@ -333,7 +333,7 @@ const ProfileContent = () => {
           }}
           currentTier={profile.verification_tier || undefined}
           currentAchievements={profile.achievement_badges || []}
-          onVerificationComplete={fetchData}
+          onVerificationComplete={() => fetchData()}
         />
 
         {/* Simplified Content - Portfolio First */}

@@ -4,14 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
-import { ConnectFeed } from "@/components/circle/ConnectFeed";
+import { SwipeFeature } from "@/components/swipe";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
 import { Users, Sparkles, UserPlus } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 
 export default function Circle() {
@@ -20,8 +19,6 @@ export default function Circle() {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'foryou';
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [showMatchCelebration, setShowMatchCelebration] = useState(false);
-  const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
   const [connections, setConnections] = useState<any[]>([]);
   const [connectionsLoading, setConnectionsLoading] = useState(false);
@@ -136,8 +133,7 @@ export default function Circle() {
   }, [activeTab, user?.id, fetchConnections]);
 
   const handleMatch = (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
-    setMatchedUser(matchedUserData);
-    setShowMatchCelebration(true);
+    console.log('[Circle] Match detected:', matchedUserData);
   };
 
   const handleMessage = (userId: string) => {
@@ -182,7 +178,7 @@ export default function Circle() {
 
           {/* Connect Tab - Swipe to match */}
           <TabsContent value="foryou" className="space-y-4">
-            <ConnectFeed onMatch={handleMatch} />
+            <SwipeFeature onMatch={handleMatch} />
           </TabsContent>
 
           {/* My Network Tab */}
@@ -229,24 +225,6 @@ export default function Circle() {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Match Celebration Dialog */}
-      {matchedUser && (
-        <MatchCelebrationDialog
-          open={showMatchCelebration}
-          onOpenChange={(open) => {
-            setShowMatchCelebration(open);
-            if (!open) {
-              setMatchedUser(null);
-            }
-          }}
-          matchedUser={matchedUser}
-          onSendMessage={() => {
-            setShowMatchCelebration(false);
-            navigate('/messages');
-          }}
-        />
-      )}
 
       {/* Invite Dialog */}
       <InviteDialog open={showInvite} onOpenChange={setShowInvite} />

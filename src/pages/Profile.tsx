@@ -320,7 +320,7 @@ const ProfileContent = () => {
           />
         )}
 
-        {/* Credential Verification Card */}
+        {/* Credential Verification Card with Progress Modal & Report */}
         <CredentialVerificationCard 
           userId={profile.user_id}
           fullName={profile.full_name}
@@ -335,6 +335,10 @@ const ProfileContent = () => {
           }}
           currentTier={profile.verification_tier || undefined}
           currentAchievements={profile.achievement_badges || []}
+          verifiedCredentials={(profile as any).verified_credentials || []}
+          verificationScore={profile.verification_score || undefined}
+          verifiedAt={profile.verified_at || undefined}
+          breakdown={(profile as any).verification_breakdown || undefined}
           onVerificationComplete={() => fetchData()}
         />
 

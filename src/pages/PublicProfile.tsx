@@ -111,11 +111,21 @@ const PublicProfile = () => {
 
     if (error) {
       console.error('Error fetching profile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile",
-        variant: "destructive",
-      });
+      // Check if user is not authenticated
+      if (error.code === 'PGRST301' || error.message?.includes('JWT')) {
+        toast({
+          title: "Please log in",
+          description: "You need to be logged in to view profiles",
+          variant: "destructive",
+        });
+        navigate('/auth');
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load profile. Please try again.",
+          variant: "destructive",
+        });
+      }
       setLoading(false);
       return;
     }
@@ -123,10 +133,10 @@ const PublicProfile = () => {
     if (!data) {
       toast({
         title: "Profile Not Found",
-        description: "This profile doesn't exist or has been removed",
+        description: "This profile doesn't exist or may not be visible",
         variant: "destructive",
       });
-      navigate('/');
+      navigate(-1); // Go back instead of to home
       setLoading(false);
       return;
     }

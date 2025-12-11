@@ -139,6 +139,13 @@ const ACHIEVEMENT_CONFIG: Record<string, {
     bgColor: "bg-cyan-500/20 border-cyan-500/50",
     description: "Selected for major film festival",
     priority: 5
+  },
+  "Press Featured": {
+    icon: Award,
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-500/20 border-emerald-500/50",
+    description: "Featured in press & media publications",
+    priority: 4
   }
 };
 

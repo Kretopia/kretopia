@@ -68,6 +68,9 @@ interface Profile {
   average_rating?: number;
   total_reviews?: number;
   badge?: 'og' | 'beta' | 'official' | 'founder';
+  achievement_badges?: string[];
+  verification_tier?: string;
+  verification_status?: string;
 }
 
 const PublicProfile = () => {
@@ -105,7 +108,7 @@ const PublicProfile = () => {
     // Fetch profile using only public fields from profiles table
     const { data, error } = await supabase
       .from('profiles')
-      .select('user_id, full_name, role, bio, location, avatar_url, job_title, industry, badge, level, professional_skills, passion_skills, section_order, website, linkedin_url, behance_url, imdb_url, instagram_url, twitter_url, spotify_url, soundcloud_url, verified_metrics, created_at, account_type, company_name, company_logo_url, company_about, company_address, company_size, company_industry, average_rating, total_reviews')
+      .select('user_id, full_name, role, bio, location, avatar_url, job_title, industry, badge, level, professional_skills, passion_skills, section_order, website, linkedin_url, behance_url, imdb_url, instagram_url, twitter_url, spotify_url, soundcloud_url, verified_metrics, created_at, account_type, company_name, company_logo_url, company_about, company_address, company_size, company_industry, average_rating, total_reviews, achievement_badges, verification_tier, verification_status')
       .eq('user_id', userId)
       .maybeSingle();
 

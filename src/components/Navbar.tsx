@@ -141,14 +141,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
-                    {/* My Analytics */}
+                    {/* My Dashboard */}
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
                       onClick={() => handleNavigation("/my-analytics")}
                     >
                       <BarChart3 className="h-5 w-5" />
-                      My Analytics
+                      My Dashboard
                     </Button>
 
                     <Separator className="my-3" />

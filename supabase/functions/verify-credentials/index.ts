@@ -264,24 +264,23 @@ Return ONLY valid JSON:
     // Store verified credentials in database
     const verifiedCredentials = result.credentials.filter(c => c.verified);
     
-    if (verifiedCredentials.length > 0) {
-      // Update profile with verified achievements
-      const { error: updateError } = await supabaseClient
-        .from("profiles")
-        .update({
-          verified_credentials: verifiedCredentials,
-          verification_tier: result.tier,
-          achievement_badges: result.achievements,
-          verification_score: result.totalScore,
-          verification_status: result.tier === 'elite' ? 'elite_verified' : 
-                              result.tier === 'industry' ? 'industry_verified' : 'verified',
-          verified_at: new Date().toISOString()
-        })
-        .eq("user_id", user.id);
+    // Update profile with verified achievements (always update, even with 0 credentials)
+    const { error: updateError } = await supabaseClient
+      .from("profiles")
+      .update({
+        verified_credentials: verifiedCredentials,
+        verification_tier: result.tier,
+        achievement_badges: result.achievements,
+        verification_score: result.totalScore,
+        verification_breakdown: result.breakdown,
+        verification_status: result.tier === 'elite' ? 'elite_verified' : 
+                            result.tier === 'industry' ? 'industry_verified' : 'verified',
+        verified_at: new Date().toISOString()
+      })
+      .eq("user_id", user.id);
 
-      if (updateError) {
-        console.error("[VERIFY-CREDENTIALS] Update error:", updateError);
-      }
+    if (updateError) {
+      console.error("[VERIFY-CREDENTIALS] Update error:", updateError);
     }
 
     // Log verification request

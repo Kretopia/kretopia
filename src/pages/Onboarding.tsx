@@ -438,6 +438,17 @@ export default function Onboarding() {
         console.error("Credential verification error (non-blocking):", credError);
       }
 
+      // Generate invite codes for new user
+      try {
+        await supabase.rpc('generate_invite_codes', { 
+          user_id_param: user.id,
+          num_codes: 5 
+        });
+        console.log("Invite codes generated for user");
+      } catch (inviteError) {
+        console.error("Invite code generation error (non-blocking):", inviteError);
+      }
+
       const { analytics } = await import("@/lib/analytics");
       analytics.onboardingComplete();
 

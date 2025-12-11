@@ -45,8 +45,18 @@ export function ProfilePreviewSheet({
 
   const extractSkills = (skills: any): string[] => {
     if (!skills) return [];
-    if (Array.isArray(skills)) return skills.slice(0, 6);
-    if (typeof skills === 'object') return Object.keys(skills).slice(0, 6);
+    if (Array.isArray(skills)) {
+      return skills.map(s => {
+        if (typeof s === 'string') return s;
+        if (typeof s === 'object' && s !== null) {
+          return s.skill || s.name || '';
+        }
+        return '';
+      }).filter(Boolean).slice(0, 6);
+    }
+    if (typeof skills === 'object') {
+      return Object.keys(skills).slice(0, 6);
+    }
     return [];
   };
 

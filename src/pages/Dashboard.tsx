@@ -41,6 +41,7 @@ import { SuccessMetrics } from "@/components/dashboard/SuccessMetrics";
 import { DiscoverReadyBanner } from "@/components/DiscoverReadyBanner";
 import { FirstActionPrompt } from "@/components/dashboard/FirstActionPrompt";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { InviteCard } from "@/components/dashboard/InviteCard";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -320,6 +321,11 @@ const Dashboard = () => {
               </div>
             </div>
           </Card>
+        </div>
+
+        {/* Invite Card - Prominent position for referral growth */}
+        <div className="mb-6 sm:mb-8">
+          <InviteCard />
         </div>
 
         {/* Profile Optimization Hub */}

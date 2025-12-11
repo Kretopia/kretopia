@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import {
@@ -39,7 +39,9 @@ const Auth = () => {
   
   // Multi-step signup state
   const [signupStep, setSignupStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4; // 4 steps: invite code, account type, email, password
+  const [inviteValidated, setInviteValidated] = useState(false);
+  const [validatingInvite, setValidatingInvite] = useState(false);
   
   // Password reset state
   const [newPassword, setNewPassword] = useState("");
@@ -75,7 +77,7 @@ const Auth = () => {
     }
     
     // Pre-fill invite code from URL
-    const inviteFromUrl = searchParams.get("inviteCode");
+    const inviteFromUrl = searchParams.get("invite") || searchParams.get("inviteCode");
     if (inviteFromUrl) {
       setInviteCode(inviteFromUrl);
     }
@@ -217,12 +219,46 @@ const Auth = () => {
   };
 
 
-  const handleNextStep = () => {
+  const validateInviteCode = async (code: string) => {
+    if (!code.trim()) {
+      setInviteError("Please enter an invite code");
+      return false;
+    }
+    
+    setValidatingInvite(true);
+    setInviteError("");
+    
+    try {
+      const { data, error } = await supabase.rpc('validate_invite_code', { code: code.trim() });
+      
+      if (error || !data) {
+        setInviteError("Invalid or expired invite code");
+        setInviteValidated(false);
+        return false;
+      }
+      
+      setInviteValidated(true);
+      return true;
+    } catch (err) {
+      setInviteError("Failed to validate invite code");
+      setInviteValidated(false);
+      return false;
+    } finally {
+      setValidatingInvite(false);
+    }
+  };
+
+  const handleNextStep = async () => {
     // Validate current step before proceeding
     if (signupStep === 1) {
-      // Account type is always selected (has default)
+      // Validate invite code first
+      const isValid = await validateInviteCode(inviteCode);
+      if (!isValid) return;
       setSignupStep(2);
     } else if (signupStep === 2) {
+      // Account type is always selected (has default)
+      setSignupStep(3);
+    } else if (signupStep === 3) {
       // Validate email
       const emailValidation = validateEmail(email);
       if (!emailValidation.valid) {
@@ -230,7 +266,7 @@ const Auth = () => {
         return;
       }
       setEmailError("");
-      setSignupStep(3);
+      setSignupStep(4);
     }
   };
 
@@ -254,13 +290,14 @@ const Auth = () => {
     setConfirmPasswordError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}${redirectTo}`,
         data: {
           account_type: accountType,
+          invite_code: inviteCode,
         },
       },
     });
@@ -285,9 +322,22 @@ const Auth = () => {
       analytics.signUp('email');
       analytics.onboardingStart();
       
+      // Use the invite code after successful signup
+      if (signUpData?.user && inviteCode) {
+        try {
+          await supabase.rpc('use_invite_code', { 
+            code: inviteCode.trim(), 
+            user_email: email,
+            new_user_id: signUpData.user.id
+          });
+        } catch (inviteErr) {
+          console.error('Error using invite code:', inviteErr);
+        }
+      }
+      
       toast({
-        title: "Success!",
-        description: "Your account has been created. Welcome to ThriveIN!",
+        title: "Welcome to ThriveIN! 🎉",
+        description: "Your exclusive access has been granted.",
       });
       
       // Check if we need to auto-connect after signup
@@ -602,16 +652,89 @@ const Auth = () => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Step {signupStep} of {totalSteps}</span>
                 <span className="text-sm text-muted-foreground">
-                  {signupStep === 1 && "I am a..."}
-                  {signupStep === 2 && "Your email"}
-                  {signupStep === 3 && "Create password"}
+                  {signupStep === 1 && "Invite code"}
+                  {signupStep === 2 && "I am a..."}
+                  {signupStep === 3 && "Your email"}
+                  {signupStep === 4 && "Create password"}
                 </span>
               </div>
               <Progress value={(signupStep / totalSteps) * 100} className="h-2" />
             </div>
 
-            {/* Step 1: Account Type Selection */}
+            {/* Step 1: Invite Code */}
             {signupStep === 1 && (
+              <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                <div className="rounded-xl bg-gradient-to-br from-amber-500/10 via-primary/10 to-secondary/10 p-5 border border-amber-500/30">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-amber-500/20 p-2 shrink-0">
+                      <Lock className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm mb-1">Exclusive Access</h4>
+                      <p className="text-xs text-muted-foreground">
+                        ThriveIN is invite-only to ensure a high-quality community of verified creative professionals.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="invite-code">Invite Code</Label>
+                  <Input
+                    id="invite-code"
+                    type="text"
+                    placeholder="Enter your invite code"
+                    value={inviteCode}
+                    onChange={(e) => {
+                      setInviteCode(e.target.value.toUpperCase());
+                      setInviteError("");
+                      setInviteValidated(false);
+                    }}
+                    className={`h-11 text-base font-mono uppercase ${inviteError ? "border-destructive" : inviteValidated ? "border-green-500" : ""}`}
+                    autoFocus
+                  />
+                  {inviteError && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {inviteError}
+                    </p>
+                  )}
+                  {inviteValidated && (
+                    <p className="text-sm text-green-600 flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Valid invite code!
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  onClick={handleNextStep}
+                  variant="gradient"
+                  size="lg"
+                  className="w-full"
+                  disabled={validatingInvite}
+                >
+                  {validatingInvite ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Validating...
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+
+                <p className="text-xs text-center text-muted-foreground">
+                  Don't have an invite code? Ask a member to share one with you.
+                </p>
+              </div>
+            )}
+
+            {/* Step 2: Account Type Selection */}
+            {signupStep === 2 && (
               <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
                 <div className="rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 border border-primary/20">
                   <div className="flex items-start gap-3">
@@ -670,20 +793,30 @@ const Auth = () => {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleNextStep}
-                  variant="gradient"
-                  size="lg"
-                  className="w-full"
-                >
-                  Continue
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSignupStep(1)}
+                    className="flex-1"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleNextStep}
+                    variant="gradient"
+                    className="flex-1"
+                  >
+                    Continue
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
 
-            {/* Step 2: Email */}
-            {signupStep === 2 && (
+            {/* Step 3: Email */}
+            {signupStep === 3 && (
               <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email Address</Label>
@@ -737,7 +870,7 @@ const Auth = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setSignupStep(1)}
+                    onClick={() => setSignupStep(2)}
                     className="flex-1"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -755,8 +888,8 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Step 3: Password */}
-            {signupStep === 3 && (
+            {/* Step 4: Password */}
+            {signupStep === 4 && (
               <form onSubmit={handleSignUp} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Create Password</Label>
@@ -811,7 +944,7 @@ const Auth = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setSignupStep(2)}
+                    onClick={() => setSignupStep(3)}
                     className="flex-1"
                     disabled={loading}
                   >

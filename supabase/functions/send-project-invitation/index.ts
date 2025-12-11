@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       console.log('Attempting to send email via Resend...');
       const emailResponse = await resend.emails.send({
-        from: "ThriveIN <noreply@thrivein.app>",
+        from: "ThriveIN <noreply@thrivein.io>",
         to: [email],
         subject: `You're invited to collaborate on "${projectTitle}" 🎯`,
         html: `

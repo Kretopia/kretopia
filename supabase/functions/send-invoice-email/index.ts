@@ -153,7 +153,7 @@ serve(async (req) => {
         "Authorization": `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: "ThriveIN <noreply@thrivein.app>",
+        from: "ThriveIN <noreply@thrivein.io>",
         to: [recipientEmail],
         subject: `Invoice ${invoice.invoice_number} from ${invoice.issuer.full_name}`,
         html: emailHtml,

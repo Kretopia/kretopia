@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Star, Verified, MessageCircle, UserPlus, Share2, Edit, Camera, Briefcase, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierByPoints } from "@/lib/tierSystem";
+import { AchievementBadges } from "./AchievementBadges";
 
 interface ProfileHeroProps {
   profile: any;
@@ -142,6 +143,18 @@ export const ProfileHero = ({
                 </Badge>
               )}
             </div>
+            
+            {/* Achievement Badges - Visible to everyone */}
+            {(profile.achievement_badges?.length > 0 || profile.verification_tier) && (
+              <div className="mt-2">
+                <AchievementBadges 
+                  achievements={profile.achievement_badges || []}
+                  tier={profile.verification_tier}
+                  size="sm"
+                  maxDisplay={4}
+                />
+              </div>
+            )}
           </div>
         </div>
 

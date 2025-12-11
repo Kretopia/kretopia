@@ -7,13 +7,21 @@ const corsHeaders = {
 };
 
 interface VerifiedCredential {
-  type: 'award' | 'credit' | 'certification' | 'social' | 'streams';
+  type: 'award' | 'credit' | 'certification' | 'social' | 'streams' | 'press';
   source: string;
   title: string;
   value?: string;
   verified: boolean;
   verifiedAt?: string;
   url?: string;
+}
+
+interface PressLink {
+  id: string;
+  title: string;
+  url: string;
+  publication?: string;
+  published_date?: string;
 }
 
 interface VerificationResult {
@@ -26,6 +34,7 @@ interface VerificationResult {
     credits: number;
     social: number;
     streams: number;
+    press: number;
   };
 }
 
@@ -99,6 +108,15 @@ serve(async (req) => {
       };
     }
 
+    // Fetch user's press links
+    const { data: pressLinks } = await supabaseClient
+      .from('press_links')
+      .select('id, title, url, publication, published_date')
+      .eq('user_id', user.id);
+
+    const pressLinksData = (pressLinks || []) as PressLink[];
+    console.log(`[VERIFY-CREDENTIALS] Found ${pressLinksData.length} press links for user`);
+
     console.log(`[VERIFY-CREDENTIALS] Starting enhanced verification for ${user.id}`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -119,6 +137,11 @@ ${Object.entries(socialLinks || {})
   .filter(([_, url]) => url)
   .map(([platform, url]) => `- ${platform}: ${url}`)
   .join('\n') || 'None provided'}
+
+PRESS & MEDIA MENTIONS TO VERIFY:
+${pressLinksData.length > 0 
+  ? pressLinksData.map(p => `- "${p.title}" ${p.publication ? `in ${p.publication}` : ''} - ${p.url}`).join('\n')
+  : 'None provided'}
 
 VERIFICATION TASKS:
 
@@ -159,6 +182,16 @@ VERIFICATION TASKS:
    - Apple Music presence
    - SoundCloud plays for indie artists
 
+5. **PRESS & MEDIA VERIFICATION**:
+   - Verify press links are real articles (not 404s)
+   - Check publication credibility (Forbes, Billboard, Rolling Stone = high value)
+   - Verify the article actually mentions the creator
+   - Cross-reference with web search for additional press mentions
+   - Award points based on publication tier:
+     * Tier 1 (Forbes, Billboard, Rolling Stone, NYT, etc.): +15 points each
+     * Tier 2 (Industry blogs, regional press): +8 points each
+     * Tier 3 (Personal blogs, small publications): +3 points each
+
 TIER CLASSIFICATION:
 - **VERIFIED**: Complete profile, social links verified, professional presence
 - **INDUSTRY**: Has verifiable industry credits (IMDB, label releases, agency representation)
@@ -179,27 +212,30 @@ ACHIEVEMENT BADGES TO AWARD (only if verifiable):
 - "Award Winning"
 - "Published Author"
 - "Festival Official Selection"
+- "Featured in Forbes" (or other major publication)
+- "Press Featured"
 
 Return ONLY valid JSON:
 {
   "credentials": [
     {
-      "type": "award|credit|certification|social|streams",
-      "source": "Grammy/IMDB/Spotify/etc",
+      "type": "award|credit|certification|social|streams|press",
+      "source": "Grammy/IMDB/Spotify/Forbes/Billboard/etc",
       "title": "Specific achievement",
-      "value": "Winner/Nominated/10M streams/etc",
+      "value": "Winner/Nominated/10M streams/Featured Article/etc",
       "verified": true|false,
       "url": "verification URL if found"
     }
   ],
   "tier": "verified|industry|elite",
-  "achievements": ["Grammy Nominated", "IMDB Credited", etc],
+  "achievements": ["Grammy Nominated", "IMDB Credited", "Press Featured", etc],
   "totalScore": 0-100,
   "breakdown": {
-    "awards": 0-30,
-    "credits": 0-30,
-    "social": 0-25,
-    "streams": 0-15
+    "awards": 0-25,
+    "credits": 0-25,
+    "social": 0-20,
+    "streams": 0-15,
+    "press": 0-15
   },
   "reasoning": "Brief explanation of verification findings"
 }`;
@@ -257,8 +293,13 @@ Return ONLY valid JSON:
         tier: "verified",
         achievements: [],
         totalScore: 50,
-        breakdown: { awards: 0, credits: 0, social: 25, streams: 0 }
+        breakdown: { awards: 0, credits: 0, social: 25, streams: 0, press: 0 }
       };
+    }
+
+    // Ensure press is in breakdown (backwards compatibility)
+    if (!result.breakdown.press) {
+      result.breakdown.press = 0;
     }
 
     // Store verified credentials in database

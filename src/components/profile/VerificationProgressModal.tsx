@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, Loader2, Sparkles, Shield, Award, Music, Users, Globe, Search, Database } from "lucide-react";
+import { CheckCircle2, Circle, Loader2, Sparkles, Shield, Award, Music, Users, Globe, Search, Database, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface VerificationStep {
@@ -58,9 +58,15 @@ const VERIFICATION_STEPS: Omit<VerificationStep, 'status' | 'result'>[] = [
     icon: <Music className="h-5 w-5" />,
   },
   {
+    id: 'press',
+    label: 'Verifying Press & Media',
+    description: 'Checking press links, validating publications',
+    icon: <Newspaper className="h-5 w-5" />,
+  },
+  {
     id: 'web',
     label: 'Web Presence Search',
-    description: 'Press mentions, publications, features',
+    description: 'Additional mentions, features, articles',
     icon: <Search className="h-5 w-5" />,
   },
   {

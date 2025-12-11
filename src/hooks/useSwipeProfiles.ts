@@ -72,7 +72,7 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
       ]);
       console.log('[useSwipeProfiles] Already connected:', connectedIds.size);
 
-      // Step 3: Fetch all profiles except current user with valid avatar
+      // Step 3: Fetch all profiles except current user with valid avatar, bio, and onboarding complete
       const { data: allProfiles, error: profileError } = await supabase
         .from('profiles')
         .select(`
@@ -86,11 +86,13 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
           professional_skills,
           passion_skills,
           badge,
-          collab_intent
+          collab_intent,
+          onboarding_completed
         `)
         .neq('user_id', currentUserId)
         .not('avatar_url', 'is', null)
         .neq('avatar_url', '')
+        .eq('onboarding_completed', true)
         .limit(100);
 
       if (profileError) {
@@ -100,18 +102,20 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
 
       console.log('[useSwipeProfiles] Total profiles fetched:', allProfiles?.length);
 
-      // Step 4: Filter out swiped and connected users
+      // Step 4: Filter out swiped, connected users, and profiles not meeting minimum requirements
       let filtered = (allProfiles || []).filter(p => {
         // Not already swiped
         if (swipedIds.has(p.user_id)) return false;
         // Not already connected
         if (connectedIds.has(p.user_id)) return false;
+        // Must have bio with minimum 20 characters
+        if (!p.bio || p.bio.length < 20) return false;
         return true;
       });
 
       console.log('[useSwipeProfiles] After filtering:', filtered.length);
 
-      // Step 5: Get portfolio counts for filtered profiles
+      // Step 5: Get portfolio counts and filter profiles that have at least 1 portfolio item
       if (filtered.length > 0) {
         const userIds = filtered.map(p => p.user_id);
         const { data: portfolioData } = await supabase
@@ -124,10 +128,15 @@ export function useSwipeProfiles(currentUserId: string | undefined) {
           portfolioCounts.set(item.user_id, (portfolioCounts.get(item.user_id) || 0) + 1);
         });
 
-        filtered = filtered.map(p => ({
-          ...p,
-          portfolio_count: portfolioCounts.get(p.user_id) || 0
-        }));
+        // Add portfolio count and filter to only include profiles with at least 1 portfolio item
+        filtered = filtered
+          .map(p => ({
+            ...p,
+            portfolio_count: portfolioCounts.get(p.user_id) || 0
+          }))
+          .filter(p => p.portfolio_count >= 1);
+        
+        console.log('[useSwipeProfiles] After portfolio filter:', filtered.length);
       }
 
       // Step 6: Shuffle for variety

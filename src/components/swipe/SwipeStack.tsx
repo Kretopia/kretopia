@@ -9,6 +9,7 @@ interface SwipeStackProps {
   profiles: SwipeProfile[];
   onSwipe: (profile: SwipeProfile, direction: 'left' | 'right') => void;
   onViewProfile: (profile: SwipeProfile) => void;
+  onMatchBadgeClick: (profile: SwipeProfile) => void;
   onUndo?: () => void;
   canUndo?: boolean;
   loading?: boolean;
@@ -18,6 +19,7 @@ export function SwipeStack({
   profiles,
   onSwipe,
   onViewProfile,
+  onMatchBadgeClick,
   onUndo,
   canUndo = false,
   loading = false
@@ -215,8 +217,8 @@ export function SwipeStack({
         <SwipeCard
           ref={cardRef}
           profile={currentProfile}
-          matchScore={Math.floor(Math.random() * 30) + 70} // Placeholder score
           onViewProfile={handleViewProfile}
+          onMatchBadgeClick={() => onMatchBadgeClick(currentProfile)}
           style={getCardStyle(true)}
         />
 

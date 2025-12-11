@@ -211,25 +211,21 @@ export const ProfileHero = ({
           ) : (
             <>
               {connectionStatus === 'accepted' ? (
-                <Button variant="secondary" size="sm" className="gap-2 flex-1">
-                  <Star className="h-4 w-4 fill-primary text-primary" />
-                  Connected
-                </Button>
-              ) : connectionStatus === 'pending' ? (
-                <Button variant="secondary" size="sm" disabled className="gap-2 flex-1">
-                  <UserPlus className="h-4 w-4" />
-                  Pending
-                </Button>
+                <>
+                  <Button variant="secondary" size="sm" className="gap-2 flex-1">
+                    <Star className="h-4 w-4 fill-primary text-primary" />
+                    Matched
+                  </Button>
+                  <Button variant="default" size="sm" onClick={onMessage} className="gap-2 flex-1">
+                    <MessageCircle className="h-4 w-4" />
+                    Message
+                  </Button>
+                </>
               ) : (
-                <Button variant="default" size="sm" onClick={onConnect} className="gap-2 flex-1">
-                  <UserPlus className="h-4 w-4" />
-                  Connect
-                </Button>
+                <Badge variant="secondary" className="py-2 px-4 text-sm">
+                  Match to connect & message
+                </Badge>
               )}
-              <Button variant="default" size="sm" onClick={onMessage} className="gap-2 flex-1">
-                <MessageCircle className="h-4 w-4" />
-                Message
-              </Button>
               <Button variant="ghost" size="sm" className="p-2" onClick={onShare}>
                 <Share2 className="h-4 w-4" />
               </Button>

@@ -5,6 +5,7 @@ import { useSwipeActions } from '@/hooks/useSwipeActions';
 import { SwipeStack } from './SwipeStack';
 import { ProfilePreviewSheet } from './ProfilePreviewSheet';
 import { MatchModal } from './MatchModal';
+import { MatchExplanationDialog } from '@/components/discover/MatchExplanationDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -25,6 +26,8 @@ export function SwipeFeature({ onMatch }: SwipeFeatureProps) {
   const [selectedProfile, setSelectedProfile] = useState<SwipeProfile | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showMatchModal, setShowMatchModal] = useState(false);
+  const [showMatchExplanation, setShowMatchExplanation] = useState(false);
+  const [explanationProfile, setExplanationProfile] = useState<SwipeProfile | null>(null);
   const [matchedProfile, setMatchedProfile] = useState<any>(null);
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [swipeHistory, setSwipeHistory] = useState<SwipeProfile[]>([]);
@@ -78,6 +81,23 @@ export function SwipeFeature({ onMatch }: SwipeFeatureProps) {
     setShowPreview(true);
   }, []);
 
+  const handleMatchBadgeClick = useCallback((profile: SwipeProfile) => {
+    setExplanationProfile(profile);
+    setShowMatchExplanation(true);
+  }, []);
+
+  const handleExplanationConnect = useCallback(() => {
+    if (explanationProfile) {
+      handleSwipe(explanationProfile, 'right');
+    }
+  }, [explanationProfile, handleSwipe]);
+
+  const handleExplanationPass = useCallback(() => {
+    if (explanationProfile) {
+      handleSwipe(explanationProfile, 'left');
+    }
+  }, [explanationProfile, handleSwipe]);
+
   const handlePreviewSwipe = useCallback((direction: 'left' | 'right') => {
     if (selectedProfile) {
       handleSwipe(selectedProfile, direction);
@@ -122,6 +142,7 @@ export function SwipeFeature({ onMatch }: SwipeFeatureProps) {
         profiles={profiles}
         onSwipe={handleSwipe}
         onViewProfile={handleViewProfile}
+        onMatchBadgeClick={handleMatchBadgeClick}
         onUndo={swipeHistory.length > 0 ? handleUndo : undefined}
         canUndo={swipeHistory.length > 0}
         loading={loading}
@@ -140,6 +161,22 @@ export function SwipeFeature({ onMatch }: SwipeFeatureProps) {
         matchedProfile={matchedProfile}
         currentUserAvatar={currentUserProfile?.avatar_url}
       />
+
+      {explanationProfile && (
+        <MatchExplanationDialog
+          open={showMatchExplanation}
+          onOpenChange={setShowMatchExplanation}
+          match={{
+            user_id: explanationProfile.user_id,
+            name: explanationProfile.full_name,
+            title: explanationProfile.role,
+            location: explanationProfile.location || '',
+            image: explanationProfile.avatar_url || ''
+          }}
+          onConnect={handleExplanationConnect}
+          onPass={handleExplanationPass}
+        />
+      )}
     </div>
   );
 }

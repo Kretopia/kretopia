@@ -18,8 +18,8 @@ interface SwipeCardProps {
     collab_intent: string | null;
     portfolio_count?: number;
   };
-  matchScore?: number;
   onViewProfile?: () => void;
+  onMatchBadgeClick?: () => void;
   style?: React.CSSProperties;
   className?: string;
 }
@@ -33,7 +33,7 @@ const COLLAB_INTENT_LABELS: Record<string, string> = {
 };
 
 export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
-  ({ profile, matchScore, onViewProfile, style, className }, ref) => {
+  ({ profile, onViewProfile, onMatchBadgeClick, style, className }, ref) => {
     const initials = profile.full_name
       ?.split(' ')
       .map(n => n[0])
@@ -65,18 +65,20 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
 
         {/* Content Overlay */}
         <div className="absolute inset-0 flex flex-col justify-end p-6">
-          {/* Match Score Badge */}
-          {matchScore && matchScore > 0 && (
-            <div className="absolute top-4 right-4">
-              <Badge 
-                variant="secondary" 
-                className="bg-primary/90 text-primary-foreground px-3 py-1.5 text-sm font-semibold backdrop-blur-sm"
-              >
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                {matchScore}% Match
-              </Badge>
-            </div>
-          )}
+          {/* AI Match Analysis Badge - Click to see why */}
+          <div className="absolute top-4 right-4">
+            <Badge 
+              variant="secondary" 
+              className="bg-primary/90 text-primary-foreground px-3 py-1.5 text-sm font-semibold backdrop-blur-sm cursor-pointer hover:bg-primary transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMatchBadgeClick?.();
+              }}
+            >
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              AI Match
+            </Badge>
+          </div>
 
           {/* Badge (OG/Beta) */}
           {profile.badge && (

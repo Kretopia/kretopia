@@ -17,13 +17,14 @@ import {
   Sparkles,
   ExternalLink,
   Database,
-  BadgeCheck
+  BadgeCheck,
+  Newspaper
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface VerifiedCredential {
-  type: 'award' | 'credit' | 'certification' | 'social' | 'streams';
+  type: 'award' | 'credit' | 'certification' | 'social' | 'streams' | 'press';
   source: string;
   title: string;
   value?: string;
@@ -42,6 +43,7 @@ interface VerificationReportCardProps {
     credits: number;
     social: number;
     streams: number;
+    press: number;
   };
   isOwnProfile?: boolean;
   onReVerify?: () => void;
@@ -57,6 +59,7 @@ const SOURCES_CHECKED = [
   { name: 'Instagram', icon: Users, category: 'social' },
   { name: 'YouTube', icon: Globe, category: 'social' },
   { name: 'LinkedIn', icon: Users, category: 'social' },
+  { name: 'Press Links', icon: Newspaper, category: 'press' },
   { name: 'Web Search', icon: Globe, category: 'press' },
 ];
 
@@ -78,6 +81,7 @@ export function VerificationReportCard({
       case 'credit': return <Film className="h-4 w-4" />;
       case 'social': return <Users className="h-4 w-4" />;
       case 'streams': return <Music className="h-4 w-4" />;
+      case 'press': return <Newspaper className="h-4 w-4" />;
       default: return <BadgeCheck className="h-4 w-4" />;
     }
   };
@@ -185,6 +189,12 @@ export function VerificationReportCard({
                   <Music className="h-3 w-3" /> Streams
                 </span>
                 <span className="font-medium">+{breakdown.streams}</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-background/40 col-span-2">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Newspaper className="h-3 w-3" /> Press & Media
+                </span>
+                <span className="font-medium">+{breakdown.press || 0}</span>
               </div>
             </div>
           </div>

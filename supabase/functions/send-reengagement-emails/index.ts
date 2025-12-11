@@ -89,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
           : `${baseUrl}/unsubscribe`;
 
         const emailResult = await resend.emails.send({
-          from: "ThriveIN <onboarding@resend.dev>",
+          from: "ThriveIN <noreply@thrivein.io>",
           to: [email],
           subject: `${userName}, we miss you! New creators are waiting to connect`,
           html: `

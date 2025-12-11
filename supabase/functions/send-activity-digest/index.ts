@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
           : `https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com/unsubscribe`;
 
         const emailResult = await resend.emails.send({
-          from: "ThriveIN <noreply@thrivein.app>",
+          from: "ThriveIN <noreply@thrivein.io>",
           to: [email],
           subject: `📬 ${userName}, you have ${unreadCount} notifications waiting`,
           html: `

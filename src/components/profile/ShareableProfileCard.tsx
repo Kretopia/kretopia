@@ -128,6 +128,14 @@ export const ShareableProfileCard = ({
   };
 
   const handleShare = async () => {
+    // In the Lovable preview (inside an iframe), the Web Share API often fails.
+    // If we're not in the top window, fall back to download so users can still share.
+    if (window.self !== window.top) {
+      toast.info("In preview, sharing isn't supported. Downloading the card so you can share it.");
+      await handleDownload();
+      return;
+    }
+
     // Simplest & most reliable: use native share for URL + text only
     if (navigator.share) {
       try {
@@ -143,7 +151,8 @@ export const ShareableProfileCard = ({
       } catch (error: any) {
         if (error?.name === "AbortError") return; // user cancelled
         console.error("Share error:", error);
-        toast.error("Share failed – try downloading the card instead");
+        // On real devices this is unlikely, but if it happens we just fall back silently
+        await handleDownload();
       }
       return;
     }

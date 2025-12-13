@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Share2, Copy, Check, Image } from "lucide-react";
+import { Share2, Copy, Check, Image, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ShareableProfileCard } from "./ShareableProfileCard";
@@ -31,7 +31,8 @@ interface ShareProfileDialogProps {
 export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenChange }: ShareProfileDialogProps) => {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
-  const [isCardDialogOpen, setIsCardDialogOpen] = useState(false);
+  const [profileCardOpen, setProfileCardOpen] = useState(false);
+  const [inviteCardOpen, setInviteCardOpen] = useState(false);
   const { toast } = useToast();
 
   const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
@@ -138,21 +139,44 @@ ${profileUrl}
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* Create Profile Card - NEW */}
-          <div className="p-4 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-sm">Create Profile Card</h4>
-                <p className="text-xs text-muted-foreground">Beautiful card for Instagram, Stories & more</p>
+          {/* Two card options */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Share Profile Card */}
+            <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+              <div className="text-center space-y-2">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
+                  <Image className="h-5 w-5 text-primary" />
+                </div>
+                <h4 className="font-semibold text-sm">Profile Card</h4>
+                <p className="text-xs text-muted-foreground">Showcase your work & credits</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setProfileCardOpen(true)}
+                  className="w-full"
+                >
+                  Create
+                </Button>
               </div>
-              <Button
-                size="sm"
-                onClick={() => setIsCardDialogOpen(true)}
-                className="gap-2"
-              >
-                <Image className="h-4 w-4" />
-                Create
-              </Button>
+            </div>
+
+            {/* Invite Friends Card */}
+            <div className="p-4 rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/5 border border-green-500/20">
+              <div className="text-center space-y-2">
+                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+                  <UserPlus className="h-5 w-5 text-green-500" />
+                </div>
+                <h4 className="font-semibold text-sm">Invite Card</h4>
+                <p className="text-xs text-muted-foreground">Invite friends with your code</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setInviteCardOpen(true)}
+                  className="w-full border-green-500/30 hover:bg-green-500/10"
+                >
+                  Create
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -274,12 +298,22 @@ ${profileUrl}
         </div>
       </DialogContent>
 
-      {/* Shareable Profile Card Dialog */}
+      {/* Profile Card Dialog - for showcasing work */}
       <ShareableProfileCard
-        open={isCardDialogOpen}
-        onOpenChange={setIsCardDialogOpen}
+        open={profileCardOpen}
+        onOpenChange={setProfileCardOpen}
         profile={profile}
         portfolioItems={portfolioItems}
+        mode="profile"
+      />
+
+      {/* Invite Card Dialog - for inviting friends */}
+      <ShareableProfileCard
+        open={inviteCardOpen}
+        onOpenChange={setInviteCardOpen}
+        profile={profile}
+        portfolioItems={portfolioItems}
+        mode="invite"
       />
     </Dialog>
   );

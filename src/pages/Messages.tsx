@@ -401,16 +401,21 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 sm:pb-0">
       {/* Conversations List */}
       <div
         className={`${
           selectedConversation ? "hidden md:flex" : "flex"
         } w-full md:w-96 flex-col border-r border-border bg-card`}
       >
-        <div className="p-3 sm:p-4 border-b border-border space-y-3 sm:space-y-4">
+        <div className="p-3 sm:p-4 border-b border-border space-y-2.5 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl sm:text-2xl font-bold">Messages</h2>
+            <h2 className="text-lg sm:text-2xl font-bold">Messages</h2>
+            {conversationCount > 0 && (
+              <Badge variant="secondary">
+                {conversationCount}
+              </Badge>
+            )}
           </div>
           
           <div className="relative">
@@ -419,15 +424,9 @@ const Messages = () => {
               placeholder="Search messages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 rounded-full"
+              className="pl-9 rounded-full h-9 sm:h-10 text-sm"
             />
           </div>
-
-          {conversationCount > 0 && (
-            <Badge variant="secondary" className="ml-2">
-              {conversationCount}
-            </Badge>
-          )}
         </div>
         
         <ScrollArea className="flex-1">
@@ -463,14 +462,14 @@ const Messages = () => {
                   <div
                     key={conv.conversation_id}
                     onClick={() => setSelectedConversation(partner.id)}
-                    className={`flex items-start gap-3 p-4 cursor-pointer hover:bg-accent/50 transition-colors ${
+                    className={`flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 cursor-pointer hover:bg-accent/50 transition-colors active:bg-accent/70 ${
                       selectedConversation === partner.id ? "bg-accent" : ""
                     }`}
                   >
-                    <div className="relative">
-                      <Avatar className="h-14 w-14 border-2 border-background">
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="h-11 w-11 sm:h-14 sm:w-14 border-2 border-background">
                         <AvatarImage src={partner.avatar} />
-                        <AvatarFallback className="text-lg">
+                        <AvatarFallback className="text-base sm:text-lg">
                           {(partner.name || 'U')
                             .split(" ")
                             .map((n) => n[0])
@@ -478,8 +477,8 @@ const Messages = () => {
                         </AvatarFallback>
                       </Avatar>
                       {unreadCount > 0 && (
-                        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                          <span className="text-xs font-bold text-primary-foreground">
+                        <div className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary flex items-center justify-center">
+                          <span className="text-[10px] sm:text-xs font-bold text-primary-foreground">
                             {unreadCount}
                           </span>
                         </div>
@@ -488,15 +487,15 @@ const Messages = () => {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <p className="font-semibold truncate">{partner.name || 'Unknown'}</p>
-                        <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                        <p className="font-semibold text-sm sm:text-base truncate">{partner.name || 'Unknown'}</p>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0 ml-2">
                           {formatDistanceToNow(new Date(conv.created_at), {
                             addSuffix: true,
                           }).replace('about ', '')}
                         </span>
                       </div>
                       
-                      <p className={`text-sm truncate ${
+                      <p className={`text-xs sm:text-sm truncate ${
                         unreadCount > 0 ? "font-medium text-foreground" : "text-muted-foreground"
                       }`}>
                         {conv.sender_id === currentUserId ? (
@@ -523,13 +522,13 @@ const Messages = () => {
 
       {/* Chat Area */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col bg-background">
+        <div className="flex-1 flex flex-col bg-background pb-20 sm:pb-0">
           {/* Chat Header */}
-          <div className="p-4 border-b border-border flex items-center gap-3 bg-card">
+          <div className="p-3 sm:p-4 border-b border-border flex items-center gap-2.5 sm:gap-3 bg-card">
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden h-9 w-9"
               onClick={() => setSelectedConversation(null)}
             >
               <ArrowLeft className="h-5 w-5" />
@@ -537,11 +536,11 @@ const Messages = () => {
             {otherUser && (
               <>
                 <Avatar
-                  className="h-11 w-11 cursor-pointer border-2 border-background"
+                  className="h-9 w-9 sm:h-11 sm:w-11 cursor-pointer border-2 border-background"
                   onClick={() => navigate(`/profile/${otherUser.id}`)}
                 >
                   <AvatarImage src={otherUser.avatar} />
-                  <AvatarFallback className="text-lg">
+                  <AvatarFallback className="text-sm sm:text-lg">
                     {(otherUser.name || 'U')
                       .split(" ")
                       .map((n) => n[0])

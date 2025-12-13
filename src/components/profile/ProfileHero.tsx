@@ -66,20 +66,20 @@ export const ProfileHero = ({
     : [];
 
   return (
-    <div className="w-full px-4 py-6">
-      <div className="space-y-4">
+    <div className="w-full px-3 sm:px-4 py-4 sm:py-6">
+      <div className="space-y-3 sm:space-y-4">
         
         {/* Top Row: Avatar + Name/Badge */}
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           {/* Avatar */}
           <div className="relative group flex-shrink-0">
-            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 rounded-full border-2 border-border">
+            <Avatar className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-full border-2 border-border">
               <AvatarImage 
                 src={displayAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
                 alt={displayName}
                 className="object-cover"
               />
-              <AvatarFallback className="text-2xl sm:text-3xl">
+              <AvatarFallback className="text-xl sm:text-2xl md:text-3xl">
                 {displayName.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
@@ -88,29 +88,29 @@ export const ProfileHero = ({
               <Button
                 size="icon"
                 variant="secondary"
-                className="absolute bottom-0 right-0 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute bottom-0 right-0 h-7 w-7 sm:h-8 sm:w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={onAvatarClick}
                 disabled={isUploadingAvatar}
               >
                 {isUploadingAvatar ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
+                  <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
                 ) : (
-                  <Camera className="h-4 w-4" />
+                  <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
                 )}
               </Button>
             )}
           </div>
 
           {/* Name & Badges */}
-          <div className="flex-1 min-w-0 pt-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-semibold">{displayName}</h1>
+          <div className="flex-1 min-w-0 pt-0.5 sm:pt-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold line-clamp-1">{displayName}</h1>
               
               {/* Admin Verified Badge - ThriveIN Official */}
               {profile.verification_status === 'verified' && (
                 <Badge 
                   variant="default" 
-                  className="gap-1.5 h-6 px-2 bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25"
+                  className="gap-1 sm:gap-1.5 h-5 sm:h-6 px-1.5 sm:px-2 bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25"
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -119,19 +119,19 @@ export const ProfileHero = ({
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="h-3.5 w-3.5"
+                    className="h-3 w-3 sm:h-3.5 sm:w-3.5"
                   >
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                     <circle cx="12" cy="12" r="3" fill="currentColor" />
                   </svg>
-                  <span className="text-xs font-bold tracking-wide">VERIFIED</span>
+                  <span className="text-[10px] sm:text-xs font-bold tracking-wide">VERIFIED</span>
                 </Badge>
               )}
               
               {profile.badge && (
                 <Badge 
                   variant="default"
-                  className="h-5 text-xs"
+                  className="h-4 sm:h-5 text-[10px] sm:text-xs"
                 >
                   {profile.badge === 'founder' ? '👑 Founder' : 
                    profile.badge === 'og' ? '⭐ OG' : 
@@ -142,7 +142,7 @@ export const ProfileHero = ({
             
             {/* Achievement Badges - Only show actual achievements, not tier (tier shown via VERIFIED badge) */}
             {profile.achievement_badges?.length > 0 && (
-              <div className="mt-2">
+              <div className="mt-1.5 sm:mt-2">
                 <AchievementBadges 
                   achievements={profile.achievement_badges || []}
                   size="sm"
@@ -154,40 +154,40 @@ export const ProfileHero = ({
         </div>
 
         {/* Stats Row */}
-        <div className="flex gap-8 py-2">
+        <div className="flex gap-4 sm:gap-8 py-1.5 sm:py-2">
           <div>
-            <div className="text-lg font-semibold">{stats.circle}</div>
-            <div className="text-sm text-muted-foreground">connections</div>
+            <div className="text-base sm:text-lg font-semibold">{stats.circle}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">connections</div>
           </div>
           <div>
-            <div className="text-lg font-semibold">{stats.projects}</div>
-            <div className="text-sm text-muted-foreground">projects</div>
+            <div className="text-base sm:text-lg font-semibold">{stats.projects}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">projects</div>
           </div>
           <div>
-            <div className="text-lg font-semibold">{stats.responseRate}%</div>
-            <div className="text-sm text-muted-foreground">response</div>
+            <div className="text-base sm:text-lg font-semibold">{stats.responseRate}%</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">response</div>
           </div>
         </div>
 
         {/* Role, Location & Rating Row */}
-        <div className="flex items-center gap-4 flex-wrap text-sm">
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap text-xs sm:text-sm">
           {displayRole && (
-            <div className="flex items-center gap-1.5">
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
-              <span>{displayRole}</span>
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+              <span className="line-clamp-1">{displayRole}</span>
             </div>
           )}
           
           {displayLocation && (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>{displayLocation}</span>
+            <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="line-clamp-1">{displayLocation}</span>
             </div>
           )}
 
           {profile.average_rating !== undefined && profile.average_rating !== null && (
-            <div className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 fill-accent text-accent" />
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-accent text-accent" />
               <span className="font-medium">{profile.average_rating.toFixed(1)}</span>
             </div>
           )}
@@ -195,7 +195,7 @@ export const ProfileHero = ({
 
         {/* Bio */}
         {profile.bio && (
-          <div className="text-sm leading-relaxed">
+          <div className="text-xs sm:text-sm leading-relaxed line-clamp-3">
             {profile.bio}
           </div>
         )}
@@ -204,15 +204,15 @@ export const ProfileHero = ({
         <div className="flex gap-2 flex-wrap">
           {isOwnProfile ? (
             <>
-              <Button variant="default" size="sm" onClick={onEdit} className="gap-2 flex-1">
-                <Edit className="h-4 w-4" />
+              <Button variant="default" size="sm" onClick={onEdit} className="gap-1.5 sm:gap-2 flex-1 h-9 text-xs sm:text-sm">
+                <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Edit
               </Button>
-              <Button variant="default" size="sm" onClick={onShowQR} className="gap-2 flex-1">
-                <QrCode className="h-4 w-4" />
+              <Button variant="default" size="sm" onClick={onShowQR} className="gap-1.5 sm:gap-2 flex-1 h-9 text-xs sm:text-sm">
+                <QrCode className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 QR Code
               </Button>
-              <Button variant="ghost" size="sm" className="p-2" onClick={onShare}>
+              <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
                 <Share2 className="h-4 w-4" />
               </Button>
             </>

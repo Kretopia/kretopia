@@ -165,7 +165,7 @@ export default function Circle() {
   };
 
   return (
-    <div className="min-h-screen pb-24 md:pb-8">
+    <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
       <SEO 
         title="Circle - Your Creative Network"
         description="Connect with creators, build your network"
@@ -173,11 +173,11 @@ export default function Circle() {
       
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-bold">Circle</h1>
+              <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <h1 className="text-xl sm:text-2xl font-bold">Circle</h1>
             </div>
             
             {/* Filters button - only show on Connect tab */}
@@ -193,7 +193,7 @@ export default function Circle() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         {/* Profile Visibility Banner */}
         <ProfileVisibilityBanner 
           isVisible={profileVisibility.isVisible} 
@@ -201,13 +201,13 @@ export default function Circle() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="foryou" className="gap-2">
-              <Sparkles className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
+            <TabsTrigger value="foryou" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
+              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Connect
             </TabsTrigger>
-            <TabsTrigger value="network" className="gap-2">
-              <Users className="h-4 w-4" />
+            <TabsTrigger value="network" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
+              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Network
             </TabsTrigger>
           </TabsList>

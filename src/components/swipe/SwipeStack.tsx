@@ -192,10 +192,10 @@ export function SwipeStack({
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-full px-4 sm:px-0">
       {/* Card Stack */}
       <div 
-        className="relative w-full max-w-sm h-[480px] md:h-[520px]"
+        className="relative w-full max-w-[340px] sm:max-w-sm h-[420px] sm:h-[480px] md:h-[520px]"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -229,8 +229,8 @@ export function SwipeStack({
             swipeDirection === 'left' ? 'opacity-100' : 'opacity-0'
           )}
         >
-          <div className="bg-red-500/90 rounded-full p-6">
-            <X className="h-12 w-12 text-white" />
+          <div className="bg-red-500/90 rounded-full p-4 sm:p-6">
+            <X className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
           </div>
         </div>
 
@@ -240,45 +240,45 @@ export function SwipeStack({
             swipeDirection === 'right' ? 'opacity-100' : 'opacity-0'
           )}
         >
-          <div className="bg-green-500/90 rounded-full p-6">
-            <Heart className="h-12 w-12 text-white" />
+          <div className="bg-green-500/90 rounded-full p-4 sm:p-6">
+            <Heart className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
           </div>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-center gap-4 mt-6">
+      <div className="flex items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6">
         {/* Pass Button */}
         <Button
           variant="outline"
           size="lg"
-          className="h-16 w-16 rounded-full border-2 border-red-500/50 hover:bg-red-500/10 hover:border-red-500"
+          className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-red-500/50 hover:bg-red-500/10 hover:border-red-500 active:scale-95 transition-transform"
           onClick={handlePass}
           disabled={isAnimating}
         >
-          <X className="h-8 w-8 text-red-500" />
+          <X className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
         </Button>
 
         {/* View Profile Button */}
         <Button
           variant="outline"
           size="lg"
-          className="h-12 w-12 rounded-full border-2"
+          className="h-11 w-11 sm:h-12 sm:w-12 rounded-full border-2 active:scale-95 transition-transform"
           onClick={handleViewProfile}
           disabled={isAnimating}
         >
-          <Eye className="h-5 w-5" />
+          <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
 
         {/* Like Button */}
         <Button
           variant="outline"
           size="lg"
-          className="h-16 w-16 rounded-full border-2 border-green-500/50 hover:bg-green-500/10 hover:border-green-500"
+          className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-green-500/50 hover:bg-green-500/10 hover:border-green-500 active:scale-95 transition-transform"
           onClick={handleLike}
           disabled={isAnimating}
         >
-          <Heart className="h-8 w-8 text-green-500" />
+          <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
         </Button>
       </div>
 
@@ -287,7 +287,7 @@ export function SwipeStack({
         <Button
           variant="ghost"
           size="sm"
-          className="mt-4 text-muted-foreground"
+          className="mt-3 sm:mt-4 text-muted-foreground"
           onClick={onUndo}
         >
           <RotateCcw className="h-4 w-4 mr-2" />
@@ -296,7 +296,7 @@ export function SwipeStack({
       )}
 
       {/* Counter */}
-      <p className="text-sm text-muted-foreground mt-2">
+      <p className="text-xs sm:text-sm text-muted-foreground mt-2">
         {profiles.length} creators available
       </p>
     </div>

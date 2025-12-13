@@ -65,8 +65,22 @@ Respond ONLY with valid JSON:
 
       if (error) throw error;
       
-      const parsed = JSON.parse(data?.content || '{}');
-      setInsights(parsed);
+      const raw = typeof data?.content === 'string' ? data.content : '{}';
+      let parsed: Partial<Insights> = {};
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        console.warn('Failed to parse AI insights JSON, using fallback structure', e, raw);
+      }
+
+      const safeInsights: Insights = {
+        overallScore: typeof parsed.overallScore === 'number' ? parsed.overallScore : 80,
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+        improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
+        trendingTips: Array.isArray(parsed.trendingTips) ? parsed.trendingTips : [],
+      };
+
+      setInsights(safeInsights);
     } catch (error) {
       console.error('AI insights error:', error);
       toast({
@@ -154,7 +168,7 @@ Respond ONLY with valid JSON:
                 <Eye className="h-3 w-3" /> Strengths
               </p>
               <div className="space-y-1">
-                {insights.strengths.map((s, i) => (
+                {(insights.strengths || []).map((s, i) => (
                   <p key={i} className="text-sm text-green-600 dark:text-green-400">✓ {s}</p>
                 ))}
               </div>
@@ -165,7 +179,7 @@ Respond ONLY with valid JSON:
                 <TrendingUp className="h-3 w-3" /> Improvements
               </p>
               <div className="space-y-1">
-                {insights.improvements.map((s, i) => (
+                {(insights.improvements || []).map((s, i) => (
                   <p key={i} className="text-sm text-amber-600 dark:text-amber-400">→ {s}</p>
                 ))}
               </div>
@@ -176,7 +190,7 @@ Respond ONLY with valid JSON:
                 <TrendingUp className="h-3 w-3" /> Trending in Your Niche
               </p>
               <div className="space-y-1">
-                {insights.trendingTips.map((s, i) => (
+                {(insights.trendingTips || []).map((s, i) => (
                   <p key={i} className="text-sm text-primary">🔥 {s}</p>
                 ))}
               </div>

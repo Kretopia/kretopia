@@ -110,34 +110,31 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
     }
   };
 
-  const handleFileClick = async (file: ProjectFile) => {
+  const handleFileClick = async (file: ProjectFile, forceDownload = false) => {
     try {
       // Extract the file path from the URL
       const url = new URL(file.file_url);
       const pathParts = url.pathname.split('/');
       const filePath = pathParts.slice(pathParts.indexOf('project-files') + 1).join('/');
       
-      // Generate a signed URL (1 hour expiry)
+      // Generate a signed URL with download option (1 hour expiry)
       const { data, error } = await supabase.storage
         .from('project-files')
-        .createSignedUrl(filePath, 3600);
+        .createSignedUrl(filePath, 3600, {
+          download: forceDownload ? file.file_name : undefined,
+        });
 
       if (error) throw error;
 
-      // For images, open in new tab for preview
-      if (file.file_type?.startsWith('image/')) {
+      // For images and not forcing download, open in new tab for preview
+      if (file.file_type?.startsWith('image/') && !forceDownload) {
         window.open(data.signedUrl, '_blank');
         return;
       }
       
-      // For other files, trigger download
-      const link = document.createElement('a');
-      link.href = data.signedUrl;
-      link.download = file.file_name;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // For downloads, use the signed URL with download parameter
+      // The download parameter in createSignedUrl forces browser download
+      window.location.href = data.signedUrl;
     } catch (error) {
       console.error('Error accessing file:', error);
       toast({
@@ -186,7 +183,7 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
                 <div
                   key={file.id}
                   className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => handleFileClick(file)}
+                  onClick={() => handleFileClick(file, false)}
                 >
                   <div className="text-muted-foreground">
                     {getFileIcon(file.file_type)}
@@ -202,7 +199,7 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleFileClick(file);
+                      handleFileClick(file, true); // Force download
                     }}
                   >
                     <Download className="h-4 w-4" />

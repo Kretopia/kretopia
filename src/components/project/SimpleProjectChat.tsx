@@ -52,6 +52,61 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
 
       if (error) throw error;
 
+      // Send notification to all other project collaborators
+      try {
+        // Get current user's name
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', currentUserId)
+          .single();
+
+        // Get project collaborators
+        const { data: collaborators } = await supabase
+          .from('project_collaborators')
+          .select('user_id')
+          .eq('project_id', projectId)
+          .neq('user_id', currentUserId);
+
+        // Get project owner
+        const { data: project } = await supabase
+          .from('projects')
+          .select('created_by, title')
+          .eq('id', projectId)
+          .single();
+
+        // Create list of users to notify (collaborators + owner, excluding sender)
+        const usersToNotify = new Set<string>();
+        collaborators?.forEach(c => usersToNotify.add(c.user_id));
+        if (project?.created_by && project.created_by !== currentUserId) {
+          usersToNotify.add(project.created_by);
+        }
+
+        // Send notifications
+        const senderName = senderProfile?.full_name || 'Someone';
+        const projectTitle = project?.title || 'Project';
+        const messagePreview = newMessage.trim().length > 50 
+          ? newMessage.trim().substring(0, 50) + '...' 
+          : newMessage.trim();
+
+        for (const userId of usersToNotify) {
+          await supabase.from('notifications').insert({
+            user_id: userId,
+            title: `New message in ${projectTitle}`,
+            message: `${senderName}: ${messagePreview}`,
+            type: 'project',
+            category: 'project',
+            priority: 'normal',
+            link: `/thrivedesk/${projectId}`,
+            action_url: `/thrivedesk/${projectId}`,
+            action_text: 'View Project',
+          });
+        }
+      } catch (notifError) {
+        console.error('Error sending notifications:', notifError);
+        // Don't fail the message send if notifications fail
+      }
+
       setNewMessage("");
       onMessageSent();
     } catch (error: any) {

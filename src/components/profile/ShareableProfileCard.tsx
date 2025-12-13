@@ -128,33 +128,56 @@ export const ShareableProfileCard = ({
   };
 
   const handleShare = async () => {
-    const canvas = await generateImage();
-    if (!canvas) return;
-
+    setIsGenerating(true);
+    
     try {
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          toast.error("Failed to create image");
-          return;
-        }
+      const canvas = await generateImage();
+      if (!canvas) {
+        setIsGenerating(false);
+        return;
+      }
 
-        const file = new File([blob], "thrivein-profile.png", { type: "image/png" });
+      // Convert canvas to blob
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((b) => resolve(b), "image/png");
+      });
 
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `${profile.full_name} on ThriveIN`,
-            text: `Check out my creative profile on ThriveIN!`,
-          });
-          toast.success("Shared successfully!");
-        } else {
-          // Fallback to download
-          handleDownload();
-        }
-      }, "image/png");
-    } catch (error) {
-      console.error("Share error:", error);
-      handleDownload();
+      if (!blob) {
+        toast.error("Failed to create image");
+        setIsGenerating(false);
+        return;
+      }
+
+      const file = new File([blob], "thrivein-profile.png", { type: "image/png" });
+
+      // Check if native share with files is supported
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `${profile.full_name} on ThriveIN`,
+          text: `Check out my creative profile on ThriveIN!`,
+        });
+        toast.success("Shared successfully!");
+      } else if (navigator.share) {
+        // Fallback: share without file (just URL/text)
+        await navigator.share({
+          title: `${profile.full_name} on ThriveIN`,
+          text: `Check out my creative profile on ThriveIN!`,
+          url: qrUrl,
+        });
+        toast.success("Shared successfully!");
+      } else {
+        // Final fallback: download
+        handleDownload();
+      }
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') {
+        console.error("Share error:", error);
+        // Fallback to download on error
+        handleDownload();
+      }
+    } finally {
+      setIsGenerating(false);
     }
   };
 

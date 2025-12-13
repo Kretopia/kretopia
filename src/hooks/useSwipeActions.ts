@@ -62,10 +62,24 @@ export function useSwipeActions(currentUserId: string | undefined) {
       }
 
       // 4. It's a match! Create the connection and match records
-      console.log('[useSwipeActions] MATCH DETECTED!');
+      console.log('[useSwipeActions] MATCH DETECTED! Creating connections and match...');
 
-      // Create bidirectional connections
-      await Promise.all([
+      // Get both user profiles first for notifications
+      const [{ data: matchedProfile }, { data: currentUserProfile }] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('user_id, full_name, avatar_url, role')
+          .eq('user_id', targetId)
+          .single(),
+        supabase
+          .from('profiles')
+          .select('full_name, avatar_url, role')
+          .eq('user_id', currentUserId)
+          .single()
+      ]);
+
+      // Create bidirectional connections with error handling
+      const [conn1Result, conn2Result] = await Promise.all([
         supabase.from('connections').insert({
           user_id: currentUserId,
           connected_user_id: targetId,
@@ -78,51 +92,83 @@ export function useSwipeActions(currentUserId: string | undefined) {
         })
       ]);
 
-      // Create match record
-      await supabase.from('matches').insert({
+      if (conn1Result.error) {
+        console.error('[useSwipeActions] Connection 1 error:', conn1Result.error);
+      }
+      if (conn2Result.error) {
+        console.error('[useSwipeActions] Connection 2 error:', conn2Result.error);
+      }
+
+      // Create match record with correct enum values
+      const { error: matchError } = await supabase.from('matches').insert({
         user1_id: currentUserId,
         user2_id: targetId,
-        match_type: 'mutual_swipe',
-        status: 'matched'
+        match_type: 'creator',
+        status: 'active'
       });
 
-      // Get matched user's profile
-      const { data: matchedProfile } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, role')
-        .eq('user_id', targetId)
-        .single();
+      if (matchError) {
+        console.error('[useSwipeActions] Match creation error:', matchError);
+      } else {
+        console.log('[useSwipeActions] Match created successfully!');
+      }
 
-      // Send notifications to both users
-      const { data: currentUserProfile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('user_id', currentUserId)
-        .single();
+      // Send notifications to BOTH users with error handling
+      const [notif1, notif2] = await Promise.all([
+        // Notify the other user (target)
+        supabase.from('notifications').insert({
+          user_id: targetId,
+          title: "It's a Match! 🎉",
+          message: `You matched with ${currentUserProfile?.full_name || 'a creator'}!`,
+          type: 'match',
+          link: '/circle?tab=network',
+          priority: 'high',
+          category: 'match'
+        }),
+        // Notify current user too
+        supabase.from('notifications').insert({
+          user_id: currentUserId,
+          title: "It's a Match! 🎉",
+          message: `You matched with ${matchedProfile?.full_name || 'a creator'}!`,
+          type: 'match',
+          link: '/circle?tab=network',
+          priority: 'high',
+          category: 'match'
+        })
+      ]);
 
-      // Notify the other user
-      await supabase.from('notifications').insert({
-        user_id: targetId,
-        title: "It's a Match! 🎉",
-        message: `You matched with ${currentUserProfile?.full_name || 'a creator'}!`,
-        type: 'match',
-        link: '/circle?tab=network',
-        priority: 'high',
-        category: 'match'
-      });
+      if (notif1.error) {
+        console.error('[useSwipeActions] Notification 1 error:', notif1.error);
+      }
+      if (notif2.error) {
+        console.error('[useSwipeActions] Notification 2 error:', notif2.error);
+      }
 
-      // Try to send email notification
+      // Try to send email notifications to both users
       try {
-        await supabase.functions.invoke('send-notification-email', {
-          body: {
-            type: 'match',
-            userId: targetId,
-            data: {
-              matchedUserName: currentUserProfile?.full_name,
-              matchedUserRole: matchedProfile?.role
+        await Promise.all([
+          supabase.functions.invoke('send-notification-email', {
+            body: {
+              type: 'match',
+              userId: targetId,
+              data: {
+                matchedUserName: currentUserProfile?.full_name,
+                matchedUserRole: currentUserProfile?.role
+              }
             }
-          }
-        });
+          }),
+          supabase.functions.invoke('send-notification-email', {
+            body: {
+              type: 'match',
+              userId: currentUserId,
+              data: {
+                matchedUserName: matchedProfile?.full_name,
+                matchedUserRole: matchedProfile?.role
+              }
+            }
+          })
+        ]);
+        console.log('[useSwipeActions] Email notifications sent!');
       } catch (emailError) {
         console.warn('[useSwipeActions] Email notification failed:', emailError);
       }

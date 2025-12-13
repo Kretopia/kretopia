@@ -1223,6 +1223,7 @@ export type Database = {
           read: boolean | null
           receiver_id: string
           sender_id: string
+          typing_at: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1233,6 +1234,7 @@ export type Database = {
           read?: boolean | null
           receiver_id: string
           sender_id: string
+          typing_at?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1243,6 +1245,7 @@ export type Database = {
           read?: boolean | null
           receiver_id?: string
           sender_id?: string
+          typing_at?: string | null
           updated_at?: string | null
         }
         Relationships: [

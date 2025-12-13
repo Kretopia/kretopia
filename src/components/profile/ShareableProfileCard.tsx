@@ -64,10 +64,10 @@ export const ShareableProfileCard = ({
 
   // Profile mode: QR goes to profile page
   // Invite mode: QR goes to signup with invite code
-  const profileUrl = `${window.location.origin}/profile/${profile.user_id}`;
+  const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
   const signupUrl = inviteCode 
-    ? `${window.location.origin}/?code=${inviteCode}`
-    : `${window.location.origin}/`;
+    ? `https://www.thrivein.io/?code=${inviteCode}`
+    : `https://www.thrivein.io/`;
   
   const qrUrl = mode === "profile" ? profileUrl : signupUrl;
   

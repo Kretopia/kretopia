@@ -267,7 +267,7 @@ const ProfileContent = () => {
   }
 
   return (
-    <div className="min-h-screen pb-20 md:pb-6 bg-background">
+    <div className="min-h-screen pb-24 sm:pb-20 md:pb-6 bg-background">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -277,9 +277,9 @@ const ProfileContent = () => {
         className="hidden"
       />
 
-      <div className="container mx-auto px-3 sm:px-4 max-w-7xl">
+      <div className="container mx-auto px-2 sm:px-3 md:px-4 max-w-7xl">
         {/* Profile Hero - Always visible */}
-        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-lg border-b mb-4">
+        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-lg border-b mb-3 sm:mb-4">
           <ProfileHero
             profile={profile}
             stats={stats}
@@ -343,10 +343,10 @@ const ProfileContent = () => {
         />
 
         {/* Simplified Content - Portfolio First */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
             {/* Portfolio Section */}
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4">My Work</h2>
+            <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm">
+              <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">My Work</h2>
               <PortfolioSection 
                 items={portfolioItems} 
                 isOwnProfile={true}
@@ -356,7 +356,7 @@ const ProfileContent = () => {
             </div>
 
             {/* Skills Section - Always show for own profile so users can add skills */}
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
+            <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm">
               <SkillsSection
                 professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
                 passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
@@ -381,8 +381,8 @@ const ProfileContent = () => {
 
 
             {industryStats.length > 0 && (
-              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-4">Industry Stats</h2>
+              <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm">
+                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Industry Stats</h2>
                 <IndustryStatsSection 
                   stats={industryStats}
                   isOwnProfile={true}
@@ -392,9 +392,9 @@ const ProfileContent = () => {
             )}
 
             {/* Pro Feature: Experience & Credits */}
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm relative">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Experience & Credits</h2>
+            <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm relative">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl font-bold">Experience & Credits</h2>
                 {!hasAdvancedProfile && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
                     <Crown className="h-3 w-3" />
@@ -420,15 +420,15 @@ const ProfileContent = () => {
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
               {/* Pro Feature: Press Links */}
-              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm relative">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold flex items-center gap-2">
+              <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm relative">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h3 className="font-semibold text-sm sm:text-base flex items-center gap-2">
                     Press Coverage
                     {!hasAdvancedProfile && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                        <Crown className="h-3 w-3" />
+                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-[10px] sm:text-xs">
+                        <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                         Pro
                       </Badge>
                     )}

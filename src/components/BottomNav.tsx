@@ -20,12 +20,12 @@ const BottomNav = memo(() => {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-background/98 backdrop-blur-xl pb-safe" 
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-background/98 backdrop-blur-xl" 
       role="navigation" 
       aria-label="Mobile navigation"
-      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
     >
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-around px-1 py-1.5">
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
           return (
@@ -35,7 +35,7 @@ const BottomNav = memo(() => {
               aria-label={`Navigate to ${label}`}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-xl transition-all duration-200 min-w-[64px]",
+                "flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-200 min-w-[56px] min-h-[48px]",
                 "touch-manipulation select-none",
                 "active:scale-90 active:bg-accent/80",
                 isActive 
@@ -45,7 +45,7 @@ const BottomNav = memo(() => {
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               <Icon className={cn("h-5 w-5 transition-transform", isActive && "scale-110")} aria-hidden="true" />
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className="text-[10px] font-medium leading-tight">{label}</span>
             </Link>
           );
         })}

@@ -46,7 +46,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
         className={cn(
           "absolute inset-0 overflow-hidden cursor-grab active:cursor-grabbing",
           "bg-gradient-to-b from-background to-background/95",
-          "border-2 border-border/50 shadow-2xl",
+          "border-2 border-border/50 shadow-2xl rounded-2xl sm:rounded-xl",
           className
         )}
         style={style}
@@ -64,29 +64,29 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
         </div>
 
         {/* Content Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end p-6">
+        <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6">
           {/* AI Match Analysis Badge - Click to see why */}
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
             <Badge 
               variant="secondary" 
-              className="bg-primary/90 text-primary-foreground px-3 py-1.5 text-sm font-semibold backdrop-blur-sm cursor-pointer hover:bg-primary transition-colors"
+              className="bg-primary/90 text-primary-foreground px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold backdrop-blur-sm cursor-pointer hover:bg-primary transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onMatchBadgeClick?.();
               }}
             >
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
               AI Match
             </Badge>
           </div>
 
           {/* Badge (OG/Beta) */}
           {profile.badge && (
-            <div className="absolute top-4 left-4">
+            <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
               <Badge 
                 variant="outline" 
                 className={cn(
-                  "backdrop-blur-sm border-white/30",
+                  "backdrop-blur-sm border-white/30 text-xs",
                   profile.badge === 'og' && "bg-amber-500/20 text-amber-200 border-amber-400/50",
                   profile.badge === 'beta' && "bg-blue-500/20 text-blue-200 border-blue-400/50"
                 )}
@@ -98,23 +98,23 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
 
           {/* Level Badge */}
           {profile.level > 1 && (
-            <div className="absolute top-4 left-20">
-              <Badge variant="outline" className="bg-purple-500/20 text-purple-200 border-purple-400/50 backdrop-blur-sm">
+            <div className="absolute top-3 sm:top-4 left-16 sm:left-20">
+              <Badge variant="outline" className="bg-purple-500/20 text-purple-200 border-purple-400/50 backdrop-blur-sm text-xs">
                 Lvl {profile.level}
               </Badge>
             </div>
           )}
 
           {/* Main Info */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {/* Name & Role */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg line-clamp-1">
                 {profile.full_name}
               </h2>
-              <div className="flex items-center gap-2 mt-1">
-                <Briefcase className="h-4 w-4 text-white/70" />
-                <span className="text-white/90 text-sm md:text-base">
+              <div className="flex items-center gap-2 mt-0.5 sm:mt-1">
+                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/70 flex-shrink-0" />
+                <span className="text-white/90 text-xs sm:text-sm md:text-base line-clamp-1">
                   {profile.role || 'Creator'}
                 </span>
               </div>
@@ -123,14 +123,14 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             {/* Location */}
             {profile.location && (
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-white/70" />
-                <span className="text-white/80 text-sm">{profile.location}</span>
+                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/70 flex-shrink-0" />
+                <span className="text-white/80 text-xs sm:text-sm line-clamp-1">{profile.location}</span>
               </div>
             )}
 
             {/* Bio */}
             {profile.bio && (
-              <p className="text-white/80 text-sm line-clamp-2 leading-relaxed">
+              <p className="text-white/80 text-xs sm:text-sm line-clamp-2 leading-relaxed">
                 {profile.bio}
               </p>
             )}
@@ -139,7 +139,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             {profile.collab_intent && (
               <Badge 
                 variant="secondary" 
-                className="bg-white/10 text-white border-white/20 backdrop-blur-sm w-fit"
+                className="bg-white/10 text-white border-white/20 backdrop-blur-sm w-fit text-xs"
               >
                 {COLLAB_INTENT_LABELS[profile.collab_intent] || profile.collab_intent}
               </Badge>
@@ -148,15 +148,15 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             {/* Portfolio Count */}
             {profile.portfolio_count && profile.portfolio_count > 0 && (
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-400" />
-                <span className="text-white/80 text-sm">
+                <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400" />
+                <span className="text-white/80 text-xs sm:text-sm">
                   {profile.portfolio_count} portfolio item{profile.portfolio_count !== 1 ? 's' : ''}
                 </span>
               </div>
             )}
 
             {/* Tap to View Profile Hint */}
-            <p className="text-white/50 text-xs pt-2">
+            <p className="text-white/50 text-[10px] sm:text-xs pt-1 sm:pt-2">
               Tap to view full profile
             </p>
           </div>

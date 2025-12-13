@@ -92,7 +92,7 @@ const Discover = () => {
     if (dailySwipesLeft <= 0) {
       setUpgradeFeature({
         name: "Unlimited Swipes",
-        description: "You've reached your daily swipe limit. Upgrade to Pro or Studio for unlimited swipes!"
+        description: "You've reached your daily swipe limit. Upgrade to Pro for unlimited swipes!"
       });
       setShowUpgradeDialog(true);
       return;

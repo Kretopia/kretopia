@@ -22,7 +22,7 @@ const SUBSCRIPTION_TIERS = [
       "30 swipes/day",
       "Basic profile",
       "Direct messaging",
-      "Portfolio (up to 10 items)",
+      "Portfolio (up to 5 items)",
       "Browse matches",
     ],
   },

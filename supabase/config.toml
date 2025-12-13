@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.verify-credentials]
 verify_jwt = true
+
+[functions.generate-ice-breakers]
+verify_jwt = true

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Info, Trash2, Archive, MessageCircle, ArrowRight, Briefcase } from "lucide-react";
+import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
-import { Card } from "@/components/ui/card";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
+import { IceBreakers } from "@/components/messages/IceBreakers";
+import { TypingIndicator, useTypingStatus } from "@/components/messages/TypingIndicator";
 
 interface Conversation {
   conversation_id: string;
@@ -67,7 +67,6 @@ const Messages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("primary");
   const [connections, setConnections] = useState<Set<string>>(new Set());
   const [otherUser, setOtherUser] = useState<{
     id: string;
@@ -78,7 +77,11 @@ const Messages = () => {
   const [showProjectDialog, setShowProjectDialog] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
+  // Typing status hook
+  const { setTyping } = useTypingStatus(selectedConversation || '', currentUserId);
   // Track page view
   useEffect(() => {
     const trackPageView = async () => {
@@ -343,26 +346,35 @@ const Messages = () => {
 
   const isConnectionAccepted = (userId: string) => connections.has(userId);
 
+  // Only show conversations with connected users (no requests tab - messaging requires match)
   const filteredConversations = conversations.filter((conv) => {
     const partner = getConversationPartner(conv);
     const partnerName = partner.name || '';
     const matchesSearch = partnerName.toLowerCase().includes(searchQuery.toLowerCase());
     const isConnected = isConnectionAccepted(partner.id);
-    
-    if (activeTab === "primary") {
-      return matchesSearch && isConnected;
-    } else {
-      return matchesSearch && !isConnected;
-    }
+    return matchesSearch && isConnected;
   });
 
-  const primaryCount = conversations.filter(c => 
-    isConnectionAccepted(getConversationPartner(c).id)
-  ).length;
-
-  const requestsCount = conversations.filter(c => 
-    !isConnectionAccepted(getConversationPartner(c).id)
-  ).length;
+  const conversationCount = filteredConversations.length;
+  
+  // Handle typing indicator
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    
+    // Set typing status
+    setTyping(true);
+    
+    // Clear previous timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    // Set new timeout to stop typing after 2 seconds of inactivity
+    const timeout = setTimeout(() => {
+      setTyping(false);
+    }, 2000);
+    setTypingTimeout(timeout);
+  };
 
   return (
     <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto overflow-hidden">
@@ -387,37 +399,14 @@ const Messages = () => {
             />
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="primary" className="relative">
-                Primary
-                {primaryCount > 0 && (
-                  <Badge variant="secondary" className="ml-2 h-5 min-w-5 px-1.5">
-                    {primaryCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="requests" className="relative">
-                Requests
-                {requestsCount > 0 && (
-                  <Badge variant="secondary" className="ml-2 h-5 min-w-5 px-1.5">
-                    {requestsCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        <ScrollArea className="flex-1">
-          {activeTab === "requests" && requestsCount > 0 && (
-            <div className="p-4 bg-accent/50 border-b border-border">
-              <div className="flex gap-2 text-sm text-muted-foreground">
-                <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <p>Message requests from people you haven't connected with yet.</p>
-              </div>
-            </div>
+          {conversationCount > 0 && (
+            <Badge variant="secondary" className="ml-2">
+              {conversationCount}
+            </Badge>
           )}
+        </div>
+        
+        <ScrollArea className="flex-1">
           
           {filteredConversations.length === 0 ? (
             <div className="p-8 text-center">
@@ -425,16 +414,14 @@ const Messages = () => {
                 <MessageCircle className="h-8 w-8 text-primary" />
               </div>
               <p className="text-lg font-semibold mb-2">
-                {searchQuery ? "No messages found" : activeTab === "primary" ? "No messages yet" : "No requests"}
+                {searchQuery ? "No messages found" : "No messages yet"}
               </p>
               <p className="text-sm text-muted-foreground mb-4">
                 {searchQuery 
                   ? "Try adjusting your search"
-                  : activeTab === "primary" 
-                  ? "Start by discovering and connecting with other creators!"
-                  : "Message requests from non-connections will appear here"}
+                  : "Start by discovering and connecting with other creators!"}
               </p>
-              {!searchQuery && activeTab === "primary" && (
+              {!searchQuery && (
                 <Button onClick={() => navigate("/circle")} size="sm" className="gap-2">
                   Discover Creators
                   <ArrowRight className="h-4 w-4" />
@@ -446,7 +433,7 @@ const Messages = () => {
               {filteredConversations.map((conv) => {
                 const partner = getConversationPartner(conv);
                 const unreadCount = getUnreadCount(partner.id);
-                const isRequest = activeTab === "requests";
+                
                 
                 return (
                   <div
@@ -501,12 +488,6 @@ const Messages = () => {
                           conv.content
                         )}
                       </p>
-                      
-                      {isRequest && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Message request
-                        </p>
-                      )}
                     </div>
                   </div>
                 );
@@ -577,23 +558,15 @@ const Messages = () => {
             )}
           </div>
 
-          {/* Connection Request Banner */}
-          {otherUser && !isConnectionAccepted(otherUser.id) && (
-            <Card className="m-4 p-4 bg-accent/50 border-accent">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="flex-1 space-y-2">
-                  <p className="text-sm font-medium">Message Request</p>
-                  <p className="text-sm text-muted-foreground">
-                    {otherUser.name || 'This user'} isn't in your connections yet. Be careful about what you share.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="default">Accept Request</Button>
-                    <Button size="sm" variant="outline">Delete</Button>
-                  </div>
-                </div>
-              </div>
-            </Card>
+          {/* Ice Breakers for new conversations */}
+          {otherUser && messages.length === 0 && (
+            <IceBreakers
+              recipientId={otherUser.id}
+              recipientName={otherUser.name || 'Creator'}
+              recipientRole={otherUser.role}
+              currentUserRole={currentUserRole}
+              onSelectIceBreaker={(message) => setNewMessage(message)}
+            />
           )}
 
           {/* Messages */}
@@ -619,7 +592,7 @@ const Messages = () => {
                     View Profile
                   </Button>
                   <p className="text-sm text-muted-foreground mt-6">
-                    Send a message to start the conversation
+                    Pick a conversation starter above or type your own message
                   </p>
                 </div>
               ) : (
@@ -673,6 +646,14 @@ const Messages = () => {
                 })
               )}
             </div>
+            
+            {/* Typing Indicator */}
+            {selectedConversation && currentUserId && (
+              <TypingIndicator 
+                recipientId={selectedConversation} 
+                currentUserId={currentUserId} 
+              />
+            )}
           </ScrollArea>
 
           {/* Message Input */}
@@ -680,21 +661,21 @@ const Messages = () => {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                setTyping(false);
                 sendMessage();
               }}
               className="flex gap-2"
             >
               <Input
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Message..."
                 className="flex-1 rounded-full"
-                disabled={otherUser && !isConnectionAccepted(otherUser.id)}
               />
               <Button 
                 type="submit" 
                 size="icon" 
-                disabled={!newMessage.trim() || (otherUser && !isConnectionAccepted(otherUser.id))}
+                disabled={!newMessage.trim()}
                 className="rounded-full"
               >
                 <Send className="h-4 w-4" />

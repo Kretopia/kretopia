@@ -60,7 +60,7 @@ const ProjectsList = () => {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto py-6 px-4 space-y-6">
+    <div className="container max-w-4xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6 overflow-y-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">ThriveDesk</h1>

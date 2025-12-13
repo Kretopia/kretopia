@@ -128,63 +128,61 @@ export const ShareableProfileCard = ({
   };
 
   const handleShare = async () => {
-    setIsGenerating(true);
-    
-    try {
-      const canvas = await generateImage();
-      if (!canvas) {
-        setIsGenerating(false);
-        return;
-      }
+    // If Web Share API is available, prefer that and only generate an image
+    // when the device can actually share files.
+    if (navigator.share) {
+      try {
+        // Share image file when supported
+        if (navigator.canShare) {
+          try {
+            const canvas = await generateImage();
+            if (canvas) {
+              const blob = await new Promise<Blob | null>((resolve) => {
+                canvas.toBlob((b) => resolve(b), "image/png");
+              });
 
-      // Convert canvas to blob
-      const blob = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob((b) => resolve(b), "image/png");
-      });
+              if (blob) {
+                const file = new File([blob], "thrivein-profile.png", { type: "image/png" });
 
-      if (!blob) {
-        toast.error("Failed to create image");
-        setIsGenerating(false);
-        return;
-      }
+                if (navigator.canShare({ files: [file] })) {
+                  await navigator.share({
+                    files: [file],
+                    title: `${profile.full_name} on ThriveIN`,
+                    text:
+                      mode === "invite"
+                        ? `Join me on ThriveIN!`
+                        : `Check out my creative profile on ThriveIN!`,
+                  });
+                  toast.success("Shared successfully!");
+                  return;
+                }
+              }
+            }
+          } catch (error) {
+            console.warn("Image share failed, falling back to URL share", error);
+          }
+        }
 
-      const file = new File([blob], "thrivein-profile.png", { type: "image/png" });
-
-      // Try sharing with file first (best experience)
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        // Fallback: share just URL + text (no image generation needed)
         await navigator.share({
-          files: [file],
           title: `${profile.full_name} on ThriveIN`,
-          text: mode === "invite" 
-            ? `Join me on ThriveIN! Use my invite code: ${inviteCode || 'Check the card!'}`
-            : `Check out my creative profile on ThriveIN!`,
-        });
-        toast.success("Shared successfully!");
-      } else if (navigator.share) {
-        // Fallback: share URL/text without file
-        await navigator.share({
-          title: `${profile.full_name} on ThriveIN`,
-          text: mode === "invite" 
-            ? `Join me on ThriveIN! Use my invite code: ${inviteCode || ''}\n${qrUrl}`
-            : `Check out my creative profile on ThriveIN!\n${qrUrl}`,
+          text:
+            mode === "invite"
+              ? `Join me on ThriveIN!\n${qrUrl}`
+              : `Check out my creative profile on ThriveIN!\n${qrUrl}`,
           url: qrUrl,
         });
         toast.success("Shared successfully!");
-        // Also offer to download the image
-        toast.info("Tip: Use Download to save the card image");
-      } else {
-        // No share API available - download instead
-        toast.info("Share not available - downloading image instead");
-        handleDownload();
-      }
-    } catch (error: any) {
-      if (error?.name !== 'AbortError') {
+        return;
+      } catch (error: any) {
+        if (error?.name === "AbortError") return; // user cancelled
         console.error("Share error:", error);
-        toast.error("Share failed - try downloading instead");
+        toast.error("Share failed, downloading card instead");
       }
-    } finally {
-      setIsGenerating(false);
     }
+
+    // No Web Share API – fall back to download
+    await handleDownload();
   };
 
   return (

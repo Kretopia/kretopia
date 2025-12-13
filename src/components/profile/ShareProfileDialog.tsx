@@ -1,10 +1,11 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Share2, Copy, Check } from "lucide-react";
+import { Share2, Copy, Check, Image } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ShareableProfileCard } from "./ShareableProfileCard";
 
 interface ShareProfileDialogProps {
   profile: {
@@ -12,14 +13,25 @@ interface ShareProfileDialogProps {
     role: string;
     bio?: string;
     user_id: string;
+    avatar_url?: string;
+    verification_tier?: string;
+    professional_skills?: string[];
+    location?: string;
   };
+  portfolioItems?: Array<{
+    id: string;
+    thumbnail_url?: string;
+    media_url?: string;
+    title?: string;
+  }>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export const ShareProfileDialog = ({ profile, open, onOpenChange }: ShareProfileDialogProps) => {
+export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenChange }: ShareProfileDialogProps) => {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
+  const [isCardDialogOpen, setIsCardDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
@@ -126,6 +138,24 @@ ${profileUrl}
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* Create Profile Card - NEW */}
+          <div className="p-4 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-semibold text-sm">Create Profile Card</h4>
+                <p className="text-xs text-muted-foreground">Beautiful card for Instagram, Stories & more</p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setIsCardDialogOpen(true)}
+                className="gap-2"
+              >
+                <Image className="h-4 w-4" />
+                Create
+              </Button>
+            </div>
+          </div>
+
           {/* Profile URL */}
           <div className="space-y-2">
             <Label htmlFor="profile-url">Your Profile Link</Label>
@@ -176,7 +206,7 @@ ${profileUrl}
               id="share-text"
               value={shareText}
               readOnly
-              rows={8}
+              rows={6}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
             />
           </div>
@@ -243,6 +273,14 @@ ${profileUrl}
           </div>
         </div>
       </DialogContent>
+
+      {/* Shareable Profile Card Dialog */}
+      <ShareableProfileCard
+        open={isCardDialogOpen}
+        onOpenChange={setIsCardDialogOpen}
+        profile={profile}
+        portfolioItems={portfolioItems}
+      />
     </Dialog>
   );
 };

@@ -56,40 +56,49 @@ export function AIPortfolioInsights({ portfolioItems = [], userRole, isPro }: AI
 
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
-          messages: [{
-            role: 'user',
-            content: `Analyze this creator's portfolio and provide detailed, actionable insights. Be encouraging but specific with real examples.
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert portfolio consultant for creative professionals. Always respond with valid JSON only, no markdown or extra text.'
+            },
+            {
+              role: 'user',
+              content: `Analyze this creator's portfolio and provide detailed, actionable insights. Be encouraging but specific with real examples.
 
 Role: ${userRole}
 Portfolio Items: ${JSON.stringify(portfolioSummary)}
 
 Provide a thorough analysis with expandable details for each point.
 
-Respond ONLY with valid JSON:
+Respond ONLY with valid JSON (no markdown, no code blocks):
 {
   "overallScore": 85,
   "summary": "Your portfolio shows strong creative direction with room to expand your range.",
   "strengths": [
-    {"title": "Visual Consistency", "detail": "Your work maintains a cohesive aesthetic across pieces. This helps brands and collaborators instantly understand your style. Consider featuring this consistency prominently in your bio."},
+    {"title": "Visual Consistency", "detail": "Your work maintains a cohesive aesthetic across pieces. This helps brands and collaborators instantly understand your style."},
     {"title": "Quality Over Quantity", "detail": "Each piece demonstrates attention to detail and professional execution. This signals reliability to potential collaborators."}
   ],
   "improvements": [
-    {"title": "Add Behind-the-Scenes Content", "detail": "Creators who show their process get 40% more engagement. Consider adding work-in-progress shots, time-lapses, or brief explanations of your creative decisions."},
-    {"title": "Diversify Media Types", "detail": "You currently have mostly images. Adding video content or audio samples could attract a wider range of collaboration opportunities."}
+    {"title": "Add Behind-the-Scenes Content", "detail": "Creators who show their process get 40% more engagement. Consider adding work-in-progress shots or time-lapses."},
+    {"title": "Diversify Media Types", "detail": "Adding video content or audio samples could attract a wider range of collaboration opportunities."}
   ],
   "trendingTips": [
-    {"title": "Short-Form Video is Booming", "detail": "In your niche, creators posting 15-60 second process videos are seeing 3x more profile views. Consider repurposing your portfolio pieces into quick, engaging clips."},
-    {"title": "Collaboration Tags", "detail": "Tag collaborators in your portfolio descriptions. This builds social proof and can lead to cross-promotion opportunities."}
+    {"title": "Short-Form Video is Booming", "detail": "Creators posting 15-60 second process videos are seeing 3x more profile views."},
+    {"title": "Collaboration Tags", "detail": "Tag collaborators in your portfolio descriptions. This builds social proof and leads to cross-promotion."}
   ]
 }`
-          }],
-          type: 'suggest'
+            }
+          ],
+          type: 'analysis'
         }
       });
 
       if (error) throw error;
       
-      const raw = typeof data?.content === 'string' ? data.content : '{}';
+      let raw = typeof data?.content === 'string' ? data.content : '{}';
+      // Strip markdown code blocks if present
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      
       let parsed: Partial<Insights> = {};
       try {
         parsed = JSON.parse(raw);

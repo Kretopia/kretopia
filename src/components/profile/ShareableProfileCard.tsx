@@ -71,7 +71,13 @@ export const ShareableProfileCard = ({
   
   const qrUrl = mode === "profile" ? profileUrl : signupUrl;
   
-  const topSkills = profile.professional_skills?.slice(0, 3) || [];
+  // Handle skills that might be objects or strings
+  const topSkills = (profile.professional_skills?.slice(0, 3) || []).map((skill: any) => {
+    if (typeof skill === 'string') return skill;
+    if (skill && typeof skill === 'object' && skill.skill) return skill.skill;
+    return null;
+  }).filter(Boolean);
+  
   const topPortfolio = portfolioItems.slice(0, 3);
 
   const getVerificationBadge = () => {

@@ -7,12 +7,15 @@ import { Loader2, Plus, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
+import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
+
 const ProjectsList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<any[]>([]);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -66,7 +69,7 @@ const ProjectsList = () => {
           <h1 className="text-3xl font-bold">ThriveDesk</h1>
           <p className="text-muted-foreground">Your collaboration spaces</p>
         </div>
-        <Button onClick={() => navigate('/circle')}>
+        <Button onClick={() => setShowCreateDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
           New Project
         </Button>
@@ -117,6 +120,15 @@ const ProjectsList = () => {
           ))}
         </div>
       )}
+
+      <CreateProjectDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSuccess={() => {
+          setShowCreateDialog(false);
+          fetchProjects();
+        }}
+      />
     </div>
   );
 };

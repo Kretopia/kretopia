@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +7,7 @@ import { Download, Share2, Loader2, CheckCircle, Shield, Award } from "lucide-re
 import { QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ShareableProfileCardProps {
   open: boolean;
@@ -36,8 +37,35 @@ export const ShareableProfileCard = ({
 }: ShareableProfileCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
 
-  const profileUrl = `${window.location.origin}/profile/${profile.user_id}`;
+  // Fetch user's invite code
+  useEffect(() => {
+    const fetchInviteCode = async () => {
+      if (!open || !profile.user_id) return;
+      
+      const { data } = await supabase
+        .from("invites")
+        .select("invite_code")
+        .eq("inviter_id", profile.user_id)
+        .lt("current_uses", supabase.rpc ? 10 : 10) // Has uses left
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (data?.invite_code) {
+        setInviteCode(data.invite_code);
+      }
+    };
+    
+    fetchInviteCode();
+  }, [open, profile.user_id]);
+
+  // QR code URL includes invite code for signup
+  const signupUrl = inviteCode 
+    ? `${window.location.origin}/?code=${inviteCode}`
+    : `${window.location.origin}/profile/${profile.user_id}`;
+  
   const topSkills = profile.professional_skills?.slice(0, 3) || [];
   const topPortfolio = portfolioItems.slice(0, 3);
 
@@ -204,24 +232,31 @@ export const ShareableProfileCard = ({
               </div>
             )}
 
-            {/* Footer with QR */}
-            <div className="px-6 pb-6 flex items-center justify-between">
-              <div>
-                <p className="text-white/50 text-[10px] uppercase tracking-wider mb-1">
-                  Find me on
-                </p>
-                <div className="flex items-center gap-1">
-                  <span className="text-white font-bold text-lg">Thrive</span>
-                  <span className="text-primary font-bold text-lg">IN</span>
+            {/* Footer with QR and Invite Code */}
+            <div className="px-6 pb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white/50 text-[10px] uppercase tracking-wider mb-1">
+                    Join me on
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-white font-bold text-lg">Thrive</span>
+                    <span className="text-primary font-bold text-lg">IN</span>
+                  </div>
+                  {inviteCode && (
+                    <p className="text-white/60 text-[10px] mt-1">
+                      Code: <span className="text-primary font-mono font-semibold">{inviteCode}</span>
+                    </p>
+                  )}
                 </div>
-              </div>
-              <div className="bg-white p-2 rounded-lg">
-                <QRCodeSVG
-                  value={profileUrl}
-                  size={60}
-                  level="M"
-                  includeMargin={false}
-                />
+                <div className="bg-white p-2 rounded-lg">
+                  <QRCodeSVG
+                    value={signupUrl}
+                    size={60}
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
               </div>
             </div>
           </div>

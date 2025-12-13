@@ -113,35 +113,42 @@ export function useSwipeActions(currentUserId: string | undefined) {
         console.log('[useSwipeActions] Match created successfully!');
       }
 
-      // Send notifications to BOTH users with error handling
-      const [notif1, notif2] = await Promise.all([
-        // Notify the other user (target)
-        supabase.from('notifications').insert({
-          user_id: targetId,
-          title: "It's a Match! 🎉",
-          message: `You matched with ${currentUserProfile?.full_name || 'a creator'}!`,
-          type: 'match',
-          link: '/circle?tab=network',
-          priority: 'high',
-          category: 'match'
-        }),
-        // Notify current user too
-        supabase.from('notifications').insert({
-          user_id: currentUserId,
-          title: "It's a Match! 🎉",
-          message: `You matched with ${matchedProfile?.full_name || 'a creator'}!`,
-          type: 'match',
-          link: '/circle?tab=network',
-          priority: 'high',
-          category: 'match'
-        })
-      ]);
+      // Check if notifications already exist before creating (prevent duplicates)
+      const { data: existingNotifications } = await supabase
+        .from('notifications')
+        .select('id')
+        .in('user_id', [currentUserId, targetId])
+        .eq('type', 'match')
+        .gte('created_at', new Date(Date.now() - 60000).toISOString()) // Within last minute
+        .limit(1);
 
-      if (notif1.error) {
-        console.error('[useSwipeActions] Notification 1 error:', notif1.error);
-      }
-      if (notif2.error) {
-        console.error('[useSwipeActions] Notification 2 error:', notif2.error);
+      if (!existingNotifications || existingNotifications.length === 0) {
+        // Send notifications to BOTH users
+        const [notif1, notif2] = await Promise.all([
+          supabase.from('notifications').insert({
+            user_id: targetId,
+            title: "It's a Match! 🎉",
+            message: `You matched with ${currentUserProfile?.full_name || 'a creator'}!`,
+            type: 'match',
+            link: '/circle?tab=network',
+            priority: 'high',
+            category: 'match'
+          }),
+          supabase.from('notifications').insert({
+            user_id: currentUserId,
+            title: "It's a Match! 🎉",
+            message: `You matched with ${matchedProfile?.full_name || 'a creator'}!`,
+            type: 'match',
+            link: '/circle?tab=network',
+            priority: 'high',
+            category: 'match'
+          })
+        ]);
+
+        if (notif1.error) console.error('[useSwipeActions] Notification 1 error:', notif1.error);
+        if (notif2.error) console.error('[useSwipeActions] Notification 2 error:', notif2.error);
+      } else {
+        console.log('[useSwipeActions] Notifications already exist, skipping to prevent duplicates');
       }
 
       // Try to send email notifications to both users

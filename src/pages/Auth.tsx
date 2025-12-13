@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2 } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X } from "lucide-react";
+import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import {
@@ -48,6 +49,7 @@ const Auth = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [newPasswordError, setNewPasswordError] = useState("");
   const [confirmNewPasswordError, setConfirmNewPasswordError] = useState("");
+  const [showWaitlistForm, setShowWaitlistForm] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -761,8 +763,30 @@ const Auth = () => {
                   )}
                 </Button>
 
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => setShowWaitlistForm(true)}
+                >
+                  <Lock className="mr-2 h-4 w-4" />
+                  Request Access
+                </Button>
+
                 <p className="text-xs text-center text-muted-foreground">
-                  Don't have an invite code? Ask a member to share one with you.
+                  No invite code? Apply and we'll AI-verify your profile
                 </p>
               </div>
             )}
@@ -1047,6 +1071,22 @@ const Auth = () => {
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Waitlist/Request Access Dialog */}
+        <Dialog open={showWaitlistForm} onOpenChange={setShowWaitlistForm}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5 text-primary" />
+                Request Access
+              </DialogTitle>
+              <DialogDescription>
+                No invite code? Apply to join and our AI will verify your profile.
+              </DialogDescription>
+            </DialogHeader>
+            <WaitlistForm />
           </DialogContent>
         </Dialog>
       </div>

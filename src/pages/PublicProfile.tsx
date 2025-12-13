@@ -25,7 +25,9 @@ import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { SEO } from "@/components/SEO";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
+import { StartProjectDialog } from "@/components/project/StartProjectDialog";
 import { Download, FileText, Globe, Award } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Profile {
   full_name: string;
@@ -77,7 +79,9 @@ const PublicProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [industryStats, setIndustryStats] = useState([]);
@@ -95,7 +99,25 @@ const PublicProfile = () => {
   const [isPendingReceived, setIsPendingReceived] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showStartProjectDialog, setShowStartProjectDialog] = useState(false);
   const { toast } = useToast();
+  
+  // Fetch current user's role for project templates
+  useEffect(() => {
+    const fetchCurrentUserRole = async () => {
+      if (currentUser) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', currentUser.id)
+          .single();
+        if (data?.role) {
+          setCurrentUserRole(data.role);
+        }
+      }
+    };
+    fetchCurrentUserRole();
+  }, [currentUser]);
 
   const fetchData = async () => {
     if (!userId) return;
@@ -367,7 +389,7 @@ const PublicProfile = () => {
   };
 
   const handleStartProject = () => {
-    navigate('/desk', { state: { collaboratorId: userId, collaboratorName: profile?.full_name } });
+    setShowStartProjectDialog(true);
   };
 
   // Check if user came from a match notification
@@ -387,6 +409,19 @@ const PublicProfile = () => {
       <SEO 
         title={`${profile?.full_name || 'User'}'s Profile`}
         description={profile?.bio || `View ${profile?.full_name || 'User'}'s professional profile`}
+      />
+      
+      {/* Start Project Dialog */}
+      <StartProjectDialog
+        open={showStartProjectDialog}
+        onOpenChange={setShowStartProjectDialog}
+        collaborator={{
+          id: userId || '',
+          name: profile?.full_name || 'Creator',
+          role: profile?.role || 'Creator',
+          avatar: profile?.avatar_url,
+        }}
+        currentUserRole={currentUserRole}
       />
       <div className="container mx-auto max-w-7xl px-4 py-6">
         {/* Back Button */}

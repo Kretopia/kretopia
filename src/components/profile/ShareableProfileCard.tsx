@@ -100,11 +100,13 @@ export const ShareableProfileCard = ({
 
     setIsGenerating(true);
     try {
+      const rect = cardRef.current.getBoundingClientRect();
       const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
-        backgroundColor: null,
+        scale: 2, // sharp but keeps exact proportions
+        width: rect.width,
+        height: rect.height,
+        backgroundColor: "#0a0612", // solid background so corners don't look warped
         useCORS: true,
-        allowTaint: true,
       });
       return canvas;
     } catch (error) {

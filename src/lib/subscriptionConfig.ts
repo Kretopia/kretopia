@@ -10,6 +10,9 @@ export const SUBSCRIPTION_PRODUCTS = {
     productId: "prod_TWc5tpvPKjy8hG",
     features: [
       "Unlimited swipes & matches",
+      "🤖 AI Portfolio Insights",
+      "🤖 AI Collaboration Ideas",
+      "🤖 AI Profile Optimizer",
       "AI match explanations",
       "Profile verification badge",
       "Unlimited portfolio items",

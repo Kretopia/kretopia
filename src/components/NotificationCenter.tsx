@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Check, CheckCheck, Trash2, ExternalLink } from "lucide-react";
+import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -11,13 +12,26 @@ import { formatDistanceToNow } from "date-fns";
 export const NotificationCenter = () => {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
     if (notification.link) {
-      navigate(notification.link);
+      setIsOpen(false); // Close sheet before navigating
+      setTimeout(() => navigate(notification.link), 100);
+    }
+  };
+
+  const handleActionClick = (e: React.MouseEvent, notification: any) => {
+    e.stopPropagation();
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+    if (notification.action_url) {
+      setIsOpen(false); // Close sheet before navigating
+      setTimeout(() => navigate(notification.action_url), 100);
     }
   };
 
@@ -41,7 +55,7 @@ export const NotificationCenter = () => {
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -128,16 +142,17 @@ export const NotificationCenter = () => {
                           </span>
                           {notification.action_url && (
                             <Button 
-                              variant="ghost" 
+                              variant="default" 
                               size="sm" 
                               className="h-7 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(notification.action_url);
-                              }}
+                              onClick={(e) => handleActionClick(e, notification)}
                             >
+                              {notification.category === 'match' ? (
+                                <MessageCircle className="h-3 w-3 mr-1" />
+                              ) : (
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                              )}
                               {notification.action_text || 'View'}
-                              <ExternalLink className="h-3 w-3 ml-1" />
                             </Button>
                           )}
                         </div>

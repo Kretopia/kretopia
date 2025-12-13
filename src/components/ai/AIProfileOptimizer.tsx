@@ -56,9 +56,14 @@ export function AIProfileOptimizer({ profile, portfolioCount, isPro }: AIProfile
     try {
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
-          messages: [{
-            role: 'user',
-            content: `Analyze this creator profile and provide detailed optimization tips to improve visibility and attract collaborators.
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert profile optimization consultant for creative professionals. Always respond with valid JSON only, no markdown or extra text.'
+            },
+            {
+              role: 'user',
+              content: `Analyze this creator profile and provide detailed optimization tips to improve visibility and attract collaborators.
 
 Profile:
 - Name: ${profile.full_name || 'Not set'}
@@ -71,32 +76,36 @@ Profile:
 
 Score the profile (0-100) and provide specific, actionable suggestions with detailed explanations.
 
-Respond ONLY with valid JSON:
+Respond ONLY with valid JSON (no markdown, no code blocks):
 {
   "score": 75,
   "summary": "Your profile has strong foundations but needs optimization to stand out in a competitive creator landscape.",
   "priority": {
     "title": "Bio Needs Work",
-    "detail": "Your bio is the first thing collaborators read. It should hook them in the first line, clearly state what you do, who you work with, and what makes you unique. Consider: 'Award-winning cinematographer helping brands tell visual stories that convert.'"
+    "detail": "Your bio is the first thing collaborators read. It should hook them in the first line and clearly state what you do."
   },
   "completed": [
-    {"title": "Professional Photo", "detail": "A high-quality avatar builds instant trust. Studies show profiles with professional photos get 14x more views."},
-    {"title": "Clear Role Defined", "detail": "Your role helps the matching algorithm connect you with relevant collaborators. This is properly set."}
+    {"title": "Professional Photo", "detail": "A high-quality avatar builds instant trust. Profiles with professional photos get 14x more views."},
+    {"title": "Clear Role Defined", "detail": "Your role helps the matching algorithm connect you with relevant collaborators."}
   ],
   "suggestions": [
-    {"title": "Add 3+ Portfolio Items", "detail": "Profiles with at least 5 portfolio pieces get 3x more collaboration requests. Show variety in your work while maintaining quality."},
-    {"title": "Highlight Your Unique Value", "detail": "What makes you different from other creators in your field? Add specific achievements, notable clients, or unique processes to your bio."},
-    {"title": "Complete Your Skills", "detail": "Add 5-8 relevant skills. This helps with search visibility and AI matching. Be specific: 'Color Grading' is better than just 'Video Editing'."}
+    {"title": "Add 3+ Portfolio Items", "detail": "Profiles with at least 5 portfolio pieces get 3x more collaboration requests."},
+    {"title": "Highlight Your Unique Value", "detail": "Add specific achievements, notable clients, or unique processes to your bio."},
+    {"title": "Complete Your Skills", "detail": "Add 5-8 relevant skills. Be specific: 'Color Grading' is better than just 'Video Editing'."}
   ]
 }`
-          }],
-          type: 'suggest'
+            }
+          ],
+          type: 'analysis'
         }
       });
 
       if (error) throw error;
       
-      const raw = typeof data?.content === 'string' ? data.content : '{}';
+      let raw = typeof data?.content === 'string' ? data.content : '{}';
+      // Strip markdown code blocks if present
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      
       let parsed: Partial<Optimization> = {};
       try {
         parsed = JSON.parse(raw);

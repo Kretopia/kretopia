@@ -62,7 +62,7 @@ const Messages = () => {
   // Check for receiverId from navigation state first, then search params
   const navigationState = location.state as { receiverId?: string; receiverName?: string } | null;
   const [selectedConversation, setSelectedConversation] = useState<string | null>(
-    navigationState?.receiverId || searchParams.get("userId")
+    navigationState?.receiverId || searchParams.get("user") || searchParams.get("userId")
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");

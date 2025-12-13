@@ -28,7 +28,7 @@ export default function Circle() {
   const [profilesCount, setProfilesCount] = useState(0);
 
   // Check if user is Pro
-  const isPro = subscriptionInfo.tier === 'pro' || subscriptionInfo.tier === 'studio';
+  const isPro = subscriptionInfo.tier === 'pro';
 
   // Sync tab with URL param when it changes
   useEffect(() => {

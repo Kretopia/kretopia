@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const MAX_DAILY_UNDOS: Record<string, number> = {
   free: 0,
-  creator_pro: 10,
+  pro: 3,
 };
 
 interface SwipeRecord {

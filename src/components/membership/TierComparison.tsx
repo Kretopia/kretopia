@@ -1,29 +1,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, X, Sparkles, Zap, Crown } from "lucide-react";
+import { Check, X, Sparkles, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Feature {
   name: string;
   free: boolean | string;
-  creator_pro: boolean | string;
+  pro: boolean | string;
 }
 
 const features: Feature[] = [
-  { name: "Daily Swipes", free: "10", creator_pro: "Unlimited" },
-  { name: "Active Projects", free: "1", creator_pro: "Unlimited" },
-  { name: "Basic Profile", free: true, creator_pro: true },
-  { name: "Direct Messaging", free: true, creator_pro: true },
-  { name: "Portfolio Showcase", free: true, creator_pro: true },
-  { name: "AI Match Recommendations", free: "3/day", creator_pro: "Unlimited" },
-  { name: "Undo Swipe", free: false, creator_pro: true },
-  { name: "Profile Verification Badge", free: false, creator_pro: true },
-  { name: "Advanced Analytics", free: false, creator_pro: true },
-  { name: "Featured Profile (3x visibility)", free: false, creator_pro: true },
-  { name: "Priority Matching", free: false, creator_pro: true },
-  { name: "Partner Discounts", free: "5%", creator_pro: "15%" },
-  { name: "Early Access to Features", free: false, creator_pro: true },
+  { name: "Daily Swipes", free: "30", pro: "Unlimited" },
+  { name: "Portfolio Items", free: "5", pro: "Unlimited" },
+  { name: "Basic Profile", free: true, pro: true },
+  { name: "Direct Messaging", free: true, pro: true },
+  { name: "Browse Matches", free: true, pro: true },
+  { name: "AI Match Explanations", free: false, pro: true },
+  { name: "Undo Swipe", free: false, pro: "3/day" },
+  { name: "Profile Verification Badge", free: false, pro: true },
+  { name: "Advanced Search Filters", free: false, pro: true },
+  { name: "Press Links & Credits", free: false, pro: true },
+  { name: "Awards Section", free: false, pro: true },
+  { name: "Priority Support", free: false, pro: true },
 ];
 
 interface TierComparisonProps {
@@ -44,23 +43,14 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
     return <span className="text-sm font-medium">{value}</span>;
   };
 
-  const getTierIcon = (tier: string) => {
-    switch (tier) {
-      case "creator_pro":
-        return <Crown className="h-5 w-5" />;
-      default:
-        return <Sparkles className="h-5 w-5" />;
-    }
-  };
-
   const tiers = [
-    { key: "free", name: "Thriver", price: "$0", icon: getTierIcon("free") },
-    { key: "creator_pro", name: "Creator Pro", price: "$29/mo", icon: getTierIcon("creator_pro"), popular: true },
+    { key: "free", name: "Spark", price: "$0", icon: <Zap className="h-5 w-5" /> },
+    { key: "pro", name: "Pro", price: "$12/mo", icon: <Sparkles className="h-5 w-5" />, popular: true },
   ];
 
   return (
     <div className="w-full overflow-x-auto pb-4">
-      <div className="min-w-[800px]">
+      <div className="min-w-[600px]">
         {/* Header Row */}
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div className="font-semibold text-muted-foreground">Features</div>
@@ -73,7 +63,7 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
             >
               {tier.popular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-primary text-xs">Most Popular</Badge>
+                  <Badge className="bg-primary text-xs">Recommended</Badge>
                 </div>
               )}
               {currentTier === tier.key && (
@@ -115,7 +105,7 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
                 {renderValue(feature.free)}
               </div>
               <div className="flex items-center justify-center">
-                {renderValue(feature.creator_pro)}
+                {renderValue(feature.pro)}
               </div>
             </div>
           ))}

@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Crown, Zap } from "lucide-react";
+import { Sparkles, Zap, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface CreditPromptDialogProps {
@@ -12,10 +12,20 @@ interface CreditPromptDialogProps {
 export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogProps) => {
   const navigate = useNavigate();
 
-  const handleUpgrade = (tier: string) => {
+  const handleUpgrade = () => {
     onOpenChange(false);
     navigate('/subscription');
   };
+
+  const proFeatures = [
+    "Unlimited daily swipes",
+    "AI match explanations",
+    "Undo swipe feature (3/day)",
+    "Profile verification badge",
+    "Unlimited portfolio items",
+    "Advanced search filters",
+    "Press, credits & awards sections",
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -26,72 +36,50 @@ export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogPro
             Out of Swipes!
           </DialogTitle>
           <DialogDescription>
-            You've reached your daily limit of 10 swipes. Upgrade to get unlimited swipes and more features.
+            You've used all 30 daily swipes. Upgrade to Pro for unlimited swipes and powerful features.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 py-4">
-          {/* Thrive Pro */}
-          <Card 
-            className="p-4 border-primary bg-gradient-to-br from-primary/5 to-secondary/5 hover:border-primary hover:shadow-md transition-all cursor-pointer" 
-            onClick={() => handleUpgrade('pro')}
-          >
-            <div className="flex items-start gap-3">
-              <div className="rounded-lg bg-gradient-to-br from-primary to-secondary p-2">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1 flex items-center gap-2">
-                  Thrive Pro
-                  <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Popular</span>
-                </h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Unlimited swipes + AI recommendations + verification badge
-                </p>
-                <ul className="text-xs text-muted-foreground space-y-1 mb-2">
-                  <li>✓ Unlimited daily swipes</li>
-                  <li>✓ AI match recommendations</li>
-                  <li>✓ Undo swipe feature</li>
-                  <li>✓ Profile verification badge</li>
-                </ul>
-                <div className="text-lg font-bold text-primary">
-                  $9/month
-                </div>
+        <Card 
+          className="p-5 border-2 border-primary bg-gradient-to-br from-primary/5 to-secondary/5 hover:shadow-lg transition-all cursor-pointer" 
+          onClick={handleUpgrade}
+        >
+          <div className="flex items-start gap-3">
+            <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-3">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
+                ThriveIN Pro
+                <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Recommended</span>
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Everything you need to find your perfect collaborators
+              </p>
+              <ul className="text-sm space-y-1.5 mb-4">
+                {proFeatures.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-primary">$12</span>
+                <span className="text-muted-foreground">/month</span>
               </div>
             </div>
-          </Card>
+          </div>
+        </Card>
 
-          {/* Thrive Studio */}
-          <Card 
-            className="p-4 hover:border-primary transition-colors cursor-pointer" 
-            onClick={() => handleUpgrade('studio')}
-          >
-            <div className="flex items-start gap-3">
-              <div className="rounded-lg bg-gradient-to-br from-primary to-accent p-2">
-                <Crown className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1">Thrive Studio</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Everything in Pro + featured profile + priority matching
-                </p>
-                <ul className="text-xs text-muted-foreground space-y-1 mb-2">
-                  <li>✓ All Pro features</li>
-                  <li>✓ Featured profile (2x visibility)</li>
-                  <li>✓ Priority matching</li>
-                  <li>✓ 15+ partner discounts</li>
-                </ul>
-                <div className="text-lg font-bold text-primary">
-                  $29/month
-                </div>
-              </div>
-            </div>
-          </Card>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            Maybe Later
+          </Button>
+          <Button onClick={handleUpgrade} className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90">
+            Upgrade Now
+          </Button>
         </div>
-
-        <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
-          Maybe Later
-        </Button>
       </DialogContent>
     </Dialog>
   );

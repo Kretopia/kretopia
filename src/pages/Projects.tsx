@@ -328,15 +328,14 @@ const Projects = () => {
         onOpenChange={setShowUpgradeDialog}
         currentTier={subscriptionTier}
         feature="Unlimited Projects"
-        description="Thriver tier allows 1 active project. Upgrade to Creator Pro for unlimited projects and unlock the full power of collaboration!"
+        description="Free tier allows 1 active project. Upgrade to Pro for unlimited projects and unlock the full power of collaboration!"
         benefits={[
           "Unlimited active projects",
           "Unlimited swipes to find collaborators",
-          "Unlimited AI match recommendations",
-          "Undo swipe feature",
-          "Featured profile (3x visibility)",
+          "AI match explanations",
+          "Undo swipe feature (3/day)",
           "Profile verification badge",
-          "15% partner discounts"
+          "Advanced profile sections"
         ]}
       />
     </div>

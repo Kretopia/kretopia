@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Crown, Sparkles, Zap } from "lucide-react";
+import { Sparkles, Zap, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { type SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -14,39 +14,38 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
   // Only show for free tier users
   if (currentTier !== 'free') return null;
 
-  const Icon = Sparkles;
+  const proFeatures = [
+    "Unlimited swipes & matches",
+    "AI match explanations",
+    "Profile verification badge",
+    "Unlimited portfolio items",
+    "Advanced search filters",
+    "Press, credits & awards",
+  ];
 
   return (
-    <Card className="border-2 bg-gradient-to-br from-blue-500 to-cyan-500 p-[2px]">
-      <CardContent className="bg-background rounded-lg p-6">
+    <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-secondary/5 overflow-hidden">
+      <CardContent className="p-6">
         <div className="flex items-start gap-4">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-            <Icon className="h-6 w-6 text-white" />
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+            <Sparkles className="h-6 w-6 text-white" />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-lg mb-1">Unlock More with Pro</h3>
-            <p className="text-sm text-muted-foreground mb-3">Get serious about your creative career</p>
-            <ul className="space-y-1 mb-4">
-              <li className="text-sm flex items-center gap-2">
-                <Zap className="h-3 w-3 text-primary" />
-                <span>Unlimited swipes</span>
-              </li>
-              <li className="text-sm flex items-center gap-2">
-                <Zap className="h-3 w-3 text-primary" />
-                <span>AI match explanations</span>
-              </li>
-              <li className="text-sm flex items-center gap-2">
-                <Zap className="h-3 w-3 text-primary" />
-                <span>Profile verification</span>
-              </li>
-              <li className="text-sm flex items-center gap-2">
-                <Zap className="h-3 w-3 text-primary" />
-                <span>Advanced filters</span>
-              </li>
+            <h3 className="font-bold text-lg mb-1">Unlock Pro Features</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Get serious about your creative career with unlimited access
+            </p>
+            <ul className="space-y-2 mb-4">
+              {proFeatures.map((feature, i) => (
+                <li key={i} className="text-sm flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
             </ul>
             <Button 
               onClick={() => navigate('/subscription')} 
-              className="w-full"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90"
               size="sm"
             >
               Upgrade to Pro - $12/mo

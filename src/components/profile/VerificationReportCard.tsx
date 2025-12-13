@@ -115,8 +115,8 @@ export function VerificationReportCard({
             <Shield className="h-5 w-5 text-primary" />
             AI Verification Report
           </CardTitle>
-          <Badge variant={getTierBadgeVariant(verificationTier)}>
-            {verificationTier.toUpperCase()} VERIFIED
+          <Badge variant={getTierBadgeVariant(verificationTier)} className="capitalize">
+            {verificationTier === 'verified' ? 'VERIFIED' : `${verificationTier.toUpperCase()}`}
           </Badge>
         </div>
         {verifiedAt && (
@@ -143,16 +143,16 @@ export function VerificationReportCard({
           </div>
         </div>
 
-        {/* Achievement Badges */}
+        {/* Achievement Badges - Only show if unique badges exist */}
         {achievementBadges.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium flex items-center gap-1">
               <Sparkles className="h-4 w-4 text-yellow-500" />
-              Earned Badges
+              Earned Achievements
             </p>
-            <div className="flex flex-wrap gap-1">
-              {achievementBadges.map((badge, idx) => (
-                <Badge key={idx} variant="secondary" className="text-xs gap-1">
+            <div className="flex flex-wrap gap-1.5">
+              {[...new Set(achievementBadges)].map((badge, idx) => (
+                <Badge key={idx} variant="secondary" className="text-xs gap-1.5 bg-emerald-500/20 text-emerald-500 border-emerald-500/30">
                   <Award className="h-3 w-3" />
                   {badge}
                 </Badge>

@@ -128,14 +128,6 @@ export const ProfileHero = ({
                 </Badge>
               )}
               
-              {/* Social Stats Verified */}
-              {profile.verified_metrics && profile.verification_status !== 'verified' && (
-                <Badge variant="secondary" className="gap-1 h-5">
-                  <Verified className="h-3 w-3 text-primary" />
-                  <span className="text-xs">Verified</span>
-                </Badge>
-              )}
-              
               {profile.badge && (
                 <Badge 
                   variant="default"
@@ -148,14 +140,13 @@ export const ProfileHero = ({
               )}
             </div>
             
-            {/* Achievement Badges - Visible to everyone */}
-            {(profile.achievement_badges?.length > 0 || profile.verification_tier) && (
+            {/* Achievement Badges - Only show actual achievements, not tier (tier shown via VERIFIED badge) */}
+            {profile.achievement_badges?.length > 0 && (
               <div className="mt-2">
                 <AchievementBadges 
                   achievements={profile.achievement_badges || []}
-                  tier={profile.verification_tier}
                   size="sm"
-                  maxDisplay={4}
+                  maxDisplay={3}
                 />
               </div>
             )}

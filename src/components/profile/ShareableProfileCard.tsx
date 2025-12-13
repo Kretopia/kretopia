@@ -128,42 +128,9 @@ export const ShareableProfileCard = ({
   };
 
   const handleShare = async () => {
-    // If Web Share API is available, prefer that and only generate an image
-    // when the device can actually share files.
+    // Simplest & most reliable: use native share for URL + text only
     if (navigator.share) {
       try {
-        // Share image file when supported
-        if (navigator.canShare) {
-          try {
-            const canvas = await generateImage();
-            if (canvas) {
-              const blob = await new Promise<Blob | null>((resolve) => {
-                canvas.toBlob((b) => resolve(b), "image/png");
-              });
-
-              if (blob) {
-                const file = new File([blob], "thrivein-profile.png", { type: "image/png" });
-
-                if (navigator.canShare({ files: [file] })) {
-                  await navigator.share({
-                    files: [file],
-                    title: `${profile.full_name} on ThriveIN`,
-                    text:
-                      mode === "invite"
-                        ? `Join me on ThriveIN!`
-                        : `Check out my creative profile on ThriveIN!`,
-                  });
-                  toast.success("Shared successfully!");
-                  return;
-                }
-              }
-            }
-          } catch (error) {
-            console.warn("Image share failed, falling back to URL share", error);
-          }
-        }
-
-        // Fallback: share just URL + text (no image generation needed)
         await navigator.share({
           title: `${profile.full_name} on ThriveIN`,
           text:
@@ -173,15 +140,16 @@ export const ShareableProfileCard = ({
           url: qrUrl,
         });
         toast.success("Shared successfully!");
-        return;
       } catch (error: any) {
         if (error?.name === "AbortError") return; // user cancelled
         console.error("Share error:", error);
-        toast.error("Share failed, downloading card instead");
+        toast.error("Share failed – try downloading the card instead");
       }
+      return;
     }
 
     // No Web Share API – fall back to download
+    toast.info("Sharing not supported in this browser, downloading image instead");
     await handleDownload();
   };
 

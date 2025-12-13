@@ -20,7 +20,7 @@ export const ProfileQRDialog = ({
   userAvatar,
 }: ProfileQRDialogProps) => {
   const { toast } = useToast();
-  const connectUrl = `${window.location.origin}/auth?connect=${userId}`;
+  const connectUrl = `${window.location.origin}/profile/${userId}`;
 
   const handleCopyLink = async () => {
     try {

@@ -414,15 +414,36 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label>Upload File</Label>
-                      <Input
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Supports images, videos, and audio files up to 100MB
+                      </p>
+                      <input
                         type="file"
+                        id="portfolio-file-input"
                         onChange={handleFileUpload}
                         disabled={uploading}
                         accept="image/*,video/*,audio/*"
+                        className="hidden"
                       />
-                      {uploading && (
-                        <p className="text-xs text-muted-foreground">Uploading...</p>
-                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-24 border-dashed border-2 flex flex-col items-center justify-center gap-2"
+                        onClick={() => document.getElementById('portfolio-file-input')?.click()}
+                        disabled={uploading}
+                      >
+                        {uploading ? (
+                          <>
+                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            <span className="text-sm text-muted-foreground">Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-6 w-6 text-muted-foreground" />
+                            <span className="text-sm">Click to browse files</span>
+                          </>
+                        )}
+                      </Button>
                     </div>
 
                     {/* Show compact fields after upload */}

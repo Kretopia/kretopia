@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
   const [uploadMode, setUploadMode] = useState<"link" | "upload">("link");
   const [linkUrl, setLinkUrl] = useState("");
   const [previewData, setPreviewData] = useState<any>(null);
+  const [existingCollections, setExistingCollections] = useState<string[]>([]);
   const [newItem, setNewItem] = useState({
     title: "",
     description: "",
@@ -47,8 +48,29 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
     thumbnail_url: "",
     embed_code: "",
     category: "",
-    tags: ""
+    tags: "",
+    collection_name: ""
   });
+
+  // Fetch existing collections
+  useEffect(() => {
+    const fetchCollections = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('portfolio_items')
+        .select('collection_name')
+        .eq('user_id', user.id)
+        .not('collection_name', 'is', null);
+      
+      if (data) {
+        const unique = [...new Set(data.map(d => d.collection_name).filter(Boolean))];
+        setExistingCollections(unique as string[]);
+      }
+    };
+    fetchCollections();
+  }, [items]);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -171,7 +193,8 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
       thumbnail_url: newItem.thumbnail_url,
       embed_code: newItem.embed_code,
       category: newItem.category,
-      tags: newItem.tags.split(',').map(t => t.trim()).filter(Boolean)
+      tags: newItem.tags.split(',').map(t => t.trim()).filter(Boolean),
+      collection_name: newItem.collection_name || null
     });
 
     if (error) {
@@ -200,7 +223,8 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
       thumbnail_url: "",
       embed_code: "",
       category: "", 
-      tags: "" 
+      tags: "",
+      collection_name: ""
     });
   };
 
@@ -273,18 +297,30 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
 
                 {uploadMode === "link" ? (
                   <div className="space-y-4">
+                    {/* Platform suggestions */}
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="text-xs text-muted-foreground">Recommended:</span>
+                      <span className="text-xs bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full">Spotify</span>
+                      <span className="text-xs bg-orange-500/10 text-orange-600 px-2 py-0.5 rounded-full">SoundCloud</span>
+                      <span className="text-xs bg-red-500/10 text-red-600 px-2 py-0.5 rounded-full">YouTube</span>
+                      <span className="text-xs bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full">Vimeo</span>
+                    </div>
+                    
                     {/* Link Input */}
                     <div className="space-y-2">
                       <Label>Paste Link</Label>
                       <Input
                         value={linkUrl}
                         onChange={(e) => handleLinkChange(e.target.value)}
-                        placeholder="YouTube, Instagram, Vimeo, Spotify..."
+                        placeholder="Spotify, SoundCloud, YouTube, Vimeo..."
                         disabled={fetchingData}
                       />
                       {fetchingData && (
                         <p className="text-xs text-muted-foreground animate-fade-in">Analyzing link...</p>
                       )}
+                      <p className="text-xs text-muted-foreground">
+                        💡 Tip: Streaming links embed better than direct uploads
+                      </p>
                     </div>
 
                     {/* Preview Card - Fixed height container to prevent jumping */}
@@ -345,6 +381,24 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                             className="text-sm"
                           />
                         </div>
+                        {/* Collection/Album field */}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Album/Collection (optional)</Label>
+                          <Input
+                            value={newItem.collection_name}
+                            onChange={(e) => setNewItem({ ...newItem, collection_name: e.target.value })}
+                            placeholder="e.g., My EP, Photo Series..."
+                            className="text-sm"
+                            list="collections-list"
+                          />
+                          {existingCollections.length > 0 && (
+                            <datalist id="collections-list">
+                              {existingCollections.map(c => (
+                                <option key={c} value={c} />
+                              ))}
+                            </datalist>
+                          )}
+                        </div>
                         <Button
                           onClick={handleAdd}
                           className="w-full"
@@ -401,6 +455,24 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                             className="text-sm"
                           />
                         </div>
+                        {/* Collection/Album field */}
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Album/Collection (optional)</Label>
+                          <Input
+                            value={newItem.collection_name}
+                            onChange={(e) => setNewItem({ ...newItem, collection_name: e.target.value })}
+                            placeholder="e.g., My EP, Photo Series..."
+                            className="text-sm"
+                            list="collections-list-upload"
+                          />
+                          {existingCollections.length > 0 && (
+                            <datalist id="collections-list-upload">
+                              {existingCollections.map(c => (
+                                <option key={c} value={c} />
+                              ))}
+                            </datalist>
+                          )}
+                        </div>
                         <Button
                           onClick={handleAdd}
                           className="w-full"
@@ -427,8 +499,40 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
           <p className="text-sm md:text-base text-muted-foreground">Showcase your best work to stand out</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-          {items.map((item) => {
+        <div className="space-y-6">
+          {/* Group items by collection */}
+          {(() => {
+            const collections = new Map<string, typeof items>();
+            const uncategorized: typeof items = [];
+            
+            items.forEach(item => {
+              const collectionName = (item as any).collection_name;
+              if (collectionName) {
+                if (!collections.has(collectionName)) {
+                  collections.set(collectionName, []);
+                }
+                collections.get(collectionName)!.push(item);
+              } else {
+                uncategorized.push(item);
+              }
+            });
+            
+            const allGroups = [
+              ...Array.from(collections.entries()).map(([name, groupItems]) => ({ name, items: groupItems })),
+              ...(uncategorized.length > 0 ? [{ name: null, items: uncategorized }] : [])
+            ];
+            
+            return allGroups.map((group, groupIndex) => (
+              <div key={group.name || 'uncategorized'}>
+                {group.name && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-sm font-medium text-muted-foreground px-2">{group.name}</span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          {group.items.map((item) => {
             const thumbnail = getMediaThumbnail(item);
             const mediaInfo = parseMediaUrl(item.media_url);
             const isPlayable = mediaInfo || ['video', 'audio'].includes(item.media_type);
@@ -501,6 +605,10 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
               </div>
             );
           })}
+                </div>
+              </div>
+            ));
+          })()}
         </div>
       )}
 

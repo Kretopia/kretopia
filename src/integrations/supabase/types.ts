@@ -1910,6 +1910,8 @@ export type Database = {
       portfolio_items: {
         Row: {
           category: string | null
+          collection_name: string | null
+          collection_order: number | null
           created_at: string
           description: string | null
           embed_code: string | null
@@ -1926,6 +1928,8 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          collection_name?: string | null
+          collection_order?: number | null
           created_at?: string
           description?: string | null
           embed_code?: string | null
@@ -1942,6 +1946,8 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          collection_name?: string | null
+          collection_order?: number | null
           created_at?: string
           description?: string | null
           embed_code?: string | null

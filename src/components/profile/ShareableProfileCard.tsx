@@ -162,119 +162,137 @@ export const ShareableProfileCard = ({
     await handleDownload();
   };
 
+  // Story size: 9:16 aspect ratio (scaled down for preview, actual render is 1080x1920)
+  const cardWidth = 270; // Preview width (scales to 1080 at 4x)
+  const cardHeight = 480; // Preview height (scales to 1920 at 4x)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>
             {mode === "profile" ? "Share Your Profile Card" : "Invite Friends Card"}
           </DialogTitle>
         </DialogHeader>
 
-        {/* Card Preview */}
-        <div className="flex justify-center py-4">
+        {/* Card Preview - Story Size 9:16 */}
+        <div className="flex justify-center py-2 overflow-hidden">
           <div
             ref={cardRef}
-            className="w-[340px] rounded-2xl overflow-hidden"
+            className="rounded-3xl overflow-hidden relative"
             style={{
+              width: cardWidth,
+              height: cardHeight,
               background: mode === "profile" 
-                ? "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)"
-                : "linear-gradient(145deg, #0f2922 0%, #0a3d2e 50%, #064225 100%)",
+                ? "linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 30%, #0d0d1a 100%)"
+                : "linear-gradient(180deg, #0a1f1a 0%, #0f2922 30%, #081a14 100%)",
             }}
           >
-            {/* Header */}
-            <div className="p-6 pb-4">
-              <div className="flex items-start gap-4">
-                <Avatar className="h-20 w-20 border-2 border-white/20">
+            {/* Decorative gradient orb */}
+            <div 
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-[200%] h-40 opacity-30"
+              style={{
+                background: mode === "profile"
+                  ? "radial-gradient(ellipse at center, #a855f7 0%, transparent 70%)"
+                  : "radial-gradient(ellipse at center, #10b981 0%, transparent 70%)",
+              }}
+            />
+
+            {/* Content */}
+            <div className="relative z-10 h-full flex flex-col p-6">
+              {/* Profile Section */}
+              <div className="flex flex-col items-center text-center pt-4">
+                <Avatar className="h-24 w-24 border-4 border-white/20 shadow-2xl">
                   <AvatarImage src={profile.avatar_url || ""} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white text-2xl">
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white text-3xl font-bold">
                     {profile.full_name?.charAt(0) || "?"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-bold text-white truncate">
-                    {profile.full_name || "Creative"}
-                  </h3>
-                  <p className="text-white/70 text-sm truncate">
-                    {profile.role || "Creator"}
+                
+                <h3 className="text-2xl font-bold text-white mt-4 px-2">
+                  {profile.full_name || "Creative"}
+                </h3>
+                
+                <p className="text-white/60 text-sm mt-1">
+                  {profile.role || "Creator"}
+                </p>
+                
+                {profile.location && (
+                  <p className="text-white/40 text-xs mt-2 flex items-center gap-1">
+                    <span>📍</span> {profile.location}
                   </p>
-                  {profile.location && (
-                    <p className="text-white/50 text-xs mt-1">📍 {profile.location}</p>
-                  )}
-                  {verification && (
-                    <div className="flex items-center gap-1 mt-2">
-                      <verification.icon className={`h-4 w-4 ${verification.color}`} />
-                      <span className={`text-xs ${verification.color}`}>
-                        {verification.label}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                )}
+                
+                {verification && (
+                  <div className="flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-white/10">
+                    <verification.icon className={`h-4 w-4 ${verification.color}`} />
+                    <span className={`text-xs font-medium ${verification.color}`}>
+                      {verification.label}
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Skills */}
-            {topSkills.length > 0 && (
-              <div className="px-6 pb-4">
-                <div className="flex flex-wrap gap-2">
+              {/* Skills */}
+              {topSkills.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-2 mt-5">
                   {topSkills.map((skill, idx) => (
-                    <Badge
+                    <span
                       key={idx}
-                      variant="secondary"
-                      className="bg-white/10 text-white/90 border-white/20 text-xs"
+                      className="px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-medium"
                     >
                       {skill}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Portfolio Preview */}
-            {topPortfolio.length > 0 && (
-              <div className="px-6 pb-4">
-                <div className="grid grid-cols-3 gap-2">
-                  {topPortfolio.map((item) => (
-                    <div
-                      key={item.id}
-                      className="aspect-square rounded-lg overflow-hidden bg-white/5"
-                    >
-                      <img
-                        src={item.thumbnail_url || item.media_url || "/placeholder.svg"}
-                        alt={item.title || "Portfolio"}
-                        className="w-full h-full object-cover"
-                        crossOrigin="anonymous"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Footer with QR */}
-            <div className="px-6 pb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/50 text-[10px] uppercase tracking-wider mb-1">
-                    {mode === "profile" ? "View my profile on" : "Join me on"}
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <span className="text-white font-bold text-lg">Thrive</span>
-                    <span className={`font-bold text-lg ${mode === "profile" ? "text-primary" : "text-emerald-400"}`}>IN</span>
+              {/* Portfolio Grid */}
+              {topPortfolio.length > 0 && (
+                <div className="mt-auto mb-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    {topPortfolio.map((item) => (
+                      <div
+                        key={item.id}
+                        className="aspect-square rounded-xl overflow-hidden bg-white/5 shadow-lg"
+                      >
+                        <img
+                          src={item.thumbnail_url || item.media_url || "/placeholder.svg"}
+                          alt={item.title || "Portfolio"}
+                          className="w-full h-full object-cover"
+                          crossOrigin="anonymous"
+                        />
+                      </div>
+                    ))}
                   </div>
-                  {mode === "invite" && inviteCode && (
-                    <p className="text-white/60 text-[10px] mt-1">
-                      Code: <span className="text-emerald-400 font-mono font-semibold">{inviteCode}</span>
-                    </p>
-                  )}
                 </div>
-                <div className="bg-white p-2 rounded-lg">
-                  <QRCodeSVG
-                    value={qrUrl}
-                    size={60}
-                    level="M"
-                    includeMargin={false}
-                  />
+              )}
+
+              {/* Footer with QR and Branding */}
+              <div className="mt-auto pt-4">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-white/40 text-[9px] uppercase tracking-widest mb-1">
+                      {mode === "profile" ? "View profile" : "Join me"}
+                    </p>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-white font-bold text-xl tracking-tight">Thrive</span>
+                      <span className={`font-bold text-xl tracking-tight ${mode === "profile" ? "text-primary" : "text-emerald-400"}`}>IN</span>
+                    </div>
+                    {mode === "invite" && inviteCode && (
+                      <p className="text-white/50 text-[10px] mt-1.5">
+                        Code: <span className="font-mono font-bold text-emerald-400">{inviteCode}</span>
+                      </p>
+                    )}
+                  </div>
+                  <div className="bg-white p-2 rounded-xl shadow-xl">
+                    <QRCodeSVG
+                      value={qrUrl}
+                      size={56}
+                      level="M"
+                      includeMargin={false}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

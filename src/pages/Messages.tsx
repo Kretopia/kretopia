@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase } from "lucide-react";
+import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase, Paperclip, Image as ImageIcon, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
 import { IceBreakers } from "@/components/messages/IceBreakers";
 import { TypingIndicator, useTypingStatus } from "@/components/messages/TypingIndicator";
+import { MessageAttachments, AttachmentPreview } from "@/components/messages/MessageAttachments";
 
 interface Conversation {
   conversation_id: string;
@@ -43,6 +44,15 @@ interface Message {
   created_at: string;
   read: boolean;
   match_id: string | null;
+  attachment_url?: string;
+  attachment_type?: 'image' | 'file';
+  attachment_name?: string;
+}
+
+interface Attachment {
+  url: string;
+  type: 'image' | 'file';
+  fileName?: string;
 }
 
 interface Connection {
@@ -78,6 +88,7 @@ const Messages = () => {
   const [matchId, setMatchId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [attachment, setAttachment] = useState<Attachment | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Typing status hook
@@ -279,9 +290,13 @@ const Messages = () => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+    if ((!newMessage.trim() && !attachment) || !selectedConversation) return;
 
-    const messageContent = newMessage.trim();
+    const messageContent = attachment 
+      ? (newMessage.trim() ? `${newMessage.trim()}\n[${attachment.type === 'image' ? '📷 Image' : '📎 ' + (attachment.fileName || 'File')}](${attachment.url})`
+        : `[${attachment.type === 'image' ? '📷 Image' : '📎 ' + (attachment.fileName || 'File')}](${attachment.url})`)
+      : newMessage.trim();
+      
     const { error } = await supabase.from("messages").insert({
       sender_id: currentUserId,
       receiver_id: selectedConversation,
@@ -310,7 +325,7 @@ const Messages = () => {
       await notifyMessage(
         selectedConversation,
         senderProfile.full_name || 'Someone',
-        messageContent
+        attachment ? (attachment.type === 'image' ? '📷 Sent an image' : '📎 Sent a file') : messageContent
       );
     }
 
@@ -319,6 +334,7 @@ const Messages = () => {
     analytics.messageSent(selectedConversation, 'direct');
 
     setNewMessage("");
+    setAttachment(null);
   };
 
   const getConversationPartner = (conv: Conversation) => {
@@ -532,6 +548,18 @@ const Messages = () => {
                     <p className="text-sm text-muted-foreground">{otherUser.role}</p>
                   )}
                 </div>
+                
+                {/* Start Project Button - visible in header */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden sm:flex gap-2"
+                  onClick={() => setShowProjectDialog(true)}
+                >
+                  <Briefcase className="h-4 w-4" />
+                  Start Project
+                </Button>
+                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
@@ -542,12 +570,10 @@ const Messages = () => {
                     <DropdownMenuItem onClick={() => navigate(`/profile/${otherUser.id}`)}>
                       View Profile
                     </DropdownMenuItem>
-                    {matchId && (
-                      <DropdownMenuItem onClick={() => setShowProjectDialog(true)}>
-                        <Briefcase className="h-4 w-4 mr-2" />
-                        Start Project Together
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem onClick={() => setShowProjectDialog(true)} className="sm:hidden">
+                      <Briefcase className="h-4 w-4 mr-2" />
+                      Start Project Together
+                    </DropdownMenuItem>
                     <DropdownMenuItem className="text-destructive">
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete Conversation
@@ -617,15 +643,65 @@ const Messages = () => {
                       {!isOwn && !showAvatar && <div className="w-8" />}
                       
                       <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
-                        <div
-                          className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
-                            isOwn
-                              ? "bg-primary text-primary-foreground rounded-br-sm"
-                              : "bg-muted rounded-bl-sm"
-                          }`}
-                        >
-                          <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
-                        </div>
+                        {/* Check if message contains an attachment link */}
+                        {msg.content.includes('](http') ? (
+                          <div className="space-y-2">
+                            {/* Extract and render attachment */}
+                            {msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/) && (
+                              <a 
+                                href={msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/)?.[1]} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="block"
+                              >
+                                <img 
+                                  src={msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/)?.[1]} 
+                                  alt="Shared image" 
+                                  className="max-w-[200px] max-h-[200px] rounded-lg object-cover border border-border"
+                                />
+                              </a>
+                            )}
+                            {msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/) && (
+                              <a 
+                                href={msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/)?.[2]} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                                  isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"
+                                }`}
+                              >
+                                <FileText className="h-4 w-4" />
+                                <span className="text-sm underline">
+                                  {msg.content.match(/\[📎 ([^\]]+)\]\(/)?.[1] || 'Download file'}
+                                </span>
+                              </a>
+                            )}
+                            {/* Render text part if exists */}
+                            {msg.content.replace(/\[📷 Image\]\([^\)]+\)/, '').replace(/\[📎 [^\]]+\]\([^\)]+\)/, '').trim() && (
+                              <div
+                                className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                                  isOwn
+                                    ? "bg-primary text-primary-foreground rounded-br-sm"
+                                    : "bg-muted rounded-bl-sm"
+                                }`}
+                              >
+                                <p className="text-sm break-words whitespace-pre-wrap">
+                                  {msg.content.replace(/\[📷 Image\]\([^\)]+\)/, '').replace(/\[📎 [^\]]+\]\([^\)]+\)/, '').trim()}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div
+                            className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                              isOwn
+                                ? "bg-primary text-primary-foreground rounded-br-sm"
+                                : "bg-muted rounded-bl-sm"
+                            }`}
+                          >
+                            <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
+                          </div>
+                        )}
                         <div className="flex items-center gap-1 mt-1 px-1">
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(msg.created_at), {
@@ -657,15 +733,29 @@ const Messages = () => {
           </ScrollArea>
 
           {/* Message Input */}
-          <div className="p-4 border-t border-border bg-card">
+          <div className="p-4 border-t border-border bg-card space-y-2">
+            {/* Attachment Preview */}
+            {attachment && (
+              <AttachmentPreview
+                url={attachment.url}
+                type={attachment.type}
+                fileName={attachment.fileName}
+                onRemove={() => setAttachment(null)}
+              />
+            )}
+            
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 setTyping(false);
                 sendMessage();
               }}
-              className="flex gap-2"
+              className="flex items-center gap-2"
             >
+              <MessageAttachments
+                onAttach={(url, type, fileName) => setAttachment({ url, type, fileName })}
+                disabled={!!attachment}
+              />
               <Input
                 value={newMessage}
                 onChange={handleInputChange}
@@ -675,7 +765,7 @@ const Messages = () => {
               <Button 
                 type="submit" 
                 size="icon" 
-                disabled={!newMessage.trim()}
+                disabled={!newMessage.trim() && !attachment}
                 className="rounded-full"
               >
                 <Send className="h-4 w-4" />
@@ -694,7 +784,7 @@ const Messages = () => {
       )}
 
       {/* Start Project Dialog */}
-      {otherUser && matchId && (
+      {otherUser && (
         <StartProjectFromMatchDialog
           open={showProjectDialog}
           onOpenChange={setShowProjectDialog}

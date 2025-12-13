@@ -2123,6 +2123,7 @@ export type Database = {
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
+          calendly_url: string | null
           collab_intent: string | null
           company_about: string | null
           company_address: string | null
@@ -2217,6 +2218,7 @@ export type Database = {
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          calendly_url?: string | null
           collab_intent?: string | null
           company_about?: string | null
           company_address?: string | null
@@ -2311,6 +2313,7 @@ export type Database = {
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          calendly_url?: string | null
           collab_intent?: string | null
           company_about?: string | null
           company_address?: string | null

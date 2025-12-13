@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Globe, Linkedin, Instagram, Twitter, Music, ExternalLink, Users, Eye, CheckCircle2 } from "lucide-react";
+import { Globe, Linkedin, Instagram, Twitter, Music, ExternalLink, Users, Eye, CheckCircle2, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface Profile {
   website?: string;
+  calendly_url?: string;
   linkedin_url?: string;
   behance_url?: string;
   imdb_url?: string;
@@ -184,6 +185,25 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
                     </div>
                   </div>
                 ))}
+                {/* Calendly Booking URL */}
+                <div className="space-y-2 pb-3 border-b border-border">
+                  <Label className="font-semibold flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Calendly / Booking URL
+                  </Label>
+                  <Input
+                    value={(editData as any).calendly_url || ""}
+                    onChange={(e) => {
+                      setEditData({ ...editData, calendly_url: e.target.value });
+                      setHasUnsavedChanges(true);
+                    }}
+                    placeholder="https://calendly.com/yourname"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Add your Calendly link so visitors can book a call with you
+                  </p>
+                </div>
+
                 <div className="space-y-2 pt-2">
                   <Label className="font-semibold">Additional Metrics</Label>
                   <Input

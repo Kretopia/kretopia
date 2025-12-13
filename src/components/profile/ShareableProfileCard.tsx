@@ -162,9 +162,9 @@ export const ShareableProfileCard = ({
     await handleDownload();
   };
 
-  // Story size: 9:16 aspect ratio (scaled down for preview, actual render is 1080x1920)
-  const cardWidth = 270; // Preview width (scales to 1080 at 4x)
-  const cardHeight = 480; // Preview height (scales to 1920 at 4x)
+  // Story size: 9:16 aspect ratio
+  const cardWidth = 280;
+  const cardHeight = 498;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -183,50 +183,59 @@ export const ShareableProfileCard = ({
             style={{
               width: cardWidth,
               height: cardHeight,
-              background: mode === "profile" 
-                ? "linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 30%, #0d0d1a 100%)"
-                : "linear-gradient(180deg, #0a1f1a 0%, #0f2922 30%, #081a14 100%)",
+              background: "linear-gradient(165deg, #1a0a2e 0%, #0f0a1e 50%, #0a0612 100%)",
             }}
           >
-            {/* Decorative gradient orb */}
+            {/* Decorative top gradient glow */}
             <div 
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-[200%] h-40 opacity-30"
+              className="absolute -top-20 left-1/2 -translate-x-1/2 w-[300px] h-[200px] opacity-60"
               style={{
-                background: mode === "profile"
-                  ? "radial-gradient(ellipse at center, #a855f7 0%, transparent 70%)"
-                  : "radial-gradient(ellipse at center, #10b981 0%, transparent 70%)",
+                background: "radial-gradient(ellipse at center, rgba(139, 92, 246, 0.5) 0%, rgba(168, 85, 247, 0.2) 40%, transparent 70%)",
+                filter: "blur(30px)",
+              }}
+            />
+            
+            {/* Decorative bottom gradient */}
+            <div 
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[200px] h-[100px] opacity-40"
+              style={{
+                background: "radial-gradient(ellipse at center, rgba(236, 72, 153, 0.4) 0%, transparent 70%)",
+                filter: "blur(20px)",
               }}
             />
 
             {/* Content */}
-            <div className="relative z-10 h-full flex flex-col p-6">
+            <div className="relative z-10 h-full flex flex-col px-6 py-5">
               {/* Profile Section */}
-              <div className="flex flex-col items-center text-center pt-4">
-                <Avatar className="h-24 w-24 border-4 border-white/20 shadow-2xl">
-                  <AvatarImage src={profile.avatar_url || ""} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white text-3xl font-bold">
-                    {profile.full_name?.charAt(0) || "?"}
-                  </AvatarFallback>
-                </Avatar>
+              <div className="flex flex-col items-center text-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-md opacity-60 scale-110" />
+                  <Avatar className="h-20 w-20 border-[3px] border-white/30 shadow-2xl relative">
+                    <AvatarImage src={profile.avatar_url || ""} />
+                    <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-2xl font-bold">
+                      {profile.full_name?.charAt(0) || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
                 
-                <h3 className="text-2xl font-bold text-white mt-4 px-2">
+                <h3 className="text-xl font-bold text-white mt-3 tracking-tight">
                   {profile.full_name || "Creative"}
                 </h3>
                 
-                <p className="text-white/60 text-sm mt-1">
+                <p className="text-purple-300/80 text-sm font-medium">
                   {profile.role || "Creator"}
                 </p>
                 
                 {profile.location && (
-                  <p className="text-white/40 text-xs mt-2 flex items-center gap-1">
+                  <p className="text-white/50 text-xs mt-1 flex items-center gap-1">
                     <span>📍</span> {profile.location}
                   </p>
                 )}
                 
                 {verification && (
-                  <div className="flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-white/10">
-                    <verification.icon className={`h-4 w-4 ${verification.color}`} />
-                    <span className={`text-xs font-medium ${verification.color}`}>
+                  <div className="flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 to-emerald-400/10 border border-emerald-500/30">
+                    <verification.icon className={`h-3.5 w-3.5 ${verification.color}`} />
+                    <span className={`text-[11px] font-semibold ${verification.color}`}>
                       {verification.label}
                     </span>
                   </div>
@@ -235,11 +244,11 @@ export const ShareableProfileCard = ({
 
               {/* Skills */}
               {topSkills.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-2 mt-5">
+                <div className="flex flex-wrap justify-center gap-1.5 mt-4">
                   {topSkills.map((skill, idx) => (
                     <span
                       key={idx}
-                      className="px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-medium"
+                      className="px-2.5 py-1 rounded-full bg-white/10 text-white/90 text-[10px] font-medium backdrop-blur-sm border border-white/10"
                     >
                       {skill}
                     </span>
@@ -249,12 +258,12 @@ export const ShareableProfileCard = ({
 
               {/* Portfolio Grid */}
               {topPortfolio.length > 0 && (
-                <div className="mt-auto mb-4">
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="mt-4 flex-1 flex items-center">
+                  <div className="grid grid-cols-3 gap-2 w-full">
                     {topPortfolio.map((item) => (
                       <div
                         key={item.id}
-                        className="aspect-square rounded-xl overflow-hidden bg-white/5 shadow-lg"
+                        className="aspect-square rounded-xl overflow-hidden bg-white/5 shadow-lg ring-1 ring-white/10"
                       >
                         <img
                           src={item.thumbnail_url || item.media_url || "/placeholder.svg"}
@@ -268,27 +277,37 @@ export const ShareableProfileCard = ({
                 </div>
               )}
 
+              {/* CTA Text */}
+              <div className="mt-auto pt-3 text-center">
+                <p className="text-white/70 text-[11px] leading-relaxed">
+                  {mode === "profile" 
+                    ? "Scan to view my full portfolio and connect with me" 
+                    : "Scan to join ThriveIN and collaborate with top creators"
+                  }
+                </p>
+              </div>
+
               {/* Footer with QR and Branding */}
-              <div className="mt-auto pt-4">
-                <div className="flex items-end justify-between">
+              <div className="mt-3 pt-3 border-t border-white/10">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white/40 text-[9px] uppercase tracking-widest mb-1">
-                      {mode === "profile" ? "View profile" : "Join me"}
-                    </p>
                     <div className="flex items-baseline gap-0.5">
-                      <span className="text-white font-bold text-xl tracking-tight">Thrive</span>
-                      <span className={`font-bold text-xl tracking-tight ${mode === "profile" ? "text-primary" : "text-emerald-400"}`}>IN</span>
+                      <span className="text-white font-bold text-lg tracking-tight">Thrive</span>
+                      <span className="font-bold text-lg tracking-tight text-purple-400">IN</span>
                     </div>
+                    <p className="text-white/40 text-[9px] mt-0.5">
+                      thrivein.io
+                    </p>
                     {mode === "invite" && inviteCode && (
-                      <p className="text-white/50 text-[10px] mt-1.5">
-                        Code: <span className="font-mono font-bold text-emerald-400">{inviteCode}</span>
+                      <p className="text-white/50 text-[10px] mt-1">
+                        Code: <span className="font-mono font-bold text-purple-400">{inviteCode}</span>
                       </p>
                     )}
                   </div>
-                  <div className="bg-white p-2 rounded-xl shadow-xl">
+                  <div className="bg-white p-1.5 rounded-lg shadow-xl">
                     <QRCodeSVG
                       value={qrUrl}
-                      size={56}
+                      size={52}
                       level="M"
                       includeMargin={false}
                     />

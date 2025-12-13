@@ -50,6 +50,7 @@ import { ProfileActions } from "@/components/profile/ProfileActions";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
+import { AIPortfolioInsights, AIProfileOptimizer } from "@/components/ai";
 
 import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
 import { checkProfileCompletion, getDiscoveryMissingFields, meetsDiscoveryRequirements } from "@/lib/profileCompletion";
@@ -341,6 +342,27 @@ const ProfileContent = () => {
           breakdown={(profile as any).verification_breakdown || undefined}
           onVerificationComplete={() => fetchData()}
         />
+
+        {/* AI Insights Section - Differentiator */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+          <AIPortfolioInsights 
+            portfolioItems={portfolioItems}
+            userRole={profile.role || 'Creator'}
+            isPro={userTier === 'pro'}
+          />
+          <AIProfileOptimizer 
+            profile={{
+              full_name: profile.full_name,
+              role: profile.role,
+              bio: profile.bio,
+              professional_skills: Array.isArray(profile.professional_skills) ? profile.professional_skills as string[] : [],
+              avatar_url: profile.avatar_url,
+              location: profile.location
+            }}
+            portfolioCount={portfolioItems.length}
+            isPro={userTier === 'pro'}
+          />
+        </div>
 
         {/* Simplified Content - Portfolio First */}
         <div className="space-y-3 sm:space-y-4">

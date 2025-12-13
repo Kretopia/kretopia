@@ -26,6 +26,7 @@ import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { SEO } from "@/components/SEO";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 import { StartProjectDialog } from "@/components/project/StartProjectDialog";
+import { AICollaborationIdeas } from "@/components/ai";
 import { Download, FileText, Globe, Award } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -100,23 +101,30 @@ const PublicProfile = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showStartProjectDialog, setShowStartProjectDialog] = useState(false);
+  const [currentUserProfile, setCurrentUserProfile] = useState<{full_name: string; role: string; professional_skills?: string[]; subscription_tier?: string} | null>(null);
   const { toast } = useToast();
   
-  // Fetch current user's role for project templates
+  // Fetch current user's profile for project templates and AI features
   useEffect(() => {
-    const fetchCurrentUserRole = async () => {
+    const fetchCurrentUserProfile = async () => {
       if (currentUser) {
         const { data } = await supabase
           .from('profiles')
-          .select('role')
+          .select('full_name, role, professional_skills, subscription_tier')
           .eq('user_id', currentUser.id)
           .single();
-        if (data?.role) {
-          setCurrentUserRole(data.role);
+        if (data) {
+          setCurrentUserRole(data.role || '');
+          setCurrentUserProfile({
+            full_name: data.full_name || '',
+            role: data.role || '',
+            professional_skills: Array.isArray(data.professional_skills) ? (data.professional_skills as string[]) : [],
+            subscription_tier: data.subscription_tier || 'free'
+          });
         }
       }
     };
-    fetchCurrentUserRole();
+    fetchCurrentUserProfile();
   }, [currentUser]);
 
   const fetchData = async () => {
@@ -496,6 +504,25 @@ const PublicProfile = () => {
             <div className="space-y-8">
               {/* Overview Section */}
               <section id="overview">
+                {/* AI Collaboration Ideas - Show only for matched users */}
+                {isConnected && currentUserProfile && (
+                  <div className="mb-6">
+                    <AICollaborationIdeas
+                      currentUser={{
+                        full_name: currentUserProfile.full_name,
+                        role: currentUserProfile.role,
+                        professional_skills: currentUserProfile.professional_skills
+                      }}
+                      matchedUser={{
+                        full_name: profile.full_name,
+                        role: profile.role,
+                        professional_skills: Array.isArray(profile.professional_skills) ? (profile.professional_skills as string[]) : []
+                      }}
+                      isPro={currentUserProfile.subscription_tier === 'pro'}
+                    />
+                  </div>
+                )}
+
                 {/* About Section */}
                 <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm mb-6">
                   <AboutSection

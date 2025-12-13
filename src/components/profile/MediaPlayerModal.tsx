@@ -9,14 +9,16 @@ interface MediaPlayerModalProps {
   onClose: () => void;
   item: {
     title: string;
-    description: string;
+    description?: string | null;
     media_type: string;
     media_url: string;
-    thumbnail_url?: string;
-  };
+    thumbnail_url?: string | null;
+  } | null;
 }
 
 export const MediaPlayerModal = ({ isOpen, onClose, item }: MediaPlayerModalProps) => {
+  if (!item) return null;
+  
   const mediaInfo = parseMediaUrl(item.media_url);
 
   const renderPlayer = () => {

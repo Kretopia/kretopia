@@ -50,6 +50,9 @@ interface Profile {
   verification_tier?: string;
   verification_status?: string;
   professional_skills?: any;
+  passion_skills?: any;
+  collab_intent?: string;
+  rate_range?: string;
 }
 
 interface PortfolioItem {
@@ -61,6 +64,22 @@ interface PortfolioItem {
   thumbnail_url?: string;
 }
 
+interface Credit {
+  id: string;
+  project_name: string;
+  role: string;
+  year?: number;
+  platform?: string;
+}
+
+interface IndustryStat {
+  id: string;
+  title: string;
+  value?: string;
+  stat_type: string;
+  issuer?: string;
+}
+
 const CreatorEPK = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
@@ -68,6 +87,8 @@ const CreatorEPK = () => {
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [pressLinks, setPressLinks] = useState<any[]>([]);
   const [awards, setAwards] = useState<any[]>([]);
+  const [credits, setCredits] = useState<Credit[]>([]);
+  const [industryStats, setIndustryStats] = useState<IndustryStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
@@ -84,7 +105,7 @@ const CreatorEPK = () => {
         // Fetch from profiles table directly - RLS allows public read
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills')
+          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -97,7 +118,51 @@ const CreatorEPK = () => {
 
         setProfile(profileData);
 
-        // Fetch portfolio items (public)
+        // Fetch all data in parallel
+        const [portfolioRes, pressRes, awardsRes, creditsRes, statsRes] = await Promise.all([
+          // Portfolio items
+          supabase
+            .from('portfolio_items')
+            .select('id, title, description, media_url, media_type, thumbnail_url')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(9),
+          
+          // Press links
+          supabase
+            .from('press_links')
+            .select('id, title, publication, url, image_url')
+            .eq('user_id', userId)
+            .limit(4),
+          
+          // Awards
+          supabase
+            .from('awards')
+            .select('id, title, organization, year')
+            .eq('user_id', userId)
+            .limit(4),
+          
+          // Credits (work history)
+          supabase
+            .from('credits')
+            .select('id, project_name, role, year, platform')
+            .eq('user_id', userId)
+            .order('year', { ascending: false })
+            .limit(6),
+          
+          // Industry stats
+          supabase
+            .from('industry_stats')
+            .select('id, title, value, stat_type, issuer')
+            .eq('user_id', userId)
+            .limit(6)
+        ]);
+
+        setPortfolioItems(portfolioRes.data || []);
+        setPressLinks(pressRes.data || []);
+        setAwards(awardsRes.data || []);
+        setCredits(creditsRes.data || []);
+        setIndustryStats(statsRes.data || []);
         const { data: portfolio } = await supabase
           .from('portfolio_items')
           .select('id, title, description, media_url, media_type, thumbnail_url')
@@ -295,17 +360,109 @@ const CreatorEPK = () => {
           )}
         </div>
 
-        {/* Skills */}
+        {/* Professional Skills */}
         {profile.professional_skills && Array.isArray(profile.professional_skills) && profile.professional_skills.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-6">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              Skills
+              Professional Skills
             </h3>
             <div className="flex flex-wrap gap-2">
-              {profile.professional_skills.slice(0, 8).map((skill: any, index: number) => (
+              {profile.professional_skills.slice(0, 10).map((skill: any, index: number) => (
                 <Badge key={index} variant="secondary" className="px-3 py-1">
                   {typeof skill === 'string' ? skill : skill?.skill || skill?.name || 'Skill'}
                 </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Passion Skills / Other Expertise */}
+        {profile.passion_skills && Array.isArray(profile.passion_skills) && profile.passion_skills.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Also Skilled In
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {profile.passion_skills.slice(0, 8).map((skill: any, index: number) => (
+                <Badge key={index} variant="outline" className="px-3 py-1">
+                  {typeof skill === 'string' ? skill : skill?.skill || skill?.name || 'Skill'}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Collaboration Info */}
+        {(profile.collab_intent || profile.rate_range) && (
+          <div className="mb-6 p-4 rounded-lg bg-muted/50">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Availability
+            </h3>
+            <div className="space-y-2 text-sm">
+              {profile.collab_intent && (
+                <p className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Looking for:</span>
+                  <span className="font-medium capitalize">{profile.collab_intent.replace(/_/g, ' ')}</span>
+                </p>
+              )}
+              {profile.rate_range && (
+                <p className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Rate:</span>
+                  <span className="font-medium">{profile.rate_range}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Work History / Credits */}
+        {credits.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Work History
+            </h3>
+            <div className="space-y-2">
+              {credits.map((credit) => (
+                <div
+                  key={credit.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm truncate">{credit.project_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {credit.role}
+                      {credit.platform && ` • ${credit.platform}`}
+                    </p>
+                  </div>
+                  {credit.year && (
+                    <span className="text-xs text-muted-foreground shrink-0 ml-2">{credit.year}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Industry Stats / Certifications */}
+        {industryStats.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Credentials & Stats
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {industryStats.map((stat) => (
+                <div
+                  key={stat.id}
+                  className="p-3 rounded-lg bg-muted/50 text-center"
+                >
+                  {stat.value && (
+                    <p className="text-lg font-bold text-primary">{stat.value}</p>
+                  )}
+                  <p className="text-xs font-medium truncate">{stat.title}</p>
+                  {stat.issuer && (
+                    <p className="text-xs text-muted-foreground truncate">{stat.issuer}</p>
+                  )}
+                </div>
               ))}
             </div>
           </div>

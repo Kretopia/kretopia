@@ -73,8 +73,22 @@ Respond ONLY with valid JSON:
 
       if (error) throw error;
       
-      const parsed = JSON.parse(data?.content || '{}');
-      setOptimization(parsed);
+      const raw = typeof data?.content === 'string' ? data.content : '{}';
+      let parsed: Partial<Optimization> = {};
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        console.warn('Failed to parse AI optimizer JSON, using fallback structure', e, raw);
+      }
+
+      const safeOptimization: Optimization = {
+        score: typeof parsed.score === 'number' ? parsed.score : 75,
+        completed: Array.isArray(parsed.completed) ? parsed.completed : [],
+        suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+        priority: typeof parsed.priority === 'string' ? parsed.priority : '',
+      };
+
+      setOptimization(safeOptimization);
     } catch (error) {
       console.error('AI optimizer error:', error);
       toast({
@@ -180,7 +194,7 @@ Respond ONLY with valid JSON:
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2">Completed</p>
               <div className="space-y-1">
-                {optimization.completed.map((item, i) => (
+                {(optimization.completed || []).map((item, i) => (
                   <p key={i} className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" /> {item}
                   </p>
@@ -191,9 +205,12 @@ Respond ONLY with valid JSON:
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2">Suggestions</p>
               <div className="space-y-1">
-                {optimization.suggestions.map((item, i) => (
+                {(optimization.suggestions || []).map((item, i) => (
                   <p key={i} className="text-xs text-muted-foreground flex items-start gap-1">
-                    <span className="text-primary">→</span> {item}
+                    <span className="text-primary">
+                      →
+                    </span>{' '}
+                    {item}
                   </p>
                 ))}
               </div>

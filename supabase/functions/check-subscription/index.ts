@@ -43,12 +43,34 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Fetch existing profile to support complimentary/internal tiers
+    const { data: profileData } = await supabaseClient
+      .from('profiles')
+      .select('subscription_tier, subscription_status')
+      .eq('user_id', user.id)
+      .single();
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
-      logStep("No customer found, updating unsubscribed state");
+      logStep("No customer found");
+
+      // If this is an internal/complimentary Pro account, keep Pro tier
+      if (profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active') {
+        logStep("Complimentary Pro profile detected, skipping downgrade");
+        return new Response(JSON.stringify({
+          subscribed: false,
+          tier: 'pro',
+          product_id: null,
+          subscription_end: null,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
       
+      logStep("No Stripe customer and no complimentary tier, updating to free");
       // Update profile with free tier
       await supabaseClient
         .from('profiles')
@@ -56,7 +78,7 @@ serve(async (req) => {
           subscription_tier: 'free',
           subscription_status: 'none',
           subscription_product_id: null,
-          subscription_end_date: null
+          subscription_end_date: null,
         })
         .eq('user_id', user.id);
       
@@ -64,7 +86,7 @@ serve(async (req) => {
         subscribed: false, 
         tier: 'free',
         product_id: null,
-        subscription_end: null 
+        subscription_end: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -91,18 +113,19 @@ serve(async (req) => {
       
       productId = subscription.items.data[0].price.product as string;
       
-      // Map product ID to tier
-      // Current product IDs (from subscriptionConfig.ts)
-      if (productId === 'prod_TAoY7TiQaFLU00') {
-        tier = 'thriver';
-      } else if (productId === 'prod_TAoZwx40t99jYc') {
-        tier = 'creator_pro';
-      }
-      // Legacy product IDs
-      else if (productId === 'prod_TA72LxYWp18g5A' || productId === 'prod_TA5c8GtL6ioS2h') {
-        tier = 'thriver';
-      } else if (productId === 'prod_TA73Hatv66ZqLu' || productId === 'prod_TA5ihoppNqeijE') {
-        tier = 'creator_pro';
+      // Map product ID to tier (all current and legacy map to 'pro')
+      const proProductIds = [
+        'prod_TWc5tpvPKjy8hG', // current Pro product
+        'prod_TA5c8GtL6ioS2h',
+        'prod_TA5ihoppNqeijE',
+        'prod_TAoY7TiQaFLU00',
+        'prod_TAoZwx40t99jYc',
+      ];
+
+      if (proProductIds.includes(productId)) {
+        tier = 'pro';
+      } else {
+        tier = 'free';
       }
       
       logStep("Determined subscription tier", { productId, tier });
@@ -121,17 +144,23 @@ serve(async (req) => {
         .eq('user_id', user.id);
     } else {
       logStep("No active subscription found");
-      
-      // Update profile to free tier
-      await supabaseClient
-        .from('profiles')
-        .update({
-          subscription_tier: 'free',
-          subscription_status: 'none',
-          subscription_product_id: null,
-          subscription_end_date: null
-        })
-        .eq('user_id', user.id);
+
+      // If this is an internal/complimentary Pro account, keep Pro tier
+      if (profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active') {
+        logStep("Complimentary Pro profile detected, skipping downgrade (no active Stripe sub)");
+      } else {
+        logStep("No active Stripe sub and no complimentary tier, updating to free");
+        // Update profile to free tier
+        await supabaseClient
+          .from('profiles')
+          .update({
+            subscription_tier: 'free',
+            subscription_status: 'none',
+            subscription_product_id: null,
+            subscription_end_date: null,
+          })
+          .eq('user_id', user.id);
+      }
     }
 
     return new Response(JSON.stringify({

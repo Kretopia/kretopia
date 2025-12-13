@@ -136,25 +136,43 @@ export const NotificationCenter = () => {
                         <p className="text-sm text-muted-foreground mb-2">
                           {notification.message}
                         </p>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                           </span>
-                          {notification.action_url && (
-                            <Button 
-                              variant="default" 
-                              size="sm" 
-                              className="h-7 text-xs"
-                              onClick={(e) => handleActionClick(e, notification)}
-                            >
-                              {notification.category === 'match' ? (
-                                <MessageCircle className="h-3 w-3 mr-1" />
-                              ) : (
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                              )}
-                              {notification.action_text || 'View'}
-                            </Button>
-                          )}
+                          <div className="flex gap-2">
+                            {/* View Profile button for match notifications */}
+                            {notification.category === 'match' && notification.link && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!notification.read) markAsRead(notification.id);
+                                  setIsOpen(false);
+                                  setTimeout(() => navigate(notification.link), 100);
+                                }}
+                              >
+                                View Profile
+                              </Button>
+                            )}
+                            {notification.action_url && (
+                              <Button 
+                                variant="default" 
+                                size="sm" 
+                                className="h-7 text-xs"
+                                onClick={(e) => handleActionClick(e, notification)}
+                              >
+                                {notification.category === 'match' ? (
+                                  <MessageCircle className="h-3 w-3 mr-1" />
+                                ) : (
+                                  <ExternalLink className="h-3 w-3 mr-1" />
+                                )}
+                                {notification.action_text || 'View'}
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

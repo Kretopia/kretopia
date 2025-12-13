@@ -3,7 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { 
+import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
+import { getMediaThumbnail } from "@/lib/mediaUtils";
+import {
   MapPin, 
   Globe, 
   Calendar, 
@@ -68,6 +70,7 @@ const CreatorEPK = () => {
   const [awards, setAwards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
 
   useEffect(() => {
     const fetchPublicProfile = async () => {
@@ -333,37 +336,51 @@ const CreatorEPK = () => {
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {portfolioItems.map((item) => (
-                <div 
+                <button 
                   key={item.id}
-                  className="aspect-square rounded-lg overflow-hidden bg-muted relative group"
+                  onClick={() => setSelectedItem(item)}
+                  className="aspect-square rounded-lg overflow-hidden bg-muted relative group cursor-pointer hover:opacity-90 transition-opacity"
                 >
                   {item.media_type === 'video' ? (
                     <>
                       <img 
-                        src={item.thumbnail_url || item.media_url}
+                        src={getMediaThumbnail(item)}
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
                         <Play className="h-6 w-6 text-white" />
                       </div>
                     </>
                   ) : item.media_type === 'audio' ? (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 transition-colors">
                       <Music className="h-8 w-8 text-primary/60" />
                     </div>
                   ) : (
                     <img 
-                      src={item.thumbnail_url || item.media_url}
+                      src={getMediaThumbnail(item)}
                       alt={item.title}
                       className="w-full h-full object-cover"
                     />
                   )}
-                </div>
+                </button>
               ))}
             </div>
           </div>
         )}
+
+        {/* Media Player Modal */}
+        <MediaPlayerModal
+          isOpen={!!selectedItem}
+          onClose={() => setSelectedItem(null)}
+          item={selectedItem ? {
+            title: selectedItem.title,
+            description: selectedItem.description,
+            media_type: selectedItem.media_type,
+            media_url: selectedItem.media_url,
+            thumbnail_url: selectedItem.thumbnail_url
+          } : null}
+        />
 
         {/* Press & Awards Combined */}
         {(pressLinks.length > 0 || awards.length > 0) && (

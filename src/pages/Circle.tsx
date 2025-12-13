@@ -9,12 +9,13 @@ import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
+import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
 import { Users, Sparkles, UserPlus } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 
 export default function Circle() {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
@@ -23,6 +24,11 @@ export default function Circle() {
   const [connections, setConnections] = useState<any[]>([]);
   const [connectionsLoading, setConnectionsLoading] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [filters, setFilters] = useState<SwipeFiltersState>(DEFAULT_SWIPE_FILTERS);
+  const [profilesCount, setProfilesCount] = useState(0);
+
+  // Check if user is Pro
+  const isPro = subscriptionInfo.tier === 'pro' || subscriptionInfo.tier === 'studio';
 
   // Sync tab with URL param when it changes
   useEffect(() => {
@@ -147,6 +153,17 @@ export default function Circle() {
     navigate(`/messages?user=${userId}`);
   };
 
+  const handleFiltersChange = (newFilters: SwipeFiltersState) => {
+    // If user is not Pro, don't allow Pro filters
+    if (!isPro) {
+      newFilters.verifiedOnly = false;
+      newFilters.minFollowers = 'all';
+      newFilters.experienceLevel = 'all';
+      newFilters.aiMatchOnly = false;
+    }
+    setFilters(newFilters);
+  };
+
   return (
     <div className="min-h-screen pb-24 md:pb-8">
       <SEO 
@@ -157,9 +174,21 @@ export default function Circle() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">Circle</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-6 w-6 text-primary" />
+              <h1 className="text-2xl font-bold">Circle</h1>
+            </div>
+            
+            {/* Filters button - only show on Connect tab */}
+            {activeTab === 'foryou' && (
+              <SwipeFilters
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                isPro={isPro}
+                profilesCount={profilesCount}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -185,7 +214,11 @@ export default function Circle() {
 
           {/* Connect Tab - Swipe to match */}
           <TabsContent value="foryou" className="space-y-4">
-            <SwipeFeature onMatch={handleMatch} />
+            <SwipeFeature 
+              onMatch={handleMatch} 
+              filters={filters}
+              onProfilesCountChange={setProfilesCount}
+            />
           </TabsContent>
 
           {/* My Network Tab */}

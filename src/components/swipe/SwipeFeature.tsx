@@ -6,23 +6,33 @@ import { useSwipeActions } from '@/hooks/useSwipeActions';
 import { SwipeStack } from './SwipeStack';
 import { MatchModal } from './MatchModal';
 import { MatchExplanationDialog } from '@/components/discover/MatchExplanationDialog';
+import { SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from '@/components/circle/SwipeFilters';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface SwipeFeatureProps {
   onMatch?: (profile: any) => void;
+  filters?: SwipeFiltersState;
+  onProfilesCountChange?: (count: number) => void;
 }
 
-export function SwipeFeature({ onMatch }: SwipeFeatureProps) {
+export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfilesCountChange }: SwipeFeatureProps) {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   
   console.log('[SwipeFeature] Render - user:', user?.id, 'authLoading:', authLoading);
   
-  const { profiles, loading, error, fetchProfiles, removeProfile } = useSwipeProfiles(user?.id);
+  const { profiles, allProfilesCount, loading, error, fetchProfiles, removeProfile } = useSwipeProfiles(user?.id, filters);
   const { recordSwipe } = useSwipeActions(user?.id);
   
   console.log('[SwipeFeature] Profiles:', profiles.length, 'Loading:', loading, 'Error:', error);
+
+  // Notify parent of profiles count for filters display
+  useEffect(() => {
+    if (onProfilesCountChange) {
+      onProfilesCountChange(profiles.length);
+    }
+  }, [profiles.length, onProfilesCountChange]);
 
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);

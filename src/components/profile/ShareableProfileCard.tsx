@@ -162,9 +162,9 @@ export const ShareableProfileCard = ({
     await handleDownload();
   };
 
-  // Story size: 9:16 aspect ratio
-  const cardWidth = 280;
-  const cardHeight = 498;
+  // Story size: 9:16 aspect ratio (compact to fit dialog)
+  const cardWidth = 260;
+  const cardHeight = 462;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -38,6 +38,9 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AdminBroadcast = lazy(() => import("./pages/AdminBroadcast"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
+const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
+const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -135,7 +138,12 @@ const AppContent = () => {
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/community-guidelines" element={<CommunityGuidelines />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            
+            {/* Partner Pages */}
+            <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
+            <Route path="/partner-submit" element={<ProtectedRoute><PartnerSubmit /></ProtectedRoute>} />
             
             {/* Public Access Pages (No Auth Required) */}
             <Route path="/endorse" element={<EndorseSkill />} />

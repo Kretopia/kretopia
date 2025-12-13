@@ -93,6 +93,14 @@ const Messages = () => {
   
   // Typing status hook
   const { setTyping } = useTypingStatus(selectedConversation || '', currentUserId);
+  // Sync URL params with selected conversation when they change
+  useEffect(() => {
+    const userIdFromUrl = navigationState?.receiverId || searchParams.get("user") || searchParams.get("userId");
+    if (userIdFromUrl && userIdFromUrl !== selectedConversation) {
+      setSelectedConversation(userIdFromUrl);
+    }
+  }, [searchParams, navigationState]);
+  
   // Track page view
   useEffect(() => {
     const trackPageView = async () => {

@@ -105,43 +105,76 @@ const Auth = () => {
         .maybeSingle();
 
       if (existingConnection) {
-      toast({
-        title: "Already Connected",
-        description: "You're already connected with this user",
-      });
-      navigate('/circle');
-      return;
+        toast({
+          title: "Already Connected",
+          description: "You're already connected with this user",
+        });
+        navigate('/circle?tab=network');
+        return;
       }
 
-      // Get target user's profile
-      const { data: targetProfile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('user_id', targetUserId)
-        .single();
+      // Get target user's profile and current user's profile
+      const [{ data: targetProfile }, { data: currentProfile }] = await Promise.all([
+        supabase.from('profiles').select('full_name, avatar_url, role').eq('user_id', targetUserId).single(),
+        supabase.from('profiles').select('full_name, avatar_url, role').eq('user_id', user.id).single()
+      ]);
 
-      // Send connection request
-      const { error } = await supabase
+      // Create bidirectional ACCEPTED connections (instant connection via QR/link)
+      const { error: connectionError } = await supabase
         .from('connections')
-        .insert({
-          user_id: user.id,
-          connected_user_id: targetUserId,
-          status: 'pending'
-        });
+        .insert([
+          { user_id: user.id, connected_user_id: targetUserId, status: 'accepted' },
+          { user_id: targetUserId, connected_user_id: user.id, status: 'accepted' }
+        ]);
 
-      if (error) throw error;
+      if (connectionError) throw connectionError;
 
-      toast({
-        title: "Connection Request Sent! 🎉",
-        description: `Request sent to ${targetProfile?.full_name || 'user'}`,
+      // Create a match record for this connection
+      await supabase.from('matches').insert({
+        user1_id: user.id,
+        user2_id: targetUserId,
+        match_type: 'creator',
+        status: 'active'
       });
 
-      navigate('/circle');
+      // Send notifications to both users about the new connection
+      const notifications = [
+        {
+          user_id: user.id,
+          type: 'connection',
+          title: `Connected with ${targetProfile?.full_name || 'a creator'}! 🎉`,
+          message: `You're now connected via QR code. Start collaborating!`,
+          link: `/profile/${targetUserId}?from=match`,
+          action_url: `/messages?user=${targetUserId}`,
+          action_text: 'Send Message',
+          image_url: targetProfile?.avatar_url
+        },
+        {
+          user_id: targetUserId,
+          type: 'connection',
+          title: `${currentProfile?.full_name || 'Someone'} connected with you! 🎉`,
+          message: `New connection via QR code. Say hello!`,
+          link: `/profile/${user.id}?from=match`,
+          action_url: `/messages?user=${user.id}`,
+          action_text: 'Send Message',
+          image_url: currentProfile?.avatar_url
+        }
+      ];
+
+      await supabase.from('notifications').insert(notifications);
+
+      toast({
+        title: "Connected! 🎉",
+        description: `You and ${targetProfile?.full_name || 'this creator'} are now connected!`,
+      });
+
+      // Navigate to their profile with match context
+      navigate(`/profile/${targetUserId}?from=match`);
     } catch (error) {
       console.error('Auto-connect error:', error);
       toast({
         title: "Connection Failed",
-        description: "Unable to send connection request",
+        description: "Unable to create connection",
         variant: "destructive",
       });
       navigate(redirectTo);
@@ -340,16 +373,17 @@ const Auth = () => {
         description: "Your exclusive access has been granted.",
       });
       
-      // Check if we need to auto-connect after signup
+      // Store connect user ID for after onboarding if present
       if (connectUserId) {
-        await handleAutoConnect(connectUserId);
+        // Store in localStorage to process after onboarding
+        localStorage.setItem('pendingConnect', connectUserId);
+      }
+      
+      // Redirect based on account type
+      if (accountType === "company") {
+        navigate("/company-onboarding");
       } else {
-        // Redirect based on account type
-        if (accountType === "company") {
-          navigate("/company-onboarding");
-        } else {
-          navigate("/onboarding");
-        }
+        navigate("/onboarding");
       }
     }
     setLoading(false);

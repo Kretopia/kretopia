@@ -396,15 +396,22 @@ export default function Onboarding() {
         })
         .eq("user_id", user.id);
 
-      // Create welcome match for new users to ensure "wow moment"
-      try {
-        const { checkAndCreateWelcomeMatch } = await import("@/lib/welcomeMatch");
-        const welcomeResult = await checkAndCreateWelcomeMatch(user.id);
-        if (welcomeResult.matchedWithCommunity) {
-          console.log("[Onboarding] Welcome match created for new user");
+      // Check for pending QR/link connection and process it
+      const pendingConnect = localStorage.getItem('pendingConnect');
+      if (pendingConnect) {
+        await processPendingConnection(pendingConnect);
+        localStorage.removeItem('pendingConnect');
+      } else {
+        // Create welcome match for new users to ensure "wow moment"
+        try {
+          const { checkAndCreateWelcomeMatch } = await import("@/lib/welcomeMatch");
+          const welcomeResult = await checkAndCreateWelcomeMatch(user.id);
+          if (welcomeResult.matchedWithCommunity) {
+            console.log("[Onboarding] Welcome match created for new user");
+          }
+        } catch (welcomeError) {
+          console.error("[Onboarding] Welcome match error (non-blocking):", welcomeError);
         }
-      } catch (welcomeError) {
-        console.error("[Onboarding] Welcome match error (non-blocking):", welcomeError);
       }
 
       // Trigger AI verification (basic profile verification)
@@ -459,7 +466,12 @@ export default function Onboarding() {
           : "Complete your profile to become visible to others.",
       });
 
-      navigate("/circle");
+      // Navigate to the connected user's profile if we just connected, otherwise to circle
+      if (pendingConnect) {
+        navigate(`/profile/${pendingConnect}?from=match`);
+      } else {
+        navigate("/circle");
+      }
     } catch (error) {
       console.error("Onboarding error:", error);
       toast({
@@ -469,6 +481,68 @@ export default function Onboarding() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const processPendingConnection = async (targetUserId: string) => {
+    if (!user) return;
+    
+    try {
+      // Get both profiles for notifications
+      const [{ data: targetProfile }, { data: currentProfile }] = await Promise.all([
+        supabase.from('profiles').select('full_name, avatar_url, role').eq('user_id', targetUserId).single(),
+        supabase.from('profiles').select('full_name, avatar_url, role').eq('user_id', user.id).single()
+      ]);
+
+      // Create bidirectional ACCEPTED connections (instant connection via QR/link)
+      await supabase
+        .from('connections')
+        .insert([
+          { user_id: user.id, connected_user_id: targetUserId, status: 'accepted' },
+          { user_id: targetUserId, connected_user_id: user.id, status: 'accepted' }
+        ]);
+
+      // Create a match record for this connection
+      await supabase.from('matches').insert({
+        user1_id: user.id,
+        user2_id: targetUserId,
+        match_type: 'creator',
+        status: 'active'
+      });
+
+      // Send notifications to both users about the new connection
+      const notifications = [
+        {
+          user_id: user.id,
+          type: 'connection',
+          title: `Connected with ${targetProfile?.full_name || 'a creator'}! 🎉`,
+          message: `You're now connected via QR code. Start collaborating!`,
+          link: `/profile/${targetUserId}?from=match`,
+          action_url: `/messages?user=${targetUserId}`,
+          action_text: 'Send Message',
+          image_url: targetProfile?.avatar_url
+        },
+        {
+          user_id: targetUserId,
+          type: 'connection',
+          title: `${currentProfile?.full_name || 'Someone'} joined and connected with you! 🎉`,
+          message: `New connection via your QR code. Say hello!`,
+          link: `/profile/${user.id}?from=match`,
+          action_url: `/messages?user=${user.id}`,
+          action_text: 'Send Message',
+          image_url: currentProfile?.avatar_url
+        }
+      ];
+
+      await supabase.from('notifications').insert(notifications);
+
+      toast({
+        title: "Connected! 🎉",
+        description: `You and ${targetProfile?.full_name || 'this creator'} are now connected!`,
+      });
+    } catch (error) {
+      console.error('Auto-connect error:', error);
+      // Don't block onboarding completion for connection errors
     }
   };
 

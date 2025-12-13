@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Verified, MessageCircle, UserPlus, Share2, Edit, Camera, Briefcase, QrCode } from "lucide-react";
+import { MapPin, Star, Verified, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierByPoints } from "@/lib/tierSystem";
 import { AchievementBadges } from "./AchievementBadges";
@@ -20,6 +20,8 @@ interface ProfileHeroProps {
   isUploadingAvatar?: boolean;
   skills?: any[];
   onShowQR?: () => void;
+  onStartProject?: () => void;
+  isFromMatch?: boolean;
 }
 
 export const ProfileHero = ({
@@ -35,7 +37,9 @@ export const ProfileHero = ({
   onAvatarClick,
   isUploadingAvatar,
   skills = [],
-  onShowQR
+  onShowQR,
+  onStartProject,
+  isFromMatch
 }: ProfileHeroProps) => {
   const tier = getTierByPoints(profile.points || 0);
   const isCompany = profile.account_type === 'company';
@@ -206,7 +210,7 @@ export const ProfileHero = ({
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-2 max-w-md">
+        <div className="flex gap-2 flex-wrap">
           {isOwnProfile ? (
             <>
               <Button variant="default" size="sm" onClick={onEdit} className="gap-2 flex-1">
@@ -221,24 +225,47 @@ export const ProfileHero = ({
                 <Share2 className="h-4 w-4" />
               </Button>
             </>
+          ) : connectionStatus === 'accepted' ? (
+            <>
+              {/* Matched State - Show prominent action buttons */}
+              {isFromMatch && (
+                <div className="w-full mb-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 border border-primary/20">
+                  <div className="flex items-center gap-2 text-primary mb-1">
+                    <Sparkles className="h-4 w-4" />
+                    <span className="text-sm font-medium">You're matched!</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Start a conversation or kick off a project together
+                  </p>
+                </div>
+              )}
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={onMessage} 
+                className="gap-2 flex-1"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Message
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onStartProject} 
+                className="gap-2 flex-1 border-primary/30 hover:bg-primary/5"
+              >
+                <Briefcase className="h-4 w-4" />
+                Start Project
+              </Button>
+              <Button variant="ghost" size="sm" className="p-2" onClick={onShare}>
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </>
           ) : (
             <>
-              {connectionStatus === 'accepted' ? (
-                <>
-                  <Button variant="secondary" size="sm" className="gap-2 flex-1">
-                    <Star className="h-4 w-4 fill-primary text-primary" />
-                    Matched
-                  </Button>
-                  <Button variant="default" size="sm" onClick={onMessage} className="gap-2 flex-1">
-                    <MessageCircle className="h-4 w-4" />
-                    Message
-                  </Button>
-                </>
-              ) : (
-                <Badge variant="secondary" className="py-2 px-4 text-sm">
-                  Match to connect & message
-                </Badge>
-              )}
+              <Badge variant="secondary" className="py-2 px-4 text-sm">
+                Match to connect & message
+              </Badge>
               <Button variant="ghost" size="sm" className="p-2" onClick={onShare}>
                 <Share2 className="h-4 w-4" />
               </Button>

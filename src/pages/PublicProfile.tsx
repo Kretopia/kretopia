@@ -363,8 +363,16 @@ const PublicProfile = () => {
     }
 
     // Navigate to messages page with the receiver ID
-    navigate('/messages', { state: { receiverId: userId, receiverName: profile.full_name } });
+    navigate(`/messages?user=${userId}`);
   };
+
+  const handleStartProject = () => {
+    navigate('/desk', { state: { collaboratorId: userId, collaboratorName: profile?.full_name } });
+  };
+
+  // Check if user came from a match notification
+  const isFromMatch = location.search?.includes('from=match') || 
+                      (location.state as any)?.from === 'match';
 
   if (!profile) {
     return (
@@ -386,22 +394,28 @@ const PublicProfile = () => {
           variant="ghost"
           onClick={() => {
             const state = location.state as { from?: string; cardIndex?: number };
-            if (state?.from === 'connect') {
+            if (state?.from === 'match' || location.search?.includes('from=match')) {
+              navigate('/circle?tab=network');
+            } else if (state?.from === 'connect') {
               navigate('/connect');
             } else if (state?.from === 'spark') {
               navigate('/spark');
+            } else if (state?.from === 'circle') {
+              navigate('/circle');
             } else {
-              navigate('/discover', { state: { cardIndex: state?.cardIndex } });
+              navigate(-1);
             }
           }}
           className="mb-4 gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          {location.state && (location.state as any).from === 'circle' 
-            ? 'Back to My Circle' 
+          {isFromMatch 
+            ? 'Back to Network' 
+            : location.state && (location.state as any).from === 'circle' 
+            ? 'Back to Circle' 
             : location.state && (location.state as any).from === 'connect' 
             ? 'Back to Connect' 
-            : 'Back to Discover'}
+            : 'Back'}
         </Button>
 
         {/* Render company view for company accounts */}
@@ -424,6 +438,8 @@ const PublicProfile = () => {
               connectionStatus={connectionStatus}
               onConnect={isPendingReceived ? handleAcceptConnection : handleConnect}
               onMessage={handleMessage}
+              onStartProject={handleStartProject}
+              isFromMatch={isFromMatch}
               onShare={() => {
                 const profileUrl = `${window.location.origin}/profile/${userId}`;
                 navigator.clipboard.writeText(profileUrl);

@@ -123,14 +123,14 @@ export function useSwipeActions(currentUserId: string | undefined) {
         .limit(1);
 
       if (!existingNotifications || existingNotifications.length === 0) {
-        // Send notifications to BOTH users with action button
+        // Send notifications to BOTH users - link to matched user's profile
         const [notif1, notif2] = await Promise.all([
           supabase.from('notifications').insert({
             user_id: targetId,
             title: "It's a Match! 🎉",
             message: `You matched with ${currentUserProfile?.full_name || 'a creator'}!`,
             type: 'match',
-            link: '/circle?tab=network',
+            link: `/profile/${currentUserId}?from=match`,
             action_url: `/messages?user=${currentUserId}`,
             action_text: 'Send Message',
             priority: 'high',
@@ -141,7 +141,7 @@ export function useSwipeActions(currentUserId: string | undefined) {
             title: "It's a Match! 🎉",
             message: `You matched with ${matchedProfile?.full_name || 'a creator'}!`,
             type: 'match',
-            link: '/circle?tab=network',
+            link: `/profile/${targetId}?from=match`,
             action_url: `/messages?user=${targetId}`,
             action_text: 'Send Message',
             priority: 'high',

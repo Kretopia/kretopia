@@ -97,15 +97,18 @@ const AppContent = () => {
   const location = useLocation();
   const { user } = useAuth();
   
+  // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
+  const isPublicEPK = /^\/profile\/[^/]+$/.test(location.pathname);
+  
   // Don't add bottom padding when on individual project pages or desk list
-  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk');
+  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK;
   
   return (
     <div className="h-full overflow-auto">
       <SkipLink />
       <PageViewTracker />
-      <Navbar user={user} />
-      {user && <BottomNav />}
+      {!isPublicEPK && <Navbar user={user} />}
+      {user && !isPublicEPK && <BottomNav />}
       <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>

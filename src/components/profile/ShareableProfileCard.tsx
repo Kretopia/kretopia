@@ -27,6 +27,7 @@ interface ShareableProfileCardProps {
     media_url?: string;
     title?: string;
   }>;
+  mode?: "profile" | "invite";
 }
 
 export const ShareableProfileCard = ({
@@ -34,21 +35,21 @@ export const ShareableProfileCard = ({
   onOpenChange,
   profile,
   portfolioItems = [],
+  mode = "profile",
 }: ShareableProfileCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
 
-  // Fetch user's invite code
+  // Fetch user's invite code only for invite mode
   useEffect(() => {
     const fetchInviteCode = async () => {
-      if (!open || !profile.user_id) return;
+      if (!open || !profile.user_id || mode !== "invite") return;
       
       const { data } = await supabase
         .from("invites")
         .select("invite_code")
         .eq("inviter_id", profile.user_id)
-        .lt("current_uses", supabase.rpc ? 10 : 10) // Has uses left
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -59,12 +60,16 @@ export const ShareableProfileCard = ({
     };
     
     fetchInviteCode();
-  }, [open, profile.user_id]);
+  }, [open, profile.user_id, mode]);
 
-  // QR code URL includes invite code for signup
+  // Profile mode: QR goes to profile page
+  // Invite mode: QR goes to signup with invite code
+  const profileUrl = `${window.location.origin}/profile/${profile.user_id}`;
   const signupUrl = inviteCode 
     ? `${window.location.origin}/?code=${inviteCode}`
-    : `${window.location.origin}/profile/${profile.user_id}`;
+    : `${window.location.origin}/`;
+  
+  const qrUrl = mode === "profile" ? profileUrl : signupUrl;
   
   const topSkills = profile.professional_skills?.slice(0, 3) || [];
   const topPortfolio = portfolioItems.slice(0, 3);
@@ -151,7 +156,9 @@ export const ShareableProfileCard = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Your Profile Card</DialogTitle>
+          <DialogTitle>
+            {mode === "profile" ? "Share Your Profile Card" : "Invite Friends Card"}
+          </DialogTitle>
         </DialogHeader>
 
         {/* Card Preview */}
@@ -160,7 +167,9 @@ export const ShareableProfileCard = ({
             ref={cardRef}
             className="w-[340px] rounded-2xl overflow-hidden"
             style={{
-              background: "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)",
+              background: mode === "profile" 
+                ? "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)"
+                : "linear-gradient(145deg, #0f2922 0%, #0a3d2e 50%, #064225 100%)",
             }}
           >
             {/* Header */}
@@ -232,26 +241,26 @@ export const ShareableProfileCard = ({
               </div>
             )}
 
-            {/* Footer with QR and Invite Code */}
+            {/* Footer with QR */}
             <div className="px-6 pb-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white/50 text-[10px] uppercase tracking-wider mb-1">
-                    Join me on
+                    {mode === "profile" ? "View my profile on" : "Join me on"}
                   </p>
                   <div className="flex items-center gap-1">
                     <span className="text-white font-bold text-lg">Thrive</span>
-                    <span className="text-primary font-bold text-lg">IN</span>
+                    <span className={`font-bold text-lg ${mode === "profile" ? "text-primary" : "text-emerald-400"}`}>IN</span>
                   </div>
-                  {inviteCode && (
+                  {mode === "invite" && inviteCode && (
                     <p className="text-white/60 text-[10px] mt-1">
-                      Code: <span className="text-primary font-mono font-semibold">{inviteCode}</span>
+                      Code: <span className="text-emerald-400 font-mono font-semibold">{inviteCode}</span>
                     </p>
                   )}
                 </div>
                 <div className="bg-white p-2 rounded-lg">
                   <QRCodeSVG
-                    value={signupUrl}
+                    value={qrUrl}
                     size={60}
                     level="M"
                     includeMargin={false}

@@ -1,0 +1,104 @@
+# ThriveIN Invite Materials
+
+Use these templates when inviting creatives to join ThriveIN.
+
+---
+
+## 🔗 Your Invite Link
+
+```
+https://thrivein.io/auth?invite=ThriveOGs
+```
+
+---
+
+## 📱 Short DM Template (Instagram/WhatsApp)
+
+```
+Hey! I'm part of this new platform called ThriveIN - it's like Tinder but for finding creative collaborators.
+
+AI matches you with other verified creatives (videographers, photographers, designers, musicians) based on your skills and portfolio.
+
+I have an invite if you want to check it out:
+👉 thrivein.io/auth?invite=ThriveOGs
+
+Takes 2 mins to set up. Let me know what you think!
+```
+
+---
+
+## 📧 Email Template
+
+**Subject:** Invite to ThriveIN - Find Your Next Creative Collaborator
+
+```
+Hey [Name],
+
+I wanted to share something I've been building - ThriveIN.
+
+It's a new platform that uses AI to match creatives for collaborations. Think Tinder, but for finding your next videographer, photographer, designer, or creative partner.
+
+Why I think you'd be a great fit:
+• Your work would stand out on the platform
+• You'd connect with other verified, quality creatives
+• No more endless scrolling through Facebook groups
+
+It's invite-only right now, and I have a spot for you:
+👉 thrivein.io/auth?invite=ThriveOGs
+
+Setup takes about 2 minutes. Upload some portfolio work and start swiping!
+
+Let me know if you have any questions.
+
+[Your name]
+```
+
+---
+
+## 💬 Voice Note Script
+
+```
+"Hey! Quick one - I'm working on this platform called ThriveIN. 
+It's basically Tinder for creatives - swipe through verified portfolios, 
+match with other videographers, photographers, designers. 
+AI figures out who you'd work well with.
+
+I'll send you the link - it's invite-only but I've got you. 
+Check it out when you have 2 minutes!"
+```
+
+---
+
+## 📋 Key Talking Points
+
+When someone asks "What is it?":
+- **Simple pitch:** "Tinder for creative collaborations"
+- **How it works:** "Swipe through verified portfolios, match with creatives you want to work with"
+- **Why it's different:** "AI-powered matching + verified portfolios, not random Facebook posts"
+- **Time to start:** "2 minutes to set up, then start swiping"
+
+---
+
+## ⚡ Pro Tips for Invites
+
+1. **Personal touch wins** - Mention why YOU think they'd be great
+2. **Lead with the problem** - "Tired of scrolling Facebook groups?"
+3. **Make it exclusive** - "It's invite-only, I saved you a spot"
+4. **Low commitment** - "Just 2 minutes to try it"
+
+---
+
+## 📊 Track Your Invites
+
+Your invite code: `ThriveOGs`
+Uses: 27 of 50
+
+---
+
+## 🎯 Ideal First Users
+
+Target creatives who:
+- Have portfolio work to showcase
+- Are actively looking for collaborators
+- Post in Facebook groups looking for work
+- Are frustrated with current discovery methods

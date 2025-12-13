@@ -20,11 +20,13 @@ interface Insights {
   trendingTips: string[];
 }
 
-export function AIPortfolioInsights({ portfolioItems, userRole, isPro }: AIPortfolioInsightsProps) {
+export function AIPortfolioInsights({ portfolioItems = [], userRole, isPro }: AIPortfolioInsightsProps) {
   const [insights, setInsights] = useState<Insights | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const safePortfolioItems = portfolioItems || [];
 
   const generateInsights = async () => {
     if (!isPro) {
@@ -34,7 +36,7 @@ export function AIPortfolioInsights({ portfolioItems, userRole, isPro }: AIPortf
 
     setLoading(true);
     try {
-      const portfolioSummary = portfolioItems.slice(0, 5).map(item => ({
+      const portfolioSummary = safePortfolioItems.slice(0, 5).map(item => ({
         title: item.title,
         type: item.media_type,
         description: item.description?.slice(0, 100)

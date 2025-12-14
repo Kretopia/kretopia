@@ -47,8 +47,9 @@ const PLATFORMS = [
     name: 'Spotify',
     icon: Music,
     color: 'bg-green-500',
-    description: 'Connect to verify streaming stats and import discography',
-    requiresOAuth: true,
+    description: 'Add your Spotify artist stats manually',
+    requiresOAuth: false,
+    manualStats: true, // Manual entry instead of OAuth
   },
   {
     id: 'youtube',
@@ -103,6 +104,13 @@ export function ConnectPlatformsCard() {
   const [searchName, setSearchName] = useState('');
   const [searching, setSearching] = useState(false);
   const [processingCallback, setProcessingCallback] = useState(false);
+  const [manualStatsDialogOpen, setManualStatsDialogOpen] = useState<string | null>(null);
+  const [manualStats, setManualStats] = useState({
+    artistName: '',
+    monthlyListeners: '',
+    followers: '',
+    spotifyUrl: '',
+  });
 
   // Handle OAuth callback
   const handleOAuthCallback = useCallback(async (code: string, platform: string, state: string) => {
@@ -377,6 +385,57 @@ export function ConnectPlatformsCard() {
     }
   };
 
+  const handleManualStatsSave = async () => {
+    if (!manualStats.artistName.trim()) {
+      toast({
+        title: "Artist name required",
+        description: "Please enter your Spotify artist name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSearching(true);
+    try {
+      // Save manual stats to connected_platforms
+      const { error } = await supabase
+        .from('connected_platforms')
+        .upsert({
+          user_id: user?.id,
+          platform: 'spotify',
+          platform_username: manualStats.artistName,
+          platform_data: {
+            monthlyListeners: parseInt(manualStats.monthlyListeners) || 0,
+            followers: parseInt(manualStats.followers) || 0,
+            spotifyUrl: manualStats.spotifyUrl || null,
+            manualEntry: true, // Flag to indicate this was manually entered
+          },
+          verified_at: null, // Not verified since manual
+          last_synced_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,platform',
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Stats Saved!",
+        description: "Your Spotify stats have been added to your profile",
+      });
+      setManualStatsDialogOpen(null);
+      setManualStats({ artistName: '', monthlyListeners: '', followers: '', spotifyUrl: '' });
+      fetchConnectedPlatforms();
+    } catch (error: any) {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save stats",
+        variant: "destructive",
+      });
+    } finally {
+      setSearching(false);
+    }
+  };
+
   const isConnected = (platformId: string) => {
     return connectedPlatforms.some(p => p.platform === platformId);
   };
@@ -442,6 +501,11 @@ export function ConnectPlatformsCard() {
                   {connected && connectionData ? (
                     <div className="text-sm text-muted-foreground">
                       @{connectionData.platform_username}
+                      {connectionData.platform_data?.monthlyListeners && (
+                        <span className="ml-2">
+                          • {formatMetric(connectionData.platform_data.monthlyListeners)} monthly listeners
+                        </span>
+                      )}
                       {connectionData.platform_data?.followers && (
                         <span className="ml-2">
                           • {formatMetric(connectionData.platform_data.followers)} followers
@@ -466,6 +530,9 @@ export function ConnectPlatformsCard() {
                         <span className="ml-2">
                           • {connectionData.platform_data.totalCredits} credits
                         </span>
+                      )}
+                      {connectionData.platform_data?.manualEntry && (
+                        <Badge variant="outline" className="ml-2 text-xs">Manual</Badge>
                       )}
                     </div>
                   ) : (
@@ -498,6 +565,80 @@ export function ConnectPlatformsCard() {
                       <Unlink className="h-4 w-4" />
                     </Button>
                   </>
+                ) : (platform as any).manualStats ? (
+                  // Manual stats entry (Spotify)
+                  <Dialog open={manualStatsDialogOpen === platform.id} onOpenChange={(open) => setManualStatsDialogOpen(open ? platform.id : null)}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        <Music className="h-4 w-4 mr-2" />
+                        Add Stats
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Spotify Stats</DialogTitle>
+                        <DialogDescription>
+                          Enter your Spotify artist stats manually. These won't be auto-verified.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-4">
+                        <div className="space-y-2">
+                          <Label>Artist Name *</Label>
+                          <Input
+                            placeholder="e.g., Your Artist Name"
+                            value={manualStats.artistName}
+                            onChange={(e) => setManualStats(s => ({ ...s, artistName: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Monthly Listeners</Label>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 50000"
+                            value={manualStats.monthlyListeners}
+                            onChange={(e) => setManualStats(s => ({ ...s, monthlyListeners: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Followers</Label>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 10000"
+                            value={manualStats.followers}
+                            onChange={(e) => setManualStats(s => ({ ...s, followers: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Spotify Profile URL (optional)</Label>
+                          <Input
+                            placeholder="https://open.spotify.com/artist/..."
+                            value={manualStats.spotifyUrl}
+                            onChange={(e) => setManualStats(s => ({ ...s, spotifyUrl: e.target.value }))}
+                          />
+                        </div>
+                        <div className="flex items-start gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                          <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5" />
+                          <p className="text-sm text-muted-foreground">
+                            Manual stats are displayed but not verified. OAuth verification coming soon!
+                          </p>
+                        </div>
+                        <Button
+                          onClick={handleManualStatsSave}
+                          disabled={searching || !manualStats.artistName.trim()}
+                          className="w-full"
+                        >
+                          {searching ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Saving...
+                            </>
+                          ) : (
+                            'Save Stats'
+                          )}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 ) : platform.requiresOAuth ? (
                   <Button
                     onClick={() => handleOAuthConnect(platform.id)}

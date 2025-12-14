@@ -22,7 +22,8 @@ import {
   Unlink,
   Search,
   AlertCircle,
-  Video
+  Video,
+  Link
 } from "lucide-react";
 
 interface ConnectedPlatform {
@@ -47,9 +48,9 @@ const PLATFORMS = [
     name: 'Spotify',
     icon: Music,
     color: 'bg-green-500',
-    description: 'Add your Spotify artist stats manually',
+    description: 'Paste your Spotify artist URL to add an embedded player',
     requiresOAuth: false,
-    manualStats: true, // Manual entry instead of OAuth
+    urlEmbed: true,
   },
   {
     id: 'youtube',
@@ -104,13 +105,8 @@ export function ConnectPlatformsCard() {
   const [searchName, setSearchName] = useState('');
   const [searching, setSearching] = useState(false);
   const [processingCallback, setProcessingCallback] = useState(false);
-  const [manualStatsDialogOpen, setManualStatsDialogOpen] = useState<string | null>(null);
-  const [manualStats, setManualStats] = useState({
-    artistName: '',
-    monthlyListeners: '',
-    followers: '',
-    spotifyUrl: '',
-  });
+  const [urlEmbedDialogOpen, setUrlEmbedDialogOpen] = useState<string | null>(null);
+  const [spotifyUrl, setSpotifyUrl] = useState('');
 
   // Handle OAuth callback
   const handleOAuthCallback = useCallback(async (code: string, platform: string, state: string) => {
@@ -227,15 +223,13 @@ export function ConnectPlatformsCard() {
           action: 'getAuthUrl',
           platform,
           redirectUri,
-          state, // Pass state to be included in auth URL
+          state,
         },
       });
 
       if (error) throw error;
 
       if (data.authUrl) {
-        // Open OAuth in a new window/tab to avoid iframe restrictions
-        // OAuth providers like Spotify block being loaded in iframes
         const width = 600;
         const height = 700;
         const left = window.screenX + (window.outerWidth - width) / 2;
@@ -247,12 +241,10 @@ export function ConnectPlatformsCard() {
           `width=${width},height=${height},left=${left},top=${top},popup=yes`
         );
         
-        // If popup was blocked, fall back to redirect in a new tab
         if (!popup || popup.closed) {
           window.open(data.authUrl, '_blank');
         }
       } else if (data.error) {
-        // Clear stored state if connection fails
         sessionStorage.removeItem(`oauth_state_${platform}`);
         toast({
           title: "Not Available",
@@ -262,7 +254,6 @@ export function ConnectPlatformsCard() {
       }
     } catch (error: any) {
       console.error('OAuth connect error:', error);
-      // Clear stored state on error
       sessionStorage.removeItem(`oauth_state_${platform}`);
       toast({
         title: "Connection Failed",
@@ -303,11 +294,10 @@ export function ConnectPlatformsCard() {
       } else if (data.personFound && data.creditsImported === 0) {
         toast({
           title: "No Credits Found",
-          description: `Found "${data.personData?.name}" but they have no film/TV credits on TMDB. They may have credits on other platforms.`,
+          description: `Found "${data.personData?.name}" but they have no film/TV credits on TMDB.`,
           variant: "destructive",
         });
       } else if (data.searchResults && data.searchResults.length > 0) {
-        // Found similar names but not exact match
         const names = data.searchResults.map((r: any) => r.name).join(', ');
         toast({
           title: "Did you mean?",
@@ -316,7 +306,7 @@ export function ConnectPlatformsCard() {
       } else {
         toast({
           title: "Not Found",
-          description: data.message || `No results found for "${searchName}". Try a different name or check TMDB directly.`,
+          description: data.message || `No results found for "${searchName}".`,
           variant: "destructive",
         });
       }
@@ -385,32 +375,58 @@ export function ConnectPlatformsCard() {
     }
   };
 
-  const handleManualStatsSave = async () => {
-    if (!manualStats.artistName.trim()) {
+  const handleSpotifyUrlSave = async () => {
+    if (!spotifyUrl.trim()) {
       toast({
-        title: "Artist name required",
-        description: "Please enter your Spotify artist name",
+        title: "URL required",
+        description: "Please paste your Spotify artist URL",
         variant: "destructive",
       });
       return;
     }
 
+    // Validate Spotify URL format
+    const spotifyArtistMatch = spotifyUrl.match(/open\.spotify\.com\/artist\/([a-zA-Z0-9]+)/);
+    if (!spotifyArtistMatch) {
+      toast({
+        title: "Invalid URL",
+        description: "Please paste a valid Spotify artist URL (e.g., https://open.spotify.com/artist/...)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const artistId = spotifyArtistMatch[1];
     setSearching(true);
+    
     try {
-      // Save manual stats to connected_platforms
+      // Fetch oEmbed data from Spotify
+      const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`;
+      const response = await fetch(oembedUrl);
+      
+      if (!response.ok) {
+        throw new Error('Could not fetch Spotify data. Make sure the URL is public.');
+      }
+      
+      const oembedData = await response.json();
+      
+      // Save to connected_platforms with embed data
       const { error } = await supabase
         .from('connected_platforms')
         .upsert({
           user_id: user?.id,
           platform: 'spotify',
-          platform_username: manualStats.artistName,
+          platform_username: oembedData.title || 'Unknown Artist',
           platform_data: {
-            monthlyListeners: parseInt(manualStats.monthlyListeners) || 0,
-            followers: parseInt(manualStats.followers) || 0,
-            spotifyUrl: manualStats.spotifyUrl || null,
-            manualEntry: true, // Flag to indicate this was manually entered
+            artistId,
+            spotifyUrl: spotifyUrl,
+            thumbnailUrl: oembedData.thumbnail_url,
+            embedHtml: oembedData.html,
+            embedWidth: oembedData.width,
+            embedHeight: oembedData.height,
+            providerName: oembedData.provider_name,
           },
-          verified_at: null, // Not verified since manual
+          verified_at: null,
           last_synced_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id,platform',
@@ -419,16 +435,16 @@ export function ConnectPlatformsCard() {
       if (error) throw error;
 
       toast({
-        title: "Stats Saved!",
-        description: "Your Spotify stats have been added to your profile",
+        title: "Spotify Connected!",
+        description: `Added ${oembedData.title} to your profile`,
       });
-      setManualStatsDialogOpen(null);
-      setManualStats({ artistName: '', monthlyListeners: '', followers: '', spotifyUrl: '' });
+      setUrlEmbedDialogOpen(null);
+      setSpotifyUrl('');
       fetchConnectedPlatforms();
     } catch (error: any) {
       toast({
-        title: "Save Failed",
-        description: error.message || "Failed to save stats",
+        title: "Connection Failed",
+        description: error.message || "Failed to fetch Spotify data",
         variant: "destructive",
       });
     } finally {
@@ -494,17 +510,15 @@ export function ConnectPlatformsCard() {
                     {connected && (
                       <Badge variant="secondary" className="bg-green-500/10 text-green-600">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Verified
+                        Connected
                       </Badge>
                     )}
                   </div>
                   {connected && connectionData ? (
                     <div className="text-sm text-muted-foreground">
-                      @{connectionData.platform_username}
-                      {connectionData.platform_data?.monthlyListeners && (
-                        <span className="ml-2">
-                          • {formatMetric(connectionData.platform_data.monthlyListeners)} monthly listeners
-                        </span>
+                      {connectionData.platform_username}
+                      {connectionData.platform_data?.thumbnailUrl && (
+                        <span className="ml-2">• Embed ready</span>
                       )}
                       {connectionData.platform_data?.followers && (
                         <span className="ml-2">
@@ -516,23 +530,10 @@ export function ConnectPlatformsCard() {
                           • {formatMetric(connectionData.platform_data.subscribers)} subscribers
                         </span>
                       )}
-                      {connectionData.platform_data?.likes && (
-                        <span className="ml-2">
-                          • {formatMetric(connectionData.platform_data.likes)} likes
-                        </span>
-                      )}
-                      {connectionData.platform_data?.videoCount && (
-                        <span className="ml-2">
-                          • {connectionData.platform_data.videoCount} videos
-                        </span>
-                      )}
                       {connectionData.platform_data?.totalCredits && (
                         <span className="ml-2">
                           • {connectionData.platform_data.totalCredits} credits
                         </span>
-                      )}
-                      {connectionData.platform_data?.manualEntry && (
-                        <Badge variant="outline" className="ml-2 text-xs">Manual</Badge>
                       )}
                     </div>
                   ) : (
@@ -565,75 +566,55 @@ export function ConnectPlatformsCard() {
                       <Unlink className="h-4 w-4" />
                     </Button>
                   </>
-                ) : (platform as any).manualStats ? (
-                  // Manual stats entry (Spotify)
-                  <Dialog open={manualStatsDialogOpen === platform.id} onOpenChange={(open) => setManualStatsDialogOpen(open ? platform.id : null)}>
+                ) : (platform as any).urlEmbed ? (
+                  // URL-based embed (Spotify)
+                  <Dialog open={urlEmbedDialogOpen === platform.id} onOpenChange={(open) => setUrlEmbedDialogOpen(open ? platform.id : null)}>
                     <DialogTrigger asChild>
                       <Button size="sm" variant="outline">
-                        <Music className="h-4 w-4 mr-2" />
-                        Add Stats
+                        <Link className="h-4 w-4 mr-2" />
+                        Add Profile
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Add Spotify Stats</DialogTitle>
+                        <DialogTitle>Add Spotify Artist</DialogTitle>
                         <DialogDescription>
-                          Enter your Spotify artist stats manually. These won't be auto-verified.
+                          Paste your Spotify artist profile URL to add an embedded player
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 pt-4">
                         <div className="space-y-2">
-                          <Label>Artist Name *</Label>
-                          <Input
-                            placeholder="e.g., Your Artist Name"
-                            value={manualStats.artistName}
-                            onChange={(e) => setManualStats(s => ({ ...s, artistName: e.target.value }))}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Monthly Listeners</Label>
-                          <Input
-                            type="number"
-                            placeholder="e.g., 50000"
-                            value={manualStats.monthlyListeners}
-                            onChange={(e) => setManualStats(s => ({ ...s, monthlyListeners: e.target.value }))}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Followers</Label>
-                          <Input
-                            type="number"
-                            placeholder="e.g., 10000"
-                            value={manualStats.followers}
-                            onChange={(e) => setManualStats(s => ({ ...s, followers: e.target.value }))}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Spotify Profile URL (optional)</Label>
+                          <Label>Spotify Artist URL *</Label>
                           <Input
                             placeholder="https://open.spotify.com/artist/..."
-                            value={manualStats.spotifyUrl}
-                            onChange={(e) => setManualStats(s => ({ ...s, spotifyUrl: e.target.value }))}
+                            value={spotifyUrl}
+                            onChange={(e) => setSpotifyUrl(e.target.value)}
                           />
+                          <p className="text-xs text-muted-foreground">
+                            Go to your Spotify artist page → Click "..." → Share → Copy link
+                          </p>
                         </div>
-                        <div className="flex items-start gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                          <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5" />
+                        <div className="flex items-start gap-2 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                          <Music className="h-4 w-4 text-green-500 mt-0.5" />
                           <p className="text-sm text-muted-foreground">
-                            Manual stats are displayed but not verified. OAuth verification coming soon!
+                            We'll fetch your artist info and add an embedded player to your profile.
                           </p>
                         </div>
                         <Button
-                          onClick={handleManualStatsSave}
-                          disabled={searching || !manualStats.artistName.trim()}
-                          className="w-full"
+                          onClick={handleSpotifyUrlSave}
+                          disabled={searching || !spotifyUrl.trim()}
+                          className="w-full bg-green-500 hover:bg-green-600"
                         >
                           {searching ? (
                             <>
                               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Saving...
+                              Fetching...
                             </>
                           ) : (
-                            'Save Stats'
+                            <>
+                              <Music className="h-4 w-4 mr-2" />
+                              Add Spotify
+                            </>
                           )}
                         </Button>
                       </div>
@@ -682,8 +663,7 @@ export function ConnectPlatformsCard() {
                         <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg">
                           <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
                           <p className="text-sm text-muted-foreground">
-                            We'll search {platform.name} for your credits and import them to your profile. 
-                            This helps verify your professional work history.
+                            We'll search {platform.name} for your credits and import them to your profile.
                           </p>
                         </div>
                         <Button
@@ -714,7 +694,7 @@ export function ConnectPlatformsCard() {
 
         <div className="pt-4 border-t">
           <p className="text-sm text-muted-foreground text-center">
-            Connected platforms auto-update your profile with verified stats and credits.
+            Connected platforms display on your profile.
             <br />
             <span className="text-primary">More platforms coming soon:</span> AllMusic, Grammy, SoundCloud, LinkedIn
           </p>

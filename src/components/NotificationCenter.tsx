@@ -141,8 +141,8 @@ export const NotificationCenter = () => {
                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                           </span>
                           <div className="flex gap-2">
-                            {/* View Profile button for match notifications */}
-                            {notification.category === 'match' && notification.link && (
+                            {/* View Profile button for match notifications - navigate to profile */}
+                            {notification.category === 'match' && notification.link && notification.link.includes('/profile/') && (
                               <Button 
                                 variant="outline" 
                                 size="sm" 
@@ -157,18 +157,32 @@ export const NotificationCenter = () => {
                                 View Profile
                               </Button>
                             )}
-                            {notification.action_url && (
+                            {/* Message button for match notifications - navigate to messages */}
+                            {notification.action_url && notification.action_url.includes('/messages') && (
+                              <Button 
+                                variant="default" 
+                                size="sm" 
+                                className="h-7 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!notification.read) markAsRead(notification.id);
+                                  setIsOpen(false);
+                                  setTimeout(() => navigate(notification.action_url), 100);
+                                }}
+                              >
+                                <MessageCircle className="h-3 w-3 mr-1" />
+                                Message
+                              </Button>
+                            )}
+                            {/* Generic action button for non-match notifications */}
+                            {notification.action_url && !notification.action_url.includes('/messages') && (
                               <Button 
                                 variant="default" 
                                 size="sm" 
                                 className="h-7 text-xs"
                                 onClick={(e) => handleActionClick(e, notification)}
                               >
-                                {notification.category === 'match' ? (
-                                  <MessageCircle className="h-3 w-3 mr-1" />
-                                ) : (
-                                  <ExternalLink className="h-3 w-3 mr-1" />
-                                )}
+                                <ExternalLink className="h-3 w-3 mr-1" />
                                 {notification.action_text || 'View'}
                               </Button>
                             )}

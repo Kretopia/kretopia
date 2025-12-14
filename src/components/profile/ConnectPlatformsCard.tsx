@@ -125,7 +125,7 @@ export function ConnectPlatformsCard() {
     setConnecting(platform);
 
     try {
-      const redirectUri = `${window.location.origin}/settings?oauth_callback=${platform}`;
+      const redirectUri = `${window.location.origin}/profile?oauth_callback=${platform}`;
       
       const { data, error } = await supabase.functions.invoke('connect-platform', {
         body: {
@@ -212,7 +212,7 @@ export function ConnectPlatformsCard() {
       const state = generateOAuthState();
       sessionStorage.setItem(`oauth_state_${platform}`, state);
       
-      const redirectUri = `${window.location.origin}/settings?oauth_callback=${platform}`;
+      const redirectUri = `${window.location.origin}/profile?oauth_callback=${platform}`;
       
       const { data, error } = await supabase.functions.invoke('connect-platform', {
         body: {
@@ -267,18 +267,33 @@ export function ConnectPlatformsCard() {
 
       if (error) throw error;
 
-      if (data.success) {
+      console.log('Search result:', data);
+
+      if (data.success && data.creditsImported > 0) {
         toast({
           title: "Credits Imported!",
-          description: `Found ${data.creditsImported} credits for "${searchName}"`,
+          description: `Found ${data.creditsImported} credits for "${data.personData?.name || searchName}"`,
         });
         setSearchDialogOpen(null);
         setSearchName('');
         fetchConnectedPlatforms();
-      } else if (!data.personFound && !data.artistFound) {
+      } else if (data.personFound && data.creditsImported === 0) {
+        toast({
+          title: "No Credits Found",
+          description: `Found "${data.personData?.name}" but they have no film/TV credits on TMDB. They may have credits on other platforms.`,
+          variant: "destructive",
+        });
+      } else if (data.searchResults && data.searchResults.length > 0) {
+        // Found similar names but not exact match
+        const names = data.searchResults.map((r: any) => r.name).join(', ');
+        toast({
+          title: "Did you mean?",
+          description: `Similar names found: ${names}. Try searching with the exact name.`,
+        });
+      } else {
         toast({
           title: "Not Found",
-          description: `No results found for "${searchName}". Try a different name.`,
+          description: data.message || `No results found for "${searchName}". Try a different name or check TMDB directly.`,
           variant: "destructive",
         });
       }

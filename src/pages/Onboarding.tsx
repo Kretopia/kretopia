@@ -492,13 +492,17 @@ export default function Onboarding() {
         supabase.from('profiles').select('full_name, avatar_url, role').eq('user_id', user.id).single()
       ]);
 
-      // Create bidirectional ACCEPTED connections (instant connection via QR/link)
-      await supabase
-        .from('connections')
-        .insert([
-          { user_id: user.id, connected_user_id: targetUserId, status: 'accepted' },
-          { user_id: targetUserId, connected_user_id: user.id, status: 'accepted' }
-        ]);
+      // Use secure database function to create bidirectional connections
+      const { error: connectionError } = await supabase.rpc('create_bidirectional_connection', {
+        user1_uuid: user.id,
+        user2_uuid: targetUserId,
+        connection_status: 'accepted'
+      });
+
+      if (connectionError) {
+        console.error('Error creating bidirectional connection:', connectionError);
+        throw connectionError;
+      }
 
       // Create a match record for this connection
       await supabase.from('matches').insert({

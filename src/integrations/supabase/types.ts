@@ -4548,6 +4548,14 @@ export type Database = {
         Args: { file_size_param: number; user_id_param: string }
         Returns: boolean
       }
+      create_bidirectional_connection: {
+        Args: {
+          connection_status?: string
+          user1_uuid: string
+          user2_uuid: string
+        }
+        Returns: undefined
+      }
       create_multi_use_code: {
         Args: { num_uses: number; owner_email: string }
         Returns: string

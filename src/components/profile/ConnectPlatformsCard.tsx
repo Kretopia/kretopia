@@ -112,10 +112,10 @@ export function ConnectPlatformsCard() {
 
   // Handle OAuth callback
   const handleOAuthCallback = useCallback(async (code: string, platform: string, state: string) => {
-    // Validate state to prevent CSRF attacks
-    const storedState = sessionStorage.getItem(`oauth_state_${platform}`);
+    // Validate state to prevent CSRF attacks - use localStorage for cross-window access
+    const storedState = localStorage.getItem(`oauth_state_${platform}`);
     if (!storedState || storedState !== state) {
-      console.error('OAuth state mismatch - possible CSRF attack');
+      console.error('OAuth state mismatch - stored:', storedState, 'received:', state);
       toast({
         title: "Security Error",
         description: "OAuth state validation failed. Please try connecting again.",
@@ -125,7 +125,7 @@ export function ConnectPlatformsCard() {
     }
 
     // Clear the stored state
-    sessionStorage.removeItem(`oauth_state_${platform}`);
+    localStorage.removeItem(`oauth_state_${platform}`);
 
     setProcessingCallback(true);
     setConnecting(platform);
@@ -214,9 +214,9 @@ export function ConnectPlatformsCard() {
   const handleOAuthConnect = async (platform: string) => {
     setConnecting(platform);
     try {
-      // Generate and store state for CSRF protection
+      // Generate and store state for CSRF protection - use localStorage for cross-window access
       const state = generateOAuthState();
-      sessionStorage.setItem(`oauth_state_${platform}`, state);
+      localStorage.setItem(`oauth_state_${platform}`, state);
       
       const redirectUri = `${window.location.origin}/profile?oauth_callback=${platform}`;
       
@@ -232,22 +232,10 @@ export function ConnectPlatformsCard() {
       if (error) throw error;
 
       if (data.authUrl) {
-        const width = 600;
-        const height = 700;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        
-        const popup = window.open(
-          data.authUrl,
-          `${platform}_oauth`,
-          `width=${width},height=${height},left=${left},top=${top},popup=yes`
-        );
-        
-        if (!popup || popup.closed) {
-          window.open(data.authUrl, '_blank');
-        }
+        // Use full page redirect instead of popup for better OAuth compatibility
+        window.location.href = data.authUrl;
       } else if (data.error) {
-        sessionStorage.removeItem(`oauth_state_${platform}`);
+        localStorage.removeItem(`oauth_state_${platform}`);
         toast({
           title: "Not Available",
           description: data.details || `${platform} integration is not configured yet`,
@@ -256,7 +244,7 @@ export function ConnectPlatformsCard() {
       }
     } catch (error: any) {
       console.error('OAuth connect error:', error);
-      sessionStorage.removeItem(`oauth_state_${platform}`);
+      localStorage.removeItem(`oauth_state_${platform}`);
       toast({
         title: "Connection Failed",
         description: error.message || "Failed to start connection",

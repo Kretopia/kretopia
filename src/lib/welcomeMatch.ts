@@ -50,11 +50,11 @@ async function createBidirectionalConnection(userId1: string, userId2: string) {
     { user_id: userId2, connected_user_id: userId1, status: 'accepted' }
   ]);
 
-  // Create a match record
+  // Create a match record with correct enum value
   await supabase.from('matches').insert({
     user1_id: userId1,
     user2_id: userId2,
-    match_type: 'welcome',
+    match_type: 'creator',  // Use 'creator' for consistency with swipe matches
     status: 'active'
   });
 

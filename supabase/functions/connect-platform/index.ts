@@ -349,7 +349,15 @@ async function fetchSpotifyData(accessToken: string) {
   if (!profileRes.ok) {
     const errorText = await profileRes.text();
     console.error('Spotify profile error:', profileRes.status, errorText);
-    throw new Error(`Spotify API error: ${profileRes.status} - ${errorText}`);
+    
+    // Handle specific Spotify errors
+    if (profileRes.status === 403) {
+      throw new Error('Spotify app is in Development Mode. Please add your Spotify account email to the app allowlist in the Spotify Developer Dashboard.');
+    }
+    if (profileRes.status === 401) {
+      throw new Error('Spotify authorization expired. Please try connecting again.');
+    }
+    throw new Error(`Spotify API error: ${profileRes.status}`);
   }
   
   const profile = await profileRes.json();

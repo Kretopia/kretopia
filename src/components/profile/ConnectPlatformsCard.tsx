@@ -226,8 +226,23 @@ export function ConnectPlatformsCard() {
       if (error) throw error;
 
       if (data.authUrl) {
-        // Redirect to OAuth provider
-        window.location.href = data.authUrl;
+        // Open OAuth in a new window/tab to avoid iframe restrictions
+        // OAuth providers like Spotify block being loaded in iframes
+        const width = 600;
+        const height = 700;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        
+        const popup = window.open(
+          data.authUrl,
+          `${platform}_oauth`,
+          `width=${width},height=${height},left=${left},top=${top},popup=yes`
+        );
+        
+        // If popup was blocked, fall back to redirect in a new tab
+        if (!popup || popup.closed) {
+          window.open(data.authUrl, '_blank');
+        }
       } else if (data.error) {
         // Clear stored state if connection fails
         sessionStorage.removeItem(`oauth_state_${platform}`);

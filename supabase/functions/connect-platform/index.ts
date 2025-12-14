@@ -72,7 +72,7 @@ serve(async (req) => {
       });
     }
 
-    const { action, platform, code, redirectUri } = await req.json();
+    const { action, platform, code, redirectUri, state: clientState } = await req.json();
 
     if (!platform || !PLATFORM_CONFIGS[platform]) {
       return new Response(JSON.stringify({ error: 'Invalid platform' }), {
@@ -98,16 +98,18 @@ serve(async (req) => {
 
     // Action: Get OAuth URL
     if (action === 'getAuthUrl') {
-      const state = btoa(JSON.stringify({ userId: user.id, platform }));
+      // Use client-provided state if available, otherwise generate one
+      // The client state is used for CSRF protection and validated on callback
+      const state = clientState || btoa(JSON.stringify({ userId: user.id, platform, timestamp: Date.now() }));
       const scopeString = config.scopes.join(platform === 'tiktok' ? ',' : ' ');
       
       let authUrl: string;
       
       if (platform === 'tiktok') {
         // TikTok uses different parameter format
-        authUrl = `${config.authUrl}?client_key=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${encodeURIComponent(scopeString)}`;
+        authUrl = `${config.authUrl}?client_key=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}&scope=${encodeURIComponent(scopeString)}`;
       } else {
-        authUrl = `${config.authUrl}?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${encodeURIComponent(scopeString)}`;
+        authUrl = `${config.authUrl}?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}&scope=${encodeURIComponent(scopeString)}`;
       }
       
       // Platform-specific params
@@ -118,7 +120,8 @@ serve(async (req) => {
         authUrl += '&show_dialog=true';
       }
 
-      return new Response(JSON.stringify({ authUrl }), {
+      console.log(`Generated OAuth URL for ${platform} with state length: ${state.length}`);
+      return new Response(JSON.stringify({ authUrl, state }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

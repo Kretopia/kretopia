@@ -66,10 +66,13 @@ interface PortfolioItem {
 
 interface Credit {
   id: string;
-  project_name: string;
+  project_name?: string;
+  title?: string;
   role: string;
   year?: number;
   platform?: string;
+  source?: string;
+  isVerified?: boolean;
 }
 
 interface IndustryStat {
@@ -119,7 +122,7 @@ const CreatorEPK = () => {
         setProfile(profileData);
 
         // Fetch all data in parallel
-        const [portfolioRes, pressRes, awardsRes, creditsRes, statsRes] = await Promise.all([
+        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes] = await Promise.all([
           // Portfolio items
           supabase
             .from('portfolio_items')
@@ -142,10 +145,18 @@ const CreatorEPK = () => {
             .eq('user_id', userId)
             .limit(4),
           
-          // Credits (work history)
+          // Manual Credits (work history)
           supabase
             .from('credits')
             .select('id, project_name, role, year, platform')
+            .eq('user_id', userId)
+            .order('year', { ascending: false })
+            .limit(6),
+          
+          // Verified Credits (auto-imported)
+          supabase
+            .from('verified_credits')
+            .select('id, title, role, year, source')
             .eq('user_id', userId)
             .order('year', { ascending: false })
             .limit(6),
@@ -161,34 +172,29 @@ const CreatorEPK = () => {
         setPortfolioItems(portfolioRes.data || []);
         setPressLinks(pressRes.data || []);
         setAwards(awardsRes.data || []);
-        setCredits(creditsRes.data || []);
         setIndustryStats(statsRes.data || []);
-        const { data: portfolio } = await supabase
-          .from('portfolio_items')
-          .select('id, title, description, media_url, media_type, thumbnail_url')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(6);
-
-        setPortfolioItems(portfolio || []);
-
-        // Fetch press links
-        const { data: press } = await supabase
-          .from('press_links')
-          .select('id, title, publication, url, image_url')
-          .eq('user_id', userId)
-          .limit(4);
-
-        setPressLinks(press || []);
-
-        // Fetch awards
-        const { data: awardsData } = await supabase
-          .from('awards')
-          .select('id, title, organization, year')
-          .eq('user_id', userId)
-          .limit(4);
-
-        setAwards(awardsData || []);
+        
+        // Combine manual and verified credits
+        const manualCredits = (creditsRes.data || []).map((c: any) => ({
+          ...c,
+          isVerified: false
+        }));
+        const verifiedCreditsData = (verifiedCreditsRes.data || []).map((c: any) => ({
+          id: c.id,
+          project_name: c.title,
+          role: c.role,
+          year: c.year,
+          platform: c.source,
+          isVerified: true,
+          source: c.source
+        }));
+        
+        // Combine and sort by year
+        const allCredits = [...verifiedCreditsData, ...manualCredits]
+          .sort((a, b) => (b.year || 0) - (a.year || 0))
+          .slice(0, 8);
+        
+        setCredits(allCredits);
 
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -418,20 +424,41 @@ const CreatorEPK = () => {
         {/* Work History / Credits */}
         {credits.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              Work History
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Work History
+              </h3>
+              {credits.some(c => c.isVerified) && (
+                <Badge variant="outline" className="text-xs gap-1 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Verified Credits
+                </Badge>
+              )}
+            </div>
             <div className="space-y-2">
               {credits.map((credit) => (
                 <div
                   key={credit.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-lg",
+                    credit.isVerified 
+                      ? "bg-green-500/10 border border-green-500/20" 
+                      : "bg-muted/50"
+                  )}
                 >
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{credit.project_name}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm truncate">{credit.project_name || credit.title}</p>
+                      {credit.isVerified && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30">
+                          <CheckCircle2 className="h-2.5 w-2.5" />
+                          {credit.source?.toUpperCase()}
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {credit.role}
-                      {credit.platform && ` • ${credit.platform}`}
+                      {credit.platform && !credit.isVerified && ` • ${credit.platform}`}
                     </p>
                   </div>
                   {credit.year && (

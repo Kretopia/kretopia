@@ -45,6 +45,8 @@ import { ProfileHero } from "@/components/profile/ProfileHero";
 import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { VerificationProgress } from "@/components/profile/VerificationProgress";
+import { ConnectPlatformsCard } from "@/components/profile/ConnectPlatformsCard";
+import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 import { VerificationAppealDialog } from "@/components/profile/VerificationAppealDialog";
 import { ProfileActions } from "@/components/profile/ProfileActions";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
@@ -343,6 +345,9 @@ const ProfileContent = () => {
           onVerificationComplete={() => fetchData()}
         />
 
+        {/* Connect Platforms - Top of Profile for Easy Import */}
+        <ConnectPlatformsCard />
+
         {/* AI Insights Section - Differentiator */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
           <AIPortfolioInsights 
@@ -413,7 +418,7 @@ const ProfileContent = () => {
               </div>
             )}
 
-            {/* Pro Feature: Experience & Credits */}
+            {/* Pro Feature: Experience & Credits - Now Unified */}
             <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm relative">
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h2 className="text-lg sm:text-xl font-bold">Experience & Credits</h2>
@@ -425,7 +430,7 @@ const ProfileContent = () => {
                 )}
               </div>
               {hasAdvancedProfile ? (
-                <CreditsSection 
+                <UnifiedWorkHistory 
                   userId={profile.user_id}
                   isOwnProfile={true}
                   onRefresh={fetchData}

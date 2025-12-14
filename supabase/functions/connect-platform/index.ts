@@ -1,0 +1,462 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Platform OAuth configurations
+const PLATFORM_CONFIGS: Record<string, {
+  authUrl: string;
+  tokenUrl: string;
+  scopes: string[];
+  clientIdEnv: string;
+  clientSecretEnv: string;
+}> = {
+  spotify: {
+    authUrl: 'https://accounts.spotify.com/authorize',
+    tokenUrl: 'https://accounts.spotify.com/api/token',
+    scopes: ['user-read-private', 'user-read-email', 'user-top-read'],
+    clientIdEnv: 'SPOTIFY_CLIENT_ID',
+    clientSecretEnv: 'SPOTIFY_CLIENT_SECRET',
+  },
+  youtube: {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: 'https://oauth2.googleapis.com/token',
+    scopes: ['https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/userinfo.profile'],
+    clientIdEnv: 'GOOGLE_CLIENT_ID',
+    clientSecretEnv: 'GOOGLE_CLIENT_SECRET',
+  },
+  instagram: {
+    authUrl: 'https://api.instagram.com/oauth/authorize',
+    tokenUrl: 'https://api.instagram.com/oauth/access_token',
+    scopes: ['user_profile', 'user_media'],
+    clientIdEnv: 'INSTAGRAM_CLIENT_ID',
+    clientSecretEnv: 'INSTAGRAM_CLIENT_SECRET',
+  },
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { action, platform, code, redirectUri } = await req.json();
+
+    if (!platform || !PLATFORM_CONFIGS[platform]) {
+      return new Response(JSON.stringify({ error: 'Invalid platform' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const config = PLATFORM_CONFIGS[platform];
+    const clientId = Deno.env.get(config.clientIdEnv);
+    const clientSecret = Deno.env.get(config.clientSecretEnv);
+
+    if (!clientId || !clientSecret) {
+      console.log(`Missing credentials for ${platform}`);
+      return new Response(JSON.stringify({ 
+        error: `${platform} integration not configured`,
+        details: 'API credentials are not set up yet'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Action: Get OAuth URL
+    if (action === 'getAuthUrl') {
+      const state = btoa(JSON.stringify({ userId: user.id, platform }));
+      const scopeString = config.scopes.join(' ');
+      
+      let authUrl = `${config.authUrl}?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${encodeURIComponent(scopeString)}`;
+      
+      // Platform-specific params
+      if (platform === 'youtube') {
+        authUrl += '&access_type=offline&prompt=consent';
+      }
+      if (platform === 'spotify') {
+        authUrl += '&show_dialog=true';
+      }
+
+      return new Response(JSON.stringify({ authUrl }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Action: Exchange code for tokens
+    if (action === 'exchangeCode') {
+      if (!code || !redirectUri) {
+        return new Response(JSON.stringify({ error: 'Missing code or redirectUri' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Exchange code for tokens
+      const tokenBody = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        client_secret: clientSecret,
+      });
+
+      const tokenResponse = await fetch(config.tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          ...(platform === 'spotify' ? {
+            'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`
+          } : {}),
+        },
+        body: tokenBody.toString(),
+      });
+
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error(`Token exchange failed for ${platform}:`, errorText);
+        return new Response(JSON.stringify({ error: 'Token exchange failed', details: errorText }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const tokens = await tokenResponse.json();
+      console.log(`Got tokens for ${platform}:`, Object.keys(tokens));
+
+      // Fetch platform-specific user data and metrics
+      const platformData = await fetchPlatformData(platform, tokens.access_token);
+
+      // Store in database
+      const { error: upsertError } = await supabase
+        .from('connected_platforms')
+        .upsert({
+          user_id: user.id,
+          platform,
+          platform_user_id: platformData.userId,
+          platform_username: platformData.username,
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          token_expires_at: tokens.expires_in 
+            ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
+            : null,
+          platform_data: platformData.metrics,
+          last_synced_at: new Date().toISOString(),
+          verified_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,platform',
+        });
+
+      if (upsertError) {
+        console.error('Failed to store platform connection:', upsertError);
+        return new Response(JSON.stringify({ error: 'Failed to store connection' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Update profile verification status
+      const verificationField = `${platform}_verified`;
+      await supabase
+        .from('profiles')
+        .update({ 
+          [verificationField]: true,
+          [`${platform}_${platform === 'spotify' ? 'listeners' : 'followers'}`]: platformData.metrics.followers || platformData.metrics.monthlyListeners || 0,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id);
+
+      // Import verified credits if available
+      if (platformData.credits && platformData.credits.length > 0) {
+        await importVerifiedCredits(supabase, user.id, platform, platformData.credits);
+      }
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        platform,
+        platformData: platformData.metrics,
+        creditsImported: platformData.credits?.length || 0,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Action: Refresh platform data
+    if (action === 'refresh') {
+      const { data: connection } = await supabase
+        .from('connected_platforms')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('platform', platform)
+        .single();
+
+      if (!connection) {
+        return new Response(JSON.stringify({ error: 'Platform not connected' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // TODO: Refresh token if expired
+      const platformData = await fetchPlatformData(platform, connection.access_token);
+
+      await supabase
+        .from('connected_platforms')
+        .update({
+          platform_data: platformData.metrics,
+          last_synced_at: new Date().toISOString(),
+        })
+        .eq('id', connection.id);
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        platformData: platformData.metrics,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Action: Disconnect platform
+    if (action === 'disconnect') {
+      await supabase
+        .from('connected_platforms')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('platform', platform);
+
+      const verificationField = `${platform}_verified`;
+      await supabase
+        .from('profiles')
+        .update({ [verificationField]: false })
+        .eq('user_id', user.id);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: 'Invalid action' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error: any) {
+    console.error('Connect platform error:', error);
+    return new Response(JSON.stringify({ error: error?.message || 'Unknown error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
+
+// Fetch platform-specific data
+async function fetchPlatformData(platform: string, accessToken: string): Promise<{
+  userId: string;
+  username: string;
+  metrics: Record<string, any>;
+  credits?: Array<{
+    sourceId: string;
+    creditType: string;
+    title: string;
+    role: string;
+    year?: number;
+    metadata: Record<string, any>;
+    verificationUrl?: string;
+  }>;
+}> {
+  switch (platform) {
+    case 'spotify':
+      return await fetchSpotifyData(accessToken);
+    case 'youtube':
+      return await fetchYouTubeData(accessToken);
+    case 'instagram':
+      return await fetchInstagramData(accessToken);
+    default:
+      return { userId: '', username: '', metrics: {} };
+  }
+}
+
+async function fetchSpotifyData(accessToken: string) {
+  // Get user profile
+  const profileRes = await fetch('https://api.spotify.com/v1/me', {
+    headers: { 'Authorization': `Bearer ${accessToken}` },
+  });
+  const profile = await profileRes.json();
+
+  // Get top artists (to show their discography/credits)
+  const topArtistsRes = await fetch('https://api.spotify.com/v1/me/top/artists?limit=10', {
+    headers: { 'Authorization': `Bearer ${accessToken}` },
+  });
+  const topArtists = await topArtistsRes.json();
+
+  // If user is an artist, try to get their artist profile
+  let artistData = null;
+  let credits: any[] = [];
+  
+  // Search for artist with same name
+  const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(profile.display_name)}&type=artist&limit=5`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` },
+  });
+  const searchResults = await searchRes.json();
+  
+  // Find matching artist (simple name match)
+  const matchingArtist = searchResults.artists?.items?.find(
+    (a: any) => a.name.toLowerCase() === profile.display_name.toLowerCase()
+  );
+
+  if (matchingArtist) {
+    artistData = matchingArtist;
+    
+    // Get artist's albums as credits
+    const albumsRes = await fetch(`https://api.spotify.com/v1/artists/${matchingArtist.id}/albums?include_groups=album,single&limit=50`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    });
+    const albums = await albumsRes.json();
+    
+    credits = albums.items?.map((album: any) => ({
+      sourceId: album.id,
+      creditType: album.album_type === 'single' ? 'single' : 'album',
+      title: album.name,
+      role: 'Artist',
+      year: album.release_date ? parseInt(album.release_date.substring(0, 4)) : undefined,
+      metadata: {
+        imageUrl: album.images?.[0]?.url,
+        totalTracks: album.total_tracks,
+        releaseDate: album.release_date,
+        spotifyUrl: album.external_urls?.spotify,
+      },
+      verificationUrl: album.external_urls?.spotify,
+    })) || [];
+  }
+
+  return {
+    userId: profile.id,
+    username: profile.display_name,
+    metrics: {
+      followers: artistData?.followers?.total || profile.followers?.total || 0,
+      monthlyListeners: artistData?.popularity ? artistData.popularity * 10000 : null, // Rough estimate
+      profileUrl: profile.external_urls?.spotify,
+      imageUrl: profile.images?.[0]?.url,
+      isArtist: !!artistData,
+      artistId: artistData?.id,
+      genres: artistData?.genres || [],
+    },
+    credits,
+  };
+}
+
+async function fetchYouTubeData(accessToken: string) {
+  // Get user's channel
+  const channelRes = await fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true', {
+    headers: { 'Authorization': `Bearer ${accessToken}` },
+  });
+  const channelData = await channelRes.json();
+  const channel = channelData.items?.[0];
+
+  if (!channel) {
+    return { userId: '', username: '', metrics: {} };
+  }
+
+  // Get recent videos as credits
+  const videosRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channel.id}&maxResults=50&order=date&type=video`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` },
+  });
+  const videosData = await videosRes.json();
+
+  const credits = videosData.items?.map((video: any) => ({
+    sourceId: video.id.videoId,
+    creditType: 'music_video',
+    title: video.snippet.title,
+    role: 'Creator',
+    year: video.snippet.publishedAt ? parseInt(video.snippet.publishedAt.substring(0, 4)) : undefined,
+    metadata: {
+      thumbnailUrl: video.snippet.thumbnails?.high?.url,
+      channelTitle: video.snippet.channelTitle,
+      publishedAt: video.snippet.publishedAt,
+    },
+    verificationUrl: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+  })) || [];
+
+  return {
+    userId: channel.id,
+    username: channel.snippet.title,
+    metrics: {
+      subscribers: parseInt(channel.statistics.subscriberCount) || 0,
+      totalViews: parseInt(channel.statistics.viewCount) || 0,
+      videoCount: parseInt(channel.statistics.videoCount) || 0,
+      profileUrl: `https://www.youtube.com/channel/${channel.id}`,
+      imageUrl: channel.snippet.thumbnails?.high?.url,
+    },
+    credits,
+  };
+}
+
+async function fetchInstagramData(accessToken: string) {
+  // Instagram Basic Display API
+  const userRes = await fetch(`https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${accessToken}`);
+  const userData = await userRes.json();
+
+  return {
+    userId: userData.id,
+    username: userData.username,
+    metrics: {
+      mediaCount: userData.media_count || 0,
+      accountType: userData.account_type,
+      profileUrl: `https://instagram.com/${userData.username}`,
+    },
+    credits: [],
+  };
+}
+
+async function importVerifiedCredits(
+  supabase: any,
+  userId: string,
+  source: string,
+  credits: any[]
+) {
+  for (const credit of credits) {
+    await supabase
+      .from('verified_credits')
+      .upsert({
+        user_id: userId,
+        source,
+        source_id: credit.sourceId,
+        credit_type: credit.creditType,
+        title: credit.title,
+        role: credit.role,
+        year: credit.year,
+        metadata: credit.metadata,
+        verification_url: credit.verificationUrl,
+        verified_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,source,source_id',
+      });
+  }
+}

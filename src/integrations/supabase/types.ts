@@ -615,6 +615,83 @@ export type Database = {
           },
         ]
       }
+      connected_platforms: {
+        Row: {
+          access_token: string | null
+          created_at: string | null
+          id: string
+          last_synced_at: string | null
+          platform: string
+          platform_data: Json | null
+          platform_user_id: string | null
+          platform_username: string | null
+          refresh_token: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          platform: string
+          platform_data?: Json | null
+          platform_user_id?: string | null
+          platform_username?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          platform?: string
+          platform_data?: Json | null
+          platform_user_id?: string | null
+          platform_username?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connected_platforms_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "connected_platforms_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "connected_platforms_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "connected_platforms_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           connected_user_id: string
@@ -2136,13 +2213,16 @@ export type Database = {
           company_size: string | null
           created_at: string | null
           daily_swipes: number | null
+          discogs_verified: boolean | null
           full_name: string
           google_maps_place_id: string | null
           id: string
           imdb_url: string | null
+          imdb_verified: boolean | null
           industry: string | null
           instagram_followers: number | null
           instagram_url: string | null
+          instagram_verified: boolean | null
           invite_code_used: string | null
           invited_by: string | null
           job_title: string | null
@@ -2174,6 +2254,7 @@ export type Database = {
           soundcloud_url: string | null
           spotify_listeners: number | null
           spotify_url: string | null
+          spotify_verified: boolean | null
           storage_limit_bytes: number | null
           storage_used_bytes: number | null
           streak_count: number | null
@@ -2206,6 +2287,7 @@ export type Database = {
           xp: number | null
           youtube_subscribers: number | null
           youtube_url: string | null
+          youtube_verified: boolean | null
         }
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
@@ -2231,13 +2313,16 @@ export type Database = {
           company_size?: string | null
           created_at?: string | null
           daily_swipes?: number | null
+          discogs_verified?: boolean | null
           full_name: string
           google_maps_place_id?: string | null
           id?: string
           imdb_url?: string | null
+          imdb_verified?: boolean | null
           industry?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          instagram_verified?: boolean | null
           invite_code_used?: string | null
           invited_by?: string | null
           job_title?: string | null
@@ -2269,6 +2354,7 @@ export type Database = {
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
+          spotify_verified?: boolean | null
           storage_limit_bytes?: number | null
           storage_used_bytes?: number | null
           streak_count?: number | null
@@ -2301,6 +2387,7 @@ export type Database = {
           xp?: number | null
           youtube_subscribers?: number | null
           youtube_url?: string | null
+          youtube_verified?: boolean | null
         }
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
@@ -2326,13 +2413,16 @@ export type Database = {
           company_size?: string | null
           created_at?: string | null
           daily_swipes?: number | null
+          discogs_verified?: boolean | null
           full_name?: string
           google_maps_place_id?: string | null
           id?: string
           imdb_url?: string | null
+          imdb_verified?: boolean | null
           industry?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
+          instagram_verified?: boolean | null
           invite_code_used?: string | null
           invited_by?: string | null
           job_title?: string | null
@@ -2364,6 +2454,7 @@ export type Database = {
           soundcloud_url?: string | null
           spotify_listeners?: number | null
           spotify_url?: string | null
+          spotify_verified?: boolean | null
           storage_limit_bytes?: number | null
           storage_used_bytes?: number | null
           streak_count?: number | null
@@ -2396,6 +2487,7 @@ export type Database = {
           xp?: number | null
           youtube_subscribers?: number | null
           youtube_url?: string | null
+          youtube_verified?: boolean | null
         }
         Relationships: [
           {
@@ -3582,6 +3674,80 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      verified_credits: {
+        Row: {
+          created_at: string | null
+          credit_type: string
+          id: string
+          metadata: Json | null
+          role: string | null
+          source: string
+          source_id: string | null
+          title: string
+          user_id: string
+          verification_url: string | null
+          verified_at: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          credit_type: string
+          id?: string
+          metadata?: Json | null
+          role?: string | null
+          source: string
+          source_id?: string | null
+          title: string
+          user_id: string
+          verification_url?: string | null
+          verified_at?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          credit_type?: string
+          id?: string
+          metadata?: Json | null
+          role?: string | null
+          source?: string
+          source_id?: string | null
+          title?: string
+          user_id?: string
+          verification_url?: string | null
+          verified_at?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verified_credits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "verified_credits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "verified_credits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "verified_credits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       waitlist: {
         Row: {

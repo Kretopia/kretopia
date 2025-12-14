@@ -43,75 +43,98 @@ serve(async (req) => {
       });
     }
 
-    const OMDB_API_KEY = Deno.env.get('OMDB_API_KEY');
     const TMDB_API_KEY = Deno.env.get('TMDB_API_KEY');
+
+    if (!TMDB_API_KEY) {
+      console.error('TMDB_API_KEY not configured');
+      return new Response(JSON.stringify({ 
+        error: 'TMDB API key not configured',
+        success: false,
+        personFound: false,
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     let credits: any[] = [];
     let personData: any = null;
+    let allSearchResults: any[] = [];
 
     // Use TMDB to search for person and get their credits
-    if (TMDB_API_KEY && personName) {
-      // Search for person
-      const searchRes = await fetch(
-        `https://api.themoviedb.org/3/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(personName)}`
-      );
-      const searchData = await searchRes.json();
+    console.log(`Searching TMDB for person: "${personName}"`);
+    
+    // Search for person
+    const searchRes = await fetch(
+      `https://api.themoviedb.org/3/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(personName)}`
+    );
+    const searchData = await searchRes.json();
+    
+    console.log(`TMDB search returned ${searchData.results?.length || 0} results`);
+    allSearchResults = searchData.results || [];
+    
+    if (searchData.results && searchData.results.length > 0) {
+      // Try exact match first, then fall back to first result
+      personData = searchData.results.find(
+        (p: any) => p.name.toLowerCase() === personName.toLowerCase()
+      ) || searchData.results[0];
       
-      if (searchData.results && searchData.results.length > 0) {
-        personData = searchData.results[0];
-        
-        // Get combined credits
-        const creditsRes = await fetch(
-          `https://api.themoviedb.org/3/person/${personData.id}/combined_credits?api_key=${TMDB_API_KEY}`
-        );
-        const creditsData = await creditsRes.json();
+      console.log(`Selected person: ${personData.name} (ID: ${personData.id})`);
+      
+      // Get combined credits
+      const creditsRes = await fetch(
+        `https://api.themoviedb.org/3/person/${personData.id}/combined_credits?api_key=${TMDB_API_KEY}`
+      );
+      const creditsData = await creditsRes.json();
 
-        // Process cast credits
-        const castCredits = (creditsData.cast || []).slice(0, 50).map((credit: any) => ({
-          sourceId: `tmdb-${credit.id}`,
-          creditType: credit.media_type === 'movie' ? 'film' : 'tv',
-          title: credit.title || credit.name,
-          role: credit.character || 'Actor',
-          year: (credit.release_date || credit.first_air_date)?.substring(0, 4) 
-            ? parseInt((credit.release_date || credit.first_air_date).substring(0, 4)) 
-            : undefined,
-          metadata: {
-            posterUrl: credit.poster_path 
-              ? `https://image.tmdb.org/t/p/w500${credit.poster_path}` 
-              : null,
-            voteAverage: credit.vote_average,
-            popularity: credit.popularity,
-            mediaType: credit.media_type,
-          },
-          verificationUrl: credit.media_type === 'movie' 
-            ? `https://www.themoviedb.org/movie/${credit.id}`
-            : `https://www.themoviedb.org/tv/${credit.id}`,
-        }));
+      console.log(`Found ${creditsData.cast?.length || 0} cast credits and ${creditsData.crew?.length || 0} crew credits`);
 
-        // Process crew credits
-        const crewCredits = (creditsData.crew || []).slice(0, 50).map((credit: any) => ({
-          sourceId: `tmdb-crew-${credit.id}-${credit.job}`,
-          creditType: credit.media_type === 'movie' ? 'film' : 'tv',
-          title: credit.title || credit.name,
-          role: credit.job || credit.department,
-          year: (credit.release_date || credit.first_air_date)?.substring(0, 4)
-            ? parseInt((credit.release_date || credit.first_air_date).substring(0, 4))
-            : undefined,
-          metadata: {
-            posterUrl: credit.poster_path 
-              ? `https://image.tmdb.org/t/p/w500${credit.poster_path}` 
-              : null,
-            department: credit.department,
-            voteAverage: credit.vote_average,
-            mediaType: credit.media_type,
-          },
-          verificationUrl: credit.media_type === 'movie'
-            ? `https://www.themoviedb.org/movie/${credit.id}`
-            : `https://www.themoviedb.org/tv/${credit.id}`,
-        }));
+      // Process cast credits
+      const castCredits = (creditsData.cast || []).slice(0, 50).map((credit: any) => ({
+        sourceId: `tmdb-${credit.id}`,
+        creditType: credit.media_type === 'movie' ? 'film' : 'tv',
+        title: credit.title || credit.name,
+        role: credit.character || 'Actor',
+        year: (credit.release_date || credit.first_air_date)?.substring(0, 4) 
+          ? parseInt((credit.release_date || credit.first_air_date).substring(0, 4)) 
+          : undefined,
+        metadata: {
+          posterUrl: credit.poster_path 
+            ? `https://image.tmdb.org/t/p/w500${credit.poster_path}` 
+            : null,
+          voteAverage: credit.vote_average,
+          popularity: credit.popularity,
+          mediaType: credit.media_type,
+        },
+        verificationUrl: credit.media_type === 'movie' 
+          ? `https://www.themoviedb.org/movie/${credit.id}`
+          : `https://www.themoviedb.org/tv/${credit.id}`,
+      }));
 
-        credits = [...castCredits, ...crewCredits];
-      }
+      // Process crew credits
+      const crewCredits = (creditsData.crew || []).slice(0, 50).map((credit: any) => ({
+        sourceId: `tmdb-crew-${credit.id}-${credit.job}`,
+        creditType: credit.media_type === 'movie' ? 'film' : 'tv',
+        title: credit.title || credit.name,
+        role: credit.job || credit.department,
+        year: (credit.release_date || credit.first_air_date)?.substring(0, 4)
+          ? parseInt((credit.release_date || credit.first_air_date).substring(0, 4))
+          : undefined,
+        metadata: {
+          posterUrl: credit.poster_path 
+            ? `https://image.tmdb.org/t/p/w500${credit.poster_path}` 
+            : null,
+          department: credit.department,
+          voteAverage: credit.vote_average,
+          mediaType: credit.media_type,
+        },
+        verificationUrl: credit.media_type === 'movie'
+          ? `https://www.themoviedb.org/movie/${credit.id}`
+          : `https://www.themoviedb.org/tv/${credit.id}`,
+      }));
+
+      credits = [...castCredits, ...crewCredits];
+      console.log(`Total processed credits: ${credits.length}`);
     }
 
     // Import credits to database
@@ -181,13 +204,27 @@ serve(async (req) => {
       } : null,
       creditsImported: credits.length,
       credits: credits.slice(0, 10), // Return first 10 for preview
+      searchResults: allSearchResults.slice(0, 5).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        knownFor: p.known_for_department,
+      })),
+      message: personData 
+        ? (credits.length > 0 
+          ? `Found ${credits.length} credits for ${personData.name}`
+          : `Found ${personData.name} but no credits available`)
+        : `No person found matching "${personName}"`,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error: any) {
     console.error('Fetch IMDB credits error:', error);
-    return new Response(JSON.stringify({ error: error?.message || 'Unknown error' }), {
+    return new Response(JSON.stringify({ 
+      error: error?.message || 'Unknown error',
+      success: false,
+      personFound: false,
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

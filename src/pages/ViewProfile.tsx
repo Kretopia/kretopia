@@ -5,9 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MapPin, 
@@ -18,19 +16,23 @@ import {
   Sparkles,
   Star,
   Award,
-  ExternalLink,
-  Play,
-  Image as ImageIcon,
-  Music,
-  Calendar,
   Rocket
 } from "lucide-react";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
-import { getMediaThumbnail } from "@/lib/mediaUtils";
 import { SEO } from "@/components/SEO";
 import CreatorEPK from "./CreatorEPK";
+
+// Import profile section components
+import { PortfolioSection } from "@/components/profile/PortfolioSection";
+import { SkillsSection } from "@/components/profile/SkillsSection";
+import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
+import { PressLinksSection } from "@/components/profile/PressLinksSection";
+import { AwardsSection } from "@/components/profile/AwardsSection";
+import { ReviewsSection } from "@/components/profile/ReviewsSection";
+import { AchievementBadges } from "@/components/profile/AchievementBadges";
 
 interface Profile {
   user_id: string;
@@ -47,15 +49,15 @@ interface Profile {
   rate_range?: string;
   average_rating?: number;
   total_reviews?: number;
-}
-
-interface PortfolioItem {
-  id: string;
-  title: string;
-  description?: string;
-  media_url: string;
-  media_type: string;
-  thumbnail_url?: string;
+  youtube_subscribers?: number;
+  instagram_followers?: number;
+  tiktok_followers?: number;
+  spotify_listeners?: number;
+  twitter_followers?: number;
+  linkedin_connections?: number;
+  social_verified?: boolean;
+  job_title?: string;
+  industry?: string;
 }
 
 const ViewProfile = () => {
@@ -65,13 +67,14 @@ const ViewProfile = () => {
   const { user, loading: authLoading } = useAuth();
   
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMatched, setIsMatched] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState<PortfolioItem | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   
   const isFromMatch = searchParams.get('from') === 'match';
 
@@ -87,59 +90,77 @@ const ViewProfile = () => {
     }
   }, [user, userId, navigate]);
 
-  useEffect(() => {
+  const fetchData = async () => {
     if (!userId || !user) return;
     
-    const fetchProfileData = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch profile
-        const { data: profileData, error: profileError } = await supabase
+    setIsLoading(true);
+    try {
+      // Fetch profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (profileError) throw profileError;
+      setProfile(profileData);
+
+      // Fetch portfolio items
+      const { data: portfolioData } = await supabase
+        .from('portfolio_items')
+        .select('*')
+        .eq('user_id', userId)
+        .order('featured', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      setPortfolioItems(portfolioData || []);
+
+      // Fetch reviews
+      const { data: reviewsData } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('profile_id', userId)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+
+      if (reviewsData) {
+        // Fetch reviewer profiles
+        const reviewerIds = reviewsData.map(r => r.reviewer_id);
+        const { data: reviewerProfiles } = await supabase
           .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
+          .select('user_id, full_name, avatar_url, role')
+          .in('user_id', reviewerIds);
 
-        if (profileError) throw profileError;
-        setProfile(profileData);
-
-        // Fetch portfolio items
-        const { data: portfolioData } = await supabase
-          .from('portfolio_items')
-          .select('*')
-          .eq('user_id', userId)
-          .order('display_order', { ascending: true })
-          .limit(12);
-
-        setPortfolioItems(portfolioData || []);
-
-        // Check if matched
-        const { data: matchData } = await supabase
-          .from('matches')
-          .select('id')
-          .or(`and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`)
-          .eq('status', 'active')
-          .limit(1);
-
-        setIsMatched(matchData && matchData.length > 0);
-        if (matchData && matchData.length > 0) {
-          setMatchId(matchData[0].id);
-        }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      } finally {
-        setIsLoading(false);
+        const reviewsWithProfiles = reviewsData.map(review => ({
+          ...review,
+          reviewer: reviewerProfiles?.find(p => p.user_id === review.reviewer_id)
+        }));
+        setReviews(reviewsWithProfiles);
       }
-    };
 
-    fetchProfileData();
+      // Check if matched
+      const { data: matchData } = await supabase
+        .from('matches')
+        .select('id')
+        .or(`and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`)
+        .eq('status', 'active')
+        .limit(1);
+
+      setIsMatched(matchData && matchData.length > 0);
+      if (matchData && matchData.length > 0) {
+        setMatchId(matchData[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
   }, [userId, user]);
 
-  const getMediaIcon = (type: string) => {
-    if (type?.includes('video')) return <Play className="h-4 w-4" />;
-    if (type?.includes('audio')) return <Music className="h-4 w-4" />;
-    return <ImageIcon className="h-4 w-4" />;
-  };
 
   const getVerificationBadge = () => {
     if (!profile?.verification_tier || profile.verification_tier === 'unverified') return null;
@@ -321,73 +342,99 @@ const ViewProfile = () => {
             </CardContent>
           </Card>
 
-          {/* Skills */}
-          {(profile.professional_skills?.length > 0 || profile.passion_skills?.length > 0) && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-lg">Skills</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {profile.professional_skills?.length > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Professional</p>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.professional_skills.map((skill: any, i: number) => (
-                          <Badge key={i} variant="secondary">
-                            {typeof skill === 'string' ? skill : skill.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {profile.passion_skills?.length > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Interests</p>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.passion_skills.map((skill: any, i: number) => (
-                          <Badge key={i} variant="outline">
-                            {typeof skill === 'string' ? skill : skill.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Achievement Badges */}
+          {profile.achievement_badges && profile.achievement_badges.length > 0 && (
+            <div className="mb-6">
+              <AchievementBadges 
+                achievements={profile.achievement_badges}
+                showAll={true}
+              />
+            </div>
           )}
 
-          {/* Portfolio */}
+          {/* Portfolio Section */}
           {portfolioItems.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Portfolio</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {portfolioItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
-                      onClick={() => setSelectedMedia(item)}
-                    >
-                      <img
-                        src={getMediaThumbnail(item)}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="text-white text-center p-2">
-                          <div className="mb-1">{getMediaIcon(item.media_type)}</div>
-                          <p className="text-xs font-medium line-clamp-2">{item.title}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
+              <h2 className="text-lg font-bold mb-4">Portfolio</h2>
+              <PortfolioSection 
+                items={portfolioItems} 
+                isOwnProfile={false}
+                onRefresh={fetchData}
+              />
+            </div>
+          )}
+
+          {/* Skills Section */}
+          {(profile.professional_skills?.length > 0 || profile.passion_skills?.length > 0) && (
+            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
+              <SkillsSection
+                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
+                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
+                jobTitle={profile.job_title}
+                industry={profile.industry}
+                isOwnProfile={false}
+                userId={profile.user_id}
+                onRefresh={fetchData}
+              />
+            </div>
+          )}
+
+          {/* Social Stats */}
+          {(profile.youtube_subscribers || profile.instagram_followers || profile.tiktok_followers || 
+            profile.spotify_listeners || profile.twitter_followers || profile.linkedin_connections) && (
+            <div className="mb-6">
+              <SocialStatsSection 
+                youtubeSubscribers={profile.youtube_subscribers}
+                instagramFollowers={profile.instagram_followers}
+                tiktokFollowers={profile.tiktok_followers}
+                spotifyListeners={profile.spotify_listeners}
+                twitterFollowers={profile.twitter_followers}
+                linkedinConnections={profile.linkedin_connections}
+                verifiedMetrics={profile.social_verified}
+              />
+            </div>
+          )}
+
+          {/* Experience & Credits */}
+          <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold mb-4">Experience & Credits</h2>
+            <UnifiedWorkHistory 
+              userId={profile.user_id}
+              isOwnProfile={false}
+              onRefresh={fetchData}
+            />
+          </div>
+
+          {/* Press Links */}
+          <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
+            <h3 className="font-semibold mb-4">Press Coverage</h3>
+            <PressLinksSection 
+              userId={profile.user_id}
+              isOwnProfile={false}
+              onRefresh={fetchData}
+            />
+          </div>
+
+          {/* Awards */}
+          <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
+            <h3 className="font-semibold mb-4">Awards</h3>
+            <AwardsSection 
+              userId={profile.user_id}
+              isOwnProfile={false}
+              onRefresh={fetchData}
+            />
+          </div>
+
+          {/* Reviews */}
+          {reviews.length > 0 && (
+            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
+              <ReviewsSection 
+                reviews={reviews}
+                isOwnProfile={false}
+                profileUserId={profile.user_id}
+                onRefresh={fetchData}
+              />
+            </div>
           )}
         </div>
       </div>

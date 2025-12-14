@@ -324,6 +324,16 @@ export function ConnectPlatformsCard() {
                           • {formatMetric(connectionData.platform_data.subscribers)} subscribers
                         </span>
                       )}
+                      {connectionData.platform_data?.likes && (
+                        <span className="ml-2">
+                          • {formatMetric(connectionData.platform_data.likes)} likes
+                        </span>
+                      )}
+                      {connectionData.platform_data?.videoCount && (
+                        <span className="ml-2">
+                          • {connectionData.platform_data.videoCount} videos
+                        </span>
+                      )}
                       {connectionData.platform_data?.totalCredits && (
                         <span className="ml-2">
                           • {connectionData.platform_data.totalCredits} credits

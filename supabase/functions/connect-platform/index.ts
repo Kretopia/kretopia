@@ -35,6 +35,13 @@ const PLATFORM_CONFIGS: Record<string, {
     clientIdEnv: 'INSTAGRAM_CLIENT_ID',
     clientSecretEnv: 'INSTAGRAM_CLIENT_SECRET',
   },
+  tiktok: {
+    authUrl: 'https://www.tiktok.com/v2/auth/authorize/',
+    tokenUrl: 'https://open.tiktokapis.com/v2/oauth/token/',
+    scopes: ['user.info.basic', 'user.info.stats', 'video.list'],
+    clientIdEnv: 'TIKTOK_CLIENT_KEY',
+    clientSecretEnv: 'TIKTOK_CLIENT_SECRET',
+  },
 };
 
 serve(async (req) => {
@@ -92,9 +99,16 @@ serve(async (req) => {
     // Action: Get OAuth URL
     if (action === 'getAuthUrl') {
       const state = btoa(JSON.stringify({ userId: user.id, platform }));
-      const scopeString = config.scopes.join(' ');
+      const scopeString = config.scopes.join(platform === 'tiktok' ? ',' : ' ');
       
-      let authUrl = `${config.authUrl}?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${encodeURIComponent(scopeString)}`;
+      let authUrl: string;
+      
+      if (platform === 'tiktok') {
+        // TikTok uses different parameter format
+        authUrl = `${config.authUrl}?client_key=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${encodeURIComponent(scopeString)}`;
+      } else {
+        authUrl = `${config.authUrl}?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${encodeURIComponent(scopeString)}`;
+      }
       
       // Platform-specific params
       if (platform === 'youtube') {
@@ -119,23 +133,41 @@ serve(async (req) => {
       }
 
       // Exchange code for tokens
-      const tokenBody = new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-        client_id: clientId,
-        client_secret: clientSecret,
-      });
-
-      const tokenResponse = await fetch(config.tokenUrl, {
-        method: 'POST',
-        headers: {
+      let tokenBody: URLSearchParams | string;
+      let tokenHeaders: Record<string, string>;
+      
+      if (platform === 'tiktok') {
+        // TikTok uses different parameter names and JSON body
+        tokenBody = JSON.stringify({
+          client_key: clientId,
+          client_secret: clientSecret,
+          code,
+          grant_type: 'authorization_code',
+          redirect_uri: redirectUri,
+        });
+        tokenHeaders = {
+          'Content-Type': 'application/json',
+        };
+      } else {
+        tokenBody = new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: redirectUri,
+          client_id: clientId,
+          client_secret: clientSecret,
+        }).toString();
+        tokenHeaders = {
           'Content-Type': 'application/x-www-form-urlencoded',
           ...(platform === 'spotify' ? {
             'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`
           } : {}),
-        },
-        body: tokenBody.toString(),
+        };
+      }
+
+      const tokenResponse = await fetch(config.tokenUrl, {
+        method: 'POST',
+        headers: tokenHeaders,
+        body: tokenBody,
       });
 
       if (!tokenResponse.ok) {
@@ -298,6 +330,8 @@ async function fetchPlatformData(platform: string, accessToken: string): Promise
       return await fetchYouTubeData(accessToken);
     case 'instagram':
       return await fetchInstagramData(accessToken);
+    case 'tiktok':
+      return await fetchTikTokData(accessToken);
     default:
       return { userId: '', username: '', metrics: {} };
   }
@@ -413,6 +447,68 @@ async function fetchYouTubeData(accessToken: string) {
       videoCount: parseInt(channel.statistics.videoCount) || 0,
       profileUrl: `https://www.youtube.com/channel/${channel.id}`,
       imageUrl: channel.snippet.thumbnails?.high?.url,
+    },
+    credits,
+  };
+}
+
+async function fetchTikTokData(accessToken: string) {
+  // Get user info with stats
+  const userRes = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name,bio_description,profile_deep_link,is_verified,follower_count,following_count,likes_count,video_count', {
+    headers: { 'Authorization': `Bearer ${accessToken}` },
+  });
+  const userData = await userRes.json();
+  const user = userData.data?.user;
+
+  if (!user) {
+    return { userId: '', username: '', metrics: {} };
+  }
+
+  // Get recent videos as credits
+  let credits: any[] = [];
+  try {
+    const videosRes = await fetch('https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,duration,cover_image_url,share_url,create_time,like_count,comment_count,share_count,view_count', {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ max_count: 20 }),
+    });
+    const videosData = await videosRes.json();
+    
+    credits = videosData.data?.videos?.map((video: any) => ({
+      sourceId: video.id,
+      creditType: 'tiktok_video',
+      title: video.title || 'TikTok Video',
+      role: 'Creator',
+      year: video.create_time ? new Date(video.create_time * 1000).getFullYear() : undefined,
+      metadata: {
+        thumbnailUrl: video.cover_image_url,
+        duration: video.duration,
+        views: video.view_count,
+        likes: video.like_count,
+        comments: video.comment_count,
+        shares: video.share_count,
+      },
+      verificationUrl: video.share_url,
+    })) || [];
+  } catch (e) {
+    console.error('Failed to fetch TikTok videos:', e);
+  }
+
+  return {
+    userId: user.open_id,
+    username: user.display_name,
+    metrics: {
+      followers: user.follower_count || 0,
+      following: user.following_count || 0,
+      likes: user.likes_count || 0,
+      videoCount: user.video_count || 0,
+      isVerified: user.is_verified,
+      profileUrl: user.profile_deep_link,
+      imageUrl: user.avatar_url,
+      bio: user.bio_description,
     },
     credits,
   };

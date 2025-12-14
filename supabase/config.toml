@@ -86,3 +86,12 @@ verify_jwt = true
 
 [functions.generate-ice-breakers]
 verify_jwt = true
+
+[functions.connect-platform]
+verify_jwt = true
+
+[functions.fetch-imdb-credits]
+verify_jwt = true
+
+[functions.fetch-discogs-credits]
+verify_jwt = true

@@ -20,7 +20,8 @@ import {
   RefreshCw,
   Unlink,
   Search,
-  AlertCircle
+  AlertCircle,
+  Video
 } from "lucide-react";
 
 interface ConnectedPlatform {
@@ -55,6 +56,14 @@ const PLATFORMS = [
     icon: Instagram,
     color: 'bg-gradient-to-r from-purple-500 to-pink-500',
     description: 'Connect to verify follower count',
+    requiresOAuth: true,
+  },
+  {
+    id: 'tiktok',
+    name: 'TikTok',
+    icon: Video,
+    color: 'bg-gradient-to-r from-[#00f2ea] to-[#ff0050]',
+    description: 'Connect to verify follower count and import videos',
     requiresOAuth: true,
   },
   {
@@ -428,7 +437,7 @@ export function ConnectPlatformsCard() {
           <p className="text-sm text-muted-foreground text-center">
             Connected platforms auto-update your profile with verified stats and credits.
             <br />
-            <span className="text-primary">More platforms coming soon:</span> AllMusic, Grammy, SoundCloud
+            <span className="text-primary">More platforms coming soon:</span> AllMusic, Grammy, SoundCloud, LinkedIn
           </p>
         </div>
       </CardContent>

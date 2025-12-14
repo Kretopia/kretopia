@@ -55,6 +55,7 @@ import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { AIPortfolioInsights, AIProfileOptimizer } from "@/components/ai";
 
 import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
+import { ProTrialBanner } from "@/components/profile/ProTrialBanner";
 import { checkProfileCompletion, getDiscoveryMissingFields, meetsDiscoveryRequirements } from "@/lib/profileCompletion";
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -302,6 +303,13 @@ const ProfileContent = () => {
             onShare={handleShare}
           />
         </div>
+
+        {/* Pro Trial Banner */}
+        <ProTrialBanner 
+          subscriptionStatus={profile.subscription_status}
+          subscriptionEndDate={profile.subscription_end_date}
+          subscriptionTier={profile.subscription_tier}
+        />
 
         {/* Profile Visibility Banner */}
         {(() => {

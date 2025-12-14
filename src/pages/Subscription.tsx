@@ -42,9 +42,16 @@ const SUBSCRIPTION_TIERS = [
 export default function Subscription() {
   const [loading, setLoading] = useState<string | null>(null);
   const [currentTier, setCurrentTier] = useState<string>("free");
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("none");
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const isTrialActive = subscriptionStatus === "trial" && subscriptionEndDate && new Date(subscriptionEndDate) > new Date();
+  const daysRemaining = subscriptionEndDate 
+    ? Math.max(0, Math.ceil((new Date(subscriptionEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : 0;
 
   useEffect(() => {
     checkSubscription();
@@ -72,12 +79,18 @@ export default function Subscription() {
       // Check current subscription from profile
       const { data: profile } = await supabase
         .from("profiles")
-        .select("subscription_tier, subscription_product_id")
+        .select("subscription_tier, subscription_product_id, subscription_status, subscription_end_date")
         .eq("user_id", session.user.id)
         .single();
       
       if (profile?.subscription_tier) {
         setCurrentTier(profile.subscription_tier);
+      }
+      if (profile?.subscription_status) {
+        setSubscriptionStatus(profile.subscription_status);
+      }
+      if (profile?.subscription_end_date) {
+        setSubscriptionEndDate(profile.subscription_end_date);
       }
     } catch (error: any) {
       console.error("Error checking subscription:", error);
@@ -172,7 +185,25 @@ export default function Subscription() {
         <p className="text-xl text-muted-foreground">
           Unlock the full potential of ThriveIN
         </p>
-        {currentTier !== "free" && (
+        
+        {/* Trial Banner */}
+        {isTrialActive && (
+          <div className="mt-6 inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-purple-500/10 border border-primary/20">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-lg">
+                🎉 You have a <span className="text-primary">1-Month Free Pro Trial!</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {daysRemaining} days remaining • All Pro features unlocked
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {currentTier !== "free" && !isTrialActive && (
           <Button
             onClick={handleManageSubscription}
             variant="outline"
@@ -208,12 +239,17 @@ export default function Subscription() {
                   : ""
               }`}
             >
-              {tier.popular && (
+              {tier.popular && !isCurrentTier && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
                   Most Popular
                 </Badge>
               )}
-              {isCurrentTier && (
+              {isCurrentTier && isTrialActive && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-cyan-500">
+                  🎁 Free Trial Active
+                </Badge>
+              )}
+              {isCurrentTier && !isTrialActive && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500">
                   Your Plan
                 </Badge>
@@ -275,8 +311,20 @@ export default function Subscription() {
       </div>
 
       <div className="mt-12 text-center text-sm text-muted-foreground">
-        <p>All plans include secure payments and 24/7 support</p>
-        <p className="mt-2">Cancel anytime • No hidden fees</p>
+        {isTrialActive ? (
+          <>
+            <p className="text-base font-medium text-foreground mb-2">
+              ✨ Enjoy your 1-month free Pro trial!
+            </p>
+            <p>Experience all premium features with no strings attached</p>
+            <p className="mt-2">Your trial ends on {new Date(subscriptionEndDate!).toLocaleDateString()}</p>
+          </>
+        ) : (
+          <>
+            <p>All plans include secure payments and 24/7 support</p>
+            <p className="mt-2">Cancel anytime • No hidden fees</p>
+          </>
+        )}
       </div>
     </div>
   );

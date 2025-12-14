@@ -461,9 +461,7 @@ export default function Onboarding() {
 
       toast({
         title: "🎉 Welcome to ThriveIN!",
-        description: isVisible 
-          ? "Your profile is visible! Start discovering creators."
-          : "Complete your profile to become visible to others.",
+        description: "You have 1-month free Pro access! Enjoy all premium features.",
       });
 
       // Navigate to the connected user's profile if we just connected, otherwise to circle
@@ -895,6 +893,41 @@ export default function Onboarding() {
                   ? "Your profile is visible to other creators!"
                   : "Complete the remaining items to become visible"}
               </p>
+            </div>
+
+            {/* Pro Trial Gift Banner */}
+            <div className="rounded-xl border-2 border-primary/30 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-purple-500/10 p-5 text-left">
+              <div className="flex items-start gap-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Trophy className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    🎁 Welcome Gift: 1-Month Free Pro!
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    As a thank you for joining, you get <span className="font-semibold text-primary">full Pro access for 30 days</span> — completely free!
+                  </p>
+                  <ul className="mt-3 text-sm space-y-1.5">
+                    <li className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      Unlimited swipes & matches
+                    </li>
+                    <li className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      AI Portfolio Insights & Profile Optimizer
+                    </li>
+                    <li className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      Import credits from IMDB, Discogs & more
+                    </li>
+                    <li className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      Unlimited portfolio items & advanced features
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
             
             <VisibilityChecklist />

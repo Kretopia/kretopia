@@ -345,65 +345,94 @@ async function fetchSpotifyData(accessToken: string) {
   const profileRes = await fetch('https://api.spotify.com/v1/me', {
     headers: { 'Authorization': `Bearer ${accessToken}` },
   });
+  
+  if (!profileRes.ok) {
+    const errorText = await profileRes.text();
+    console.error('Spotify profile error:', profileRes.status, errorText);
+    throw new Error(`Spotify API error: ${profileRes.status} - ${errorText}`);
+  }
+  
   const profile = await profileRes.json();
 
-  // Get top artists (to show their discography/credits)
-  const topArtistsRes = await fetch('https://api.spotify.com/v1/me/top/artists?limit=10', {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
-  });
-  const topArtists = await topArtistsRes.json();
+  // Get top artists (to show their discography/credits) - optional, don't fail if this errors
+  let topArtists = { items: [] };
+  try {
+    const topArtistsRes = await fetch('https://api.spotify.com/v1/me/top/artists?limit=10', {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    });
+    if (topArtistsRes.ok) {
+      topArtists = await topArtistsRes.json();
+    }
+  } catch (e) {
+    console.log('Could not fetch top artists:', e);
+  }
 
   // If user is an artist, try to get their artist profile
   let artistData = null;
   let credits: any[] = [];
   
-  // Search for artist with same name
-  const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(profile.display_name)}&type=artist&limit=5`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
-  });
-  const searchResults = await searchRes.json();
+  // Search for artist with same name - optional, don't fail if this errors
+  let searchResults = { artists: { items: [] } };
+  try {
+    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(profile.display_name || '')}&type=artist&limit=5`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` },
+    });
+    if (searchRes.ok) {
+      searchResults = await searchRes.json();
+    }
+  } catch (e) {
+    console.log('Could not search for artist:', e);
+  }
   
   // Find matching artist (simple name match)
   const matchingArtist = searchResults.artists?.items?.find(
-    (a: any) => a.name.toLowerCase() === profile.display_name.toLowerCase()
+    (a: any) => a.name?.toLowerCase() === profile.display_name?.toLowerCase()
   );
 
   if (matchingArtist) {
-    artistData = matchingArtist;
+    artistData = matchingArtist as any;
     
-    // Get artist's albums as credits
-    const albumsRes = await fetch(`https://api.spotify.com/v1/artists/${matchingArtist.id}/albums?include_groups=album,single&limit=50`, {
-      headers: { 'Authorization': `Bearer ${accessToken}` },
-    });
-    const albums = await albumsRes.json();
-    
-    credits = albums.items?.map((album: any) => ({
-      sourceId: album.id,
-      creditType: album.album_type === 'single' ? 'single' : 'album',
-      title: album.name,
-      role: 'Artist',
-      year: album.release_date ? parseInt(album.release_date.substring(0, 4)) : undefined,
-      metadata: {
-        imageUrl: album.images?.[0]?.url,
-        totalTracks: album.total_tracks,
-        releaseDate: album.release_date,
-        spotifyUrl: album.external_urls?.spotify,
-      },
-      verificationUrl: album.external_urls?.spotify,
-    })) || [];
+    // Get artist's albums as credits - optional, don't fail
+    try {
+      const albumsRes = await fetch(`https://api.spotify.com/v1/artists/${(matchingArtist as any).id}/albums?include_groups=album,single&limit=50`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+      });
+      if (albumsRes.ok) {
+        const albums = await albumsRes.json();
+        
+        credits = albums.items?.map((album: any) => ({
+          sourceId: album.id,
+          creditType: album.album_type === 'single' ? 'single' : 'album',
+          title: album.name,
+          role: 'Artist',
+          year: album.release_date ? parseInt(album.release_date.substring(0, 4)) : undefined,
+          metadata: {
+            imageUrl: album.images?.[0]?.url,
+            totalTracks: album.total_tracks,
+            releaseDate: album.release_date,
+            spotifyUrl: album.external_urls?.spotify,
+          },
+          verificationUrl: album.external_urls?.spotify,
+        })) || [];
+      }
+    } catch (e) {
+      console.log('Could not fetch artist albums:', e);
+    }
   }
 
+  const artistDataTyped = artistData as any;
+  
   return {
     userId: profile.id,
     username: profile.display_name,
     metrics: {
-      followers: artistData?.followers?.total || profile.followers?.total || 0,
-      monthlyListeners: artistData?.popularity ? artistData.popularity * 10000 : null, // Rough estimate
+      followers: artistDataTyped?.followers?.total || profile.followers?.total || 0,
+      monthlyListeners: artistDataTyped?.popularity ? artistDataTyped.popularity * 10000 : null,
       profileUrl: profile.external_urls?.spotify,
       imageUrl: profile.images?.[0]?.url,
       isArtist: !!artistData,
-      artistId: artistData?.id,
-      genres: artistData?.genres || [],
+      artistId: artistDataTyped?.id,
+      genres: artistDataTyped?.genres || [],
     },
     credits,
   };

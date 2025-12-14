@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSearchParams } from "react-router-dom";
 import { 
   Music, 
   Youtube, 
@@ -32,6 +33,13 @@ interface ConnectedPlatform {
   verified_at: string;
   last_synced_at: string;
 }
+
+// Generate a cryptographically secure random state for CSRF protection
+const generateOAuthState = () => {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+};
 
 const PLATFORMS = [
   {
@@ -87,18 +95,99 @@ const PLATFORMS = [
 export function ConnectPlatformsCard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [connectedPlatforms, setConnectedPlatforms] = useState<ConnectedPlatform[]>([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
   const [searchDialogOpen, setSearchDialogOpen] = useState<string | null>(null);
   const [searchName, setSearchName] = useState('');
   const [searching, setSearching] = useState(false);
+  const [processingCallback, setProcessingCallback] = useState(false);
+
+  // Handle OAuth callback
+  const handleOAuthCallback = useCallback(async (code: string, platform: string, state: string) => {
+    // Validate state to prevent CSRF attacks
+    const storedState = sessionStorage.getItem(`oauth_state_${platform}`);
+    if (!storedState || storedState !== state) {
+      console.error('OAuth state mismatch - possible CSRF attack');
+      toast({
+        title: "Security Error",
+        description: "OAuth state validation failed. Please try connecting again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Clear the stored state
+    sessionStorage.removeItem(`oauth_state_${platform}`);
+
+    setProcessingCallback(true);
+    setConnecting(platform);
+
+    try {
+      const redirectUri = `${window.location.origin}/settings?oauth_callback=${platform}`;
+      
+      const { data, error } = await supabase.functions.invoke('connect-platform', {
+        body: {
+          action: 'exchangeCode',
+          platform,
+          code,
+          redirectUri,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Connected!",
+          description: `${platform.charAt(0).toUpperCase() + platform.slice(1)} has been connected successfully`,
+        });
+        fetchConnectedPlatforms();
+      } else {
+        throw new Error(data.error || 'Failed to exchange code');
+      }
+    } catch (error: any) {
+      console.error('OAuth callback error:', error);
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to complete OAuth connection",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingCallback(false);
+      setConnecting(null);
+      // Clear URL parameters
+      setSearchParams({});
+    }
+  }, [toast, setSearchParams]);
 
   useEffect(() => {
     if (user) {
       fetchConnectedPlatforms();
+      
+      // Check for OAuth callback parameters
+      const oauthCallback = searchParams.get('oauth_callback');
+      const code = searchParams.get('code');
+      const state = searchParams.get('state');
+      const error = searchParams.get('error');
+      const errorDescription = searchParams.get('error_description');
+
+      if (error) {
+        toast({
+          title: "Connection Denied",
+          description: errorDescription || `${oauthCallback || 'Platform'} authorization was denied`,
+          variant: "destructive",
+        });
+        setSearchParams({});
+        return;
+      }
+
+      if (oauthCallback && code && state && !processingCallback) {
+        handleOAuthCallback(code, oauthCallback, state);
+      }
     }
-  }, [user]);
+  }, [user, searchParams, handleOAuthCallback, processingCallback]);
 
   const fetchConnectedPlatforms = async () => {
     try {
@@ -119,6 +208,10 @@ export function ConnectPlatformsCard() {
   const handleOAuthConnect = async (platform: string) => {
     setConnecting(platform);
     try {
+      // Generate and store state for CSRF protection
+      const state = generateOAuthState();
+      sessionStorage.setItem(`oauth_state_${platform}`, state);
+      
       const redirectUri = `${window.location.origin}/settings?oauth_callback=${platform}`;
       
       const { data, error } = await supabase.functions.invoke('connect-platform', {
@@ -126,6 +219,7 @@ export function ConnectPlatformsCard() {
           action: 'getAuthUrl',
           platform,
           redirectUri,
+          state, // Pass state to be included in auth URL
         },
       });
 
@@ -135,6 +229,8 @@ export function ConnectPlatformsCard() {
         // Redirect to OAuth provider
         window.location.href = data.authUrl;
       } else if (data.error) {
+        // Clear stored state if connection fails
+        sessionStorage.removeItem(`oauth_state_${platform}`);
         toast({
           title: "Not Available",
           description: data.details || `${platform} integration is not configured yet`,
@@ -143,6 +239,8 @@ export function ConnectPlatformsCard() {
       }
     } catch (error: any) {
       console.error('OAuth connect error:', error);
+      // Clear stored state on error
+      sessionStorage.removeItem(`oauth_state_${platform}`);
       toast({
         title: "Connection Failed",
         description: error.message || "Failed to start connection",

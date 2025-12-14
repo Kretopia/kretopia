@@ -44,17 +44,24 @@ export async function checkAndCreateWelcomeMatch(userId: string): Promise<{
 }
 
 async function createBidirectionalConnection(userId1: string, userId2: string) {
-  // Create bidirectional connections (accepted status)
-  await supabase.from('connections').insert([
-    { user_id: userId1, connected_user_id: userId2, status: 'accepted' },
-    { user_id: userId2, connected_user_id: userId1, status: 'accepted' }
-  ]);
+  // Use secure database function to create bidirectional connections
+  // This bypasses RLS restrictions for welcome/auto connections
+  const { error: connectionError } = await supabase.rpc('create_bidirectional_connection', {
+    user1_uuid: userId1,
+    user2_uuid: userId2,
+    connection_status: 'accepted'
+  });
+
+  if (connectionError) {
+    console.error('[WelcomeMatch] Error creating bidirectional connection:', connectionError);
+    throw connectionError;
+  }
 
   // Create a match record with correct enum value
   await supabase.from('matches').insert({
     user1_id: userId1,
     user2_id: userId2,
-    match_type: 'creator',  // Use 'creator' for consistency with swipe matches
+    match_type: 'creator',
     status: 'active'
   });
 

@@ -101,29 +101,17 @@ export function useSwipeActions(currentUserId: string | undefined) {
         .limit(1);
 
       if (!existingConnection || existingConnection.length === 0) {
-        // Create bidirectional connections
-        const [conn1Result, conn2Result] = await Promise.all([
-          supabase.from('connections').insert({
-            user_id: currentUserId,
-            connected_user_id: targetId,
-            status: 'accepted'
-          }),
-          supabase.from('connections').insert({
-            user_id: targetId,
-            connected_user_id: currentUserId,
-            status: 'accepted'
-          })
-        ]);
+        // Use secure database function to create bidirectional connections
+        const { error: connectionError } = await supabase.rpc('create_bidirectional_connection', {
+          user1_uuid: currentUserId,
+          user2_uuid: targetId,
+          connection_status: 'accepted'
+        });
 
-        if (conn1Result.error) {
-          console.error('[useSwipeActions] Connection 1 error:', conn1Result.error);
+        if (connectionError) {
+          console.error('[useSwipeActions] Connection error:', connectionError);
         } else {
-          console.log('[useSwipeActions] Connection 1 created');
-        }
-        if (conn2Result.error) {
-          console.error('[useSwipeActions] Connection 2 error:', conn2Result.error);
-        } else {
-          console.log('[useSwipeActions] Connection 2 created');
+          console.log('[useSwipeActions] Bidirectional connections created successfully');
         }
       } else {
         console.log('[useSwipeActions] Connection already exists, skipping');

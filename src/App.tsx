@@ -22,6 +22,7 @@ const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
+const ViewProfile = lazy(() => import("./pages/ViewProfile"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Circle = lazy(() => import("./pages/Circle"));
 const Messages = lazy(() => import("./pages/Messages"));
@@ -98,7 +99,7 @@ const AppContent = () => {
   const { user } = useAuth();
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
-  const isPublicEPK = /^\/profile\/[^/]+$/.test(location.pathname);
+  const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
   
   // Don't add bottom padding when on individual project pages or desk list
   const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK;
@@ -121,8 +122,9 @@ const AppContent = () => {
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
-            {/* Public EPK/Link-in-Bio - No Auth Required */}
-            <Route path="/profile/:userId" element={<CreatorEPK />} />
+            {/* View other user's profile - Auth users get in-app view, public gets EPK */}
+            <Route path="/profile/:userId" element={<ViewProfile />} />
+            <Route path="/epk/:userId" element={<CreatorEPK />} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/my-analytics" element={<ProtectedRoute><MyAnalytics /></ProtectedRoute>} />

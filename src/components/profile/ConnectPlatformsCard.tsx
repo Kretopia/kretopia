@@ -107,6 +107,8 @@ export function ConnectPlatformsCard() {
   const [processingCallback, setProcessingCallback] = useState(false);
   const [urlEmbedDialogOpen, setUrlEmbedDialogOpen] = useState<string | null>(null);
   const [spotifyUrl, setSpotifyUrl] = useState('');
+  const [spotifyMode, setSpotifyMode] = useState<'url' | 'manual'>('url');
+  const [manualStats, setManualStats] = useState({ monthlyListeners: '', artistName: '' });
 
   // Handle OAuth callback
   const handleOAuthCallback = useCallback(async (code: string, platform: string, state: string) => {
@@ -452,6 +454,54 @@ export function ConnectPlatformsCard() {
     }
   };
 
+  const handleSpotifyManualSave = async () => {
+    if (!manualStats.artistName.trim()) {
+      toast({
+        title: "Artist name required",
+        description: "Please enter your Spotify artist name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const { error } = await supabase
+        .from('connected_platforms')
+        .upsert({
+          user_id: user?.id,
+          platform: 'spotify',
+          platform_username: manualStats.artistName,
+          platform_data: {
+            monthlyListeners: manualStats.monthlyListeners ? parseInt(manualStats.monthlyListeners.replace(/,/g, '')) : null,
+            manualEntry: true,
+          },
+          verified_at: null,
+          last_synced_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,platform',
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Spotify Added!",
+        description: `Added ${manualStats.artistName} to your profile`,
+      });
+      setUrlEmbedDialogOpen(null);
+      setManualStats({ monthlyListeners: '', artistName: '' });
+      fetchConnectedPlatforms();
+    } catch (error: any) {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save Spotify data",
+        variant: "destructive",
+      });
+    } finally {
+      setSearching(false);
+    }
+  };
+
   const isConnected = (platformId: string) => {
     return connectedPlatforms.some(p => p.platform === platformId);
   };
@@ -514,11 +564,19 @@ export function ConnectPlatformsCard() {
                       </Badge>
                     )}
                   </div>
-                  {connected && connectionData ? (
+                    {connected && connectionData ? (
                     <div className="text-sm text-muted-foreground">
                       {connectionData.platform_username}
                       {connectionData.platform_data?.thumbnailUrl && (
                         <span className="ml-2">• Embed ready</span>
+                      )}
+                      {connectionData.platform_data?.monthlyListeners && (
+                        <span className="ml-2">
+                          • {formatMetric(connectionData.platform_data.monthlyListeners)} monthly listeners
+                        </span>
+                      )}
+                      {connectionData.platform_data?.manualEntry && (
+                        <Badge variant="outline" className="ml-2 text-xs">Manual</Badge>
                       )}
                       {connectionData.platform_data?.followers && (
                         <span className="ml-2">
@@ -567,8 +625,15 @@ export function ConnectPlatformsCard() {
                     </Button>
                   </>
                 ) : (platform as any).urlEmbed ? (
-                  // URL-based embed (Spotify)
-                  <Dialog open={urlEmbedDialogOpen === platform.id} onOpenChange={(open) => setUrlEmbedDialogOpen(open ? platform.id : null)}>
+                  // URL-based embed OR manual entry (Spotify)
+                  <Dialog open={urlEmbedDialogOpen === platform.id} onOpenChange={(open) => {
+                    setUrlEmbedDialogOpen(open ? platform.id : null);
+                    if (!open) {
+                      setSpotifyMode('url');
+                      setSpotifyUrl('');
+                      setManualStats({ monthlyListeners: '', artistName: '' });
+                    }
+                  }}>
                     <DialogTrigger asChild>
                       <Button size="sm" variant="outline">
                         <Link className="h-4 w-4 mr-2" />
@@ -579,44 +644,112 @@ export function ConnectPlatformsCard() {
                       <DialogHeader>
                         <DialogTitle>Add Spotify Artist</DialogTitle>
                         <DialogDescription>
-                          Paste your Spotify artist profile URL to add an embedded player
+                          Add your Spotify profile with URL embed or manual entry
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                          <Label>Spotify Artist URL *</Label>
-                          <Input
-                            placeholder="https://open.spotify.com/artist/..."
-                            value={spotifyUrl}
-                            onChange={(e) => setSpotifyUrl(e.target.value)}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Go to your Spotify artist page → Click "..." → Share → Copy link
-                          </p>
+                        {/* Mode Toggle */}
+                        <div className="flex rounded-lg border p-1 gap-1">
+                          <Button
+                            variant={spotifyMode === 'url' ? 'default' : 'ghost'}
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => setSpotifyMode('url')}
+                          >
+                            <Link className="h-4 w-4 mr-2" />
+                            Embed URL
+                          </Button>
+                          <Button
+                            variant={spotifyMode === 'manual' ? 'default' : 'ghost'}
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => setSpotifyMode('manual')}
+                          >
+                            <Music className="h-4 w-4 mr-2" />
+                            Manual Entry
+                          </Button>
                         </div>
-                        <div className="flex items-start gap-2 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                          <Music className="h-4 w-4 text-green-500 mt-0.5" />
-                          <p className="text-sm text-muted-foreground">
-                            We'll fetch your artist info and add an embedded player to your profile.
-                          </p>
-                        </div>
-                        <Button
-                          onClick={handleSpotifyUrlSave}
-                          disabled={searching || !spotifyUrl.trim()}
-                          className="w-full bg-green-500 hover:bg-green-600"
-                        >
-                          {searching ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Fetching...
-                            </>
-                          ) : (
-                            <>
-                              <Music className="h-4 w-4 mr-2" />
-                              Add Spotify
-                            </>
-                          )}
-                        </Button>
+
+                        {spotifyMode === 'url' ? (
+                          <>
+                            <div className="space-y-2">
+                              <Label>Spotify Artist URL *</Label>
+                              <Input
+                                placeholder="https://open.spotify.com/artist/..."
+                                value={spotifyUrl}
+                                onChange={(e) => setSpotifyUrl(e.target.value)}
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Go to your Spotify artist page → Click "..." → Share → Copy link
+                              </p>
+                            </div>
+                            <div className="flex items-start gap-2 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                              <Music className="h-4 w-4 text-green-500 mt-0.5" />
+                              <p className="text-sm text-muted-foreground">
+                                We'll fetch your artist info and add an embedded player to your profile.
+                              </p>
+                            </div>
+                            <Button
+                              onClick={handleSpotifyUrlSave}
+                              disabled={searching || !spotifyUrl.trim()}
+                              className="w-full bg-green-500 hover:bg-green-600"
+                            >
+                              {searching ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Fetching...
+                                </>
+                              ) : (
+                                <>
+                                  <Music className="h-4 w-4 mr-2" />
+                                  Add Spotify
+                                </>
+                              )}
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <div className="space-y-2">
+                              <Label>Artist Name *</Label>
+                              <Input
+                                placeholder="Your Spotify artist name"
+                                value={manualStats.artistName}
+                                onChange={(e) => setManualStats(prev => ({ ...prev, artistName: e.target.value }))}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Monthly Listeners (optional)</Label>
+                              <Input
+                                placeholder="e.g., 50,000"
+                                value={manualStats.monthlyListeners}
+                                onChange={(e) => setManualStats(prev => ({ ...prev, monthlyListeners: e.target.value }))}
+                              />
+                            </div>
+                            <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg">
+                              <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
+                              <p className="text-sm text-muted-foreground">
+                                Manual stats will be shown on your profile but won't include an embed player.
+                              </p>
+                            </div>
+                            <Button
+                              onClick={handleSpotifyManualSave}
+                              disabled={searching || !manualStats.artistName.trim()}
+                              className="w-full bg-green-500 hover:bg-green-600"
+                            >
+                              {searching ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Saving...
+                                </>
+                              ) : (
+                                <>
+                                  <Music className="h-4 w-4 mr-2" />
+                                  Save Spotify
+                                </>
+                              )}
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </DialogContent>
                   </Dialog>

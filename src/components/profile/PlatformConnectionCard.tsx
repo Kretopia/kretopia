@@ -394,75 +394,75 @@ export function PlatformConnectionCard() {
           return (
             <div
               key={platform.id}
-              className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+              className={`p-4 rounded-lg border transition-colors ${
                 connected ? 'bg-primary/5 border-primary/20' : 'bg-muted/30 hover:bg-muted/50'
               }`}
             >
-              <div className="flex items-center gap-4 min-w-0 flex-1">
+              <div className="flex items-start gap-3">
                 <div className={`p-2.5 rounded-lg ${platform.color} text-white shrink-0`}>
                   <Icon className="h-5 w-5" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="font-medium">{platform.name}</span>
                     {connected && (
-                      <Badge variant="secondary" className="bg-green-500/10 text-green-600 shrink-0">
+                      <Badge variant="secondary" className="bg-green-500/10 text-green-600 text-xs">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Connected
                       </Badge>
                     )}
                   </div>
                   {connected && connectionData ? (
-                    <div className="text-sm text-muted-foreground truncate">
-                      <span className="font-medium">{connectionData.platform_username}</span>
-                      {connectionData.platform_data?.thumbnailUrl && (
-                        <span className="ml-2">• Embed ready</span>
-                      )}
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {connectionData.platform_username}
+                    </p>
                   ) : (
-                    <p className="text-sm text-muted-foreground">{platform.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {platform.description}
+                    </p>
                   )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0 ml-2">
-                {connected ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(platform.id)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDisconnect(platform.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <Dialog 
-                    open={searchDialogOpen === platform.id} 
-                    onOpenChange={(open) => {
-                      setSearchDialogOpen(open ? platform.id : null);
-                      if (!open) {
-                        setSearchQuery('');
-                        setSearchResults([]);
-                        setSelectedResult(null);
-                      }
-                    }}
-                  >
-                    <DialogTrigger asChild>
-                      <Button size="sm" variant="outline" className="gap-2">
-                        <Search className="h-4 w-4" />
-                        Search & Import
-                      </Button>
-                    </DialogTrigger>
+                  
+                  {/* Action buttons - below content on mobile */}
+                  <div className="flex items-center gap-2 mt-3">
+                    {connected ? (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(platform.id)}
+                          className="gap-1.5"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDisconnect(platform.id)}
+                          className="text-destructive hover:text-destructive gap-1.5"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Remove
+                        </Button>
+                      </>
+                    ) : (
+                      <Dialog 
+                        open={searchDialogOpen === platform.id} 
+                        onOpenChange={(open) => {
+                          setSearchDialogOpen(open ? platform.id : null);
+                          if (!open) {
+                            setSearchQuery('');
+                            setSearchResults([]);
+                            setSelectedResult(null);
+                          }
+                        }}
+                      >
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="default" className="gap-2">
+                            <Search className="h-4 w-4" />
+                            Search & Import
+                          </Button>
+                        </DialogTrigger>
                     <DialogContent className="max-w-md">
                       <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
@@ -589,8 +589,10 @@ export function PlatformConnectionCard() {
                         </Button>
                       </DialogFooter>
                     </DialogContent>
-                  </Dialog>
-                )}
+                      </Dialog>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           );

@@ -40,6 +40,7 @@ interface SearchResult {
   image?: string;
   details?: string;
   url?: string;
+  type?: string; // 'artist', 'show', 'episode' for Spotify
 }
 
 // Only platforms that work without OAuth
@@ -49,8 +50,8 @@ const PLATFORMS = [
     name: 'Spotify',
     icon: Music,
     color: 'bg-green-500',
-    description: 'Search for your Spotify artist profile to import music & stats',
-    searchPlaceholder: 'Search artist name (e.g., "Ethan Young")',
+    description: 'Import podcasts, music, and episode appearances',
+    searchPlaceholder: 'Search your name or podcast/show name',
     searchType: 'spotify' as const,
   },
   {
@@ -58,8 +59,8 @@ const PLATFORMS = [
     name: 'IMDB / TMDB',
     icon: Film,
     color: 'bg-yellow-500',
-    description: 'Search and import your film/TV credits',
-    searchPlaceholder: 'Your name as it appears on IMDB',
+    description: 'Import film & TV credits (search name or paste IMDB ID like nm1234567)',
+    searchPlaceholder: 'Your name or IMDB ID (e.g., nm5890122)',
     searchType: 'imdb' as const,
   },
   {
@@ -67,7 +68,7 @@ const PLATFORMS = [
     name: 'Discogs',
     icon: Disc3,
     color: 'bg-orange-500',
-    description: 'Search and import your music production credits',
+    description: 'Import music production & engineering credits',
     searchPlaceholder: 'Your artist/producer name',
     searchType: 'discogs' as const,
   },
@@ -135,36 +136,74 @@ export function PlatformConnectionCard() {
           setSearchResults(data.results.map((r: any) => ({
             id: r.id,
             name: r.name,
-            image: r.images?.[0]?.url || r.image,
-            details: r.genres?.join(', ') || `${r.followers?.total?.toLocaleString() || 0} followers`,
-            url: r.external_urls?.spotify || r.url,
+            image: r.image,
+            details: r.details || r.type,
+            url: r.url,
+            type: r.type, // 'artist', 'show', or 'episode'
           })));
-        } else {
-          // Fallback: Just use the search query as-is
-          setSearchResults([{
-            id: searchQuery.toLowerCase().replace(/\s+/g, '-'),
-            name: searchQuery,
-            details: 'Enter your Spotify artist URL to verify',
-          }]);
         }
       } else if (platform === 'imdb') {
-        const { data, error } = await supabase.functions.invoke('fetch-imdb-credits', {
-          body: { 
-            personName: searchQuery,
-            searchOnly: true 
-          },
-        });
-
-        if (error) throw error;
+        // Check if the query is an IMDB ID (starts with nm followed by numbers)
+        const imdbIdMatch = searchQuery.match(/nm(\d+)/i);
         
-        if (data?.searchResults) {
-          setSearchResults(data.searchResults.map((r: any) => ({
-            id: r.id,
-            name: r.name,
-            image: r.profile_path ? `https://image.tmdb.org/t/p/w92${r.profile_path}` : undefined,
-            details: r.known_for_department || 'Person',
-            url: `https://www.themoviedb.org/person/${r.id}`,
-          })));
+        if (imdbIdMatch) {
+          // Direct IMDB ID lookup
+          const imdbId = `nm${imdbIdMatch[1]}`;
+          const { data, error } = await supabase.functions.invoke('fetch-imdb-credits', {
+            body: { 
+              imdbId,
+              searchOnly: false // Actually import the credits
+            },
+          });
+
+          if (error) throw error;
+          
+          if (data?.personFound && data?.personData) {
+            setSearchResults([{
+              id: data.personData.id,
+              name: data.personData.name,
+              image: data.personData.profilePath,
+              details: `${data.personData.knownFor || 'Person'} • ${data.creditsImported || 0} credits found`,
+              url: `https://www.imdb.com/name/${imdbId}`,
+            }]);
+            
+            // Auto-import since we found via direct IMDB ID
+            toast({
+              title: "IMDB Profile Found!",
+              description: `Found ${data.creditsImported || 0} credits for ${data.personData.name}`,
+            });
+          } else {
+            toast({
+              title: "Not Found",
+              description: `No person found with IMDB ID: ${imdbId}`,
+              variant: "destructive",
+            });
+          }
+        } else {
+          // Name search
+          const { data, error } = await supabase.functions.invoke('fetch-imdb-credits', {
+            body: { 
+              personName: searchQuery,
+              searchOnly: true 
+            },
+          });
+
+          if (error) throw error;
+          
+          if (data?.searchResults && data.searchResults.length > 0) {
+            setSearchResults(data.searchResults.map((r: any) => ({
+              id: r.id,
+              name: r.name,
+              image: r.profile_path ? `https://image.tmdb.org/t/p/w92${r.profile_path}` : undefined,
+              details: `${r.known_for_department || 'Person'}${r.known_for ? ` • ${r.known_for}` : ''}`,
+              url: `https://www.themoviedb.org/person/${r.id}`,
+            })));
+          } else {
+            toast({
+              title: "No Results",
+              description: "Try your IMDB ID instead (e.g., nm5890122)",
+            });
+          }
         }
       } else if (platform === 'discogs') {
         const { data, error } = await supabase.functions.invoke('fetch-discogs-credits', {
@@ -198,20 +237,27 @@ export function PlatformConnectionCard() {
     }
   };
 
-  const handleSelectAndImport = async (platform: string, result: SearchResult) => {
+  const handleSelectAndImport = async (platform: string, result: SearchResult & { type?: string }) => {
     setSelectedResult(result);
     setImporting(true);
     
     try {
       if (platform === 'spotify') {
-        // Fetch via Spotify oEmbed
-        const spotifyUrl = result.url || `https://open.spotify.com/artist/${result.id}`;
-        const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`;
+        // Determine content type
+        const spotifyType = result.type || 'artist';
+        const spotifyUrl = result.url || `https://open.spotify.com/${spotifyType}/${result.id}`;
         
-        const response = await fetch(oembedUrl);
-        if (!response.ok) throw new Error('Could not fetch Spotify data');
-        
-        const oembedData = await response.json();
+        // Try to fetch via Spotify oEmbed
+        let oembedData: any = {};
+        try {
+          const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`;
+          const response = await fetch(oembedUrl);
+          if (response.ok) {
+            oembedData = await response.json();
+          }
+        } catch (e) {
+          console.log('oEmbed fetch failed, continuing without embed data');
+        }
         
         // Save to connected_platforms
         const { error } = await supabase
@@ -222,11 +268,12 @@ export function PlatformConnectionCard() {
             platform_username: result.name,
             platform_user_id: result.id,
             platform_data: {
-              artistId: result.id,
+              contentId: result.id,
+              contentType: spotifyType,
               spotifyUrl: spotifyUrl,
               thumbnailUrl: oembedData.thumbnail_url || result.image,
               embedHtml: oembedData.html,
-              genres: result.details,
+              details: result.details,
             },
             verified_at: new Date().toISOString(),
             last_synced_at: new Date().toISOString(),
@@ -236,12 +283,13 @@ export function PlatformConnectionCard() {
 
         if (error) throw error;
 
-        // Import verified credits
-        await importSpotifyCredits(result.id, result.name);
+        // Import verified credits based on content type
+        await importSpotifyCredits(result.id, result.name, spotifyType);
         
+        const typeLabel = spotifyType === 'show' ? 'podcast' : spotifyType === 'episode' ? 'episode' : 'music';
         toast({
           title: "Spotify Connected!",
-          description: `Added ${result.name} to your profile with music credits`,
+          description: `Added ${result.name} to your profile with ${typeLabel} credits`,
         });
       } else if (platform === 'imdb') {
         const { data, error } = await supabase.functions.invoke('fetch-imdb-credits', {
@@ -290,19 +338,23 @@ export function PlatformConnectionCard() {
     }
   };
 
-  const importSpotifyCredits = async (artistId: string, artistName: string) => {
+  const importSpotifyCredits = async (contentId: string, contentName: string, spotifyType: string = 'artist') => {
     try {
-      // Get Spotify artist albums via our edge function
+      // Get Spotify credits via our edge function
       const { data, error } = await supabase.functions.invoke('connect-platform', {
         body: {
           action: 'importSpotifyCredits',
-          artistId,
-          artistName,
+          platform: 'spotify',
+          artistId: contentId,
+          artistName: contentName,
+          spotifyType, // 'artist', 'show', or 'episode'
         },
       });
 
       if (error) {
         console.error('Spotify credits import error:', error);
+      } else {
+        console.log(`Imported ${data?.creditsImported || 0} credits from Spotify`);
       }
     } catch (e) {
       console.error('Spotify import error:', e);
@@ -524,7 +576,16 @@ export function PlatformConnectionCard() {
                                       </div>
                                     )}
                                     <div className="flex-1 min-w-0">
-                                      <p className="font-medium truncate">{result.name}</p>
+                                      <div className="flex items-center gap-2">
+                                        <p className="font-medium truncate">{result.name}</p>
+                                        {result.type && (
+                                          <Badge variant="secondary" className="text-[10px] shrink-0">
+                                            {result.type === 'show' ? '🎙️ Podcast' : 
+                                             result.type === 'episode' ? '🎧 Episode' : 
+                                             result.type === 'artist' ? '🎵 Artist' : result.type}
+                                          </Badge>
+                                        )}
+                                      </div>
                                       {result.details && (
                                         <p className="text-sm text-muted-foreground truncate">
                                           {result.details}

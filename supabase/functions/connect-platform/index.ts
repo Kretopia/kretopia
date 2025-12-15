@@ -297,7 +297,7 @@ serve(async (req) => {
       });
     }
 
-    // Action: Search Spotify artists (public API via web search)
+    // Action: Search Spotify (artists, shows, and episodes)
     if (action === 'searchArtist' && platform === 'spotify') {
       const { query } = await req.json().catch(() => ({}));
       
@@ -308,10 +308,8 @@ serve(async (req) => {
         });
       }
       
-      // Use Spotify's public web API to search artists
+      // Search Spotify for artists, shows (podcasts), and episodes
       try {
-        const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=10`;
-        
         // We need client credentials for public search
         const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
           method: 'POST',
@@ -328,6 +326,9 @@ serve(async (req) => {
         
         const tokenData = await tokenRes.json();
         
+        // Search for artists, shows (podcasts), and episodes
+        const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist,show,episode&limit=10`;
+        
         const searchRes = await fetch(searchUrl, {
           headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
         });
@@ -338,17 +339,52 @@ serve(async (req) => {
         
         const searchData = await searchRes.json();
         
-        return new Response(JSON.stringify({
-          success: true,
-          results: (searchData.artists?.items || []).map((artist: any) => ({
+        // Combine results from artists, shows, and episodes
+        const results: any[] = [];
+        
+        // Add artists
+        (searchData.artists?.items || []).forEach((artist: any) => {
+          results.push({
             id: artist.id,
             name: artist.name,
             image: artist.images?.[0]?.url,
-            genres: artist.genres,
-            followers: artist.followers?.total,
-            popularity: artist.popularity,
+            type: 'artist',
+            details: artist.genres?.slice(0, 2).join(', ') || `${(artist.followers?.total || 0).toLocaleString()} followers`,
             url: artist.external_urls?.spotify,
-          })),
+          });
+        });
+        
+        // Add shows (podcasts) - these are what you want for "Discover A Thriver"
+        (searchData.shows?.items || []).forEach((show: any) => {
+          results.push({
+            id: show.id,
+            name: show.name,
+            image: show.images?.[0]?.url,
+            type: 'show',
+            details: `Podcast • ${show.publisher || 'Unknown'}`,
+            publisher: show.publisher,
+            url: show.external_urls?.spotify,
+          });
+        });
+        
+        // Add episodes (podcast appearances)
+        (searchData.episodes?.items || []).forEach((episode: any) => {
+          results.push({
+            id: episode.id,
+            name: episode.name,
+            image: episode.images?.[0]?.url,
+            type: 'episode',
+            details: `Episode • ${episode.release_date || ''}`,
+            showName: episode.show?.name,
+            url: episode.external_urls?.spotify,
+          });
+        });
+        
+        console.log(`Spotify search for "${query}" found: ${searchData.artists?.items?.length || 0} artists, ${searchData.shows?.items?.length || 0} shows, ${searchData.episodes?.items?.length || 0} episodes`);
+        
+        return new Response(JSON.stringify({
+          success: true,
+          results,
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -364,9 +400,9 @@ serve(async (req) => {
       }
     }
 
-    // Action: Import Spotify credits for a specific artist
+    // Action: Import Spotify credits for a specific artist, show (podcast), or episode
     if (action === 'importSpotifyCredits') {
-      const { artistId, artistName } = await req.json().catch(() => ({}));
+      const { artistId, artistName, spotifyType } = await req.json().catch(() => ({}));
       
       if (!artistId) {
         return new Response(JSON.stringify({ error: 'Missing artistId' }), {
@@ -389,29 +425,123 @@ serve(async (req) => {
         if (!tokenRes.ok) throw new Error('Failed to get Spotify access token');
         const tokenData = await tokenRes.json();
         
-        // Get artist albums
-        const albumsRes = await fetch(
-          `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&limit=50`,
-          { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }
-        );
+        const credits: any[] = [];
         
-        if (!albumsRes.ok) throw new Error('Failed to fetch albums');
-        const albumsData = await albumsRes.json();
-        
-        const credits = (albumsData.items || []).map((album: any) => ({
-          sourceId: album.id,
-          creditType: album.album_type === 'single' ? 'single' : 'album',
-          title: album.name,
-          role: 'Artist',
-          year: album.release_date ? parseInt(album.release_date.substring(0, 4)) : undefined,
-          metadata: {
-            imageUrl: album.images?.[0]?.url,
-            totalTracks: album.total_tracks,
-            releaseDate: album.release_date,
-            spotifyUrl: album.external_urls?.spotify,
-          },
-          verificationUrl: album.external_urls?.spotify,
-        }));
+        // Handle different Spotify content types
+        if (spotifyType === 'show') {
+          // Fetch podcast show and its episodes
+          const showRes = await fetch(
+            `https://api.spotify.com/v1/shows/${artistId}`,
+            { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }
+          );
+          
+          if (!showRes.ok) throw new Error('Failed to fetch show');
+          const showData = await showRes.json();
+          
+          // Fetch episodes
+          const episodesRes = await fetch(
+            `https://api.spotify.com/v1/shows/${artistId}/episodes?limit=50`,
+            { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }
+          );
+          
+          if (episodesRes.ok) {
+            const episodesData = await episodesRes.json();
+            
+            (episodesData.items || []).forEach((ep: any) => {
+              credits.push({
+                sourceId: ep.id,
+                creditType: 'podcast',
+                title: ep.name,
+                role: 'Host',
+                year: ep.release_date ? parseInt(ep.release_date.substring(0, 4)) : undefined,
+                metadata: {
+                  imageUrl: ep.images?.[0]?.url || showData.images?.[0]?.url,
+                  showName: showData.name,
+                  releaseDate: ep.release_date,
+                  duration: ep.duration_ms,
+                  spotifyUrl: ep.external_urls?.spotify,
+                },
+                verificationUrl: ep.external_urls?.spotify,
+              });
+            });
+          }
+          
+          // Also add the show itself as a credit
+          credits.unshift({
+            sourceId: `show-${artistId}`,
+            creditType: 'podcast',
+            title: showData.name,
+            role: 'Podcast Host',
+            year: undefined,
+            metadata: {
+              imageUrl: showData.images?.[0]?.url,
+              publisher: showData.publisher,
+              totalEpisodes: showData.total_episodes,
+              spotifyUrl: showData.external_urls?.spotify,
+              description: showData.description?.substring(0, 200),
+            },
+            verificationUrl: showData.external_urls?.spotify,
+          });
+          
+          console.log(`Imported ${credits.length} podcast credits for show "${showData.name}"`);
+          
+        } else if (spotifyType === 'episode') {
+          // Single episode appearance
+          const episodeRes = await fetch(
+            `https://api.spotify.com/v1/episodes/${artistId}`,
+            { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }
+          );
+          
+          if (!episodeRes.ok) throw new Error('Failed to fetch episode');
+          const episodeData = await episodeRes.json();
+          
+          credits.push({
+            sourceId: artistId,
+            creditType: 'podcast',
+            title: episodeData.name,
+            role: 'Guest',
+            year: episodeData.release_date ? parseInt(episodeData.release_date.substring(0, 4)) : undefined,
+            metadata: {
+              imageUrl: episodeData.images?.[0]?.url,
+              showName: episodeData.show?.name,
+              releaseDate: episodeData.release_date,
+              duration: episodeData.duration_ms,
+              spotifyUrl: episodeData.external_urls?.spotify,
+            },
+            verificationUrl: episodeData.external_urls?.spotify,
+          });
+          
+          console.log(`Imported episode credit: "${episodeData.name}"`);
+          
+        } else {
+          // Default: Artist - fetch albums
+          const albumsRes = await fetch(
+            `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&limit=50`,
+            { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }
+          );
+          
+          if (!albumsRes.ok) throw new Error('Failed to fetch albums');
+          const albumsData = await albumsRes.json();
+          
+          (albumsData.items || []).forEach((album: any) => {
+            credits.push({
+              sourceId: album.id,
+              creditType: album.album_type === 'single' ? 'single' : 'album',
+              title: album.name,
+              role: 'Artist',
+              year: album.release_date ? parseInt(album.release_date.substring(0, 4)) : undefined,
+              metadata: {
+                imageUrl: album.images?.[0]?.url,
+                totalTracks: album.total_tracks,
+                releaseDate: album.release_date,
+                spotifyUrl: album.external_urls?.spotify,
+              },
+              verificationUrl: album.external_urls?.spotify,
+            });
+          });
+          
+          console.log(`Imported ${credits.length} album credits for artist "${artistName}"`);
+        }
         
         // Import credits to database
         for (const credit of credits) {

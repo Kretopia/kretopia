@@ -34,10 +34,10 @@ serve(async (req) => {
       });
     }
 
-    const { imdbUrl, personName, personId, searchOnly } = await req.json();
+    const { imdbUrl, personName, personId, searchOnly, imdbId } = await req.json();
 
-    if (!imdbUrl && !personName && !personId) {
-      return new Response(JSON.stringify({ error: 'Provide imdbUrl, personName, or personId' }), {
+    if (!imdbUrl && !personName && !personId && !imdbId) {
+      return new Response(JSON.stringify({ error: 'Provide imdbUrl, personName, personId, or imdbId' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -60,9 +60,39 @@ serve(async (req) => {
     let credits: any[] = [];
     let personData: any = null;
     let allSearchResults: any[] = [];
+    
+    // If imdbId is provided (e.g., nm5890122), look up via TMDB's find endpoint
+    if (imdbId) {
+      console.log(`Looking up IMDB ID: ${imdbId}`);
+      
+      // Use TMDB's find endpoint to look up by external ID
+      const findRes = await fetch(
+        `https://api.themoviedb.org/3/find/${imdbId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`
+      );
+      const findData = await findRes.json();
+      
+      console.log(`TMDB find results for ${imdbId}:`, JSON.stringify(findData));
+      
+      if (findData.person_results && findData.person_results.length > 0) {
+        personData = findData.person_results[0];
+        console.log(`Found person via IMDB ID: ${personData.name} (TMDB ID: ${personData.id})`);
+        
+        // Get combined credits
+        const creditsRes = await fetch(
+          `https://api.themoviedb.org/3/person/${personData.id}/combined_credits?api_key=${TMDB_API_KEY}`
+        );
+        const creditsData = await creditsRes.json();
+        
+        console.log(`Found ${creditsData.cast?.length || 0} cast credits and ${creditsData.crew?.length || 0} crew credits`);
+        
+        credits = processCredits(creditsData);
+      } else {
+        console.log(`No person found with IMDB ID: ${imdbId}`);
+      }
+    }
 
     // If personId is provided, use that directly (user selected from search)
-    if (personId) {
+    if (personId && !personData) {
       console.log(`Fetching TMDB person by ID: ${personId}`);
       
       // Get person details
@@ -80,7 +110,7 @@ serve(async (req) => {
       console.log(`Found ${creditsData.cast?.length || 0} cast credits and ${creditsData.crew?.length || 0} crew credits`);
       
       credits = processCredits(creditsData);
-    } else {
+    } else if (personName && !personData) {
       // Use TMDB to search for person and get their credits
       console.log(`Searching TMDB for person: "${personName}"`);
       

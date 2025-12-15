@@ -65,7 +65,7 @@ async function createBidirectionalConnection(userId1: string, userId2: string) {
     status: 'active'
   });
 
-  // Send welcome notification to new user
+  // Send welcome notification to new user with proper action links
   const { data: founderProfile } = await supabase
     .from('profiles')
     .select('full_name, avatar_url, role')
@@ -78,9 +78,11 @@ async function createBidirectionalConnection(userId1: string, userId2: string) {
       title: "🎉 Welcome to ThriveIN!",
       message: `You're now connected with ${founderProfile.full_name}, the founder! Say hello and start your creative journey.`,
       type: 'match',
-      category: 'collaboration',
+      category: 'match',
       priority: 'high',
-      link: '/messages',
+      link: `/profile/${userId2}?from=match`,
+      action_url: `/messages?user=${userId2}`,
+      action_text: 'Send Message',
       image_url: founderProfile.avatar_url
     });
   }

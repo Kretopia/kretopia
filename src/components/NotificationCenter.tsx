@@ -141,8 +141,8 @@ export const NotificationCenter = () => {
                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                           </span>
                           <div className="flex gap-2">
-                            {/* View Profile button for match notifications - navigate to profile */}
-                            {notification.category === 'match' && notification.link && notification.link.includes('/profile/') && (
+                            {/* View Profile button - works for any notification with a profile link */}
+                            {notification.link && notification.link.includes('/profile/') && (
                               <Button 
                                 variant="outline" 
                                 size="sm" 
@@ -157,7 +157,7 @@ export const NotificationCenter = () => {
                                 View Profile
                               </Button>
                             )}
-                            {/* Message button for match notifications - navigate to messages */}
+                            {/* Message button - for any notification with messages action URL */}
                             {notification.action_url && notification.action_url.includes('/messages') && (
                               <Button 
                                 variant="default" 
@@ -174,8 +174,28 @@ export const NotificationCenter = () => {
                                 Message
                               </Button>
                             )}
-                            {/* Generic action button for non-match notifications */}
-                            {notification.action_url && !notification.action_url.includes('/messages') && (
+                            {/* Fallback: View Connection for /circle links without profile */}
+                            {notification.link && 
+                             notification.link === '/circle' && 
+                             !notification.action_url?.includes('/messages') && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!notification.read) markAsRead(notification.id);
+                                  setIsOpen(false);
+                                  setTimeout(() => navigate('/circle?tab=network'), 100);
+                                }}
+                              >
+                                View Connections
+                              </Button>
+                            )}
+                            {/* Generic action button for other notifications */}
+                            {notification.action_url && 
+                             !notification.action_url.includes('/messages') && 
+                             !notification.action_url.includes('/circle') && (
                               <Button 
                                 variant="default" 
                                 size="sm" 

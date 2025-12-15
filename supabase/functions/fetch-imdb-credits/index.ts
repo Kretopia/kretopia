@@ -34,10 +34,10 @@ serve(async (req) => {
       });
     }
 
-    const { imdbUrl, personName } = await req.json();
+    const { imdbUrl, personName, personId, searchOnly } = await req.json();
 
-    if (!imdbUrl && !personName) {
-      return new Response(JSON.stringify({ error: 'Provide imdbUrl or personName' }), {
+    if (!imdbUrl && !personName && !personId) {
+      return new Response(JSON.stringify({ error: 'Provide imdbUrl, personName, or personId' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -61,34 +61,76 @@ serve(async (req) => {
     let personData: any = null;
     let allSearchResults: any[] = [];
 
-    // Use TMDB to search for person and get their credits
-    console.log(`Searching TMDB for person: "${personName}"`);
-    
-    // Search for person
-    const searchRes = await fetch(
-      `https://api.themoviedb.org/3/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(personName)}`
-    );
-    const searchData = await searchRes.json();
-    
-    console.log(`TMDB search returned ${searchData.results?.length || 0} results`);
-    allSearchResults = searchData.results || [];
-    
-    if (searchData.results && searchData.results.length > 0) {
-      // Try exact match first, then fall back to first result
-      personData = searchData.results.find(
-        (p: any) => p.name.toLowerCase() === personName.toLowerCase()
-      ) || searchData.results[0];
+    // If personId is provided, use that directly (user selected from search)
+    if (personId) {
+      console.log(`Fetching TMDB person by ID: ${personId}`);
       
-      console.log(`Selected person: ${personData.name} (ID: ${personData.id})`);
+      // Get person details
+      const personRes = await fetch(
+        `https://api.themoviedb.org/3/person/${personId}?api_key=${TMDB_API_KEY}`
+      );
+      personData = await personRes.json();
       
       // Get combined credits
       const creditsRes = await fetch(
-        `https://api.themoviedb.org/3/person/${personData.id}/combined_credits?api_key=${TMDB_API_KEY}`
+        `https://api.themoviedb.org/3/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}`
       );
       const creditsData = await creditsRes.json();
-
+      
       console.log(`Found ${creditsData.cast?.length || 0} cast credits and ${creditsData.crew?.length || 0} crew credits`);
+      
+      credits = processCredits(creditsData);
+    } else {
+      // Use TMDB to search for person and get their credits
+      console.log(`Searching TMDB for person: "${personName}"`);
+      
+      // Search for person
+      const searchRes = await fetch(
+        `https://api.themoviedb.org/3/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(personName)}`
+      );
+      const searchData = await searchRes.json();
+      
+      console.log(`TMDB search returned ${searchData.results?.length || 0} results`);
+      allSearchResults = searchData.results || [];
+      
+      // If searchOnly, return results without importing
+      if (searchOnly) {
+        return new Response(JSON.stringify({
+          success: true,
+          searchResults: allSearchResults.slice(0, 10).map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            profile_path: p.profile_path,
+            known_for_department: p.known_for_department,
+            known_for: p.known_for?.slice(0, 3).map((k: any) => k.title || k.name).join(', '),
+          })),
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      if (searchData.results && searchData.results.length > 0) {
+        // Try exact match first, then fall back to first result
+        personData = searchData.results.find(
+          (p: any) => p.name.toLowerCase() === personName.toLowerCase()
+        ) || searchData.results[0];
+        
+        console.log(`Selected person: ${personData.name} (ID: ${personData.id})`);
+        
+        // Get combined credits
+        const creditsRes = await fetch(
+          `https://api.themoviedb.org/3/person/${personData.id}/combined_credits?api_key=${TMDB_API_KEY}`
+        );
+        const creditsData = await creditsRes.json();
 
+        console.log(`Found ${creditsData.cast?.length || 0} cast credits and ${creditsData.crew?.length || 0} crew credits`);
+
+        credits = processCredits(creditsData);
+      }
+    }
+    
+    // Helper function to process credits
+    function processCredits(creditsData: any) {
       // Process cast credits
       const castCredits = (creditsData.cast || []).slice(0, 50).map((credit: any) => ({
         sourceId: `tmdb-${credit.id}`,
@@ -133,8 +175,7 @@ serve(async (req) => {
           : `https://www.themoviedb.org/tv/${credit.id}`,
       }));
 
-      credits = [...castCredits, ...crewCredits];
-      console.log(`Total processed credits: ${credits.length}`);
+      return [...castCredits, ...crewCredits];
     }
 
     // Import credits to database

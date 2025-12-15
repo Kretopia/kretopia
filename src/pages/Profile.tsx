@@ -353,8 +353,8 @@ const ProfileContent = () => {
           onVerificationComplete={() => fetchData()}
         />
 
-        {/* Connect Platforms - Top of Profile for Easy Import */}
-        <ConnectPlatformsCard />
+        {/* Connect Platforms - Hidden until OAuth is fully configured */}
+        {/* <ConnectPlatformsCard /> */}
 
         {/* AI Insights Section - Differentiator */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">

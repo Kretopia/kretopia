@@ -34,10 +34,10 @@ serve(async (req) => {
       });
     }
 
-    const { artistName, discogsUrl } = await req.json();
+    const { artistName, discogsUrl, artistId, searchOnly } = await req.json();
 
-    if (!artistName && !discogsUrl) {
-      return new Response(JSON.stringify({ error: 'Provide artistName or discogsUrl' }), {
+    if (!artistName && !discogsUrl && !artistId) {
+      return new Response(JSON.stringify({ error: 'Provide artistName, discogsUrl, or artistId' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -58,32 +58,65 @@ serve(async (req) => {
     let credits: any[] = [];
     let artistData: any = null;
 
-    // Search for artist
-    const searchRes = await fetch(
-      `https://api.discogs.com/database/search?q=${encodeURIComponent(artistName)}&type=artist&token=${DISCOGS_TOKEN}`,
-      {
-        headers: {
-          'User-Agent': 'ThriveIN/1.0 +https://thrivein.io',
-        },
-      }
-    );
-    const searchData = await searchRes.json();
-
-    if (searchData.results && searchData.results.length > 0) {
-      artistData = searchData.results[0];
-
+    // If artistId is provided, use that directly (user selected from search)
+    if (artistId) {
+      console.log(`Fetching Discogs artist by ID: ${artistId}`);
+      
+      // Get artist details
+      const artistRes = await fetch(
+        `https://api.discogs.com/artists/${artistId}?token=${DISCOGS_TOKEN}`,
+        { headers: { 'User-Agent': 'ThriveIN/1.0 +https://thrivein.io' } }
+      );
+      artistData = await artistRes.json();
+      
       // Get artist releases
       const releasesRes = await fetch(
-        `https://api.discogs.com/artists/${artistData.id}/releases?sort=year&sort_order=desc&per_page=100&token=${DISCOGS_TOKEN}`,
-        {
-          headers: {
-            'User-Agent': 'ThriveIN/1.0 +https://thrivein.io',
-          },
-        }
+        `https://api.discogs.com/artists/${artistId}/releases?sort=year&sort_order=desc&per_page=100&token=${DISCOGS_TOKEN}`,
+        { headers: { 'User-Agent': 'ThriveIN/1.0 +https://thrivein.io' } }
       );
       const releasesData = await releasesRes.json();
+      
+      credits = processReleases(releasesData.releases || []);
+    } else {
+      // Search for artist
+      const searchRes = await fetch(
+        `https://api.discogs.com/database/search?q=${encodeURIComponent(artistName)}&type=artist&token=${DISCOGS_TOKEN}`,
+        { headers: { 'User-Agent': 'ThriveIN/1.0 +https://thrivein.io' } }
+      );
+      const searchData = await searchRes.json();
+      
+      // If searchOnly, return results without importing
+      if (searchOnly) {
+        return new Response(JSON.stringify({
+          success: true,
+          searchResults: (searchData.results || []).slice(0, 10).map((a: any) => ({
+            id: a.id,
+            name: a.title,
+            thumb: a.thumb,
+            cover_image: a.cover_image,
+            type: a.type,
+          })),
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
-      credits = (releasesData.releases || []).slice(0, 50).map((release: any) => ({
+      if (searchData.results && searchData.results.length > 0) {
+        artistData = searchData.results[0];
+
+        // Get artist releases
+        const releasesRes = await fetch(
+          `https://api.discogs.com/artists/${artistData.id}/releases?sort=year&sort_order=desc&per_page=100&token=${DISCOGS_TOKEN}`,
+          { headers: { 'User-Agent': 'ThriveIN/1.0 +https://thrivein.io' } }
+        );
+        const releasesData = await releasesRes.json();
+
+        credits = processReleases(releasesData.releases || []);
+      }
+    }
+    
+    function processReleases(releases: any[]) {
+      return releases.slice(0, 50).map((release: any) => ({
         sourceId: `discogs-${release.id}`,
         creditType: release.type === 'master' ? 'album' : (release.format?.includes('Single') ? 'single' : 'album'),
         title: release.title,

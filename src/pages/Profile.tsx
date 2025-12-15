@@ -46,6 +46,7 @@ import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
 import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
 import { VerificationProgress } from "@/components/profile/VerificationProgress";
 import { ConnectPlatformsCard } from "@/components/profile/ConnectPlatformsCard";
+import { PlatformConnectionCard } from "@/components/profile/PlatformConnectionCard";
 import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 import { VerificationAppealDialog } from "@/components/profile/VerificationAppealDialog";
 import { ProfileActions } from "@/components/profile/ProfileActions";
@@ -353,8 +354,8 @@ const ProfileContent = () => {
           onVerificationComplete={() => fetchData()}
         />
 
-        {/* Connect Platforms - Hidden until OAuth is fully configured */}
-        {/* <ConnectPlatformsCard /> */}
+        {/* Import & Verify Credits - Key Feature */}
+        <PlatformConnectionCard />
 
         {/* AI Insights Section - Differentiator */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">

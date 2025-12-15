@@ -297,6 +297,160 @@ serve(async (req) => {
       });
     }
 
+    // Action: Search Spotify artists (public API via web search)
+    if (action === 'searchArtist' && platform === 'spotify') {
+      const { query } = await req.json().catch(() => ({}));
+      
+      if (!query) {
+        return new Response(JSON.stringify({ error: 'Missing search query' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      // Use Spotify's public web API to search artists
+      try {
+        const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=10`;
+        
+        // We need client credentials for public search
+        const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+          },
+          body: 'grant_type=client_credentials',
+        });
+        
+        if (!tokenRes.ok) {
+          throw new Error('Failed to get Spotify access token');
+        }
+        
+        const tokenData = await tokenRes.json();
+        
+        const searchRes = await fetch(searchUrl, {
+          headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
+        });
+        
+        if (!searchRes.ok) {
+          throw new Error('Spotify search failed');
+        }
+        
+        const searchData = await searchRes.json();
+        
+        return new Response(JSON.stringify({
+          success: true,
+          results: (searchData.artists?.items || []).map((artist: any) => ({
+            id: artist.id,
+            name: artist.name,
+            image: artist.images?.[0]?.url,
+            genres: artist.genres,
+            followers: artist.followers?.total,
+            popularity: artist.popularity,
+            url: artist.external_urls?.spotify,
+          })),
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (e: any) {
+        console.error('Spotify search error:', e);
+        return new Response(JSON.stringify({ 
+          error: 'Spotify search unavailable',
+          details: e.message,
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Action: Import Spotify credits for a specific artist
+    if (action === 'importSpotifyCredits') {
+      const { artistId, artistName } = await req.json().catch(() => ({}));
+      
+      if (!artistId) {
+        return new Response(JSON.stringify({ error: 'Missing artistId' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      try {
+        // Get client credentials token
+        const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+          },
+          body: 'grant_type=client_credentials',
+        });
+        
+        if (!tokenRes.ok) throw new Error('Failed to get Spotify access token');
+        const tokenData = await tokenRes.json();
+        
+        // Get artist albums
+        const albumsRes = await fetch(
+          `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&limit=50`,
+          { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }
+        );
+        
+        if (!albumsRes.ok) throw new Error('Failed to fetch albums');
+        const albumsData = await albumsRes.json();
+        
+        const credits = (albumsData.items || []).map((album: any) => ({
+          sourceId: album.id,
+          creditType: album.album_type === 'single' ? 'single' : 'album',
+          title: album.name,
+          role: 'Artist',
+          year: album.release_date ? parseInt(album.release_date.substring(0, 4)) : undefined,
+          metadata: {
+            imageUrl: album.images?.[0]?.url,
+            totalTracks: album.total_tracks,
+            releaseDate: album.release_date,
+            spotifyUrl: album.external_urls?.spotify,
+          },
+          verificationUrl: album.external_urls?.spotify,
+        }));
+        
+        // Import credits to database
+        for (const credit of credits) {
+          await supabase
+            .from('verified_credits')
+            .upsert({
+              user_id: user.id,
+              source: 'spotify',
+              source_id: credit.sourceId,
+              credit_type: credit.creditType,
+              title: credit.title,
+              role: credit.role,
+              year: credit.year,
+              metadata: credit.metadata,
+              verification_url: credit.verificationUrl,
+              verified_at: new Date().toISOString(),
+            }, {
+              onConflict: 'user_id,source,source_id',
+            });
+        }
+        
+        return new Response(JSON.stringify({
+          success: true,
+          creditsImported: credits.length,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (e: any) {
+        console.error('Spotify import error:', e);
+        return new Response(JSON.stringify({ 
+          error: 'Failed to import Spotify credits',
+          details: e.message,
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     return new Response(JSON.stringify({ error: 'Invalid action' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

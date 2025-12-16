@@ -72,7 +72,8 @@ serve(async (req) => {
       });
     }
 
-    const { action, platform, code, redirectUri, state: clientState } = await req.json();
+    const requestBody = await req.json();
+    const { action, platform, code, redirectUri, state: clientState, query, artistId, artistName, spotifyType } = requestBody;
 
     if (!platform || !PLATFORM_CONFIGS[platform]) {
       return new Response(JSON.stringify({ error: 'Invalid platform' }), {
@@ -299,8 +300,6 @@ serve(async (req) => {
 
     // Action: Search Spotify (artists, shows, and episodes)
     if (action === 'searchArtist' && platform === 'spotify') {
-      const { query } = await req.json().catch(() => ({}));
-      
       if (!query) {
         return new Response(JSON.stringify({ error: 'Missing search query' }), {
           status: 400,
@@ -402,8 +401,6 @@ serve(async (req) => {
 
     // Action: Import Spotify credits for a specific artist, show (podcast), or episode
     if (action === 'importSpotifyCredits') {
-      const { artistId, artistName, spotifyType } = await req.json().catch(() => ({}));
-      
       if (!artistId) {
         return new Response(JSON.stringify({ error: 'Missing artistId' }), {
           status: 400,

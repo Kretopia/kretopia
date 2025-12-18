@@ -152,30 +152,38 @@ export function PlatformConnectionCard() {
           const { data, error } = await supabase.functions.invoke('fetch-imdb-credits', {
             body: { 
               imdbId,
-              searchOnly: false // Actually import the credits
+              searchOnly: true // Let user confirm before importing
             },
           });
 
           if (error) throw error;
           
-          if (data?.personFound && data?.personData) {
+          // Check for search results from fallback name search
+          if (data?.searchResults && data.searchResults.length > 0) {
+            setSearchResults(data.searchResults.map((r: any) => ({
+              id: String(r.id || ''),
+              name: r.name || 'Unknown',
+              image: r.profile_path ? `https://image.tmdb.org/t/p/w92${r.profile_path}` : undefined,
+              details: `${r.known_for_department || 'Person'}${r.known_for ? ` • ${r.known_for}` : ''}`,
+              url: `https://www.imdb.com/name/${imdbId}`,
+            })));
+            toast({
+              title: "Multiple Results",
+              description: "Please select your correct profile below",
+            });
+          } else if (data?.personFound && data?.personData) {
+            // Single person found directly
             setSearchResults([{
-              id: data.personData.id,
-              name: data.personData.name,
-              image: data.personData.profilePath,
-              details: `${data.personData.knownFor || 'Person'} • ${data.creditsImported || 0} credits found`,
+              id: String(data.personData.id || ''),
+              name: data.personData.name || 'Unknown',
+              image: data.personData.profilePath || undefined,
+              details: `${data.personData.knownFor || 'Person'}`,
               url: `https://www.imdb.com/name/${imdbId}`,
             }]);
-            
-            // Auto-import since we found via direct IMDB ID
-            toast({
-              title: "IMDB Profile Found!",
-              description: `Found ${data.creditsImported || 0} credits for ${data.personData.name}`,
-            });
           } else {
             toast({
               title: "Not Found",
-              description: `No person found with IMDB ID: ${imdbId}`,
+              description: `IMDB ID ${imdbId} not found in TMDB. Try searching by name instead.`,
               variant: "destructive",
             });
           }
@@ -192,8 +200,8 @@ export function PlatformConnectionCard() {
           
           if (data?.searchResults && data.searchResults.length > 0) {
             setSearchResults(data.searchResults.map((r: any) => ({
-              id: r.id,
-              name: r.name,
+              id: String(r.id || ''),
+              name: r.name || 'Unknown',
               image: r.profile_path ? `https://image.tmdb.org/t/p/w92${r.profile_path}` : undefined,
               details: `${r.known_for_department || 'Person'}${r.known_for ? ` • ${r.known_for}` : ''}`,
               url: `https://www.themoviedb.org/person/${r.id}`,
@@ -474,14 +482,14 @@ export function PlatformConnectionCard() {
                     </p>
                   )}
                   
-                  {/* Action buttons - below content on mobile */}
+                  {/* Action buttons */}
                   <div className="flex items-center gap-2 mt-3">
                     {connected ? (
                       <>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEdit(platform.id)}
+                          onClick={() => setSearchDialogOpen(platform.id)}
                           className="gap-1.5"
                         >
                           <Edit className="h-3.5 w-3.5" />
@@ -498,163 +506,168 @@ export function PlatformConnectionCard() {
                         </Button>
                       </>
                     ) : (
-                      <Dialog 
-                        open={searchDialogOpen === platform.id} 
-                        onOpenChange={(open) => {
-                          setSearchDialogOpen(open ? platform.id : null);
-                          if (!open) {
-                            setSearchQuery('');
-                            setSearchResults([]);
-                            setSelectedResult(null);
-                          }
-                        }}
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        className="gap-2"
+                        onClick={() => setSearchDialogOpen(platform.id)}
                       >
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="default" className="gap-2">
-                            <Search className="h-4 w-4" />
-                            Search & Import
-                          </Button>
-                        </DialogTrigger>
-                    <DialogContent className="max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                          <Icon className={`h-5 w-5 ${platform.color.replace('bg-', 'text-').replace('-500', '-600')}`} />
-                          Search {platform.name}
-                        </DialogTitle>
-                        <DialogDescription>
-                          Search for your profile, then select the correct one to import credits
-                        </DialogDescription>
-                      </DialogHeader>
-                      
-                      <div className="space-y-4 pt-2">
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder={platform.searchPlaceholder}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch(platform.id)}
-                            className="flex-1"
-                          />
-                          <Button 
-                            onClick={() => handleSearch(platform.id)}
-                            disabled={searching || !searchQuery.trim()}
-                          >
-                            {searching ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Search className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-
-                        {searchResults.length > 0 && (
-                          <div className="space-y-2">
-                            <Label className="text-sm text-muted-foreground">
-                              Select your profile:
-                            </Label>
-                            <ScrollArea className="h-[280px] rounded-md border">
-                              <div className="p-2 space-y-2">
-                                {searchResults.map((result) => (
-                                  <div
-                                    key={result.id}
-                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                                      selectedResult?.id === result.id 
-                                        ? 'border-primary bg-primary/5 ring-1 ring-primary' 
-                                        : 'hover:bg-muted/50'
-                                    }`}
-                                    onClick={() => setSelectedResult(result)}
-                                  >
-                                    {result.image ? (
-                                      <img
-                                        src={result.image}
-                                        alt={result.name}
-                                        className="w-12 h-12 rounded-lg object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                                        <User className="h-6 w-6 text-muted-foreground" />
-                                      </div>
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <p className="font-medium truncate">{result.name}</p>
-                                        {result.type && (
-                                          <Badge variant="secondary" className="text-[10px] shrink-0">
-                                            {result.type === 'show' ? '🎙️ Podcast' : 
-                                             result.type === 'episode' ? '🎧 Episode' : 
-                                             result.type === 'artist' ? '🎵 Artist' : result.type}
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      {result.details && (
-                                        <p className="text-sm text-muted-foreground truncate">
-                                          {result.details}
-                                        </p>
-                                      )}
-                                    </div>
-                                    {result.url && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        asChild
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <a href={result.url} target="_blank" rel="noopener noreferrer">
-                                          <ExternalLink className="h-4 w-4" />
-                                        </a>
-                                      </Button>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </ScrollArea>
-                          </div>
-                        )}
-
-                        {searching && (
-                          <div className="flex items-center justify-center py-8">
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                          </div>
-                        )}
-
-                        {!searching && searchQuery && searchResults.length === 0 && (
-                          <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-                            <p className="text-sm text-muted-foreground">
-                              No results found for "{searchQuery}"
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Try a different spelling or your full name
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <DialogFooter>
-                        <Button
-                          onClick={() => selectedResult && handleSelectAndImport(platform.id, selectedResult)}
-                          disabled={!selectedResult || importing}
-                          className="w-full"
-                        >
-                          {importing ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Importing Credits...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="h-4 w-4 mr-2" />
-                              Import {selectedResult?.name || 'Selected Profile'}
-                            </>
-                          )}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                      </Dialog>
+                        <Search className="h-4 w-4" />
+                        Search & Import
+                      </Button>
                     )}
                   </div>
                 </div>
               </div>
+
+              {/* Search Dialog - rendered separately for both connected and non-connected */}
+              <Dialog 
+                open={searchDialogOpen === platform.id} 
+                onOpenChange={(open) => {
+                  setSearchDialogOpen(open ? platform.id : null);
+                  if (!open) {
+                    setSearchQuery('');
+                    setSearchResults([]);
+                    setSelectedResult(null);
+                  }
+                }}
+              >
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Icon className={`h-5 w-5 ${platform.color.replace('bg-', 'text-').replace('-500', '-600')}`} />
+                      Search {platform.name}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Search for your profile, then select the correct one to import credits
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4 pt-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={platform.searchPlaceholder}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch(platform.id)}
+                        className="flex-1"
+                      />
+                      <Button 
+                        onClick={() => handleSearch(platform.id)}
+                        disabled={searching || !searchQuery.trim()}
+                      >
+                        {searching ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Search className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+
+                    {searchResults.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm text-muted-foreground">
+                          Select your profile:
+                        </Label>
+                        <ScrollArea className="h-[280px] rounded-md border">
+                          <div className="p-2 space-y-2">
+                            {searchResults.map((result) => (
+                              <div
+                                key={result.id}
+                                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                  selectedResult?.id === result.id 
+                                    ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                                    : 'hover:bg-muted/50'
+                                }`}
+                                onClick={() => setSelectedResult(result)}
+                              >
+                                {result.image ? (
+                                  <img
+                                    src={result.image}
+                                    alt={result.name || 'Profile'}
+                                    className="w-12 h-12 rounded-lg object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                                    <User className="h-6 w-6 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium truncate">{result.name || 'Unknown'}</p>
+                                    {result.type && (
+                                      <Badge variant="secondary" className="text-[10px] shrink-0">
+                                        {result.type === 'show' ? '🎙️ Podcast' : 
+                                         result.type === 'episode' ? '🎧 Episode' : 
+                                         result.type === 'artist' ? '🎵 Artist' : result.type}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {result.details && (
+                                    <p className="text-sm text-muted-foreground truncate">
+                                      {result.details}
+                                    </p>
+                                  )}
+                                </div>
+                                {result.url && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    asChild
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <a href={result.url} target="_blank" rel="noopener noreferrer">
+                                      <ExternalLink className="h-4 w-4" />
+                                    </a>
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    )}
+
+                    {searching && (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
+
+                    {!searching && searchQuery && searchResults.length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground">
+                          No results found for "{searchQuery}"
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Try a different spelling or your full name
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      onClick={() => selectedResult && handleSelectAndImport(platform.id, selectedResult)}
+                      disabled={!selectedResult || importing}
+                      className="w-full"
+                    >
+                      {importing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Importing Credits...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Import {selectedResult?.name || 'Selected Profile'}
+                        </>
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           );
         })}

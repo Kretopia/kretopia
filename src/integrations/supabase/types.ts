@@ -4046,161 +4046,65 @@ export type Database = {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"] | null
           avatar_url: string | null
-          average_rating: number | null
-          avg_views: number | null
           badge: Database["public"]["Enums"]["user_badge"] | null
-          behance_url: string | null
           bio: string | null
           collab_intent: string | null
-          company_about: string | null
-          company_address: string | null
-          company_images: Json | null
-          company_industry: string | null
-          company_location_lat: number | null
-          company_location_lng: number | null
           company_logo_url: string | null
           company_name: string | null
-          company_size: string | null
-          created_at: string | null
           full_name: string | null
-          imdb_url: string | null
           industry: string | null
-          instagram_followers: number | null
-          instagram_url: string | null
           job_title: string | null
           level: number | null
-          linkedin_connections: number | null
-          linkedin_url: string | null
           location: string | null
           passion_skills: Json | null
-          portfolio_verified: boolean | null
           professional_skills: Json | null
           role: string | null
-          social_verified: boolean | null
-          soundcloud_url: string | null
-          spotify_listeners: number | null
-          spotify_url: string | null
           subscription_tier: string | null
-          tiktok_followers: number | null
-          tiktok_url: string | null
-          total_engagement_rate: number | null
-          total_reviews: number | null
-          twitter_followers: number | null
-          twitter_url: string | null
           user_id: string | null
-          verification_status: string | null
-          verified_at: string | null
-          verified_metrics: boolean | null
-          website: string | null
+          verification_score: number | null
           xp: number | null
-          youtube_subscribers: number | null
-          youtube_url: string | null
         }
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
-          average_rating?: number | null
-          avg_views?: number | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
-          behance_url?: string | null
           bio?: string | null
           collab_intent?: string | null
-          company_about?: string | null
-          company_address?: string | null
-          company_images?: Json | null
-          company_industry?: string | null
-          company_location_lat?: number | null
-          company_location_lng?: number | null
           company_logo_url?: string | null
           company_name?: string | null
-          company_size?: string | null
-          created_at?: string | null
           full_name?: string | null
-          imdb_url?: string | null
           industry?: string | null
-          instagram_followers?: number | null
-          instagram_url?: string | null
           job_title?: string | null
           level?: number | null
-          linkedin_connections?: number | null
-          linkedin_url?: string | null
           location?: string | null
           passion_skills?: Json | null
-          portfolio_verified?: boolean | null
           professional_skills?: Json | null
           role?: string | null
-          social_verified?: boolean | null
-          soundcloud_url?: string | null
-          spotify_listeners?: number | null
-          spotify_url?: string | null
           subscription_tier?: string | null
-          tiktok_followers?: number | null
-          tiktok_url?: string | null
-          total_engagement_rate?: number | null
-          total_reviews?: number | null
-          twitter_followers?: number | null
-          twitter_url?: string | null
           user_id?: string | null
-          verification_status?: string | null
-          verified_at?: string | null
-          verified_metrics?: boolean | null
-          website?: string | null
+          verification_score?: number | null
           xp?: number | null
-          youtube_subscribers?: number | null
-          youtube_url?: string | null
         }
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
-          average_rating?: number | null
-          avg_views?: number | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
-          behance_url?: string | null
           bio?: string | null
           collab_intent?: string | null
-          company_about?: string | null
-          company_address?: string | null
-          company_images?: Json | null
-          company_industry?: string | null
-          company_location_lat?: number | null
-          company_location_lng?: number | null
           company_logo_url?: string | null
           company_name?: string | null
-          company_size?: string | null
-          created_at?: string | null
           full_name?: string | null
-          imdb_url?: string | null
           industry?: string | null
-          instagram_followers?: number | null
-          instagram_url?: string | null
           job_title?: string | null
           level?: number | null
-          linkedin_connections?: number | null
-          linkedin_url?: string | null
           location?: string | null
           passion_skills?: Json | null
-          portfolio_verified?: boolean | null
           professional_skills?: Json | null
           role?: string | null
-          social_verified?: boolean | null
-          soundcloud_url?: string | null
-          spotify_listeners?: number | null
-          spotify_url?: string | null
           subscription_tier?: string | null
-          tiktok_followers?: number | null
-          tiktok_url?: string | null
-          total_engagement_rate?: number | null
-          total_reviews?: number | null
-          twitter_followers?: number | null
-          twitter_url?: string | null
           user_id?: string | null
-          verification_status?: string | null
-          verified_at?: string | null
-          verified_metrics?: boolean | null
-          website?: string | null
+          verification_score?: number | null
           xp?: number | null
-          youtube_subscribers?: number | null
-          youtube_url?: string | null
         }
         Relationships: []
       }
@@ -4503,6 +4407,87 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      skill_endorsements_public: {
+        Row: {
+          created_at: string | null
+          endorser_company: string | null
+          endorser_name: string | null
+          id: string | null
+          proficiency_level: string | null
+          profile_id: string | null
+          project_name: string | null
+          relationship: string | null
+          request_id: string | null
+          skill_name: string | null
+          testimonial: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          endorser_company?: string | null
+          endorser_name?: string | null
+          id?: string | null
+          proficiency_level?: string | null
+          profile_id?: string | null
+          project_name?: string | null
+          relationship?: string | null
+          request_id?: string | null
+          skill_name?: string | null
+          testimonial?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          endorser_company?: string | null
+          endorser_name?: string | null
+          id?: string | null
+          proficiency_level?: string | null
+          profile_id?: string | null
+          project_name?: string | null
+          relationship?: string | null
+          request_id?: string | null
+          skill_name?: string | null
+          testimonial?: string | null
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "skill_endorsement_requests"
+            referencedColumns: ["id"]
           },
         ]
       }

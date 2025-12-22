@@ -11,6 +11,18 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate admin secret - this function should only be called by admins
+  const adminSecret = req.headers.get("x-admin-secret");
+  const expectedSecret = Deno.env.get("ADMIN_SECRET");
+  
+  if (expectedSecret && adminSecret !== expectedSecret) {
+    console.error("Unauthorized: Invalid or missing admin secret");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const { email } = await req.json();
     

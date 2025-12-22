@@ -16,7 +16,9 @@ import {
   CheckCircle2,
   Plus,
   Loader2,
-  ShieldCheck
+  ShieldCheck,
+  Trash2,
+  Mic2
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -73,6 +75,8 @@ const CREDIT_TYPE_ICONS: Record<string, any> = {
   album: Disc3,
   single: Music,
   music_video: Video,
+  podcast: Mic2,
+  episode: Mic2,
 };
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -88,6 +92,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
   const [credits, setCredits] = useState<UnifiedCredit[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [newCredit, setNewCredit] = useState({
     project_name: "",
     role: "",
@@ -197,17 +202,20 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
   };
 
   const handleDelete = async (id: string, isVerified: boolean) => {
+    setDeletingId(id);
     try {
       const table = isVerified ? 'verified_credits' : 'credits';
       const { error } = await supabase.from(table).delete().eq("id", id);
       if (error) throw error;
 
+      setCredits(prev => prev.filter(c => c.id !== id));
       toast.success("Credit removed");
-      fetchAllCredits();
       onRefresh?.();
     } catch (error) {
       console.error("Error deleting credit:", error);
       toast.error("Failed to remove credit");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -367,12 +375,27 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1 shrink-0">
                   {credit.url && (
                     <Button variant="ghost" size="sm" asChild>
                       <a href={credit.url} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-4 w-4" />
                       </a>
+                    </Button>
+                  )}
+                  {isOwnProfile && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleDelete(credit.id, credit.isVerified)}
+                      disabled={deletingId === credit.id}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      {deletingId === credit.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
                     </Button>
                   )}
                 </div>

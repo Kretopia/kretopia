@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Film, 
   Tv, 
@@ -14,7 +15,8 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-  Loader2
+  Loader2,
+  Trash2
 } from "lucide-react";
 
 interface VerifiedCredit {
@@ -33,6 +35,7 @@ interface VerifiedCredit {
 interface VerifiedCreditsSectionProps {
   userId: string;
   isOwnProfile?: boolean;
+  onCreditsChanged?: () => void;
 }
 
 import { Mic2 } from "lucide-react";
@@ -56,14 +59,45 @@ const SOURCE_COLORS: Record<string, string> = {
   discogs: 'bg-orange-500',
 };
 
-export function VerifiedCreditsSection({ userId, isOwnProfile }: VerifiedCreditsSectionProps) {
+export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged }: VerifiedCreditsSectionProps) {
   const [credits, setCredits] = useState<VerifiedCredit[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchCredits();
   }, [userId]);
+
+  const handleDeleteCredit = async (creditId: string) => {
+    setDeletingId(creditId);
+    try {
+      const { error } = await supabase
+        .from('verified_credits')
+        .delete()
+        .eq('id', creditId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      setCredits(prev => prev.filter(c => c.id !== creditId));
+      onCreditsChanged?.();
+      toast({
+        title: "Credit removed",
+        description: "The credit has been removed from your profile",
+      });
+    } catch (error: any) {
+      console.error('Error deleting credit:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove credit",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const fetchCredits = async () => {
     try {
@@ -158,8 +192,14 @@ export function VerifiedCreditsSection({ userId, isOwnProfile }: VerifiedCredits
             {creditTypes.map((type) => (
               <TabsContent key={type} value={type}>
                 <div className="grid gap-3">
-                  {groupedCredits[type].slice(0, expanded ? undefined : 6).map((credit) => (
-                    <CreditItem key={credit.id} credit={credit} />
+                {groupedCredits[type].slice(0, expanded ? undefined : 6).map((credit) => (
+                    <CreditItem 
+                      key={credit.id} 
+                      credit={credit} 
+                      isOwnProfile={isOwnProfile}
+                      onDelete={() => handleDeleteCredit(credit.id)}
+                      isDeleting={deletingId === credit.id}
+                    />
                   ))}
                 </div>
                 {groupedCredits[type].length > 6 && (
@@ -188,7 +228,13 @@ export function VerifiedCreditsSection({ userId, isOwnProfile }: VerifiedCredits
           <>
             <div className="grid gap-3">
               {displayedCredits.map((credit) => (
-                <CreditItem key={credit.id} credit={credit} />
+                <CreditItem 
+                  key={credit.id} 
+                  credit={credit} 
+                  isOwnProfile={isOwnProfile}
+                  onDelete={() => handleDeleteCredit(credit.id)}
+                  isDeleting={deletingId === credit.id}
+                />
               ))}
             </div>
             {credits.length > 6 && (
@@ -217,7 +263,14 @@ export function VerifiedCreditsSection({ userId, isOwnProfile }: VerifiedCredits
   );
 }
 
-function CreditItem({ credit }: { credit: VerifiedCredit }) {
+interface CreditItemProps {
+  credit: VerifiedCredit;
+  isOwnProfile?: boolean;
+  onDelete?: () => void;
+  isDeleting?: boolean;
+}
+
+function CreditItem({ credit, isOwnProfile, onDelete, isDeleting }: CreditItemProps) {
   const Icon = CREDIT_TYPE_ICONS[credit.credit_type] || Film;
   const sourceColor = SOURCE_COLORS[credit.source] || 'bg-gray-500';
   const thumbnailUrl = credit.metadata?.posterUrl || credit.metadata?.imageUrl || credit.metadata?.thumbUrl || credit.metadata?.thumbnailUrl;
@@ -247,17 +300,34 @@ function CreditItem({ credit }: { credit: VerifiedCredit }) {
           {credit.year && <span className="ml-2">• {credit.year}</span>}
         </p>
       </div>
-      {credit.verification_url && (
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-        >
-          <a href={credit.verification_url} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </Button>
-      )}
+      <div className="flex items-center gap-1">
+        {credit.verification_url && (
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+          >
+            <a href={credit.verification_url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </Button>
+        )}
+        {isOwnProfile && onDelete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDelete}
+            disabled={isDeleting}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

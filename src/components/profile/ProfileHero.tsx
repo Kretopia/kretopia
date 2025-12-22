@@ -5,6 +5,9 @@ import { MapPin, Star, Verified, MessageCircle, Share2, Edit, Camera, Briefcase,
 import { cn } from "@/lib/utils";
 import { getTierByPoints } from "@/lib/tierSystem";
 import { AchievementBadges } from "./AchievementBadges";
+import { DegreeBadge, ConnectionPathDisplay } from "@/components/circle/DegreeBadge";
+import { useConnectionDegree } from "@/hooks/useNetworkStats";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ProfileHeroProps {
   profile: any;
@@ -41,8 +44,15 @@ export const ProfileHero = ({
   onStartProject,
   isFromMatch
 }: ProfileHeroProps) => {
+  const { user } = useAuth();
   const tier = getTierByPoints(profile.points || 0);
   const isCompany = profile.account_type === 'company';
+  
+  // Get connection degree for non-own profiles
+  const { degree, path, loading: degreeLoading } = useConnectionDegree(
+    user?.id,
+    !isOwnProfile ? profile.user_id : undefined
+  );
   
   const displayName = isCompany 
     ? (profile.company_name || profile.full_name)
@@ -138,7 +148,17 @@ export const ProfileHero = ({
                    profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
                 </Badge>
               )}
+              
+              {/* Connection Degree Badge - Show for non-own profiles */}
+              {!isOwnProfile && !degreeLoading && degree && degree > 0 && (
+                <DegreeBadge degree={degree} size="sm" />
+              )}
             </div>
+            
+            {/* Connection Path - Show how you're connected */}
+            {!isOwnProfile && !degreeLoading && degree === 2 && path.length > 0 && (
+              <ConnectionPathDisplay path={path} className="mt-1" />
+            )}
             
             {/* Achievement Badges - Only show actual achievements, not tier (tier shown via VERIFIED badge) */}
             {profile.achievement_badges?.length > 0 && (

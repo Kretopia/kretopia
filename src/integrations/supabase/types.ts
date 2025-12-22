@@ -4568,6 +4568,14 @@ export type Database = {
       generate_membership_number: { Args: never; Returns: string }
       generate_secure_token: { Args: never; Returns: string }
       generate_unsubscribe_token: { Args: never; Returns: string }
+      get_connection_path: {
+        Args: { from_user_id: string; to_user_id: string }
+        Returns: {
+          degree: number
+          path_user_ids: string[]
+          path_user_names: string[]
+        }[]
+      }
       get_endorsement_request_by_token: {
         Args: { token_param: string }
         Returns: {

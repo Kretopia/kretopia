@@ -37,7 +37,7 @@ interface StartProjectFromMatchDialogProps {
     role: string;
     avatar?: string | null;
   };
-  matchId: string;
+  matchId?: string; // Made optional for connected users without match
   currentUserRole?: string;
 }
 
@@ -224,7 +224,7 @@ export function StartProjectFromMatchDialog({
         }
       });
 
-      // Create project linked to the match
+      // Create project linked to the match (if exists)
       const { data: project, error: projectError } = await supabase
         .from('projects')
         .insert({
@@ -232,7 +232,7 @@ export function StartProjectFromMatchDialog({
           description: validationResult.data.description || null,
           created_by: user.id,
           status: 'active' as const,
-          match_id: matchId, // Link to match
+          match_id: matchId || null, // Link to match if exists
         })
         .select()
         .single();

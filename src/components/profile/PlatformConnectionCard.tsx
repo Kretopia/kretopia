@@ -80,7 +80,11 @@ const PLATFORMS = [
   },
 ];
 
-export function PlatformConnectionCard() {
+interface PlatformConnectionCardProps {
+  onCreditsImported?: () => void;
+}
+
+export function PlatformConnectionCard({ onCreditsImported }: PlatformConnectionCardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [connectedPlatforms, setConnectedPlatforms] = useState<ConnectedPlatform[]>([]);
@@ -389,7 +393,9 @@ export function PlatformConnectionCard() {
       setSearchQuery('');
       setSearchResults([]);
       setSelectedResult(null);
+      setGuestAppearances([]);
       fetchConnectedPlatforms();
+      onCreditsImported?.();
     } catch (error: any) {
       console.error('Import error:', error);
       toast({

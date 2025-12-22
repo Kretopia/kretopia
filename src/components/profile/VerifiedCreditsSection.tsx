@@ -35,6 +35,8 @@ interface VerifiedCreditsSectionProps {
   isOwnProfile?: boolean;
 }
 
+import { Mic2 } from "lucide-react";
+
 const CREDIT_TYPE_ICONS: Record<string, any> = {
   film: Film,
   movie: Film,
@@ -42,6 +44,8 @@ const CREDIT_TYPE_ICONS: Record<string, any> = {
   album: Disc3,
   single: Music,
   music_video: Video,
+  podcast: Mic2,
+  episode: Mic2,
 };
 
 const SOURCE_COLORS: Record<string, string> = {

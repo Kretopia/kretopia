@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,7 +23,9 @@ import {
   AlertCircle,
   Edit,
   Sparkles,
-  User
+  User,
+  Mic2,
+  Radio
 } from "lucide-react";
 
 interface ConnectedPlatform {
@@ -41,6 +44,8 @@ interface SearchResult {
   details?: string;
   url?: string;
   type?: string; // 'artist', 'show', 'episode' for Spotify
+  showName?: string;
+  confidence?: string;
 }
 
 // Only platforms that work without OAuth
@@ -53,6 +58,7 @@ const PLATFORMS = [
     description: 'Import podcasts, music, and episode appearances',
     searchPlaceholder: 'Search your name or podcast/show name',
     searchType: 'spotify' as const,
+    hasGuestSearch: true,
   },
   {
     id: 'imdb',
@@ -85,6 +91,9 @@ export function PlatformConnectionCard() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
   const [importing, setImporting] = useState(false);
+  const [searchTab, setSearchTab] = useState<'search' | 'guest'>('search');
+  const [guestAppearances, setGuestAppearances] = useState<SearchResult[]>([]);
+  const [searchingGuest, setSearchingGuest] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -242,6 +251,53 @@ export function PlatformConnectionCard() {
       });
     } finally {
       setSearching(false);
+    }
+  };
+
+  const handleFindGuestAppearances = async () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "Enter your name",
+        description: "Please enter your name to find podcast appearances",
+      });
+      return;
+    }
+    
+    setSearchingGuest(true);
+    setGuestAppearances([]);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('connect-platform', {
+        body: {
+          action: 'findGuestAppearances',
+          platform: 'spotify',
+          guestName: searchQuery,
+        },
+      });
+
+      if (error) throw error;
+      
+      if (data?.guestAppearances && data.guestAppearances.length > 0) {
+        setGuestAppearances(data.guestAppearances);
+        toast({
+          title: `Found ${data.guestAppearances.length} potential appearances`,
+          description: "Select episodes to add to your profile",
+        });
+      } else {
+        toast({
+          title: "No appearances found",
+          description: "Try different variations of your name",
+        });
+      }
+    } catch (error: any) {
+      console.error('Guest search error:', error);
+      toast({
+        title: "Search Failed",
+        description: error.message || "Unable to search for guest appearances",
+        variant: "destructive",
+      });
+    } finally {
+      setSearchingGuest(false);
     }
   };
 
@@ -529,123 +585,268 @@ export function PlatformConnectionCard() {
                     setSearchQuery('');
                     setSearchResults([]);
                     setSelectedResult(null);
+                    setSearchTab('search');
+                    setGuestAppearances([]);
                   }
                 }}
               >
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-lg">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                       <Icon className={`h-5 w-5 ${platform.color.replace('bg-', 'text-').replace('-500', '-600')}`} />
                       Search {platform.name}
                     </DialogTitle>
                     <DialogDescription>
-                      Search for your profile, then select the correct one to import credits
+                      {platform.id === 'spotify' 
+                        ? 'Find your music, podcasts, or episode appearances'
+                        : 'Search for your profile, then select the correct one to import credits'}
                     </DialogDescription>
                   </DialogHeader>
                   
-                  <div className="space-y-4 pt-2">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder={platform.searchPlaceholder}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch(platform.id)}
-                        className="flex-1"
-                      />
-                      <Button 
-                        onClick={() => handleSearch(platform.id)}
-                        disabled={searching || !searchQuery.trim()}
-                      >
-                        {searching ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Search className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+                  {/* Show tabs for Spotify to enable guest appearance search */}
+                  {platform.id === 'spotify' ? (
+                    <Tabs value={searchTab} onValueChange={(v) => setSearchTab(v as 'search' | 'guest')} className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="search" className="gap-1.5">
+                          <Search className="h-3.5 w-3.5" />
+                          Search
+                        </TabsTrigger>
+                        <TabsTrigger value="guest" className="gap-1.5">
+                          <Mic2 className="h-3.5 w-3.5" />
+                          Find My Appearances
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="search" className="space-y-4 pt-2">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Search artist, podcast, or episode..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch(platform.id)}
+                            className="flex-1"
+                          />
+                          <Button 
+                            onClick={() => handleSearch(platform.id)}
+                            disabled={searching || !searchQuery.trim()}
+                          >
+                            {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                          </Button>
+                        </div>
 
-                    {searchResults.length > 0 && (
-                      <div className="space-y-2">
-                        <Label className="text-sm text-muted-foreground">
-                          Select your profile:
-                        </Label>
-                        <ScrollArea className="h-[280px] rounded-md border">
-                          <div className="p-2 space-y-2">
-                            {searchResults.map((result) => (
-                              <div
-                                key={result.id}
-                                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                                  selectedResult?.id === result.id 
-                                    ? 'border-primary bg-primary/5 ring-1 ring-primary' 
-                                    : 'hover:bg-muted/50'
-                                }`}
-                                onClick={() => setSelectedResult(result)}
-                              >
-                                {result.image ? (
-                                  <img
-                                    src={result.image}
-                                    alt={result.name || 'Profile'}
-                                    className="w-12 h-12 rounded-lg object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                                    <User className="h-6 w-6 text-muted-foreground" />
+                        {/* Search Results */}
+                        {searchResults.length > 0 && (
+                          <div className="space-y-2">
+                            <Label className="text-sm text-muted-foreground">Select to import:</Label>
+                            <ScrollArea className="h-[260px] rounded-md border">
+                              <div className="p-2 space-y-2">
+                                {searchResults.map((result) => (
+                                  <div
+                                    key={result.id}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                      selectedResult?.id === result.id 
+                                        ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                                        : 'hover:bg-muted/50'
+                                    }`}
+                                    onClick={() => setSelectedResult(result)}
+                                  >
+                                    {result.image ? (
+                                      <img src={result.image} alt={result.name || ''} className="w-12 h-12 rounded-lg object-cover" />
+                                    ) : (
+                                      <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                                        {result.type === 'show' ? <Radio className="h-5 w-5 text-muted-foreground" /> :
+                                         result.type === 'episode' ? <Mic2 className="h-5 w-5 text-muted-foreground" /> :
+                                         <Music className="h-5 w-5 text-muted-foreground" />}
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <p className="font-medium truncate text-sm">{result.name}</p>
+                                        {result.type && (
+                                          <Badge variant="secondary" className="text-[10px] shrink-0">
+                                            {result.type === 'show' ? '🎙️ Podcast' : 
+                                             result.type === 'episode' ? '🎧 Episode' : '🎵 Artist'}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      {result.details && <p className="text-xs text-muted-foreground truncate">{result.details}</p>}
+                                    </div>
                                   </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <p className="font-medium truncate">{result.name || 'Unknown'}</p>
-                                    {result.type && (
-                                      <Badge variant="secondary" className="text-[10px] shrink-0">
-                                        {result.type === 'show' ? '🎙️ Podcast' : 
-                                         result.type === 'episode' ? '🎧 Episode' : 
-                                         result.type === 'artist' ? '🎵 Artist' : result.type}
-                                      </Badge>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </div>
+                        )}
+
+                        {searching && (
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                      </TabsContent>
+                      
+                      <TabsContent value="guest" className="space-y-4 pt-2">
+                        <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            <div>
+                              <p className="text-sm font-medium">Find Podcast Guest Appearances</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Enter your name to find episodes where you were mentioned as a guest
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Your full name (e.g., John Smith)"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleFindGuestAppearances()}
+                            className="flex-1"
+                          />
+                          <Button 
+                            onClick={handleFindGuestAppearances}
+                            disabled={searchingGuest || !searchQuery.trim()}
+                            variant="default"
+                          >
+                            {searchingGuest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic2 className="h-4 w-4" />}
+                          </Button>
+                        </div>
+
+                        {/* Guest Appearances Results */}
+                        {guestAppearances.length > 0 && (
+                          <div className="space-y-2">
+                            <Label className="text-sm text-muted-foreground">
+                              Found {guestAppearances.length} potential appearances:
+                            </Label>
+                            <ScrollArea className="h-[240px] rounded-md border">
+                              <div className="p-2 space-y-2">
+                                {guestAppearances.map((episode) => (
+                                  <div
+                                    key={episode.id}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                      selectedResult?.id === episode.id 
+                                        ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                                        : 'hover:bg-muted/50'
+                                    }`}
+                                    onClick={() => setSelectedResult({ ...episode, type: 'episode' })}
+                                  >
+                                    {episode.image ? (
+                                      <img src={episode.image} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                                    ) : (
+                                      <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+                                        <Mic2 className="h-5 w-5 text-green-600" />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <p className="font-medium truncate text-sm">{episode.name}</p>
+                                        {episode.confidence === 'high' && (
+                                          <Badge variant="secondary" className="text-[10px] bg-green-500/10 text-green-600 shrink-0">
+                                            High match
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground truncate">{episode.details}</p>
+                                    </div>
+                                    {episode.url && (
+                                      <Button variant="ghost" size="sm" asChild onClick={(e) => e.stopPropagation()}>
+                                        <a href={episode.url} target="_blank" rel="noopener noreferrer">
+                                          <ExternalLink className="h-3.5 w-3.5" />
+                                        </a>
+                                      </Button>
                                     )}
                                   </div>
-                                  {result.details && (
-                                    <p className="text-sm text-muted-foreground truncate">
-                                      {result.details}
-                                    </p>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </div>
+                        )}
+
+                        {searchingGuest && (
+                          <div className="flex flex-col items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
+                            <p className="text-xs text-muted-foreground">Searching podcasts for "{searchQuery}"...</p>
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  ) : (
+                    /* Standard search for non-Spotify platforms */
+                    <div className="space-y-4 pt-2">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder={platform.searchPlaceholder}
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSearch(platform.id)}
+                          className="flex-1"
+                        />
+                        <Button 
+                          onClick={() => handleSearch(platform.id)}
+                          disabled={searching || !searchQuery.trim()}
+                        >
+                          {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                        </Button>
+                      </div>
+
+                      {searchResults.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-sm text-muted-foreground">Select your profile:</Label>
+                          <ScrollArea className="h-[280px] rounded-md border">
+                            <div className="p-2 space-y-2">
+                              {searchResults.map((result) => (
+                                <div
+                                  key={result.id}
+                                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                    selectedResult?.id === result.id 
+                                      ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                                      : 'hover:bg-muted/50'
+                                  }`}
+                                  onClick={() => setSelectedResult(result)}
+                                >
+                                  {result.image ? (
+                                    <img src={result.image} alt={result.name || ''} className="w-12 h-12 rounded-lg object-cover" />
+                                  ) : (
+                                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                                      <User className="h-6 w-6 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium truncate">{result.name}</p>
+                                    {result.details && <p className="text-sm text-muted-foreground truncate">{result.details}</p>}
+                                  </div>
+                                  {result.url && (
+                                    <Button variant="ghost" size="sm" asChild onClick={(e) => e.stopPropagation()}>
+                                      <a href={result.url} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="h-4 w-4" />
+                                      </a>
+                                    </Button>
                                   )}
                                 </div>
-                                {result.url && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    asChild
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <a href={result.url} target="_blank" rel="noopener noreferrer">
-                                      <ExternalLink className="h-4 w-4" />
-                                    </a>
-                                  </Button>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </ScrollArea>
-                      </div>
-                    )}
+                              ))}
+                            </div>
+                          </ScrollArea>
+                        </div>
+                      )}
 
-                    {searching && (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                      </div>
-                    )}
+                      {searching && (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                      )}
 
-                    {!searching && searchQuery && searchResults.length === 0 && (
-                      <div className="flex flex-col items-center justify-center py-8 text-center">
-                        <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">
-                          No results found for "{searchQuery}"
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Try a different spelling or your full name
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                      {!searching && searchQuery && searchResults.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                          <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground">No results found for "{searchQuery}"</p>
+                          <p className="text-xs text-muted-foreground mt-1">Try a different spelling or your full name</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <DialogFooter>
                     <Button
@@ -661,7 +862,7 @@ export function PlatformConnectionCard() {
                       ) : (
                         <>
                           <CheckCircle2 className="h-4 w-4 mr-2" />
-                          Import {selectedResult?.name || 'Selected Profile'}
+                          Import {selectedResult?.name ? `"${selectedResult.name.substring(0, 30)}${selectedResult.name.length > 30 ? '...' : ''}"` : 'Selected'}
                         </>
                       )}
                     </Button>

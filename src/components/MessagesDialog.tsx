@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { validateMessage, sanitizeInput } from "@/lib/errorHandling";
 
@@ -180,14 +180,17 @@ export const MessagesDialog = ({
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 px-6" ref={scrollRef}>
+        <ScrollArea className="flex-1 px-6" ref={scrollRef} aria-label="Message history">
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center py-8 gap-3" aria-busy="true">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Loading messages...</p>
             </div>
           ) : messages.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No messages yet. Start the conversation!
+            <div className="text-center py-12 px-4">
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="font-semibold mb-2">No messages yet</h3>
+              <p className="text-sm text-muted-foreground">Send a message to start the conversation!</p>
             </div>
           ) : (
             <div className="space-y-4 py-4">

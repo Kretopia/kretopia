@@ -41,14 +41,15 @@ export const ProfilePreviewDialog = ({
       if (!userId) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('user_id, full_name, role, bio, avatar_url, location, professional_skills, passion_skills, instagram_followers, youtube_subscribers, tiktok_followers, spotify_listeners')
         .eq('user_id', userId)
         .single();
       
       if (error) throw error;
       return data;
     },
-    enabled: open && !!userId && !isDemo
+    enabled: open && !!userId && !isDemo,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 
   const { data: portfolioItems = [] } = useQuery({
@@ -57,7 +58,7 @@ export const ProfilePreviewDialog = ({
       if (!userId) return [];
       const { data, error } = await supabase
         .from('portfolio_items')
-        .select('*')
+        .select('id, title, media_url, thumbnail_url')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(6);
@@ -65,7 +66,8 @@ export const ProfilePreviewDialog = ({
       if (error) throw error;
       return data || [];
     },
-    enabled: open && !!userId && !isDemo
+    enabled: open && !!userId && !isDemo,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 
   // Use demo profile data or real profile data

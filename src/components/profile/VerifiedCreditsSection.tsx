@@ -80,9 +80,10 @@ export function VerifiedCreditsSection({ userId, isOwnProfile }: VerifiedCredits
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <Card aria-busy="true" aria-label="Loading verified credits">
+        <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading credits...</p>
         </CardContent>
       </Card>
     );

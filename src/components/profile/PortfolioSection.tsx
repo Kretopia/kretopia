@@ -4,13 +4,25 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Upload, ExternalLink, Trash2, Eye, Play, Lock, Crown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Upload, ExternalLink, Trash2, Eye, Play, Lock, Crown, Music, Video, Image as ImageIcon, Mic2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaPlayerModal } from "./MediaPlayerModal";
 import { useNavigate } from "react-router-dom";
 import { TIER_LIMITS, canAddPortfolioItem, SubscriptionTier } from "@/lib/subscriptionLimits";
 import { getMediaThumbnail, parseMediaUrl } from "@/lib/mediaUtils";
+
+// Platform color and icon mapping
+const PLATFORM_STYLES: Record<string, { bg: string; text: string; icon: string }> = {
+  spotify: { bg: 'bg-green-500', text: 'text-white', icon: '🎵' },
+  youtube: { bg: 'bg-red-500', text: 'text-white', icon: '▶️' },
+  vimeo: { bg: 'bg-blue-500', text: 'text-white', icon: '🎬' },
+  soundcloud: { bg: 'bg-orange-500', text: 'text-white', icon: '🔊' },
+  tiktok: { bg: 'bg-black', text: 'text-white', icon: '🎵' },
+  instagram: { bg: 'bg-gradient-to-r from-purple-500 to-pink-500', text: 'text-white', icon: '📸' },
+  behance: { bg: 'bg-blue-600', text: 'text-white', icon: '🎨' },
+};
 
 interface PortfolioItem {
   id: string;
@@ -582,12 +594,14 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                     </div>
                   )}
 
-                  {/* Platform badge */}
+                  {/* Platform badge with enhanced styling */}
                   {mediaInfo && (
                     <div className="absolute top-2 left-2">
-                      <span className="bg-black/60 text-white text-xs px-2 py-1 rounded-full capitalize">
-                        {mediaInfo.platform}
-                      </span>
+                      <Badge 
+                        className={`${PLATFORM_STYLES[mediaInfo.platform]?.bg || 'bg-black/60'} ${PLATFORM_STYLES[mediaInfo.platform]?.text || 'text-white'} text-xs border-0`}
+                      >
+                        {PLATFORM_STYLES[mediaInfo.platform]?.icon || '🔗'} {mediaInfo.platform}
+                      </Badge>
                     </div>
                   )}
 

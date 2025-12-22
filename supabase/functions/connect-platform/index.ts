@@ -307,9 +307,8 @@ serve(async (req) => {
         });
       }
       
-      // Search Spotify for artists, shows (podcasts), and episodes
       try {
-        // We need client credentials for public search
+        // Get client credentials token
         const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
           method: 'POST',
           headers: {
@@ -326,7 +325,7 @@ serve(async (req) => {
         const tokenData = await tokenRes.json();
         
         // Search for artists, shows (podcasts), and episodes
-        const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist,show,episode&limit=10`;
+        const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist,show,episode&limit=15`;
         
         const searchRes = await fetch(searchUrl, {
           headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
@@ -350,10 +349,11 @@ serve(async (req) => {
             type: 'artist',
             details: artist.genres?.slice(0, 2).join(', ') || `${(artist.followers?.total || 0).toLocaleString()} followers`,
             url: artist.external_urls?.spotify,
+            followers: artist.followers?.total || 0,
           });
         });
         
-        // Add shows (podcasts) - these are what you want for "Discover A Thriver"
+        // Add shows (podcasts)
         (searchData.shows?.items || []).forEach((show: any) => {
           results.push({
             id: show.id,
@@ -363,10 +363,11 @@ serve(async (req) => {
             details: `Podcast • ${show.publisher || 'Unknown'}`,
             publisher: show.publisher,
             url: show.external_urls?.spotify,
+            totalEpisodes: show.total_episodes,
           });
         });
         
-        // Add episodes (podcast appearances)
+        // Add episodes (podcast appearances) - prioritize these for guest appearances
         (searchData.episodes?.items || []).forEach((episode: any) => {
           results.push({
             id: episode.id,
@@ -375,7 +376,10 @@ serve(async (req) => {
             type: 'episode',
             details: `Episode • ${episode.release_date || ''}`,
             showName: episode.show?.name,
+            showId: episode.show?.id,
             url: episode.external_urls?.spotify,
+            releaseDate: episode.release_date,
+            duration: episode.duration_ms,
           });
         });
         
@@ -391,6 +395,109 @@ serve(async (req) => {
         console.error('Spotify search error:', e);
         return new Response(JSON.stringify({ 
           error: 'Spotify search unavailable',
+          details: e.message,
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Action: Find podcast guest appearances by searching episodes mentioning user's name
+    if (action === 'findGuestAppearances' && platform === 'spotify') {
+      const guestName = requestBody.guestName;
+      if (!guestName) {
+        return new Response(JSON.stringify({ error: 'Missing guestName' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      try {
+        // Get client credentials token
+        const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+          },
+          body: 'grant_type=client_credentials',
+        });
+        
+        if (!tokenRes.ok) throw new Error('Failed to get Spotify access token');
+        const tokenData = await tokenRes.json();
+        
+        // Search specifically for episodes mentioning the guest name
+        const searchQueries = [
+          `"${guestName}"`, // Exact name match
+          `${guestName} interview`,
+          `${guestName} guest`,
+          `featuring ${guestName}`,
+        ];
+        
+        const allEpisodes: any[] = [];
+        const seenIds = new Set<string>();
+        
+        for (const searchQuery of searchQueries) {
+          const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery)}&type=episode&limit=20`;
+          
+          const searchRes = await fetch(searchUrl, {
+            headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
+          });
+          
+          if (searchRes.ok) {
+            const searchData = await searchRes.json();
+            
+            (searchData.episodes?.items || []).forEach((episode: any) => {
+              if (!seenIds.has(episode.id)) {
+                seenIds.add(episode.id);
+                
+                // Check if the episode title or description actually contains the name
+                const nameInTitle = episode.name?.toLowerCase().includes(guestName.toLowerCase());
+                const nameInDescription = episode.description?.toLowerCase().includes(guestName.toLowerCase());
+                
+                if (nameInTitle || nameInDescription) {
+                  allEpisodes.push({
+                    id: episode.id,
+                    name: episode.name,
+                    image: episode.images?.[0]?.url,
+                    type: 'episode',
+                    details: `${episode.show?.name || 'Podcast'} • ${episode.release_date || ''}`,
+                    showName: episode.show?.name,
+                    showId: episode.show?.id,
+                    showImage: episode.show?.images?.[0]?.url,
+                    url: episode.external_urls?.spotify,
+                    releaseDate: episode.release_date,
+                    duration: episode.duration_ms,
+                    confidence: nameInTitle ? 'high' : 'medium',
+                  });
+                }
+              }
+            });
+          }
+        }
+        
+        // Sort by confidence and release date
+        allEpisodes.sort((a, b) => {
+          if (a.confidence !== b.confidence) {
+            return a.confidence === 'high' ? -1 : 1;
+          }
+          return new Date(b.releaseDate || 0).getTime() - new Date(a.releaseDate || 0).getTime();
+        });
+        
+        console.log(`Found ${allEpisodes.length} potential guest appearances for "${guestName}"`);
+        
+        return new Response(JSON.stringify({
+          success: true,
+          guestAppearances: allEpisodes.slice(0, 30), // Limit to 30 results
+          totalFound: allEpisodes.length,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (e: any) {
+        console.error('Guest appearance search error:', e);
+        return new Response(JSON.stringify({ 
+          error: 'Failed to search for guest appearances',
           details: e.message,
         }), {
           status: 500,

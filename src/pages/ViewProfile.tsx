@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import { 
   MapPin, 
   ArrowLeft, 
@@ -16,13 +17,18 @@ import {
   Sparkles,
   Star,
   Award,
-  Rocket
+  Rocket,
+  UserPlus,
+  Clock,
+  Users
 } from "lucide-react";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { SEO } from "@/components/SEO";
 import CreatorEPK from "./CreatorEPK";
+import { DegreeBadge } from "@/components/circle/DegreeBadge";
+import { useConnectionDegree } from "@/hooks/useNetworkStats";
 
 // Import profile section components
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
@@ -72,11 +78,16 @@ const ViewProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isMatched, setIsMatched] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'none' | 'pending' | 'connected'>('none');
+  const [isConnecting, setIsConnecting] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   
   const isFromMatch = searchParams.get('from') === 'match';
+  
+  // Get connection degree info
+  const { degree, path: connectionPath } = useConnectionDegree(user?.id, userId);
 
   // If not authenticated, show public EPK
   if (!authLoading && !user) {
@@ -150,6 +161,19 @@ const ViewProfile = () => {
       if (matchData && matchData.length > 0) {
         setMatchId(matchData[0].id);
       }
+      
+      // Check connection status
+      const { data: connectionData } = await supabase
+        .from('connections')
+        .select('status')
+        .or(`and(user_id.eq.${user.id},connected_user_id.eq.${userId}),and(user_id.eq.${userId},connected_user_id.eq.${user.id})`)
+        .limit(1);
+      
+      if (connectionData && connectionData.length > 0) {
+        setConnectionStatus(connectionData[0].status === 'accepted' ? 'connected' : 'pending');
+      } else {
+        setConnectionStatus('none');
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -160,6 +184,50 @@ const ViewProfile = () => {
   useEffect(() => {
     fetchData();
   }, [userId, user]);
+  
+  // Handle connection request
+  const handleConnect = async () => {
+    if (!user || !userId) return;
+    
+    setIsConnecting(true);
+    try {
+      // Insert connection request
+      const { error } = await supabase
+        .from('connections')
+        .insert({
+          user_id: user.id,
+          connected_user_id: userId,
+          status: 'pending'
+        });
+      
+      if (error) {
+        if (error.code === '23505') {
+          toast.info('Connection request already sent');
+        } else {
+          throw error;
+        }
+      } else {
+        setConnectionStatus('pending');
+        toast.success(`Connection request sent to ${profile?.full_name}`);
+        
+        // Create notification for the other user
+        await supabase.from('notifications').insert({
+          user_id: userId,
+          title: 'New Connection Request',
+          message: `${profile?.full_name || 'Someone'} wants to connect with you`,
+          type: 'connection',
+          link: `/profile/${user.id}`,
+          action_url: '/circle',
+          action_text: 'View Request'
+        });
+      }
+    } catch (error) {
+      console.error('Error sending connection request:', error);
+      toast.error('Failed to send connection request');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
 
   const getVerificationBadge = () => {
@@ -315,30 +383,74 @@ const ViewProfile = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              {isMatched && (
-                <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-6 pt-6 border-t">
-                  <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    Message
-                  </Button>
-                  <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
-                    <Rocket className="h-4 w-4" />
-                    Start Project
-                  </Button>
+              {/* Connection Degree Badge */}
+              {degree !== null && degree > 0 && degree <= 3 && (
+                <div className="flex items-center justify-center sm:justify-start gap-2 mt-4">
+                  <DegreeBadge degree={degree as 1 | 2 | 3} showLabel />
+                  {connectionPath.length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      via {connectionPath.map(c => c.fullName).join(' → ')}
+                    </span>
+                  )}
                 </div>
               )}
 
-              {!isMatched && (
-                <div className="mt-6 pt-6 border-t text-center">
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Match with {profile.full_name} to connect and collaborate
-                  </p>
-                  <Button onClick={() => navigate('/circle')} variant="outline">
-                    Go to Circle
+              {/* Action Buttons */}
+              <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-6 pt-6 border-t">
+                {/* Already matched - show full actions */}
+                {isMatched && (
+                  <>
+                    <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
+                      <MessageCircle className="h-4 w-4" />
+                      Message
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
+                      <Rocket className="h-4 w-4" />
+                      Start Project
+                    </Button>
+                  </>
+                )}
+                
+                {/* Connected but not matched - allow messaging */}
+                {!isMatched && connectionStatus === 'connected' && (
+                  <>
+                    <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
+                      <MessageCircle className="h-4 w-4" />
+                      Message
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
+                      <Rocket className="h-4 w-4" />
+                      Collaborate
+                    </Button>
+                  </>
+                )}
+                
+                {/* Pending connection */}
+                {!isMatched && connectionStatus === 'pending' && (
+                  <Button variant="outline" disabled className="gap-2">
+                    <Clock className="h-4 w-4" />
+                    Request Pending
                   </Button>
-                </div>
-              )}
+                )}
+                
+                {/* No connection - show connect option */}
+                {!isMatched && connectionStatus === 'none' && (
+                  <>
+                    <Button 
+                      onClick={handleConnect} 
+                      disabled={isConnecting}
+                      className="gap-2"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      {isConnecting ? 'Connecting...' : 'Connect'}
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate('/circle')} className="gap-2">
+                      <Users className="h-4 w-4" />
+                      Discover More
+                    </Button>
+                  </>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -448,8 +560,8 @@ const ViewProfile = () => {
         recipientAvatar={profile.avatar_url}
       />
 
-      {/* Start Project Dialog */}
-      {matchId && (
+      {/* Start Project Dialog - works for matched or connected users */}
+      {(isMatched || connectionStatus === 'connected') && (
         <StartProjectFromMatchDialog
           open={isStartProjectOpen}
           onOpenChange={setIsStartProjectOpen}
@@ -459,7 +571,7 @@ const ViewProfile = () => {
             role: profile.role,
             avatar: profile.avatar_url
           }}
-          matchId={matchId}
+          matchId={matchId || undefined}
         />
       )}
 

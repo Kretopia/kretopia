@@ -151,9 +151,8 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
 
       console.log('[useCircleData] Raw profiles fetched:', profiles?.length || 0);
 
-      // Filter out already-swiped and already-connected users
+      // Filter out already-swiped and already-connected users - use efficient Set lookup
       let filtered = (profiles || []).filter(p => !excludedUserIds.has(p.user_id));
-      console.log('[useCircleData] After filtering excluded:', filtered.length);
       
       // Apply role filter
       if (filters.role && filters.role !== 'all') {
@@ -161,13 +160,12 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
       }
 
       // QUALITY FILTER: Only show profiles with valid avatars
-      // Portfolio and bio requirements removed for MVP to allow discovery
       filtered = filtered.filter(p => 
         p.avatar_url && 
-        p.avatar_url.startsWith('http') // Must be valid URL
+        p.avatar_url.startsWith('http')
       );
 
-      console.log('[useCircleData] After quality filter:', filtered.length);
+      console.log('[useCircleData] After filtering:', filtered.length);
 
       // Transform profiles to cards
       const cards: CreatorCard[] = filtered.map(profile => ({

@@ -129,12 +129,17 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3">
+        <div className="space-y-3" role="list" aria-label="Saved items">
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="flex flex-col items-center justify-center py-8 gap-3" aria-busy="true">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              <p className="text-sm text-muted-foreground">Loading saved items...</p>
+            </div>
           ) : savedSparks?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No clipped items yet. Start clipping posts and work for inspiration!
+            <div className="text-center py-12 px-4">
+              <Paperclip className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="font-semibold mb-2">No clipped items yet</h3>
+              <p className="text-sm text-muted-foreground mb-4">Save posts and work that inspire you for quick reference</p>
             </div>
           ) : (
             savedSparks?.map((item) => (

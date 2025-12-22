@@ -88,20 +88,23 @@ export const useProfileData = () => {
       // Stop loading - show UI immediately
       setIsLoading(false);
 
-      // Load remaining data in background (non-blocking)
-      Promise.all([
+      // Load remaining data in background (non-blocking) with individual error handling
+      const backgroundPromises = [
         supabase.from('reviews').select('id, profile_id, reviewer_id, reviewer_name, reviewer_role, reviewer_company, reviewer_avatar_url, rating, review_text, project_name, collaboration_type, is_endorsed, is_verified, status, created_at, updated_at').eq('profile_id', currentUserId).order('created_at', { ascending: false }).limit(10),
-        supabase.from('industry_stats').select('*').eq('user_id', currentUserId).order('display_order', { ascending: true }),
+        supabase.from('industry_stats').select('*').eq('user_id', currentUserId).order('display_order', { ascending: true }).limit(20),
         supabase.from('credits').select('*').eq('user_id', currentUserId).order('year', { ascending: false }).limit(10),
         supabase.from('awards').select('*').eq('user_id', currentUserId).order('year', { ascending: false }).limit(10),
         supabase.from('press_links').select('*').eq('user_id', currentUserId).order('published_date', { ascending: false }).limit(10)
-      ]).then(([reviewsResult, statsResult, creditsResult, awardsResult, pressResult]) => {
-        setReviews(reviewsResult.data || []);
-        setIndustryStats(statsResult.data || []);
-        setCredits(creditsResult.data || []);
-        setAwards(awardsResult.data || []);
-        setPressLinks(pressResult.data || []);
-      }).catch(err => console.error('[Profile] Error loading additional data:', err));
+      ];
+      
+      Promise.allSettled(backgroundPromises).then((results) => {
+        const [reviewsResult, statsResult, creditsResult, awardsResult, pressResult] = results;
+        if (reviewsResult.status === 'fulfilled') setReviews(reviewsResult.value.data || []);
+        if (statsResult.status === 'fulfilled') setIndustryStats(statsResult.value.data || []);
+        if (creditsResult.status === 'fulfilled') setCredits(creditsResult.value.data || []);
+        if (awardsResult.status === 'fulfilled') setAwards(awardsResult.value.data || []);
+        if (pressResult.status === 'fulfilled') setPressLinks(pressResult.value.data || []);
+      });
 
       // Fetch company-specific data in background if needed
       if (data?.account_type === 'company') {

@@ -80,9 +80,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const shouldSyncStripe = forceSync || (now - lastSyncRef.current) > CACHE_DURATION;
       if (shouldSyncStripe) {
         lastSyncRef.current = now;
-        supabase.functions.invoke('check-subscription').catch(err => 
-          console.error('[AuthContext] Background sync failed:', err)
-        );
+        supabase.functions.invoke('check-subscription').catch(err => {
+          // Log but don't disrupt user experience
+          console.warn('[AuthContext] Background Stripe sync failed (non-critical):', err);
+        });
       }
     } catch (error) {
       console.error('[AuthContext] Error checking subscription:', error);

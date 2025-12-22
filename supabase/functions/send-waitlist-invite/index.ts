@@ -18,6 +18,23 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate cron secret or admin auth for automated calls
+  const cronSecret = req.headers.get("x-cron-secret");
+  const expectedSecret = Deno.env.get("CRON_SECRET");
+  const authHeader = req.headers.get("authorization");
+  
+  // Allow if cron secret matches OR if there's valid service role auth
+  const hasValidCronSecret = expectedSecret && cronSecret === expectedSecret;
+  const hasServiceRoleAuth = authHeader?.includes(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+  
+  if (!hasValidCronSecret && !hasServiceRoleAuth) {
+    console.error("Unauthorized: Invalid or missing authentication");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const { to, fullName, inviteCode }: EmailRequest = await req.json();
 

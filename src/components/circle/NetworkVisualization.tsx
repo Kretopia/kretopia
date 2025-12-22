@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Users, Share2, Sparkles, UserPlus, Lock, Compass, Target, Handshake } from "lucide-react";
+import { useNetworkStats } from "@/hooks/useNetworkStats";
+import { NetworkReachStats } from "./NetworkReachStats";
+import { Users, Sparkles, UserPlus, Compass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ConnectionProfile {
@@ -26,6 +27,9 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [connections, setConnections] = useState<ConnectionProfile[]>([]);
   const [connectionCount, setConnectionCount] = useState(0);
+  
+  // Use the network stats hook
+  const { stats, loading: statsLoading } = useNetworkStats(user?.id);
 
   useEffect(() => {
     if (user?.id) {
@@ -100,52 +104,64 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
   }
 
   return (
-    <div className="py-6 px-4">
-      {/* Hero Section - Creative Circles Branding */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary text-sm font-medium mb-4">
+    <div className="py-4 px-2">
+      {/* Hero Section - 6 Degrees Branding */}
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary text-sm font-medium mb-3">
           <Compass className="h-4 w-4" />
-          Creative Circles
+          6 Degrees
         </div>
-        <h2 className="text-2xl font-bold mb-2">Your Creative Universe</h2>
+        <h2 className="text-xl font-bold mb-1">Your Creative Universe</h2>
         <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-          Every creator is connected. Build your circle and unlock the power of warm introductions.
+          Every creator is connected. See how far your network reaches.
         </p>
       </div>
 
-      {/* Current Connections Visualization */}
-      <div className="relative mx-auto mb-8" style={{ width: 220, height: 220 }}>
-        {/* Outer ring - teaser */}
+      {/* Interactive Visualization */}
+      <div className="relative mx-auto mb-6" style={{ width: 240, height: 240 }}>
+        {/* 3rd degree ring */}
         <div 
-          className="absolute inset-0 rounded-full border-2 border-dashed border-muted-foreground/20"
-          style={{ width: 220, height: 220 }}
-        />
+          className="absolute inset-0 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center"
+          style={{ width: 240, height: 240 }}
+        >
+          {stats.degree3 > 0 && (
+            <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] text-muted-foreground bg-background px-1.5 rounded-full">
+              3° • {stats.degree3.toLocaleString()}
+            </span>
+          )}
+        </div>
         
-        {/* Middle ring - teaser */}
+        {/* 2nd degree ring */}
         <div 
-          className="absolute rounded-full border-2 border-dashed border-muted-foreground/30"
+          className="absolute rounded-full border-2 border-dashed border-accent/40"
           style={{ 
-            width: 160, 
-            height: 160,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)'
-          }}
-        />
-        
-        {/* Inner ring - active connections */}
-        <div 
-          className="absolute rounded-full border-2 border-primary/60"
-          style={{ 
-            width: 100, 
-            height: 100,
+            width: 170, 
+            height: 170,
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)'
           }}
         >
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-primary bg-background px-2 whitespace-nowrap">
-            Your Circle
+          {stats.degree2 > 0 && (
+            <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] text-accent-foreground bg-background px-1.5 rounded-full">
+              2° • {stats.degree2.toLocaleString()}
+            </span>
+          )}
+        </div>
+        
+        {/* 1st degree ring - active connections */}
+        <div 
+          className="absolute rounded-full border-2 border-primary/70"
+          style={{ 
+            width: 105, 
+            height: 105,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)'
+          }}
+        >
+          <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] text-primary bg-background px-1.5 rounded-full font-medium">
+            1° • {stats.degree1}
           </span>
         </div>
         
@@ -153,17 +169,17 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
         <div 
           className="absolute bg-gradient-to-br from-primary to-accent rounded-full p-1 shadow-lg shadow-primary/30"
           style={{ 
-            width: 72, 
-            height: 72,
+            width: 60, 
+            height: 60,
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)'
           }}
         >
-          <Avatar className="h-16 w-16 border-2 border-background">
+          <Avatar className="h-14 w-14 border-2 border-background">
             <AvatarImage src={avatarUrl || undefined} />
             <AvatarFallback className="bg-background">
-              <Sparkles className="h-6 w-6 text-primary" />
+              <Sparkles className="h-5 w-5 text-primary" />
             </AvatarFallback>
           </Avatar>
         </div>
@@ -171,21 +187,21 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
         {/* Connection avatars on inner ring */}
         {connections.slice(0, 6).map((profile, i) => {
           const angle = i * (2 * Math.PI / Math.min(connections.length, 6)) - Math.PI / 2;
-          const radius = 50;
+          const radius = 52;
           return (
             <button
               key={profile.user_id}
               onClick={() => handleProfileClick(profile.user_id)}
-              className="absolute w-8 h-8 rounded-full overflow-hidden border-2 border-primary bg-background hover:scale-110 transition-transform cursor-pointer z-10"
+              className="absolute w-7 h-7 rounded-full overflow-hidden border-2 border-primary bg-background hover:scale-110 transition-transform cursor-pointer z-10"
               style={{
-                top: `calc(50% + ${Math.sin(angle) * radius}px - 16px)`,
-                left: `calc(50% + ${Math.cos(angle) * radius}px - 16px)`,
+                top: `calc(50% + ${Math.sin(angle) * radius}px - 14px)`,
+                left: `calc(50% + ${Math.cos(angle) * radius}px - 14px)`,
               }}
               title={profile.full_name || 'Creator'}
             >
               <Avatar className="h-full w-full">
                 <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback className="text-[9px]">
                   {profile.full_name?.charAt(0) || '?'}
                 </AvatarFallback>
               </Avatar>
@@ -193,117 +209,71 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
           );
         })}
         
-        {/* Placeholder dots for future connections */}
-        {[...Array(6)].map((_, i) => {
-          const angle = i * (2 * Math.PI / 6) + 0.5;
+        {/* Placeholder dots for 2nd degree ring */}
+        {stats.degree2 > 0 && [...Array(Math.min(8, stats.degree2))].map((_, i) => {
+          const angle = i * (2 * Math.PI / 8) + 0.3;
           return (
             <div 
-              key={`placeholder-${i}`}
-              className="absolute w-3 h-3 rounded-full bg-muted-foreground/20 border border-dashed border-muted-foreground/30"
+              key={`d2-${i}`}
+              className="absolute w-2.5 h-2.5 rounded-full bg-accent/30 border border-accent/50"
               style={{
-                top: `calc(50% + ${Math.sin(angle) * 80}px - 6px)`,
-                left: `calc(50% + ${Math.cos(angle) * 80}px - 6px)`,
+                top: `calc(50% + ${Math.sin(angle) * 85}px - 5px)`,
+                left: `calc(50% + ${Math.cos(angle) * 85}px - 5px)`,
+              }}
+            />
+          );
+        })}
+
+        {/* Placeholder dots for 3rd degree ring */}
+        {stats.degree3 > 0 && [...Array(Math.min(12, stats.degree3))].map((_, i) => {
+          const angle = i * (2 * Math.PI / 12) + 0.1;
+          return (
+            <div 
+              key={`d3-${i}`}
+              className="absolute w-2 h-2 rounded-full bg-muted-foreground/20 border border-muted-foreground/30"
+              style={{
+                top: `calc(50% + ${Math.sin(angle) * 118}px - 4px)`,
+                left: `calc(50% + ${Math.cos(angle) * 118}px - 4px)`,
               }}
             />
           );
         })}
       </div>
 
-      {/* Current Stats */}
-      <Card className="p-4 mb-6 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+      {/* Network Reach Stats Card */}
+      <NetworkReachStats 
+        stats={stats} 
+        loading={statsLoading} 
+        className="mb-4" 
+      />
+
+      {/* Current Direct Connection Stats */}
+      <Card className="p-3 mb-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-primary/20">
-              <Users className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-full bg-primary/20">
+              <Users className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="font-semibold">{connectionCount} Direct Connection{connectionCount !== 1 ? 's' : ''}</p>
-              <p className="text-xs text-muted-foreground">Your inner creative circle</p>
+              <p className="font-semibold text-sm">{connectionCount} Direct Connection{connectionCount !== 1 ? 's' : ''}</p>
+              <p className="text-[11px] text-muted-foreground">Your inner creative circle</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onInvite} className="gap-1">
-            <UserPlus className="h-4 w-4" />
+          <Button variant="ghost" size="sm" onClick={onInvite} className="gap-1 text-xs h-8">
+            <UserPlus className="h-3.5 w-3.5" />
             Grow
           </Button>
         </div>
       </Card>
 
-      {/* Coming Soon - Creative Circles Vision */}
-      <Card className="p-5 mb-6 border-dashed bg-gradient-to-br from-background to-muted/30 relative overflow-hidden">
-        <div className="absolute top-3 right-3">
-          <Badge variant="secondary" className="text-[10px] gap-1">
-            <Sparkles className="h-3 w-3" />
-            Coming Soon
-          </Badge>
-        </div>
-        
-        <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
-          <Compass className="h-5 w-5 text-primary" />
-          Creative Circles
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Discover how you're connected to any creator through your network.
-        </p>
-        
-        <div className="space-y-3">
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-            <div className="p-1.5 rounded-full bg-primary/10 mt-0.5">
-              <Target className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="font-medium text-sm">Path Finding</p>
-              <p className="text-xs text-muted-foreground">See the shortest connection path to any creator</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-            <div className="p-1.5 rounded-full bg-accent/10 mt-0.5">
-              <Handshake className="h-4 w-4 text-accent" />
-            </div>
-            <div>
-              <p className="font-medium text-sm">Warm Introductions</p>
-              <p className="text-xs text-muted-foreground">Request intros through mutual connections</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-            <div className="p-1.5 rounded-full bg-pink-500/10 mt-0.5">
-              <Share2 className="h-4 w-4 text-pink-500" />
-            </div>
-            <div>
-              <p className="font-medium text-sm">Network Reach</p>
-              <p className="text-xs text-muted-foreground">See how many creators you can reach through 3 degrees</p>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Phase Roadmap Teaser */}
-      <div className="text-center mb-6">
-        <p className="text-xs text-muted-foreground mb-2">
-          As your circle grows, you'll unlock:
-        </p>
-        <div className="flex justify-center gap-2 flex-wrap">
-          <Badge variant="outline" className="text-[10px] gap-1">
-            <Lock className="h-2.5 w-2.5" /> 2° Connections
-          </Badge>
-          <Badge variant="outline" className="text-[10px] gap-1">
-            <Lock className="h-2.5 w-2.5" /> Intro Requests
-          </Badge>
-          <Badge variant="outline" className="text-[10px] gap-1">
-            <Lock className="h-2.5 w-2.5" /> Path Finder
-          </Badge>
-        </div>
-      </div>
-
       {/* CTA Section */}
-      <div className="space-y-3 text-center">
-        <Button onClick={onInvite} className="gap-2 w-full" size="lg">
-          <UserPlus className="h-5 w-5" />
-          Grow Your Creative Circle
+      <div className="space-y-2 text-center">
+        <Button onClick={onInvite} className="gap-2 w-full" size="default">
+          <UserPlus className="h-4 w-4" />
+          Expand Your Network
         </Button>
-        <p className="text-xs text-muted-foreground">
-          Every connection expands your creative universe
+        <p className="text-[11px] text-muted-foreground">
+          Every connection expands your reach exponentially
         </p>
       </div>
     </div>

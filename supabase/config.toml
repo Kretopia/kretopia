@@ -1,8 +1,5 @@
 project_id = "kwmcocsitwssrtzkdojh"
 
-[functions.test-email-system]
-verify_jwt = false
-
 [functions.seed-communities]
 verify_jwt = true
 
@@ -71,9 +68,6 @@ verify_jwt = true
 
 [functions.generate-match-explanation]
 verify_jwt = true
-
-[functions.send-test-emails]
-verify_jwt = false
 
 [functions.handle-unsubscribe]
 verify_jwt = false

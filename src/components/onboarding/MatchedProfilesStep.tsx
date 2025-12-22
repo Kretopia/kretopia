@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, UserPlus, ArrowRight, Lightbulb, Zap, Users } from "lucide-react";
+import { Sparkles, UserPlus, ArrowRight, Lightbulb, Zap, Users, Loader2, CheckCheck } from "lucide-react";
 
 interface MatchedProfile {
   user_id: string;
@@ -29,6 +29,7 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
   const [matches, setMatches] = useState<MatchedProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [connectingAll, setConnectingAll] = useState(false);
   const [connectedIds, setConnectedIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
@@ -103,6 +104,54 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
     }
   };
 
+  const handleConnectAll = async () => {
+    setConnectingAll(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const unconnectedMatches = matches.filter(m => !connectedIds.has(m.user_id));
+      
+      // Connect to all unconnected matches
+      for (const match of unconnectedMatches) {
+        try {
+          await supabase
+            .from("connections")
+            .insert({
+              user_id: user.id,
+              connected_user_id: match.user_id,
+              status: "pending",
+            });
+          
+          setConnectedIds(prev => new Set([...prev, match.user_id]));
+        } catch (err) {
+          console.error(`Failed to connect with ${match.full_name}:`, err);
+        }
+      }
+
+      // Track analytics
+      const { analytics } = await import("@/lib/analytics");
+      for (const match of unconnectedMatches) {
+        analytics.connectionRequest(match.user_id);
+      }
+
+      toast({
+        title: `🎉 Connected with ${unconnectedMatches.length} creators!`,
+        description: "You'll be notified when they accept",
+      });
+    } catch (error) {
+      console.error("Error connecting all:", error);
+      toast({
+        title: "Failed to connect",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setConnectingAll(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -155,6 +204,43 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
         </Card>
       ) : (
         <>
+          {/* Quick Connect All Banner */}
+          {matches.length > 1 && connectedIds.size < matches.length && (
+            <Card className="p-4 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 border-primary/20">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-primary/20">
+                    <CheckCheck className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Quick Connect</p>
+                    <p className="text-sm text-muted-foreground">
+                      Connect with all {matches.length} suggested creators in one click!
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleConnectAll}
+                  disabled={connectingAll || connectedIds.size === matches.length}
+                  className="gap-2 shrink-0"
+                  size="lg"
+                >
+                  {connectingAll ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCheck className="h-4 w-4" />
+                      Connect All ({matches.length - connectedIds.size})
+                    </>
+                  )}
+                </Button>
+              </div>
+            </Card>
+          )}
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {matches.map((match) => (
               <Card key={match.user_id} className="p-6 hover:shadow-lg transition-shadow">

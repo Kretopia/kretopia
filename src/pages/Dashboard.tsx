@@ -42,6 +42,7 @@ import { DiscoverReadyBanner } from "@/components/DiscoverReadyBanner";
 import { FirstActionPrompt } from "@/components/dashboard/FirstActionPrompt";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteCard } from "@/components/dashboard/InviteCard";
+import { QuickMatchBanner } from "@/components/discover/QuickMatchBanner";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -250,6 +251,13 @@ const Dashboard = () => {
 
         {/* Discover Ready Banner */}
         <DiscoverReadyBanner portfolioCount={portfolioCount} />
+
+        {/* Quick Match Banner - Prominent for new users to get first match */}
+        {!firstTimeLoading && isFirstTime && profile && (
+          <div className="mb-6 sm:mb-8">
+            <QuickMatchBanner userId={profile.user_id} />
+          </div>
+        )}
 
         {/* First Action Prompt - Only show for new users */}
         {!firstTimeLoading && !loading && (

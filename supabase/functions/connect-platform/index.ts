@@ -324,66 +324,81 @@ serve(async (req) => {
         
         const tokenData = await tokenRes.json();
         
-        // Search for artists, shows (podcasts), and episodes
-        const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist,show,episode&limit=15`;
+        // Do TWO searches: one prioritizing shows/podcasts, another for artists/episodes
+        const showSearchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=show&limit=10&market=US`;
+        const generalSearchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist,episode&limit=10&market=US`;
         
-        const searchRes = await fetch(searchUrl, {
-          headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
-        });
+        const [showSearchRes, generalSearchRes] = await Promise.all([
+          fetch(showSearchUrl, { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }),
+          fetch(generalSearchUrl, { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }),
+        ]);
         
-        if (!searchRes.ok) {
+        if (!showSearchRes.ok || !generalSearchRes.ok) {
           throw new Error('Spotify search failed');
         }
         
-        const searchData = await searchRes.json();
+        const [showSearchData, generalSearchData] = await Promise.all([
+          showSearchRes.json(),
+          generalSearchRes.json(),
+        ]);
         
-        // Combine results from artists, shows, and episodes
+        // Combine results - PRIORITIZE SHOWS (podcasts) first
         const results: any[] = [];
+        const seenIds = new Set<string>();
+        
+        // Add shows (podcasts) FIRST - prioritized
+        (showSearchData.shows?.items || []).forEach((show: any) => {
+          if (show && !seenIds.has(show.id)) {
+            seenIds.add(show.id);
+            results.push({
+              id: show.id,
+              name: show.name,
+              image: show.images?.[0]?.url,
+              type: 'show',
+              details: `Podcast • ${show.publisher || 'Unknown'} • ${show.total_episodes || 0} episodes`,
+              publisher: show.publisher,
+              url: show.external_urls?.spotify,
+              totalEpisodes: show.total_episodes,
+            });
+          }
+        });
         
         // Add artists
-        (searchData.artists?.items || []).forEach((artist: any) => {
-          results.push({
-            id: artist.id,
-            name: artist.name,
-            image: artist.images?.[0]?.url,
-            type: 'artist',
-            details: artist.genres?.slice(0, 2).join(', ') || `${(artist.followers?.total || 0).toLocaleString()} followers`,
-            url: artist.external_urls?.spotify,
-            followers: artist.followers?.total || 0,
-          });
+        (generalSearchData.artists?.items || []).forEach((artist: any) => {
+          if (artist && !seenIds.has(artist.id)) {
+            seenIds.add(artist.id);
+            results.push({
+              id: artist.id,
+              name: artist.name,
+              image: artist.images?.[0]?.url,
+              type: 'artist',
+              details: artist.genres?.slice(0, 2).join(', ') || `${(artist.followers?.total || 0).toLocaleString()} followers`,
+              url: artist.external_urls?.spotify,
+              followers: artist.followers?.total || 0,
+            });
+          }
         });
         
-        // Add shows (podcasts)
-        (searchData.shows?.items || []).forEach((show: any) => {
-          results.push({
-            id: show.id,
-            name: show.name,
-            image: show.images?.[0]?.url,
-            type: 'show',
-            details: `Podcast • ${show.publisher || 'Unknown'}`,
-            publisher: show.publisher,
-            url: show.external_urls?.spotify,
-            totalEpisodes: show.total_episodes,
-          });
+        // Add episodes (podcast appearances)
+        (generalSearchData.episodes?.items || []).forEach((episode: any) => {
+          if (episode && !seenIds.has(episode.id)) {
+            seenIds.add(episode.id);
+            results.push({
+              id: episode.id,
+              name: episode.name,
+              image: episode.images?.[0]?.url,
+              type: 'episode',
+              details: `Episode on ${episode.show?.name || 'Podcast'} • ${episode.release_date || ''}`,
+              showName: episode.show?.name,
+              showId: episode.show?.id,
+              url: episode.external_urls?.spotify,
+              releaseDate: episode.release_date,
+              duration: episode.duration_ms,
+            });
+          }
         });
         
-        // Add episodes (podcast appearances) - prioritize these for guest appearances
-        (searchData.episodes?.items || []).forEach((episode: any) => {
-          results.push({
-            id: episode.id,
-            name: episode.name,
-            image: episode.images?.[0]?.url,
-            type: 'episode',
-            details: `Episode • ${episode.release_date || ''}`,
-            showName: episode.show?.name,
-            showId: episode.show?.id,
-            url: episode.external_urls?.spotify,
-            releaseDate: episode.release_date,
-            duration: episode.duration_ms,
-          });
-        });
-        
-        console.log(`Spotify search for "${query}" found: ${searchData.artists?.items?.length || 0} artists, ${searchData.shows?.items?.length || 0} shows, ${searchData.episodes?.items?.length || 0} episodes`);
+        console.log(`Spotify search for "${query}" found: ${showSearchData.shows?.items?.length || 0} shows, ${generalSearchData.artists?.items?.length || 0} artists, ${generalSearchData.episodes?.items?.length || 0} episodes`);
         
         return new Response(JSON.stringify({
           success: true,

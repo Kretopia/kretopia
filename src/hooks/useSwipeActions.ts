@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 interface SwipeResult {
   success: boolean;
   isMatch: boolean;
+  isFirstMatch?: boolean;
   matchedProfile?: {
     user_id: string;
     full_name: string;
@@ -117,6 +118,15 @@ export function useSwipeActions(currentUserId: string | undefined) {
         console.log('[useSwipeActions] Connection already exists, skipping');
       }
 
+      // Check total match count to determine if this is their first match
+      const { count: totalMatchCount } = await supabase
+        .from('matches')
+        .select('id', { count: 'exact', head: true })
+        .or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`);
+
+      const isFirstMatch = (totalMatchCount || 0) === 0;
+      console.log('[useSwipeActions] Is first match:', isFirstMatch, 'Total matches:', totalMatchCount);
+
       // Check if match already exists
       const { data: existingMatch } = await supabase
         .from('matches')
@@ -224,6 +234,7 @@ export function useSwipeActions(currentUserId: string | undefined) {
       return {
         success: true,
         isMatch: true,
+        isFirstMatch,
         matchedProfile: matchedProfile || undefined
       };
 

@@ -35,7 +35,7 @@ export default function SubmitReview() {
 
   useEffect(() => {
     if (!token) {
-      toast({ title: "Error", description: "Invalid review link", variant: "destructive" });
+      setLoading(false);
       return;
     }
 
@@ -154,9 +154,17 @@ export default function SubmitReview() {
           <p className="text-muted-foreground">
             Thank you for taking the time to leave a review. Your feedback helps build trust in the creative community.
           </p>
-          <Button onClick={() => navigate("/")} variant="gradient" className="w-full">
-            Explore ThriveIN
-          </Button>
+          <div className="pt-4 border-t space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Are you a creative? Build your own verified profile!
+            </p>
+            <Button onClick={() => navigate("/auth")} variant="gradient" className="w-full">
+              Join ThriveIN
+            </Button>
+            <Button onClick={() => navigate("/")} variant="outline" className="w-full">
+              Learn More
+            </Button>
+          </div>
         </Card>
       </div>
     );
@@ -165,9 +173,20 @@ export default function SubmitReview() {
   if (!profileData) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 text-center">
-          <h1 className="text-xl font-semibold mb-2">Link Not Found</h1>
+        <Card className="max-w-md w-full p-8 text-center space-y-4">
+          <h1 className="text-xl font-semibold">Link Not Found</h1>
           <p className="text-muted-foreground">This review link is invalid or has expired.</p>
+          <div className="pt-4 border-t space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Want to build your own verified creative profile?
+            </p>
+            <Button onClick={() => navigate("/auth")} variant="gradient" className="w-full">
+              Join ThriveIN
+            </Button>
+            <Button onClick={() => navigate("/")} variant="outline" className="w-full">
+              Learn More
+            </Button>
+          </div>
         </Card>
       </div>
     );
@@ -316,6 +335,20 @@ export default function SubmitReview() {
                 "Submit Review"
               )}
             </Button>
+
+            <div className="pt-4 border-t text-center">
+              <p className="text-xs text-muted-foreground mb-2">
+                Are you a creative? Build your own verified profile!
+              </p>
+              <Button 
+                type="button"
+                onClick={() => navigate("/auth")} 
+                variant="link" 
+                className="text-sm"
+              >
+                Join ThriveIN →
+              </Button>
+            </div>
           </form>
         </Card>
       </div>

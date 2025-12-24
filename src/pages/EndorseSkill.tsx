@@ -32,8 +32,7 @@ export default function EndorseSkill() {
 
   useEffect(() => {
     if (!token) {
-      toast({ title: "Error", description: "Invalid endorsement link", variant: "destructive" });
-      navigate("/");
+      setLoading(false);
       return;
     }
     fetchRequestData();
@@ -48,12 +47,7 @@ export default function EndorseSkill() {
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        toast({
-          title: "Invalid or Expired Link",
-          description: "This endorsement request is no longer valid",
-          variant: "destructive",
-        });
-        navigate("/");
+        setLoading(false);
         return;
       }
 
@@ -111,12 +105,7 @@ export default function EndorseSkill() {
 
       setSkills(allSkills);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      navigate("/");
+      console.error("Error fetching endorsement request:", error);
     } finally {
       setLoading(false);
     }
@@ -180,7 +169,44 @@ export default function EndorseSkill() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  // Invalid or expired token - show friendly message
+  if (!requestData || !profileData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <CardTitle>Link Not Found</CardTitle>
+            <CardDescription>
+              This endorsement link is invalid or has expired.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-muted rounded-lg text-center">
+              <p className="text-sm text-muted-foreground">
+                Want to build your own verified creative profile?
+              </p>
+            </div>
+            <Button 
+              onClick={() => navigate("/auth")} 
+              variant="gradient" 
+              className="w-full"
+            >
+              Join ThriveIN
+            </Button>
+            <Button 
+              onClick={() => navigate("/")} 
+              variant="outline" 
+              className="w-full"
+            >
+              Learn More
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -218,9 +244,23 @@ export default function EndorseSkill() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" variant="gradient">
                 Continue
               </Button>
+              
+              <div className="pt-4 border-t text-center">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Are you a creative? Build your own verified profile!
+                </p>
+                <Button 
+                  type="button"
+                  onClick={() => navigate("/auth")} 
+                  variant="link" 
+                  className="text-sm"
+                >
+                  Join ThriveIN →
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -299,7 +339,19 @@ export default function EndorseSkill() {
             </div>
           )}
 
-          <div className="pt-4 border-t">
+          <div className="pt-4 border-t space-y-3">
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground mb-2">
+                Are you a creative? Build your own verified profile!
+              </p>
+              <Button 
+                onClick={() => navigate("/auth")} 
+                variant="gradient" 
+                className="w-full"
+              >
+                Join ThriveIN
+              </Button>
+            </div>
             <Button 
               onClick={() => navigate("/")} 
               variant="outline" 

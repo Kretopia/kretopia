@@ -226,7 +226,7 @@ export const SkillsSection = ({
 
       if (error) throw error;
 
-      const link = `https://thrivein.io/endorse?token=${data.share_token}`;
+      const link = `https://www.thrivein.io/endorse?token=${data.share_token}`;
       setShareLink(link);
       
       const message = `Hi there,

@@ -45,17 +45,15 @@ export const ReviewsSection = ({ reviews, isOwnProfile, profileUserId, onRefresh
         .from('review_requests')
         .insert({
           profile_id: profileUserId,
-          reviewer_name: '',
-          reviewer_email: '',
-          project_name: requestForm.project_name,
-          personal_message: requestForm.personal_message
+          project_name: requestForm.project_name || null,
+          personal_message: requestForm.personal_message || null
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      const reviewLink = `https://www.thrivein.io/review?token=${data.share_token}`;
+      const reviewLink = `https://www.thrivein.io/submit-review?token=${data.share_token}`;
       
       const copyMessage = `Hi there,
 
@@ -111,7 +109,7 @@ Thank you so much!`;
   return (
     <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-lg md:text-xl font-semibold">Reviews & Endorsements</h3>
+        <h3 className="text-lg md:text-xl font-semibold">Reviews</h3>
         {isOwnProfile && (
           <Dialog open={isRequestOpen} onOpenChange={setIsRequestOpen}>
             <DialogTrigger asChild>

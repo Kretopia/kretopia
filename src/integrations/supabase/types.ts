@@ -2943,8 +2943,8 @@ export type Database = {
           personal_message: string | null
           profile_id: string
           project_name: string | null
-          reviewer_email: string
-          reviewer_name: string
+          reviewer_email: string | null
+          reviewer_name: string | null
           share_token: string
           status: string | null
         }
@@ -2956,8 +2956,8 @@ export type Database = {
           personal_message?: string | null
           profile_id: string
           project_name?: string | null
-          reviewer_email: string
-          reviewer_name: string
+          reviewer_email?: string | null
+          reviewer_name?: string | null
           share_token?: string
           status?: string | null
         }
@@ -2969,8 +2969,8 @@ export type Database = {
           personal_message?: string | null
           profile_id?: string
           project_name?: string | null
-          reviewer_email?: string
-          reviewer_name?: string
+          reviewer_email?: string | null
+          reviewer_name?: string | null
           share_token?: string
           status?: string | null
         }

@@ -95,6 +95,8 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
+  const INITIAL_ITEMS_PER_SOURCE = 3;
   const [newCredit, setNewCredit] = useState({
     project_name: "",
     role: "",
@@ -331,79 +333,134 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {credits.map((credit) => {
-            const Icon = CREDIT_TYPE_ICONS[credit.creditType || 'credit'] || Film;
-            const sourceColor = SOURCE_COLORS[credit.source || 'manual'] || SOURCE_COLORS.manual;
+        <div className="space-y-4">
+          {/* Group credits by source */}
+          {(() => {
+            const groupedCredits = credits.reduce((acc, credit) => {
+              const source = credit.source || 'manual';
+              if (!acc[source]) acc[source] = [];
+              acc[source].push(credit);
+              return acc;
+            }, {} as Record<string, UnifiedCredit[]>);
 
-            return (
-              <div
-                key={credit.id}
-                className={cn(
-                  "flex items-center gap-4 p-3 rounded-lg transition-colors",
-                  credit.isVerified 
-                    ? "bg-green-500/5 border border-green-500/20 hover:bg-green-500/10" 
-                    : "bg-muted/30 hover:bg-muted/50"
-                )}
-              >
-                {credit.thumbnailUrl ? (
-                  <img
-                    src={credit.thumbnailUrl}
-                    alt={credit.title}
-                    className="w-12 h-12 rounded object-cover shrink-0"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
-                    <Icon className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                )}
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-medium truncate">{credit.title}</h4>
-                    {credit.isVerified && (
-                      <Badge variant="outline" className={cn("text-xs gap-1", sourceColor)}>
-                        <CheckCircle2 className="h-3 w-3" />
-                        {credit.source?.toUpperCase()}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {credit.role}
-                    {credit.year && <span className="ml-2">• {credit.year}</span>}
-                    {credit.platform && !credit.isVerified && (
-                      <span className="ml-2">• {credit.platform}</span>
-                    )}
-                  </p>
-                </div>
+            const sourceOrder = ['tmdb', 'imdb', 'spotify', 'youtube', 'musicbrainz', 'discogs', 'manual'];
+            const sortedSources = Object.keys(groupedCredits).sort((a, b) => {
+              const aIndex = sourceOrder.indexOf(a);
+              const bIndex = sourceOrder.indexOf(b);
+              return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+            });
 
-                <div className="flex items-center gap-1 shrink-0">
-                  {credit.url && (
-                    <Button variant="ghost" size="sm" asChild>
-                      <a href={credit.url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                  {isOwnProfile && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleDelete(credit.id, credit.isVerified)}
-                      disabled={deletingId === credit.id}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            return sortedSources.map(source => {
+              const sourceCredits = groupedCredits[source];
+              const isExpanded = expandedSources.has(source);
+              const displayCredits = isExpanded ? sourceCredits : sourceCredits.slice(0, INITIAL_ITEMS_PER_SOURCE);
+              const hasMore = sourceCredits.length > INITIAL_ITEMS_PER_SOURCE;
+              const sourceColor = SOURCE_COLORS[source] || SOURCE_COLORS.manual;
+              const sourceName = source === 'tmdb' ? 'IMDB/TMDB' : source.charAt(0).toUpperCase() + source.slice(1);
+
+              return (
+                <div key={source} className="space-y-2">
+                  {/* Source header with count */}
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className={cn("text-xs gap-1", sourceColor)}>
+                      <CheckCircle2 className="h-3 w-3" />
+                      {sourceName} • {sourceCredits.length} credit{sourceCredits.length !== 1 ? 's' : ''}
+                    </Badge>
+                  </div>
+
+                  {/* Credits for this source */}
+                  {displayCredits.map((credit) => {
+                    const Icon = CREDIT_TYPE_ICONS[credit.creditType || 'credit'] || Film;
+
+                    return (
+                      <div
+                        key={credit.id}
+                        className={cn(
+                          "flex items-center gap-4 p-3 rounded-lg transition-colors",
+                          credit.isVerified 
+                            ? "bg-green-500/5 border border-green-500/20 hover:bg-green-500/10" 
+                            : "bg-muted/30 hover:bg-muted/50"
+                        )}
+                      >
+                        {credit.thumbnailUrl ? (
+                          <img
+                            src={credit.thumbnailUrl}
+                            alt={credit.title}
+                            className="w-12 h-12 rounded object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
+                            <Icon className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium truncate">{credit.title}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {credit.role}
+                            {credit.year && <span className="ml-2">• {credit.year}</span>}
+                            {credit.platform && !credit.isVerified && (
+                              <span className="ml-2">• {credit.platform}</span>
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          {credit.url && (
+                            <Button variant="ghost" size="sm" asChild>
+                              <a href={credit.url} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          )}
+                          {isOwnProfile && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleDelete(credit.id, credit.isVerified)}
+                              disabled={deletingId === credit.id}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              {deletingId === credit.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Show more/less button */}
+                  {hasMore && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        setExpandedSources(prev => {
+                          const next = new Set(prev);
+                          if (next.has(source)) {
+                            next.delete(source);
+                          } else {
+                            next.add(source);
+                          }
+                          return next;
+                        });
+                      }}
                     >
-                      {deletingId === credit.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
+                      {isExpanded 
+                        ? `Show less` 
+                        : `Show ${sourceCredits.length - INITIAL_ITEMS_PER_SOURCE} more`
+                      }
                     </Button>
                   )}
                 </div>
-              </div>
-            );
-          })}
+              );
+            });
+          })()}
         </div>
       )}
     </div>

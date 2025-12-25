@@ -77,6 +77,7 @@ const CREDIT_TYPE_ICONS: Record<string, any> = {
   music_video: Video,
   podcast: Mic2,
   episode: Mic2,
+  video: Video,
 };
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -85,6 +86,7 @@ const SOURCE_COLORS: Record<string, string> = {
   tmdb: 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
   imdb: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
   discogs: 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
+  musicbrainz: 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
   manual: 'bg-muted text-muted-foreground',
 };
 

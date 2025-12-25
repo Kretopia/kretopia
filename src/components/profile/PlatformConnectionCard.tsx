@@ -25,7 +25,9 @@ import {
   Sparkles,
   User,
   Mic2,
-  Radio
+  Radio,
+  Youtube,
+  Library
 } from "lucide-react";
 
 interface ConnectedPlatform {
@@ -61,6 +63,15 @@ const PLATFORMS = [
     hasGuestSearch: true,
   },
   {
+    id: 'youtube',
+    name: 'YouTube',
+    icon: Youtube,
+    color: 'bg-red-500',
+    description: 'Import your YouTube channel and video credits',
+    searchPlaceholder: 'Your channel name or paste YouTube URL',
+    searchType: 'youtube' as const,
+  },
+  {
     id: 'imdb',
     name: 'IMDB / TMDB',
     icon: Film,
@@ -68,6 +79,15 @@ const PLATFORMS = [
     description: 'Import film & TV credits (search name or paste IMDB ID like nm1234567)',
     searchPlaceholder: 'Your name or IMDB ID (e.g., nm5890122)',
     searchType: 'imdb' as const,
+  },
+  {
+    id: 'musicbrainz',
+    name: 'MusicBrainz',
+    icon: Library,
+    color: 'bg-purple-500',
+    description: 'Import songwriting, session work & music credits (100% free)',
+    searchPlaceholder: 'Your artist or producer name',
+    searchType: 'musicbrainz' as const,
   },
   {
     id: 'discogs',
@@ -245,6 +265,40 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
             url: r.resource_url,
           })));
         }
+      } else if (platform === 'youtube') {
+        // YouTube search
+        const isUrl = searchQuery.includes('youtube.com') || searchQuery.includes('youtu.be');
+        const { data, error } = await supabase.functions.invoke('fetch-youtube-credits', {
+          body: isUrl 
+            ? { channelUrl: searchQuery, searchOnly: true }
+            : { channelName: searchQuery, searchOnly: true },
+        });
+
+        if (error) throw error;
+        
+        if (data?.searchResults) {
+          setSearchResults(data.searchResults.map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            image: r.thumb,
+            details: r.details || 'YouTube Channel',
+          })));
+        }
+      } else if (platform === 'musicbrainz') {
+        // MusicBrainz search (100% free, no API key needed)
+        const { data, error } = await supabase.functions.invoke('fetch-musicbrainz-credits', {
+          body: { artistName: searchQuery, searchOnly: true },
+        });
+
+        if (error) throw error;
+        
+        if (data?.searchResults) {
+          setSearchResults(data.searchResults.map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            details: [r.type, r.details].filter(Boolean).join(' • ') || 'Artist',
+          })));
+        }
       }
     } catch (error: any) {
       console.error('Search error:', error);
@@ -385,6 +439,34 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
         
         toast({
           title: "Discogs Credits Imported!",
+          description: `Found ${data?.creditsImported || 0} credits for ${result.name}`,
+        });
+      } else if (platform === 'youtube') {
+        const { data, error } = await supabase.functions.invoke('fetch-youtube-credits', {
+          body: { 
+            channelId: result.id,
+            channelName: result.name 
+          },
+        });
+
+        if (error) throw error;
+        
+        toast({
+          title: "YouTube Credits Imported!",
+          description: `Found ${data?.creditsImported || 0} videos for ${result.name}`,
+        });
+      } else if (platform === 'musicbrainz') {
+        const { data, error } = await supabase.functions.invoke('fetch-musicbrainz-credits', {
+          body: { 
+            artistId: result.id,
+            artistName: result.name 
+          },
+        });
+
+        if (error) throw error;
+        
+        toast({
+          title: "MusicBrainz Credits Imported!",
           description: `Found ${data?.creditsImported || 0} credits for ${result.name}`,
         });
       }

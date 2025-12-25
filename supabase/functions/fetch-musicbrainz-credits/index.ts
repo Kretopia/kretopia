@@ -196,7 +196,6 @@ serve(async (req) => {
         role: credit.role,
         year: credit.year,
         verification_url: credit.verificationUrl,
-        is_verified: true,
         verified_at: new Date().toISOString(),
         metadata: credit.metadata,
       }));

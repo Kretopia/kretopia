@@ -1,4 +1,5 @@
 import { Building2, MapPin, Users, Star, Award, Gift } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -63,8 +64,13 @@ export const CompanyProfileView = ({
                   )}
                 </div>
                 {profile.badge && (
-                  <Badge variant="secondary" className="text-sm">
-                    {profile.badge === "og" ? "🌟 OG Member" : "Beta Member"}
+                  <Badge variant="secondary" className={cn(
+                    "text-sm",
+                    profile.badge === 'odos' && "bg-green-500/20 text-green-700 dark:text-green-300 border-green-400/50"
+                  )}>
+                    {profile.badge === "og" ? "🌟 OG Member" : 
+                     profile.badge === "odos" ? "🌿 ODOS Member" :
+                     profile.badge === "founder" ? "👑 Founder" : "Beta Member"}
                   </Badge>
                 )}
               </div>

@@ -69,7 +69,26 @@ serve(async (req) => {
 
     if (cre8ivesError) throw cre8ivesError;
 
-    // Add admin as owner to both communities
+    // Create ODOS community
+    const { data: odosCommunity, error: odosError } = await supabaseClient
+      .from('communities')
+      .insert({
+        name: 'ODOS',
+        description: 'ODOS creative community - a global network of artists, musicians, and creatives building the future together.',
+        location: 'Global',
+        category: 'Creative',
+        is_official: true,
+        is_private: false,
+        created_by: adminUserId,
+        image_url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80',
+        cover_url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80'
+      })
+      .select()
+      .single();
+
+    if (odosError) throw odosError;
+
+    // Add admin as owner to all communities
     await supabaseClient.from('community_members').insert([
       {
         community_id: baliCommunity.id,
@@ -80,13 +99,18 @@ serve(async (req) => {
         community_id: cre8ivesCommunity.id,
         user_id: adminUserId,
         role: 'owner'
+      },
+      {
+        community_id: odosCommunity.id,
+        user_id: adminUserId,
+        role: 'owner'
       }
     ]);
 
     return new Response(
       JSON.stringify({
         success: true,
-        communities: [baliCommunity, cre8ivesCommunity]
+        communities: [baliCommunity, cre8ivesCommunity, odosCommunity]
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

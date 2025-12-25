@@ -12,10 +12,10 @@ const BottomNav = memo(() => {
   }
   
   const navItems = [
-    { path: "/circle", icon: Users, label: "Match" },
-    { path: "/profile", icon: User, label: "Profile" },
-    { path: "/desk", icon: Briefcase, label: "Desk" },
-    { path: "/messages", icon: MessageCircle, label: "Messages" },
+    { path: "/circle", icon: Users, label: "Match", tourId: "circle-tab" },
+    { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
+    { path: "/desk", icon: Briefcase, label: "Desk", tourId: "projects-tab" },
+    { path: "/messages", icon: MessageCircle, label: "Messages", tourId: "messages-tab" },
   ];
 
   return (
@@ -26,12 +26,13 @@ const BottomNav = memo(() => {
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
     >
       <div className="flex items-center justify-around px-1 py-1.5">
-        {navItems.map(({ path, icon: Icon, label }) => {
+        {navItems.map(({ path, icon: Icon, label, tourId }) => {
           const isActive = location.pathname === path;
           return (
             <Link
               key={path}
               to={path}
+              data-tour={tourId}
               aria-label={`Navigate to ${label}`}
               aria-current={isActive ? "page" : undefined}
               className={cn(

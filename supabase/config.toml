@@ -95,3 +95,6 @@ verify_jwt = true
 
 [functions.fetch-musicbrainz-credits]
 verify_jwt = true
+
+[functions.send-user-email]
+verify_jwt = true

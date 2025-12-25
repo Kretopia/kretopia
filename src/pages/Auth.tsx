@@ -370,6 +370,25 @@ const Auth = () => {
         }
       }
       
+      // Send welcome email (non-blocking)
+      try {
+        console.log('[Auth] Sending welcome email...');
+        supabase.functions.invoke('send-user-email', {
+          body: {
+            type: 'welcome',
+            data: { userName: email.split('@')[0] || 'there' }
+          }
+        }).then(({ error }) => {
+          if (error) {
+            console.warn('[Auth] Welcome email failed:', error);
+          } else {
+            console.log('[Auth] Welcome email sent successfully');
+          }
+        });
+      } catch (emailErr) {
+        console.warn('[Auth] Welcome email error:', emailErr);
+      }
+      
       toast({
         title: "Welcome to ThriveIN! 🎉",
         description: "Your exclusive access has been granted.",

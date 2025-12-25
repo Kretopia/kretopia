@@ -199,32 +199,26 @@ export function useSwipeActions(currentUserId: string | undefined) {
         console.log('[useSwipeActions] Notifications already exist, skipping to prevent duplicates');
       }
 
-      // Try to send email notifications to both users
+      // Try to send email notifications to both users using user-authenticated endpoint
       try {
-        console.log('[useSwipeActions] Sending email notifications...');
-        await Promise.all([
-          supabase.functions.invoke('send-notification-email', {
-            body: {
-              type: 'match',
-              userId: targetId,
-              data: {
-                matchedUserName: currentUserProfile?.full_name,
-                matchedUserRole: currentUserProfile?.role
-              }
+        console.log('[useSwipeActions] Sending match email notifications...');
+        // Send email to the other user (target) about the match
+        const { error: emailError } = await supabase.functions.invoke('send-user-email', {
+          body: {
+            type: 'match',
+            recipientId: targetId,
+            data: {
+              matchedUserName: currentUserProfile?.full_name,
+              matchedUserRole: currentUserProfile?.role
             }
-          }),
-          supabase.functions.invoke('send-notification-email', {
-            body: {
-              type: 'match',
-              userId: currentUserId,
-              data: {
-                matchedUserName: matchedProfile?.full_name,
-                matchedUserRole: matchedProfile?.role
-              }
-            }
-          })
-        ]);
-        console.log('[useSwipeActions] Email notifications sent successfully!');
+          }
+        });
+        
+        if (emailError) {
+          console.warn('[useSwipeActions] Match email to target failed:', emailError);
+        } else {
+          console.log('[useSwipeActions] Match email sent to target user');
+        }
       } catch (emailError) {
         console.warn('[useSwipeActions] Email notification failed (non-blocking):', emailError);
       }

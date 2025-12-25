@@ -89,3 +89,9 @@ verify_jwt = true
 
 [functions.fetch-discogs-credits]
 verify_jwt = true
+
+[functions.fetch-youtube-credits]
+verify_jwt = true
+
+[functions.fetch-musicbrainz-credits]
+verify_jwt = true

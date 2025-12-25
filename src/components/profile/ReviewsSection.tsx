@@ -213,11 +213,19 @@ Thank you so much!`;
           {approvedReviews.map((review) => (
             <div key={review.id} className="rounded-xl md:rounded-2xl border border-border bg-card p-4 md:p-6">
               <div className="flex items-start gap-3 md:gap-4">
-                <img
-                  src={review.reviewer_avatar_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"}
-                  alt={review.reviewer_name}
-                  className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover flex-shrink-0"
-                />
+                {review.reviewer_avatar_url ? (
+                  <img
+                    src={review.reviewer_avatar_url}
+                    alt={review.reviewer_name}
+                    className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm md:text-base font-medium text-muted-foreground">
+                      {review.reviewer_name?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
                     <div className="flex-1 min-w-0">

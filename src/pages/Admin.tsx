@@ -20,6 +20,7 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -183,7 +184,7 @@ export default function Admin() {
         <TabsContent value="system" className="mt-4 sm:mt-6">
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">System Management</h2>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
                 <h3 className="font-medium mb-2">Seed Communities</h3>
                 <p className="text-sm text-muted-foreground mb-3">
@@ -191,6 +192,44 @@ export default function Admin() {
                 </p>
                 <Button onClick={seedCommunities} disabled={seeding}>
                   {seeding ? "Seeding..." : "Seed Communities"}
+                </Button>
+              </div>
+              
+              <div className="border-t pt-6">
+                <h3 className="font-medium mb-2 flex items-center gap-2">
+                  🎄 Christmas Broadcast Email
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Send a Merry Christmas email to all users with platform update information. 
+                  This will email all {user ? "users" : "0 users"} in the system.
+                </p>
+                <Button 
+                  onClick={async () => {
+                    setSendingBroadcast(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke('send-broadcast-email');
+                      
+                      if (error) throw error;
+                      
+                      toast({
+                        title: "Broadcast Sent! 🎄",
+                        description: `Successfully sent to ${data?.sent || 0} users. ${data?.failed || 0} failed.`,
+                      });
+                    } catch (error: any) {
+                      console.error('Error sending broadcast:', error);
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to send broadcast email",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setSendingBroadcast(false);
+                    }
+                  }} 
+                  disabled={sendingBroadcast}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {sendingBroadcast ? "Sending to all users..." : "Send Christmas Email to All Users"}
                 </Button>
               </div>
             </div>

@@ -43,6 +43,9 @@ const MyAnalytics = () => {
     if (!user) return;
     
     try {
+      // Import profile view tracking
+      const { getProfileViewStats } = await import('@/lib/profileViewTracking');
+      
       // Fetch all data in parallel
       const [
         profileRes,
@@ -52,7 +55,8 @@ const MyAnalytics = () => {
         portfolioRes,
         projectsRes,
         messagesRes,
-        invitesRes
+        invitesRes,
+        viewStats
       ] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user.id).single(),
         supabase.from('matches').select('*', { count: 'exact', head: true })
@@ -68,7 +72,8 @@ const MyAnalytics = () => {
         supabase.from('messages').select('*', { count: 'exact', head: true })
           .eq('receiver_id', user.id),
         supabase.from('invites').select('*, accepted:status')
-          .eq('inviter_id', user.id)
+          .eq('inviter_id', user.id),
+        getProfileViewStats(user.id)
       ]);
 
       if (profileRes.data) {
@@ -82,7 +87,7 @@ const MyAnalytics = () => {
         totalConnections: connectionsRes.count || 0,
         totalSwipes: swipesRes.count || 0,
         portfolioItems: portfolioRes.count || 0,
-        profileViews: 0, // Profile views tracked separately
+        profileViews: viewStats.thisMonth,
         totalProjects: projectsRes.count || 0,
         messagesReceived: messagesRes.count || 0,
         invitesSent: invitesRes.data?.length || 0,

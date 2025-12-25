@@ -99,33 +99,38 @@ const Dashboard = () => {
       setLoading(false);
 
       // Load everything else in background (non-blocking)
-      Promise.all([
-        supabase.from('portfolio_items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
-        supabase.from('projects').select('*').eq('status', 'active').or(`creator_id.eq.${user.id}`).limit(3),
-        checkAndAwardDailyLogin(user.id)
-      ]).then(([
-        { count: portfolioCount },
-        { count: connectionsCount },
-        { data: projectsData },
-        dailyResult
-      ]) => {
-        setPortfolioCount(portfolioCount || 0);
-        setStats(prev => ({ 
-          ...prev, 
-          circle: connectionsCount || 0,
-          projects: projectsData?.length || 0
-        }));
-        setHasAppliedToOpportunity((connectionsCount || 0) > 0);
-        if (projectsData) setActiveProjects(projectsData);
-        
-        if (dailyResult.awarded) {
-          toast({
-            title: "Daily Bonus! 🎉",
-            description: "+5 credits for logging in today",
-          });
-        }
-      }).catch(err => console.error('Background loading error:', err));
+      import('@/lib/profileViewTracking').then(({ getProfileViewStats }) => {
+        Promise.all([
+          supabase.from('portfolio_items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'accepted'),
+          supabase.from('projects').select('*').eq('status', 'active').or(`creator_id.eq.${user.id}`).limit(3),
+          checkAndAwardDailyLogin(user.id),
+          getProfileViewStats(user.id)
+        ]).then(([
+          { count: portfolioCount },
+          { count: connectionsCount },
+          { data: projectsData },
+          dailyResult,
+          viewStats
+        ]) => {
+          setPortfolioCount(portfolioCount || 0);
+          setStats(prev => ({ 
+            ...prev, 
+            circle: connectionsCount || 0,
+            projects: projectsData?.length || 0,
+            profileViews: viewStats.thisMonth
+          }));
+          setHasAppliedToOpportunity((connectionsCount || 0) > 0);
+          if (projectsData) setActiveProjects(projectsData);
+          
+          if (dailyResult.awarded) {
+            toast({
+              title: "Daily Bonus! 🎉",
+              description: "+5 credits for logging in today",
+            });
+          }
+        }).catch(err => console.error('Background loading error:', err));
+      });
     } catch (error) {
       console.error('[Dashboard] Error in fetchProfile:', error);
       setLoading(false);

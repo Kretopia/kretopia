@@ -36,15 +36,19 @@ export const ProfileVisibilityDashboard = ({
 
   const fetchVisibilityStats = async () => {
     try {
-      // Simulate fetching view stats (in production, track actual views)
-      const mockViews = {
-        total: Math.floor(Math.random() * 500) + 50,
-        thisWeek: Math.floor(Math.random() * 50) + 5,
-        trend: Math.floor(Math.random() * 30) - 10
-      };
+      // Import and fetch real profile view stats
+      const { getProfileViewStats } = await import('@/lib/profileViewTracking');
+      const viewData = await getProfileViewStats(profile.user_id);
       
-      setViewStats(mockViews);
-      setSearchAppearances(Math.floor(Math.random() * 100) + 10);
+      setViewStats({
+        total: viewData.total,
+        thisWeek: viewData.thisWeek,
+        trend: viewData.trend
+      });
+      
+      // Search appearances based on profile completeness (proxy metric)
+      const searchScore = Math.round(completion.percentage * 1.5);
+      setSearchAppearances(searchScore);
     } catch (error: any) {
       toast({
         title: "Failed to load stats",

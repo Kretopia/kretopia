@@ -18,10 +18,14 @@ import {
   Loader2,
   ShieldCheck,
   Trash2,
-  Mic2
+  Mic2,
+  Play,
+  Eye
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { MediaPlayerModal } from "./MediaPlayerModal";
+import { parseMediaUrl } from "@/lib/mediaUtils";
 
 interface ManualCredit {
   id: string;
@@ -96,6 +100,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
+  const [selectedCredit, setSelectedCredit] = useState<UnifiedCredit | null>(null);
   const INITIAL_ITEMS_PER_SOURCE = 3;
   const [newCredit, setNewCredit] = useState({
     project_name: "",
@@ -371,28 +376,40 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                   {/* Credits for this source */}
                   {displayCredits.map((credit) => {
                     const Icon = CREDIT_TYPE_ICONS[credit.creditType || 'credit'] || Film;
+                    const mediaInfo = credit.url ? parseMediaUrl(credit.url) : null;
+                    const isPlayable = mediaInfo && ['youtube', 'vimeo', 'spotify', 'soundcloud'].includes(mediaInfo.platform);
 
                     return (
                       <div
                         key={credit.id}
                         className={cn(
-                          "flex items-center gap-4 p-3 rounded-lg transition-colors",
+                          "flex items-center gap-4 p-3 rounded-lg transition-colors group",
                           credit.isVerified 
                             ? "bg-green-500/5 border border-green-500/20 hover:bg-green-500/10" 
-                            : "bg-muted/30 hover:bg-muted/50"
+                            : "bg-muted/30 hover:bg-muted/50",
+                          isPlayable && "cursor-pointer"
                         )}
+                        onClick={() => isPlayable && setSelectedCredit(credit)}
                       >
-                        {credit.thumbnailUrl ? (
-                          <img
-                            src={credit.thumbnailUrl}
-                            alt={credit.title}
-                            className="w-12 h-12 rounded object-cover shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
-                            <Icon className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                        )}
+                        <div className="relative shrink-0">
+                          {credit.thumbnailUrl ? (
+                            <img
+                              src={credit.thumbnailUrl}
+                              alt={credit.title}
+                              className="w-12 h-12 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                              <Icon className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          {/* Play overlay for playable content */}
+                          {isPlayable && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded">
+                              <Play className="h-5 w-5 text-white" fill="currentColor" />
+                            </div>
+                          )}
+                        </div>
                         
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium truncate">{credit.title}</h4>
@@ -407,17 +424,33 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
 
                         <div className="flex items-center gap-1 shrink-0">
                           {credit.url && (
-                            <Button variant="ghost" size="sm" asChild>
-                              <a href={credit.url} target="_blank" rel="noopener noreferrer">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isPlayable) {
+                                  setSelectedCredit(credit);
+                                } else {
+                                  window.open(credit.url, '_blank');
+                                }
+                              }}
+                            >
+                              {isPlayable ? (
+                                <Play className="h-4 w-4" />
+                              ) : (
                                 <ExternalLink className="h-4 w-4" />
-                              </a>
+                              )}
                             </Button>
                           )}
                           {isOwnProfile && (
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              onClick={() => handleDelete(credit.id, credit.isVerified)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(credit.id, credit.isVerified);
+                              }}
                               disabled={deletingId === credit.id}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
@@ -463,6 +496,19 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
           })()}
         </div>
       )}
+
+      {/* Media Player Modal for in-app preview */}
+      <MediaPlayerModal
+        isOpen={!!selectedCredit}
+        onClose={() => setSelectedCredit(null)}
+        item={selectedCredit ? {
+          title: selectedCredit.title,
+          description: `${selectedCredit.role}${selectedCredit.year ? ` • ${selectedCredit.year}` : ''}`,
+          media_type: selectedCredit.creditType === 'album' || selectedCredit.creditType === 'single' ? 'audio' : 'video',
+          media_url: selectedCredit.url || '',
+          thumbnail_url: selectedCredit.thumbnailUrl,
+        } : null}
+      />
     </div>
   );
 }

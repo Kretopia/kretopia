@@ -9,10 +9,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -25,6 +26,42 @@ interface NotificationPreferences {
   push_opportunities: boolean;
   in_app_all: boolean;
 }
+
+// Restart Tour Button Component
+const RestartTourButton = () => {
+  const { restartOnboarding, loading } = useOnboarding();
+  const { toast } = useToast();
+
+  const handleRestart = async () => {
+    await restartOnboarding();
+    toast({
+      title: "Tour restarted!",
+      description: "The onboarding tour will start now.",
+    });
+    window.location.reload();
+  };
+
+  return (
+    <Button 
+      variant="outline" 
+      className="w-full" 
+      onClick={handleRestart}
+      disabled={loading}
+    >
+      {loading ? (
+        <>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Restarting...
+        </>
+      ) : (
+        <>
+          <RotateCcw className="h-4 w-4 mr-2" />
+          Restart Platform Tour
+        </>
+      )}
+    </Button>
+  );
+};
 
 const Settings = () => {
   const { toast } = useToast();
@@ -752,6 +789,11 @@ const Settings = () => {
                   <span>Community Guidelines</span>
                 </Link>
               </div>
+
+              <Separator />
+
+              {/* Restart Tour */}
+              <RestartTourButton />
 
               <Separator />
               

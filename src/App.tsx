@@ -10,7 +10,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
-import { OnboardingTour } from "./components/OnboardingTour";
+import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboarding";
 import { SkipLink } from "./components/ui/skip-link";
 import { analytics } from "@/lib/analytics";
 
@@ -190,7 +190,7 @@ const App = () => {
               <Sonner />
               <VercelAnalytics />
               <BrowserRouter>
-                <OnboardingTour />
+                <InteractiveOnboarding />
                 <AppContent />
               </BrowserRouter>
             </TooltipProvider>

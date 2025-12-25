@@ -138,10 +138,10 @@ const AppContent = () => {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             
-            {/* Admin Routes - Redirect to Circle (admin panel removed from MVP) */}
-            <Route path="/admin" element={<Navigate to="/circle" replace />} />
+            {/* Admin Routes */}
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            <Route path="/admin-broadcast" element={<Navigate to="/circle" replace />} />
+            <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
 
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />

@@ -569,12 +569,13 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
             const thumbnail = getMediaThumbnail(item);
             const mediaInfo = parseMediaUrl(item.media_url);
             const isPlayable = mediaInfo || ['video', 'audio'].includes(item.media_type);
+            const hasInAppPreview = mediaInfo || ['video', 'audio', 'image'].includes(item.media_type);
 
             return (
               <div key={item.id} className="group relative rounded-xl md:rounded-2xl border border-border bg-card overflow-hidden hover:shadow-card transition-all">
                 <div 
                   className="aspect-video bg-muted relative cursor-pointer"
-                  onClick={() => isPlayable && setSelectedItem(item)}
+                  onClick={() => hasInAppPreview ? setSelectedItem(item) : window.open(item.media_url, '_blank')}
                 >
                   <img 
                     src={thumbnail} 
@@ -585,11 +586,15 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                     }}
                   />
                   
-                  {/* Play button overlay for playable media */}
-                  {isPlayable && (
+                  {/* Preview overlay for all media types */}
+                  {hasInAppPreview && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center">
-                        <Play className="h-8 w-8 text-primary-foreground ml-1" fill="currentColor" />
+                        {item.media_type === 'image' ? (
+                          <Eye className="h-8 w-8 text-primary-foreground" />
+                        ) : (
+                          <Play className="h-8 w-8 text-primary-foreground ml-1" fill="currentColor" />
+                        )}
                       </div>
                     </div>
                   )}

@@ -183,6 +183,13 @@ const ViewProfile = () => {
 
   useEffect(() => {
     fetchData();
+    
+    // Track profile view
+    if (userId && user && userId !== user.id) {
+      import('@/lib/profileViewTracking').then(({ trackProfileView }) => {
+        trackProfileView(userId, isFromMatch ? 'match' : 'public');
+      });
+    }
   }, [userId, user]);
   
   // Handle connection request

@@ -32,36 +32,46 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      setIsOpen(false);
+      
+      // Try to sign out from Supabase
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
       
       if (error) {
         console.error('[Navbar] Sign out error:', error);
-        toast({
-          variant: "destructive",
-          title: "Error signing out",
-          description: error.message,
-        });
-        return;
+        // Even if server sign out fails, clear local storage and redirect
+        localStorage.removeItem('sb-kwmcocsitwssrtzkdojh-auth-token');
+        sessionStorage.clear();
       }
       
-      // Track sign out
-      const { analytics } = await import("@/lib/analytics");
-      analytics.signOut();
+      // Track sign out (non-blocking)
+      import("@/lib/analytics")
+        .then(({ analytics }) => analytics.signOut())
+        .catch(() => {});
       
       toast({
         title: "Signed out",
         description: "You've been successfully signed out",
       });
       
-      setIsOpen(false);
       navigate("/", { replace: true });
     } catch (error) {
       console.error('[Navbar] Sign out exception:', error);
+      
+      // Force clear local auth state even on network failure
+      try {
+        localStorage.removeItem('sb-kwmcocsitwssrtzkdojh-auth-token');
+        sessionStorage.clear();
+      } catch (e) {
+        console.error('[Navbar] Error clearing storage:', e);
+      }
+      
       toast({
-        variant: "destructive",
-        title: "Error signing out",
-        description: "An unexpected error occurred",
+        title: "Signed out",
+        description: "You've been signed out locally",
       });
+      
+      navigate("/", { replace: true });
     }
   };
 

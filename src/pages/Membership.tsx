@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -199,8 +200,14 @@ export default function Membership() {
                 </Badge>
               </div>
             </div>
-            <Badge className="text-sm px-3 py-2 uppercase tracking-wider font-bold bg-background/80 backdrop-blur-sm text-foreground">
-              {profile?.badge === "founder" ? "👑 Founder" : profile?.badge || "Beta"}
+            <Badge className={cn(
+              "text-sm px-3 py-2 uppercase tracking-wider font-bold backdrop-blur-sm",
+              profile?.badge === 'odos' ? "bg-green-500/20 text-green-200 border-green-400/50" : "bg-background/80 text-foreground"
+            )}>
+              {profile?.badge === "founder" ? "👑 Founder" : 
+               profile?.badge === "odos" ? "🌿 ODOS" :
+               profile?.badge === "og" ? "⭐ OG" : 
+               profile?.badge || "Beta"}
             </Badge>
           </div>
 

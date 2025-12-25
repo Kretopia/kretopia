@@ -80,7 +80,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             </Badge>
           </div>
 
-          {/* Badge (OG/Beta) */}
+          {/* Badge (OG/Beta/ODOS) */}
           {profile.badge && (
             <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
               <Badge 
@@ -88,10 +88,14 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
                 className={cn(
                   "backdrop-blur-sm border-white/30 text-xs",
                   profile.badge === 'og' && "bg-amber-500/20 text-amber-200 border-amber-400/50",
-                  profile.badge === 'beta' && "bg-blue-500/20 text-blue-200 border-blue-400/50"
+                  profile.badge === 'beta' && "bg-blue-500/20 text-blue-200 border-blue-400/50",
+                  profile.badge === 'odos' && "bg-green-500/20 text-green-200 border-green-400/50",
+                  profile.badge === 'founder' && "bg-purple-500/20 text-purple-200 border-purple-400/50"
                 )}
               >
-                {profile.badge === 'og' ? '⭐ OG' : '🚀 Beta'}
+                {profile.badge === 'og' ? '⭐ OG' : 
+                 profile.badge === 'odos' ? '🌿 ODOS' : 
+                 profile.badge === 'founder' ? '👑 Founder' : '🚀 Beta'}
               </Badge>
             </div>
           )}

@@ -70,7 +70,7 @@ interface Profile {
   company_industry?: string;
   average_rating?: number;
   total_reviews?: number;
-  badge?: 'og' | 'beta' | 'official' | 'founder';
+  badge?: 'og' | 'beta' | 'official' | 'founder' | 'odos';
   achievement_badges?: string[];
   verification_tier?: string;
   verification_status?: string;
@@ -89,7 +89,7 @@ const PublicProfile = () => {
   const [credits, setCredits] = useState([]);
   const [awards, setAwards] = useState([]);
   const [pressLinks, setPressLinks] = useState([]);
-  const [userBadge, setUserBadge] = useState<'og' | 'beta' | 'official' | 'founder' | null>(null);
+  const [userBadge, setUserBadge] = useState<'og' | 'beta' | 'official' | 'founder' | 'odos' | null>(null);
   const [stats, setStats] = useState({
     circle: 0,
     projects: 0,

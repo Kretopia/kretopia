@@ -46,8 +46,8 @@ serve(async (req) => {
     let discoveredProfiles: DiscoveredProfile[] = [];
 
     if (searchType === "name") {
-      // Search for a specific person by name - broad search without site restrictions
-      const searchQuery = `"${query}" musician OR producer OR artist OR filmmaker OR director OR songwriter OR composer OR creative professional`;
+      // Search for a specific person by name - include multiple platform variations
+      const searchQuery = `"${query}" (site:imdb.com OR site:discogs.com OR site:open.spotify.com OR site:allmusic.com OR site:behance.net OR site:wikipedia.org OR site:grammy.com)`;
       console.log("Searching for person by name:", searchQuery);
 
       const searchResponse = await fetch("https://api.firecrawl.dev/v1/search", {
@@ -58,7 +58,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           query: searchQuery,
-          limit: 20,
+          limit: 15,
           scrapeOptions: {
             formats: ["markdown"],
           },
@@ -66,24 +66,68 @@ serve(async (req) => {
       });
 
       const searchData = await searchResponse.json();
-      console.log("Name search results:", searchData.success ? `${searchData.data?.length || 0} results` : "failed");
+      console.log("Name search response:", searchData.success ? `${searchData.data?.length || 0} results` : `failed: ${JSON.stringify(searchData)}`);
 
-      if (searchData.success && searchData.data) {
-        for (const result of searchData.data.slice(0, 10)) {
+      if (searchData.success && searchData.data && searchData.data.length > 0) {
+        // Process results in parallel for speed
+        const profilePromises = searchData.data.slice(0, 8).map(async (result: any) => {
           // Skip LinkedIn due to restrictions
-          if (result.url?.includes('linkedin.com')) continue;
+          if (result.url?.includes('linkedin.com')) return null;
           
           console.log("Processing result:", result.url);
-          const profile = await extractProfileWithAI(
-            result.markdown || result.description || result.title,
+          const content = result.markdown || result.description || result.title || '';
+          
+          if (!content || content.length < 50) {
+            console.log("Skipping - insufficient content");
+            return null;
+          }
+
+          return extractProfileWithAI(
+            content,
             result.url,
             query,
             LOVABLE_API_KEY
           );
-          if (profile) {
-            console.log("Extracted profile:", profile.name);
-            discoveredProfiles.push(profile);
-          }
+        });
+
+        const results = await Promise.all(profilePromises);
+        discoveredProfiles = results.filter((p): p is DiscoveredProfile => p !== null);
+        console.log(`Extracted ${discoveredProfiles.length} profiles from name search`);
+      } else {
+        // Fallback: broader search without site restrictions
+        console.log("Trying broader search...");
+        const fallbackQuery = `"${query}" musician OR producer OR artist OR filmmaker OR director OR songwriter`;
+        
+        const fallbackResponse = await fetch("https://api.firecrawl.dev/v1/search", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: fallbackQuery,
+            limit: 15,
+            scrapeOptions: {
+              formats: ["markdown"],
+            },
+          }),
+        });
+
+        const fallbackData = await fallbackResponse.json();
+        console.log("Fallback search results:", fallbackData.success ? `${fallbackData.data?.length || 0} results` : "failed");
+
+        if (fallbackData.success && fallbackData.data) {
+          const profilePromises = fallbackData.data.slice(0, 8).map(async (result: any) => {
+            if (result.url?.includes('linkedin.com')) return null;
+            
+            const content = result.markdown || result.description || result.title || '';
+            if (!content || content.length < 50) return null;
+
+            return extractProfileWithAI(content, result.url, query, LOVABLE_API_KEY);
+          });
+
+          const results = await Promise.all(profilePromises);
+          discoveredProfiles = results.filter((p): p is DiscoveredProfile => p !== null);
         }
       }
     } else if (searchType === "industry") {
@@ -242,6 +286,7 @@ serve(async (req) => {
     }
 
     const uniqueProfiles = deduplicateProfiles(discoveredProfiles);
+    console.log(`Returning ${uniqueProfiles.length} unique profiles`);
 
     return new Response(
       JSON.stringify({
@@ -268,11 +313,17 @@ serve(async (req) => {
 async function extractProfileWithAI(
   content: string,
   sourceUrl: string,
-  platformOrHint: string | undefined,
+  searchHint: string | undefined,
   apiKey: string
 ): Promise<DiscoveredProfile | null> {
   try {
     console.log("Extracting profile with AI for:", sourceUrl);
+    
+    if (!content || content.length < 30) {
+      console.log("Content too short, skipping");
+      return null;
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -286,11 +337,12 @@ async function extractProfileWithAI(
             role: "system",
             content: `You are an expert at extracting professional profile information from web content. 
 Extract creator/professional profiles only. Skip company pages, product pages, or generic content.
-Focus on individual people who are creators, artists, musicians, filmmakers, designers, etc.`
+Focus on individual people who are creators, artists, musicians, filmmakers, designers, songwriters, producers, etc.
+${searchHint ? `The user is searching for: "${searchHint}"` : ''}`
           },
           {
             role: "user",
-            content: `Extract profile information from this ${platformOrHint || 'web'} page content:\n\n${content.substring(0, 15000)}`
+            content: `Extract profile information from this web page content:\n\n${content.substring(0, 12000)}`
           }
         ],
         tools: [
@@ -303,12 +355,12 @@ Focus on individual people who are creators, artists, musicians, filmmakers, des
                 type: "object",
                 properties: {
                   name: { type: "string", description: "Full name of the person" },
-                  role: { type: "string", description: "Professional role/title (e.g., Music Producer, Filmmaker, Designer)" },
-                  bio: { type: "string", description: "Brief professional bio or description" },
+                  role: { type: "string", description: "Professional role/title (e.g., Music Producer, Filmmaker, Designer, Songwriter)" },
+                  bio: { type: "string", description: "Brief professional bio or description (max 300 chars)" },
                   location: { type: "string", description: "Location if mentioned" },
-                  skills: { type: "array", items: { type: "string" }, description: "Professional skills" },
+                  skills: { type: "array", items: { type: "string" }, description: "Professional skills (max 5)" },
                   imageUrl: { type: "string", description: "Profile image URL if found" },
-                  isValidProfile: { type: "boolean", description: "True if this is a valid individual creator profile" }
+                  isValidProfile: { type: "boolean", description: "True if this is a valid individual creator profile, false for companies/products/generic pages" }
                 },
                 required: ["name", "role", "isValidProfile"]
               }
@@ -333,20 +385,32 @@ Focus on individual people who are creators, artists, musicians, filmmakers, des
       return null;
     }
 
-    const extracted = JSON.parse(toolCall.function.arguments);
+    let extracted;
+    try {
+      extracted = JSON.parse(toolCall.function.arguments);
+    } catch (e) {
+      console.error("Failed to parse tool call:", toolCall.function.arguments);
+      return null;
+    }
     
-    if (!extracted.isValidProfile || !extracted.name) {
-      console.log("Invalid profile or no name:", extracted);
+    if (!extracted.isValidProfile) {
+      console.log("Not a valid profile:", extracted.name);
       return null;
     }
 
+    if (!extracted.name || extracted.name.length < 2) {
+      console.log("Invalid name:", extracted);
+      return null;
+    }
+
+    console.log("Successfully extracted:", extracted.name);
     return {
       name: extracted.name,
       role: extracted.role || "Creator",
       bio: extracted.bio,
       location: extracted.location,
       sourceUrl,
-      skills: extracted.skills,
+      skills: extracted.skills?.slice(0, 5),
       imageUrl: extracted.imageUrl,
     };
   } catch (e) {
@@ -361,6 +425,8 @@ async function extractProfileFromNews(
   apiKey: string
 ): Promise<DiscoveredProfile | null> {
   try {
+    if (!content || content.length < 50) return null;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -377,7 +443,7 @@ Find the main person/people featured in the article and extract their profession
           },
           {
             role: "user",
-            content: `Extract the main creator/artist profile from this news article:\n\n${content.substring(0, 15000)}`
+            content: `Extract the main creator/artist profile from this news article:\n\n${content.substring(0, 12000)}`
           }
         ],
         tools: [

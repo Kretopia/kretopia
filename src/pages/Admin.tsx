@@ -6,12 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, MapPin, CheckCircle, Users, ShieldCheck, Settings } from "lucide-react";
+import { Shield, MapPin, CheckCircle, Users, ShieldCheck, Settings, UserPlus } from "lucide-react";
 import { LocationsTab } from "@/components/admin/LocationsTab";
 import { CheckInsTab } from "@/components/admin/CheckInsTab";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { PartnerSubmissionsTab } from "@/components/admin/PartnerSubmissionsTab";
 import { VerificationTab } from "@/components/admin/VerificationTab";
+import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
 
 export default function Admin() {
   const { user } = useAuth();
@@ -129,40 +130,43 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="verifications" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 h-auto p-1 lg:grid-cols-6">
-          <TabsTrigger value="verifications" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+        <TabsList className="grid w-full grid-cols-7 h-auto p-1 lg:grid-cols-7">
+          <TabsTrigger value="verifications" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <ShieldCheck className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Verifications</span>
-            <span className="sm:hidden">Verify</span>
+            <span className="hidden lg:inline">Verifications</span>
           </TabsTrigger>
-          <TabsTrigger value="locations" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="unclaimed" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+            <span className="hidden lg:inline">Unclaimed</span>
+          </TabsTrigger>
+          <TabsTrigger value="locations" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <MapPin className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Locations</span>
-            <span className="sm:hidden">Places</span>
+            <span className="hidden lg:inline">Locations</span>
           </TabsTrigger>
-          <TabsTrigger value="checkins" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="checkins" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Check-ins</span>
-            <span className="sm:hidden">Checks</span>
+            <span className="hidden lg:inline">Check-ins</span>
           </TabsTrigger>
-          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="users" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Users className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span>Users</span>
+            <span className="hidden lg:inline">Users</span>
           </TabsTrigger>
-          <TabsTrigger value="partners" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="partners" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Shield className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Partners</span>
-            <span className="sm:hidden">Parts</span>
+            <span className="hidden lg:inline">Partners</span>
           </TabsTrigger>
-          <TabsTrigger value="system" className="text-xs sm:text-sm px-2 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="system" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Settings className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden sm:inline">System</span>
-            <span className="sm:hidden">Sys</span>
+            <span className="hidden lg:inline">System</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="verifications" className="mt-4 sm:mt-6">
           <VerificationTab />
+        </TabsContent>
+
+        <TabsContent value="unclaimed" className="mt-4 sm:mt-6">
+          <UnclaimedProfilesTab />
         </TabsContent>
 
         <TabsContent value="locations" className="mt-4 sm:mt-6">

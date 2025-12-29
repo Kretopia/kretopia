@@ -2188,6 +2188,80 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_claim_requests: {
+        Row: {
+          admin_notes: string | null
+          claimant_email: string
+          claimant_user_id: string | null
+          created_at: string
+          id: string
+          profile_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          verification_method: string
+          verification_proof: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          claimant_email: string
+          claimant_user_id?: string | null
+          created_at?: string
+          id?: string
+          profile_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          verification_method: string
+          verification_proof?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          claimant_email?: string
+          claimant_user_id?: string | null
+          created_at?: string
+          id?: string
+          profile_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          verification_method?: string
+          verification_proof?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_claim_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "profile_claim_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "profile_claim_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "profile_claim_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
@@ -2201,6 +2275,9 @@ export type Database = {
           behance_url: string | null
           bio: string | null
           calendly_url: string | null
+          claim_token: string | null
+          claimed_at: string | null
+          claimed_by: string | null
           collab_intent: string | null
           company_about: string | null
           company_address: string | null
@@ -2219,12 +2296,15 @@ export type Database = {
           id: string
           imdb_url: string | null
           imdb_verified: boolean | null
+          imported_data: Json | null
+          imported_from_url: string | null
           industry: string | null
           instagram_followers: number | null
           instagram_url: string | null
           instagram_verified: boolean | null
           invite_code_used: string | null
           invited_by: string | null
+          is_claimed: boolean | null
           job_title: string | null
           last_active_date: string | null
           last_swipe_reset: string | null
@@ -2245,6 +2325,7 @@ export type Database = {
           portfolio_verified: boolean | null
           press_links: Json | null
           professional_skills: Json | null
+          profile_source: string | null
           project_credits: number | null
           rate_range: string | null
           review_share_token: string | null
@@ -2301,6 +2382,9 @@ export type Database = {
           behance_url?: string | null
           bio?: string | null
           calendly_url?: string | null
+          claim_token?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           collab_intent?: string | null
           company_about?: string | null
           company_address?: string | null
@@ -2319,12 +2403,15 @@ export type Database = {
           id?: string
           imdb_url?: string | null
           imdb_verified?: boolean | null
+          imported_data?: Json | null
+          imported_from_url?: string | null
           industry?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
           instagram_verified?: boolean | null
           invite_code_used?: string | null
           invited_by?: string | null
+          is_claimed?: boolean | null
           job_title?: string | null
           last_active_date?: string | null
           last_swipe_reset?: string | null
@@ -2345,6 +2432,7 @@ export type Database = {
           portfolio_verified?: boolean | null
           press_links?: Json | null
           professional_skills?: Json | null
+          profile_source?: string | null
           project_credits?: number | null
           rate_range?: string | null
           review_share_token?: string | null
@@ -2401,6 +2489,9 @@ export type Database = {
           behance_url?: string | null
           bio?: string | null
           calendly_url?: string | null
+          claim_token?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           collab_intent?: string | null
           company_about?: string | null
           company_address?: string | null
@@ -2419,12 +2510,15 @@ export type Database = {
           id?: string
           imdb_url?: string | null
           imdb_verified?: boolean | null
+          imported_data?: Json | null
+          imported_from_url?: string | null
           industry?: string | null
           instagram_followers?: number | null
           instagram_url?: string | null
           instagram_verified?: boolean | null
           invite_code_used?: string | null
           invited_by?: string | null
+          is_claimed?: boolean | null
           job_title?: string | null
           last_active_date?: string | null
           last_swipe_reset?: string | null
@@ -2445,6 +2539,7 @@ export type Database = {
           portfolio_verified?: boolean | null
           press_links?: Json | null
           professional_skills?: Json | null
+          profile_source?: string | null
           project_credits?: number | null
           rate_range?: string | null
           review_share_token?: string | null
@@ -4533,6 +4628,10 @@ export type Database = {
         Args: { file_size_param: number; user_id_param: string }
         Returns: boolean
       }
+      claim_profile: {
+        Args: { p_claim_token: string; p_user_id: string }
+        Returns: boolean
+      }
       create_bidirectional_connection: {
         Args: {
           connection_status?: string
@@ -4560,6 +4659,21 @@ export type Database = {
         }
         Returns: string
       }
+      create_unclaimed_profile: {
+        Args: {
+          p_avatar_url?: string
+          p_bio?: string
+          p_full_name: string
+          p_imported_data?: Json
+          p_imported_from_url?: string
+          p_location?: string
+          p_professional_skills?: Json
+          p_role: string
+          p_source?: string
+        }
+        Returns: string
+      }
+      generate_claim_token: { Args: never; Returns: string }
       generate_invite_codes: {
         Args: { num_codes?: number; user_id_param: string }
         Returns: undefined

@@ -107,3 +107,9 @@ verify_jwt = false
 
 [functions.send-push-notification]
 verify_jwt = false
+
+[functions.import-profile-from-url]
+verify_jwt = true
+
+[functions.discover-profiles]
+verify_jwt = true

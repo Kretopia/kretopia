@@ -138,7 +138,17 @@ export const ProfileHero = ({
                 </Badge>
               )}
               
-              {profile.badge && (
+              {/* Unclaimed Profile Badge */}
+              {profile.is_claimed === false && (
+                <Badge 
+                  variant="secondary"
+                  className="h-4 sm:h-5 text-[10px] sm:text-xs bg-amber-500/20 text-amber-600 border-amber-500/30"
+                >
+                  ⚠️ Unclaimed
+                </Badge>
+              )}
+              
+              {profile.badge && profile.is_claimed !== false && (
                 <Badge 
                   variant="default"
                   className={cn(

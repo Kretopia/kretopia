@@ -3,14 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, MapPin, CheckCircle, Users, ShieldCheck, Settings, UserPlus } from "lucide-react";
-import { LocationsTab } from "@/components/admin/LocationsTab";
-import { CheckInsTab } from "@/components/admin/CheckInsTab";
+import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2 } from "lucide-react";
 import { UsersTab } from "@/components/admin/UsersTab";
-import { PartnerSubmissionsTab } from "@/components/admin/PartnerSubmissionsTab";
 import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
 
@@ -20,7 +17,6 @@ export default function Admin() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
 
   useEffect(() => {
@@ -33,14 +29,12 @@ export default function Admin() {
 
   const checkAdminAccess = async () => {
     if (!user) {
-      console.log('[Admin] No user, redirecting to auth');
       navigate("/auth");
       return;
     }
 
     setLoading(true);
     try {
-      console.log('[Admin] Checking admin access for user:', user.id);
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
@@ -48,10 +42,7 @@ export default function Admin() {
         .eq("role", "admin")
         .maybeSingle();
 
-      console.log('[Admin] User roles query result:', { data, error });
-
       if (error) {
-        console.error('[Admin] Error querying user_roles:', error);
         toast({
           title: "Error",
           description: "Failed to verify admin access",
@@ -62,7 +53,6 @@ export default function Admin() {
       }
 
       if (!data) {
-        console.log('[Admin] No admin role found for user');
         toast({
           title: "Access Denied",
           description: "You don't have admin permissions",
@@ -72,10 +62,8 @@ export default function Admin() {
         return;
       }
 
-      console.log('[Admin] Admin access granted');
       setIsAdmin(true);
     } catch (error) {
-      console.error('[Admin] Error checking admin access:', error);
       toast({
         title: "Error",
         description: "An error occurred while checking permissions",
@@ -87,33 +75,32 @@ export default function Admin() {
     }
   };
 
-  const seedCommunities = async () => {
-    setSeeding(true);
+  const sendBroadcastEmail = async () => {
+    setSendingBroadcast(true);
     try {
-      const { data, error } = await supabase.functions.invoke('seed-communities');
+      const { data, error } = await supabase.functions.invoke('send-broadcast-email');
       
       if (error) throw error;
       
       toast({
-        title: "Success",
-        description: "Communities seeded successfully!",
+        title: "Broadcast Sent!",
+        description: `Successfully sent to ${data?.sent || 0} users. ${data?.failed || 0} failed.`,
       });
-    } catch (error) {
-      console.error('Error seeding communities:', error);
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to seed communities",
+        description: error.message || "Failed to send broadcast email",
         variant: "destructive",
       });
     } finally {
-      setSeeding(false);
+      setSendingBroadcast(false);
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -129,115 +116,71 @@ export default function Admin() {
         <h1 className="text-2xl sm:text-3xl font-bold">Admin Panel</h1>
       </div>
 
-      <Tabs defaultValue="verifications" className="w-full">
-        <TabsList className="grid w-full grid-cols-7 h-auto p-1 lg:grid-cols-7">
-          <TabsTrigger value="verifications" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <ShieldCheck className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden lg:inline">Verifications</span>
+      <Tabs defaultValue="users" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Users</span>
           </TabsTrigger>
-          <TabsTrigger value="unclaimed" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden lg:inline">Unclaimed</span>
+          <TabsTrigger value="unclaimed" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <UserPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Unclaimed</span>
           </TabsTrigger>
-          <TabsTrigger value="locations" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden lg:inline">Locations</span>
+          <TabsTrigger value="verifications" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Verify</span>
           </TabsTrigger>
-          <TabsTrigger value="checkins" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden lg:inline">Check-ins</span>
-          </TabsTrigger>
-          <TabsTrigger value="users" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Users className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden lg:inline">Users</span>
-          </TabsTrigger>
-          <TabsTrigger value="partners" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Shield className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden lg:inline">Partners</span>
-          </TabsTrigger>
-          <TabsTrigger value="system" className="text-xs sm:text-sm px-1 sm:px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Settings className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-            <span className="hidden lg:inline">System</span>
+          <TabsTrigger value="system" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">System</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="verifications" className="mt-4 sm:mt-6">
-          <VerificationTab />
+        <TabsContent value="users" className="mt-4 sm:mt-6">
+          <UsersTab />
         </TabsContent>
 
         <TabsContent value="unclaimed" className="mt-4 sm:mt-6">
           <UnclaimedProfilesTab />
         </TabsContent>
 
-        <TabsContent value="locations" className="mt-4 sm:mt-6">
-          <LocationsTab />
-        </TabsContent>
-
-        <TabsContent value="checkins" className="mt-4 sm:mt-6">
-          <CheckInsTab />
-        </TabsContent>
-
-        <TabsContent value="users" className="mt-4 sm:mt-6">
-          <UsersTab />
-        </TabsContent>
-
-        <TabsContent value="partners" className="mt-4 sm:mt-6">
-          <PartnerSubmissionsTab />
+        <TabsContent value="verifications" className="mt-4 sm:mt-6">
+          <VerificationTab />
         </TabsContent>
 
         <TabsContent value="system" className="mt-4 sm:mt-6">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">System Management</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-medium mb-2">Seed Communities</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Initialize default communities (ThriveIN Bali & Bali Cre8ives). Only run this once.
-                </p>
-                <Button onClick={seedCommunities} disabled={seeding}>
-                  {seeding ? "Seeding..." : "Seed Communities"}
-                </Button>
-              </div>
-              
-              <div className="border-t pt-6">
-                <h3 className="font-medium mb-2 flex items-center gap-2">
-                  🎄 Christmas Broadcast Email
-                </h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Send a Merry Christmas email to all users with platform update information. 
-                  This will email all {user ? "users" : "0 users"} in the system.
-                </p>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Send className="h-5 w-5" />
+                  Broadcast Email
+                </CardTitle>
+                <CardDescription>
+                  Send platform updates or announcements to all users
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Button 
-                  onClick={async () => {
-                    setSendingBroadcast(true);
-                    try {
-                      const { data, error } = await supabase.functions.invoke('send-broadcast-email');
-                      
-                      if (error) throw error;
-                      
-                      toast({
-                        title: "Broadcast Sent! 🎄",
-                        description: `Successfully sent to ${data?.sent || 0} users. ${data?.failed || 0} failed.`,
-                      });
-                    } catch (error: any) {
-                      console.error('Error sending broadcast:', error);
-                      toast({
-                        title: "Error",
-                        description: error.message || "Failed to send broadcast email",
-                        variant: "destructive",
-                      });
-                    } finally {
-                      setSendingBroadcast(false);
-                    }
-                  }} 
+                  onClick={sendBroadcastEmail} 
                   disabled={sendingBroadcast}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="w-full sm:w-auto"
                 >
-                  {sendingBroadcast ? "Sending to all users..." : "Send Christmas Email to All Users"}
+                  {sendingBroadcast ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Broadcast to All Users
+                    </>
+                  )}
                 </Button>
-              </div>
-            </div>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

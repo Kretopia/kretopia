@@ -82,18 +82,18 @@ const Navbar = memo(({ user }: NavbarProps) => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-lg" role="navigation" aria-label="Main navigation">
-      <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2">
+    <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
+      <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2.5">
         <Link to={user ? "/circle" : "/"} className="flex items-center gap-2 sm:gap-3" aria-label="ThriveIN Home">
           <img 
             src={thriveinIcon} 
             alt="ThriveIN Icon" 
             className="h-10 w-10 sm:h-12 sm:w-12 object-contain"
           />
-          <span className="text-lg sm:text-xl font-bold tracking-tight">
+          <span className="text-xl sm:text-2xl font-bold tracking-tight gradient-text">
             thriveIN
           </span>
-          <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
+          <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-semibold">
             BETA
           </Badge>
         </Link>

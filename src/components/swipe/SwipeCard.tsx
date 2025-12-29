@@ -45,8 +45,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
         ref={ref}
         className={cn(
           "absolute inset-0 overflow-hidden cursor-grab active:cursor-grabbing",
-          "bg-gradient-to-b from-background to-background/95",
-          "border-2 border-border/50 shadow-2xl rounded-2xl sm:rounded-xl",
+          "bg-card border border-border/30 shadow-2xl rounded-3xl",
           className
         )}
         style={style}
@@ -59,8 +58,9 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             alt={profile.full_name}
             className="w-full h-full object-cover"
           />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+          {/* Enhanced Gradient Overlay - More cinematic */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 mix-blend-overlay" />
         </div>
 
         {/* Content Overlay */}
@@ -139,14 +139,11 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
               </p>
             )}
 
-            {/* Collab Intent */}
+            {/* Collab Intent - Pill style tags */}
             {profile.collab_intent && (
-              <Badge 
-                variant="secondary" 
-                className="bg-white/10 text-white border-white/20 backdrop-blur-sm w-fit text-xs"
-              >
+              <span className="inline-flex px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-white/90 text-xs font-medium border border-white/10">
                 {COLLAB_INTENT_LABELS[profile.collab_intent] || profile.collab_intent}
-              </Badge>
+              </span>
             )}
 
             {/* Portfolio Count */}

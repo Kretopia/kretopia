@@ -113,3 +113,6 @@ verify_jwt = true
 
 [functions.discover-profiles]
 verify_jwt = true
+
+[functions.generate-sitemap]
+verify_jwt = false

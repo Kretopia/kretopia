@@ -34,5 +34,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://kwmcocsitwssrtzkdojh.supabase.co/functions/v1/generate-sitemap
-Allow: /
+Sitemap: https://thrivein.io/sitemap.xml

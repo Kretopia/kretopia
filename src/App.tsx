@@ -43,6 +43,7 @@ const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
 const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
+const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -156,6 +157,7 @@ const AppContent = () => {
             {/* Public Access Pages (No Auth Required) */}
             <Route path="/endorse" element={<EndorseSkill />} />
             <Route path="/submit-review" element={<SubmitReview />} />
+            <Route path="/claim/:claimToken" element={<ClaimProfile />} />
             
             {/* Redirect old routes to Circle */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />

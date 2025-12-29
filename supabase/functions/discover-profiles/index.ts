@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,6 +27,7 @@ serve(async (req) => {
     console.log("Discovery request:", { searchType, query, platform, page });
 
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!FIRECRAWL_API_KEY) {
       return new Response(
@@ -36,11 +36,18 @@ serve(async (req) => {
       );
     }
 
+    if (!LOVABLE_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: "LOVABLE_API_KEY not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     let discoveredProfiles: DiscoveredProfile[] = [];
 
     if (searchType === "name") {
-      // Search for a specific person by name
-      const searchQuery = `"${query}" professional profile portfolio site:imdb.com OR site:discogs.com OR site:open.spotify.com OR site:allmusic.com OR site:behance.net OR site:linkedin.com`;
+      // Search for a specific person by name - broad search without site restrictions
+      const searchQuery = `"${query}" musician OR producer OR artist OR filmmaker OR director OR songwriter OR composer OR creative professional`;
       console.log("Searching for person by name:", searchQuery);
 
       const searchResponse = await fetch("https://api.firecrawl.dev/v1/search", {
@@ -66,12 +73,15 @@ serve(async (req) => {
           // Skip LinkedIn due to restrictions
           if (result.url?.includes('linkedin.com')) continue;
           
+          console.log("Processing result:", result.url);
           const profile = await extractProfileWithAI(
             result.markdown || result.description || result.title,
             result.url,
-            query
+            query,
+            LOVABLE_API_KEY
           );
           if (profile) {
+            console.log("Extracted profile:", profile.name);
             discoveredProfiles.push(profile);
           }
         }
@@ -89,7 +99,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           query: searchQuery,
-          limit: 30, // Fetch more to allow pagination
+          limit: 30,
           scrapeOptions: {
             formats: ["markdown"],
           },
@@ -100,19 +110,21 @@ serve(async (req) => {
       console.log("Search results:", searchData.success ? `${searchData.data?.length || 0} results` : "failed");
 
       if (searchData.success && searchData.data) {
-        // Paginate results
         const paginatedResults = searchData.data.slice(offset, offset + pageSize);
         
-        // Process each result with AI to extract profile data
         for (const result of paginatedResults) {
-          const profile = await extractProfileWithAI(result.markdown || result.description, result.url);
+          const profile = await extractProfileWithAI(
+            result.markdown || result.description, 
+            result.url,
+            undefined,
+            LOVABLE_API_KEY
+          );
           if (profile) {
             discoveredProfiles.push(profile);
           }
         }
       }
     } else if (searchType === "platform") {
-      // Crawl specific platform for profiles
       const platformUrls: Record<string, string> = {
         imdb: "https://www.imdb.com/search/name/",
         discogs: "https://www.discogs.com/search/?type=artist",
@@ -129,7 +141,6 @@ serve(async (req) => {
         );
       }
 
-      // Use Firecrawl to map and scrape the platform
       const searchUrl = `${baseUrl}${encodeURIComponent(query)}`;
       console.log("Scraping platform:", searchUrl);
 
@@ -153,18 +164,17 @@ serve(async (req) => {
         const profile = await extractProfileWithAI(
           scrapeData.data.markdown,
           searchUrl,
-          platform
+          platform,
+          LOVABLE_API_KEY
         );
         if (profile) {
           discoveredProfiles.push(profile);
         }
 
-        // Extract profile links from the page
         const profileLinks = (scrapeData.data.links || [])
           .filter((link: string) => isProfileLink(link, platform))
           .slice(0, 15);
 
-        // Scrape individual profiles
         for (const profileUrl of profileLinks) {
           try {
             const profileScrape = await fetch("https://api.firecrawl.dev/v1/scrape", {
@@ -185,7 +195,8 @@ serve(async (req) => {
               const extractedProfile = await extractProfileWithAI(
                 profileData.data.markdown,
                 profileUrl,
-                platform
+                platform,
+                LOVABLE_API_KEY
               );
               if (extractedProfile) {
                 discoveredProfiles.push(extractedProfile);
@@ -197,7 +208,6 @@ serve(async (req) => {
         }
       }
     } else if (searchType === "news") {
-      // Search news/press for creator mentions
       const searchQuery = `"${query}" creator artist musician filmmaker site:variety.com OR site:billboard.com OR site:pitchfork.com OR site:hollywoodreporter.com`;
       
       const searchResponse = await fetch("https://api.firecrawl.dev/v1/search", {
@@ -209,7 +219,7 @@ serve(async (req) => {
         body: JSON.stringify({
           query: searchQuery,
           limit: 20,
-          tbs: "qdr:y", // Last year
+          tbs: "qdr:y",
           scrapeOptions: {
             formats: ["markdown"],
           },
@@ -221,7 +231,8 @@ serve(async (req) => {
         for (const result of searchData.data.slice(0, 15)) {
           const profile = await extractProfileFromNews(
             result.markdown || result.description,
-            result.url
+            result.url,
+            LOVABLE_API_KEY
           );
           if (profile) {
             discoveredProfiles.push(profile);
@@ -230,7 +241,6 @@ serve(async (req) => {
       }
     }
 
-    // Deduplicate profiles by name
     const uniqueProfiles = deduplicateProfiles(discoveredProfiles);
 
     return new Response(
@@ -258,16 +268,19 @@ serve(async (req) => {
 async function extractProfileWithAI(
   content: string,
   sourceUrl: string,
-  platformOrHint?: string
+  platformOrHint: string | undefined,
+  apiKey: string
 ): Promise<DiscoveredProfile | null> {
   try {
-    const response = await fetch("https://ai.lovable.dev/api/v1/chat/completions", {
+    console.log("Extracting profile with AI for:", sourceUrl);
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-mini",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "system",
@@ -307,18 +320,25 @@ Focus on individual people who are creators, artists, musicians, filmmakers, des
     });
 
     if (!response.ok) {
-      console.error("AI extraction failed:", response.status);
+      const errorText = await response.text();
+      console.error("AI extraction failed:", response.status, errorText);
       return null;
     }
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     
-    if (!toolCall) return null;
+    if (!toolCall) {
+      console.log("No tool call in response");
+      return null;
+    }
 
     const extracted = JSON.parse(toolCall.function.arguments);
     
-    if (!extracted.isValidProfile || !extracted.name) return null;
+    if (!extracted.isValidProfile || !extracted.name) {
+      console.log("Invalid profile or no name:", extracted);
+      return null;
+    }
 
     return {
       name: extracted.name,
@@ -337,16 +357,18 @@ Focus on individual people who are creators, artists, musicians, filmmakers, des
 
 async function extractProfileFromNews(
   content: string,
-  sourceUrl: string
+  sourceUrl: string,
+  apiKey: string
 ): Promise<DiscoveredProfile | null> {
   try {
-    const response = await fetch("https://ai.lovable.dev/api/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-mini",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "system",

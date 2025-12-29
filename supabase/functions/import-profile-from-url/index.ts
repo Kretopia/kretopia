@@ -78,9 +78,10 @@ serve(async (req) => {
           html = firecrawlData.data?.markdown || firecrawlData.data?.html || '';
           pageTitle = firecrawlData.data?.metadata?.title || '';
           pageDescription = firecrawlData.data?.metadata?.description || '';
-          console.log('Firecrawl scrape successful');
+          console.log('Firecrawl scrape successful, content length:', html.length);
         } else {
-          console.log('Firecrawl failed, falling back to fetch');
+          const errorText = await firecrawlResponse.text();
+          console.log('Firecrawl failed:', firecrawlResponse.status, errorText);
         }
       } catch (e) {
         console.error('Firecrawl error:', e);
@@ -111,7 +112,7 @@ serve(async (req) => {
       );
     }
     
-    // Use Lovable AI to extract profile information
+    // Use Lovable AI to extract profile information with tool calling
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
@@ -125,61 +126,71 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
-            content: `You are an expert at extracting professional profile information from web pages. Extract the following information and return ONLY valid JSON:
-
-{
-  "full_name": "The person's full name",
-  "role": "Their primary profession/role (e.g., Producer, Director, Artist, Musician, Songwriter)",
-  "bio": "A brief professional bio (max 500 chars)",
-  "location": "Their location if available (city, country)",
-  "avatar_url": "URL to their profile image if found",
-  "skills": ["list", "of", "skills"],
-  "awards": ["list of notable awards if any"],
-  "credits": ["list of notable work credits"],
-  "social_links": {
-    "twitter": "url if found",
-    "instagram": "url if found",
-    "website": "url if found"
-  }
-}
-
-If information is not available, use null. Be accurate and only include information that's clearly present.`
+            content: `You are an expert at extracting professional profile information from web pages.
+Extract information about the creator/artist from the provided content.`
           },
           {
             role: 'user',
-            content: `Extract profile information from this ${sourceType} page:\n\nURL: ${url}\n\nPage Title: ${pageTitle}\nPage Description: ${pageDescription}\n\nContent (first 25000 chars):\n${html.substring(0, 25000)}`
+            content: `Extract profile information from this ${sourceType} page:\n\nURL: ${url}\n\nPage Title: ${pageTitle}\nPage Description: ${pageDescription}\n\nContent:\n${html.substring(0, 20000)}`
           }
         ],
-        temperature: 0.3,
-        max_tokens: 2000
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "extract_profile",
+              description: "Extract professional profile information from web content",
+              parameters: {
+                type: "object",
+                properties: {
+                  full_name: { type: "string", description: "The person's full name" },
+                  role: { type: "string", description: "Their primary profession/role (e.g., Producer, Director, Artist, Musician, Songwriter)" },
+                  bio: { type: "string", description: "A brief professional bio (max 500 chars)" },
+                  location: { type: "string", description: "Their location if available (city, country)" },
+                  avatar_url: { type: "string", description: "URL to their profile image if found" },
+                  skills: { type: "array", items: { type: "string" }, description: "List of professional skills" },
+                  awards: { type: "array", items: { type: "string" }, description: "List of notable awards if any" },
+                  credits: { type: "array", items: { type: "string" }, description: "List of notable work credits" },
+                  twitter_url: { type: "string", description: "Twitter URL if found" },
+                  instagram_url: { type: "string", description: "Instagram URL if found" },
+                  website_url: { type: "string", description: "Personal website URL if found" }
+                },
+                required: ["full_name", "role"]
+              }
+            }
+          }
+        ],
+        tool_choice: { type: "function", function: { name: "extract_profile" } }
       })
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error('AI API error:', errorText);
-      throw new Error('Failed to process with AI');
+      throw new Error('Failed to process with AI: ' + errorText);
     }
 
     const aiResult = await aiResponse.json();
-    const aiContent = aiResult.choices?.[0]?.message?.content || '';
+    const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
     
-    // Parse the JSON response
+    if (!toolCall) {
+      console.error('No tool call in AI response:', JSON.stringify(aiResult));
+      throw new Error('AI did not return structured data');
+    }
+
     let profileData;
     try {
-      // Extract JSON from the response (handle markdown code blocks)
-      const jsonMatch = aiContent.match(/```json\s*([\s\S]*?)\s*```/) || 
-                        aiContent.match(/```\s*([\s\S]*?)\s*```/) ||
-                        [null, aiContent];
-      profileData = JSON.parse(jsonMatch[1] || aiContent);
+      profileData = JSON.parse(toolCall.function.arguments);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', aiContent);
+      console.error('Failed to parse tool call arguments:', toolCall.function.arguments);
       throw new Error('Failed to parse profile data');
     }
+
+    console.log('Extracted profile:', profileData.full_name);
 
     if (!profileData.full_name) {
       return new Response(
@@ -208,7 +219,7 @@ If information is not available, use null. Be accurate and only include informat
 
     if (createError) {
       console.error('Error creating profile:', createError);
-      throw new Error('Failed to create profile');
+      throw new Error('Failed to create profile: ' + createError.message);
     }
 
     // If we have credits, add them to the credits table

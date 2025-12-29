@@ -19,7 +19,9 @@ import {
   Loader2,
   UserCheck,
   AlertTriangle,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
@@ -32,17 +34,20 @@ interface UnclaimedProfile {
   location: string | null;
   is_claimed: boolean;
   imported_from_url: string | null;
+  claim_token: string | null;
+  professional_skills: any;
 }
 
 export default function ClaimProfile() {
   const { claimToken } = useParams<{ claimToken: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
   const [profile, setProfile] = useState<UnclaimedProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [claimed, setClaimed] = useState(false);
   
   // Form state
   const [verificationMethod, setVerificationMethod] = useState<'email' | 'social' | 'admin'>('email');
@@ -60,7 +65,7 @@ export default function ClaimProfile() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, is_claimed, imported_from_url')
+        .select('user_id, full_name, role, bio, avatar_url, location, is_claimed, imported_from_url, claim_token, professional_skills')
         .eq('claim_token', claimToken)
         .single();
 
@@ -79,6 +84,36 @@ export default function ClaimProfile() {
       navigate('/');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Instant claim for logged-in users
+  const instantClaim = async () => {
+    if (!profile || !user || !claimToken) return;
+    
+    setSubmitting(true);
+    try {
+      // Call the claim_profile function directly
+      const { data: claimResult, error: claimError } = await supabase.rpc('claim_profile', {
+        p_claim_token: claimToken,
+        p_user_id: user.id
+      });
+      
+      if (claimError) throw claimError;
+      
+      if (claimResult) {
+        setClaimed(true);
+        toast.success('Profile claimed successfully! Welcome to ThriveIN.');
+      } else {
+        // Fallback to claim request if instant claim fails
+        toast.error('Could not claim instantly. Submitting for review...');
+        await submitClaimRequest();
+      }
+    } catch (error) {
+      console.error('Error claiming profile:', error);
+      toast.error('Failed to claim profile. Try submitting for review.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -119,7 +154,7 @@ export default function ClaimProfile() {
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -129,6 +164,36 @@ export default function ClaimProfile() {
 
   if (!profile) {
     return null;
+  }
+
+  // Successfully claimed
+  if (claimed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="flex flex-col items-center py-12">
+            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+              <Sparkles className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold text-center mb-2">Welcome to ThriveIN!</h2>
+            <p className="text-muted-foreground text-center mb-2">
+              Your profile has been claimed and data transferred to your account.
+            </p>
+            <p className="text-sm text-muted-foreground text-center mb-6">
+              Now complete your profile to start connecting with other creators.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => navigate('/circle')}>
+                Explore Creators
+              </Button>
+              <Button onClick={() => navigate('/profile')}>
+                Complete Profile <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (submitted) {
@@ -143,9 +208,15 @@ export default function ClaimProfile() {
             <p className="text-muted-foreground text-center mb-6">
               We'll review your request and get back to you within 24-48 hours.
             </p>
-            <Button onClick={() => navigate('/')}>
-              Return Home
-            </Button>
+            {user ? (
+              <Button onClick={() => navigate('/circle')}>
+                Explore While You Wait
+              </Button>
+            ) : (
+              <Button onClick={() => navigate('/auth')}>
+                Create Account
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -203,15 +274,81 @@ export default function ClaimProfile() {
             )}
           </Card>
 
-          {/* Claim Form */}
+          {/* Instant Claim for Logged-in Users */}
+          {user && (
+            <Card className="border-primary/50 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Sparkles className="h-5 w-5" />
+                  Quick Claim
+                </CardTitle>
+                <CardDescription>
+                  You're logged in! Claim this profile instantly and start building your presence.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={instantClaim}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <UserCheck className="h-4 w-4 mr-2" />
+                  )}
+                  Claim Profile Now
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-3">
+                  This will transfer the profile data to your account
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Sign Up Prompt for Non-logged Users */}
+          {!user && (
+            <Card className="border-primary/50 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <Sparkles className="h-5 w-5" />
+                  Join ThriveIN to Claim
+                </CardTitle>
+                <CardDescription>
+                  Create an account to claim this profile and connect with other creators.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={() => navigate(`/auth?redirect=/claim/${claimToken}`)}
+                >
+                  Create Account <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Already have an account?{' '}
+                  <button 
+                    onClick={() => navigate(`/auth?redirect=/claim/${claimToken}`)}
+                    className="text-primary hover:underline"
+                  >
+                    Sign in
+                  </button>
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Alternative Verification (for users who need manual review) */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UserCheck className="h-5 w-5" />
-                Claim This Profile
+                <Shield className="h-5 w-5" />
+                Need Manual Verification?
               </CardTitle>
               <CardDescription>
-                Verify that you are {profile.full_name} to take ownership of this profile
+                If you need additional verification, submit a claim request for review
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -241,7 +378,7 @@ export default function ClaimProfile() {
                       placeholder="your@professional-email.com"
                     />
                     <p className="text-sm text-muted-foreground mt-2">
-                      Enter an email associated with your professional work. We'll send a verification link.
+                      Enter an email associated with your professional work.
                     </p>
                   </div>
                 </TabsContent>
@@ -255,13 +392,7 @@ export default function ClaimProfile() {
                       placeholder="https://twitter.com/yourhandle/status/..."
                     />
                     <p className="text-sm text-muted-foreground mt-2">
-                      Post about claiming your ThriveIN profile from a verified account, then paste the link here.
-                    </p>
-                  </div>
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <p className="text-sm font-medium mb-2">Suggested post:</p>
-                    <p className="text-sm text-muted-foreground italic">
-                      "I'm claiming my @ThriveIN profile! 🎵 #ThriveIN #VerifiedCreator"
+                      Post about claiming your ThriveIN profile from a verified account.
                     </p>
                   </div>
                 </TabsContent>
@@ -272,19 +403,16 @@ export default function ClaimProfile() {
                     <Textarea
                       value={adminMessage}
                       onChange={(e) => setAdminMessage(e.target.value)}
-                      placeholder="Provide any information that helps us verify your identity (agent contact, management email, official website, etc.)"
-                      className="min-h-[120px]"
+                      placeholder="Agent contact, management email, official website, etc."
+                      className="min-h-[100px]"
                     />
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Our team will manually review your request within 24-48 hours.
-                    </p>
                   </div>
                 </TabsContent>
               </Tabs>
 
               <Button 
+                variant="outline"
                 className="w-full mt-6" 
-                size="lg"
                 onClick={submitClaimRequest}
                 disabled={submitting}
               >
@@ -293,7 +421,7 @@ export default function ClaimProfile() {
                 ) : (
                   <UserCheck className="h-4 w-4 mr-2" />
                 )}
-                Submit Claim Request
+                Submit for Review
               </Button>
             </CardContent>
           </Card>

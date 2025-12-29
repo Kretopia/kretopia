@@ -239,6 +239,42 @@ export function UnclaimedProfilesTab() {
 
   const handleClaimRequest = async (requestId: string, approve: boolean) => {
     try {
+      // First get the claim request details
+      const { data: claimRequest, error: fetchError } = await supabase
+        .from('profile_claim_requests')
+        .select('profile_id, claimant_user_id')
+        .eq('id', requestId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+
+      if (approve && claimRequest?.claimant_user_id) {
+        // Get the claim token for the profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('claim_token')
+          .eq('user_id', claimRequest.profile_id)
+          .single();
+        
+        if (profileError) throw profileError;
+        
+        if (profileData?.claim_token) {
+          // Call the claim_profile function to transfer data
+          const { data: claimResult, error: claimError } = await supabase.rpc('claim_profile', {
+            p_claim_token: profileData.claim_token,
+            p_user_id: claimRequest.claimant_user_id
+          });
+          
+          if (claimError) throw claimError;
+          
+          if (!claimResult) {
+            toast.error('Failed to transfer profile data');
+            return;
+          }
+        }
+      }
+
+      // Update the claim request status
       const { error } = await supabase
         .from('profile_claim_requests')
         .update({
@@ -249,7 +285,20 @@ export function UnclaimedProfilesTab() {
 
       if (error) throw error;
 
-      toast.success(approve ? 'Claim approved!' : 'Claim rejected');
+      // Send notification to the claimant if approved
+      if (approve && claimRequest?.claimant_user_id) {
+        await supabase.from('notifications').insert({
+          user_id: claimRequest.claimant_user_id,
+          title: 'Profile Claim Approved! 🎉',
+          message: 'Your profile claim has been approved. Your profile data has been transferred to your account.',
+          type: 'system',
+          link: '/profile',
+          action_url: '/profile',
+          action_text: 'View Your Profile'
+        });
+      }
+
+      toast.success(approve ? 'Claim approved and profile transferred!' : 'Claim rejected');
       fetchData();
     } catch (error) {
       console.error('Error updating claim request:', error);

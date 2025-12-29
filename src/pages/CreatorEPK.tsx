@@ -264,11 +264,41 @@ const CreatorEPK = () => {
 
   const verificationBadge = getVerificationBadge();
 
+  // Prepare skills for structured data
+  const allSkills = [
+    ...(Array.isArray(profile.professional_skills) 
+      ? profile.professional_skills.map((s: any) => typeof s === 'string' ? s : s?.skill || s?.name).filter(Boolean)
+      : []),
+    ...(Array.isArray(profile.passion_skills)
+      ? profile.passion_skills.map((s: any) => typeof s === 'string' ? s : s?.skill || s?.name).filter(Boolean)
+      : [])
+  ];
+
+  const canonicalUrl = `https://thrivein.io/epk/${userId}`;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <SEO 
-        title={`${profile.full_name} | ${profile.role || 'Creator'}`}
-        description={profile.bio || `Connect with ${profile.full_name} on ThriveIN`}
+        title={`${profile.full_name} - ${profile.role || 'Creator'} | ThriveIN`}
+        description={profile.bio || `${profile.full_name} is a ${profile.role || 'creative professional'}${profile.location ? ` based in ${profile.location}` : ''}. View portfolio, work history, and connect on ThriveIN.`}
+        type="profile"
+        image={profile.avatar_url || undefined}
+        url={canonicalUrl}
+        profile={{
+          name: profile.full_name,
+          role: profile.role,
+          location: profile.location,
+          avatar: profile.avatar_url,
+          bio: profile.bio,
+          skills: allSkills.slice(0, 20),
+          socialLinks: {
+            instagram: profile.instagram_url,
+            twitter: profile.twitter_url,
+            linkedin: profile.linkedin_url,
+            youtube: profile.youtube_url,
+            website: profile.website
+          }
+        }}
       />
 
       {/* Main Content - Mobile-first vertical layout */}

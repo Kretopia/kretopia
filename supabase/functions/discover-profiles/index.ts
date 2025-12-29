@@ -57,7 +57,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           query: searchQuery,
-          limit: 10,
+          limit: 20,
           scrapeOptions: {
             formats: ["markdown"],
           },
@@ -69,7 +69,7 @@ serve(async (req) => {
 
       if (searchData.success && searchData.data) {
         // Process each result with AI to extract profile data
-        for (const result of searchData.data.slice(0, 5)) {
+        for (const result of searchData.data.slice(0, 15)) {
           const profile = await extractProfileWithAI(result.markdown || result.description, result.url, LOVABLE_API_KEY);
           if (profile) {
             discoveredProfiles.push(profile);
@@ -128,7 +128,7 @@ serve(async (req) => {
         // Extract profile links from the page
         const profileLinks = (scrapeData.data.links || [])
           .filter((link: string) => isProfileLink(link, platform))
-          .slice(0, 5);
+          .slice(0, 15);
 
         // Scrape individual profiles
         for (const profileUrl of profileLinks) {
@@ -175,7 +175,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           query: searchQuery,
-          limit: 10,
+          limit: 20,
           tbs: "qdr:y", // Last year
           scrapeOptions: {
             formats: ["markdown"],
@@ -185,7 +185,7 @@ serve(async (req) => {
 
       const searchData = await searchResponse.json();
       if (searchData.success && searchData.data) {
-        for (const result of searchData.data.slice(0, 5)) {
+        for (const result of searchData.data.slice(0, 15)) {
           const profile = await extractProfileFromNews(
             result.markdown || result.description,
             result.url,

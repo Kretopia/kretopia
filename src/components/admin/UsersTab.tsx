@@ -34,18 +34,28 @@ export function UsersTab() {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(`
-          *,
-          user_roles (
-            role
-          )
-        `)
-        .order("created_at", { ascending: false });
+      // Fetch profiles and roles separately (no FK relationship)
+      const [profilesRes, rolesRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("*")
+          .order("created_at", { ascending: false }),
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
 
-      if (error) throw error;
-      setUsers(data || []);
+      if (profilesRes.error) throw profilesRes.error;
+
+      // Map roles to users
+      const rolesMap = new Map(
+        (rolesRes.data || []).map((r) => [r.user_id, r.role])
+      );
+
+      const usersWithRoles = (profilesRes.data || []).map((user) => ({
+        ...user,
+        admin_role: rolesMap.get(user.user_id) || "user",
+      }));
+
+      setUsers(usersWithRoles);
     } catch (error) {
       console.error("Error fetching users:", error);
       toast({
@@ -130,7 +140,7 @@ export function UsersTab() {
           </TableHeader>
           <TableBody>
             {filteredUsers.map((user) => {
-              const userRole = user.user_roles?.[0]?.role || "user";
+              const userRole = user.admin_role || "user";
               return (
                 <TableRow key={user.id}>
                   <TableCell>

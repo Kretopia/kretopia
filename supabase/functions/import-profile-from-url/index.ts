@@ -31,8 +31,18 @@ serve(async (req) => {
       sourceType = 'discogs';
     } else if (urlLower.includes('allmusic.com')) {
       sourceType = 'allmusic';
-    } else if (urlLower.includes('spotify.com')) {
+    } else if (urlLower.includes('spotify.com') || urlLower.includes('artists.spotify.com')) {
       sourceType = 'spotify';
+    } else if (urlLower.includes('soundcloud.com')) {
+      sourceType = 'soundcloud';
+    } else if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) {
+      sourceType = 'youtube';
+    } else if (urlLower.includes('behance.net')) {
+      sourceType = 'behance';
+    } else if (urlLower.includes('dribbble.com')) {
+      sourceType = 'dribbble';
+    } else if (urlLower.includes('artstation.com')) {
+      sourceType = 'artstation';
     } else if (urlLower.includes('linkedin.com')) {
       return new Response(
         JSON.stringify({ error: 'LinkedIn profiles cannot be imported due to restrictions' }),
@@ -40,35 +50,76 @@ serve(async (req) => {
       );
     }
 
-    // Fetch the webpage content
-    console.log(`Fetching URL: ${url}`);
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch URL: ${response.status}`);
-    }
-
-    const html = await response.text();
+    // Use Firecrawl to fetch the page content (better than raw fetch for JS-rendered pages)
+    const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY');
+    let html = '';
+    let pageTitle = '';
+    let pageDescription = '';
     
-    // Use AI to extract profile information
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (FIRECRAWL_API_KEY) {
+      console.log(`Using Firecrawl to scrape URL: ${url}`);
+      try {
+        const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url,
+            formats: ['markdown', 'html'],
+            onlyMainContent: true,
+            waitFor: 3000,
+          }),
+        });
+
+        if (firecrawlResponse.ok) {
+          const firecrawlData = await firecrawlResponse.json();
+          html = firecrawlData.data?.markdown || firecrawlData.data?.html || '';
+          pageTitle = firecrawlData.data?.metadata?.title || '';
+          pageDescription = firecrawlData.data?.metadata?.description || '';
+          console.log('Firecrawl scrape successful');
+        } else {
+          console.log('Firecrawl failed, falling back to fetch');
+        }
+      } catch (e) {
+        console.error('Firecrawl error:', e);
+      }
     }
 
-    const aiResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+    // Fallback to direct fetch if Firecrawl didn't work
+    if (!html) {
+      console.log(`Fetching URL directly: ${url}`);
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch URL: ${response.status}`);
+      }
+
+      html = await response.text();
+    }
+
+    if (!html || html.length < 100) {
+      return new Response(
+        JSON.stringify({ error: 'Could not retrieve content from this URL. The page may be protected or require authentication.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    
+    // Use Lovable AI to extract profile information
+    console.log('Calling Lovable AI for extraction...');
+    const aiResponse = await fetch('https://ai.lovable.dev/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'openai/gpt-5-mini',
         messages: [
           {
             role: 'system',
@@ -76,7 +127,7 @@ serve(async (req) => {
 
 {
   "full_name": "The person's full name",
-  "role": "Their primary profession/role (e.g., Producer, Director, Artist, Musician)",
+  "role": "Their primary profession/role (e.g., Producer, Director, Artist, Musician, Songwriter)",
   "bio": "A brief professional bio (max 500 chars)",
   "location": "Their location if available (city, country)",
   "avatar_url": "URL to their profile image if found",
@@ -94,7 +145,7 @@ If information is not available, use null. Be accurate and only include informat
           },
           {
             role: 'user',
-            content: `Extract profile information from this ${sourceType} page:\n\nURL: ${url}\n\nHTML Content (first 30000 chars):\n${html.substring(0, 30000)}`
+            content: `Extract profile information from this ${sourceType} page:\n\nURL: ${url}\n\nPage Title: ${pageTitle}\nPage Description: ${pageDescription}\n\nContent (first 25000 chars):\n${html.substring(0, 25000)}`
           }
         ],
         temperature: 0.3,

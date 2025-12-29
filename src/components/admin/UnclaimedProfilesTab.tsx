@@ -79,11 +79,14 @@ export function UnclaimedProfilesTab() {
   
   // AI Discovery states
   const [discovering, setDiscovering] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [discoveredProfiles, setDiscoveredProfiles] = useState<DiscoveredProfile[]>([]);
   const [discoveryType, setDiscoveryType] = useState<'industry' | 'platform' | 'news'>('industry');
   const [discoveryQuery, setDiscoveryQuery] = useState('');
   const [discoveryPlatform, setDiscoveryPlatform] = useState('imdb');
   const [importingDiscovered, setImportingDiscovered] = useState<string | null>(null);
+  const [discoveryPage, setDiscoveryPage] = useState(1);
+  const [hasMoreResults, setHasMoreResults] = useState(false);
   
   // Form states
   const [newProfile, setNewProfile] = useState({
@@ -306,28 +309,42 @@ export function UnclaimedProfilesTab() {
     }
   };
 
-  const discoverProfiles = async () => {
+  const discoverProfiles = async (loadMore = false) => {
     if (!discoveryQuery.trim()) {
       toast.error('Please enter a search query');
       return;
     }
 
-    setDiscovering(true);
-    setDiscoveredProfiles([]);
+    const page = loadMore ? discoveryPage + 1 : 1;
+    
+    if (loadMore) {
+      setLoadingMore(true);
+    } else {
+      setDiscovering(true);
+      setDiscoveredProfiles([]);
+      setDiscoveryPage(1);
+    }
     
     try {
       const { data, error } = await supabase.functions.invoke('discover-profiles', {
         body: {
           searchType: discoveryType,
           query: discoveryQuery,
-          platform: discoveryPlatform
+          platform: discoveryPlatform,
+          page
         }
       });
 
       if (error) throw error;
 
       if (data?.success && data.profiles) {
-        setDiscoveredProfiles(data.profiles);
+        if (loadMore) {
+          setDiscoveredProfiles(prev => [...prev, ...data.profiles]);
+        } else {
+          setDiscoveredProfiles(data.profiles);
+        }
+        setDiscoveryPage(page);
+        setHasMoreResults(data.hasMore || false);
         toast.success(`Found ${data.profiles.length} profiles`);
       } else {
         toast.error(data?.error || 'No profiles found');
@@ -337,6 +354,7 @@ export function UnclaimedProfilesTab() {
       toast.error('Failed to discover profiles');
     } finally {
       setDiscovering(false);
+      setLoadingMore(false);
     }
   };
 
@@ -621,7 +639,7 @@ export function UnclaimedProfilesTab() {
                     }
                     onKeyDown={(e) => e.key === 'Enter' && discoverProfiles()}
                   />
-                  <Button onClick={discoverProfiles} disabled={discovering}>
+                  <Button onClick={() => discoverProfiles(false)} disabled={discovering}>
                     {discovering ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
@@ -638,13 +656,34 @@ export function UnclaimedProfilesTab() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Discovered Profiles ({discoveredProfiles.length})</h3>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setDiscoveredProfiles([])}
-                >
-                  Clear Results
-                </Button>
+                <div className="flex gap-2">
+                  {hasMoreResults && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => discoverProfiles(true)}
+                      disabled={loadingMore}
+                    >
+                      {loadingMore ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Plus className="h-4 w-4 mr-2" />
+                      )}
+                      Load More
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setDiscoveredProfiles([]);
+                      setHasMoreResults(false);
+                      setDiscoveryPage(1);
+                    }}
+                  >
+                    Clear Results
+                  </Button>
+                </div>
               </div>
               
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

@@ -22,8 +22,10 @@ serve(async (req) => {
   }
 
   try {
-    const { searchType, query, platform } = await req.json();
-    console.log("Discovery request:", { searchType, query, platform });
+    const { searchType, query, platform, page = 1 } = await req.json();
+    const pageSize = 15;
+    const offset = (page - 1) * pageSize;
+    console.log("Discovery request:", { searchType, query, platform, page });
 
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -57,7 +59,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           query: searchQuery,
-          limit: 20,
+          limit: 30, // Fetch more to allow pagination
           scrapeOptions: {
             formats: ["markdown"],
           },
@@ -68,8 +70,12 @@ serve(async (req) => {
       console.log("Search results:", searchData.success ? `${searchData.data?.length || 0} results` : "failed");
 
       if (searchData.success && searchData.data) {
+        // Paginate results
+        const paginatedResults = searchData.data.slice(offset, offset + pageSize);
+        const hasMore = searchData.data.length > offset + pageSize;
+        
         // Process each result with AI to extract profile data
-        for (const result of searchData.data.slice(0, 15)) {
+        for (const result of paginatedResults) {
           const profile = await extractProfileWithAI(result.markdown || result.description, result.url, LOVABLE_API_KEY);
           if (profile) {
             discoveredProfiles.push(profile);
@@ -206,6 +212,8 @@ serve(async (req) => {
         success: true,
         profiles: uniqueProfiles,
         count: uniqueProfiles.length,
+        page,
+        hasMore: uniqueProfiles.length >= pageSize,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

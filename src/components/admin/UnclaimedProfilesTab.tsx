@@ -81,7 +81,7 @@ export function UnclaimedProfilesTab() {
   const [discovering, setDiscovering] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [discoveredProfiles, setDiscoveredProfiles] = useState<DiscoveredProfile[]>([]);
-  const [discoveryType, setDiscoveryType] = useState<'industry' | 'platform' | 'news'>('industry');
+  const [discoveryType, setDiscoveryType] = useState<'industry' | 'platform' | 'news' | 'name'>('name');
   const [discoveryQuery, setDiscoveryQuery] = useState('');
   const [discoveryPlatform, setDiscoveryPlatform] = useState('imdb');
   const [importingDiscovered, setImportingDiscovered] = useState<string | null>(null);
@@ -484,7 +484,7 @@ export function UnclaimedProfilesTab() {
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <p className="text-sm text-muted-foreground">
-                  Paste an IMDB, Discogs, AllMusic, or public profile URL. AI will extract the information.
+                  Paste a profile URL (IMDB, Discogs, AllMusic, Spotify, YouTube, Behance, etc.). AI will extract the information.
                 </p>
                 <div>
                   <Label>Profile URL</Label>
@@ -579,6 +579,12 @@ export function UnclaimedProfilesTab() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="name">
+                        <div className="flex items-center gap-2">
+                          <UserPlus className="h-4 w-4" />
+                          Search by Name
+                        </div>
+                      </SelectItem>
                       <SelectItem value="industry">
                         <div className="flex items-center gap-2">
                           <Search className="h-4 w-4" />
@@ -622,6 +628,7 @@ export function UnclaimedProfilesTab() {
 
               <div>
                 <Label>
+                  {discoveryType === 'name' && 'Creative Name (e.g., "Pharrell Williams", "Hans Zimmer")'}
                   {discoveryType === 'industry' && 'Search Query (e.g., "music producers in Los Angeles")'}
                   {discoveryType === 'platform' && 'Search Term (e.g., "electronic music", "cinematographer")'}
                   {discoveryType === 'news' && 'Creator Name or Topic'}
@@ -631,7 +638,9 @@ export function UnclaimedProfilesTab() {
                     value={discoveryQuery}
                     onChange={(e) => setDiscoveryQuery(e.target.value)}
                     placeholder={
-                      discoveryType === 'industry' 
+                      discoveryType === 'name'
+                        ? "Hans Zimmer"
+                        : discoveryType === 'industry' 
                         ? "music producer Los Angeles" 
                         : discoveryType === 'platform'
                         ? "electronic music"

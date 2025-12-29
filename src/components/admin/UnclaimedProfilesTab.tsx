@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -23,7 +24,10 @@ import {
   Loader2,
   Users,
   FileSpreadsheet,
-  Sparkles
+  Sparkles,
+  Radar,
+  Globe,
+  Plus
 } from 'lucide-react';
 
 interface UnclaimedProfile {
@@ -53,6 +57,16 @@ interface ClaimRequest {
   };
 }
 
+interface DiscoveredProfile {
+  name: string;
+  role: string;
+  bio?: string;
+  location?: string;
+  sourceUrl: string;
+  skills?: string[];
+  imageUrl?: string;
+}
+
 export function UnclaimedProfilesTab() {
   const [unclaimedProfiles, setUnclaimedProfiles] = useState<UnclaimedProfile[]>([]);
   const [claimRequests, setClaimRequests] = useState<ClaimRequest[]>([]);
@@ -62,6 +76,14 @@ export function UnclaimedProfilesTab() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showBulkDialog, setShowBulkDialog] = useState(false);
+  
+  // AI Discovery states
+  const [discovering, setDiscovering] = useState(false);
+  const [discoveredProfiles, setDiscoveredProfiles] = useState<DiscoveredProfile[]>([]);
+  const [discoveryType, setDiscoveryType] = useState<'industry' | 'platform' | 'news'>('industry');
+  const [discoveryQuery, setDiscoveryQuery] = useState('');
+  const [discoveryPlatform, setDiscoveryPlatform] = useState('imdb');
+  const [importingDiscovered, setImportingDiscovered] = useState<string | null>(null);
   
   // Form states
   const [newProfile, setNewProfile] = useState({
@@ -235,6 +257,68 @@ export function UnclaimedProfilesTab() {
     }
   };
 
+  const discoverProfiles = async () => {
+    if (!discoveryQuery.trim()) {
+      toast.error('Please enter a search query');
+      return;
+    }
+
+    setDiscovering(true);
+    setDiscoveredProfiles([]);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('discover-profiles', {
+        body: {
+          searchType: discoveryType,
+          query: discoveryQuery,
+          platform: discoveryPlatform
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data.profiles) {
+        setDiscoveredProfiles(data.profiles);
+        toast.success(`Found ${data.profiles.length} profiles`);
+      } else {
+        toast.error(data?.error || 'No profiles found');
+      }
+    } catch (error) {
+      console.error('Error discovering profiles:', error);
+      toast.error('Failed to discover profiles');
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  const importDiscoveredProfile = async (profile: DiscoveredProfile) => {
+    setImportingDiscovered(profile.name);
+    
+    try {
+      const { data, error } = await supabase.rpc('create_unclaimed_profile', {
+        p_full_name: profile.name,
+        p_role: profile.role,
+        p_bio: profile.bio || null,
+        p_location: profile.location || null,
+        p_avatar_url: profile.imageUrl || null,
+        p_professional_skills: profile.skills ? JSON.stringify(profile.skills) : '[]',
+        p_imported_from_url: profile.sourceUrl,
+        p_source: 'ai_discovery'
+      });
+
+      if (error) throw error;
+
+      toast.success(`Imported: ${profile.name}`);
+      setDiscoveredProfiles(prev => prev.filter(p => p.name !== profile.name));
+      fetchData();
+    } catch (error) {
+      console.error('Error importing profile:', error);
+      toast.error('Failed to import profile');
+    } finally {
+      setImportingDiscovered(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -391,17 +475,212 @@ export function UnclaimedProfilesTab() {
         </div>
       </div>
 
-      <Tabs defaultValue="profiles">
+      <Tabs defaultValue="discover">
         <TabsList>
+          <TabsTrigger value="discover" className="gap-2">
+            <Radar className="h-4 w-4" />
+            AI Discovery
+          </TabsTrigger>
           <TabsTrigger value="profiles" className="gap-2">
             <Users className="h-4 w-4" />
             Profiles ({unclaimedProfiles.length})
           </TabsTrigger>
           <TabsTrigger value="claims" className="gap-2">
             <Clock className="h-4 w-4" />
-            Claim Requests ({claimRequests.length})
+            Claims ({claimRequests.length})
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="discover" className="mt-4 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Radar className="h-5 w-5 text-primary" />
+                AI Profile Discovery
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Let AI search the web and discover creator profiles from various sources.
+              </p>
+              
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label>Discovery Type</Label>
+                  <Select value={discoveryType} onValueChange={(v: any) => setDiscoveryType(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="industry">
+                        <div className="flex items-center gap-2">
+                          <Search className="h-4 w-4" />
+                          Industry Search
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="platform">
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4" />
+                          Platform Crawl
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="news">
+                        <div className="flex items-center gap-2">
+                          <FileSpreadsheet className="h-4 w-4" />
+                          News & Press
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {discoveryType === 'platform' && (
+                  <div>
+                    <Label>Platform</Label>
+                    <Select value={discoveryPlatform} onValueChange={setDiscoveryPlatform}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="imdb">IMDb</SelectItem>
+                        <SelectItem value="discogs">Discogs</SelectItem>
+                        <SelectItem value="spotify">Spotify</SelectItem>
+                        <SelectItem value="behance">Behance</SelectItem>
+                        <SelectItem value="dribbble">Dribbble</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label>
+                  {discoveryType === 'industry' && 'Search Query (e.g., "music producers in Los Angeles")'}
+                  {discoveryType === 'platform' && 'Search Term (e.g., "electronic music", "cinematographer")'}
+                  {discoveryType === 'news' && 'Creator Name or Topic'}
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={discoveryQuery}
+                    onChange={(e) => setDiscoveryQuery(e.target.value)}
+                    placeholder={
+                      discoveryType === 'industry' 
+                        ? "music producer Los Angeles" 
+                        : discoveryType === 'platform'
+                        ? "electronic music"
+                        : "Grammy winning producer"
+                    }
+                    onKeyDown={(e) => e.key === 'Enter' && discoverProfiles()}
+                  />
+                  <Button onClick={discoverProfiles} disabled={discovering}>
+                    {discovering ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Discovery Results */}
+          {discoveredProfiles.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Discovered Profiles ({discoveredProfiles.length})</h3>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDiscoveredProfiles([])}
+                >
+                  Clear Results
+                </Button>
+              </div>
+              
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {discoveredProfiles.map((profile, idx) => (
+                  <Card key={idx} className="relative">
+                    <Badge 
+                      variant="secondary" 
+                      className="absolute top-3 right-3 bg-blue-500/20 text-blue-600"
+                    >
+                      Discovered
+                    </Badge>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={profile.imageUrl} />
+                          <AvatarFallback>
+                            {profile.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">{profile.name}</h3>
+                          <p className="text-sm text-muted-foreground truncate">{profile.role}</p>
+                          {profile.location && (
+                            <p className="text-xs text-muted-foreground">{profile.location}</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {profile.bio && (
+                        <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
+                          {profile.bio}
+                        </p>
+                      )}
+
+                      {profile.skills && profile.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {profile.skills.slice(0, 3).map((skill, i) => (
+                            <Badge key={i} variant="outline" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 mt-4">
+                        <Button 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => importDiscoveredProfile(profile)}
+                          disabled={importingDiscovered === profile.name}
+                        >
+                          {importingDiscovered === profile.name ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : (
+                            <Plus className="h-3 w-3 mr-1" />
+                          )}
+                          Import
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => window.open(profile.sourceUrl, '_blank')}
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {discovering && (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <h3 className="text-lg font-medium">Searching the web...</h3>
+                <p className="text-muted-foreground text-center">
+                  AI is discovering creator profiles. This may take a moment.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
         <TabsContent value="profiles" className="mt-4">
           {unclaimedProfiles.length === 0 ? (

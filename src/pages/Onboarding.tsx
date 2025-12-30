@@ -284,20 +284,6 @@ export default function Onboarding() {
       await completeOnboarding();
       return;
     }
-      // Skills step - at least 1 required
-      if (selectedSkills.length === 0) {
-        toast({
-          title: "Add at least one skill",
-          description: "Skills help AI match you with the right collaborators",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Complete onboarding
-      await completeOnboarding();
-      return;
-    }
 
     setCurrentStep(currentStep + 1);
   };

@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X, Mail, RefreshCw } from "lucide-react";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
@@ -50,6 +50,11 @@ const Auth = () => {
   const [newPasswordError, setNewPasswordError] = useState("");
   const [confirmNewPasswordError, setConfirmNewPasswordError] = useState("");
   const [showWaitlistForm, setShowWaitlistForm] = useState(false);
+  
+  // Email confirmation state
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState("");
+  const [resendingEmail, setResendingEmail] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -371,41 +376,35 @@ const Auth = () => {
         }
       }
       
-      // Send welcome email (non-blocking)
-      try {
-        console.log('[Auth] Sending welcome email...');
-        supabase.functions.invoke('send-user-email', {
-          body: {
-            type: 'welcome',
-            data: { userName: email.split('@')[0] || 'there' }
-          }
-        }).then(({ error }) => {
-          if (error) {
-            console.warn('[Auth] Welcome email failed:', error);
-          } else {
-            console.log('[Auth] Welcome email sent successfully');
-          }
-        });
-      } catch (emailErr) {
-        console.warn('[Auth] Welcome email error:', emailErr);
-      }
-      
-      toast({
-        title: "Welcome to ThriveIN! 🎉",
-        description: "Your exclusive access has been granted.",
-      });
-      
       // Store connect user ID for after onboarding if present
       if (connectUserId) {
-        // Store in localStorage to process after onboarding
         localStorage.setItem('pendingConnect', connectUserId);
       }
       
-      // Redirect based on account type
-      if (accountType === "company") {
-        navigate("/company-onboarding");
+      // Check if email confirmation is required (user not confirmed yet)
+      const needsEmailConfirmation = signUpData?.user && !signUpData.user.confirmed_at;
+      
+      if (needsEmailConfirmation) {
+        // Show email confirmation message
+        setShowEmailConfirmation(true);
+        setConfirmationEmail(email);
+        toast({
+          title: "Check your email! 📧",
+          description: "We've sent a confirmation link to verify your account.",
+        });
       } else {
-        navigate("/onboarding");
+        // Auto-confirmed - proceed directly
+        toast({
+          title: "Welcome to ThriveIN! 🎉",
+          description: "Your exclusive access has been granted.",
+        });
+        
+        // Redirect based on account type
+        if (accountType === "company") {
+          navigate("/company-onboarding");
+        } else {
+          navigate("/onboarding");
+        }
       }
     }
     setLoading(false);
@@ -492,7 +491,107 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleResendConfirmation = async () => {
+    if (!confirmationEmail) return;
+    
+    setResendingEmail(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: confirmationEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}${redirectTo}`,
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Email Sent! 📧",
+        description: "We've resent the confirmation link. Check your inbox and spam folder.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resend confirmation email",
+        variant: "destructive",
+      });
+    } finally {
+      setResendingEmail(false);
+    }
+  };
 
+  // Show email confirmation screen
+  if (showEmailConfirmation) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
+        <div className="w-full max-w-md">
+          <Card className="p-8 text-center space-y-6">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-10 w-10 text-primary" />
+            </div>
+            
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold">Check Your Email 📧</h1>
+              <p className="text-muted-foreground">
+                We've sent a confirmation link to:
+              </p>
+              <p className="font-medium text-foreground">{confirmationEmail}</p>
+            </div>
+            
+            <div className="space-y-4 pt-4">
+              <p className="text-sm text-muted-foreground">
+                Click the link in your email to verify your account and start matching with creators.
+              </p>
+              
+              <div className="flex flex-col gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleResendConfirmation}
+                  disabled={resendingEmail}
+                  className="w-full"
+                >
+                  {resendingEmail ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Resend Confirmation Email
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setShowEmailConfirmation(false);
+                    setConfirmationEmail("");
+                    setEmail("");
+                    setPassword("");
+                    setConfirmPassword("");
+                    setSignupStep(1);
+                  }}
+                  className="w-full"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Sign Up
+                </Button>
+              </div>
+            </div>
+            
+            <div className="pt-4 border-t">
+              <p className="text-xs text-muted-foreground">
+                Didn't receive an email? Check your spam folder or try resending.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 sm:px-6 py-8 sm:py-12">

@@ -21,7 +21,9 @@ import {
   Instagram,
   Twitter,
   Linkedin,
-  Youtube
+  Youtube,
+  UserCheck,
+  ArrowRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
@@ -53,6 +55,7 @@ interface Profile {
   passion_skills?: any;
   collab_intent?: string;
   rate_range?: string;
+  is_claimed?: boolean;
 }
 
 interface PortfolioItem {
@@ -108,7 +111,7 @@ const CreatorEPK = () => {
         // Fetch from profiles table directly - RLS allows public read
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range')
+          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -369,6 +372,27 @@ const CreatorEPK = () => {
             </div>
           )}
         </div>
+
+        {/* Unclaimed Profile Banner */}
+        {profile.is_claimed === false && (
+          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+            <div className="flex items-center gap-2 text-amber-500 mb-2">
+              <Sparkles className="h-4 w-4" />
+              <span className="font-semibold">Is this you?</span>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              Claim this profile to unlock all features, connect with other creators, and manage your presence on ThriveIN.
+            </p>
+            <Button 
+              onClick={() => navigate(`/auth?claim=${profile.user_id}`)}
+              className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+            >
+              <UserCheck className="h-4 w-4" />
+              Claim This Profile
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
 
         {/* CTA Buttons */}
         <div className="space-y-3 mb-8">

@@ -91,7 +91,7 @@ const ViewProfile = () => {
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
-  const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
   const [showShareDialog, setShowShareDialog] = useState(false);
   
   const isFromMatch = searchParams.get('from') === 'match';

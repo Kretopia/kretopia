@@ -157,9 +157,9 @@ const TIER_CONFIG = {
     label: "Verified"
   },
   industry: {
-    icon: Star,
-    color: "text-purple-500",
-    bgColor: "bg-purple-500/20 border-purple-500/50",
+    icon: Award,
+    color: "text-amber-500",
+    bgColor: "bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-500/50",
     label: "Industry Verified"
   },
   elite: {

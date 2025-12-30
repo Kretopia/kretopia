@@ -22,6 +22,7 @@ interface PortfolioItem {
 interface AddPortfolioStepProps {
   userId: string;
   onComplete: (items: PortfolioItem[]) => void;
+  onSkip?: () => void;
 }
 
 const EXAMPLE_URLS = [
@@ -42,7 +43,7 @@ const CATEGORIES = [
   "Other"
 ];
 
-export const AddPortfolioStep = ({ userId, onComplete }: AddPortfolioStepProps) => {
+export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioStepProps) => {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -112,8 +113,9 @@ export const AddPortfolioStep = ({ userId, onComplete }: AddPortfolioStepProps) 
   };
 
   const saveAndContinue = async () => {
+    // Portfolio is now optional - can continue with 0 items
     if (items.length === 0) {
-      toast.error("Add at least one portfolio item to continue");
+      await onComplete([]);
       return;
     }
 
@@ -155,7 +157,7 @@ export const AddPortfolioStep = ({ userId, onComplete }: AddPortfolioStepProps) 
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold">Showcase Your Work</h2>
         <p className="text-muted-foreground">
-          Add at least one portfolio item to help others discover your talent
+          Add portfolio items to help others discover your talent (optional if you imported credits)
         </p>
       </div>
 
@@ -342,15 +344,22 @@ export const AddPortfolioStep = ({ userId, onComplete }: AddPortfolioStepProps) 
 
       <div className="flex justify-between pt-6 border-t">
         <div className="text-sm text-muted-foreground">
-          {items.length === 0 ? "Add at least 1 item to continue" : `${items.length} item${items.length > 1 ? 's' : ''} added`}
+          {items.length === 0 ? "Portfolio is optional if you imported credits" : `${items.length} item${items.length > 1 ? 's' : ''} added`}
         </div>
-        <Button 
-          onClick={saveAndContinue} 
-          disabled={items.length === 0 || isLoading}
-        >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          Continue
-        </Button>
+        <div className="flex gap-2">
+          {items.length === 0 && onSkip && (
+            <Button variant="ghost" onClick={onSkip}>
+              Skip for now
+            </Button>
+          )}
+          <Button 
+            onClick={saveAndContinue} 
+            disabled={isLoading}
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            {items.length === 0 ? "Continue" : "Save & Continue"}
+          </Button>
+        </div>
       </div>
     </div>
   );

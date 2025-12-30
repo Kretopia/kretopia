@@ -104,14 +104,17 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             </div>
           )}
 
-          {/* Unclaimed Badge - show prominently for imported profiles (only if not industry verified) */}
-          {!isIndustryVerified && profile.is_claimed === false && (
-            <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+          {/* Unclaimed Badge - show for imported profiles (positioned after Industry Verified if both present) */}
+          {profile.is_claimed === false && (
+            <div className={cn(
+              "absolute top-3 sm:top-4",
+              isIndustryVerified ? "left-[9.5rem] sm:left-44" : "left-3 sm:left-4"
+            )}>
               <Badge 
                 variant="outline" 
-                className="bg-orange-500/30 text-orange-200 border-orange-400/50 backdrop-blur-sm text-xs"
+                className="bg-violet-500/30 text-violet-200 border-violet-400/50 backdrop-blur-sm text-xs"
               >
-                ✨ Unclaimed Profile
+                ✨ Unclaimed
               </Badge>
             </div>
           )}

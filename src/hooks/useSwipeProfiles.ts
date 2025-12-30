@@ -15,6 +15,8 @@ export interface SwipeProfile {
   badge: string | null;
   collab_intent: string | null;
   portfolio_count?: number;
+  credits_count?: number;
+  awards_count?: number;
   verification_tier?: string | null;
   instagram_followers?: number | null;
   youtube_subscribers?: number | null;
@@ -136,24 +138,39 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
 
       console.log('[useSwipeProfiles] After filtering:', filtered.length);
 
-      // Step 5: Get portfolio counts - unclaimed profiles skip portfolio requirement
+      // Step 5: Get portfolio, credits, and awards counts
       if (filtered.length > 0) {
         const userIds = filtered.map(p => p.user_id);
-        const { data: portfolioData } = await supabase
-          .from('portfolio_items')
-          .select('user_id')
-          .in('user_id', userIds);
+        
+        // Fetch portfolio, credits, and awards counts in parallel
+        const [portfolioResult, creditsResult, awardsResult] = await Promise.all([
+          supabase.from('portfolio_items').select('user_id').in('user_id', userIds),
+          supabase.from('credits').select('user_id').in('user_id', userIds),
+          supabase.from('awards').select('user_id').in('user_id', userIds)
+        ]);
 
         const portfolioCounts = new Map<string, number>();
-        portfolioData?.forEach(item => {
+        portfolioResult.data?.forEach(item => {
           portfolioCounts.set(item.user_id, (portfolioCounts.get(item.user_id) || 0) + 1);
         });
 
-        // Add portfolio count - unclaimed profiles don't require portfolio items
+        const creditsCounts = new Map<string, number>();
+        creditsResult.data?.forEach(item => {
+          creditsCounts.set(item.user_id, (creditsCounts.get(item.user_id) || 0) + 1);
+        });
+
+        const awardsCounts = new Map<string, number>();
+        awardsResult.data?.forEach(item => {
+          awardsCounts.set(item.user_id, (awardsCounts.get(item.user_id) || 0) + 1);
+        });
+
+        // Add counts - unclaimed profiles don't require portfolio items
         filtered = filtered
           .map(p => ({
             ...p,
-            portfolio_count: portfolioCounts.get(p.user_id) || 0
+            portfolio_count: portfolioCounts.get(p.user_id) || 0,
+            credits_count: creditsCounts.get(p.user_id) || 0,
+            awards_count: awardsCounts.get(p.user_id) || 0
           }))
           .filter(p => {
             // Unclaimed profiles can appear without portfolio items (they have imported credits instead)

@@ -24,7 +24,7 @@ interface ClaimProfileDialogProps {
   onSuccess: () => void;
 }
 
-type Step = 'intro' | 'credentials' | 'camera' | 'verifying' | 'success' | 'failed';
+type Step = 'intro' | 'camera' | 'verifying' | 'credentials' | 'creating' | 'success' | 'failed';
 
 export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: ClaimProfileDialogProps) {
   const { user } = useAuth();
@@ -88,13 +88,8 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
   }, []);
 
   const handleStartVerification = async () => {
-    if (user) {
-      // User is already logged in, go straight to camera
-      startCamera();
-    } else {
-      // User needs to create account first
-      setStep('credentials');
-    }
+    // Always start with camera verification first
+    startCamera();
   };
 
   const handleCreateAccountAndVerify = async () => {
@@ -181,70 +176,15 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
       setVerificationResult(data);
       
       if (data.verified) {
-        // The user claiming the profile
-        const claimingUserId = user?.id || newUserId;
-        
-        if (!claimingUserId) {
-          toast.error("No user account found. Please try again.");
-          setStep('failed');
-          return;
+        // Face verified! Now check if user needs to create account
+        if (user) {
+          // User is already logged in, complete the claim
+          await completeProfileClaim(user.id);
+        } else {
+          // User needs to create account first
+          toast.success("Identity verified! Now create your account.");
+          setStep('credentials');
         }
-
-        // Transfer unclaimed profile data to the new user's profile
-        // First, update the claiming user's profile with the unclaimed profile's data
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ 
-            full_name: profile.full_name,
-            role: profile.role,
-            bio: profile.bio,
-            avatar_url: profile.avatar_url,
-            location: profile.location,
-            professional_skills: profile.professional_skills,
-            imported_data: profile.imported_data,
-            imported_from_url: profile.imported_from_url,
-            badge: 'og', // Industry leaders get OG badge
-            verification_tier: 'industry' // Set industry verified tier
-          })
-          .eq('user_id', claimingUserId);
-
-        if (updateError) {
-          console.error('Profile update error:', updateError);
-          toast.error("Verified but failed to transfer profile. Please contact support.");
-          setStep('failed');
-          return;
-        }
-
-        // Mark the original unclaimed profile as claimed
-        await supabase
-          .from('profiles')
-          .update({ 
-            is_claimed: true, 
-            claimed_at: new Date().toISOString(),
-            claimed_by: claimingUserId
-          })
-          .eq('user_id', profile.user_id);
-
-        // Transfer credits from unclaimed profile to new user
-        await supabase
-          .from('credits')
-          .update({ user_id: claimingUserId })
-          .eq('user_id', profile.user_id);
-
-        // Transfer awards from unclaimed profile to new user
-        await supabase
-          .from('awards')
-          .update({ user_id: claimingUserId })
-          .eq('user_id', profile.user_id);
-
-        // Transfer press links from unclaimed profile to new user
-        await supabase
-          .from('press_links')
-          .update({ user_id: claimingUserId })
-          .eq('user_id', profile.user_id);
-
-        setStep('success');
-        toast.success("Identity verified! Profile claimed successfully.");
       } else {
         setStep('failed');
       }
@@ -252,6 +192,121 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
       console.error('Verification error:', error);
       setStep('failed');
       toast.error("Verification failed. Please try again.");
+    }
+  };
+
+  const completeProfileClaim = async (claimingUserId: string) => {
+    try {
+      // Transfer unclaimed profile data to the new user's profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          full_name: profile.full_name,
+          role: profile.role,
+          bio: profile.bio,
+          avatar_url: profile.avatar_url,
+          location: profile.location,
+          professional_skills: profile.professional_skills,
+          imported_data: profile.imported_data,
+          imported_from_url: profile.imported_from_url,
+          badge: 'og', // Industry leaders get OG badge
+          verification_tier: 'industry' // Set industry verified tier
+        })
+        .eq('user_id', claimingUserId);
+
+      if (updateError) {
+        console.error('Profile update error:', updateError);
+        toast.error("Verified but failed to transfer profile. Please contact support.");
+        setStep('failed');
+        return;
+      }
+
+      // Mark the original unclaimed profile as claimed
+      await supabase
+        .from('profiles')
+        .update({ 
+          is_claimed: true, 
+          claimed_at: new Date().toISOString(),
+          claimed_by: claimingUserId
+        })
+        .eq('user_id', profile.user_id);
+
+      // Transfer credits from unclaimed profile to new user
+      await supabase
+        .from('credits')
+        .update({ user_id: claimingUserId })
+        .eq('user_id', profile.user_id);
+
+      // Transfer awards from unclaimed profile to new user
+      await supabase
+        .from('awards')
+        .update({ user_id: claimingUserId })
+        .eq('user_id', profile.user_id);
+
+      // Transfer press links from unclaimed profile to new user
+      await supabase
+        .from('press_links')
+        .update({ user_id: claimingUserId })
+        .eq('user_id', profile.user_id);
+
+      setStep('success');
+      toast.success("Profile claimed successfully!");
+    } catch (error) {
+      console.error('Claim error:', error);
+      setStep('failed');
+      toast.error("Failed to claim profile. Please contact support.");
+    }
+  };
+
+  const handleCreateAccountAndClaim = async () => {
+    if (!email || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsCreatingAccount(true);
+    setStep('creating');
+    
+    try {
+      // Create account with auto-confirm enabled
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: profile.full_name,
+            account_type: 'individual'
+          }
+        }
+      });
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error("This email is already registered. Please sign in instead.");
+          setStep('credentials');
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      if (data.user) {
+        setNewUserId(data.user.id);
+        // Now complete the profile claim
+        await completeProfileClaim(data.user.id);
+      }
+    } catch (error: any) {
+      console.error('Account creation error:', error);
+      toast.error(error.message || "Failed to create account");
+      setStep('credentials');
+    } finally {
+      setIsCreatingAccount(false);
     }
   };
 
@@ -325,7 +380,7 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-primary">1</span>
                     </div>
-                    <span>{user ? "Take a quick selfie" : "Create your account"}</span>
+                    <span>Take a quick selfie to verify it's you</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -337,7 +392,7 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-primary">3</span>
                     </div>
-                    <span>If verified, all credits & achievements transfer to you</span>
+                    <span>Create your account and claim your profile</span>
                   </div>
                 </div>
               </div>
@@ -354,14 +409,25 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
               </div>
 
               <Button onClick={handleStartVerification} className="w-full gap-2">
-                {user ? <Camera className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                {user ? "Start Verification" : "Create Account & Verify"}
+                <Camera className="h-4 w-4" />
+                Start Face Verification
               </Button>
             </>
           )}
 
           {step === 'credentials' && (
             <>
+              {/* Verification Success Banner */}
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/30">
+                <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-green-600 dark:text-green-400">Identity Verified!</p>
+                  <p className="text-xs text-muted-foreground">Now create your account to claim this profile</p>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -403,24 +469,29 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep('intro')} className="flex-1">
-                  Back
-                </Button>
-                <Button 
-                  onClick={handleCreateAccountAndVerify} 
-                  className="flex-1 gap-2"
-                  disabled={isCreatingAccount}
-                >
-                  {isCreatingAccount ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Camera className="h-4 w-4" />
-                  )}
-                  {isCreatingAccount ? "Creating..." : "Continue"}
-                </Button>
-              </div>
+              <Button 
+                onClick={handleCreateAccountAndClaim} 
+                className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+                disabled={isCreatingAccount}
+              >
+                {isCreatingAccount ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <UserCheck className="h-4 w-4" />
+                )}
+                {isCreatingAccount ? "Claiming Profile..." : "Create Account & Claim Profile"}
+              </Button>
             </>
+          )}
+
+          {step === 'creating' && (
+            <div className="py-8 space-y-4 text-center">
+              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+              <div>
+                <p className="font-semibold">Creating your account...</p>
+                <p className="text-sm text-muted-foreground">Transferring your profile and achievements</p>
+              </div>
+            </div>
           )}
 
           {step === 'camera' && (

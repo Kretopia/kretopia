@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
+import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { getMediaThumbnail } from "@/lib/mediaUtils";
 import {
   MapPin, 
@@ -98,6 +99,7 @@ const CreatorEPK = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+  const [showClaimDialog, setShowClaimDialog] = useState(false);
 
   useEffect(() => {
     const fetchPublicProfile = async () => {
@@ -384,7 +386,7 @@ const CreatorEPK = () => {
               Claim this profile to unlock all features, connect with other creators, and manage your presence on ThriveIN.
             </p>
             <Button 
-              onClick={() => navigate(`/auth?claim=${profile.user_id}`)}
+              onClick={() => setShowClaimDialog(true)}
               className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
             >
               <UserCheck className="h-4 w-4" />
@@ -392,6 +394,16 @@ const CreatorEPK = () => {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
+        )}
+
+        {/* Claim Profile Dialog */}
+        {profile.is_claimed === false && (
+          <ClaimProfileDialog
+            open={showClaimDialog}
+            onOpenChange={setShowClaimDialog}
+            profile={profile}
+            onSuccess={() => navigate('/onboarding')}
+          />
         )}
 
         {/* CTA Buttons */}

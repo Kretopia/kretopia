@@ -326,7 +326,14 @@ const ViewProfile = () => {
           {/* Back Button */}
           <Button 
             variant="ghost" 
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              // If we have history, go back; otherwise go to Circle
+              if (window.history.length > 2) {
+                navigate(-1);
+              } else {
+                navigate('/circle');
+              }
+            }}
             className="mb-4 gap-2"
           >
             <ArrowLeft className="h-4 w-4" />

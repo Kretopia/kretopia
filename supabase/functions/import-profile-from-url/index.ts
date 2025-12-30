@@ -23,6 +23,30 @@ serve(async (req) => {
 
     console.log('Processing URL:', url);
 
+    // Create Supabase client early for deduplication check
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if this URL was already imported (deduplication)
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('profiles')
+      .select('user_id, full_name')
+      .eq('imported_from_url', url)
+      .maybeSingle();
+
+    if (existingProfile) {
+      console.log('Profile already exists for this URL:', existingProfile.full_name);
+      return new Response(
+        JSON.stringify({ 
+          error: `This URL has already been imported. Profile "${existingProfile.full_name}" exists.`,
+          existing_profile_id: existingProfile.user_id,
+          existing_profile_name: existingProfile.full_name
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
+      );
+    }
+
     // Determine the source type
     const urlLower = url.toLowerCase();
     let sourceType = 'website';
@@ -84,8 +108,8 @@ serve(async (req) => {
           body: JSON.stringify({
             url,
             formats: ['markdown'],
-            onlyMainContent: true,
-            waitFor: 3000,
+            onlyMainContent: false, // Get full page for more data
+            waitFor: 5000, // Wait longer for dynamic content
           }),
         });
 
@@ -132,7 +156,7 @@ serve(async (req) => {
       );
     }
     
-    // Use Lovable AI to extract profile information with tool calling
+    // Use Lovable AI to extract RICH profile information
     console.log('Calling AI for profile extraction...');
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -145,21 +169,31 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at extracting professional profile information from web pages about creative professionals.
-Extract information about the main creator/artist from the provided content.
-Focus on: musicians, producers, songwriters, filmmakers, directors, designers, artists, actors, photographers, etc.
+            content: `You are an expert at extracting comprehensive professional profile information from web pages about creative professionals.
+
+YOUR GOAL: Extract as much relevant professional information as possible to build a rich creator profile.
+
+Focus on: musicians, producers, songwriters, filmmakers, directors, designers, artists, actors, photographers, videographers, content creators, etc.
+
+IMPORTANT EXTRACTION RULES:
+1. For SKILLS: Infer skills from their work, credits, and description. A songwriter would have skills like "Songwriting", "Lyric Writing", "Music Composition", "Collaboration". A producer would have "Music Production", "Beat Making", "Mixing", etc.
+2. For CREDITS: Extract ALL work credits you can find - albums, songs, films, projects, etc. Include the artist they worked with in the project name.
+3. For BIO: Create a compelling professional bio that highlights their achievements, notable collaborations, and career highlights.
+4. For SOCIAL LINKS: Look for any social media links, website links, or platform links.
+5. For LOCATION: If not explicitly stated, try to infer from context or leave empty.
+
 Skip company pages, product pages, or generic content - we only want individual professional profiles.`
           },
           {
             role: 'user',
-            content: `Extract profile information from this ${sourceType} page.
+            content: `Extract a COMPREHENSIVE profile from this ${sourceType} page. Get as much data as possible for a rich creator profile.
 
 URL: ${url}
 Title: ${pageTitle}
 Description: ${pageDescription}
 
 Page Content:
-${content.substring(0, 25000)}`
+${content.substring(0, 30000)}`
           }
         ],
         tools: [
@@ -167,22 +201,93 @@ ${content.substring(0, 25000)}`
             type: "function",
             function: {
               name: "extract_profile",
-              description: "Extract professional profile information from web content",
+              description: "Extract comprehensive professional profile information from web content",
               parameters: {
                 type: "object",
                 properties: {
-                  full_name: { type: "string", description: "The person's full name" },
-                  role: { type: "string", description: "Their primary profession/role (e.g., Producer, Director, Artist, Musician, Songwriter, Designer)" },
-                  bio: { type: "string", description: "A brief professional bio (max 500 chars)" },
-                  location: { type: "string", description: "Their location if available (city, country)" },
-                  avatar_url: { type: "string", description: "URL to their profile/avatar image if found" },
-                  skills: { type: "array", items: { type: "string" }, description: "List of professional skills (max 10)" },
-                  awards: { type: "array", items: { type: "object", properties: { title: { type: "string" }, organization: { type: "string" }, year: { type: "number" } } }, description: "Notable awards" },
-                  credits: { type: "array", items: { type: "object", properties: { project: { type: "string" }, role: { type: "string" }, year: { type: "number" } } }, description: "Notable work credits (films, albums, projects)" },
-                  social_links: { type: "object", properties: { twitter: { type: "string" }, instagram: { type: "string" }, website: { type: "string" }, youtube: { type: "string" }, spotify: { type: "string" } }, description: "Social media links if found" },
-                  is_valid_profile: { type: "boolean", description: "True if this is a valid individual creator profile, false for companies/products/generic pages" }
+                  full_name: { 
+                    type: "string", 
+                    description: "The person's full name" 
+                  },
+                  role: { 
+                    type: "string", 
+                    description: "Their primary profession/role (e.g., Producer, Director, Artist, Musician, Songwriter, Designer, Photographer)" 
+                  },
+                  bio: { 
+                    type: "string", 
+                    description: "A compelling professional bio highlighting achievements, notable collaborations, and career highlights (200-500 characters)" 
+                  },
+                  location: { 
+                    type: "string", 
+                    description: "Their location if available (city, country)" 
+                  },
+                  avatar_url: { 
+                    type: "string", 
+                    description: "URL to their profile/avatar image if found" 
+                  },
+                  skills: { 
+                    type: "array", 
+                    items: { type: "string" }, 
+                    description: "List of professional skills inferred from their work (e.g., Songwriting, Music Production, Photography, Video Editing). Include 5-15 relevant skills." 
+                  },
+                  awards: { 
+                    type: "array", 
+                    items: { 
+                      type: "object", 
+                      properties: { 
+                        title: { type: "string", description: "Award name" }, 
+                        organization: { type: "string", description: "Awarding organization (e.g., Grammy, Oscar, etc.)" }, 
+                        year: { type: "number", description: "Year received" },
+                        category: { type: "string", description: "Award category" }
+                      },
+                      required: ["title", "organization"]
+                    }, 
+                    description: "Notable awards and nominations" 
+                  },
+                  credits: { 
+                    type: "array", 
+                    items: { 
+                      type: "object", 
+                      properties: { 
+                        project_name: { type: "string", description: "Project/Song/Album/Film name - include artist name if applicable (e.g., 'Locked Away - R. City ft. Adam Levine')" }, 
+                        role: { type: "string", description: "Their role on the project (Songwriter, Producer, Director, etc.)" }, 
+                        year: { type: "number", description: "Year of release" }
+                      },
+                      required: ["project_name", "role"]
+                    }, 
+                    description: "Work credits - albums, songs, films, projects they've worked on. Include as many as possible with the artist/project name." 
+                  },
+                  social_links: { 
+                    type: "object", 
+                    properties: { 
+                      twitter: { type: "string" }, 
+                      instagram: { type: "string" }, 
+                      website: { type: "string" }, 
+                      youtube: { type: "string" }, 
+                      spotify: { type: "string" },
+                      soundcloud: { type: "string" },
+                      facebook: { type: "string" },
+                      tiktok: { type: "string" },
+                      linkedin: { type: "string" }
+                    }, 
+                    description: "Social media and platform links" 
+                  },
+                  notable_collaborations: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Names of notable artists/people they've worked with"
+                  },
+                  genres: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Music genres or creative styles they work in"
+                  },
+                  is_valid_profile: { 
+                    type: "boolean", 
+                    description: "True if this is a valid individual creator profile, false for companies/products/generic pages" 
+                  }
                 },
-                required: ["full_name", "role", "is_valid_profile"]
+                required: ["full_name", "role", "is_valid_profile", "bio", "skills", "credits"]
               }
             }
           }
@@ -223,6 +328,8 @@ ${content.substring(0, 25000)}`
     }
 
     console.log('Extracted profile:', profileData.full_name, '- Valid:', profileData.is_valid_profile);
+    console.log('Skills extracted:', profileData.skills?.length || 0);
+    console.log('Credits extracted:', profileData.credits?.length || 0);
 
     if (!profileData.is_valid_profile) {
       return new Response(
@@ -238,23 +345,42 @@ ${content.substring(0, 25000)}`
       );
     }
 
+    // Also check for duplicate by name + similar role (fuzzy deduplication)
+    const { data: nameMatch } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, role')
+      .ilike('full_name', profileData.full_name)
+      .eq('is_claimed', false)
+      .maybeSingle();
+
+    if (nameMatch) {
+      console.log('Found existing unclaimed profile with same name:', nameMatch.full_name);
+      // Instead of creating new, could update existing - for now just warn
+      return new Response(
+        JSON.stringify({ 
+          error: `An unclaimed profile for "${profileData.full_name}" already exists. Consider updating the existing profile instead.`,
+          existing_profile_id: nameMatch.user_id,
+          existing_profile_name: nameMatch.full_name
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
+      );
+    }
+
     // Use the image from extraction or from page metadata
     const finalAvatarUrl = profileData.avatar_url || imageUrl || null;
 
-    // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Ensure skills is an array
+    const skills = Array.isArray(profileData.skills) ? profileData.skills : [];
 
     // Create the unclaimed profile
-    console.log('Creating unclaimed profile...');
+    console.log('Creating unclaimed profile with', skills.length, 'skills...');
     const { data: newProfileId, error: createError } = await supabase.rpc('create_unclaimed_profile', {
       p_full_name: profileData.full_name,
       p_role: profileData.role || 'Creative Professional',
-      p_bio: profileData.bio || null,
+      p_bio: profileData.bio || `${profileData.full_name} is a ${profileData.role || 'creative professional'}.`,
       p_avatar_url: finalAvatarUrl,
       p_location: profileData.location || null,
-      p_professional_skills: profileData.skills || [],
+      p_professional_skills: skills,
       p_imported_data: {
         ...profileData,
         source_url: url,
@@ -276,39 +402,51 @@ ${content.substring(0, 25000)}`
     console.log('Profile created with ID:', newProfileId);
 
     // Add credits if we have them
+    const creditsAdded: string[] = [];
     if (profileData.credits && Array.isArray(profileData.credits) && profileData.credits.length > 0) {
       console.log('Adding', profileData.credits.length, 'credits...');
-      for (const credit of profileData.credits.slice(0, 15)) {
-        try {
-          await supabase.from('credits').insert({
-            user_id: newProfileId,
-            project_name: credit.project || (typeof credit === 'string' ? credit : 'Unknown Project'),
-            role: credit.role || profileData.role || 'Creative',
-            year: credit.year || null,
-            verification_status: 'imported'
-          });
-        } catch (e) {
-          console.error('Error adding credit:', e);
+      for (const credit of profileData.credits.slice(0, 20)) {
+        const projectName = credit.project_name || credit.project || (typeof credit === 'string' ? credit : null);
+        if (!projectName) continue;
+        
+        const { error: creditError } = await supabase.from('credits').insert({
+          user_id: newProfileId,
+          project_name: projectName,
+          role: credit.role || profileData.role || 'Creative',
+          year: credit.year || null,
+          verification_status: 'imported'
+        });
+        
+        if (creditError) {
+          console.error('Error adding credit:', creditError.message);
+        } else {
+          creditsAdded.push(projectName);
         }
       }
+      console.log('Successfully added', creditsAdded.length, 'credits');
     }
 
     // Add awards if we have them
+    const awardsAdded: string[] = [];
     if (profileData.awards && Array.isArray(profileData.awards) && profileData.awards.length > 0) {
       console.log('Adding', profileData.awards.length, 'awards...');
       for (const award of profileData.awards.slice(0, 10)) {
-        try {
-          await supabase.from('awards').insert({
-            user_id: newProfileId,
-            title: award.title || (typeof award === 'string' ? award : 'Award'),
-            organization: award.organization || 'Unknown',
-            year: award.year || null,
-            verification_status: 'imported'
-          });
-        } catch (e) {
-          console.error('Error adding award:', e);
+        const { error: awardError } = await supabase.from('awards').insert({
+          user_id: newProfileId,
+          title: award.title || (typeof award === 'string' ? award : 'Award'),
+          organization: award.organization || 'Unknown',
+          year: award.year || null,
+          category: award.category || null,
+          verification_status: 'imported'
+        });
+        
+        if (awardError) {
+          console.error('Error adding award:', awardError.message);
+        } else {
+          awardsAdded.push(award.title);
         }
       }
+      console.log('Successfully added', awardsAdded.length, 'awards');
     }
 
     console.log('Import complete!');
@@ -318,7 +456,12 @@ ${content.substring(0, 25000)}`
         profile_id: newProfileId,
         profile_name: profileData.full_name,
         source: sourceType,
-        extracted_data: profileData
+        extracted_data: profileData,
+        stats: {
+          skills_count: skills.length,
+          credits_added: creditsAdded.length,
+          awards_added: awardsAdded.length
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -13,15 +13,17 @@ import {
   ArrowLeft, 
   MessageCircle, 
   Briefcase,
-  CheckCircle2,
   Sparkles,
   Star,
   Award,
   Rocket,
   UserPlus,
   Clock,
-  Users
+  Users,
+  UserCheck,
+  Share2
 } from "lucide-react";
+import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
@@ -48,6 +50,7 @@ interface Profile {
   location: string;
   avatar_url: string;
   verification_tier?: string;
+  verification_status?: string;
   achievement_badges?: string[];
   professional_skills?: any;
   passion_skills?: any;
@@ -64,6 +67,8 @@ interface Profile {
   social_verified?: boolean;
   job_title?: string;
   industry?: string;
+  is_claimed?: boolean;
+  badge?: string;
 }
 
 const ViewProfile = () => {
@@ -85,6 +90,7 @@ const ViewProfile = () => {
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
+  const [showClaimDialog, setShowClaimDialog] = useState(false);
   
   const isFromMatch = searchParams.get('from') === 'match';
   
@@ -247,23 +253,30 @@ const ViewProfile = () => {
     }
   };
 
-
+  // Check if this is an unclaimed profile
+  const isUnclaimedProfile = profile?.is_claimed === false;
+  
+  // Check if profile qualifies for Industry Verified badge (3+ credits OR 2+ awards)
+  const isIndustryVerified = credits.length >= 3 || awards.length >= 2 || profile?.verification_tier === 'industry';
+  
   const getVerificationBadge = () => {
-    if (!profile?.verification_tier || profile.verification_tier === 'unverified') return null;
-    
-    const tierConfig = {
-      'profile': { color: 'bg-blue-500', label: 'Verified' },
-      'industry': { color: 'bg-purple-500', label: 'Industry Verified' },
-      'elite': { color: 'bg-amber-500', label: 'Elite Verified' }
-    };
-    
-    const config = tierConfig[profile.verification_tier as keyof typeof tierConfig];
-    if (!config) return null;
+    if (!profile?.verification_status || profile.verification_status !== 'verified') return null;
     
     return (
-      <Badge className={`${config.color} text-white gap-1`}>
-        <CheckCircle2 className="h-3 w-3" />
-        {config.label}
+      <Badge className="gap-1.5 bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-3 w-3"
+        >
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+          <circle cx="12" cy="12" r="3" fill="currentColor" />
+        </svg>
+        <span className="text-xs font-bold tracking-wide">VERIFIED</span>
       </Badge>
     );
   };
@@ -338,6 +351,29 @@ const ViewProfile = () => {
           {/* Profile Header Card */}
           <Card className="mb-6">
             <CardContent className="p-6">
+              {/* Unclaimed Profile Banner */}
+              {isUnclaimedProfile && (
+                <div className="mb-6 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 text-amber-500">
+                      <Sparkles className="h-4 w-4" />
+                      <span className="text-sm font-medium">Unclaimed Profile</span>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      onClick={() => setShowClaimDialog(true)}
+                      className="gap-1.5 h-8 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+                    >
+                      <UserCheck className="h-3.5 w-3.5" />
+                      Claim Profile
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Is this you? Verify your identity to claim this profile and unlock all features.
+                  </p>
+                </div>
+              )}
+              
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                 {/* Avatar */}
                 <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
@@ -352,6 +388,37 @@ const ViewProfile = () => {
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
                     <h1 className="text-2xl font-bold">{profile.full_name}</h1>
                     {getVerificationBadge()}
+                    
+                    {/* Industry Verified Badge */}
+                    {isIndustryVerified && (
+                      <Badge className="gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+                        <Sparkles className="h-3 w-3" />
+                        <span className="text-xs font-semibold">Industry Verified</span>
+                      </Badge>
+                    )}
+                    
+                    {/* Unclaimed Badge */}
+                    {isUnclaimedProfile && (
+                      <Badge 
+                        variant="secondary"
+                        className="text-xs bg-amber-500/20 text-amber-500 border-amber-500/30"
+                      >
+                        ✨ Unclaimed
+                      </Badge>
+                    )}
+                    
+                    {/* OG/Beta/ODOS Badge - only for claimed profiles */}
+                    {profile.badge && !isUnclaimedProfile && (
+                      <Badge 
+                        variant="default"
+                        className={profile.badge === 'odos' ? "bg-green-500 hover:bg-green-600" : ""}
+                      >
+                        {profile.badge === 'founder' ? '👑 Founder' : 
+                         profile.badge === 'og' ? '⭐ OG' : 
+                         profile.badge === 'odos' ? '🌿 ODOS' :
+                         profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
+                      </Badge>
+                    )}
                   </div>
                   
                   <p className="text-muted-foreground mb-2">{profile.role}</p>
@@ -415,8 +482,23 @@ const ViewProfile = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-6 pt-6 border-t">
-                {/* Already matched - show full actions */}
-                {isMatched && (
+                {/* Unclaimed profile - show claim button prominently */}
+                {isUnclaimedProfile ? (
+                  <>
+                    <Button 
+                      onClick={() => setShowClaimDialog(true)}
+                      className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+                    >
+                      <UserCheck className="h-4 w-4" />
+                      Claim This Profile
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate('/circle')} className="gap-2">
+                      <Users className="h-4 w-4" />
+                      Discover More
+                    </Button>
+                  </>
+                ) : isMatched ? (
+                  /* Already matched - show full actions */
                   <>
                     <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
                       <MessageCircle className="h-4 w-4" />
@@ -427,10 +509,8 @@ const ViewProfile = () => {
                       Start Project
                     </Button>
                   </>
-                )}
-                
-                {/* Connected but not matched - allow messaging */}
-                {!isMatched && connectionStatus === 'connected' && (
+                ) : connectionStatus === 'connected' ? (
+                  /* Connected but not matched - allow messaging */
                   <>
                     <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
                       <MessageCircle className="h-4 w-4" />
@@ -441,18 +521,14 @@ const ViewProfile = () => {
                       Collaborate
                     </Button>
                   </>
-                )}
-                
-                {/* Pending connection */}
-                {!isMatched && connectionStatus === 'pending' && (
+                ) : connectionStatus === 'pending' ? (
+                  /* Pending connection */
                   <Button variant="outline" disabled className="gap-2">
                     <Clock className="h-4 w-4" />
                     Request Pending
                   </Button>
-                )}
-                
-                {/* No connection - show connect option */}
-                {!isMatched && connectionStatus === 'none' && (
+                ) : (
+                  /* No connection - show connect option */
                   <>
                     <Button 
                       onClick={handleConnect} 
@@ -471,6 +547,17 @@ const ViewProfile = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Claim Profile Dialog */}
+          <ClaimProfileDialog
+            open={showClaimDialog}
+            onOpenChange={setShowClaimDialog}
+            profile={profile}
+            onSuccess={() => {
+              setShowClaimDialog(false);
+              fetchData();
+            }}
+          />
 
           {/* Achievement Badges */}
           {profile.achievement_badges && profile.achievement_badges.length > 0 && (

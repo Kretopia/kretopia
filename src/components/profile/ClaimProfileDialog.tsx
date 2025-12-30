@@ -42,17 +42,41 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
 
   const startCamera = async () => {
     try {
+      // First transition to camera step so video element is mounted
+      setStep('camera');
+      
+      // Small delay to ensure DOM is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user', width: 640, height: 480 } 
+        video: { 
+          facingMode: 'user', 
+          width: { ideal: 640 }, 
+          height: { ideal: 480 } 
+        } 
       });
+      
       streamRef.current = stream;
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // Ensure video plays after stream is attached
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().catch(e => {
+            console.error('Video play error:', e);
+          });
+        };
       }
-      setStep('camera');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Camera access error:', error);
-      toast.error("Camera access required for identity verification");
+      setStep('intro');
+      if (error.name === 'NotAllowedError') {
+        toast.error("Camera permission denied. Please allow camera access and try again.");
+      } else if (error.name === 'NotFoundError') {
+        toast.error("No camera found. Please connect a camera and try again.");
+      } else {
+        toast.error("Camera access required for identity verification");
+      }
     }
   };
 

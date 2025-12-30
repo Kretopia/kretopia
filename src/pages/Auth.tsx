@@ -331,11 +331,14 @@ const Auth = () => {
     setConfirmPasswordError("");
     setLoading(true);
 
+    // Email confirmation should redirect to onboarding, not circle
+    const onboardingPath = accountType === "company" ? "/company-onboarding" : "/onboarding";
+    
     const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}${redirectTo}`,
+        emailRedirectTo: `${window.location.origin}${onboardingPath}`,
         data: {
           account_type: accountType,
           invite_code: inviteCode,

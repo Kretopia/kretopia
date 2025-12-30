@@ -131,21 +131,46 @@ export function UnclaimedProfilesTab() {
         .eq('is_claimed', false)
         .order('created_at', { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
       setUnclaimedProfiles(profiles || []);
 
-      // Fetch pending claim requests
-      const { data: requests, error: requestsError } = await supabase
-        .from('profile_claim_requests')
-        .select('*, profiles:profile_id(full_name)')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+      // Fetch pending claim requests - handle errors gracefully
+      try {
+        const { data: requests, error: requestsError } = await supabase
+          .from('profile_claim_requests')
+          .select('id, profile_id, claimant_email, claimant_user_id, verification_method, verification_proof, status, created_at')
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false });
 
-      if (requestsError) throw requestsError;
-      setClaimRequests(requests || []);
+        if (requestsError) {
+          console.error('Error fetching claim requests:', requestsError);
+          setClaimRequests([]);
+        } else {
+          // Fetch profile names separately to avoid join issues
+          const requestsWithNames = await Promise.all(
+            (requests || []).map(async (req) => {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('user_id', req.profile_id)
+                .maybeSingle();
+              
+              return {
+                ...req,
+                profiles: profileData ? { full_name: profileData.full_name } : undefined
+              };
+            })
+          );
+          setClaimRequests(requestsWithNames);
+        }
+      } catch (reqError) {
+        console.error('Error fetching claim requests:', reqError);
+        setClaimRequests([]);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to load unclaimed profiles');
     } finally {
       setLoading(false);
     }

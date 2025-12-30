@@ -486,7 +486,7 @@ const PublicProfile = () => {
               onStartProject={handleStartProject}
               isFromMatch={isFromMatch}
               onShare={() => {
-                const profileUrl = `${window.location.origin}/profile/${userId}`;
+                const profileUrl = `https://www.thrivein.io/profile/${userId}`;
                 navigator.clipboard.writeText(profileUrl);
                 toast({
                   title: "Profile link copied!",

@@ -576,7 +576,7 @@ const ViewProfile = () => {
               open={showShareDialog}
               onOpenChange={setShowShareDialog}
               profileName={profile.full_name}
-              profileUrl={`${window.location.origin}/profile/${profile.user_id}`}
+              profileUrl={`https://www.thrivein.io/profile/${profile.user_id}`}
             />
           )}
 

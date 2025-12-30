@@ -49,7 +49,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const origin = req.headers.get("origin") || Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '') || "https://thrivein.app";
+    const origin = req.headers.get("origin") || "https://www.thrivein.io";
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/subscription`,

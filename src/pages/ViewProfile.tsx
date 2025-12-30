@@ -24,6 +24,7 @@ import {
   Share2
 } from "lucide-react";
 import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
+import { ShareUnclaimedProfileDialog } from "@/components/profile/ShareUnclaimedProfileDialog";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
@@ -91,6 +92,7 @@ const ViewProfile = () => {
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   
   const isFromMatch = searchParams.get('from') === 'match';
   
@@ -359,14 +361,25 @@ const ViewProfile = () => {
                       <Sparkles className="h-4 w-4" />
                       <span className="text-sm font-medium">Unclaimed Profile</span>
                     </div>
-                    <Button 
-                      size="sm" 
-                      onClick={() => setShowClaimDialog(true)}
-                      className="gap-1.5 h-8 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
-                    >
-                      <UserCheck className="h-3.5 w-3.5" />
-                      Claim Profile
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setShowShareDialog(true)}
+                        className="gap-1.5 h-8 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                        Share
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={() => setShowClaimDialog(true)}
+                        className="gap-1.5 h-8 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+                      >
+                        <UserCheck className="h-3.5 w-3.5" />
+                        Claim
+                      </Button>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1.5">
                     Is this you? Verify your identity to claim this profile and unlock all features.
@@ -549,6 +562,16 @@ const ViewProfile = () => {
               fetchData();
             }}
           />
+
+          {/* Share Unclaimed Profile Dialog */}
+          {isUnclaimedProfile && (
+            <ShareUnclaimedProfileDialog
+              open={showShareDialog}
+              onOpenChange={setShowShareDialog}
+              profileName={profile.full_name}
+              profileUrl={`${window.location.origin}/profile/${profile.user_id}`}
+            />
+          )}
 
           {/* Achievement Badges */}
           {profile.achievement_badges && profile.achievement_badges.length > 0 && (

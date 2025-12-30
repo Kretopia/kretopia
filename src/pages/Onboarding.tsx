@@ -1146,7 +1146,7 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Step 3 has its own navigation from AddPortfolioStep */}
+        {/* Step 3: Bio step navigation */}
         {currentStep === 3 && (
           <div className="flex justify-between mt-4 pt-4 border-t">
             <Button
@@ -1156,14 +1156,23 @@ export default function Onboarding() {
             >
               Back
             </Button>
-            <Button
-              variant="ghost"
-              onClick={handleSkip}
-              className="text-muted-foreground"
-            >
-              <SkipForward className="h-4 w-4 mr-2" />
-              Skip for now
-            </Button>
+            {profile.bio.length >= 20 ? (
+              <Button
+                onClick={handleNext}
+                disabled={loading}
+              >
+                Continue
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={handleSkip}
+                className="text-muted-foreground"
+              >
+                <SkipForward className="h-4 w-4 mr-2" />
+                Skip for now
+              </Button>
+            )}
           </div>
         )}
         

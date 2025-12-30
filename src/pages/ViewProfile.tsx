@@ -709,6 +709,26 @@ const ViewProfile = () => {
           item={selectedMedia}
         />
       )}
+
+      {/* Claim Profile Dialog */}
+      {isUnclaimedProfile && (
+        <ClaimProfileDialog
+          open={showClaimDialog}
+          onOpenChange={setShowClaimDialog}
+          profile={profile}
+          onSuccess={() => navigate('/onboarding')}
+        />
+      )}
+
+      {/* Share Unclaimed Profile Dialog */}
+      {isUnclaimedProfile && (
+        <ShareUnclaimedProfileDialog
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          profileName={profile.full_name}
+          profileUrl={`https://www.thrivein.io/profile/${profile.user_id}`}
+        />
+      )}
     </>
   );
 };

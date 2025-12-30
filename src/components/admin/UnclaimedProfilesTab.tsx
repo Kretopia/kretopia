@@ -251,12 +251,12 @@ export function UnclaimedProfilesTab() {
 
       for (const line of lines) {
         const parts = line.split(',').map(p => p.trim());
-        if (parts.length >= 2) {
+        if (parts.length >= 1 && parts[0]) {
           const [name, role, location] = parts;
           
           const { error } = await supabase.rpc('create_unclaimed_profile', {
             p_full_name: name,
-            p_role: role,
+            p_role: role || 'Creative Professional',
             p_location: location || null,
             p_source: 'bulk_import'
           });
@@ -268,12 +268,71 @@ export function UnclaimedProfilesTab() {
       toast.success(`Imported ${successCount} profiles`);
       setShowBulkDialog(false);
       setBulkData('');
+      setCsvFile(null);
       fetchData();
     } catch (error) {
       console.error('Error bulk importing:', error);
       toast.error('Failed to import profiles');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleEnrichedBulkImport = async () => {
+    if (!bulkData.trim()) {
+      toast.error('Please enter names to import');
+      return;
+    }
+
+    setBulkProcessing(true);
+    setBulkImportResults([]);
+
+    try {
+      // Parse names from text/CSV
+      const lines = bulkData.trim().split('\n').filter(l => l.trim());
+      const contacts = lines.map(line => {
+        const parts = line.split(',').map(p => p.trim());
+        return {
+          name: parts[0] || '',
+          role: parts[1] || undefined,
+          company: parts[2] || undefined,
+          email: parts[3] || undefined
+        };
+      }).filter(c => c.name.length > 0);
+
+      if (contacts.length === 0) {
+        toast.error('No valid names found');
+        setBulkProcessing(false);
+        return;
+      }
+
+      toast.info(`Processing ${contacts.length} contacts with AI enrichment...`);
+
+      // Call the bulk import edge function with enrichment
+      const { data, error } = await supabase.functions.invoke('bulk-import-profiles', {
+        body: {
+          contacts,
+          importDirectly: true
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.results) {
+        setBulkImportResults(data.results);
+        
+        const { found, notFound, imported } = data.summary || {};
+        toast.success(
+          `Complete! ${imported || 0} profiles imported, ${found || 0} enriched from web, ${notFound || 0} created with basic info`
+        );
+        
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error with enriched bulk import:', error);
+      toast.error('Failed to process profiles');
+    } finally {
+      setBulkProcessing(false);
     }
   };
 
@@ -567,28 +626,229 @@ export function UnclaimedProfilesTab() {
                 Bulk
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Bulk Import Profiles</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
-                <p className="text-sm text-muted-foreground">
-                  Enter one profile per line: Name, Role, Location (optional)
-                </p>
-                <Textarea
-                  value={bulkData}
-                  onChange={(e) => setBulkData(e.target.value)}
-                  placeholder="John Smith, Music Producer, Los Angeles&#10;Jane Doe, Singer-Songwriter, Nashville&#10;..."
-                  className="min-h-[200px] font-mono text-sm"
-                />
-                <Button 
-                  onClick={importBulkProfiles} 
-                  disabled={creating}
-                  className="w-full"
-                >
-                  {creating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Import All
-                </Button>
+                {/* Import Mode Tabs */}
+                <Tabs value={bulkImportMode} onValueChange={(v: any) => setBulkImportMode(v)}>
+                  <TabsList className="grid grid-cols-3 w-full">
+                    <TabsTrigger value="simple" className="text-xs sm:text-sm">
+                      <FileSpreadsheet className="h-4 w-4 mr-1" />
+                      Text
+                    </TabsTrigger>
+                    <TabsTrigger value="csv" className="text-xs sm:text-sm">
+                      <Upload className="h-4 w-4 mr-1" />
+                      CSV File
+                    </TabsTrigger>
+                    <TabsTrigger value="enriched" className="text-xs sm:text-sm">
+                      <Sparkles className="h-4 w-4 mr-1" />
+                      AI Enrich
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="simple" className="space-y-4 mt-4">
+                    <p className="text-sm text-muted-foreground">
+                      Enter one profile per line: Name, Role, Location (optional)
+                    </p>
+                    <Textarea
+                      value={bulkData}
+                      onChange={(e) => setBulkData(e.target.value)}
+                      placeholder="John Smith, Music Producer, Los Angeles&#10;Jane Doe, Singer-Songwriter, Nashville&#10;..."
+                      className="min-h-[200px] font-mono text-sm"
+                    />
+                    <Button 
+                      onClick={importBulkProfiles} 
+                      disabled={creating}
+                      className="w-full"
+                    >
+                      {creating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                      Import All ({bulkData.trim().split('\n').filter(l => l.trim()).length} profiles)
+                    </Button>
+                  </TabsContent>
+
+                  <TabsContent value="csv" className="space-y-4 mt-4">
+                    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                      <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Upload a CSV file with columns: Name, Role, Location (optional), Email (optional)
+                      </p>
+                      <input
+                        type="file"
+                        accept=".csv,.txt"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setCsvFile(file);
+                            // Parse CSV and load into bulkData
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const text = event.target?.result as string;
+                              setBulkData(text);
+                            };
+                            reader.readAsText(file);
+                          }
+                        }}
+                        className="hidden"
+                        id="csv-upload"
+                      />
+                      <label htmlFor="csv-upload">
+                        <Button variant="secondary" className="cursor-pointer" asChild>
+                          <span>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Select CSV File
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                    
+                    {csvFile && (
+                      <div className="bg-muted rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileSpreadsheet className="h-5 w-5 text-primary" />
+                            <span className="font-medium">{csvFile.name}</span>
+                          </div>
+                          <Badge variant="secondary">
+                            {bulkData.trim().split('\n').filter(l => l.trim()).length} rows
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Preview: {bulkData.split('\n').slice(0, 3).join(' | ')}...
+                        </p>
+                        <Button 
+                          onClick={importBulkProfiles} 
+                          disabled={creating}
+                          className="w-full"
+                        >
+                          {creating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                          Import from CSV
+                        </Button>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="enriched" className="space-y-4 mt-4">
+                    <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
+                      <div className="flex items-start gap-3">
+                        <Sparkles className="h-5 w-5 text-primary mt-0.5" />
+                        <div>
+                          <h4 className="font-medium text-sm">AI-Powered Enrichment</h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            AI will search the web for each person and automatically fill in their bio, skills, credits, awards, and more.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <Label>Enter names (one per line) or upload CSV</Label>
+                      <Textarea
+                        value={bulkData}
+                        onChange={(e) => setBulkData(e.target.value)}
+                        placeholder="Hans Zimmer&#10;Pharrell Williams&#10;Billie Eilish&#10;..."
+                        className="min-h-[150px] font-mono text-sm"
+                      />
+                      
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>or</span>
+                        <input
+                          type="file"
+                          accept=".csv,.txt"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setCsvFile(file);
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const text = event.target?.result as string;
+                                setBulkData(text);
+                              };
+                              reader.readAsText(file);
+                            }
+                          }}
+                          className="hidden"
+                          id="csv-upload-enriched"
+                        />
+                        <label htmlFor="csv-upload-enriched" className="cursor-pointer text-primary hover:underline">
+                          upload a file
+                        </label>
+                        {csvFile && (
+                          <Badge variant="secondary" className="ml-2">
+                            {csvFile.name}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={handleEnrichedBulkImport} 
+                      disabled={bulkProcessing || !bulkData.trim()}
+                      className="w-full"
+                    >
+                      {bulkProcessing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          AI Enriching... This may take a few minutes
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Search & Import ({bulkData.trim().split('\n').filter(l => l.trim()).length} names)
+                        </>
+                      )}
+                    </Button>
+                    
+                    {/* Results display */}
+                    {bulkImportResults.length > 0 && (
+                      <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-sm">Import Results</h4>
+                          <div className="flex gap-2 text-xs">
+                            <Badge variant="default" className="bg-green-500">
+                              {bulkImportResults.filter(r => r.status === 'found').length} found
+                            </Badge>
+                            <Badge variant="secondary">
+                              {bulkImportResults.filter(r => r.status === 'not_found').length} not found
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        {bulkImportResults.map((result, idx) => (
+                          <div 
+                            key={idx} 
+                            className={`flex items-center gap-3 p-3 rounded-lg border ${
+                              result.status === 'found' ? 'bg-green-500/10 border-green-500/30' :
+                              result.status === 'not_found' ? 'bg-muted border-muted' :
+                              'bg-red-500/10 border-red-500/30'
+                            }`}
+                          >
+                            {result.status === 'found' ? (
+                              <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                            ) : result.status === 'not_found' ? (
+                              <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                            ) : (
+                              <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">{result.name}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {result.role}
+                                {result.location && ` • ${result.location}`}
+                              </p>
+                            </div>
+                            {result.skills && result.skills.length > 0 && (
+                              <Badge variant="outline" className="text-xs flex-shrink-0">
+                                {result.skills.length} skills
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
             </DialogContent>
           </Dialog>

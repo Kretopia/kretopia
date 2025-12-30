@@ -17,6 +17,8 @@ interface SwipeCardProps {
     badge: string | null;
     collab_intent: string | null;
     portfolio_count?: number;
+    is_claimed?: boolean;
+    imported_from_url?: string | null;
   };
   onViewProfile?: () => void;
   onMatchBadgeClick?: () => void;
@@ -80,8 +82,20 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             </Badge>
           </div>
 
-          {/* Badge (OG/Beta/ODOS) */}
-          {profile.badge && (
+          {/* Unclaimed Badge - show prominently for imported profiles */}
+          {profile.is_claimed === false && (
+            <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+              <Badge 
+                variant="outline" 
+                className="bg-orange-500/30 text-orange-200 border-orange-400/50 backdrop-blur-sm text-xs animate-pulse"
+              >
+                ✨ Unclaimed Profile
+              </Badge>
+            </div>
+          )}
+
+          {/* Badge (OG/Beta/ODOS) - only for claimed profiles */}
+          {profile.is_claimed !== false && profile.badge && (
             <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
               <Badge 
                 variant="outline" 

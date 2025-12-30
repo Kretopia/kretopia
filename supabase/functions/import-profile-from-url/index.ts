@@ -179,8 +179,10 @@ IMPORTANT EXTRACTION RULES:
 1. For SKILLS: Infer skills from their work, credits, and description. A songwriter would have skills like "Songwriting", "Lyric Writing", "Music Composition", "Collaboration". A producer would have "Music Production", "Beat Making", "Mixing", etc.
 2. For CREDITS: Extract ALL work credits you can find - albums, songs, films, projects, etc. Include the artist they worked with in the project name.
 3. For BIO: Create a compelling professional bio that highlights their achievements, notable collaborations, and career highlights.
-4. For SOCIAL LINKS: Look for any social media links, website links, or platform links.
-5. For LOCATION: If not explicitly stated, try to infer from context or leave empty.
+4. For AWARDS: Look for Grammy nominations/wins, Oscar nominations/wins, Billboard awards, certifications (Platinum, Gold), or any industry recognition.
+5. For PRESS: Look for any media coverage, interviews, articles, news mentions.
+6. For SOCIAL LINKS: Look for any social media links, website links, or platform links.
+7. For LOCATION: If not explicitly stated, try to infer from context or leave empty.
 
 Skip company pages, product pages, or generic content - we only want individual professional profiles.`
           },
@@ -227,22 +229,31 @@ ${content.substring(0, 30000)}`
                   },
                   skills: { 
                     type: "array", 
-                    items: { type: "string" }, 
-                    description: "List of professional skills inferred from their work (e.g., Songwriting, Music Production, Photography, Video Editing). Include 5-15 relevant skills." 
+                    items: { 
+                      type: "object",
+                      properties: {
+                        skill: { type: "string", description: "The skill name (e.g., Songwriting, Music Production)" },
+                        level: { type: "number", description: "Skill level from 1-5, infer from their experience (5 for experts, 4 for advanced, 3 for proficient)" },
+                        category: { type: "string", description: "Category like 'Audio & Music', 'Video & Film', 'Design', 'Content & Social', 'Photography & Visual'" }
+                      },
+                      required: ["skill", "level", "category"]
+                    }, 
+                    description: "List of professional skills with levels (5-15 skills). Categories: Audio & Music, Video & Film, Design, Photography & Visual, Content & Social, Technical, Creative Direction, Motion & Animation" 
                   },
                   awards: { 
                     type: "array", 
                     items: { 
                       type: "object", 
                       properties: { 
-                        title: { type: "string", description: "Award name" }, 
-                        organization: { type: "string", description: "Awarding organization (e.g., Grammy, Oscar, etc.)" }, 
+                        title: { type: "string", description: "Award name (e.g., 'Best Pop Vocal Album')" }, 
+                        organization: { type: "string", description: "Awarding organization (e.g., Grammy, Oscar, Billboard)" }, 
                         year: { type: "number", description: "Year received" },
-                        category: { type: "string", description: "Award category" }
+                        category: { type: "string", description: "Award category or subcategory" },
+                        description: { type: "string", description: "Brief description like 'For work on XYZ album'" }
                       },
                       required: ["title", "organization"]
                     }, 
-                    description: "Notable awards and nominations" 
+                    description: "Notable awards, nominations, and certifications (Grammy, Oscar, Platinum, Gold, etc.)" 
                   },
                   credits: { 
                     type: "array", 
@@ -255,7 +266,21 @@ ${content.substring(0, 30000)}`
                       },
                       required: ["project_name", "role"]
                     }, 
-                    description: "Work credits - albums, songs, films, projects they've worked on. Include as many as possible with the artist/project name." 
+                    description: "Work credits - albums, songs, films, projects they've worked on. Include as many as possible (up to 20)." 
+                  },
+                  press_links: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", description: "Article/interview title" },
+                        publication: { type: "string", description: "Publication name (e.g., Rolling Stone, Billboard, Variety)" },
+                        url: { type: "string", description: "URL to the article if available" },
+                        date: { type: "string", description: "Publication date if known (YYYY-MM-DD or year)" }
+                      },
+                      required: ["title", "publication"]
+                    },
+                    description: "Press coverage, interviews, articles, news mentions"
                   },
                   social_links: { 
                     type: "object", 
@@ -437,6 +462,7 @@ ${content.substring(0, 30000)}`
           organization: award.organization || 'Unknown',
           year: award.year || null,
           category: award.category || null,
+          description: award.description || null,
           verification_status: 'imported'
         });
         
@@ -447,6 +473,29 @@ ${content.substring(0, 30000)}`
         }
       }
       console.log('Successfully added', awardsAdded.length, 'awards');
+    }
+
+    // Add press links if we have them
+    const pressAdded: string[] = [];
+    if (profileData.press_links && Array.isArray(profileData.press_links) && profileData.press_links.length > 0) {
+      console.log('Adding', profileData.press_links.length, 'press links...');
+      for (const press of profileData.press_links.slice(0, 15)) {
+        const { error: pressError } = await supabase.from('press_links').insert({
+          user_id: newProfileId,
+          title: press.title || 'Press Coverage',
+          publication: press.publication || 'Unknown',
+          url: press.url || null,
+          published_date: press.date ? (press.date.length === 4 ? `${press.date}-01-01` : press.date) : null,
+          verification_status: 'imported'
+        });
+        
+        if (pressError) {
+          console.error('Error adding press link:', pressError.message);
+        } else {
+          pressAdded.push(press.title);
+        }
+      }
+      console.log('Successfully added', pressAdded.length, 'press links');
     }
 
     console.log('Import complete!');
@@ -460,7 +509,8 @@ ${content.substring(0, 30000)}`
         stats: {
           skills_count: skills.length,
           credits_added: creditsAdded.length,
-          awards_added: awardsAdded.length
+          awards_added: awardsAdded.length,
+          press_added: pressAdded.length
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

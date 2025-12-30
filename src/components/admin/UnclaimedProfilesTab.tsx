@@ -405,25 +405,35 @@ export function UnclaimedProfilesTab() {
     setImportingDiscovered(profile.name);
     
     try {
-      const { data, error } = await supabase.rpc('create_unclaimed_profile', {
-        p_full_name: profile.name,
-        p_role: profile.role,
-        p_bio: profile.bio || null,
-        p_location: profile.location || null,
-        p_avatar_url: profile.imageUrl || null,
-        p_professional_skills: profile.skills ? JSON.stringify(profile.skills) : '[]',
-        p_imported_from_url: profile.sourceUrl,
-        p_source: 'ai_discovery'
+      // Use the full import-profile-from-url function which extracts credits, awards, press links
+      const { data, error } = await supabase.functions.invoke('import-profile-from-url', {
+        body: { url: profile.sourceUrl }
       });
 
       if (error) throw error;
+      
+      if (data?.error) {
+        // If already imported, just remove from discovered list
+        if (data.existing_profile_id) {
+          toast.info(`Profile already exists: ${data.existing_profile_name || profile.name}`);
+          setDiscoveredProfiles(prev => prev.filter(p => p.name !== profile.name));
+          return;
+        }
+        throw new Error(data.error);
+      }
 
-      toast.success(`Imported: ${profile.name}`);
+      const stats = [];
+      if (data?.stats?.credits > 0) stats.push(`${data.stats.credits} credits`);
+      if (data?.stats?.awards > 0) stats.push(`${data.stats.awards} awards`);
+      if (data?.stats?.pressLinks > 0) stats.push(`${data.stats.pressLinks} press links`);
+      
+      const statsText = stats.length > 0 ? ` with ${stats.join(', ')}` : '';
+      toast.success(`Imported: ${profile.name}${statsText}`);
       setDiscoveredProfiles(prev => prev.filter(p => p.name !== profile.name));
       fetchData();
     } catch (error) {
       console.error('Error importing profile:', error);
-      toast.error('Failed to import profile');
+      toast.error(`Failed to import: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setImportingDiscovered(null);
     }

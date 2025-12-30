@@ -127,22 +127,47 @@ export const AIProfileDiscoveryStep = ({
 
     setIsImporting(true);
     try {
-      // Import the profile data to the current user
-      const { data, error } = await supabase.functions.invoke("import-profile-from-url", {
-        body: {
-          url: selectedProfile.sourceUrl,
-          userId: userId,
-          enrichWithAI: true
-        }
-      });
+      // Import discovered profile data directly to user's profile
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          bio: selectedProfile.bio || undefined,
+          location: selectedProfile.location || undefined,
+        })
+        .eq("user_id", userId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      // Import credits if available
+      if (selectedProfile.credits && selectedProfile.credits.length > 0) {
+        const creditsToInsert = selectedProfile.credits.map(c => ({
+          user_id: userId,
+          project_name: c.project,
+          role: c.role,
+          year: c.year || null,
+          verification_status: "ai_imported"
+        }));
+        
+        await supabase.from("credits").insert(creditsToInsert);
+      }
+
+      // Import awards if available
+      if (selectedProfile.awards && selectedProfile.awards.length > 0) {
+        const awardsToInsert = selectedProfile.awards.map(a => ({
+          user_id: userId,
+          title: a.title,
+          organization: a.organization,
+          year: a.year || null,
+          verification_status: "ai_imported"
+        }));
+        
+        await supabase.from("awards").insert(awardsToInsert);
+      }
 
       toast.success("Profile data imported successfully!");
       onComplete({
         ...selectedProfile,
-        imported: true,
-        importedData: data
+        imported: true
       });
 
     } catch (error) {
@@ -160,13 +185,7 @@ export const AIProfileDiscoveryStep = ({
 
     setIsImporting(true);
     try {
-      // Use the claim profile RPC
-      const { data, error } = await supabase.rpc("claim_profile", {
-        p_claim_token: "", // Will be handled by the merge logic
-        p_user_id: userId
-      });
-
-      // Alternatively, directly merge the data
+      // Directly merge the unclaimed profile data
       const { data: unclaimedData } = await supabase
         .from("profiles")
         .select("*")
@@ -181,21 +200,44 @@ export const AIProfileDiscoveryStep = ({
           supabase.from("press_links").select("*").eq("user_id", unclaimedMatch.user_id)
         ]);
 
-        // Transfer to current user
+        // Transfer credits to current user (create new entries)
         if (creditsRes.data && creditsRes.data.length > 0) {
-          await supabase.from("credits").upsert(
-            creditsRes.data.map(c => ({ ...c, user_id: userId, id: undefined }))
-          );
+          const creditsToInsert = creditsRes.data.map(c => ({
+            user_id: userId,
+            project_name: c.project_name,
+            role: c.role,
+            year: c.year,
+            platform: c.platform,
+            url: c.url,
+            verification_status: c.verification_status
+          }));
+          await supabase.from("credits").insert(creditsToInsert);
         }
+        
+        // Transfer awards to current user
         if (awardsRes.data && awardsRes.data.length > 0) {
-          await supabase.from("awards").upsert(
-            awardsRes.data.map(a => ({ ...a, user_id: userId, id: undefined }))
-          );
+          const awardsToInsert = awardsRes.data.map(a => ({
+            user_id: userId,
+            title: a.title,
+            organization: a.organization,
+            year: a.year,
+            category: a.category,
+            description: a.description,
+            verification_status: a.verification_status
+          }));
+          await supabase.from("awards").insert(awardsToInsert);
         }
+        
+        // Transfer press links to current user
         if (pressRes.data && pressRes.data.length > 0) {
-          await supabase.from("press_links").upsert(
-            pressRes.data.map(p => ({ ...p, user_id: userId, id: undefined }))
-          );
+          const pressToInsert = pressRes.data.map(p => ({
+            user_id: userId,
+            title: p.title,
+            url: p.url,
+            publication: p.publication,
+            published_date: p.published_date
+          }));
+          await supabase.from("press_links").insert(pressToInsert);
         }
 
         // Update user's profile with unclaimed data

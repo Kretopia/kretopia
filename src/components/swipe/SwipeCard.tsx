@@ -87,7 +87,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
               <Badge 
                 variant="outline" 
-                className="bg-orange-500/30 text-orange-200 border-orange-400/50 backdrop-blur-sm text-xs animate-pulse"
+                className="bg-orange-500/30 text-orange-200 border-orange-400/50 backdrop-blur-sm text-xs"
               >
                 ✨ Unclaimed Profile
               </Badge>

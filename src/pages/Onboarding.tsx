@@ -15,15 +15,17 @@ import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 import { AddPortfolioStep } from "@/components/onboarding/AddPortfolioStep";
+import { AIProfileDiscoveryStep } from "@/components/onboarding/AIProfileDiscoveryStep";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS, LOCATION_OPTIONS } from "@/components/profile/ProfileEditDialog";
 
 const STEPS = [
   { id: 1, title: "Profile", icon: Users, required: true },
-  { id: 2, title: "Bio", icon: Briefcase, required: true },
-  { id: 3, title: "Portfolio", icon: Image, required: true },
-  { id: 4, title: "Skills", icon: Award, required: false },
-  { id: 5, title: "Done", icon: Sparkles, required: false },
+  { id: 2, title: "AI Import", icon: Sparkles, required: false },
+  { id: 3, title: "Bio", icon: Briefcase, required: true },
+  { id: 4, title: "Portfolio", icon: Image, required: true },
+  { id: 5, title: "Skills", icon: Award, required: false },
+  { id: 6, title: "Done", icon: Sparkles, required: false },
 ];
 
 interface Skill {
@@ -132,7 +134,7 @@ export default function Onboarding() {
       
       // Resume from last step if they've started
       if (profileData.onboarding_step && profileData.onboarding_step > 1) {
-        setCurrentStep(Math.min(profileData.onboarding_step, 5));
+        setCurrentStep(Math.min(profileData.onboarding_step, 6));
       }
     }
 
@@ -194,7 +196,7 @@ export default function Onboarding() {
         return;
       }
       
-      // Save profile data
+      // Save profile data and go to AI Discovery step
       try {
         await supabase
           .from("profiles")
@@ -217,7 +219,9 @@ export default function Onboarding() {
       }
     }
 
-    if (currentStep === 2) {
+    // Step 2 is AI Discovery - handled by its own component
+
+    if (currentStep === 3) {
       // Validate bio length
       if (profile.bio.length < 20) {
         toast({
@@ -233,20 +237,20 @@ export default function Onboarding() {
         await supabase
           .from("profiles")
           .update({ 
-            onboarding_step: 3,
+            onboarding_step: 4,
             bio: profile.bio,
             location: profile.location,
           })
           .eq("user_id", user!.id);
         
-        analytics.onboardingStep(2, "bio_complete");
+        analytics.onboardingStep(3, "bio_complete");
       } catch (error) {
         console.error("Error updating profile:", error);
         return;
       }
     }
 
-    if (currentStep === 3) {
+    if (currentStep === 4) {
       // Portfolio step - handled by AddPortfolioStep component
       if (portfolioItems.length === 0) {
         toast({
@@ -259,13 +263,27 @@ export default function Onboarding() {
       
       await supabase
         .from("profiles")
-        .update({ onboarding_step: 4 })
+        .update({ onboarding_step: 5 })
         .eq("user_id", user!.id);
       
-      analytics.onboardingStep(3, "portfolio_complete");
+      analytics.onboardingStep(4, "portfolio_complete");
     }
 
-    if (currentStep === 4) {
+    if (currentStep === 5) {
+      // Skills step - at least 1 required
+      if (selectedSkills.length === 0) {
+        toast({
+          title: "Add at least one skill",
+          description: "Skills help AI match you with the right collaborators",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Complete onboarding
+      await completeOnboarding();
+      return;
+    }
       // Skills step - at least 1 required
       if (selectedSkills.length === 0) {
         toast({
@@ -294,14 +312,22 @@ export default function Onboarding() {
     });
     
     // Skip to next step but save current progress
-    if (currentStep === 3) {
+    if (currentStep === 2) {
+      // Skip AI Discovery
       await supabase
         .from("profiles")
-        .update({ onboarding_step: 4 })
+        .update({ onboarding_step: 3 })
         .eq("user_id", user!.id);
-      setCurrentStep(4);
-      analytics.onboardingStep(3, "portfolio_skipped");
+      setCurrentStep(3);
+      analytics.onboardingStep(2, "ai_discovery_skipped");
     } else if (currentStep === 4) {
+      await supabase
+        .from("profiles")
+        .update({ onboarding_step: 5 })
+        .eq("user_id", user!.id);
+      setCurrentStep(5);
+      analytics.onboardingStep(4, "portfolio_skipped");
+    } else if (currentStep === 5) {
       // Skip skills and complete
       await completeOnboarding();
     }
@@ -370,7 +396,32 @@ export default function Onboarding() {
 
   const handlePortfolioComplete = async (items: any[]) => {
     setPortfolioItems(items);
-    setCurrentStep(4);
+    setCurrentStep(5);
+  };
+
+  const handleAIDiscoveryComplete = async (importedData?: any) => {
+    const { analytics } = await import("@/lib/analytics");
+    
+    // If data was imported, update profile
+    if (importedData) {
+      if (importedData.bio) setProfile(prev => ({ ...prev, bio: importedData.bio }));
+      if (importedData.location) setProfile(prev => ({ ...prev, location: importedData.location }));
+      if (importedData.skills) setSelectedSkills(importedData.skills);
+      if (importedData.imageUrl && !avatarUrl) setAvatarUrl(importedData.imageUrl);
+      
+      toast({
+        title: "✨ Profile data imported!",
+        description: "We've added your credits, awards, and more",
+      });
+    }
+    
+    await supabase
+      .from("profiles")
+      .update({ onboarding_step: 3 })
+      .eq("user_id", user!.id);
+    
+    analytics.onboardingStep(2, importedData ? "ai_discovery_imported" : "ai_discovery_complete");
+    setCurrentStep(3);
   };
 
   const completeOnboarding = async () => {
@@ -391,7 +442,7 @@ export default function Onboarding() {
           ...profile,
           professional_skills: skillObjects.length > 0 ? skillObjects as any : null,
           onboarding_completed: true,
-          onboarding_step: 5,
+          onboarding_step: 6,
           xp: 100, // Award all XP at once
         })
         .eq("user_id", user.id);
@@ -548,7 +599,7 @@ export default function Onboarding() {
     }
   };
 
-  const progress = (currentStep / 5) * 100;
+  const progress = (currentStep / 6) * 100;
 
   // Visibility checklist component
   const VisibilityChecklist = () => (
@@ -745,8 +796,18 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Step 2: Bio + Location */}
+        {/* Step 2: AI Profile Discovery */}
         {currentStep === 2 && (
+          <AIProfileDiscoveryStep
+            userName={profile.full_name}
+            userId={userId}
+            onComplete={handleAIDiscoveryComplete}
+            onSkip={() => handleAIDiscoveryComplete()}
+          />
+        )}
+
+        {/* Step 3: Bio + Location */}
+        {currentStep === 3 && (
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-2xl sm:text-3xl font-bold mb-2">Tell Us About Yourself</h2>
@@ -833,8 +894,8 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Step 3: Portfolio */}
-        {currentStep === 3 && (
+        {/* Step 4: Portfolio */}
+        {currentStep === 4 && (
           <div className="space-y-6">
             <VisibilityChecklist />
             <AddPortfolioStep 
@@ -844,8 +905,8 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Step 4: Skills */}
-        {currentStep === 4 && (
+        {/* Step 5: Skills */}
+        {currentStep === 5 && (
           <div className="space-y-6">
             <div className="text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/20 bg-secondary/5 px-4 py-2 text-sm font-medium text-secondary">

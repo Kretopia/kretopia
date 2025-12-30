@@ -277,10 +277,10 @@ export function UnclaimedProfilesTab() {
     }
   };
 
-  const copyClaimLink = (claimToken: string) => {
-    const link = `https://www.thrivein.io/claim/${claimToken}`;
+  const copyProfileLink = (userId: string) => {
+    const link = `https://www.thrivein.io/profile/${userId}`;
     navigator.clipboard.writeText(link);
-    toast.success('Claim link copied!');
+    toast.success('Profile link copied!');
   };
 
   const handleClaimRequest = async (requestId: string, approve: boolean) => {
@@ -897,7 +897,7 @@ export function UnclaimedProfilesTab() {
                         size="sm" 
                         variant="outline" 
                         className="flex-1"
-                        onClick={() => copyClaimLink(profile.claim_token!)}
+                        onClick={() => copyProfileLink(profile.user_id)}
                       >
                         <Copy className="h-3 w-3 mr-1" />
                         Copy Link

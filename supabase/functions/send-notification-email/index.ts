@@ -74,19 +74,30 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
   switch (type) {
     case 'welcome':
       return {
-        subject: "Welcome to ThriveIN! 🎉",
+        subject: "Welcome to ThriveIN – Let's Create Together 🎉",
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">Welcome to ThriveIN, ${data.userName}! 🎉</h1>
-            <p>We're thrilled to have you join our creative community!</p>
-            <p>Here's what you can do next:</p>
-            <ul>
-              <li>Complete your profile to attract collaborators</li>
-              <li>Start swiping to find your perfect match</li>
-              <li>Connect with other creatives</li>
-            </ul>
-            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Get Started</a>
-            <p style="color: #666; margin-top: 30px;">Best regards,<br>The ThriveIN Team</p>
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+            <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to ThriveIN</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${data.userName}, you're officially part of the creative revolution.</p>
+            </div>
+            <div style="padding: 30px; background: #ffffff;">
+              <p style="color: #333; font-size: 16px; line-height: 1.6;">You've just joined an exclusive community of verified creatives – from Grammy winners to emerging talents – all looking for their next collaboration.</p>
+              <div style="background: #F5F3FF; border-left: 4px solid #8B5CF6; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0 0 15px 0; color: #5B21B6; font-weight: 600;">Your next steps:</p>
+                <p style="margin: 8px 0; color: #374151;">✨ <strong>Complete your profile</strong> – Showcase your work and get discovered</p>
+                <p style="margin: 8px 0; color: #374151;">🎯 <strong>Start matching</strong> – Swipe to find your perfect collaborator</p>
+                <p style="margin: 8px 0; color: #374151;">🤝 <strong>Connect & create</strong> – Turn matches into real projects</p>
+              </div>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Find Your First Match</a>
+              </div>
+              <p style="color: #6B7280; font-size: 14px; text-align: center; margin-top: 30px;">Questions? Just reply to this email – we're here to help.</p>
+            </div>
+            <div style="padding: 20px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
+              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">Connect, Collaborate & Create</p>
+              <p style="color: #9CA3AF; font-size: 12px; margin: 5px 0 0 0;">© ThriveIN</p>
+            </div>
             ${unsubscribeFooter}
           </div>
         `
@@ -111,15 +122,23 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
     
     case 'match':
       return {
-        subject: "You've got a new match! 💫",
+        subject: "It's a Match! You Connected with " + (data.matchName || "a Creator") + " 💫",
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">New Match! 💫</h1>
-            <p>Hi ${data.userName},</p>
-            <p>Great news! You've matched with ${data.matchName}.</p>
-            <p>This is a great opportunity to start a collaboration!</p>
-            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Connection</a>
-            <p style="color: #666; margin-top: 30px;">Happy collaborating!<br>The ThriveIN Team</p>
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+            <div style="background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 32px;">It's a Match! 💫</h1>
+            </div>
+            <div style="padding: 30px; background: #ffffff; text-align: center;">
+              <p style="color: #333; font-size: 18px; margin-bottom: 10px;">Hey ${data.userName},</p>
+              <p style="color: #6B7280; font-size: 16px; line-height: 1.6;">You and <strong style="color: #8B5CF6;">${data.matchName}</strong> both want to connect!</p>
+              <div style="background: #F5F3FF; padding: 25px; margin: 25px 0; border-radius: 12px;">
+                <p style="margin: 0; color: #5B21B6; font-size: 16px;">This could be the start of something amazing. Don't keep them waiting – start the conversation now!</p>
+              </div>
+              <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Say Hello</a>
+            </div>
+            <div style="padding: 20px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
+              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">Great collaborations start with a simple hello.</p>
+            </div>
             ${unsubscribeFooter}
           </div>
         `
@@ -256,25 +275,27 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
     
     case 'onboarding-reminder':
       return {
-        subject: '🚀 Complete Your ThriveIN Profile',
+        subject: "You're 2 Minutes Away from Your First Match 🎯",
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">Finish Setting Up Your Profile! 🎨</h1>
-            <p>Hi ${data.userName || 'there'},</p>
-            <p>You started creating your ThriveIN profile, but haven't finished yet.</p>
-            <p><strong>${data.stepMessage || "You're almost there!"}</strong></p>
-            <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p style="margin: 0; color: #333; font-weight: bold;">Complete your profile to:</p>
-              <ul style="margin: 10px 0; padding-left: 20px; color: #666;">
-                <li>✨ Connect with other creators</li>
-                <li>🎯 Get matched with collaborators</li>
-                <li>🚀 Start collaborating on projects</li>
-                <li>🎁 Earn your first 100 XP</li>
-              </ul>
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+            <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); padding: 35px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">You're Almost There!</h1>
             </div>
-            <a href="${data.onboardingUrl || baseUrl + '/onboarding'}" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Complete Your Profile</a>
-            <p>It only takes 2 minutes! 🚀</p>
-            <p style="color: #666; margin-top: 30px;">We're excited to see you thrive!<br>The ThriveIN Team</p>
+            <div style="padding: 30px; background: #ffffff;">
+              <p style="color: #333; font-size: 16px; line-height: 1.6;">Hey ${data.userName || 'there'},</p>
+              <p style="color: #6B7280; font-size: 16px; line-height: 1.6;">${data.stepMessage || "You started setting up your ThriveIN profile, but haven't finished yet."}</p>
+              <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0; color: #92400E; font-weight: 600;">⚡ Did you know?</p>
+                <p style="margin: 10px 0 0 0; color: #78350F;">Complete profiles get 5x more matches. Creatives are actively looking for talent like you right now.</p>
+              </div>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${data.onboardingUrl || baseUrl + '/onboarding'}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Complete Profile (2 min)</a>
+              </div>
+              <p style="color: #9CA3AF; font-size: 14px; text-align: center;">Your next collaboration is waiting.</p>
+            </div>
+            <div style="padding: 20px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
+              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">© ThriveIN – Connect, Collaborate & Create</p>
+            </div>
             ${unsubscribeFooter}
           </div>
         `

@@ -702,15 +702,41 @@ const CreatorEPK = () => {
       {/* Fixed Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border p-4">
         <div className="max-w-lg mx-auto space-y-3">
-          {/* Connect CTA */}
-          <Button 
-            onClick={() => navigate('/auth')}
-            className="w-full h-12 text-base font-semibold"
-            size="lg"
-          >
-            <Mail className="h-5 w-5 mr-2" />
-            Sign Up to Connect
-          </Button>
+          {/* Primary CTA - Different for claimed vs unclaimed profiles */}
+          {profile.is_claimed === false ? (
+            <>
+              {/* Claim Profile - Primary for unclaimed */}
+              <Button 
+                onClick={() => setShowClaimDialog(true)}
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+                size="lg"
+              >
+                <UserCheck className="h-5 w-5 mr-2" />
+                Claim This Profile
+              </Button>
+              
+              {/* Secondary - Sign up for others */}
+              <Button 
+                onClick={() => navigate('/auth')}
+                variant="outline"
+                className="w-full h-10 text-sm"
+                size="default"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Not you? Sign Up to Connect
+              </Button>
+            </>
+          ) : (
+            /* Connect CTA - For claimed profiles */
+            <Button 
+              onClick={() => navigate('/auth')}
+              className="w-full h-12 text-base font-semibold"
+              size="lg"
+            >
+              <Mail className="h-5 w-5 mr-2" />
+              Sign Up to Connect
+            </Button>
+          )}
           
           {/* Secondary Links */}
           <div className="flex items-center justify-center gap-4 text-sm">

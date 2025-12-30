@@ -28,6 +28,8 @@ interface ProfileHeroProps {
   onStartProject?: () => void;
   isFromMatch?: boolean;
   onRefresh?: () => void;
+  creditsCount?: number;
+  awardsCount?: number;
 }
 
 export const ProfileHero = ({
@@ -46,7 +48,9 @@ export const ProfileHero = ({
   onShowQR,
   onStartProject,
   isFromMatch,
-  onRefresh
+  onRefresh,
+  creditsCount = 0,
+  awardsCount = 0
 }: ProfileHeroProps) => {
   const { user } = useAuth();
   const tier = getTierByPoints(profile.points || 0);
@@ -55,6 +59,9 @@ export const ProfileHero = ({
   
   // Check if this is an unclaimed profile
   const isUnclaimedProfile = profile.is_claimed === false;
+  
+  // Check if profile qualifies for Industry Verified badge (3+ credits OR 2+ awards)
+  const isIndustryVerified = creditsCount >= 3 || awardsCount >= 2 || profile.verification_tier === 'industry';
   
   // Get connection degree for non-own profiles
   const { degree, path, loading: degreeLoading } = useConnectionDegree(
@@ -169,8 +176,8 @@ export const ProfileHero = ({
                 </Badge>
               )}
               
-              {/* Industry Verified Badge - for claimed profiles with verification_tier */}
-              {!isUnclaimedProfile && profile.verification_tier === 'industry' && (
+              {/* Industry Verified Badge - for any profile with 3+ credits OR 2+ awards */}
+              {isIndustryVerified && (
                 <Badge 
                   variant="default"
                   className="gap-1 sm:gap-1.5 h-5 sm:h-6 px-1.5 sm:px-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0"

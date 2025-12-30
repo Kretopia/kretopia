@@ -75,6 +75,8 @@ const ViewProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [credits, setCredits] = useState<any[]>([]);
+  const [awards, setAwards] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMatched, setIsMatched] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
@@ -148,6 +150,15 @@ const ViewProfile = () => {
         }));
         setReviews(reviewsWithProfiles);
       }
+
+      // Fetch credits and awards for Industry Verified badge
+      const [creditsResult, awardsResult] = await Promise.all([
+        supabase.from('credits').select('id').eq('user_id', userId),
+        supabase.from('awards').select('id').eq('user_id', userId)
+      ]);
+      
+      setCredits(creditsResult.data || []);
+      setAwards(awardsResult.data || []);
 
       // Check if matched
       const { data: matchData } = await supabase

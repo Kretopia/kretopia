@@ -19,6 +19,9 @@ interface SwipeCardProps {
     portfolio_count?: number;
     is_claimed?: boolean;
     imported_from_url?: string | null;
+    credits_count?: number;
+    awards_count?: number;
+    verification_tier?: string;
   };
   onViewProfile?: () => void;
   onMatchBadgeClick?: () => void;
@@ -41,6 +44,12 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
       .map(n => n[0])
       .join('')
       .toUpperCase() || '?';
+
+    // Check if profile qualifies for Industry Verified badge
+    const isIndustryVerified = 
+      (profile.credits_count || 0) >= 3 || 
+      (profile.awards_count || 0) >= 2 || 
+      profile.verification_tier === 'industry';
 
     return (
       <Card
@@ -82,8 +91,21 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             </Badge>
           </div>
 
-          {/* Unclaimed Badge - show prominently for imported profiles */}
-          {profile.is_claimed === false && (
+          {/* Industry Verified Badge - for profiles with 3+ credits OR 2+ awards */}
+          {isIndustryVerified && (
+            <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+              <Badge 
+                variant="outline" 
+                className="bg-gradient-to-r from-amber-500/40 to-orange-500/40 text-amber-100 border-amber-400/60 backdrop-blur-sm text-xs"
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                Industry Verified
+              </Badge>
+            </div>
+          )}
+
+          {/* Unclaimed Badge - show prominently for imported profiles (only if not industry verified) */}
+          {!isIndustryVerified && profile.is_claimed === false && (
             <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
               <Badge 
                 variant="outline" 
@@ -94,8 +116,8 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             </div>
           )}
 
-          {/* Badge (OG/Beta/ODOS) - only for claimed profiles */}
-          {profile.is_claimed !== false && profile.badge && (
+          {/* Badge (OG/Beta/ODOS) - only for claimed profiles without industry verified */}
+          {!isIndustryVerified && profile.is_claimed !== false && profile.badge && (
             <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
               <Badge 
                 variant="outline" 
@@ -116,7 +138,10 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
 
           {/* Level Badge */}
           {profile.level > 1 && (
-            <div className="absolute top-3 sm:top-4 left-16 sm:left-20">
+            <div className={cn(
+              "absolute top-3 sm:top-4",
+              isIndustryVerified ? "left-32 sm:left-36" : "left-16 sm:left-20"
+            )}>
               <Badge variant="outline" className="bg-purple-500/20 text-purple-200 border-purple-400/50 backdrop-blur-sm text-xs">
                 Lvl {profile.level}
               </Badge>

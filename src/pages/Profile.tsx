@@ -289,6 +289,8 @@ const ProfileContent = () => {
             profile={profile}
             stats={stats}
             isOwnProfile={true}
+            creditsCount={credits?.length || 0}
+            awardsCount={awards?.length || 0}
             onEdit={() => {
               setEditForm({
                 full_name: profile.full_name || "",

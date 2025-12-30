@@ -479,6 +479,8 @@ const PublicProfile = () => {
               stats={stats}
               isOwnProfile={false}
               connectionStatus={connectionStatus}
+              creditsCount={credits?.length || 0}
+              awardsCount={awards?.length || 0}
               onConnect={isPendingReceived ? handleAcceptConnection : handleConnect}
               onMessage={handleMessage}
               onStartProject={handleStartProject}

@@ -27,10 +27,13 @@ interface AwardsSectionProps {
   onRefresh: () => void;
 }
 
+const INITIAL_DISPLAY_COUNT = 6;
+
 export const AwardsSection = ({ userId, isOwnProfile, onRefresh }: AwardsSectionProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [awards, setAwards] = useState<AwardItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
   const [newAward, setNewAward] = useState({
     title: "",
     organization: "",
@@ -60,6 +63,9 @@ export const AwardsSection = ({ userId, isOwnProfile, onRefresh }: AwardsSection
       setLoading(false);
     }
   };
+
+  const displayedAwards = showAll ? awards : awards.slice(0, INITIAL_DISPLAY_COUNT);
+  const hasMore = awards.length > INITIAL_DISPLAY_COUNT;
 
   const addAward = async () => {
     if (!newAward.title || !newAward.organization || !newAward.year) {
@@ -204,24 +210,39 @@ export const AwardsSection = ({ userId, isOwnProfile, onRefresh }: AwardsSection
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {awards.map((award) => (
-            <AchievementCard
-              key={award.id}
-              variant="award"
-              title={award.title}
-              subtitle={award.organization}
-              description={award.description}
-              year={award.year}
-              imageUrl={award.image_url}
-              verificationStatus={award.verification_status}
-              isFeatured={award.is_featured}
-              isOwnProfile={isOwnProfile}
-              onDelete={() => handleDelete(award.id)}
-              icon={<Award className="h-16 w-16" />}
-              metadata={award.category ? { Category: award.category } : undefined}
-            />
-          ))}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayedAwards.map((award) => (
+              <AchievementCard
+                key={award.id}
+                variant="award"
+                title={award.title}
+                subtitle={award.organization}
+                description={award.description}
+                year={award.year}
+                imageUrl={award.image_url}
+                verificationStatus={award.verification_status}
+                isFeatured={award.is_featured}
+                isOwnProfile={isOwnProfile}
+                onDelete={() => handleDelete(award.id)}
+                icon={<Award className="h-16 w-16" />}
+                metadata={award.category ? { Category: award.category } : undefined}
+              />
+            ))}
+          </div>
+          
+          {hasMore && (
+            <div className="text-center">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowAll(!showAll)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {showAll ? `Show less` : `Show ${awards.length - INITIAL_DISPLAY_COUNT} more awards`}
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

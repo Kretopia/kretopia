@@ -138,6 +138,9 @@ export const AIProfileDiscoveryStep = ({
 
       if (updateError) throw updateError;
 
+      let creditsImported = 0;
+      let awardsImported = 0;
+
       // Import credits if available
       if (selectedProfile.credits && selectedProfile.credits.length > 0) {
         const creditsToInsert = selectedProfile.credits.map(c => ({
@@ -148,7 +151,8 @@ export const AIProfileDiscoveryStep = ({
           verification_status: "ai_imported"
         }));
         
-        await supabase.from("credits").insert(creditsToInsert);
+        const { error } = await supabase.from("credits").insert(creditsToInsert);
+        if (!error) creditsImported = creditsToInsert.length;
       }
 
       // Import awards if available
@@ -161,13 +165,24 @@ export const AIProfileDiscoveryStep = ({
           verification_status: "ai_imported"
         }));
         
-        await supabase.from("awards").insert(awardsToInsert);
+        const { error } = await supabase.from("awards").insert(awardsToInsert);
+        if (!error) awardsImported = awardsToInsert.length;
       }
 
-      toast.success("Profile data imported successfully!");
+      // Determine if we have enough data to fast-track
+      const hasSufficientBio = (selectedProfile.bio?.length || 0) >= 20;
+      const hasWorkContent = creditsImported > 0 || awardsImported > 0;
+      const canFastTrack = hasSufficientBio && hasWorkContent;
+
+      toast.success(`Profile imported! ${creditsImported} credits, ${awardsImported} awards added.`);
+      
       onComplete({
         ...selectedProfile,
-        imported: true
+        imported: true,
+        creditsImported,
+        awardsImported,
+        canFastTrack,
+        skills: selectedProfile.skills || []
       });
 
     } catch (error) {
@@ -192,7 +207,13 @@ export const AIProfileDiscoveryStep = ({
         .eq("user_id", unclaimedMatch.user_id)
         .single();
 
+      let creditsImported = 0;
+      let awardsImported = 0;
+      let bio = "";
+
       if (unclaimedData) {
+        bio = unclaimedData.bio || "";
+        
         // Get credits, awards, press from unclaimed profile
         const [creditsRes, awardsRes, pressRes] = await Promise.all([
           supabase.from("credits").select("*").eq("user_id", unclaimedMatch.user_id),
@@ -211,7 +232,8 @@ export const AIProfileDiscoveryStep = ({
             url: c.url,
             verification_status: c.verification_status
           }));
-          await supabase.from("credits").insert(creditsToInsert);
+          const { error } = await supabase.from("credits").insert(creditsToInsert);
+          if (!error) creditsImported = creditsToInsert.length;
         }
         
         // Transfer awards to current user
@@ -225,7 +247,8 @@ export const AIProfileDiscoveryStep = ({
             description: a.description,
             verification_status: a.verification_status
           }));
-          await supabase.from("awards").insert(awardsToInsert);
+          const { error } = await supabase.from("awards").insert(awardsToInsert);
+          if (!error) awardsImported = awardsToInsert.length;
         }
         
         // Transfer press links to current user
@@ -263,8 +286,20 @@ export const AIProfileDiscoveryStep = ({
           .eq("user_id", unclaimedMatch.user_id);
       }
 
-      toast.success("Profile claimed and merged successfully!");
-      onComplete({ claimed: true, unclaimedProfile: unclaimedMatch });
+      // Determine if we have enough data to fast-track
+      const hasSufficientBio = bio.length >= 20;
+      const hasWorkContent = creditsImported > 0 || awardsImported > 0;
+      const canFastTrack = hasSufficientBio && hasWorkContent;
+
+      toast.success(`Profile claimed! ${creditsImported} credits, ${awardsImported} awards merged.`);
+      onComplete({ 
+        claimed: true, 
+        unclaimedProfile: unclaimedMatch,
+        creditsImported,
+        awardsImported,
+        canFastTrack,
+        bio
+      });
 
     } catch (error) {
       console.error("Claim error:", error);

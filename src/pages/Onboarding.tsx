@@ -252,22 +252,18 @@ export default function Onboarding() {
     }
 
     if (currentStep === 4) {
-      // Portfolio step - handled by AddPortfolioStep component
-      if (portfolioItems.length === 0) {
-        toast({
-          title: "Portfolio required",
-          description: "Add at least one portfolio item to be visible to other creators",
-          variant: "destructive",
-        });
-        return;
-      }
-      
+      // Portfolio step - now optional if credits/awards were imported
+      // Just proceed to skills step
       await supabase
         .from("profiles")
         .update({ onboarding_step: 5 })
         .eq("user_id", user!.id);
       
-      analytics.onboardingStep(4, "portfolio_complete");
+      if (portfolioItems.length > 0) {
+        analytics.onboardingStep(4, "portfolio_complete");
+      } else {
+        analytics.onboardingStep(4, "portfolio_skipped");
+      }
     }
 
     if (currentStep === 5) {
@@ -396,10 +392,34 @@ export default function Onboarding() {
       if (importedData.skills) setSelectedSkills(importedData.skills);
       if (importedData.imageUrl && !avatarUrl) setAvatarUrl(importedData.imageUrl);
       
-      toast({
-        title: "✨ Profile data imported!",
-        description: "We've added your credits, awards, and more",
-      });
+      // Check if AI import provides enough data to fast-track
+      if (importedData.canFastTrack) {
+        toast({
+          title: "✨ Profile complete!",
+          description: "Your credits & awards are imported.",
+        });
+        
+        // Set skills from import or default skills
+        if (importedData.skills && importedData.skills.length > 0) {
+          setSelectedSkills(importedData.skills);
+        }
+        
+        await supabase
+          .from("profiles")
+          .update({ onboarding_step: 6 })
+          .eq("user_id", user!.id);
+        
+        analytics.onboardingStep(2, "ai_discovery_fast_track");
+        
+        // Skip directly to completion
+        await completeOnboarding();
+        return;
+      } else {
+        toast({
+          title: "✨ Data imported!",
+          description: "We've added your credits & awards. Add a portfolio item to complete.",
+        });
+      }
     }
     
     await supabase
@@ -685,7 +705,7 @@ export default function Onboarding() {
         </div>
         <div className={`flex items-center gap-2 ${hasPortfolio ? 'text-green-600' : 'text-muted-foreground'}`}>
           {hasPortfolio ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-          At least 1 portfolio item
+          Portfolio, credits, or awards
         </div>
       </div>
     </div>
@@ -958,6 +978,10 @@ export default function Onboarding() {
             <AddPortfolioStep 
               userId={userId} 
               onComplete={handlePortfolioComplete}
+              onSkip={() => {
+                // Skip directly to skills
+                handleNext();
+              }}
             />
           </div>
         )}
@@ -1116,7 +1140,7 @@ export default function Onboarding() {
         )}
 
         {/* Navigation Buttons */}
-        {currentStep !== 5 && currentStep !== 3 && currentStep !== 7 && (
+        {currentStep !== 5 && currentStep !== 3 && currentStep !== 4 && currentStep !== 7 && (
           <div className="flex gap-3 mt-8">
             {currentStep > 1 && (
               <Button

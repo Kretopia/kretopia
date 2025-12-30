@@ -94,39 +94,52 @@ serve(async (req) => {
     let pageTitle = '';
     let pageDescription = '';
     let imageUrl = '';
+    let wikipediaContent = '';
     
-    // Try Firecrawl first (best for JS-rendered pages)
-    if (FIRECRAWL_API_KEY) {
-      console.log('Using Firecrawl to scrape URL...');
+    // Helper function to scrape with Firecrawl
+    const scrapeWithFirecrawl = async (scrapeUrl: string): Promise<{ content: string; title: string; description: string; image: string }> => {
+      if (!FIRECRAWL_API_KEY) return { content: '', title: '', description: '', image: '' };
+      
       try {
-        const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            url,
+            url: scrapeUrl,
             formats: ['markdown'],
-            onlyMainContent: false, // Get full page for more data
-            waitFor: 5000, // Wait longer for dynamic content
+            onlyMainContent: false,
+            waitFor: 5000,
           }),
         });
 
-        if (firecrawlResponse.ok) {
-          const firecrawlData = await firecrawlResponse.json();
-          content = firecrawlData.data?.markdown || '';
-          pageTitle = firecrawlData.data?.metadata?.title || '';
-          pageDescription = firecrawlData.data?.metadata?.description || '';
-          imageUrl = firecrawlData.data?.metadata?.ogImage || '';
-          console.log('Firecrawl success, content length:', content.length);
-        } else {
-          const errorText = await firecrawlResponse.text();
-          console.log('Firecrawl failed:', firecrawlResponse.status, errorText);
+        if (response.ok) {
+          const data = await response.json();
+          return {
+            content: data.data?.markdown || '',
+            title: data.data?.metadata?.title || '',
+            description: data.data?.metadata?.description || '',
+            image: data.data?.metadata?.ogImage || ''
+          };
         }
+        console.log('Firecrawl failed for', scrapeUrl, ':', response.status);
       } catch (e) {
-        console.error('Firecrawl error:', e);
+        console.error('Firecrawl error for', scrapeUrl, ':', e);
       }
+      return { content: '', title: '', description: '', image: '' };
+    };
+    
+    // Try Firecrawl first (best for JS-rendered pages)
+    if (FIRECRAWL_API_KEY) {
+      console.log('Using Firecrawl to scrape URL...');
+      const result = await scrapeWithFirecrawl(url);
+      content = result.content;
+      pageTitle = result.title;
+      pageDescription = result.description;
+      imageUrl = result.image;
+      console.log('Firecrawl success, content length:', content.length);
     }
 
     // Fallback to direct fetch
@@ -154,6 +167,33 @@ serve(async (req) => {
         JSON.stringify({ error: 'Could not retrieve content from this URL. The page may be protected, require login, or block automated access. Try a different URL or platform.' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
+    }
+    
+    // Try to find and scrape Wikipedia for additional awards/recognition data
+    if (FIRECRAWL_API_KEY && sourceType !== 'wikipedia') {
+      // Extract name from page title or content to search Wikipedia
+      const nameMatch = pageTitle?.match(/^([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/);
+      const possibleName = nameMatch?.[1] || pageTitle?.split(/[|\-–]/)?.[0]?.trim();
+      
+      if (possibleName && possibleName.length > 3 && possibleName.length < 50) {
+        console.log('Searching Wikipedia for:', possibleName);
+        const wikiUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(possibleName.replace(/\s+/g, '_'))}`;
+        
+        const wikiResult = await scrapeWithFirecrawl(wikiUrl);
+        if (wikiResult.content && wikiResult.content.length > 500) {
+          // Check if it's actually about the right person (contains relevant keywords)
+          const lowerContent = wikiResult.content.toLowerCase();
+          const relevantKeywords = ['singer', 'songwriter', 'producer', 'musician', 'actor', 'director', 'artist', 'composer', 'grammy', 'award', 'album', 'film'];
+          const isRelevant = relevantKeywords.some(kw => lowerContent.includes(kw));
+          
+          if (isRelevant) {
+            wikipediaContent = wikiResult.content;
+            console.log('Wikipedia content found, length:', wikipediaContent.length);
+          } else {
+            console.log('Wikipedia page found but not relevant to creative professional');
+          }
+        }
+      }
     }
     
     // Use Lovable AI to extract RICH profile information
@@ -190,12 +230,30 @@ Skip company pages, product pages, or generic content - we only want individual 
             role: 'user',
             content: `Extract a COMPREHENSIVE profile from this ${sourceType} page. Get as much data as possible for a rich creator profile.
 
+IMPORTANT FOR AWARDS: Look very carefully for:
+- Grammy Awards (wins AND nominations) - including categories like "Songwriter of the Year", "Album of the Year", "Song of the Year", etc.
+- Oscar/Academy Awards (wins and nominations)
+- Billboard Music Awards
+- MTV Awards
+- Emmy Awards
+- BRIT Awards
+- American Music Awards
+- Gold/Platinum certifications
+- ANY industry awards or nominations
+
+For each award, capture: title, organization, year, category, and whether it was a WIN or NOMINATION.
+
 URL: ${url}
 Title: ${pageTitle}
 Description: ${pageDescription}
 
 Page Content:
-${content.substring(0, 30000)}`
+${content.substring(0, 25000)}
+
+${wikipediaContent ? `
+--- ADDITIONAL WIKIPEDIA DATA (use this for awards, biography, and career details) ---
+${wikipediaContent.substring(0, 15000)}
+` : ''}`
           }
         ],
         tools: [
@@ -245,15 +303,16 @@ ${content.substring(0, 30000)}`
                     items: { 
                       type: "object", 
                       properties: { 
-                        title: { type: "string", description: "Award name (e.g., 'Best Pop Vocal Album')" }, 
-                        organization: { type: "string", description: "Awarding organization (e.g., Grammy, Oscar, Billboard)" }, 
-                        year: { type: "number", description: "Year received" },
-                        category: { type: "string", description: "Award category or subcategory" },
-                        description: { type: "string", description: "Brief description like 'For work on XYZ album'" }
+                        title: { type: "string", description: "Award name (e.g., 'Songwriter of the Year', 'Best Pop Vocal Album')" }, 
+                        organization: { type: "string", description: "Awarding organization (Grammy Awards, Academy Awards, Billboard, etc.)" }, 
+                        year: { type: "number", description: "Year received or nominated" },
+                        category: { type: "string", description: "Award category (e.g., 'Non-Classical', 'Pop')" },
+                        status: { type: "string", enum: ["won", "nominated"], description: "Whether they won or were nominated" },
+                        description: { type: "string", description: "Brief context like 'For work on XYZ album' or the song/project name" }
                       },
                       required: ["title", "organization"]
                     }, 
-                    description: "Notable awards, nominations, and certifications (Grammy, Oscar, Platinum, Gold, etc.)" 
+                    description: "ALL awards AND nominations. Include Grammy wins, Grammy nominations, Oscar nominations, certifications, etc. Get as many as possible (up to 30)." 
                   },
                   credits: { 
                     type: "array", 
@@ -451,18 +510,26 @@ ${content.substring(0, 30000)}`
       console.log('Successfully added', creditsAdded.length, 'credits');
     }
 
-    // Add awards if we have them
+    // Add awards if we have them (now supports up to 30)
     const awardsAdded: string[] = [];
     if (profileData.awards && Array.isArray(profileData.awards) && profileData.awards.length > 0) {
       console.log('Adding', profileData.awards.length, 'awards...');
-      for (const award of profileData.awards.slice(0, 10)) {
+      for (const award of profileData.awards.slice(0, 30)) {
+        // Build description with status (won/nominated)
+        let fullDescription = award.description || '';
+        if (award.status === 'nominated' && !fullDescription.toLowerCase().includes('nominat')) {
+          fullDescription = `Nominated${fullDescription ? ': ' + fullDescription : ''}`;
+        } else if (award.status === 'won' && !fullDescription.toLowerCase().includes('won') && !fullDescription.toLowerCase().includes('winner')) {
+          fullDescription = `Winner${fullDescription ? ': ' + fullDescription : ''}`;
+        }
+        
         const { error: awardError } = await supabase.from('awards').insert({
           user_id: newProfileId,
           title: award.title || (typeof award === 'string' ? award : 'Award'),
           organization: award.organization || 'Unknown',
           year: award.year || null,
           category: award.category || null,
-          description: award.description || null,
+          description: fullDescription || null,
           verification_status: 'imported'
         });
         

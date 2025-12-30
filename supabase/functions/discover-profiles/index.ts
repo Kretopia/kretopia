@@ -13,6 +13,7 @@ interface DiscoveredProfile {
   sourceUrl: string;
   skills?: string[];
   imageUrl?: string;
+  confidence: number;
 }
 
 serve(async (req) => {
@@ -22,23 +23,23 @@ serve(async (req) => {
 
   try {
     const { searchType, query, platform, page = 1 } = await req.json();
-    const pageSize = 15;
-    const offset = (page - 1) * pageSize;
     console.log("Discovery request:", { searchType, query, platform, page });
 
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!FIRECRAWL_API_KEY) {
+      console.error("FIRECRAWL_API_KEY not configured");
       return new Response(
-        JSON.stringify({ error: "Firecrawl API key not configured" }),
+        JSON.stringify({ error: "Web search not configured. Please connect Firecrawl in settings." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY not configured");
       return new Response(
-        JSON.stringify({ error: "LOVABLE_API_KEY not configured" }),
+        JSON.stringify({ error: "AI service not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -46,215 +47,89 @@ serve(async (req) => {
     let discoveredProfiles: DiscoveredProfile[] = [];
 
     if (searchType === "name") {
-      // Search for a specific person by name - include multiple platform variations
-      const searchQuery = `"${query}" (site:imdb.com OR site:discogs.com OR site:open.spotify.com OR site:allmusic.com OR site:behance.net OR site:wikipedia.org OR site:grammy.com)`;
-      console.log("Searching for person by name:", searchQuery);
+      // Search for a specific person by name across multiple strategies
+      console.log("=== NAME SEARCH ===");
+      console.log("Searching for:", query);
 
-      const searchResponse = await fetch("https://api.firecrawl.dev/v1/search", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: searchQuery,
-          limit: 15,
-          scrapeOptions: {
-            formats: ["markdown"],
-          },
-        }),
-      });
+      // Strategy 1: Direct search with creative industry terms
+      const searchQueries = [
+        `"${query}" site:imdb.com/name`,
+        `"${query}" site:discogs.com/artist`,
+        `"${query}" site:open.spotify.com/artist`,
+        `"${query}" site:behance.net`,
+        `"${query}" musician OR producer OR artist OR director OR filmmaker OR songwriter OR designer`,
+        `"${query}" professional portfolio biography`,
+      ];
 
-      const searchData = await searchResponse.json();
-      console.log("Name search response:", searchData.success ? `${searchData.data?.length || 0} results` : `failed: ${JSON.stringify(searchData)}`);
-
-      if (searchData.success && searchData.data && searchData.data.length > 0) {
-        // Process results in parallel for speed
-        const profilePromises = searchData.data.slice(0, 8).map(async (result: any) => {
-          // Skip LinkedIn due to restrictions
-          if (result.url?.includes('linkedin.com')) return null;
-          
-          console.log("Processing result:", result.url);
-          const content = result.markdown || result.description || result.title || '';
-          
-          if (!content || content.length < 50) {
-            console.log("Skipping - insufficient content");
-            return null;
-          }
-
-          return extractProfileWithAI(
-            content,
-            result.url,
-            query,
-            LOVABLE_API_KEY
-          );
-        });
-
-        const results = await Promise.all(profilePromises);
-        discoveredProfiles = results.filter((p): p is DiscoveredProfile => p !== null);
-        console.log(`Extracted ${discoveredProfiles.length} profiles from name search`);
-      } else {
-        // Fallback: broader search without site restrictions
-        console.log("Trying broader search...");
-        const fallbackQuery = `"${query}" musician OR producer OR artist OR filmmaker OR director OR songwriter`;
-        
-        const fallbackResponse = await fetch("https://api.firecrawl.dev/v1/search", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            query: fallbackQuery,
-            limit: 15,
-            scrapeOptions: {
-              formats: ["markdown"],
+      // Run multiple searches in parallel for speed
+      const searchPromises = searchQueries.slice(0, 3).map(async (searchQuery) => {
+        try {
+          console.log("Searching:", searchQuery);
+          const response = await fetch("https://api.firecrawl.dev/v1/search", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
+              "Content-Type": "application/json",
             },
-          }),
-        });
-
-        const fallbackData = await fallbackResponse.json();
-        console.log("Fallback search results:", fallbackData.success ? `${fallbackData.data?.length || 0} results` : "failed");
-
-        if (fallbackData.success && fallbackData.data) {
-          const profilePromises = fallbackData.data.slice(0, 8).map(async (result: any) => {
-            if (result.url?.includes('linkedin.com')) return null;
-            
-            const content = result.markdown || result.description || result.title || '';
-            if (!content || content.length < 50) return null;
-
-            return extractProfileWithAI(content, result.url, query, LOVABLE_API_KEY);
+            body: JSON.stringify({
+              query: searchQuery,
+              limit: 10,
+              scrapeOptions: { formats: ["markdown"] },
+            }),
           });
 
-          const results = await Promise.all(profilePromises);
-          discoveredProfiles = results.filter((p): p is DiscoveredProfile => p !== null);
+          if (response.ok) {
+            const data = await response.json();
+            return data.data || [];
+          }
+          return [];
+        } catch (e) {
+          console.error("Search error:", e);
+          return [];
+        }
+      });
+
+      const allResults = await Promise.all(searchPromises);
+      const flatResults = allResults.flat();
+      console.log("Total search results:", flatResults.length);
+
+      // Deduplicate by URL
+      const uniqueUrls = new Map();
+      for (const result of flatResults) {
+        if (result.url && !uniqueUrls.has(result.url)) {
+          uniqueUrls.set(result.url, result);
         }
       }
+      const uniqueResults = Array.from(uniqueUrls.values());
+      console.log("Unique results:", uniqueResults.length);
+
+      // Process results with AI extraction (in parallel batches)
+      const batchSize = 5;
+      for (let i = 0; i < Math.min(uniqueResults.length, 15); i += batchSize) {
+        const batch = uniqueResults.slice(i, i + batchSize);
+        const extractionPromises = batch.map(async (result: any) => {
+          // Skip LinkedIn
+          if (result.url?.includes('linkedin.com')) return null;
+          
+          const content = result.markdown || result.description || result.title || '';
+          if (!content || content.length < 30) return null;
+
+          return extractProfileWithAI(content, result.url, query, LOVABLE_API_KEY);
+        });
+
+        const batchProfiles = await Promise.all(extractionPromises);
+        discoveredProfiles.push(...batchProfiles.filter((p): p is DiscoveredProfile => p !== null));
+      }
+
+      console.log("Extracted profiles:", discoveredProfiles.length);
+
     } else if (searchType === "industry") {
-      // Search for creators by industry/role using Firecrawl search
-      const searchQuery = `${query} professional profile portfolio`;
-      console.log("Searching for:", searchQuery);
+      // Search for creators by industry/role
+      console.log("=== INDUSTRY SEARCH ===");
+      const searchQuery = `${query} professional portfolio creator artist`;
+      console.log("Searching:", searchQuery);
 
-      const searchResponse = await fetch("https://api.firecrawl.dev/v1/search", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: searchQuery,
-          limit: 30,
-          scrapeOptions: {
-            formats: ["markdown"],
-          },
-        }),
-      });
-
-      const searchData = await searchResponse.json();
-      console.log("Search results:", searchData.success ? `${searchData.data?.length || 0} results` : "failed");
-
-      if (searchData.success && searchData.data) {
-        const paginatedResults = searchData.data.slice(offset, offset + pageSize);
-        
-        for (const result of paginatedResults) {
-          const profile = await extractProfileWithAI(
-            result.markdown || result.description, 
-            result.url,
-            undefined,
-            LOVABLE_API_KEY
-          );
-          if (profile) {
-            discoveredProfiles.push(profile);
-          }
-        }
-      }
-    } else if (searchType === "platform") {
-      const platformUrls: Record<string, string> = {
-        imdb: "https://www.imdb.com/search/name/",
-        discogs: "https://www.discogs.com/search/?type=artist",
-        spotify: "https://open.spotify.com/search/",
-        behance: "https://www.behance.net/search/projects",
-        dribbble: "https://dribbble.com/search",
-      };
-
-      const baseUrl = platformUrls[platform];
-      if (!baseUrl) {
-        return new Response(
-          JSON.stringify({ error: `Platform ${platform} not supported` }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const searchUrl = `${baseUrl}${encodeURIComponent(query)}`;
-      console.log("Scraping platform:", searchUrl);
-
-      const scrapeResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: searchUrl,
-          formats: ["markdown", "links"],
-          onlyMainContent: true,
-        }),
-      });
-
-      const scrapeData = await scrapeResponse.json();
-      console.log("Scrape result:", scrapeData.success ? "success" : "failed");
-
-      if (scrapeData.success && scrapeData.data) {
-        const profile = await extractProfileWithAI(
-          scrapeData.data.markdown,
-          searchUrl,
-          platform,
-          LOVABLE_API_KEY
-        );
-        if (profile) {
-          discoveredProfiles.push(profile);
-        }
-
-        const profileLinks = (scrapeData.data.links || [])
-          .filter((link: string) => isProfileLink(link, platform))
-          .slice(0, 15);
-
-        for (const profileUrl of profileLinks) {
-          try {
-            const profileScrape = await fetch("https://api.firecrawl.dev/v1/scrape", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                url: profileUrl,
-                formats: ["markdown"],
-                onlyMainContent: true,
-              }),
-            });
-
-            const profileData = await profileScrape.json();
-            if (profileData.success && profileData.data?.markdown) {
-              const extractedProfile = await extractProfileWithAI(
-                profileData.data.markdown,
-                profileUrl,
-                platform,
-                LOVABLE_API_KEY
-              );
-              if (extractedProfile) {
-                discoveredProfiles.push(extractedProfile);
-              }
-            }
-          } catch (e) {
-            console.error("Error scraping profile:", profileUrl, e);
-          }
-        }
-      }
-    } else if (searchType === "news") {
-      const searchQuery = `"${query}" creator artist musician filmmaker site:variety.com OR site:billboard.com OR site:pitchfork.com OR site:hollywoodreporter.com`;
-      
-      const searchResponse = await fetch("https://api.firecrawl.dev/v1/search", {
+      const response = await fetch("https://api.firecrawl.dev/v1/search", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
@@ -263,30 +138,109 @@ serve(async (req) => {
         body: JSON.stringify({
           query: searchQuery,
           limit: 20,
-          tbs: "qdr:y",
-          scrapeOptions: {
-            formats: ["markdown"],
-          },
+          scrapeOptions: { formats: ["markdown"] },
         }),
       });
 
-      const searchData = await searchResponse.json();
-      if (searchData.success && searchData.data) {
-        for (const result of searchData.data.slice(0, 15)) {
-          const profile = await extractProfileFromNews(
-            result.markdown || result.description,
-            result.url,
-            LOVABLE_API_KEY
-          );
-          if (profile) {
-            discoveredProfiles.push(profile);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data) {
+          for (const result of data.data.slice(0, 15)) {
+            const profile = await extractProfileWithAI(
+              result.markdown || result.description,
+              result.url,
+              undefined,
+              LOVABLE_API_KEY
+            );
+            if (profile) discoveredProfiles.push(profile);
+          }
+        }
+      }
+
+    } else if (searchType === "platform") {
+      // Search within a specific platform
+      console.log("=== PLATFORM SEARCH ===");
+      const platformSearchQueries: Record<string, string> = {
+        imdb: `site:imdb.com/name "${query}"`,
+        discogs: `site:discogs.com/artist "${query}"`,
+        spotify: `site:open.spotify.com/artist "${query}"`,
+        behance: `site:behance.net "${query}"`,
+        dribbble: `site:dribbble.com "${query}"`,
+        youtube: `site:youtube.com/@"${query}" OR site:youtube.com/c/"${query}"`,
+      };
+
+      const searchQuery = platformSearchQueries[platform] || `site:${platform}.com "${query}"`;
+      console.log("Searching:", searchQuery);
+
+      const response = await fetch("https://api.firecrawl.dev/v1/search", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: searchQuery,
+          limit: 15,
+          scrapeOptions: { formats: ["markdown"] },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data) {
+          for (const result of data.data.slice(0, 10)) {
+            const profile = await extractProfileWithAI(
+              result.markdown || result.description,
+              result.url,
+              query,
+              LOVABLE_API_KEY
+            );
+            if (profile) discoveredProfiles.push(profile);
+          }
+        }
+      }
+
+    } else if (searchType === "news") {
+      // Search news for mentions of creators
+      console.log("=== NEWS SEARCH ===");
+      const newsQuery = `"${query}" creator OR artist OR musician OR filmmaker site:variety.com OR site:billboard.com OR site:pitchfork.com OR site:hollywoodreporter.com`;
+
+      const response = await fetch("https://api.firecrawl.dev/v1/search", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${FIRECRAWL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: newsQuery,
+          limit: 15,
+          tbs: "qdr:y", // Last year
+          scrapeOptions: { formats: ["markdown"] },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data) {
+          for (const result of data.data.slice(0, 10)) {
+            const profile = await extractProfileFromNews(
+              result.markdown || result.description,
+              result.url,
+              LOVABLE_API_KEY
+            );
+            if (profile) discoveredProfiles.push(profile);
           }
         }
       }
     }
 
+    // Deduplicate by name
     const uniqueProfiles = deduplicateProfiles(discoveredProfiles);
-    console.log(`Returning ${uniqueProfiles.length} unique profiles`);
+    
+    // Sort by confidence
+    uniqueProfiles.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+
+    console.log(`=== RESULT: ${uniqueProfiles.length} unique profiles ===`);
 
     return new Response(
       JSON.stringify({
@@ -294,16 +248,17 @@ serve(async (req) => {
         profiles: uniqueProfiles,
         count: uniqueProfiles.length,
         page,
-        hasMore: uniqueProfiles.length >= pageSize,
+        hasMore: uniqueProfiles.length >= 10,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (error) {
     console.error("Error in discover-profiles:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Unknown error",
-        success: false 
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Discovery failed",
+        success: false,
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -317,12 +272,9 @@ async function extractProfileWithAI(
   apiKey: string
 ): Promise<DiscoveredProfile | null> {
   try {
-    console.log("Extracting profile with AI for:", sourceUrl);
-    
-    if (!content || content.length < 30) {
-      console.log("Content too short, skipping");
-      return null;
-    }
+    if (!content || content.length < 30) return null;
+
+    console.log("Extracting from:", sourceUrl.substring(0, 60));
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -335,14 +287,14 @@ async function extractProfileWithAI(
         messages: [
           {
             role: "system",
-            content: `You are an expert at extracting professional profile information from web content. 
-Extract creator/professional profiles only. Skip company pages, product pages, or generic content.
-Focus on individual people who are creators, artists, musicians, filmmakers, designers, songwriters, producers, etc.
-${searchHint ? `The user is searching for: "${searchHint}"` : ''}`
+            content: `You extract professional profile data from web content.
+Only extract INDIVIDUAL creator profiles (musicians, producers, filmmakers, designers, artists, etc).
+Skip company pages, product pages, lists, and generic content.
+${searchHint ? `The user is searching for: "${searchHint}" - prioritize matches for this name.` : ''}`
           },
           {
             role: "user",
-            content: `Extract profile information from this web page content:\n\n${content.substring(0, 12000)}`
+            content: `Extract the creator profile from this content:\n\n${content.substring(0, 15000)}`
           }
         ],
         tools: [
@@ -355,12 +307,13 @@ ${searchHint ? `The user is searching for: "${searchHint}"` : ''}`
                 type: "object",
                 properties: {
                   name: { type: "string", description: "Full name of the person" },
-                  role: { type: "string", description: "Professional role/title (e.g., Music Producer, Filmmaker, Designer, Songwriter)" },
-                  bio: { type: "string", description: "Brief professional bio or description (max 300 chars)" },
+                  role: { type: "string", description: "Professional role/title" },
+                  bio: { type: "string", description: "Brief bio (max 300 chars)" },
                   location: { type: "string", description: "Location if mentioned" },
-                  skills: { type: "array", items: { type: "string" }, description: "Professional skills (max 5)" },
+                  skills: { type: "array", items: { type: "string" }, description: "Skills (max 5)" },
                   imageUrl: { type: "string", description: "Profile image URL if found" },
-                  isValidProfile: { type: "boolean", description: "True if this is a valid individual creator profile, false for companies/products/generic pages" }
+                  isValidProfile: { type: "boolean", description: "True if valid individual creator profile" },
+                  confidence: { type: "number", description: "Confidence score 0-100 that this is the searched person" }
                 },
                 required: ["name", "role", "isValidProfile"]
               }
@@ -372,38 +325,26 @@ ${searchHint ? `The user is searching for: "${searchHint}"` : ''}`
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI extraction failed:", response.status, errorText);
+      console.error("AI error:", response.status);
       return null;
     }
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
-    if (!toolCall) {
-      console.log("No tool call in response");
-      return null;
-    }
+    if (!toolCall) return null;
 
     let extracted;
     try {
       extracted = JSON.parse(toolCall.function.arguments);
-    } catch (e) {
-      console.error("Failed to parse tool call:", toolCall.function.arguments);
-      return null;
-    }
-    
-    if (!extracted.isValidProfile) {
-      console.log("Not a valid profile:", extracted.name);
+    } catch {
       return null;
     }
 
-    if (!extracted.name || extracted.name.length < 2) {
-      console.log("Invalid name:", extracted);
+    if (!extracted.isValidProfile || !extracted.name || extracted.name.length < 2) {
       return null;
     }
 
-    console.log("Successfully extracted:", extracted.name);
+    console.log("✓ Extracted:", extracted.name);
     return {
       name: extracted.name,
       role: extracted.role || "Creator",
@@ -412,9 +353,10 @@ ${searchHint ? `The user is searching for: "${searchHint}"` : ''}`
       sourceUrl,
       skills: extracted.skills?.slice(0, 5),
       imageUrl: extracted.imageUrl,
+      confidence: extracted.confidence || 50,
     };
   } catch (e) {
-    console.error("Error extracting profile:", e);
+    console.error("Extraction error:", e);
     return null;
   }
 }
@@ -438,12 +380,11 @@ async function extractProfileFromNews(
         messages: [
           {
             role: "system",
-            content: `You are an expert at extracting mentions of creators and artists from news articles.
-Find the main person/people featured in the article and extract their professional details.`
+            content: "Extract the main creator/artist featured in this news article."
           },
           {
             role: "user",
-            content: `Extract the main creator/artist profile from this news article:\n\n${content.substring(0, 12000)}`
+            content: `Extract the main creator profile from this news:\n\n${content.substring(0, 12000)}`
           }
         ],
         tools: [
@@ -451,14 +392,14 @@ Find the main person/people featured in the article and extract their profession
             type: "function",
             function: {
               name: "extract_profile",
-              description: "Extract a professional profile from news content",
+              description: "Extract profile from news",
               parameters: {
                 type: "object",
                 properties: {
-                  name: { type: "string", description: "Full name of the person" },
-                  role: { type: "string", description: "Professional role/title" },
-                  bio: { type: "string", description: "Brief description based on the article" },
-                  isValidProfile: { type: "boolean", description: "True if a clear creator profile was found" }
+                  name: { type: "string" },
+                  role: { type: "string" },
+                  bio: { type: "string" },
+                  isValidProfile: { type: "boolean" }
                 },
                 required: ["name", "role", "isValidProfile"]
               }
@@ -473,11 +414,9 @@ Find the main person/people featured in the article and extract their profession
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
     if (!toolCall) return null;
 
     const extracted = JSON.parse(toolCall.function.arguments);
-    
     if (!extracted.isValidProfile || !extracted.name) return null;
 
     return {
@@ -485,24 +424,11 @@ Find the main person/people featured in the article and extract their profession
       role: extracted.role || "Creator",
       bio: extracted.bio,
       sourceUrl,
+      confidence: 60,
     };
-  } catch (e) {
-    console.error("Error extracting from news:", e);
+  } catch {
     return null;
   }
-}
-
-function isProfileLink(link: string, platform: string): boolean {
-  const patterns: Record<string, RegExp[]> = {
-    imdb: [/imdb\.com\/name\/nm\d+/],
-    discogs: [/discogs\.com\/artist\/\d+/],
-    spotify: [/open\.spotify\.com\/artist\//],
-    behance: [/behance\.net\/[^/]+$/],
-    dribbble: [/dribbble\.com\/[^/]+$/],
-  };
-
-  const platformPatterns = patterns[platform] || [];
-  return platformPatterns.some(pattern => pattern.test(link));
 }
 
 function deduplicateProfiles(profiles: DiscoveredProfile[]): DiscoveredProfile[] {
@@ -510,7 +436,10 @@ function deduplicateProfiles(profiles: DiscoveredProfile[]): DiscoveredProfile[]
   
   for (const profile of profiles) {
     const key = profile.name.toLowerCase().trim();
-    if (!seen.has(key)) {
+    const existing = seen.get(key);
+    
+    // Keep the one with higher confidence or more data
+    if (!existing || (profile.confidence || 0) > (existing.confidence || 0)) {
       seen.set(key, profile);
     }
   }

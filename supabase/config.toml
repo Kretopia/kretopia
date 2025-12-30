@@ -122,3 +122,6 @@ verify_jwt = false
 
 [functions.verify-profile-claim]
 verify_jwt = true
+
+[functions.send-test-emails]
+verify_jwt = false

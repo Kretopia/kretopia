@@ -44,6 +44,7 @@ const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
 const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
+const TestEmails = lazy(() => import("./pages/TestEmails"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -143,6 +144,7 @@ const AppContent = () => {
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
+            <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
 
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />

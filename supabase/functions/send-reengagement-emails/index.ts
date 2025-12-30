@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     let emailsSent = 0;
     let errors: string[] = [];
-    const baseUrl = "https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com";
+    const baseUrl = "https://www.thrivein.io";
 
     for (const user of inactiveUsers) {
       try {

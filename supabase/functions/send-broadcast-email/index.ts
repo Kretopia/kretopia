@@ -9,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const baseUrl = 'https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com';
+const baseUrl = 'https://www.thrivein.io';
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {

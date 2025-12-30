@@ -88,8 +88,8 @@ const handler = async (req: Request): Promise<Response> => {
           .single();
 
         const unsubscribeUrl = prefs?.unsubscribe_token 
-          ? `https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com/unsubscribe?token=${prefs.unsubscribe_token}`
-          : `https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com/unsubscribe`;
+          ? `https://www.thrivein.io/unsubscribe?token=${prefs.unsubscribe_token}`
+          : `https://www.thrivein.io/unsubscribe`;
 
         const emailResult = await resend.emails.send({
           from: "ThriveIN <noreply@thrivein.io>",
@@ -120,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </p>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com/circle" 
+                  <a href="https://www.thrivein.io/circle" 
                      style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); 
                             color: white; 
                             padding: 16px 40px; 

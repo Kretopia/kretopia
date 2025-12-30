@@ -132,7 +132,7 @@ serve(async (req) => {
               data: {
                 userName,
                 stepMessage,
-                onboardingUrl: `${Deno.env.get("SUPABASE_URL")?.replace("supabase.co", "lovable.app")}/onboarding`,
+                onboardingUrl: `https://www.thrivein.io/onboarding`,
               },
             },
           }

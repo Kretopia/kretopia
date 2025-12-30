@@ -278,7 +278,7 @@ export function UnclaimedProfilesTab() {
   };
 
   const copyClaimLink = (claimToken: string) => {
-    const link = `${window.location.origin}/claim/${claimToken}`;
+    const link = `https://www.thrivein.io/claim/${claimToken}`;
     navigator.clipboard.writeText(link);
     toast.success('Claim link copied!');
   };

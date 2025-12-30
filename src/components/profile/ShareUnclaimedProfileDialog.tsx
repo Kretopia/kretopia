@@ -19,14 +19,17 @@ export const ShareUnclaimedProfileDialog = ({
 }: ShareUnclaimedProfileDialogProps) => {
   const [copiedType, setCopiedType] = useState<string | null>(null);
 
+  // Always use production URL for sharing
+  const productionUrl = `https://www.thrivein.io/profile/${profileUrl.split('/profile/')[1]}`;
+  
   const shareMessages = {
     claim: {
       title: "Is this you?",
-      text: `Hey! I found your profile on ThriveIN. Is this you? Claim it to unlock all features: ${profileUrl}`
+      text: `Hey! I found your profile on ThriveIN. Is this you? Claim it to unlock all features: ${productionUrl}`
     },
     simple: {
       title: "Check this out",
-      text: `Check out ${profileName}'s profile on ThriveIN: ${profileUrl}`
+      text: `Check out ${profileName}'s profile on ThriveIN: ${productionUrl}`
     }
   };
 
@@ -47,7 +50,7 @@ export const ShareUnclaimedProfileDialog = ({
         await navigator.share({
           title: shareMessages[type].title,
           text: shareMessages[type].text,
-          url: profileUrl
+          url: productionUrl
         });
       } catch (error) {
         // User cancelled or share failed

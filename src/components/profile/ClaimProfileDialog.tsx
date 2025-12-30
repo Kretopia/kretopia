@@ -8,11 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Camera, CheckCircle, XCircle, Loader2, Shield, Sparkles, UserCheck } from "lucide-react";
+import { Camera, CheckCircle, XCircle, Loader2, Shield, Sparkles, UserCheck, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ClaimProfileDialogProps {
@@ -22,13 +24,18 @@ interface ClaimProfileDialogProps {
   onSuccess: () => void;
 }
 
-type Step = 'intro' | 'camera' | 'verifying' | 'success' | 'failed';
+type Step = 'intro' | 'credentials' | 'camera' | 'verifying' | 'success' | 'failed';
 
 export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: ClaimProfileDialogProps) {
   const { user } = useAuth();
   const [step, setStep] = useState<Step>('intro');
   const [selfieImage, setSelfieImage] = useState<string | null>(null);
   const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [newUserId, setNewUserId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -55,6 +62,64 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
       streamRef.current = null;
     }
   }, []);
+
+  const handleStartVerification = async () => {
+    if (user) {
+      // User is already logged in, go straight to camera
+      startCamera();
+    } else {
+      // User needs to create account first
+      setStep('credentials');
+    }
+  };
+
+  const handleCreateAccountAndVerify = async () => {
+    if (!email || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsCreatingAccount(true);
+    try {
+      // Create account with auto-confirm enabled
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: profile.full_name,
+            account_type: 'individual'
+          }
+        }
+      });
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error("This email is already registered. Please sign in instead.");
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      if (data.user) {
+        setNewUserId(data.user.id);
+        toast.success("Account created! Now let's verify your identity.");
+        startCamera();
+      }
+    } catch (error: any) {
+      console.error('Account creation error:', error);
+      toast.error(error.message || "Failed to create account");
+    } finally {
+      setIsCreatingAccount(false);
+    }
+  };
 
   const captureAndVerify = async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -92,27 +157,68 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
       setVerificationResult(data);
       
       if (data.verified) {
-        // Auto-approve: Update profile to mark as claimed
-        if (user) {
-          // Update the profile directly to mark as claimed
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ 
-              is_claimed: true, 
-              claimed_at: new Date().toISOString()
-            })
-            .eq('user_id', profile.user_id);
-
-          if (updateError) {
-            console.error('Profile update error:', updateError);
-            toast.error("Verified but failed to claim. Please contact support.");
-            setStep('failed');
-            return;
-          }
-          
-          // Also create a connection between this profile and the user
-          // so the user can "own" this profile data
+        // The user claiming the profile
+        const claimingUserId = user?.id || newUserId;
+        
+        if (!claimingUserId) {
+          toast.error("No user account found. Please try again.");
+          setStep('failed');
+          return;
         }
+
+        // Transfer unclaimed profile data to the new user's profile
+        // First, update the claiming user's profile with the unclaimed profile's data
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            full_name: profile.full_name,
+            role: profile.role,
+            bio: profile.bio,
+            avatar_url: profile.avatar_url,
+            location: profile.location,
+            professional_skills: profile.professional_skills,
+            imported_data: profile.imported_data,
+            imported_from_url: profile.imported_from_url,
+            badge: 'og', // Industry leaders get OG badge
+            verification_tier: 'industry' // Set industry verified tier
+          })
+          .eq('user_id', claimingUserId);
+
+        if (updateError) {
+          console.error('Profile update error:', updateError);
+          toast.error("Verified but failed to transfer profile. Please contact support.");
+          setStep('failed');
+          return;
+        }
+
+        // Mark the original unclaimed profile as claimed
+        await supabase
+          .from('profiles')
+          .update({ 
+            is_claimed: true, 
+            claimed_at: new Date().toISOString(),
+            claimed_by: claimingUserId
+          })
+          .eq('user_id', profile.user_id);
+
+        // Transfer credits from unclaimed profile to new user
+        await supabase
+          .from('credits')
+          .update({ user_id: claimingUserId })
+          .eq('user_id', profile.user_id);
+
+        // Transfer awards from unclaimed profile to new user
+        await supabase
+          .from('awards')
+          .update({ user_id: claimingUserId })
+          .eq('user_id', profile.user_id);
+
+        // Transfer press links from unclaimed profile to new user
+        await supabase
+          .from('press_links')
+          .update({ user_id: claimingUserId })
+          .eq('user_id', profile.user_id);
+
         setStep('success');
         toast.success("Identity verified! Profile claimed successfully.");
       } else {
@@ -130,6 +236,9 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
     setStep('intro');
     setSelfieImage(null);
     setVerificationResult(null);
+    setEmail('');
+    setPassword('');
+    setNewUserId(null);
     onOpenChange(false);
     if (step === 'success') {
       onSuccess();
@@ -140,6 +249,15 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
     setSelfieImage(null);
     setVerificationResult(null);
     setStep('intro');
+  };
+
+  const handleSuccessRedirect = () => {
+    handleClose();
+    // Redirect to the user's own profile
+    const claimingUserId = user?.id || newUserId;
+    if (claimingUserId) {
+      window.location.href = `/profile`;
+    }
   };
 
   return (
@@ -163,7 +281,7 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                 <Avatar className="h-14 w-14 border-2 border-amber-500/30">
                   <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
                   <AvatarFallback>
-                    {profile.full_name?.split(' ').map(n => n[0]).join('')}
+                    {profile.full_name?.split(' ').map((n: string) => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
@@ -183,7 +301,7 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-primary">1</span>
                     </div>
-                    <span>Take a quick selfie using your camera</span>
+                    <span>{user ? "Take a quick selfie" : "Create your account"}</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -195,23 +313,89 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                     <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-primary">3</span>
                     </div>
-                    <span>If verified, profile is instantly transferred to you</span>
+                    <span>If verified, all credits & achievements transfer to you</span>
                   </div>
                 </div>
               </div>
 
-              {!user ? (
-                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm">
-                  <p className="text-amber-600 dark:text-amber-400">
-                    Please sign in or create an account first to claim this profile.
-                  </p>
+              {/* Industry Verified Badge Preview */}
+              <div className="p-3 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-sm font-medium">Industry Verified Badge</span>
                 </div>
-              ) : (
-                <Button onClick={startCamera} className="w-full gap-2">
-                  <Camera className="h-4 w-4" />
-                  Start Verification
+                <p className="text-xs text-muted-foreground mt-1">
+                  Upon claiming, you'll receive the exclusive Industry Verified badge recognizing your professional achievements.
+                </p>
+              </div>
+
+              <Button onClick={handleStartVerification} className="w-full gap-2">
+                {user ? <Camera className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                {user ? "Start Verification" : "Create Account & Verify"}
+              </Button>
+            </>
+          )}
+
+          {step === 'credentials' && (
+            <>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Create Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="At least 6 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setStep('intro')} className="flex-1">
+                  Back
                 </Button>
-              )}
+                <Button 
+                  onClick={handleCreateAccountAndVerify} 
+                  className="flex-1 gap-2"
+                  disabled={isCreatingAccount}
+                >
+                  {isCreatingAccount ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                  {isCreatingAccount ? "Creating..." : "Continue"}
+                </Button>
+              </div>
             </>
           )}
 
@@ -268,7 +452,7 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                   <Avatar className="h-20 w-20 border-2 border-muted">
                     <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
                     <AvatarFallback>
-                      {profile.full_name?.split(' ').map(n => n[0]).join('')}
+                      {profile.full_name?.split(' ').map((n: string) => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <span className="absolute -bottom-1 -right-1 text-xs bg-background px-1 rounded">Profile</span>
@@ -289,15 +473,22 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
               <div>
                 <h3 className="font-semibold text-lg">Identity Verified!</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  This profile has been claimed and linked to your account.
+                  Your profile has been claimed with all credits and achievements transferred.
                 </p>
               </div>
+              
+              {/* Industry Verified Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/50">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span className="font-semibold text-amber-600 dark:text-amber-400">Industry Verified</span>
+              </div>
+              
               {verificationResult?.confidence && (
                 <Badge variant="secondary" className="bg-green-500/10 text-green-600">
                   {Math.round(verificationResult.confidence * 100)}% match confidence
                 </Badge>
               )}
-              <Button onClick={handleClose} className="w-full gap-2">
+              <Button onClick={handleSuccessRedirect} className="w-full gap-2">
                 <Sparkles className="h-4 w-4" />
                 View Your Profile
               </Button>
@@ -314,6 +505,9 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                 <p className="text-sm text-muted-foreground mt-1">
                   {verificationResult?.reason || "We couldn't verify your identity. This could be due to lighting, image quality, or the faces not matching."}
                 </p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+                <p>Need help? Email us at <a href="mailto:support@thrivein.io" className="text-primary hover:underline">support@thrivein.io</a> with proof of identity for manual review.</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleClose} className="flex-1">

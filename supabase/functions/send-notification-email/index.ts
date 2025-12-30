@@ -67,7 +67,7 @@ interface EmailRequest {
 }
 
 const generateEmailContent = (type: string, data: any, unsubscribeToken?: string) => {
-  const baseUrl = 'https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com';
+  const baseUrl = 'https://thrivein.io';
   const unsubscribeUrl = unsubscribeToken ? `${baseUrl}/unsubscribe?token=${unsubscribeToken}` : `${baseUrl}/notification-settings`;
   const unsubscribeFooter = `<p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #8B5CF6;">Unsubscribe</a> or manage your <a href="${baseUrl}/notification-settings" style="color: #8B5CF6;">notification preferences</a>.</p>`;
   

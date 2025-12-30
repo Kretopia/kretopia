@@ -1,13 +1,15 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Verified, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, Check } from "lucide-react";
+import { MapPin, Star, Verified, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, Check, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierByPoints } from "@/lib/tierSystem";
 import { AchievementBadges } from "./AchievementBadges";
 import { DegreeBadge, ConnectionPathDisplay } from "@/components/circle/DegreeBadge";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
 import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { ClaimProfileDialog } from "./ClaimProfileDialog";
 
 interface ProfileHeroProps {
   profile: any;
@@ -25,6 +27,7 @@ interface ProfileHeroProps {
   onShowQR?: () => void;
   onStartProject?: () => void;
   isFromMatch?: boolean;
+  onRefresh?: () => void;
 }
 
 export const ProfileHero = ({
@@ -42,11 +45,16 @@ export const ProfileHero = ({
   skills = [],
   onShowQR,
   onStartProject,
-  isFromMatch
+  isFromMatch,
+  onRefresh
 }: ProfileHeroProps) => {
   const { user } = useAuth();
   const tier = getTierByPoints(profile.points || 0);
   const isCompany = profile.account_type === 'company';
+  const [showClaimDialog, setShowClaimDialog] = useState(false);
+  
+  // Check if this is an unclaimed profile
+  const isUnclaimedProfile = profile.is_claimed === false;
   
   // Get connection degree for non-own profiles
   const { degree, path, loading: degreeLoading } = useConnectionDegree(
@@ -78,6 +86,29 @@ export const ProfileHero = ({
   return (
     <div className="w-full px-3 sm:px-4 py-4 sm:py-6">
       <div className="space-y-3 sm:space-y-4">
+        
+        {/* Unclaimed Profile Banner */}
+        {isUnclaimedProfile && (
+          <div className="p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-amber-500">
+                <Sparkles className="h-4 w-4" />
+                <span className="text-sm font-medium">Unclaimed Profile</span>
+              </div>
+              <Button 
+                size="sm" 
+                onClick={() => setShowClaimDialog(true)}
+                className="gap-1.5 h-8 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                Claim Profile
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              Is this you? Verify your identity to claim this profile and unlock all features.
+            </p>
+          </div>
+        )}
         
         {/* Top Row: Avatar + Name/Badge */}
         <div className="flex items-start gap-3 sm:gap-4">
@@ -138,17 +169,17 @@ export const ProfileHero = ({
                 </Badge>
               )}
               
-              {/* Unclaimed Profile Badge */}
-              {profile.is_claimed === false && (
+              {/* Unclaimed Profile Badge - inline version */}
+              {isUnclaimedProfile && (
                 <Badge 
                   variant="secondary"
-                  className="h-4 sm:h-5 text-[10px] sm:text-xs bg-amber-500/20 text-amber-600 border-amber-500/30"
+                  className="h-4 sm:h-5 text-[10px] sm:text-xs bg-amber-500/20 text-amber-500 border-amber-500/30"
                 >
-                  ⚠️ Unclaimed
+                  ✨ Unclaimed
                 </Badge>
               )}
               
-              {profile.badge && profile.is_claimed !== false && (
+              {profile.badge && !isUnclaimedProfile && (
                 <Badge 
                   variant="default"
                   className={cn(
@@ -250,6 +281,21 @@ export const ProfileHero = ({
                 <Share2 className="h-4 w-4" />
               </Button>
             </>
+          ) : isUnclaimedProfile ? (
+            // Unclaimed profile - only show share, no connect button
+            <>
+              <Button 
+                size="sm" 
+                onClick={() => setShowClaimDialog(true)}
+                className="gap-2 flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+              >
+                <UserCheck className="h-4 w-4" />
+                Claim This Profile
+              </Button>
+              <Button variant="ghost" size="sm" className="p-2" onClick={onShare}>
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </>
           ) : connectionStatus === 'accepted' ? (
             <>
               {/* Matched State - Show prominent action buttons */}
@@ -298,6 +344,17 @@ export const ProfileHero = ({
           )}
         </div>
       </div>
+      
+      {/* Claim Profile Dialog */}
+      <ClaimProfileDialog
+        open={showClaimDialog}
+        onOpenChange={setShowClaimDialog}
+        profile={profile}
+        onSuccess={() => {
+          setShowClaimDialog(false);
+          onRefresh?.();
+        }}
+      />
     </div>
   );
 };

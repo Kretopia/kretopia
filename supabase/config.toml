@@ -119,3 +119,6 @@ verify_jwt = true
 
 [functions.generate-sitemap]
 verify_jwt = false
+
+[functions.verify-profile-claim]
+verify_jwt = true

@@ -397,8 +397,8 @@ const ViewProfile = () => {
                       </Badge>
                     )}
                     
-                    {/* Unclaimed Badge */}
-                    {isUnclaimedProfile && (
+                    {/* Unclaimed Badge - only show if NOT industry verified (avoid badge clutter) */}
+                    {isUnclaimedProfile && !isIndustryVerified && (
                       <Badge 
                         variant="secondary"
                         className="text-xs bg-amber-500/20 text-amber-500 border-amber-500/30"
@@ -482,21 +482,12 @@ const ViewProfile = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-6 pt-6 border-t">
-                {/* Unclaimed profile - show claim button prominently */}
+                {/* Unclaimed profile - only show Discover More since claim is in banner */}
                 {isUnclaimedProfile ? (
-                  <>
-                    <Button 
-                      onClick={() => setShowClaimDialog(true)}
-                      className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
-                    >
-                      <UserCheck className="h-4 w-4" />
-                      Claim This Profile
-                    </Button>
-                    <Button variant="outline" onClick={() => navigate('/circle')} className="gap-2">
-                      <Users className="h-4 w-4" />
-                      Discover More
-                    </Button>
-                  </>
+                  <Button variant="outline" onClick={() => navigate('/circle')} className="gap-2">
+                    <Users className="h-4 w-4" />
+                    Discover More
+                  </Button>
                 ) : isMatched ? (
                   /* Already matched - show full actions */
                   <>

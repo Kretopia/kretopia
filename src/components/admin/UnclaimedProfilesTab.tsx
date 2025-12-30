@@ -67,6 +67,18 @@ interface DiscoveredProfile {
   imageUrl?: string;
 }
 
+interface BulkImportResult {
+  name: string;
+  role: string;
+  bio?: string;
+  location?: string;
+  skills?: string[];
+  imageUrl?: string;
+  sourceUrl?: string;
+  status: 'found' | 'not_found' | 'error';
+  errorMessage?: string;
+}
+
 export function UnclaimedProfilesTab() {
   const [unclaimedProfiles, setUnclaimedProfiles] = useState<UnclaimedProfile[]>([]);
   const [claimRequests, setClaimRequests] = useState<ClaimRequest[]>([]);
@@ -87,6 +99,12 @@ export function UnclaimedProfilesTab() {
   const [importingDiscovered, setImportingDiscovered] = useState<string | null>(null);
   const [discoveryPage, setDiscoveryPage] = useState(1);
   const [hasMoreResults, setHasMoreResults] = useState(false);
+  
+  // Bulk import states
+  const [bulkImportMode, setBulkImportMode] = useState<'simple' | 'csv' | 'enriched'>('simple');
+  const [bulkImportResults, setBulkImportResults] = useState<BulkImportResult[]>([]);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
   
   // Form states
   const [newProfile, setNewProfile] = useState({

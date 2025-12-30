@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2, Globe, Flame, Trophy, Image, AlertCircle, CheckCircle2, Eye, EyeOff, SkipForward } from "lucide-react";
+import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2, Globe, Flame, Trophy, Image, AlertCircle, CheckCircle2, Eye, EyeOff, SkipForward, Mail } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
@@ -47,6 +47,7 @@ export default function Onboarding() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [resendingEmail, setResendingEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string>("");
   const [showCustomRole, setShowCustomRole] = useState(false);
@@ -496,16 +497,29 @@ export default function Onboarding() {
       const { analytics } = await import("@/lib/analytics");
       analytics.onboardingComplete();
 
-      toast({
-        title: "🎉 Welcome to ThriveIN!",
-        description: "You have 1-month free Pro access! Enjoy all premium features.",
-      });
-
-      // Navigate to the connected user's profile if we just connected, otherwise to circle
-      if (pendingConnect) {
-        navigate(`/profile/${pendingConnect}?from=match`);
+      // Check if email is verified before allowing access to Circle
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const emailVerified = currentUser?.email_confirmed_at || currentUser?.confirmed_at;
+      
+      if (!emailVerified) {
+        // Show email verification required - set step to 7 (verification step)
+        setCurrentStep(7);
+        toast({
+          title: "Almost there! 📧",
+          description: "Please verify your email to start matching.",
+        });
       } else {
-        navigate("/circle");
+        toast({
+          title: "🎉 Welcome to ThriveIN!",
+          description: "You have 1-month free Pro access! Enjoy all premium features.",
+        });
+
+        // Navigate to the connected user's profile if we just connected, otherwise to circle
+        if (pendingConnect) {
+          navigate(`/profile/${pendingConnect}?from=match`);
+        } else {
+          navigate("/circle");
+        }
       }
     } catch (error) {
       console.error("Onboarding error:", error);
@@ -585,7 +599,64 @@ export default function Onboarding() {
     }
   };
 
-  const progress = (currentStep / 6) * 100;
+  const [emailToVerify, setEmailToVerify] = useState<string>("");
+
+  // Get email for verification step
+  useEffect(() => {
+    if (user?.email) {
+      setEmailToVerify(user.email);
+    }
+  }, [user]);
+
+  const handleResendVerification = async () => {
+    if (!emailToVerify) return;
+    
+    setResendingEmail(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: emailToVerify,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Email sent! 📧",
+        description: "Check your inbox for the verification link.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to resend",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setResendingEmail(false);
+    }
+  };
+
+  // Check if email was verified (for users returning from email link)
+  useEffect(() => {
+    if (currentStep === 7) {
+      const checkVerification = async () => {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (currentUser?.email_confirmed_at || currentUser?.confirmed_at) {
+          toast({
+            title: "🎉 Email verified!",
+            description: "Welcome to ThriveIN! Enjoy your 1-month free Pro access.",
+          });
+          navigate("/circle");
+        }
+      };
+      
+      // Check immediately and set up interval
+      checkVerification();
+      const interval = setInterval(checkVerification, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [currentStep, navigate]);
+
+  const progress = currentStep === 7 ? 100 : (currentStep / 6) * 100;
 
   // Visibility checklist component
   const VisibilityChecklist = () => (
@@ -1004,8 +1075,48 @@ export default function Onboarding() {
           </div>
         )}
 
+        {/* Step 7: Email Verification */}
+        {currentStep === 7 && (
+          <div className="space-y-6 text-center py-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4">
+              <Mail className="h-10 w-10 text-primary" />
+            </div>
+            
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">Verify Your Email</h2>
+              <p className="text-muted-foreground">
+                We've sent a verification link to
+              </p>
+              <p className="font-medium text-lg mt-1">{emailToVerify}</p>
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+              <p>Click the link in your email to verify your account and start matching with creators.</p>
+              <p className="mt-2 text-xs">Don't see it? Check your spam folder.</p>
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={handleResendVerification}
+              disabled={resendingEmail}
+              className="gap-2"
+            >
+              {resendingEmail ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Mail className="h-4 w-4" />
+              )}
+              Resend Verification Email
+            </Button>
+
+            <div className="pt-4 text-sm text-muted-foreground">
+              <p>Already verified? The page will refresh automatically.</p>
+            </div>
+          </div>
+        )}
+
         {/* Navigation Buttons */}
-        {currentStep !== 5 && currentStep !== 3 && (
+        {currentStep !== 5 && currentStep !== 3 && currentStep !== 7 && (
           <div className="flex gap-3 mt-8">
             {currentStep > 1 && (
               <Button

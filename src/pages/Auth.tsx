@@ -50,7 +50,6 @@ const Auth = () => {
   const [newPasswordError, setNewPasswordError] = useState("");
   const [confirmNewPasswordError, setConfirmNewPasswordError] = useState("");
   const [showWaitlistForm, setShowWaitlistForm] = useState(false);
-  
   // Email confirmation state
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState("");
@@ -331,14 +330,12 @@ const Auth = () => {
     setConfirmPasswordError("");
     setLoading(true);
 
-    // Email confirmation should redirect to onboarding, not circle
-    const onboardingPath = accountType === "company" ? "/company-onboarding" : "/onboarding";
-    
+    // Email confirmation link should go to Circle (after onboarding is done)
     const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}${onboardingPath}`,
+        emailRedirectTo: `${window.location.origin}/circle`,
         data: {
           account_type: accountType,
           invite_code: inviteCode,
@@ -384,30 +381,16 @@ const Auth = () => {
         localStorage.setItem('pendingConnect', connectUserId);
       }
       
-      // Check if email confirmation is required (user not confirmed yet)
-      const needsEmailConfirmation = signUpData?.user && !signUpData.user.confirmed_at;
+      // Go directly to onboarding - email verification happens at the end
+      toast({
+        title: "Welcome to ThriveIN! 🎉",
+        description: "Let's set up your profile.",
+      });
       
-      if (needsEmailConfirmation) {
-        // Show email confirmation message
-        setShowEmailConfirmation(true);
-        setConfirmationEmail(email);
-        toast({
-          title: "Check your email! 📧",
-          description: "We've sent a confirmation link to verify your account.",
-        });
+      if (accountType === "company") {
+        navigate("/company-onboarding");
       } else {
-        // Auto-confirmed - proceed directly
-        toast({
-          title: "Welcome to ThriveIN! 🎉",
-          description: "Your exclusive access has been granted.",
-        });
-        
-        // Redirect based on account type
-        if (accountType === "company") {
-          navigate("/company-onboarding");
-        } else {
-          navigate("/onboarding");
-        }
+        navigate("/onboarding");
       }
     }
     setLoading(false);
@@ -494,107 +477,6 @@ const Auth = () => {
     setLoading(false);
   };
 
-  const handleResendConfirmation = async () => {
-    if (!confirmationEmail) return;
-    
-    setResendingEmail(true);
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: confirmationEmail,
-        options: {
-          emailRedirectTo: `${window.location.origin}${redirectTo}`,
-        }
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Email Sent! 📧",
-        description: "We've resent the confirmation link. Check your inbox and spam folder.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to resend confirmation email",
-        variant: "destructive",
-      });
-    } finally {
-      setResendingEmail(false);
-    }
-  };
-
-  // Show email confirmation screen
-  if (showEmailConfirmation) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
-        <div className="w-full max-w-md">
-          <Card className="p-8 text-center space-y-6">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-              <Mail className="h-10 w-10 text-primary" />
-            </div>
-            
-            <div className="space-y-2">
-              <h1 className="text-2xl font-bold">Check Your Email 📧</h1>
-              <p className="text-muted-foreground">
-                We've sent a confirmation link to:
-              </p>
-              <p className="font-medium text-foreground">{confirmationEmail}</p>
-            </div>
-            
-            <div className="space-y-4 pt-4">
-              <p className="text-sm text-muted-foreground">
-                Click the link in your email to verify your account and start matching with creators.
-              </p>
-              
-              <div className="flex flex-col gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleResendConfirmation}
-                  disabled={resendingEmail}
-                  className="w-full"
-                >
-                  {resendingEmail ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Resend Confirmation Email
-                    </>
-                  )}
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowEmailConfirmation(false);
-                    setConfirmationEmail("");
-                    setEmail("");
-                    setPassword("");
-                    setConfirmPassword("");
-                    setSignupStep(1);
-                  }}
-                  className="w-full"
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Sign Up
-                </Button>
-              </div>
-            </div>
-            
-            <div className="pt-4 border-t">
-              <p className="text-xs text-muted-foreground">
-                Didn't receive an email? Check your spam folder or try resending.
-              </p>
-            </div>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 sm:px-6 py-8 sm:py-12">

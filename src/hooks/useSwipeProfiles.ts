@@ -22,6 +22,8 @@ export interface SwipeProfile {
   twitter_followers?: number | null;
   spotify_listeners?: number | null;
   xp?: number;
+  is_claimed?: boolean;
+  imported_from_url?: string | null;
 }
 
 export function useSwipeProfiles(currentUserId: string | undefined, filters: SwipeFiltersState = DEFAULT_SWIPE_FILTERS) {
@@ -81,7 +83,8 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       ]);
       console.log('[useSwipeProfiles] Already connected:', connectedIds.size);
 
-      // Step 3: Fetch all profiles except current user with valid avatar, bio, and onboarding complete
+      // Step 3: Fetch all profiles except current user with valid avatar and bio
+      // Include unclaimed profiles (is_claimed = false) which have onboarding_completed = true
       const { data: fetchedProfiles, error: profileError } = await supabase
         .from('profiles')
         .select(`
@@ -103,7 +106,9 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
           tiktok_followers,
           twitter_followers,
           spotify_listeners,
-          xp
+          xp,
+          is_claimed,
+          imported_from_url
         `)
         .neq('user_id', currentUserId)
         .not('avatar_url', 'is', null)
@@ -131,7 +136,7 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
 
       console.log('[useSwipeProfiles] After filtering:', filtered.length);
 
-      // Step 5: Get portfolio counts and filter profiles that have at least 1 portfolio item
+      // Step 5: Get portfolio counts - unclaimed profiles skip portfolio requirement
       if (filtered.length > 0) {
         const userIds = filtered.map(p => p.user_id);
         const { data: portfolioData } = await supabase
@@ -144,13 +149,18 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
           portfolioCounts.set(item.user_id, (portfolioCounts.get(item.user_id) || 0) + 1);
         });
 
-        // Add portfolio count and filter to only include profiles with at least 1 portfolio item
+        // Add portfolio count - unclaimed profiles don't require portfolio items
         filtered = filtered
           .map(p => ({
             ...p,
             portfolio_count: portfolioCounts.get(p.user_id) || 0
           }))
-          .filter(p => p.portfolio_count >= 1);
+          .filter(p => {
+            // Unclaimed profiles can appear without portfolio items (they have imported credits instead)
+            if (p.is_claimed === false) return true;
+            // Claimed profiles need at least 1 portfolio item
+            return p.portfolio_count >= 1;
+          });
         
         console.log('[useSwipeProfiles] After portfolio filter:', filtered.length);
       }

@@ -128,3 +128,6 @@ verify_jwt = false
 
 [functions.onboarding-discover]
 verify_jwt = true
+
+[functions.import-odos-members]
+verify_jwt = true

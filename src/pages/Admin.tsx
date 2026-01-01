@@ -6,10 +6,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2 } from "lucide-react";
+import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle } from "lucide-react";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+interface OdosImportResult {
+  name: string;
+  status: 'imported' | 'enriched' | 'duplicate' | 'error';
+  profileId?: string;
+  credits?: number;
+  awards?: number;
+  message?: string;
+}
+
+interface OdosImportSummary {
+  totalMembers: number;
+  imported: number;
+  enriched: number;
+  duplicates: number;
+  errors: number;
+}
 
 export default function Admin() {
   const { user } = useAuth();
@@ -18,6 +37,9 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [importingOdos, setImportingOdos] = useState(false);
+  const [odosResults, setOdosResults] = useState<OdosImportResult[] | null>(null);
+  const [odosSummary, setOdosSummary] = useState<OdosImportSummary | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -97,6 +119,42 @@ export default function Admin() {
     }
   };
 
+  const importOdosMembers = async () => {
+    setImportingOdos(true);
+    setOdosResults(null);
+    setOdosSummary(null);
+    
+    try {
+      toast({
+        title: "ODOS Import Started",
+        description: "Scraping members and enriching with AI... This may take a few minutes.",
+      });
+
+      const { data, error } = await supabase.functions.invoke('import-odos-members');
+      
+      if (error) throw error;
+      
+      if (data?.results) {
+        setOdosResults(data.results);
+        setOdosSummary(data.summary);
+      }
+      
+      toast({
+        title: "ODOS Import Complete! 🌿",
+        description: `Imported ${data?.summary?.imported || 0} members, ${data?.summary?.enriched || 0} enriched with credits/awards.`,
+      });
+    } catch (error: any) {
+      console.error("ODOS import error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to import ODOS members",
+        variant: "destructive",
+      });
+    } finally {
+      setImportingOdos(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -150,6 +208,118 @@ export default function Admin() {
 
         <TabsContent value="system" className="mt-4 sm:mt-6">
           <div className="space-y-6">
+            {/* ODOS Import Card */}
+            <Card className="border-green-500/30 bg-green-500/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-600">
+                  <Leaf className="h-5 w-5" />
+                  ODOS Community Import
+                </CardTitle>
+                <CardDescription>
+                  Scrape ODOS members page, enrich profiles with AI (IMDb, Wikipedia, etc.), and tag with ODOS badge
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button 
+                  onClick={importOdosMembers} 
+                  disabled={importingOdos}
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                >
+                  {importingOdos ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Importing ODOS Members...
+                    </>
+                  ) : (
+                    <>
+                      <Leaf className="h-4 w-4 mr-2" />
+                      Import ODOS Members
+                    </>
+                  )}
+                </Button>
+
+                {/* Summary */}
+                {odosSummary && (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4">
+                    <div className="bg-muted p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold">{odosSummary.totalMembers}</div>
+                      <div className="text-xs text-muted-foreground">Total Found</div>
+                    </div>
+                    <div className="bg-green-500/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-green-600">{odosSummary.imported}</div>
+                      <div className="text-xs text-muted-foreground">Imported</div>
+                    </div>
+                    <div className="bg-primary/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{odosSummary.enriched}</div>
+                      <div className="text-xs text-muted-foreground">Enriched</div>
+                    </div>
+                    <div className="bg-yellow-500/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-yellow-600">{odosSummary.duplicates}</div>
+                      <div className="text-xs text-muted-foreground">Duplicates</div>
+                    </div>
+                    <div className="bg-red-500/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-red-600">{odosSummary.errors}</div>
+                      <div className="text-xs text-muted-foreground">Errors</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Results List */}
+                {odosResults && odosResults.length > 0 && (
+                  <ScrollArea className="h-64 border rounded-lg p-2">
+                    <div className="space-y-2">
+                      {odosResults.map((result, index) => (
+                        <div 
+                          key={index} 
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                        >
+                          <div className="flex items-center gap-2">
+                            {result.status === 'enriched' && (
+                              <CheckCircle className="h-4 w-4 text-primary" />
+                            )}
+                            {result.status === 'imported' && (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            )}
+                            {result.status === 'duplicate' && (
+                              <AlertCircle className="h-4 w-4 text-yellow-500" />
+                            )}
+                            {result.status === 'error' && (
+                              <AlertCircle className="h-4 w-4 text-red-500" />
+                            )}
+                            <span className="text-sm font-medium">{result.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {result.credits && result.credits > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {result.credits} credits
+                              </Badge>
+                            )}
+                            {result.awards && result.awards > 0 && (
+                              <Badge variant="secondary" className="text-xs bg-amber-500/20">
+                                {result.awards} awards
+                              </Badge>
+                            )}
+                            <Badge 
+                              variant={result.status === 'error' ? 'destructive' : 'outline'}
+                              className={
+                                result.status === 'enriched' ? 'bg-primary/20 text-primary' :
+                                result.status === 'imported' ? 'bg-green-500/20 text-green-600' :
+                                result.status === 'duplicate' ? 'bg-yellow-500/20 text-yellow-600' :
+                                ''
+                              }
+                            >
+                              {result.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Broadcast Email Card */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

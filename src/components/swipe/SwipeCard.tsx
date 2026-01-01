@@ -120,7 +120,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
           )}
 
           {/* Badge (OG/Beta/ODOS) - only for claimed profiles without industry verified */}
-          {!isIndustryVerified && profile.is_claimed !== false && profile.badge && (
+          {!isIndustryVerified && profile.badge && (
             <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
               <Badge 
                 variant="outline" 

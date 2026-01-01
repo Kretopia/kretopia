@@ -197,7 +197,7 @@ export const ProfileHero = ({
                 </Badge>
               )}
               
-              {profile.badge && !isUnclaimedProfile && (
+              {profile.badge && (
                 <Badge 
                   variant="default"
                   className={cn(

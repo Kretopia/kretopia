@@ -428,7 +428,7 @@ const ViewProfile = () => {
                     )}
                     
                     {/* OG/Beta/ODOS Badge - only for claimed profiles */}
-                    {profile.badge && !isUnclaimedProfile && (
+                    {profile.badge && (
                       <Badge 
                         variant="default"
                         className={profile.badge === 'odos' ? "bg-green-500 hover:bg-green-600" : ""}

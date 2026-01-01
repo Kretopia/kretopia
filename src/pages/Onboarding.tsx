@@ -20,10 +20,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS, LOCATION_OPTIONS } from "@/components/profile/ProfileEditDialog";
 
 const STEPS = [
-  { id: 1, title: "Profile", icon: Users, required: true },
-  { id: 2, title: "AI Import", icon: Sparkles, required: false },
+  { id: 1, title: "AI Import", icon: Sparkles, required: false },
+  { id: 2, title: "Profile", icon: Users, required: true },
   { id: 3, title: "Bio", icon: Briefcase, required: true },
-  { id: 4, title: "Portfolio", icon: Image, required: true },
+  { id: 4, title: "Portfolio", icon: Image, required: false },
   { id: 5, title: "Skills", icon: Award, required: false },
   { id: 6, title: "Done", icon: Sparkles, required: false },
 ];
@@ -168,8 +168,10 @@ export default function Onboarding() {
   const handleNext = async () => {
     const { analytics } = await import("@/lib/analytics");
     
-    if (currentStep === 1) {
-      // Validate name, role, and avatar
+    // Step 1 is AI Discovery - handled by its own component
+    
+    if (currentStep === 2) {
+      // Validate name, role, and avatar for Profile Basics step
       if (!profile.full_name?.trim()) {
         toast({
           title: "Name is required",
@@ -197,18 +199,18 @@ export default function Onboarding() {
         return;
       }
       
-      // Save profile data and go to AI Discovery step
+      // Save profile data and go to Bio step
       try {
         await supabase
           .from("profiles")
           .update({ 
-            onboarding_step: 2,
+            onboarding_step: 3,
             full_name: profile.full_name,
             role: profile.role,
           })
           .eq("user_id", user!.id);
         
-        analytics.onboardingStep(1, "profile_basics_complete");
+        analytics.onboardingStep(2, "profile_basics_complete");
       } catch (error) {
         console.error("Error updating profile:", error);
         toast({
@@ -219,8 +221,6 @@ export default function Onboarding() {
         return;
       }
     }
-
-    // Step 2 is AI Discovery - handled by its own component
 
     if (currentStep === 3) {
       // Validate bio length
@@ -295,14 +295,14 @@ export default function Onboarding() {
     });
     
     // Skip to next step but save current progress
-    if (currentStep === 2) {
-      // Skip AI Discovery
+    if (currentStep === 1) {
+      // Skip AI Discovery - go to Profile Basics
       await supabase
         .from("profiles")
-        .update({ onboarding_step: 3 })
+        .update({ onboarding_step: 2 })
         .eq("user_id", user!.id);
-      setCurrentStep(3);
-      analytics.onboardingStep(2, "ai_discovery_skipped");
+      setCurrentStep(2);
+      analytics.onboardingStep(1, "ai_discovery_skipped");
     } else if (currentStep === 4) {
       await supabase
         .from("profiles")
@@ -385,12 +385,14 @@ export default function Onboarding() {
   const handleAIDiscoveryComplete = async (importedData?: any) => {
     const { analytics } = await import("@/lib/analytics");
     
-    // If data was imported, update profile
+    // If data was imported, update profile state (will be pre-filled in step 2)
     if (importedData) {
       if (importedData.bio) setProfile(prev => ({ ...prev, bio: importedData.bio }));
       if (importedData.location) setProfile(prev => ({ ...prev, location: importedData.location }));
+      if (importedData.role) setProfile(prev => ({ ...prev, role: importedData.role }));
+      if (importedData.name) setProfile(prev => ({ ...prev, full_name: importedData.name }));
       if (importedData.skills) setSelectedSkills(importedData.skills);
-      if (importedData.imageUrl && !avatarUrl) setAvatarUrl(importedData.imageUrl);
+      if (importedData.imageUrl) setAvatarUrl(importedData.imageUrl);
       
       // Check if AI import provides enough data to fast-track
       if (importedData.canFastTrack) {
@@ -409,7 +411,7 @@ export default function Onboarding() {
           .update({ onboarding_step: 6 })
           .eq("user_id", user!.id);
         
-        analytics.onboardingStep(2, "ai_discovery_fast_track");
+        analytics.onboardingStep(1, "ai_discovery_fast_track");
         
         // Skip directly to completion
         await completeOnboarding();
@@ -417,18 +419,18 @@ export default function Onboarding() {
       } else {
         toast({
           title: "✨ Data imported!",
-          description: "We've added your credits & awards. Add a portfolio item to complete.",
+          description: "Review your profile details in the next step.",
         });
       }
     }
     
     await supabase
       .from("profiles")
-      .update({ onboarding_step: 3 })
+      .update({ onboarding_step: 2 })
       .eq("user_id", user!.id);
     
-    analytics.onboardingStep(2, importedData ? "ai_discovery_imported" : "ai_discovery_complete");
-    setCurrentStep(3);
+    analytics.onboardingStep(1, importedData ? "ai_discovery_imported" : "ai_discovery_complete");
+    setCurrentStep(2);
   };
 
   const completeOnboarding = async () => {
@@ -748,16 +750,26 @@ export default function Onboarding() {
           </div>
         </div>
 
-        {/* Step 1: Profile Basics + Avatar */}
+        {/* Step 1: AI Profile Discovery - FIRST */}
         {currentStep === 1 && (
+          <AIProfileDiscoveryStep
+            userName={profile.full_name}
+            userId={userId}
+            onComplete={handleAIDiscoveryComplete}
+            onSkip={() => handleSkip()}
+          />
+        )}
+
+        {/* Step 2: Profile Basics + Avatar (pre-filled from AI) */}
+        {currentStep === 2 && (
           <div className="space-y-6">
             <div className="text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
                 <Sparkles className="h-4 w-4" />
                 <span>Earn +100 XP for completing</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2">Let's Get You Started</h2>
-              <p className="text-muted-foreground">Complete these basics to be discovered by other creators</p>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">Confirm Your Profile</h2>
+              <p className="text-muted-foreground">Review and complete your profile details</p>
               
               <Button 
                 variant="outline" 
@@ -871,16 +883,6 @@ export default function Onboarding() {
               </div>
             </div>
           </div>
-        )}
-
-        {/* Step 2: AI Profile Discovery */}
-        {currentStep === 2 && (
-          <AIProfileDiscoveryStep
-            userName={profile.full_name}
-            userId={userId}
-            onComplete={handleAIDiscoveryComplete}
-            onSkip={() => handleAIDiscoveryComplete()}
-          />
         )}
 
         {/* Step 3: Bio + Location */}
@@ -1140,7 +1142,7 @@ export default function Onboarding() {
         )}
 
         {/* Navigation Buttons */}
-        {currentStep !== 5 && currentStep !== 3 && currentStep !== 4 && currentStep !== 7 && (
+        {currentStep !== 5 && currentStep !== 1 && currentStep !== 3 && currentStep !== 4 && currentStep !== 7 && (
           <div className="flex gap-3 mt-8">
             {currentStep > 1 && (
               <Button

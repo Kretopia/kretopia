@@ -178,6 +178,8 @@ export const AIProfileDiscoveryStep = ({
       
       onComplete({
         ...selectedProfile,
+        name: selectedProfile.name,
+        role: selectedProfile.role,
         imported: true,
         creditsImported,
         awardsImported,

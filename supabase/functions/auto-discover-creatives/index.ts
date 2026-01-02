@@ -59,12 +59,15 @@ const discoverySources: DiscoverySource[] = [
 
 // Celebrity names to EXCLUDE - people too famous to use the platform
 const CELEBRITY_EXCLUSIONS = new Set([
-  // Music megastars
+  // Music megastars / Legacy icons
   'beyoncé', 'beyonce', 'taylor swift', 'drake', 'kanye west', 'rihanna',
   'lady gaga', 'justin bieber', 'ariana grande', 'ed sheeran', 'adele',
   'the weeknd', 'bruno mars', 'post malone', 'dua lipa', 'billie eilish',
   'harry styles', 'bad bunny', 'kendrick lamar', 'travis scott', 'doja cat',
   'olivia rodrigo', 'justin timberlake', 'katy perry', 'miley cyrus', 'selena gomez',
+  'paul mccartney', 'john lennon', 'ringo starr', 'george harrison', // Beatles
+  'mick jagger', 'keith richards', // Rolling Stones
+  'elton john', 'madonna', 'michael jackson', 'prince', 'stevie wonder',
   
   // A-list actors
   'tom hanks', 'leonardo dicaprio', 'brad pitt', 'angelina jolie', 'tom cruise',

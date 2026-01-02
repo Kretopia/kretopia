@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle } from "lucide-react";
+import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search } from "lucide-react";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
@@ -30,6 +30,23 @@ interface OdosImportSummary {
   errors: number;
 }
 
+interface AIDiscoveryResult {
+  name: string;
+  status: 'imported' | 'duplicate' | 'skipped' | 'error';
+  role?: string;
+  error?: string;
+  enriched?: boolean;
+}
+
+interface AIDiscoverySummary {
+  discovered: number;
+  processed: number;
+  imported: number;
+  enriched: number;
+  duplicates: number;
+  errors: number;
+}
+
 export default function Admin() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -40,6 +57,11 @@ export default function Admin() {
   const [importingOdos, setImportingOdos] = useState(false);
   const [odosResults, setOdosResults] = useState<OdosImportResult[] | null>(null);
   const [odosSummary, setOdosSummary] = useState<OdosImportSummary | null>(null);
+  
+  // AI Discovery state
+  const [runningDiscovery, setRunningDiscovery] = useState(false);
+  const [discoveryResults, setDiscoveryResults] = useState<AIDiscoveryResult[] | null>(null);
+  const [discoverySummary, setDiscoverySummary] = useState<AIDiscoverySummary | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -152,6 +174,44 @@ export default function Admin() {
       });
     } finally {
       setImportingOdos(false);
+    }
+  };
+
+  const runAIDiscovery = async (maxProfiles = 20) => {
+    setRunningDiscovery(true);
+    setDiscoveryResults(null);
+    setDiscoverySummary(null);
+    
+    try {
+      toast({
+        title: "🤖 AI Discovery Agent Started",
+        description: "Searching for authentic creatives across the web... This may take a few minutes.",
+      });
+
+      const { data, error } = await supabase.functions.invoke('auto-discover-creatives', {
+        body: { maxProfiles },
+      });
+      
+      if (error) throw error;
+      
+      if (data?.results) {
+        setDiscoveryResults(data.results);
+        setDiscoverySummary(data.summary);
+      }
+      
+      toast({
+        title: "AI Discovery Complete! 🎯",
+        description: `Discovered ${data?.summary?.discovered || 0} creatives, imported ${data?.summary?.imported || 0} new profiles.`,
+      });
+    } catch (error: any) {
+      console.error("AI Discovery error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to run AI discovery",
+        variant: "destructive",
+      });
+    } finally {
+      setRunningDiscovery(false);
     }
   };
 
@@ -303,6 +363,164 @@ export default function Admin() {
                               variant={result.status === 'error' ? 'destructive' : 'outline'}
                               className={
                                 result.status === 'enriched' ? 'bg-primary/20 text-primary' :
+                                result.status === 'imported' ? 'bg-green-500/20 text-green-600' :
+                                result.status === 'duplicate' ? 'bg-yellow-500/20 text-yellow-600' :
+                                ''
+                              }
+                            >
+                              {result.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* AI Discovery Agent Card */}
+            <Card className="border-purple-500/30 bg-purple-500/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-purple-600">
+                  <Bot className="h-5 w-5" />
+                  AI Creative Discovery Agent
+                </CardTitle>
+                <CardDescription>
+                  Autonomous AI that discovers authentic creatives from industry news, award shows, and platforms (runs twice daily automatically)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    onClick={() => runAIDiscovery(10)} 
+                    disabled={runningDiscovery}
+                    variant="outline"
+                    className="border-purple-500/50 hover:bg-purple-500/10"
+                  >
+                    {runningDiscovery ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Discovering...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4 mr-2" />
+                        Quick Run (10)
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={() => runAIDiscovery(20)} 
+                    disabled={runningDiscovery}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {runningDiscovery ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Discovering...
+                      </>
+                    ) : (
+                      <>
+                        <Bot className="h-4 w-4 mr-2" />
+                        Standard Run (20)
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={() => runAIDiscovery(50)} 
+                    disabled={runningDiscovery}
+                    variant="outline"
+                    className="border-purple-500/50 hover:bg-purple-500/10"
+                  >
+                    {runningDiscovery ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Discovering...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Deep Run (50)
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                  <p className="font-medium mb-1">Discovery Sources:</p>
+                  <p>• Industry News (Billboard, Variety, Hollywood Reporter)</p>
+                  <p>• Award Shows (Grammy, Oscar, Emmy nominees)</p>
+                  <p>• Platforms (IMDb, Spotify, Behance, Dribbble)</p>
+                  <p>• Trending Creatives & Breakout Artists</p>
+                </div>
+
+                {/* Summary */}
+                {discoverySummary && (
+                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 mt-4">
+                    <div className="bg-muted p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold">{discoverySummary.discovered}</div>
+                      <div className="text-xs text-muted-foreground">Discovered</div>
+                    </div>
+                    <div className="bg-purple-500/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-purple-600">{discoverySummary.processed}</div>
+                      <div className="text-xs text-muted-foreground">Processed</div>
+                    </div>
+                    <div className="bg-green-500/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-green-600">{discoverySummary.imported}</div>
+                      <div className="text-xs text-muted-foreground">Imported</div>
+                    </div>
+                    <div className="bg-primary/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{discoverySummary.enriched}</div>
+                      <div className="text-xs text-muted-foreground">Enriched</div>
+                    </div>
+                    <div className="bg-yellow-500/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-yellow-600">{discoverySummary.duplicates}</div>
+                      <div className="text-xs text-muted-foreground">Duplicates</div>
+                    </div>
+                    <div className="bg-red-500/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-red-600">{discoverySummary.errors}</div>
+                      <div className="text-xs text-muted-foreground">Errors</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Results List */}
+                {discoveryResults && discoveryResults.length > 0 && (
+                  <ScrollArea className="h-64 border rounded-lg p-2">
+                    <div className="space-y-2">
+                      {discoveryResults.map((result, index) => (
+                        <div 
+                          key={index} 
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                        >
+                          <div className="flex items-center gap-2">
+                            {result.status === 'imported' && (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            )}
+                            {result.status === 'duplicate' && (
+                              <AlertCircle className="h-4 w-4 text-yellow-500" />
+                            )}
+                            {result.status === 'error' && (
+                              <AlertCircle className="h-4 w-4 text-red-500" />
+                            )}
+                            <div>
+                              <span className="text-sm font-medium">{result.name}</span>
+                              {result.role && (
+                                <span className="text-xs text-muted-foreground ml-2">({result.role})</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {result.enriched && (
+                              <Badge variant="secondary" className="text-xs bg-purple-500/20">
+                                <Sparkles className="h-3 w-3 mr-1" />
+                                Enriched
+                              </Badge>
+                            )}
+                            <Badge 
+                              variant={result.status === 'error' ? 'destructive' : 'outline'}
+                              className={
                                 result.status === 'imported' ? 'bg-green-500/20 text-green-600' :
                                 result.status === 'duplicate' ? 'bg-yellow-500/20 text-yellow-600' :
                                 ''

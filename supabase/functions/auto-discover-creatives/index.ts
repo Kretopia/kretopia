@@ -24,33 +24,68 @@ interface DiscoverySource {
   priority: number;
 }
 
-// Discovery sources for different creative fields
+// Discovery sources - FOCUS ON COLLABORATORS & CREW, not celebrities
+// Target: producers, engineers, mixers, session musicians, DPs, editors, designers, etc.
 const discoverySources: DiscoverySource[] = [
-  // Music Industry
-  { type: 'news', query: 'Grammy nominated artist 2024 2025', priority: 1 },
-  { type: 'news', query: 'Billboard Hot 100 producer songwriter', priority: 2 },
-  { type: 'news', query: 'new music producer breakthrough', priority: 3 },
-  { type: 'awards', query: 'Grammy winner best new artist', priority: 1 },
-  { type: 'platform', query: 'site:spotify.com/artist rising musician', priority: 2 },
+  // Music - Behind the hits (producers, engineers, session musicians)
+  { type: 'news', query: 'Grammy nominated mixing engineer mastering 2024', priority: 1 },
+  { type: 'news', query: 'Grammy winning producer credits songwriter', priority: 1 },
+  { type: 'news', query: 'session musician drummer guitarist bassist credits', priority: 2 },
+  { type: 'news', query: 'vocal producer songwriter collaborated with', priority: 2 },
+  { type: 'platform', query: 'site:allmusic.com session musician credits', priority: 2 },
+  { type: 'platform', query: 'site:discogs.com mixing engineer mastering credits', priority: 2 },
+  { type: 'news', query: 'site:mixonline.com engineer interview studio', priority: 1 },
+  { type: 'news', query: 'site:soundonsound.com producer interview', priority: 1 },
   
-  // Film & TV
-  { type: 'news', query: 'Oscar nominated cinematographer director 2024 2025', priority: 1 },
-  { type: 'news', query: 'Emmy winning showrunner writer', priority: 1 },
-  { type: 'awards', query: 'Academy Award nominee director', priority: 1 },
-  { type: 'platform', query: 'site:imdb.com rising actor filmmaker', priority: 2 },
-  { type: 'news', query: 'Sundance film festival director', priority: 2 },
+  // Film & TV - Crew roles (not actors/directors)
+  { type: 'news', query: 'Oscar nominated cinematographer editor colorist 2024', priority: 1 },
+  { type: 'news', query: 'VFX supervisor credits blockbuster film', priority: 1 },
+  { type: 'news', query: 'costume designer production designer Emmy', priority: 2 },
+  { type: 'news', query: 'sound designer foley artist film credits', priority: 2 },
+  { type: 'platform', query: 'site:imdb.com gaffer grip line producer credits', priority: 2 },
+  { type: 'platform', query: 'site:imdb.com assistant director editor colorist', priority: 2 },
+  { type: 'news', query: 'stunt coordinator action sequence credits', priority: 3 },
   
-  // Design & Visual
-  { type: 'news', query: 'award winning graphic designer 2024', priority: 2 },
-  { type: 'platform', query: 'site:behance.net featured designer', priority: 2 },
-  { type: 'platform', query: 'site:dribbble.com top designer', priority: 3 },
-  { type: 'news', query: 'creative director brand agency', priority: 3 },
+  // Design - Working professionals
+  { type: 'platform', query: 'site:behance.net senior designer agency portfolio', priority: 2 },
+  { type: 'platform', query: 'site:dribbble.com product designer startup', priority: 2 },
+  { type: 'news', query: 'motion designer animator studio credits', priority: 3 },
+  { type: 'news', query: 'brand designer creative agency portfolio', priority: 3 },
   
-  // Content Creators
-  { type: 'news', query: 'YouTube creator filmmaker award', priority: 3 },
-  { type: 'news', query: 'photographer exhibition gallery award', priority: 3 },
-  { type: 'trending', query: 'rising creative professional portfolio', priority: 4 },
+  // Advertising - Agency creatives
+  { type: 'news', query: 'Cannes Lions art director copywriter 2024', priority: 2 },
+  { type: 'news', query: 'advertising creative director agency award', priority: 3 },
 ];
+
+// Celebrity names to EXCLUDE - people too famous to use the platform
+const CELEBRITY_EXCLUSIONS = new Set([
+  // Music megastars
+  'beyoncé', 'beyonce', 'taylor swift', 'drake', 'kanye west', 'rihanna',
+  'lady gaga', 'justin bieber', 'ariana grande', 'ed sheeran', 'adele',
+  'the weeknd', 'bruno mars', 'post malone', 'dua lipa', 'billie eilish',
+  'harry styles', 'bad bunny', 'kendrick lamar', 'travis scott', 'doja cat',
+  'olivia rodrigo', 'justin timberlake', 'katy perry', 'miley cyrus', 'selena gomez',
+  
+  // A-list actors
+  'tom hanks', 'leonardo dicaprio', 'brad pitt', 'angelina jolie', 'tom cruise',
+  'scarlett johansson', 'robert downey jr', 'chris hemsworth', 'margot robbie',
+  'jennifer lawrence', 'denzel washington', 'will smith', 'meryl streep',
+  'ryan gosling', 'zendaya', 'timothée chalamet', 'florence pugh',
+  
+  // Major directors
+  'steven spielberg', 'christopher nolan', 'martin scorsese', 'quentin tarantino',
+  'james cameron', 'ridley scott', 'denis villeneuve', 'greta gerwig',
+  'jordan peele', 'david fincher', 'wes anderson', 'guillermo del toro',
+]);
+
+// Check if a name is a celebrity to exclude
+function isCelebrity(name: string): boolean {
+  const normalized = name.toLowerCase().trim();
+  return CELEBRITY_EXCLUSIONS.has(normalized) || 
+    Array.from(CELEBRITY_EXCLUSIONS).some(celeb => 
+      normalized.includes(celeb) || celeb.includes(normalized)
+    );
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -160,6 +195,12 @@ serve(async (req) => {
           );
 
           for (const creative of extracted) {
+            // Skip if celebrity
+            if (isCelebrity(creative.name)) {
+              console.log(`🚫 Skipping celebrity: ${creative.name}`);
+              continue;
+            }
+
             // Skip if already exists or already discovered
             const normalizedName = creative.name.toLowerCase().trim();
             if (existingNames.has(normalizedName)) {
@@ -361,16 +402,26 @@ async function extractCreativesFromContent(
         messages: [
           {
             role: 'system',
-            content: `You are an expert at identifying real creative professionals from web content.
-Extract ONLY verified, real people who are professional creatives (musicians, producers, directors, actors, designers, photographers, etc.).
+            content: `You are an expert at identifying WORKING creative professionals - the collaborators and crew BEHIND major projects, NOT celebrities.
+
+TARGET ROLES (prioritize these):
+- Music: producers, engineers, mixers, session musicians, songwriters, arrangers, vocal coaches
+- Film/TV: cinematographers, editors, colorists, VFX artists, sound designers, costume designers, production designers, gaffers, grips, line producers, assistant directors
+- Design: graphic designers, motion designers, animators, art directors, brand designers
+- Advertising: creative directors, copywriters, art directors
+
+DO NOT EXTRACT:
+- Major celebrities (Beyoncé, Taylor Swift, Drake, Tom Hanks, etc.)
+- Famous actors or lead performers
+- Well-known directors (Spielberg, Nolan, Scorsese, etc.)
+- Anyone with 1M+ social followers or household name recognition
 
 STRICT RULES:
-- Only extract REAL individuals with verifiable careers
+- Focus on the CREW and COLLABORATORS mentioned in articles
+- Look for people credited as working ON projects, not starring IN them
+- Prioritize people with technical/craft roles
 - Must have clear professional role/title
-- Skip fictional characters, band names, company names
-- Skip people mentioned only in passing
-- Focus on people who are actively working in creative industries
-- Prioritize people with notable credits or achievements mentioned`
+- Skip fictional characters, band names, company names`
           },
           {
             role: 'user',

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Lock, Users } from "lucide-react";
+import { Sparkles, Lock, CheckCircle2, ArrowRight } from "lucide-react";
 
 export const HeroSection = () => {
   const handleCtaClick = async () => {
@@ -21,43 +21,68 @@ export const HeroSection = () => {
           {/* Invite-Only Badge */}
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-amber-500/50 bg-amber-500/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105">
             <Lock className="h-3 w-3 sm:h-4 sm:w-4 text-amber-500" />
-            <span className="font-medium text-amber-500">Invite Only • Exclusive Access</span>
+            <span className="font-medium text-amber-500">Invite Only Beta • Limited Spots</span>
           </div>
           
+          {/* Pain-first headline */}
           <h1 className="mb-4 sm:mb-6 md:mb-8 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight sm:leading-[1.1] tracking-tight px-4">
-            The Network for{" "}
+            Stop Scrolling.{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Verified Creatives
+              Start Collaborating.
             </span>
           </h1>
           
           <p className="mx-auto mb-2 sm:mb-3 max-w-3xl text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold leading-tight text-foreground px-6 sm:px-4">
-            AI-powered matching for collaborations that matter.
+            AI matches you with the right collaborators in minutes.
           </p>
           
-          <p className="mx-auto mb-6 sm:mb-8 md:mb-12 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
-            Join a curated community of videographers, photographers, designers & creative professionals. Get invited by a member to access.
+          <p className="mx-auto mb-6 sm:mb-8 md:mb-10 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
+            Where filmmakers, musicians, designers & creators connect through verified portfolios — not endless DMs.
           </p>
+          
+          {/* Value props */}
+          <div className="mx-auto mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground px-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+              AI-verified credentials
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-secondary" />
+              Swipe to match
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
+              Built-in workspace
+            </span>
+          </div>
           
           <div className="flex flex-col items-center justify-center gap-3 px-6 sm:px-4 w-full max-w-md sm:max-w-none sm:flex-row">
             <Link to="/auth" className="w-full sm:w-auto" onClick={handleCtaClick}>
-              <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 shadow-glow transition-smooth hover:-translate-y-1 text-base sm:text-lg">
+              <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 shadow-glow transition-smooth hover:-translate-y-1 text-base sm:text-lg group">
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="sm:hidden">Get Access</span>
                 <span className="hidden sm:inline">I Have an Invite Code</span>
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
           </div>
           
-          {/* Trust indicators */}
-          <div className="mt-6 sm:mt-8 flex flex-col items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground px-4">
-            <p className="flex items-center gap-2">
-              <Users className="h-3 w-3 text-primary" />
-              AI-verified professionals • Quality over quantity
-            </p>
-            <p className="text-xs text-muted-foreground/80">
-              Grammy winners, IMDB-credited filmmakers & verified creators
-            </p>
+          {/* Live stats */}
+          <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-center">
+            <div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">130+</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Verified Creators</div>
+            </div>
+            <div className="h-8 w-px bg-border/50" />
+            <div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">IMDB</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Spotify • Grammy</div>
+            </div>
+            <div className="h-8 w-px bg-border/50 hidden sm:block" />
+            <div className="hidden sm:block">
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Free</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">to Start</div>
+            </div>
           </div>
         </div>
       </div>

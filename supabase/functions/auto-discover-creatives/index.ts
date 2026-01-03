@@ -12,6 +12,7 @@ interface DiscoveredCreative {
   bio?: string;
   location?: string;
   sourceUrl?: string;
+  avatarUrl?: string;
   skills?: string[];
   credits?: Array<{ project_name: string; role: string; year?: number; platform?: string }>;
   awards?: Array<{ title: string; organization: string; year?: number; category?: string }>;
@@ -304,9 +305,17 @@ serve(async (req) => {
 
         // Enrich with additional web search if needed
         let enrichedCreative = creative;
-        if (creative.confidence < 0.7 || !creative.credits?.length) {
+        if (creative.confidence < 0.7 || !creative.credits?.length || !creative.avatarUrl) {
           console.log(`🔄 Enriching: ${creative.name}`);
           enrichedCreative = await enrichCreativeProfile(creative, FIRECRAWL_API_KEY!, LOVABLE_API_KEY!);
+        }
+        
+        // Generate bio if still missing
+        if (!enrichedCreative.bio && enrichedCreative.credits?.length) {
+          const creditsList = enrichedCreative.credits.slice(0, 3).map(c => c.project_name).join(', ');
+          enrichedCreative.bio = `${enrichedCreative.name} is a ${enrichedCreative.role} known for work on ${creditsList}.`;
+        } else if (!enrichedCreative.bio) {
+          enrichedCreative.bio = `${enrichedCreative.name} is a professional ${enrichedCreative.role} in the creative industry.`;
         }
 
         // Create the unclaimed profile
@@ -314,7 +323,8 @@ serve(async (req) => {
           .rpc('create_unclaimed_profile', {
             p_full_name: enrichedCreative.name,
             p_role: enrichedCreative.role || 'Creative',
-            p_bio: enrichedCreative.bio || null,
+            p_bio: enrichedCreative.bio,
+            p_avatar_url: enrichedCreative.avatarUrl || null,
             p_location: enrichedCreative.location || null,
             p_professional_skills: enrichedCreative.skills ? JSON.stringify(
               enrichedCreative.skills.map(s => ({ name: s, level: 'advanced' }))
@@ -499,8 +509,9 @@ STRICT RULES:
                       properties: {
                         name: { type: 'string', description: 'Full name of the creative professional' },
                         role: { type: 'string', description: 'Primary professional role (e.g., Music Producer, Film Director, Graphic Designer)' },
-                        bio: { type: 'string', description: 'Brief bio if available' },
+                        bio: { type: 'string', description: 'Brief professional bio (2-3 sentences). If not explicitly stated, generate one based on their role and credits.' },
                         location: { type: 'string', description: 'Location if mentioned' },
+                        avatarUrl: { type: 'string', description: 'URL to profile image/headshot if found in the content' },
                         skills: { type: 'array', items: { type: 'string' }, description: 'Professional skills' },
                         credits: {
                           type: 'array',
@@ -642,6 +653,7 @@ Keep only verified, factual information.`
                 properties: {
                   bio: { type: 'string', description: 'Professional bio (2-3 sentences)' },
                   location: { type: 'string' },
+                  avatarUrl: { type: 'string', description: 'URL to profile image/headshot if found' },
                   skills: { type: 'array', items: { type: 'string' } },
                   credits: {
                     type: 'array',
@@ -689,6 +701,7 @@ Keep only verified, factual information.`
       ...creative,
       bio: enriched.bio || creative.bio,
       location: enriched.location || creative.location,
+      avatarUrl: enriched.avatarUrl || creative.avatarUrl,
       skills: [...new Set([...(creative.skills || []), ...(enriched.skills || [])])],
       credits: [...(creative.credits || []), ...(enriched.credits || [])].slice(0, 25),
       awards: [...(creative.awards || []), ...(enriched.awards || [])].slice(0, 15),

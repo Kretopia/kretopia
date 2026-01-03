@@ -131,7 +131,9 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         if (swipedIds.has(p.user_id)) return false;
         // Not already connected
         if (connectedIds.has(p.user_id)) return false;
-        // Must have bio with minimum 20 characters
+        // Unclaimed profiles are pre-verified and can appear without bio requirement
+        if (p.is_claimed === false) return true;
+        // Claimed profiles must have bio with minimum 20 characters
         if (!p.bio || p.bio.length < 20) return false;
         return true;
       });

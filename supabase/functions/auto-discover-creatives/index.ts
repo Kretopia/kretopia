@@ -24,35 +24,65 @@ interface DiscoverySource {
   priority: number;
 }
 
-// Discovery sources - FOCUS ON COLLABORATORS & CREW, not celebrities
-// Target: producers, engineers, mixers, session musicians, DPs, editors, designers, etc.
+// Discovery sources - DIVERSIFIED across creative industries
+// Target: producers, engineers, DPs, editors, designers, photographers, writers, animators, etc.
 const discoverySources: DiscoverySource[] = [
-  // Music - Behind the hits (producers, engineers, session musicians)
+  // === MUSIC (keep some but reduce weight) ===
   { type: 'news', query: 'Grammy nominated mixing engineer mastering 2024', priority: 1 },
-  { type: 'news', query: 'Grammy winning producer credits songwriter', priority: 1 },
-  { type: 'news', query: 'session musician drummer guitarist bassist credits', priority: 2 },
-  { type: 'news', query: 'vocal producer songwriter collaborated with', priority: 2 },
-  { type: 'platform', query: 'site:allmusic.com session musician credits', priority: 2 },
-  { type: 'platform', query: 'site:discogs.com mixing engineer mastering credits', priority: 2 },
-  { type: 'news', query: 'site:mixonline.com engineer interview studio', priority: 1 },
-  { type: 'news', query: 'site:soundonsound.com producer interview', priority: 1 },
+  { type: 'news', query: 'session musician drummer guitarist bassist credits', priority: 3 },
+  { type: 'platform', query: 'site:discogs.com mixing engineer mastering credits', priority: 3 },
   
-  // Film & TV - Crew roles (not actors/directors)
-  { type: 'news', query: 'Oscar nominated cinematographer editor colorist 2024', priority: 1 },
-  { type: 'news', query: 'VFX supervisor credits blockbuster film', priority: 1 },
-  { type: 'news', query: 'costume designer production designer Emmy', priority: 2 },
+  // === FILM & TV (expanded) ===
+  { type: 'news', query: 'Oscar nominated cinematographer 2024 2025', priority: 1 },
+  { type: 'news', query: 'Emmy winning editor colorist film credits', priority: 1 },
+  { type: 'news', query: 'VFX supervisor visual effects artist credits', priority: 1 },
+  { type: 'news', query: 'costume designer production designer award', priority: 2 },
   { type: 'news', query: 'sound designer foley artist film credits', priority: 2 },
-  { type: 'platform', query: 'site:imdb.com gaffer grip line producer credits', priority: 2 },
-  { type: 'platform', query: 'site:imdb.com assistant director editor colorist', priority: 2 },
-  { type: 'news', query: 'stunt coordinator action sequence credits', priority: 3 },
+  { type: 'news', query: 'stunt coordinator stunt performer credits', priority: 2 },
+  { type: 'platform', query: 'site:imdb.com line producer assistant director credits', priority: 2 },
+  { type: 'news', query: 'documentary cinematographer filmmaker credits', priority: 2 },
   
-  // Design - Working professionals
-  { type: 'platform', query: 'site:behance.net senior designer agency portfolio', priority: 2 },
-  { type: 'platform', query: 'site:dribbble.com product designer startup', priority: 2 },
-  { type: 'news', query: 'motion designer animator studio credits', priority: 3 },
-  { type: 'news', query: 'brand designer creative agency portfolio', priority: 3 },
+  // === PHOTOGRAPHY ===
+  { type: 'news', query: 'commercial photographer campaign credits 2024', priority: 1 },
+  { type: 'news', query: 'fashion photographer editorial Vogue Harper', priority: 2 },
+  { type: 'news', query: 'portrait photographer celebrity interview', priority: 2 },
+  { type: 'news', query: 'sports photographer Olympics World Cup', priority: 3 },
   
-  // Advertising - Agency creatives
+  // === DESIGN & UI/UX ===
+  { type: 'platform', query: 'site:behance.net senior designer featured portfolio', priority: 1 },
+  { type: 'platform', query: 'site:dribbble.com product designer UX portfolio', priority: 1 },
+  { type: 'news', query: 'UI UX designer startup tech company', priority: 2 },
+  { type: 'news', query: 'brand identity designer agency portfolio', priority: 2 },
+  { type: 'news', query: 'type designer typography foundry', priority: 3 },
+  
+  // === ILLUSTRATION & ANIMATION ===
+  { type: 'platform', query: 'site:artstation.com concept artist portfolio', priority: 1 },
+  { type: 'news', query: 'illustrator children book cover artist', priority: 2 },
+  { type: 'news', query: 'motion graphics designer animator studio', priority: 2 },
+  { type: 'news', query: '3D artist character designer game film', priority: 2 },
+  { type: 'news', query: 'Annie Award animator storyboard artist', priority: 1 },
+  
+  // === GAMING ===
+  { type: 'news', query: 'game designer developer credits studio', priority: 1 },
+  { type: 'news', query: 'game audio composer sound designer', priority: 2 },
+  { type: 'news', query: 'level designer environment artist game', priority: 2 },
+  { type: 'platform', query: 'site:artstation.com game environment concept art', priority: 2 },
+  
+  // === WRITING & CONTENT ===
+  { type: 'news', query: 'screenwriter TV writer Emmy credits', priority: 1 },
+  { type: 'news', query: 'copywriter creative director advertising', priority: 2 },
+  { type: 'news', query: 'content creator writer journalist creative', priority: 3 },
+  
+  // === FASHION ===
+  { type: 'news', query: 'fashion stylist celebrity editorial credits', priority: 2 },
+  { type: 'news', query: 'makeup artist hair stylist fashion week', priority: 2 },
+  { type: 'news', query: 'fashion designer emerging CFDA credits', priority: 2 },
+  
+  // === ARCHITECTURE & INTERIOR ===
+  { type: 'news', query: 'architect interior designer award project', priority: 2 },
+  { type: 'news', query: 'set designer theatre Broadway production', priority: 2 },
+  
+  // === ADVERTISING ===
   { type: 'news', query: 'Cannes Lions art director copywriter 2024', priority: 2 },
   { type: 'news', query: 'advertising creative director agency award', priority: 3 },
 ];
@@ -407,10 +437,16 @@ async function extractCreativesFromContent(
             role: 'system',
             content: `You are an expert at identifying WORKING creative professionals - the collaborators and crew BEHIND major projects, NOT celebrities.
 
-TARGET ROLES (prioritize these):
-- Music: producers, engineers, mixers, session musicians, songwriters, arrangers, vocal coaches
-- Film/TV: cinematographers, editors, colorists, VFX artists, sound designers, costume designers, production designers, gaffers, grips, line producers, assistant directors
-- Design: graphic designers, motion designers, animators, art directors, brand designers
+TARGET ROLES (prioritize these - aim for diverse industries):
+- Film/TV: cinematographers, editors, colorists, VFX artists, sound designers, costume designers, production designers, gaffers, grips, line producers, assistant directors, stunt coordinators
+- Photography: fashion photographers, commercial photographers, portrait photographers, documentary photographers
+- Design: graphic designers, UI/UX designers, product designers, motion designers, art directors, brand designers, type designers
+- Illustration/Animation: illustrators, concept artists, 3D artists, animators, storyboard artists, character designers
+- Gaming: game designers, level designers, environment artists, game audio designers
+- Writing: screenwriters, TV writers, copywriters, content creators
+- Fashion: stylists, makeup artists, hair stylists, emerging fashion designers
+- Architecture/Set: architects, interior designers, set designers
+- Music: producers, engineers, mixers, session musicians, songwriters, arrangers (but don't over-index here)
 - Advertising: creative directors, copywriters, art directors
 
 DO NOT EXTRACT:
@@ -418,13 +454,15 @@ DO NOT EXTRACT:
 - Famous actors or lead performers
 - Well-known directors (Spielberg, Nolan, Scorsese, etc.)
 - Anyone with 1M+ social followers or household name recognition
+- Famous musicians/artists who are primarily performers
 
 STRICT RULES:
 - Focus on the CREW and COLLABORATORS mentioned in articles
 - Look for people credited as working ON projects, not starring IN them
 - Prioritize people with technical/craft roles
 - Must have clear professional role/title
-- Skip fictional characters, band names, company names`
+- Skip fictional characters, band names, company names
+- AIM FOR DIVERSITY: Include people from Film, Design, Photography, Gaming, not just Music`
           },
           {
             role: 'user',

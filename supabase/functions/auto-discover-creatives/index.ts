@@ -85,6 +85,20 @@ const discoverySources: DiscoverySource[] = [
   // === ADVERTISING ===
   { type: 'news', query: 'Cannes Lions art director copywriter 2024', priority: 2 },
   { type: 'news', query: 'advertising creative director agency award', priority: 3 },
+  
+  // === BALI & INDONESIA CREATIVES ===
+  { type: 'news', query: 'Bali photographer videographer creative professional', priority: 1 },
+  { type: 'news', query: 'Bali content creator influencer creative', priority: 1 },
+  { type: 'news', query: 'Bali graphic designer UI UX web design', priority: 1 },
+  { type: 'news', query: 'Bali music producer DJ electronic artist', priority: 1 },
+  { type: 'news', query: 'Bali filmmaker cinematographer video production', priority: 1 },
+  { type: 'news', query: 'Ubud Canggu Seminyak creative artist designer', priority: 2 },
+  { type: 'news', query: 'Indonesia digital nomad creative professional Bali', priority: 2 },
+  { type: 'news', query: 'Bali wedding photographer portrait photographer', priority: 2 },
+  { type: 'news', query: 'Bali fashion stylist creative director', priority: 2 },
+  { type: 'news', query: 'Bali illustrator animator motion designer', priority: 2 },
+  { type: 'news', query: 'Bali sound engineer music studio producer', priority: 2 },
+  { type: 'news', query: 'Indonesian creative agency Bali Jakarta designer', priority: 3 },
 ];
 
 // Celebrity names to EXCLUDE - people too famous to use the platform

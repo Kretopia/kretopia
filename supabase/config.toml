@@ -134,3 +134,6 @@ verify_jwt = true
 
 [functions.import-odos-members]
 verify_jwt = true
+
+[functions.update-unclaimed-profiles]
+verify_jwt = false

@@ -126,14 +126,13 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       console.log('[useSwipeProfiles] Total profiles fetched:', fetchedProfiles?.length);
 
       // Step 4: Filter out swiped, connected users, and profiles not meeting minimum requirements
+      // ALL profiles (claimed and unclaimed) must have avatar and bio
       let filtered = (fetchedProfiles || []).filter(p => {
         // Not already swiped
         if (swipedIds.has(p.user_id)) return false;
         // Not already connected
         if (connectedIds.has(p.user_id)) return false;
-        // Unclaimed profiles are pre-verified and can appear without bio requirement
-        if (p.is_claimed === false) return true;
-        // Claimed profiles must have bio with minimum 20 characters
+        // ALL profiles must have bio with minimum 20 characters
         if (!p.bio || p.bio.length < 20) return false;
         return true;
       });
@@ -175,10 +174,9 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
             awards_count: awardsCounts.get(p.user_id) || 0
           }))
           .filter(p => {
-            // Unclaimed profiles can appear without portfolio items (they have imported credits instead)
-            if (p.is_claimed === false) return true;
-            // Claimed profiles need at least 1 portfolio item
-            return p.portfolio_count >= 1;
+            // ALL profiles need at least 1 portfolio item OR 1 credit OR 1 award
+            const hasWork = (p.portfolio_count >= 1) || (p.credits_count >= 1) || (p.awards_count >= 1);
+            return hasWork;
           });
         
         console.log('[useSwipeProfiles] After portfolio filter:', filtered.length);

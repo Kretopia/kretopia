@@ -25,81 +25,82 @@ interface DiscoverySource {
   priority: number;
 }
 
-// Discovery sources - DIVERSIFIED across creative industries
-// Target: producers, engineers, DPs, editors, designers, photographers, writers, animators, etc.
+// Discovery sources - BALANCED across creative industries
+// Rotate through categories equally - each run picks from different fields
 const discoverySources: DiscoverySource[] = [
-  // === MUSIC (keep some but reduce weight) ===
-  { type: 'news', query: 'Grammy nominated mixing engineer mastering 2024', priority: 1 },
-  { type: 'news', query: 'session musician drummer guitarist bassist credits', priority: 3 },
-  { type: 'platform', query: 'site:discogs.com mixing engineer mastering credits', priority: 3 },
+  // === FILM & TV (HIGH PRIORITY) ===
+  { type: 'news', query: 'Oscar nominated cinematographer DP 2024 2025', priority: 1 },
+  { type: 'news', query: 'Emmy winning film editor colorist credits', priority: 1 },
+  { type: 'news', query: 'VFX supervisor visual effects artist Oscar', priority: 1 },
+  { type: 'news', query: 'production designer costume designer film credits', priority: 1 },
+  { type: 'news', query: 'sound designer supervising sound editor credits', priority: 1 },
+  { type: 'news', query: 'documentary director cinematographer Sundance', priority: 1 },
+  { type: 'platform', query: 'site:imdb.com line producer unit production manager', priority: 2 },
+  { type: 'news', query: 'stunt coordinator stunt performer SAG credits', priority: 2 },
   
-  // === FILM & TV (expanded) ===
-  { type: 'news', query: 'Oscar nominated cinematographer 2024 2025', priority: 1 },
-  { type: 'news', query: 'Emmy winning editor colorist film credits', priority: 1 },
-  { type: 'news', query: 'VFX supervisor visual effects artist credits', priority: 1 },
-  { type: 'news', query: 'costume designer production designer award', priority: 2 },
-  { type: 'news', query: 'sound designer foley artist film credits', priority: 2 },
-  { type: 'news', query: 'stunt coordinator stunt performer credits', priority: 2 },
-  { type: 'platform', query: 'site:imdb.com line producer assistant director credits', priority: 2 },
-  { type: 'news', query: 'documentary cinematographer filmmaker credits', priority: 2 },
+  // === PHOTOGRAPHY (HIGH PRIORITY) ===
+  { type: 'news', query: 'commercial photographer advertising campaign 2024', priority: 1 },
+  { type: 'news', query: 'fashion photographer Vogue Elle Harper editorial', priority: 1 },
+  { type: 'news', query: 'portrait photographer celebrity magazine cover', priority: 1 },
+  { type: 'news', query: 'product photographer still life advertising', priority: 1 },
+  { type: 'news', query: 'architecture photographer interior design editorial', priority: 2 },
+  { type: 'news', query: 'sports photographer Olympics World Cup Reuters AP', priority: 2 },
   
-  // === PHOTOGRAPHY ===
-  { type: 'news', query: 'commercial photographer campaign credits 2024', priority: 1 },
-  { type: 'news', query: 'fashion photographer editorial Vogue Harper', priority: 2 },
-  { type: 'news', query: 'portrait photographer celebrity interview', priority: 2 },
-  { type: 'news', query: 'sports photographer Olympics World Cup', priority: 3 },
+  // === DESIGN & UI/UX (HIGH PRIORITY) ===
+  { type: 'platform', query: 'site:behance.net senior product designer portfolio', priority: 1 },
+  { type: 'platform', query: 'site:dribbble.com UX designer featured portfolio', priority: 1 },
+  { type: 'news', query: 'brand identity designer agency Pentagram Landor', priority: 1 },
+  { type: 'news', query: 'UI designer Apple Google Meta design team', priority: 1 },
+  { type: 'news', query: 'motion graphics designer title sequence credits', priority: 2 },
+  { type: 'news', query: 'type designer typography foundry font design', priority: 2 },
   
-  // === DESIGN & UI/UX ===
-  { type: 'platform', query: 'site:behance.net senior designer featured portfolio', priority: 1 },
-  { type: 'platform', query: 'site:dribbble.com product designer UX portfolio', priority: 1 },
-  { type: 'news', query: 'UI UX designer startup tech company', priority: 2 },
-  { type: 'news', query: 'brand identity designer agency portfolio', priority: 2 },
-  { type: 'news', query: 'type designer typography foundry', priority: 3 },
+  // === ILLUSTRATION & ANIMATION (HIGH PRIORITY) ===
+  { type: 'platform', query: 'site:artstation.com concept artist film game portfolio', priority: 1 },
+  { type: 'news', query: 'Annie Award animator character designer Pixar Disney', priority: 1 },
+  { type: 'news', query: 'illustrator New Yorker editorial book cover artist', priority: 1 },
+  { type: 'news', query: '3D artist environment designer game studio', priority: 1 },
+  { type: 'news', query: 'storyboard artist animation feature film credits', priority: 2 },
   
-  // === ILLUSTRATION & ANIMATION ===
-  { type: 'platform', query: 'site:artstation.com concept artist portfolio', priority: 1 },
-  { type: 'news', query: 'illustrator children book cover artist', priority: 2 },
-  { type: 'news', query: 'motion graphics designer animator studio', priority: 2 },
-  { type: 'news', query: '3D artist character designer game film', priority: 2 },
-  { type: 'news', query: 'Annie Award animator storyboard artist', priority: 1 },
+  // === GAMING (HIGH PRIORITY) ===
+  { type: 'news', query: 'game designer lead developer AAA studio credits', priority: 1 },
+  { type: 'news', query: 'game audio director composer sound designer', priority: 1 },
+  { type: 'news', query: 'level designer senior environment artist game', priority: 2 },
+  { type: 'platform', query: 'site:artstation.com character artist game studio', priority: 2 },
   
-  // === GAMING ===
-  { type: 'news', query: 'game designer developer credits studio', priority: 1 },
-  { type: 'news', query: 'game audio composer sound designer', priority: 2 },
-  { type: 'news', query: 'level designer environment artist game', priority: 2 },
-  { type: 'platform', query: 'site:artstation.com game environment concept art', priority: 2 },
+  // === WRITING & CONTENT (HIGH PRIORITY) ===
+  { type: 'news', query: 'screenwriter WGA TV writer Emmy nominated', priority: 1 },
+  { type: 'news', query: 'creative director copywriter Cannes Lions award', priority: 1 },
+  { type: 'news', query: 'playwright dramatist theatre writer credits', priority: 2 },
   
-  // === WRITING & CONTENT ===
-  { type: 'news', query: 'screenwriter TV writer Emmy credits', priority: 1 },
-  { type: 'news', query: 'copywriter creative director advertising', priority: 2 },
-  { type: 'news', query: 'content creator writer journalist creative', priority: 3 },
-  
-  // === FASHION ===
-  { type: 'news', query: 'fashion stylist celebrity editorial credits', priority: 2 },
-  { type: 'news', query: 'makeup artist hair stylist fashion week', priority: 2 },
-  { type: 'news', query: 'fashion designer emerging CFDA credits', priority: 2 },
+  // === FASHION & BEAUTY (HIGH PRIORITY) ===
+  { type: 'news', query: 'celebrity stylist fashion week editorial credits', priority: 1 },
+  { type: 'news', query: 'makeup artist film beauty director credits', priority: 1 },
+  { type: 'news', query: 'fashion designer CFDA emerging talent award', priority: 1 },
+  { type: 'news', query: 'hair stylist creative director salon editorial', priority: 2 },
   
   // === ARCHITECTURE & INTERIOR ===
-  { type: 'news', query: 'architect interior designer award project', priority: 2 },
-  { type: 'news', query: 'set designer theatre Broadway production', priority: 2 },
+  { type: 'news', query: 'architect interior designer award winning project', priority: 1 },
+  { type: 'news', query: 'set designer production designer Broadway theatre', priority: 2 },
   
-  // === ADVERTISING ===
-  { type: 'news', query: 'Cannes Lions art director copywriter 2024', priority: 2 },
-  { type: 'news', query: 'advertising creative director agency award', priority: 3 },
+  // === ADVERTISING & CREATIVE DIRECTION ===
+  { type: 'news', query: 'Cannes Lions art director creative team 2024', priority: 1 },
+  { type: 'news', query: 'executive creative director agency award campaign', priority: 2 },
   
-  // === BALI & INDONESIA CREATIVES ===
+  // === MUSIC (REDUCED - lower priority) ===
+  { type: 'news', query: 'Grammy nominated mixing engineer mastering 2024', priority: 3 },
+  { type: 'news', query: 'session musician studio drummer guitarist credits', priority: 3 },
+  { type: 'platform', query: 'site:discogs.com mixing engineer mastering', priority: 3 },
+  
+  // === BALI & INDONESIA CREATIVES (BALANCED) ===
   { type: 'news', query: 'Bali photographer videographer creative professional', priority: 1 },
-  { type: 'news', query: 'Bali content creator influencer creative', priority: 1 },
-  { type: 'news', query: 'Bali graphic designer UI UX web design', priority: 1 },
-  { type: 'news', query: 'Bali music producer DJ electronic artist', priority: 1 },
+  { type: 'news', query: 'Bali graphic designer UI UX web design studio', priority: 1 },
   { type: 'news', query: 'Bali filmmaker cinematographer video production', priority: 1 },
-  { type: 'news', query: 'Ubud Canggu Seminyak creative artist designer', priority: 2 },
-  { type: 'news', query: 'Indonesia digital nomad creative professional Bali', priority: 2 },
+  { type: 'news', query: 'Bali fashion photographer creative director', priority: 1 },
+  { type: 'news', query: 'Ubud Canggu artist designer illustrator creative', priority: 2 },
+  { type: 'news', query: 'Indonesia digital nomad creative Bali designer', priority: 2 },
   { type: 'news', query: 'Bali wedding photographer portrait photographer', priority: 2 },
-  { type: 'news', query: 'Bali fashion stylist creative director', priority: 2 },
-  { type: 'news', query: 'Bali illustrator animator motion designer', priority: 2 },
-  { type: 'news', query: 'Bali sound engineer music studio producer', priority: 2 },
-  { type: 'news', query: 'Indonesian creative agency Bali Jakarta designer', priority: 3 },
+  { type: 'news', query: 'Bali animator motion designer VFX artist', priority: 2 },
+  { type: 'news', query: 'Indonesian creative agency Bali Jakarta studio', priority: 3 },
 ];
 
 // Celebrity names to EXCLUDE - people too famous to use the platform

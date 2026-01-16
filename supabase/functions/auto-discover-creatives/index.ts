@@ -1,6 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+// ========================================
+// 🚫 AUTO-DISCOVERY PAUSED
+// Set to true to resume automatic profile seeding
+// Paused on: 2026-01-16 for manual outreach phase
+// ========================================
+const AUTO_DISCOVERY_ENABLED = false;
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -139,6 +146,23 @@ function isCelebrity(name: string): boolean {
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Check if auto-discovery is paused
+  if (!AUTO_DISCOVERY_ENABLED) {
+    console.log('🚫 Auto-discovery is currently PAUSED');
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Auto-discovery is paused for manual outreach phase',
+        paused: true,
+        resumeInstructions: 'Set AUTO_DISCOVERY_ENABLED = true in the function to resume'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    );
   }
 
   try {

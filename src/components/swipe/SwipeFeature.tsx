@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSwipeProfiles, SwipeProfile } from '@/hooks/useSwipeProfiles';
 import { useSwipeActions } from '@/hooks/useSwipeActions';
 import { SwipeStack } from './SwipeStack';
 import { MatchModal } from './MatchModal';
+import { ProfilePreviewSheet } from './ProfilePreviewSheet';
 import { MatchExplanationDialog } from '@/components/discover/MatchExplanationDialog';
 import { SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from '@/components/circle/SwipeFilters';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +17,6 @@ interface SwipeFeatureProps {
 }
 
 export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfilesCountChange }: SwipeFeatureProps) {
-  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   
   console.log('[SwipeFeature] Render - user:', user?.id, 'authLoading:', authLoading);
@@ -36,6 +35,8 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
 
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
+  const [showProfilePreview, setShowProfilePreview] = useState(false);
+  const [previewProfile, setPreviewProfile] = useState<SwipeProfile | null>(null);
   const [explanationProfile, setExplanationProfile] = useState<SwipeProfile | null>(null);
   const [matchedProfile, setMatchedProfile] = useState<any>(null);
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
@@ -86,9 +87,10 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
   }, [recordSwipe, removeProfile, onMatch]);
 
   const handleViewProfile = useCallback((profile: SwipeProfile) => {
-    // Navigate directly to full profile page
-    navigate(`/profile/${profile.user_id}`);
-  }, [navigate]);
+    // Open profile preview sheet instead of navigating away
+    setPreviewProfile(profile);
+    setShowProfilePreview(true);
+  }, []);
 
   const handleMatchBadgeClick = useCallback((profile: SwipeProfile) => {
     setExplanationProfile(profile);
@@ -106,6 +108,14 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
       handleSwipe(explanationProfile, 'left');
     }
   }, [explanationProfile, handleSwipe]);
+
+  // Handle swipe from profile preview sheet
+  const handlePreviewSwipe = useCallback((direction: 'left' | 'right') => {
+    if (previewProfile) {
+      handleSwipe(previewProfile, direction);
+      setPreviewProfile(null);
+    }
+  }, [previewProfile, handleSwipe]);
 
 
   const handleUndo = useCallback(async () => {
@@ -174,6 +184,13 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
           onPass={handleExplanationPass}
         />
       )}
+
+      <ProfilePreviewSheet
+        profile={previewProfile}
+        open={showProfilePreview}
+        onOpenChange={setShowProfilePreview}
+        onSwipe={handlePreviewSwipe}
+      />
     </div>
   );
 }

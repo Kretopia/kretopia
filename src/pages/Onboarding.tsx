@@ -831,7 +831,10 @@ export default function Onboarding() {
                 <Input
                   id="full_name"
                   value={profile.full_name}
-                  onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setProfile(prev => ({ ...prev, full_name: value }));
+                  }}
                   placeholder="Your name"
                 />
               </div>
@@ -843,7 +846,10 @@ export default function Onboarding() {
                     <Input
                       id="role"
                       value={profile.role}
-                      onChange={(e) => setProfile({ ...profile, role: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setProfile(prev => ({ ...prev, role: value }));
+                      }}
                       placeholder="Enter your role"
                     />
                     <Button 
@@ -852,7 +858,7 @@ export default function Onboarding() {
                       size="sm"
                       onClick={() => {
                         setShowCustomRole(false);
-                        setProfile({ ...profile, role: '' });
+                        setProfile(prev => ({ ...prev, role: '' }));
                       }}
                     >
                       Choose from list
@@ -864,9 +870,9 @@ export default function Onboarding() {
                     onValueChange={(value) => {
                       if (value === 'Other') {
                         setShowCustomRole(true);
-                        setProfile({ ...profile, role: '' });
+                        setProfile(prev => ({ ...prev, role: '' }));
                       } else {
-                        setProfile({ ...profile, role: value });
+                        setProfile(prev => ({ ...prev, role: value }));
                       }
                     }}
                   >
@@ -910,8 +916,9 @@ export default function Onboarding() {
                   id="bio"
                   value={profile.bio}
                   onChange={(e) => {
-                    if (e.target.value.length <= 500) {
-                      setProfile({ ...profile, bio: e.target.value });
+                    const value = e.target.value;
+                    if (value.length <= 500) {
+                      setProfile(prev => ({ ...prev, bio: value }));
                     }
                   }}
                   placeholder="I'm a videographer specializing in music videos and brand content. Looking to collaborate with musicians and creative directors in Bali..."
@@ -931,7 +938,10 @@ export default function Onboarding() {
                     <Input
                       id="location"
                       value={profile.location}
-                      onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setProfile(prev => ({ ...prev, location: value }));
+                      }}
                       placeholder="City, Country"
                     />
                     <Button 
@@ -940,7 +950,7 @@ export default function Onboarding() {
                       size="sm"
                       onClick={() => {
                         setShowCustomLocation(false);
-                        setProfile({ ...profile, location: '' });
+                        setProfile(prev => ({ ...prev, location: '' }));
                       }}
                     >
                       Choose from list
@@ -952,9 +962,9 @@ export default function Onboarding() {
                     onValueChange={(value) => {
                       if (value === 'Other') {
                         setShowCustomLocation(true);
-                        setProfile({ ...profile, location: '' });
+                        setProfile(prev => ({ ...prev, location: '' }));
                       } else {
-                        setProfile({ ...profile, location: value });
+                        setProfile(prev => ({ ...prev, location: value }));
                       }
                     }}
                   >

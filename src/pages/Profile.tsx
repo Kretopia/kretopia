@@ -285,7 +285,7 @@ const ProfileContent = () => {
       <div className="container mx-auto px-2 sm:px-3 md:px-4 max-w-7xl">
         {/* Profile Hero - Always visible */}
         <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-lg border-b mb-3 sm:mb-4">
-          <ProfileHero
+        <ProfileHero
             profile={profile}
             stats={stats}
             isOwnProfile={true}
@@ -304,6 +304,9 @@ const ProfileContent = () => {
               setIsEditOpen(true);
             }}
             onShare={handleShare}
+            onAvatarClick={() => fileInputRef.current?.click()}
+            isUploadingAvatar={isUploadingAvatar}
+            onShowQR={() => setIsQRDialogOpen(true)}
           />
         </div>
 

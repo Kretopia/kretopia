@@ -62,7 +62,7 @@ interface ProfileEditDialogProps {
     company_size: string;
     collab_intent: string;
   };
-  onFormChange: (form: any) => void;
+  onFormChange: (updater: any | ((prev: any) => any)) => void;
   onSave: () => void;
   onQuickFill: () => void;
 }
@@ -177,7 +177,10 @@ export const ProfileEditDialog = ({
             <Input
               id="full_name"
               value={editForm.full_name}
-              onChange={(e) => onFormChange({ ...editForm, full_name: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                onFormChange((prev: typeof editForm) => ({ ...prev, full_name: value }));
+              }}
               placeholder="Your full name"
             />
             {getFieldStatus("Full Name") === 'incomplete' && (
@@ -193,7 +196,10 @@ export const ProfileEditDialog = ({
                 <Input
                   id="role"
                   value={editForm.role}
-                  onChange={(e) => onFormChange({ ...editForm, role: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    onFormChange((prev: typeof editForm) => ({ ...prev, role: value }));
+                  }}
                   placeholder="Enter your role"
                 />
                 <Button 
@@ -202,7 +208,7 @@ export const ProfileEditDialog = ({
                   size="sm"
                   onClick={() => {
                     setShowCustomRole(false);
-                    onFormChange({ ...editForm, role: '' });
+                    onFormChange((prev: typeof editForm) => ({ ...prev, role: '' }));
                   }}
                 >
                   Choose from list instead
@@ -214,9 +220,9 @@ export const ProfileEditDialog = ({
                 onValueChange={(value) => {
                   if (value === 'Other') {
                     setShowCustomRole(true);
-                    onFormChange({ ...editForm, role: '' });
+                    onFormChange((prev: typeof editForm) => ({ ...prev, role: '' }));
                   } else {
-                    onFormChange({ ...editForm, role: value });
+                    onFormChange((prev: typeof editForm) => ({ ...prev, role: value }));
                   }
                 }}
               >
@@ -243,7 +249,10 @@ export const ProfileEditDialog = ({
                 <Input
                   id="location"
                   value={editForm.location}
-                  onChange={(e) => onFormChange({ ...editForm, location: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    onFormChange((prev: typeof editForm) => ({ ...prev, location: value }));
+                  }}
                   placeholder="Enter your location"
                 />
                 <Button 
@@ -252,7 +261,7 @@ export const ProfileEditDialog = ({
                   size="sm"
                   onClick={() => {
                     setShowCustomLocation(false);
-                    onFormChange({ ...editForm, location: '' });
+                    onFormChange((prev: typeof editForm) => ({ ...prev, location: '' }));
                   }}
                 >
                   Choose from list instead
@@ -264,9 +273,9 @@ export const ProfileEditDialog = ({
                 onValueChange={(value) => {
                   if (value === 'Other') {
                     setShowCustomLocation(true);
-                    onFormChange({ ...editForm, location: '' });
+                    onFormChange((prev: typeof editForm) => ({ ...prev, location: '' }));
                   } else {
-                    onFormChange({ ...editForm, location: value });
+                    onFormChange((prev: typeof editForm) => ({ ...prev, location: value }));
                   }
                 }}
               >
@@ -291,7 +300,10 @@ export const ProfileEditDialog = ({
             <Textarea
               id="bio"
               value={editForm.bio}
-              onChange={(e) => onFormChange({ ...editForm, bio: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                onFormChange((prev: typeof editForm) => ({ ...prev, bio: value }));
+              }}
               rows={4}
               placeholder="Tell others about yourself, your experience, and what you're looking for... (minimum 20 characters)"
             />
@@ -305,7 +317,7 @@ export const ProfileEditDialog = ({
           <div className="border-t pt-4">
             <CollabIntentSelector 
               value={editForm.collab_intent}
-              onChange={(value) => onFormChange({ ...editForm, collab_intent: value })}
+              onChange={(value) => onFormChange((prev: typeof editForm) => ({ ...prev, collab_intent: value }))}
             />
           </div>
 

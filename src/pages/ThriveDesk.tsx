@@ -3,12 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageSquare, CheckSquare, FolderOpen, BarChart3, DollarSign, FileText, StickyNote } from "lucide-react";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
 import { SimpleTaskList } from "@/components/project/SimpleTaskList";
 import { SimpleProgressTracker } from "@/components/project/SimpleProgressTracker";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
+import { MilestoneBoard } from "@/components/project/MilestoneBoard";
+import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
+import { ProjectNotes } from "@/components/project/ProjectNotes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ThriveDesk = () => {
@@ -22,7 +25,9 @@ const ThriveDesk = () => {
   const [files, setFiles] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [milestones, setMilestones] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("chat");
+  const [userRole, setUserRole] = useState<'creator' | 'client'>('creator');
 
   useEffect(() => {
     if (projectId && user) {
@@ -71,6 +76,10 @@ const ThriveDesk = () => {
       }
 
       setProject(projectData);
+      
+      // Determine user role (creator vs client)
+      // Project creator is typically the "client" who manages payments
+      setUserRole(projectData.created_by === user.id ? 'client' : 'creator');
 
       // Fetch collaborators
       const { data: collabData } = await supabase
@@ -163,6 +172,15 @@ const ThriveDesk = () => {
 
       setTasks(tasksData || []);
 
+      // Fetch milestones
+      const { data: milestonesData } = await supabase
+        .from('milestones')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      setMilestones(milestonesData || []);
+
       // Subscribe to real-time updates
       const channel = supabase
         .channel(`project:${projectId}`)
@@ -176,6 +194,10 @@ const ThriveDesk = () => {
         )
         .on('postgres_changes',
           { event: '*', schema: 'public', table: 'project_tasks', filter: `project_id=eq.${projectId}` },
+          () => fetchProjectData()
+        )
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'milestones', filter: `project_id=eq.${projectId}` },
           () => fetchProjectData()
         )
         .subscribe();
@@ -222,11 +244,27 @@ const ThriveDesk = () => {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="chat">Chat</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="files">Files</TabsTrigger>
-          <TabsTrigger value="progress">Progress</TabsTrigger>
+        <TabsList className="w-full flex overflow-x-auto">
+          <TabsTrigger value="chat" className="flex-1 gap-1.5">
+            <MessageSquare className="h-4 w-4 hidden sm:block" />
+            Chat
+          </TabsTrigger>
+          <TabsTrigger value="tasks" className="flex-1 gap-1.5">
+            <CheckSquare className="h-4 w-4 hidden sm:block" />
+            Tasks
+          </TabsTrigger>
+          <TabsTrigger value="files" className="flex-1 gap-1.5">
+            <FolderOpen className="h-4 w-4 hidden sm:block" />
+            Files
+          </TabsTrigger>
+          <TabsTrigger value="milestones" className="flex-1 gap-1.5">
+            <DollarSign className="h-4 w-4 hidden sm:block" />
+            Payments
+          </TabsTrigger>
+          <TabsTrigger value="notes" className="flex-1 gap-1.5">
+            <StickyNote className="h-4 w-4 hidden sm:block" />
+            Notes
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat" className="mt-6">
@@ -255,12 +293,20 @@ const ThriveDesk = () => {
           />
         </TabsContent>
 
-        <TabsContent value="progress" className="mt-6">
-          <SimpleProgressTracker
-            completedTasks={completedTasks}
-            totalTasks={tasks.length}
-            projectStatus={project.status}
+        <TabsContent value="milestones" className="mt-6 space-y-4">
+          <MilestoneBoard
+            milestones={milestones}
+            projectId={projectId!}
+            onUpdate={fetchProjectData}
+            userRole={userRole}
           />
+          <div className="flex justify-end">
+            <InvoiceGenerator projectId={projectId!} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="notes" className="mt-6">
+          <ProjectNotes projectId={projectId!} />
         </TabsContent>
       </Tabs>
     </div>

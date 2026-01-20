@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { getMediaThumbnail } from "@/lib/mediaUtils";
@@ -24,7 +25,9 @@ import {
   Linkedin,
   Youtube,
   UserCheck,
-  ArrowRight
+  ArrowRight,
+  Package,
+  Download
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
@@ -96,6 +99,7 @@ const CreatorEPK = () => {
   const [awards, setAwards] = useState<any[]>([]);
   const [credits, setCredits] = useState<Credit[]>([]);
   const [industryStats, setIndustryStats] = useState<IndustryStat[]>([]);
+  const [digitalProducts, setDigitalProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
@@ -127,7 +131,7 @@ const CreatorEPK = () => {
         setProfile(profileData);
 
         // Fetch all data in parallel
-        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes] = await Promise.all([
+        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes] = await Promise.all([
           // Portfolio items
           supabase
             .from('portfolio_items')
@@ -171,6 +175,15 @@ const CreatorEPK = () => {
             .from('industry_stats')
             .select('id, title, value, stat_type, issuer')
             .eq('user_id', userId)
+            .limit(6),
+          
+          // Digital products
+          supabase
+            .from('digital_products')
+            .select('id, title, description, price, currency, product_type, preview_urls, download_count, tags')
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
             .limit(6)
         ]);
 
@@ -178,6 +191,7 @@ const CreatorEPK = () => {
         setPressLinks(pressRes.data || []);
         setAwards(awardsRes.data || []);
         setIndustryStats(statsRes.data || []);
+        setDigitalProducts(productsRes.data || []);
         
         // Combine manual and verified credits
         const manualCredits = (creditsRes.data || []).map((c: any) => ({
@@ -694,6 +708,56 @@ const CreatorEPK = () => {
                 ({profile.total_reviews || 0} reviews)
               </span>
             </div>
+          </div>
+        )}
+
+        {/* Digital Products & Services */}
+        {digitalProducts.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Products & Services
+            </h3>
+            <div className="grid gap-3">
+              {digitalProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3 p-3">
+                    {product.preview_urls?.[0] && (
+                      <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden shrink-0">
+                        <img 
+                          src={product.preview_urls[0]} 
+                          alt={product.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    {!product.preview_urls?.[0] && (
+                      <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <Package className="h-6 w-6 text-primary" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-sm truncate">{product.title}</h4>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{product.description}</p>
+                        </div>
+                        <span className="font-bold text-primary shrink-0">${product.price}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="secondary" className="text-[10px]">{product.product_type}</Badge>
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          <Download className="h-2.5 w-2.5" />
+                          {product.download_count || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            <p className="text-xs text-center text-muted-foreground mt-3">
+              Sign up to purchase products from this creator
+            </p>
           </div>
         )}
 

@@ -1,36 +1,36 @@
-import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, Star } from "lucide-react";
+import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, Star, DollarSign, FileText, Share2 } from "lucide-react";
 
 export const WhyCreatorsChooseSection = () => {
   const features = [
+    {
+      icon: <Share2 className="h-5 w-5" />,
+      title: "One-Link EPK",
+      text: "Portfolio, credits, services — share your profile anywhere"
+    },
     {
       icon: <Shield className="h-5 w-5" />,
       title: "Verified Credentials",
       text: "AI checks IMDB, Spotify, Grammy & more"
     },
     {
-      icon: <Palette className="h-5 w-5" />,
-      title: "Portfolio-First",
-      text: "Judge by actual work, not followers"
-    },
-    {
       icon: <Brain className="h-5 w-5" />,
-      title: "Smart Matching",
-      text: "AI explains why you're compatible"
+      title: "AI Matching",
+      text: "Find collaborators that fit your style"
     },
     {
       icon: <MessageSquare className="h-5 w-5" />,
-      title: "Built-in Workspace",
-      text: "Chat, files, and projects in one place"
+      title: "ThriveDesk",
+      text: "Chat, tasks, files & milestones in one workspace"
     },
     {
-      icon: <Zap className="h-5 w-5" />,
-      title: "Fast Results",
-      text: "Find collaborators in minutes"
+      icon: <DollarSign className="h-5 w-5" />,
+      title: "Escrow Payments",
+      text: "Secure payments for freelance & client work"
     },
     {
-      icon: <Crown className="h-5 w-5" />,
-      title: "Pro When Ready",
-      text: "Scale with unlimited features"
+      icon: <FileText className="h-5 w-5" />,
+      title: "Invoicing",
+      text: "Generate and send professional invoices"
     }
   ];
 

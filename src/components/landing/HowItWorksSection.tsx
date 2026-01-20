@@ -1,4 +1,4 @@
-import { Sparkles, Heart, Briefcase } from "lucide-react";
+import { Sparkles, Heart, Briefcase, Link, Users, DollarSign } from "lucide-react";
 
 export const HowItWorksSection = () => {
   return (
@@ -7,17 +7,17 @@ export const HowItWorksSection = () => {
         <div className="text-center mb-12 sm:mb-16">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
             <Sparkles className="h-4 w-4" />
-            <span>3 Steps to Your Next Collab</span>
+            <span>Your Complete Creative Platform</span>
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            Swipe.{" "}
+            Showcase.{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Match.
+              Connect.
             </span>{" "}
-            Create.
+            Thrive.
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            No more cold DMs or endless networking events. Our AI finds collaborators who actually fit your style and skills.
+            From portfolio to payment — everything creatives need in one platform.
           </p>
         </div>
 
@@ -27,15 +27,15 @@ export const HowItWorksSection = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
             <div className="relative bg-card border border-border/50 rounded-2xl p-6 sm:p-8 hover:border-primary/30 transition-all h-full">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-2xl font-bold text-primary">
-                1
+                <Link className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-bold">Swipe Through Portfolios</h3>
+              <h3 className="mb-2 text-xl font-bold">One Link Profile</h3>
               <p className="text-muted-foreground">
-                Real work, not just bios. See actual videos, photos, and projects before you connect.
+                Your EPK with portfolio, credits, reviews, services & products — share anywhere to attract clients and collaborators.
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm text-primary font-medium">AI-verified skills</span>
+                <span className="text-sm text-primary font-medium">AI-verified credentials</span>
               </div>
             </div>
           </div>
@@ -45,11 +45,11 @@ export const HowItWorksSection = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-accent/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
             <div className="relative bg-card border border-border/50 rounded-2xl p-6 sm:p-8 hover:border-secondary/30 transition-all h-full">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/10 text-2xl font-bold text-secondary">
-                2
+                <Users className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-bold">Match with Reasons</h3>
+              <h3 className="mb-2 text-xl font-bold">Smart Matching</h3>
               <p className="text-muted-foreground mb-3">
-                See why you're compatible: same city, similar style, complementary skills.
+                Swipe through verified portfolios. AI explains why you're compatible based on skills, style & location.
               </p>
               <div className="flex items-center gap-2 text-xs bg-muted/50 rounded-lg px-3 py-2 border border-border/50">
                 <Heart className="h-4 w-4 text-secondary" />
@@ -63,15 +63,15 @@ export const HowItWorksSection = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-primary/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
             <div className="relative bg-card border border-border/50 rounded-2xl p-6 sm:p-8 hover:border-accent/30 transition-all h-full">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-2xl font-bold text-accent">
-                3
+                <Briefcase className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-bold">Collaborate Instantly</h3>
+              <h3 className="mb-2 text-xl font-bold">ThriveDesk Workspace</h3>
               <p className="text-muted-foreground">
-                Message, plan, and manage projects in ThriveDesk — our built-in workspace for creators.
+                Manage collaborations & client work: real-time chat, task boards, file sharing, milestones & escrow payments.
               </p>
               <div className="mt-4 flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-accent" />
-                <span className="text-sm text-accent font-medium">No extra tools needed</span>
+                <DollarSign className="h-4 w-4 text-accent" />
+                <span className="text-sm text-accent font-medium">Secure escrow payments</span>
               </div>
             </div>
           </div>

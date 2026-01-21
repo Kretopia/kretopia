@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, Download, Star, DollarSign, ExternalLink } from "lucide-react";
+import { Plus, Package, Download, ShoppingCart, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { AddDigitalProductDialog } from "./AddDigitalProductDialog";
+import { PurchaseProductDialog } from "@/components/product/PurchaseProductDialog";
 
 interface DigitalProduct {
   id: string;
@@ -20,18 +22,23 @@ interface DigitalProduct {
   download_count: number;
   tags: string[];
   created_at: string;
+  user_id: string;
 }
 
 interface DigitalProductsSectionProps {
   userId: string;
   isOwner: boolean;
+  sellerName?: string;
 }
 
-export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSectionProps) => {
+export const DigitalProductsSection = ({ userId, isOwner, sellerName }: DigitalProductsSectionProps) => {
   const [products, setProducts] = useState<DigitalProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<DigitalProduct | null>(null);
+  const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchProducts();
@@ -60,12 +67,26 @@ export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSecti
     }
   };
 
+  const handleProductClick = (product: DigitalProduct) => {
+    if (isOwner) {
+      // Owner can view/edit product
+      toast({
+        title: product.title,
+        description: `${product.download_count} downloads • $${product.price}`,
+      });
+    } else {
+      // Non-owner can purchase
+      setSelectedProduct(product);
+      setShowPurchaseDialog(true);
+    }
+  };
+
   if (loading) {
     return (
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <Package className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">Digital Products</h3>
+          <h3 className="text-lg font-semibold">Products & Services</h3>
         </div>
         <p className="text-sm text-muted-foreground">Loading products...</p>
       </Card>
@@ -73,7 +94,7 @@ export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSecti
   }
 
   if (!isOwner && products.length === 0) {
-    return null; // Don't show section if user has no products and viewer isn't owner
+    return null;
   }
 
   return (
@@ -82,7 +103,7 @@ export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSecti
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">Digital Products</h3>
+            <h3 className="text-lg font-semibold">Products & Services</h3>
             {products.length > 0 && (
               <Badge variant="secondary">{products.length}</Badge>
             )}
@@ -101,7 +122,7 @@ export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSecti
             <p className="text-sm text-muted-foreground mb-4">
               {isOwner 
                 ? "Start selling your digital creations! Templates, assets, courses, and more."
-                : "No digital products yet"}
+                : "No products available yet"}
             </p>
             {isOwner && (
               <Button onClick={() => setShowAddDialog(true)}>
@@ -113,14 +134,26 @@ export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSecti
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {products.map((product) => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <Card 
+                key={product.id} 
+                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                onClick={() => handleProductClick(product)}
+              >
                 {product.preview_urls?.[0] && (
                   <div className="aspect-video bg-muted relative overflow-hidden">
                     <img 
                       src={product.preview_urls[0]} 
                       alt={product.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
+                    {!isOwner && user && user.id !== product.user_id && (
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Button size="sm" variant="secondary">
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          Buy Now
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -147,9 +180,28 @@ export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSecti
                       </span>
                     </div>
                     
-                    <Button size="sm" variant="outline">
-                      View Details
-                    </Button>
+                    {!isOwner && user && user.id !== product.user_id ? (
+                      <Button size="sm" variant="default">
+                        <ShoppingCart className="h-4 w-4 mr-1" />
+                        Buy
+                      </Button>
+                    ) : product.demo_url ? (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(product.demo_url, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        Demo
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline">
+                        View
+                      </Button>
+                    )}
                   </div>
                   
                   {product.tags && product.tags.length > 0 && (
@@ -172,6 +224,13 @@ export const DigitalProductsSection = ({ userId, isOwner }: DigitalProductsSecti
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
         onSuccess={fetchProducts}
+      />
+
+      <PurchaseProductDialog
+        open={showPurchaseDialog}
+        onOpenChange={setShowPurchaseDialog}
+        product={selectedProduct}
+        sellerName={sellerName}
       />
     </>
   );

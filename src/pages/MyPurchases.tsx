@@ -19,7 +19,6 @@ import {
   ShoppingBag,
   Store,
   TrendingUp,
-  MessageSquare,
   Star,
 } from "lucide-react";
 
@@ -28,9 +27,11 @@ interface Purchase {
   product_id: string;
   amount: number;
   currency: string;
-  payment_status: string;
-  download_urls: string[];
-  purchased_at: string;
+  status: string;
+  download_url: string | null;
+  download_count: number;
+  created_at: string;
+  completed_at: string | null;
   has_reviewed?: boolean;
   product?: {
     id: string;
@@ -44,9 +45,11 @@ interface Sale {
   id: string;
   product_id: string;
   amount: number;
+  seller_amount: number;
+  platform_fee: number;
   currency: string;
-  payment_status: string;
-  purchased_at: string;
+  status: string;
+  created_at: string;
   product?: {
     id: string;
     title: string;
@@ -82,78 +85,102 @@ export default function MyPurchases() {
     try {
       setLoading(true);
       
-      // Fetch purchases
+      // Fetch purchases from product_purchases table
       const { data: purchasesData, error: purchasesError } = await supabase
-        .from('digital_product_purchases')
+        .from('product_purchases')
         .select(`
           *,
           product:digital_products(id, title, product_type, preview_urls)
         `)
         .eq('buyer_id', user?.id)
-        .order('purchased_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      if (purchasesError) throw purchasesError;
-      
-      // Check which products user has reviewed
-      const productIds = purchasesData?.map(p => p.product_id) || [];
-      const { data: reviews } = await supabase
-        .from('product_reviews')
-        .select('product_id')
-        .eq('reviewer_id', user?.id)
-        .in('product_id', productIds);
-      
-      const reviewedProductIds = new Set(reviews?.map(r => r.product_id) || []);
-      
-      const purchasesWithReviewStatus = (purchasesData || []).map(p => ({
-        ...p,
-        has_reviewed: reviewedProductIds.has(p.product_id)
-      }));
-      
-      setPurchases(purchasesWithReviewStatus);
+      if (purchasesError) {
+        console.error('Error fetching purchases:', purchasesError);
+        // If table doesn't exist, just set empty
+        setPurchases([]);
+      } else {
+        // Check which products user has reviewed
+        const productIds = purchasesData?.map(p => p.product_id) || [];
+        const { data: reviews } = await supabase
+          .from('product_reviews')
+          .select('product_id')
+          .eq('reviewer_id', user?.id)
+          .in('product_id', productIds.length > 0 ? productIds : ['00000000-0000-0000-0000-000000000000']);
+        
+        const reviewedProductIds = new Set(reviews?.map(r => r.product_id) || []);
+        
+        const purchasesWithReviewStatus = (purchasesData || []).map(p => ({
+          id: p.id,
+          product_id: p.product_id,
+          amount: p.amount,
+          currency: p.currency || 'usd',
+          status: p.status,
+          download_url: p.download_url,
+          download_count: p.download_count || 0,
+          created_at: p.created_at,
+          completed_at: p.completed_at,
+          has_reviewed: reviewedProductIds.has(p.product_id),
+          product: p.product
+        }));
+        
+        setPurchases(purchasesWithReviewStatus);
+      }
 
       // Fetch sales (as seller)
       const { data: salesData, error: salesError } = await supabase
-        .from('digital_product_purchases')
+        .from('product_purchases')
         .select(`
           *,
           product:digital_products(id, title, product_type)
         `)
         .eq('seller_id', user?.id)
-        .order('purchased_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      if (salesError) throw salesError;
-      
-      // Fetch buyer info separately
-      const salesWithBuyers = await Promise.all((salesData || []).map(async (sale) => {
-        const { data: buyerData } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('user_id', sale.buyer_id)
-          .single();
-        return {
-          ...sale,
-          buyer: buyerData || { full_name: 'Customer' }
-        };
-      }));
-      
-      setSales(salesWithBuyers as Sale[]);
+      if (salesError) {
+        console.error('Error fetching sales:', salesError);
+        setSales([]);
+      } else {
+        // Fetch buyer info separately
+        const salesWithBuyers = await Promise.all((salesData || []).map(async (sale) => {
+          const { data: buyerData } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('user_id', sale.buyer_id)
+            .single();
+          return {
+            id: sale.id,
+            product_id: sale.product_id,
+            amount: sale.amount,
+            seller_amount: sale.seller_amount || sale.amount,
+            platform_fee: sale.platform_fee || 0,
+            currency: sale.currency || 'usd',
+            status: sale.status,
+            created_at: sale.created_at,
+            product: sale.product,
+            buyer: buyerData || { full_name: 'Customer' }
+          };
+        }));
+        
+        setSales(salesWithBuyers);
 
-      // Calculate sales stats
-      const now = new Date();
-      const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      
-      const stats = (salesData || []).reduce((acc, sale) => {
-        if (sale.payment_status === 'completed') {
-          acc.total += sale.amount;
-          acc.count += 1;
-          if (new Date(sale.purchased_at) >= thisMonth) {
-            acc.thisMonth += sale.amount;
+        // Calculate sales stats
+        const now = new Date();
+        const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+        const stats = salesWithBuyers.reduce((acc, sale) => {
+          if (sale.status === 'completed') {
+            acc.total += sale.seller_amount;
+            acc.count += 1;
+            if (new Date(sale.created_at) >= thisMonth) {
+              acc.thisMonth += sale.seller_amount;
+            }
           }
-        }
-        return acc;
-      }, { total: 0, count: 0, thisMonth: 0 });
+          return acc;
+        }, { total: 0, count: 0, thisMonth: 0 });
 
-      setSalesStats(stats);
+        setSalesStats(stats);
+      }
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -184,7 +211,7 @@ export default function MyPurchases() {
   return (
     <>
       <SEO title="My Purchases & Sales - ThriveIN" />
-      <div className="container mx-auto py-8 px-4 max-w-6xl min-h-screen">
+      <div className="container mx-auto py-8 px-4 max-w-6xl min-h-screen pb-24 md:pb-8">
         <h1 className="text-3xl font-bold mb-8">Purchases & Sales</h1>
 
         {/* Sales Stats */}
@@ -277,26 +304,26 @@ export default function MyPurchases() {
                       </div>
                       <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(purchase.purchased_at).toLocaleDateString()}
+                        {new Date(purchase.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex flex-col gap-2">
                       <Badge 
-                        variant={purchase.payment_status === 'completed' ? 'default' : 'secondary'}
+                        variant={purchase.status === 'completed' ? 'default' : 'secondary'}
                       >
-                        {purchase.payment_status}
+                        {purchase.status}
                       </Badge>
-                      {purchase.download_urls?.length > 0 && (
+                      {purchase.download_url && (
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => window.open(purchase.download_urls[0], '_blank')}
+                          onClick={() => window.open(purchase.download_url!, '_blank')}
                         >
                           <Download className="h-4 w-4 mr-1" />
                           Download
                         </Button>
                       )}
-                      {purchase.payment_status === 'completed' && !purchase.has_reviewed && (
+                      {purchase.status === 'completed' && !purchase.has_reviewed && (
                         <Button 
                           size="sm" 
                           variant="secondary"
@@ -347,17 +374,20 @@ export default function MyPurchases() {
                       </p>
                       <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(sale.purchased_at).toLocaleDateString()}
+                        {new Date(sale.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-green-500">
-                        +${sale.amount.toFixed(2)}
+                        +${sale.seller_amount.toFixed(2)}
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        Fee: ${sale.platform_fee.toFixed(2)}
+                      </p>
                       <Badge 
-                        variant={sale.payment_status === 'completed' ? 'default' : 'secondary'}
+                        variant={sale.status === 'completed' ? 'default' : 'secondary'}
                       >
-                        {sale.payment_status}
+                        {sale.status}
                       </Badge>
                     </div>
                   </div>

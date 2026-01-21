@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, ArrowUpRight, ArrowDownRight, ExternalLink } from "lucide-react";
+import { Wallet, ArrowUpRight, ArrowDownRight, ExternalLink, CreditCard } from "lucide-react";
 import { TooltipHint } from "@/components/ui/tooltip-hint";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 export const WalletCard = () => {
   const [wallet, setWallet] = useState<any>(null);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [thrivePayStatus, setThrivePayStatus] = useState<string>('not_connected');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +20,7 @@ export const WalletCard = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Fetch wallet
     const { data: walletData } = await supabase
       .from('wallets')
       .select('*')
@@ -36,6 +38,18 @@ export const WalletCard = () => {
       setWallet(newWallet);
     }
 
+    // Check ThrivePay status
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_account_status')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (profile?.stripe_account_status) {
+      setThrivePayStatus(profile.stripe_account_status);
+    }
+
+    // Fetch transactions
     const { data: transactions } = await supabase
       .from('transactions')
       .select('*')
@@ -48,25 +62,34 @@ export const WalletCard = () => {
 
   return (
     <Card className="cursor-pointer hover:shadow-glow transition-smooth" onClick={() => navigate('/wallet')}>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="flex items-center gap-2 text-base">
           <Wallet className="h-5 w-5" />
           Wallet
-          <TooltipHint content="Credits are used for premium features like undoing swipes. Cash can be used for ThrivePay transactions and collaborations." />
+          <TooltipHint content="Credits are used for premium features. ThrivePay lets you receive payments for your work." />
         </CardTitle>
-        <Button 
-          size="sm" 
-          variant="ghost" 
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate('/wallet');
-          }}
-        >
-          View
-          <ExternalLink className="h-4 w-4 ml-1" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {thrivePayStatus === 'active' ? (
+            <span className="text-xs text-green-500 font-medium flex items-center gap-1">
+              <CreditCard className="h-3 w-3" />
+              Active
+            </span>
+          ) : (
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="h-7 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/thrivepay');
+              }}
+            >
+              Setup ThrivePay
+            </Button>
+          )}
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="space-y-4">
           {/* Balance Display */}
           <div className="grid gap-3 grid-cols-2">

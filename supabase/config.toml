@@ -137,3 +137,9 @@ verify_jwt = true
 
 [functions.update-unclaimed-profiles]
 verify_jwt = false
+
+[functions.purchase-digital-product]
+verify_jwt = true
+
+[functions.complete-product-purchase]
+verify_jwt = false

@@ -535,6 +535,14 @@ const ProfileContent = () => {
               />
             </div>
 
+            {/* Products & Services Section */}
+            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
+              <DigitalProductsSection 
+                userId={profile.user_id}
+                isOwner={true}
+              />
+            </div>
+
             {/* Media Kit section hidden for now - to be improved later */}
         </div>
       </div>

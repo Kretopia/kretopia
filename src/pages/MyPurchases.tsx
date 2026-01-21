@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { useNavigate } from "react-router-dom";
+import { ProductReviewDialog } from "@/components/product/ProductReviewDialog";
 import {
   Download,
   Package,
@@ -18,6 +19,8 @@ import {
   ShoppingBag,
   Store,
   TrendingUp,
+  MessageSquare,
+  Star,
 } from "lucide-react";
 
 interface Purchase {
@@ -28,6 +31,7 @@ interface Purchase {
   payment_status: string;
   download_urls: string[];
   purchased_at: string;
+  has_reviewed?: boolean;
   product?: {
     id: string;
     title: string;
@@ -65,6 +69,8 @@ export default function MyPurchases() {
     count: 0,
     thisMonth: 0,
   });
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -87,7 +93,23 @@ export default function MyPurchases() {
         .order('purchased_at', { ascending: false });
 
       if (purchasesError) throw purchasesError;
-      setPurchases(purchasesData || []);
+      
+      // Check which products user has reviewed
+      const productIds = purchasesData?.map(p => p.product_id) || [];
+      const { data: reviews } = await supabase
+        .from('product_reviews')
+        .select('product_id')
+        .eq('reviewer_id', user?.id)
+        .in('product_id', productIds);
+      
+      const reviewedProductIds = new Set(reviews?.map(r => r.product_id) || []);
+      
+      const purchasesWithReviewStatus = (purchasesData || []).map(p => ({
+        ...p,
+        has_reviewed: reviewedProductIds.has(p.product_id)
+      }));
+      
+      setPurchases(purchasesWithReviewStatus);
 
       // Fetch sales (as seller)
       const { data: salesData, error: salesError } = await supabase
@@ -274,6 +296,24 @@ export default function MyPurchases() {
                           Download
                         </Button>
                       )}
+                      {purchase.payment_status === 'completed' && !purchase.has_reviewed && (
+                        <Button 
+                          size="sm" 
+                          variant="secondary"
+                          onClick={() => {
+                            setSelectedPurchase(purchase);
+                            setReviewDialogOpen(true);
+                          }}
+                        >
+                          <Star className="h-4 w-4 mr-1" />
+                          Review
+                        </Button>
+                      )}
+                      {purchase.has_reviewed && (
+                        <Badge variant="outline" className="text-xs">
+                          ✓ Reviewed
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -326,6 +366,20 @@ export default function MyPurchases() {
             )}
           </TabsContent>
         </Tabs>
+        
+        {selectedPurchase && (
+          <ProductReviewDialog
+            open={reviewDialogOpen}
+            onOpenChange={setReviewDialogOpen}
+            productId={selectedPurchase.product_id}
+            productTitle={selectedPurchase.product?.title || 'Product'}
+            purchaseId={selectedPurchase.id}
+            onSuccess={() => {
+              fetchData();
+              setSelectedPurchase(null);
+            }}
+          />
+        )}
       </div>
     </>
   );

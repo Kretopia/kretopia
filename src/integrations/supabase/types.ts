@@ -889,6 +889,7 @@ export type Database = {
       }
       digital_products: {
         Row: {
+          average_rating: number | null
           category: string | null
           created_at: string | null
           currency: string | null
@@ -902,12 +903,14 @@ export type Database = {
           preview_urls: string[] | null
           price: number
           product_type: string
+          review_count: number | null
           tags: string[] | null
           title: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          average_rating?: number | null
           category?: string | null
           created_at?: string | null
           currency?: string | null
@@ -921,12 +924,14 @@ export type Database = {
           preview_urls?: string[] | null
           price: number
           product_type: string
+          review_count?: number | null
           tags?: string[] | null
           title: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          average_rating?: number | null
           category?: string | null
           created_at?: string | null
           currency?: string | null
@@ -940,6 +945,7 @@ export type Database = {
           preview_urls?: string[] | null
           price?: number
           product_type?: string
+          review_count?: number | null
           tags?: string[] | null
           title?: string
           updated_at?: string | null
@@ -2187,6 +2193,122 @@ export type Database = {
           verification_status?: string | null
         }
         Relationships: []
+      }
+      product_purchases: {
+        Row: {
+          amount: number
+          buyer_id: string
+          completed_at: string | null
+          created_at: string
+          currency: string | null
+          download_count: number | null
+          download_url: string | null
+          id: string
+          platform_fee: number | null
+          product_id: string
+          seller_amount: number
+          seller_id: string
+          status: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          completed_at?: string | null
+          created_at?: string
+          currency?: string | null
+          download_count?: number | null
+          download_url?: string | null
+          id?: string
+          platform_fee?: number | null
+          product_id: string
+          seller_amount: number
+          seller_id: string
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          completed_at?: string | null
+          created_at?: string
+          currency?: string | null
+          download_count?: number | null
+          download_url?: string | null
+          id?: string
+          platform_fee?: number | null
+          product_id?: string
+          seller_amount?: number
+          seller_id?: string
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_purchases_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_reviews: {
+        Row: {
+          created_at: string
+          helpful_count: number | null
+          id: string
+          is_verified_purchase: boolean | null
+          product_id: string
+          purchase_id: string | null
+          rating: number
+          review_text: string | null
+          reviewer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          product_id: string
+          purchase_id?: string | null
+          rating: number
+          review_text?: string | null
+          reviewer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          product_id?: string
+          purchase_id?: string | null
+          rating?: number
+          review_text?: string | null
+          reviewer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "product_purchases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile_claim_requests: {
         Row: {

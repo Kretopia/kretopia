@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, Download, ShoppingCart, ExternalLink } from "lucide-react";
+import { Plus, Package, Download, ShoppingCart, ExternalLink, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { AddDigitalProductDialog } from "./AddDigitalProductDialog";
-import { PurchaseProductDialog } from "@/components/product/PurchaseProductDialog";
+import { ProductDetailDialog } from "@/components/product/ProductDetailDialog";
 
 interface DigitalProduct {
   id: string;
@@ -23,6 +23,8 @@ interface DigitalProduct {
   tags: string[];
   created_at: string;
   user_id: string;
+  average_rating?: number;
+  review_count?: number;
 }
 
 interface DigitalProductsSectionProps {
@@ -36,7 +38,7 @@ export const DigitalProductsSection = ({ userId, isOwner, sellerName }: DigitalP
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<DigitalProduct | null>(null);
-  const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -68,18 +70,22 @@ export const DigitalProductsSection = ({ userId, isOwner, sellerName }: DigitalP
   };
 
   const handleProductClick = (product: DigitalProduct) => {
-    if (isOwner) {
-      // Owner can view/edit product
-      toast({
-        title: product.title,
-        description: `${product.download_count} downloads • $${product.price}`,
-      });
-    } else {
-      // Non-owner can purchase
-      setSelectedProduct(product);
-      setShowPurchaseDialog(true);
-    }
+    setSelectedProduct(product);
+    setShowDetailDialog(true);
   };
+
+  const renderStars = (rating: number) => (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={`h-3 w-3 ${
+            star <= rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+          }`}
+        />
+      ))}
+    </div>
+  );
 
   if (loading) {
     return (
@@ -157,13 +163,23 @@ export const DigitalProductsSection = ({ userId, isOwner, sellerName }: DigitalP
                   </div>
                 )}
                 
-                <div className="p-4">
+                  <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="font-semibold text-sm line-clamp-1">{product.title}</h4>
                     <Badge variant="secondary" className="text-xs">
                       {product.product_type}
                     </Badge>
                   </div>
+                  
+                  {/* Rating display */}
+                  {(product.review_count || 0) > 0 && (
+                    <div className="flex items-center gap-1 mb-2">
+                      {renderStars(Math.round(product.average_rating || 0))}
+                      <span className="text-xs text-muted-foreground">
+                        ({product.review_count})
+                      </span>
+                    </div>
+                  )}
                   
                   <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                     {product.description}
@@ -226,9 +242,9 @@ export const DigitalProductsSection = ({ userId, isOwner, sellerName }: DigitalP
         onSuccess={fetchProducts}
       />
 
-      <PurchaseProductDialog
-        open={showPurchaseDialog}
-        onOpenChange={setShowPurchaseDialog}
+      <ProductDetailDialog
+        open={showDetailDialog}
+        onOpenChange={setShowDetailDialog}
         product={selectedProduct}
         sellerName={sellerName}
       />

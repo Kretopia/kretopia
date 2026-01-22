@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,28 +79,45 @@ export const ProfileEditDialog = ({
 }: ProfileEditDialogProps) => {
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [showCustomLocation, setShowCustomLocation] = useState(false);
+  
+  // Local state for text inputs to prevent lag
+  const [localFullName, setLocalFullName] = useState(editForm.full_name);
+  const [localRole, setLocalRole] = useState(editForm.role);
+  const [localLocation, setLocalLocation] = useState(editForm.location);
+  const [localBio, setLocalBio] = useState(editForm.bio);
 
-  // Calculate completion based on current form state
-  const getCurrentCompletion = (): ProfileCompletionStatus => {
+  // Sync local state when editForm changes from parent (e.g., quick fill)
+  useEffect(() => {
+    setLocalFullName(editForm.full_name);
+    setLocalRole(editForm.role);
+    setLocalLocation(editForm.location);
+    setLocalBio(editForm.bio);
+  }, [editForm.full_name, editForm.role, editForm.location, editForm.bio]);
+
+  // Sync local state to parent on blur
+  const syncToParent = (field: string, value: string) => {
+    onFormChange((prev: typeof editForm) => ({ ...prev, [field]: value }));
+  };
+
+  // Calculate completion based on local state for immediate feedback
+  const completion = useMemo((): ProfileCompletionStatus => {
     const tempProfile = {
       ...profile,
-      full_name: editForm.full_name,
-      role: editForm.role,
-      bio: editForm.bio,
-      location: editForm.location,
+      full_name: localFullName,
+      role: localRole,
+      bio: localBio,
+      location: localLocation,
       avatar_url: editForm.avatar_url,
     };
     return checkProfileCompletion(tempProfile, portfolioCount);
-  };
-
-  const completion = getCurrentCompletion();
+  }, [profile, localFullName, localRole, localBio, localLocation, editForm.avatar_url, portfolioCount]);
 
   const getFieldStatus = (fieldLabel: string) => {
     return completion.completedFields.includes(fieldLabel) ? 'complete' : 'incomplete';
   };
 
-  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === editForm.role);
-  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === editForm.location);
+  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === localRole);
+  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === localLocation);
 
   const FieldWrapper = ({ label, children, fieldLabel }: { label: string; children: React.ReactNode; fieldLabel: string }) => {
     const status = getFieldStatus(fieldLabel);
@@ -176,8 +193,9 @@ export const ProfileEditDialog = ({
           <FieldWrapper label="Full Name" fieldLabel="Full Name">
             <Input
               id="full_name"
-              value={editForm.full_name}
-              onChange={(e) => onFormChange((prev: typeof editForm) => ({ ...prev, full_name: e.target.value }))}
+              value={localFullName}
+              onChange={(e) => setLocalFullName(e.target.value)}
+              onBlur={() => syncToParent('full_name', localFullName)}
               placeholder="Your full name"
               autoComplete="name"
             />
@@ -189,12 +207,13 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Role/Title" fieldLabel="Role/Title">
-            {showCustomRole || (!isRoleInOptions && editForm.role) ? (
+            {showCustomRole || (!isRoleInOptions && localRole) ? (
               <div className="space-y-2">
                 <Input
                   id="role"
-                  value={editForm.role}
-                  onChange={(e) => onFormChange((prev: typeof editForm) => ({ ...prev, role: e.target.value }))}
+                  value={localRole}
+                  onChange={(e) => setLocalRole(e.target.value)}
+                  onBlur={() => syncToParent('role', localRole)}
                   placeholder="Enter your role"
                   autoComplete="off"
                 />
@@ -204,6 +223,7 @@ export const ProfileEditDialog = ({
                   size="sm"
                   onClick={() => {
                     setShowCustomRole(false);
+                    setLocalRole('');
                     onFormChange((prev: typeof editForm) => ({ ...prev, role: '' }));
                   }}
                 >
@@ -212,12 +232,14 @@ export const ProfileEditDialog = ({
               </div>
             ) : (
               <Select 
-                value={editForm.role || undefined}
+                value={localRole || undefined}
                 onValueChange={(value) => {
                   if (value === 'Other') {
                     setShowCustomRole(true);
+                    setLocalRole('');
                     onFormChange((prev: typeof editForm) => ({ ...prev, role: '' }));
                   } else {
+                    setLocalRole(value);
                     onFormChange((prev: typeof editForm) => ({ ...prev, role: value }));
                   }
                 }}
@@ -240,12 +262,13 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Location" fieldLabel="Location">
-            {showCustomLocation || (!isLocationInOptions && editForm.location) ? (
+            {showCustomLocation || (!isLocationInOptions && localLocation) ? (
               <div className="space-y-2">
                 <Input
                   id="location"
-                  value={editForm.location}
-                  onChange={(e) => onFormChange((prev: typeof editForm) => ({ ...prev, location: e.target.value }))}
+                  value={localLocation}
+                  onChange={(e) => setLocalLocation(e.target.value)}
+                  onBlur={() => syncToParent('location', localLocation)}
                   placeholder="Enter your location"
                   autoComplete="off"
                 />
@@ -255,6 +278,7 @@ export const ProfileEditDialog = ({
                   size="sm"
                   onClick={() => {
                     setShowCustomLocation(false);
+                    setLocalLocation('');
                     onFormChange((prev: typeof editForm) => ({ ...prev, location: '' }));
                   }}
                 >
@@ -263,12 +287,14 @@ export const ProfileEditDialog = ({
               </div>
             ) : (
               <Select 
-                value={editForm.location || undefined}
+                value={localLocation || undefined}
                 onValueChange={(value) => {
                   if (value === 'Other') {
                     setShowCustomLocation(true);
+                    setLocalLocation('');
                     onFormChange((prev: typeof editForm) => ({ ...prev, location: '' }));
                   } else {
+                    setLocalLocation(value);
                     onFormChange((prev: typeof editForm) => ({ ...prev, location: value }));
                   }
                 }}
@@ -293,13 +319,14 @@ export const ProfileEditDialog = ({
           <FieldWrapper label="Bio" fieldLabel="Bio (20+ chars)">
             <Textarea
               id="bio"
-              value={editForm.bio}
-              onChange={(e) => onFormChange((prev: typeof editForm) => ({ ...prev, bio: e.target.value }))}
+              value={localBio}
+              onChange={(e) => setLocalBio(e.target.value)}
+              onBlur={() => syncToParent('bio', localBio)}
               rows={4}
               placeholder="Tell others about yourself, your experience, and what you're looking for... (minimum 20 characters)"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {editForm.bio?.length || 0}/20 characters minimum
+              {localBio?.length || 0}/20 characters minimum
               {getFieldStatus("Bio (20+ chars)") === 'incomplete' && " - A detailed bio increases profile views by 60%"}
             </p>
           </FieldWrapper>

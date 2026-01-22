@@ -177,11 +177,9 @@ export const ProfileEditDialog = ({
             <Input
               id="full_name"
               value={editForm.full_name}
-              onChange={(e) => {
-                const value = e.target.value;
-                onFormChange((prev: typeof editForm) => ({ ...prev, full_name: value }));
-              }}
+              onChange={(e) => onFormChange((prev: typeof editForm) => ({ ...prev, full_name: e.target.value }))}
               placeholder="Your full name"
+              autoComplete="name"
             />
             {getFieldStatus("Full Name") === 'incomplete' && (
               <p className="text-xs text-muted-foreground mt-1">
@@ -196,11 +194,9 @@ export const ProfileEditDialog = ({
                 <Input
                   id="role"
                   value={editForm.role}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    onFormChange((prev: typeof editForm) => ({ ...prev, role: value }));
-                  }}
+                  onChange={(e) => onFormChange((prev: typeof editForm) => ({ ...prev, role: e.target.value }))}
                   placeholder="Enter your role"
+                  autoComplete="off"
                 />
                 <Button 
                   type="button" 
@@ -249,11 +245,9 @@ export const ProfileEditDialog = ({
                 <Input
                   id="location"
                   value={editForm.location}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    onFormChange((prev: typeof editForm) => ({ ...prev, location: value }));
-                  }}
+                  onChange={(e) => onFormChange((prev: typeof editForm) => ({ ...prev, location: e.target.value }))}
                   placeholder="Enter your location"
+                  autoComplete="off"
                 />
                 <Button 
                   type="button" 
@@ -296,20 +290,17 @@ export const ProfileEditDialog = ({
             )}
           </FieldWrapper>
 
-          <FieldWrapper label="Bio" fieldLabel="Bio">
+          <FieldWrapper label="Bio" fieldLabel="Bio (20+ chars)">
             <Textarea
               id="bio"
               value={editForm.bio}
-              onChange={(e) => {
-                const value = e.target.value;
-                onFormChange((prev: typeof editForm) => ({ ...prev, bio: value }));
-              }}
+              onChange={(e) => onFormChange((prev: typeof editForm) => ({ ...prev, bio: e.target.value }))}
               rows={4}
               placeholder="Tell others about yourself, your experience, and what you're looking for... (minimum 20 characters)"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {editForm.bio.length}/20 characters minimum
-              {getFieldStatus("Bio") === 'incomplete' && " - A detailed bio increases profile views by 60%"}
+              {editForm.bio?.length || 0}/20 characters minimum
+              {getFieldStatus("Bio (20+ chars)") === 'incomplete' && " - A detailed bio increases profile views by 60%"}
             </p>
           </FieldWrapper>
 

@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -9,79 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Globe, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { checkProfileCompletion, ProfileCompletionStatus } from "@/lib/profileCompletion";
 import { Database } from "@/integrations/supabase/types";
-import { CollabIntentSelector, CollabIntentValue } from "./CollabIntentSelector";
-
-// Uncontrolled input component for smooth typing
-const UncontrolledInput = ({ 
-  defaultValue, 
-  onValueChange, 
-  placeholder,
-  id,
-  className 
-}: { 
-  defaultValue: string; 
-  onValueChange: (value: string) => void;
-  placeholder?: string;
-  id?: string;
-  className?: string;
-}) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  
-  useEffect(() => {
-    if (inputRef.current && inputRef.current.value !== defaultValue) {
-      inputRef.current.value = defaultValue;
-    }
-  }, [defaultValue]);
-
-  return (
-    <input
-      ref={inputRef}
-      id={id}
-      defaultValue={defaultValue}
-      onChange={(e) => onValueChange(e.target.value)}
-      placeholder={placeholder}
-      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${className || ''}`}
-      autoComplete="off"
-    />
-  );
-};
-
-// Uncontrolled textarea component for smooth typing
-const UncontrolledTextarea = ({ 
-  defaultValue, 
-  onValueChange, 
-  placeholder,
-  id,
-  rows,
-  className 
-}: { 
-  defaultValue: string; 
-  onValueChange: (value: string) => void;
-  placeholder?: string;
-  id?: string;
-  rows?: number;
-  className?: string;
-}) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
-  useEffect(() => {
-    if (textareaRef.current && textareaRef.current.value !== defaultValue) {
-      textareaRef.current.value = defaultValue;
-    }
-  }, [defaultValue]);
-
-  return (
-    <textarea
-      ref={textareaRef}
-      id={id}
-      defaultValue={defaultValue}
-      onChange={(e) => onValueChange(e.target.value)}
-      placeholder={placeholder}
-      rows={rows}
-      className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${className || ''}`}
-    />
-  );
-};
+import { CollabIntentSelector } from "./CollabIntentSelector";
 
 // Standardized options - must match filter options in BrowseCreators.tsx
 export const ROLE_OPTIONS = [
@@ -148,51 +77,95 @@ export const ProfileEditDialog = ({
   onSave,
   onQuickFill,
 }: ProfileEditDialogProps) => {
+  // LOCAL state - completely isolated from parent during typing
+  const [localForm, setLocalForm] = useState({
+    full_name: '',
+    role: '',
+    bio: '',
+    location: '',
+    collab_intent: '',
+  });
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [showCustomLocation, setShowCustomLocation] = useState(false);
-  const [bioLength, setBioLength] = useState(editForm.bio?.length || 0);
-  
-  // Debounced completion calculation
-  const [debouncedForm, setDebouncedForm] = useState(editForm);
-  const debounceRef = useRef<NodeJS.Timeout>();
-  
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setDebouncedForm(editForm);
-    }, 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [editForm]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Calculate completion based on debounced form
+  // Initialize local state when dialog opens
+  useEffect(() => {
+    if (open && !isInitialized) {
+      setLocalForm({
+        full_name: editForm.full_name || '',
+        role: editForm.role || '',
+        bio: editForm.bio || '',
+        location: editForm.location || '',
+        collab_intent: editForm.collab_intent || 'seeking_collaborators',
+      });
+      setShowCustomRole(!ROLE_OPTIONS.some(opt => opt.value === editForm.role) && !!editForm.role);
+      setShowCustomLocation(!LOCATION_OPTIONS.some(opt => opt.value === editForm.location) && !!editForm.location);
+      setIsInitialized(true);
+    }
+    if (!open) {
+      setIsInitialized(false);
+    }
+  }, [open, editForm, isInitialized]);
+
+  // Sync from quick fill (external update)
+  useEffect(() => {
+    if (open && isInitialized) {
+      // Only update if parent data changed significantly (quick fill)
+      const parentChanged = 
+        editForm.full_name !== localForm.full_name ||
+        editForm.role !== localForm.role ||
+        editForm.bio !== localForm.bio ||
+        editForm.location !== localForm.location;
+      
+      // Check if it's a quick fill by looking for substantial changes
+      if (parentChanged && editForm.full_name && editForm.full_name !== localForm.full_name) {
+        setLocalForm({
+          full_name: editForm.full_name || '',
+          role: editForm.role || '',
+          bio: editForm.bio || '',
+          location: editForm.location || '',
+          collab_intent: editForm.collab_intent || localForm.collab_intent,
+        });
+      }
+    }
+  }, [editForm.full_name, editForm.role, editForm.bio, editForm.location]);
+
+  // Handle save - sync local state to parent and trigger save
+  const handleSave = () => {
+    onFormChange({
+      ...editForm,
+      full_name: localForm.full_name,
+      role: localForm.role,
+      bio: localForm.bio,
+      location: localForm.location,
+      collab_intent: localForm.collab_intent,
+    });
+    // Small delay to ensure state is synced before save
+    setTimeout(() => {
+      onSave();
+    }, 50);
+  };
+
+  // Calculate completion based on local state
   const completion = useMemo((): ProfileCompletionStatus => {
     const tempProfile = {
       ...profile,
-      full_name: debouncedForm.full_name,
-      role: debouncedForm.role,
-      bio: debouncedForm.bio,
-      location: debouncedForm.location,
-      avatar_url: debouncedForm.avatar_url,
+      full_name: localForm.full_name,
+      role: localForm.role,
+      bio: localForm.bio,
+      location: localForm.location,
+      avatar_url: editForm.avatar_url,
     };
     return checkProfileCompletion(tempProfile, portfolioCount);
-  }, [profile, debouncedForm, portfolioCount]);
+  }, [profile, localForm, editForm.avatar_url, portfolioCount]);
 
   const getFieldStatus = (fieldLabel: string) => {
     return completion.completedFields.includes(fieldLabel) ? 'complete' : 'incomplete';
   };
 
-  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === editForm.role);
-  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === editForm.location);
-
-  // Handlers that update parent immediately but don't cause re-render lag
-  const handleFieldChange = useCallback((field: string, value: string) => {
-    onFormChange((prev: typeof editForm) => ({ ...prev, [field]: value }));
-    if (field === 'bio') {
-      setBioLength(value.length);
-    }
-  }, [onFormChange]);
+  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === localForm.role);
+  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === localForm.location);
 
   const FieldWrapper = ({ label, children, fieldLabel }: { label: string; children: React.ReactNode; fieldLabel: string }) => {
     const status = getFieldStatus(fieldLabel);
@@ -266,11 +239,12 @@ export const ProfileEditDialog = ({
         {/* Form Fields */}
         <div className="space-y-4 py-4">
           <FieldWrapper label="Full Name" fieldLabel="Full Name">
-            <UncontrolledInput
+            <Input
               id="full_name"
-              defaultValue={editForm.full_name}
-              onValueChange={(value) => handleFieldChange('full_name', value)}
+              value={localForm.full_name}
+              onChange={(e) => setLocalForm(prev => ({ ...prev, full_name: e.target.value }))}
               placeholder="Your full name"
+              autoComplete="off"
             />
             {getFieldStatus("Full Name") === 'incomplete' && (
               <p className="text-xs text-muted-foreground mt-1">
@@ -280,13 +254,14 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Role/Title" fieldLabel="Role/Title">
-            {showCustomRole || (!isRoleInOptions && editForm.role) ? (
+            {showCustomRole || (!isRoleInOptions && localForm.role) ? (
               <div className="space-y-2">
-                <UncontrolledInput
+                <Input
                   id="role"
-                  defaultValue={editForm.role}
-                  onValueChange={(value) => handleFieldChange('role', value)}
+                  value={localForm.role}
+                  onChange={(e) => setLocalForm(prev => ({ ...prev, role: e.target.value }))}
                   placeholder="Enter your role"
+                  autoComplete="off"
                 />
                 <Button 
                   type="button" 
@@ -294,7 +269,7 @@ export const ProfileEditDialog = ({
                   size="sm"
                   onClick={() => {
                     setShowCustomRole(false);
-                    onFormChange((prev: typeof editForm) => ({ ...prev, role: '' }));
+                    setLocalForm(prev => ({ ...prev, role: '' }));
                   }}
                 >
                   Choose from list instead
@@ -302,13 +277,13 @@ export const ProfileEditDialog = ({
               </div>
             ) : (
               <Select 
-                value={editForm.role || undefined}
+                value={localForm.role || undefined}
                 onValueChange={(value) => {
                   if (value === 'Other') {
                     setShowCustomRole(true);
-                    onFormChange((prev: typeof editForm) => ({ ...prev, role: '' }));
+                    setLocalForm(prev => ({ ...prev, role: '' }));
                   } else {
-                    onFormChange((prev: typeof editForm) => ({ ...prev, role: value }));
+                    setLocalForm(prev => ({ ...prev, role: value }));
                   }
                 }}
               >
@@ -330,13 +305,14 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Location" fieldLabel="Location">
-            {showCustomLocation || (!isLocationInOptions && editForm.location) ? (
+            {showCustomLocation || (!isLocationInOptions && localForm.location) ? (
               <div className="space-y-2">
-                <UncontrolledInput
+                <Input
                   id="location"
-                  defaultValue={editForm.location}
-                  onValueChange={(value) => handleFieldChange('location', value)}
+                  value={localForm.location}
+                  onChange={(e) => setLocalForm(prev => ({ ...prev, location: e.target.value }))}
                   placeholder="Enter your location"
+                  autoComplete="off"
                 />
                 <Button 
                   type="button" 
@@ -344,7 +320,7 @@ export const ProfileEditDialog = ({
                   size="sm"
                   onClick={() => {
                     setShowCustomLocation(false);
-                    onFormChange((prev: typeof editForm) => ({ ...prev, location: '' }));
+                    setLocalForm(prev => ({ ...prev, location: '' }));
                   }}
                 >
                   Choose from list instead
@@ -352,13 +328,13 @@ export const ProfileEditDialog = ({
               </div>
             ) : (
               <Select 
-                value={editForm.location || undefined}
+                value={localForm.location || undefined}
                 onValueChange={(value) => {
                   if (value === 'Other') {
                     setShowCustomLocation(true);
-                    onFormChange((prev: typeof editForm) => ({ ...prev, location: '' }));
+                    setLocalForm(prev => ({ ...prev, location: '' }));
                   } else {
-                    onFormChange((prev: typeof editForm) => ({ ...prev, location: value }));
+                    setLocalForm(prev => ({ ...prev, location: value }));
                   }
                 }}
               >
@@ -380,15 +356,15 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Bio" fieldLabel="Bio (20+ chars)">
-            <UncontrolledTextarea
+            <Textarea
               id="bio"
-              defaultValue={editForm.bio}
-              onValueChange={(value) => handleFieldChange('bio', value)}
+              value={localForm.bio}
+              onChange={(e) => setLocalForm(prev => ({ ...prev, bio: e.target.value }))}
               rows={4}
               placeholder="Tell others about yourself, your experience, and what you're looking for... (minimum 20 characters)"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {bioLength}/20 characters minimum
+              {localForm.bio?.length || 0}/20 characters minimum
               {getFieldStatus("Bio (20+ chars)") === 'incomplete' && " - A detailed bio increases profile views by 60%"}
             </p>
           </FieldWrapper>
@@ -396,8 +372,8 @@ export const ProfileEditDialog = ({
           {/* Collab Intent Selector */}
           <div className="border-t pt-4">
             <CollabIntentSelector 
-              value={editForm.collab_intent}
-              onChange={(value) => onFormChange((prev: typeof editForm) => ({ ...prev, collab_intent: value }))}
+              value={localForm.collab_intent}
+              onChange={(value) => setLocalForm(prev => ({ ...prev, collab_intent: value }))}
             />
           </div>
 
@@ -423,7 +399,7 @@ export const ProfileEditDialog = ({
             </div>
           )}
 
-          <Button onClick={onSave} className="w-full" size="lg">
+          <Button onClick={handleSave} className="w-full" size="lg">
             <CheckCircle2 className="mr-2 h-4 w-4" />
             Save Changes {completion.percentage === 100 ? '🎉' : ''}
           </Button>

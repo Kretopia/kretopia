@@ -27,7 +27,13 @@ import {
   Mic2,
   Radio,
   Youtube,
-  Library
+  Library,
+  Globe,
+  Wand2,
+  Palette,
+  Camera,
+  Gamepad2,
+  BookOpen
 } from "lucide-react";
 
 interface ConnectedPlatform {
@@ -118,6 +124,12 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
   const [searchTab, setSearchTab] = useState<'search' | 'guest'>('search');
   const [guestAppearances, setGuestAppearances] = useState<SearchResult[]>([]);
   const [searchingGuest, setSearchingGuest] = useState(false);
+  
+  // AI Import from URL state
+  const [urlImportDialogOpen, setUrlImportDialogOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [importingUrl, setImportingUrl] = useState(false);
+  const [urlImportResult, setUrlImportResult] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -554,6 +566,114 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
     }
   };
 
+  const handleImportFromUrl = async () => {
+    if (!importUrl.trim()) {
+      toast({
+        title: "URL Required",
+        description: "Please enter a website or portfolio URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setImportingUrl(true);
+    setUrlImportResult(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-profile-url', {
+        body: { url: importUrl }
+      });
+
+      if (data?.isLinkedInBlock) {
+        toast({
+          title: "LinkedIn Access Restricted",
+          description: "LinkedIn blocks automated imports. Please copy-paste your info manually.",
+          variant: "destructive",
+          duration: 6000,
+        });
+        return;
+      }
+
+      if (error) throw error;
+
+      if (data?.success && data.data) {
+        setUrlImportResult(data.data);
+        toast({
+          title: "Profile Analyzed!",
+          description: `Found: ${[
+            data.data.skills?.length ? `${data.data.skills.length} skills` : '',
+            data.data.credits?.length ? `${data.data.credits.length} credits` : '',
+            data.data.awards?.length ? `${data.data.awards.length} awards` : '',
+          ].filter(Boolean).join(', ') || 'profile data'}`,
+        });
+      } else {
+        throw new Error(data?.error || "Could not extract data from this URL");
+      }
+    } catch (error: any) {
+      console.error("URL import error:", error);
+      toast({
+        title: "Import Failed",
+        description: error.message || "Could not extract data. Try a different URL.",
+        variant: "destructive",
+      });
+    } finally {
+      setImportingUrl(false);
+    }
+  };
+
+  const applyUrlImportData = async () => {
+    if (!urlImportResult) return;
+    
+    setImportingUrl(true);
+    try {
+      // Import credits if found
+      if (urlImportResult.credits?.length > 0) {
+        for (const credit of urlImportResult.credits.slice(0, 20)) {
+          await supabase.from('credits').insert({
+            user_id: user?.id,
+            project_name: credit.title || credit.project_name,
+            role: credit.role || 'Contributor',
+            year: credit.year || null,
+            url: credit.url,
+            verification_status: 'pending',
+          });
+        }
+      }
+
+      // Import awards if found
+      if (urlImportResult.awards?.length > 0) {
+        for (const award of urlImportResult.awards.slice(0, 10)) {
+          await supabase.from('awards').insert({
+            user_id: user?.id,
+            title: award.title || award.name,
+            organization: award.organization || award.issuer || 'Unknown',
+            year: award.year || null,
+            verification_status: 'pending',
+          });
+        }
+      }
+
+      toast({
+        title: "Data Imported!",
+        description: `Added ${urlImportResult.credits?.length || 0} credits and ${urlImportResult.awards?.length || 0} awards`,
+      });
+
+      setUrlImportDialogOpen(false);
+      setImportUrl('');
+      setUrlImportResult(null);
+      onCreditsImported?.();
+    } catch (error: any) {
+      console.error("Apply import error:", error);
+      toast({
+        title: "Import Failed",
+        description: error.message || "Failed to save imported data",
+        variant: "destructive",
+      });
+    } finally {
+      setImportingUrl(false);
+    }
+  };
+
   const isConnected = (platformId: string) => {
     return connectedPlatforms.some(p => p.platform === platformId);
   };
@@ -590,6 +710,162 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* AI-Powered URL Import - Featured */}
+        <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 p-4">
+          <div className="absolute top-0 right-0 opacity-10">
+            <Wand2 className="h-24 w-24 text-primary -mr-6 -mt-6" />
+          </div>
+          <div className="relative">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shrink-0">
+                <Globe className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold">Import from Any URL</span>
+                  <Badge className="bg-primary/20 text-primary text-xs border-0">
+                    <Wand2 className="h-3 w-3 mr-1" />
+                    AI Powered
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Paste any portfolio, website, or profile URL — AI extracts your credits, skills & awards
+                </p>
+                
+                <div className="flex flex-wrap gap-1.5 mt-2 mb-3">
+                  {[
+                    { icon: Palette, label: 'Behance' },
+                    { icon: Camera, label: 'ArtStation' },
+                    { icon: BookOpen, label: 'Goodreads' },
+                    { icon: Gamepad2, label: 'IGDB' },
+                    { icon: Globe, label: 'Personal Sites' },
+                  ].map(({ icon: Icon, label }) => (
+                    <Badge key={label} variant="outline" className="text-xs bg-background/50">
+                      <Icon className="h-3 w-3 mr-1" />
+                      {label}
+                    </Badge>
+                  ))}
+                </div>
+
+                <Dialog open={urlImportDialogOpen} onOpenChange={setUrlImportDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2">
+                      <Wand2 className="h-4 w-4" />
+                      Import with AI
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <Globe className="h-5 w-5 text-primary" />
+                        Import from Any URL
+                      </DialogTitle>
+                      <DialogDescription>
+                        Paste your portfolio, personal website, or any profile URL to extract credits and achievements
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="import-url">Website or Portfolio URL</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="import-url"
+                            placeholder="https://behance.net/yourname or any portfolio URL"
+                            value={importUrl}
+                            onChange={(e) => setImportUrl(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleImportFromUrl()}
+                            disabled={importingUrl}
+                          />
+                          <Button onClick={handleImportFromUrl} disabled={importingUrl || !importUrl.trim()}>
+                            {importingUrl ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Search className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Works with Behance, ArtStation, Dribbble, personal websites, and most portfolio platforms
+                        </p>
+                      </div>
+
+                      {urlImportResult && (
+                        <div className="space-y-3 p-3 bg-muted/50 rounded-lg border">
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="font-medium">Data extracted successfully!</span>
+                          </div>
+                          
+                          {urlImportResult.full_name && (
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">Name:</span> {urlImportResult.full_name}
+                            </div>
+                          )}
+                          
+                          <div className="flex flex-wrap gap-2">
+                            {urlImportResult.skills?.length > 0 && (
+                              <Badge variant="secondary">
+                                {urlImportResult.skills.length} skills
+                              </Badge>
+                            )}
+                            {urlImportResult.credits?.length > 0 && (
+                              <Badge variant="secondary">
+                                {urlImportResult.credits.length} credits
+                              </Badge>
+                            )}
+                            {urlImportResult.awards?.length > 0 && (
+                              <Badge variant="secondary">
+                                {urlImportResult.awards.length} awards
+                              </Badge>
+                            )}
+                            {urlImportResult.portfolio_items?.length > 0 && (
+                              <Badge variant="secondary">
+                                {urlImportResult.portfolio_items.length} portfolio items
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => {
+                        setUrlImportDialogOpen(false);
+                        setImportUrl('');
+                        setUrlImportResult(null);
+                      }}>
+                        Cancel
+                      </Button>
+                      {urlImportResult && (
+                        <Button onClick={applyUrlImportData} disabled={importingUrl}>
+                          {importingUrl ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Importing...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="h-4 w-4 mr-2" />
+                              Add to Profile
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative flex items-center py-2">
+          <div className="flex-grow border-t border-muted-foreground/20" />
+          <span className="px-3 text-xs text-muted-foreground uppercase tracking-wider">Or search by platform</span>
+          <div className="flex-grow border-t border-muted-foreground/20" />
+        </div>
+
         {PLATFORMS.map((platform) => {
           const connected = isConnected(platform.id);
           const connectionData = getConnectionData(platform.id);

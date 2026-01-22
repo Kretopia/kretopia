@@ -149,12 +149,7 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
     
     try {
       if (platform === 'spotify') {
-        // Use Spotify API to search for artists
-        const response = await fetch(
-          `https://open.spotify.com/oembed?url=https://open.spotify.com/search/${encodeURIComponent(searchQuery)}`
-        );
-        
-        // For Spotify, we'll do a different approach - search via our backend
+        // Search Spotify via our backend (uses Spotify API with client credentials)
         const { data, error } = await supabase.functions.invoke('connect-platform', {
           body: {
             action: 'searchArtist',
@@ -174,6 +169,11 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
             url: r.url,
             type: r.type, // 'artist', 'show', or 'episode'
           })));
+        } else {
+          toast({
+            title: "No results found",
+            description: "Try a different search term",
+          });
         }
       } else if (platform === 'imdb') {
         // Check if the query is an IMDB ID (starts with nm followed by numbers)

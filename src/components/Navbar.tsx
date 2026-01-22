@@ -161,6 +161,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       My Dashboard
                     </Button>
                     
+                    {/* AI Agent hidden for beta - uncomment when ready
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
@@ -169,6 +170,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Bot className="h-5 w-5" />
                       AI Agent
                     </Button>
+                    */}
 
                     <Separator className="my-3" />
                     

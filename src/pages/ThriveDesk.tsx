@@ -3,15 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, MessageSquare, CheckSquare, FolderOpen, BarChart3, DollarSign, FileText, StickyNote } from "lucide-react";
+import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles } from "lucide-react";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
 import { SimpleTaskList } from "@/components/project/SimpleTaskList";
-import { SimpleProgressTracker } from "@/components/project/SimpleProgressTracker";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
 import { ProjectNotes } from "@/components/project/ProjectNotes";
+import { AIBriefBuilder } from "@/components/project/AIBriefBuilder";
+import { AIAutomation } from "@/components/project/AIAutomation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ThriveDesk = () => {
@@ -265,6 +266,10 @@ const ThriveDesk = () => {
             <StickyNote className="h-4 w-4 hidden sm:block" />
             Notes
           </TabsTrigger>
+          <TabsTrigger value="ai" className="flex-1 gap-1.5">
+            <Sparkles className="h-4 w-4 hidden sm:block" />
+            AI
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat" className="mt-6">
@@ -307,6 +312,22 @@ const ThriveDesk = () => {
 
         <TabsContent value="notes" className="mt-6">
           <ProjectNotes projectId={projectId!} />
+        </TabsContent>
+
+        <TabsContent value="ai" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <AIBriefBuilder
+              projectId={projectId!}
+              projectTitle={project.title}
+              projectDescription={project.description}
+            />
+            <AIAutomation
+              projectId={projectId!}
+              projectTitle={project.title}
+              projectDescription={project.description}
+              onUpdate={fetchProjectData}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

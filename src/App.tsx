@@ -49,6 +49,7 @@ const PurchaseSuccess = lazy(() => import("./pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("./pages/MyPurchases"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 const Wallet = lazy(() => import("./pages/Wallet"));
+const AIAgent = lazy(() => import("./pages/AIAgent"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -147,6 +148,9 @@ const AppContent = () => {
             <Route path="/purchase-success" element={<ProtectedRoute><PurchaseSuccess /></ProtectedRoute>} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
+            
+            {/* AI Agent */}
+            <Route path="/agent" element={<ProtectedRoute><AIAgent /></ProtectedRoute>} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

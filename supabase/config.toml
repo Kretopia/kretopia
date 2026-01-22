@@ -143,3 +143,9 @@ verify_jwt = true
 
 [functions.complete-product-purchase]
 verify_jwt = false
+
+[functions.execute-agent-action]
+verify_jwt = true
+
+[functions.generate-agent-actions]
+verify_jwt = true

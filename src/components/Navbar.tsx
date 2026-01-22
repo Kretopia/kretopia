@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -159,6 +159,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     >
                       <BarChart3 className="h-5 w-5" />
                       My Dashboard
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/agent")}
+                    >
+                      <Bot className="h-5 w-5" />
+                      AI Agent
                     </Button>
 
                     <Separator className="my-3" />

@@ -14,6 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          description: string | null
+          error_message: string | null
+          executed_at: string | null
+          goal_id: string | null
+          id: string
+          payload: Json
+          result: Json | null
+          risk_level: string
+          scheduled_for: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          goal_id?: string | null
+          id?: string
+          payload?: Json
+          result?: Json | null
+          risk_level?: string
+          scheduled_for?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          goal_id?: string | null
+          id?: string
+          payload?: Json
+          result?: Json | null
+          risk_level?: string
+          scheduled_for?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_actions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "agent_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          deadline: string | null
+          description: string | null
+          goal_type: string
+          id: string
+          priority: string
+          status: string
+          target_value: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          deadline?: string | null
+          description?: string | null
+          goal_type: string
+          id?: string
+          priority?: string
+          status?: string
+          target_value?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          deadline?: string | null
+          description?: string | null
+          goal_type?: string
+          id?: string
+          priority?: string
+          status?: string
+          target_value?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_settings: {
+        Row: {
+          auto_approve_low_risk: boolean
+          created_at: string
+          daily_action_limit: number
+          document_generation: boolean
+          email_automation: boolean
+          focus_areas: Json
+          id: string
+          is_active: boolean
+          mode: string
+          task_automation: boolean
+          timezone: string | null
+          updated_at: string
+          user_id: string
+          working_hours_end: number | null
+          working_hours_start: number | null
+        }
+        Insert: {
+          auto_approve_low_risk?: boolean
+          created_at?: string
+          daily_action_limit?: number
+          document_generation?: boolean
+          email_automation?: boolean
+          focus_areas?: Json
+          id?: string
+          is_active?: boolean
+          mode?: string
+          task_automation?: boolean
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+          working_hours_end?: number | null
+          working_hours_start?: number | null
+        }
+        Update: {
+          auto_approve_low_risk?: boolean
+          created_at?: string
+          daily_action_limit?: number
+          document_generation?: boolean
+          email_automation?: boolean
+          focus_areas?: Json
+          id?: string
+          is_active?: boolean
+          mode?: string
+          task_automation?: boolean
+          timezone?: string | null
+          updated_at?: string
+          user_id?: string
+          working_hours_end?: number | null
+          working_hours_start?: number | null
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string | null

@@ -281,6 +281,45 @@ const AIAgent = () => {
     }
   };
 
+  const [generatingGoalId, setGeneratingGoalId] = useState<string | null>(null);
+
+  const generateActionsForGoal = async (goalId: string) => {
+    setGeneratingGoalId(goalId);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-agent-actions", {
+        body: { goalId }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Actions generated",
+        description: `${data?.actionsCreated || 0} new actions added to queue`
+      });
+      
+      // Refresh actions list
+      const { data: actionsData } = await supabase
+        .from("agent_actions")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      
+      if (actionsData) {
+        setActions(actionsData as AgentAction[]);
+      }
+    } catch (error) {
+      console.error("Error generating actions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate actions",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingGoalId(null);
+    }
+  };
+
   const handleAction = async (actionId: string, approved: boolean) => {
     try {
       const status = approved ? "approved" : "rejected";
@@ -686,13 +725,34 @@ const AIAgent = () => {
                             </div>
                           </div>
                         </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => deleteGoal(goal.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => generateActionsForGoal(goal.id)}
+                            disabled={generatingGoalId === goal.id}
+                            className="gap-1"
+                          >
+                            {generatingGoalId === goal.id ? (
+                              <>
+                                <Sparkles className="h-4 w-4 animate-pulse" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4" />
+                                Generate Actions
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => deleteGoal(goal.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
                       </div>
                       <div className="mt-4">
                         <div className="flex justify-between text-sm mb-1">

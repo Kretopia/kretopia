@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -11,6 +10,78 @@ import { Globe, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { checkProfileCompletion, ProfileCompletionStatus } from "@/lib/profileCompletion";
 import { Database } from "@/integrations/supabase/types";
 import { CollabIntentSelector, CollabIntentValue } from "./CollabIntentSelector";
+
+// Uncontrolled input component for smooth typing
+const UncontrolledInput = ({ 
+  defaultValue, 
+  onValueChange, 
+  placeholder,
+  id,
+  className 
+}: { 
+  defaultValue: string; 
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  id?: string;
+  className?: string;
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    if (inputRef.current && inputRef.current.value !== defaultValue) {
+      inputRef.current.value = defaultValue;
+    }
+  }, [defaultValue]);
+
+  return (
+    <input
+      ref={inputRef}
+      id={id}
+      defaultValue={defaultValue}
+      onChange={(e) => onValueChange(e.target.value)}
+      placeholder={placeholder}
+      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${className || ''}`}
+      autoComplete="off"
+    />
+  );
+};
+
+// Uncontrolled textarea component for smooth typing
+const UncontrolledTextarea = ({ 
+  defaultValue, 
+  onValueChange, 
+  placeholder,
+  id,
+  rows,
+  className 
+}: { 
+  defaultValue: string; 
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  id?: string;
+  rows?: number;
+  className?: string;
+}) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  useEffect(() => {
+    if (textareaRef.current && textareaRef.current.value !== defaultValue) {
+      textareaRef.current.value = defaultValue;
+    }
+  }, [defaultValue]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      id={id}
+      defaultValue={defaultValue}
+      onChange={(e) => onValueChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${className || ''}`}
+    />
+  );
+};
 
 // Standardized options - must match filter options in BrowseCreators.tsx
 export const ROLE_OPTIONS = [
@@ -79,45 +150,49 @@ export const ProfileEditDialog = ({
 }: ProfileEditDialogProps) => {
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [showCustomLocation, setShowCustomLocation] = useState(false);
+  const [bioLength, setBioLength] = useState(editForm.bio?.length || 0);
   
-  // Local state for text inputs to prevent lag
-  const [localFullName, setLocalFullName] = useState(editForm.full_name);
-  const [localRole, setLocalRole] = useState(editForm.role);
-  const [localLocation, setLocalLocation] = useState(editForm.location);
-  const [localBio, setLocalBio] = useState(editForm.bio);
-
-  // Sync local state when editForm changes from parent (e.g., quick fill)
+  // Debounced completion calculation
+  const [debouncedForm, setDebouncedForm] = useState(editForm);
+  const debounceRef = useRef<NodeJS.Timeout>();
+  
   useEffect(() => {
-    setLocalFullName(editForm.full_name);
-    setLocalRole(editForm.role);
-    setLocalLocation(editForm.location);
-    setLocalBio(editForm.bio);
-  }, [editForm.full_name, editForm.role, editForm.location, editForm.bio]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedForm(editForm);
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [editForm]);
 
-  // Sync local state to parent on blur
-  const syncToParent = (field: string, value: string) => {
-    onFormChange((prev: typeof editForm) => ({ ...prev, [field]: value }));
-  };
-
-  // Calculate completion based on local state for immediate feedback
+  // Calculate completion based on debounced form
   const completion = useMemo((): ProfileCompletionStatus => {
     const tempProfile = {
       ...profile,
-      full_name: localFullName,
-      role: localRole,
-      bio: localBio,
-      location: localLocation,
-      avatar_url: editForm.avatar_url,
+      full_name: debouncedForm.full_name,
+      role: debouncedForm.role,
+      bio: debouncedForm.bio,
+      location: debouncedForm.location,
+      avatar_url: debouncedForm.avatar_url,
     };
     return checkProfileCompletion(tempProfile, portfolioCount);
-  }, [profile, localFullName, localRole, localBio, localLocation, editForm.avatar_url, portfolioCount]);
+  }, [profile, debouncedForm, portfolioCount]);
 
   const getFieldStatus = (fieldLabel: string) => {
     return completion.completedFields.includes(fieldLabel) ? 'complete' : 'incomplete';
   };
 
-  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === localRole);
-  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === localLocation);
+  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === editForm.role);
+  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === editForm.location);
+
+  // Handlers that update parent immediately but don't cause re-render lag
+  const handleFieldChange = useCallback((field: string, value: string) => {
+    onFormChange((prev: typeof editForm) => ({ ...prev, [field]: value }));
+    if (field === 'bio') {
+      setBioLength(value.length);
+    }
+  }, [onFormChange]);
 
   const FieldWrapper = ({ label, children, fieldLabel }: { label: string; children: React.ReactNode; fieldLabel: string }) => {
     const status = getFieldStatus(fieldLabel);
@@ -191,13 +266,11 @@ export const ProfileEditDialog = ({
         {/* Form Fields */}
         <div className="space-y-4 py-4">
           <FieldWrapper label="Full Name" fieldLabel="Full Name">
-            <Input
+            <UncontrolledInput
               id="full_name"
-              value={localFullName}
-              onChange={(e) => setLocalFullName(e.target.value)}
-              onBlur={() => syncToParent('full_name', localFullName)}
+              defaultValue={editForm.full_name}
+              onValueChange={(value) => handleFieldChange('full_name', value)}
               placeholder="Your full name"
-              autoComplete="name"
             />
             {getFieldStatus("Full Name") === 'incomplete' && (
               <p className="text-xs text-muted-foreground mt-1">
@@ -207,15 +280,13 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Role/Title" fieldLabel="Role/Title">
-            {showCustomRole || (!isRoleInOptions && localRole) ? (
+            {showCustomRole || (!isRoleInOptions && editForm.role) ? (
               <div className="space-y-2">
-                <Input
+                <UncontrolledInput
                   id="role"
-                  value={localRole}
-                  onChange={(e) => setLocalRole(e.target.value)}
-                  onBlur={() => syncToParent('role', localRole)}
+                  defaultValue={editForm.role}
+                  onValueChange={(value) => handleFieldChange('role', value)}
                   placeholder="Enter your role"
-                  autoComplete="off"
                 />
                 <Button 
                   type="button" 
@@ -223,7 +294,6 @@ export const ProfileEditDialog = ({
                   size="sm"
                   onClick={() => {
                     setShowCustomRole(false);
-                    setLocalRole('');
                     onFormChange((prev: typeof editForm) => ({ ...prev, role: '' }));
                   }}
                 >
@@ -232,14 +302,12 @@ export const ProfileEditDialog = ({
               </div>
             ) : (
               <Select 
-                value={localRole || undefined}
+                value={editForm.role || undefined}
                 onValueChange={(value) => {
                   if (value === 'Other') {
                     setShowCustomRole(true);
-                    setLocalRole('');
                     onFormChange((prev: typeof editForm) => ({ ...prev, role: '' }));
                   } else {
-                    setLocalRole(value);
                     onFormChange((prev: typeof editForm) => ({ ...prev, role: value }));
                   }
                 }}
@@ -262,15 +330,13 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Location" fieldLabel="Location">
-            {showCustomLocation || (!isLocationInOptions && localLocation) ? (
+            {showCustomLocation || (!isLocationInOptions && editForm.location) ? (
               <div className="space-y-2">
-                <Input
+                <UncontrolledInput
                   id="location"
-                  value={localLocation}
-                  onChange={(e) => setLocalLocation(e.target.value)}
-                  onBlur={() => syncToParent('location', localLocation)}
+                  defaultValue={editForm.location}
+                  onValueChange={(value) => handleFieldChange('location', value)}
                   placeholder="Enter your location"
-                  autoComplete="off"
                 />
                 <Button 
                   type="button" 
@@ -278,7 +344,6 @@ export const ProfileEditDialog = ({
                   size="sm"
                   onClick={() => {
                     setShowCustomLocation(false);
-                    setLocalLocation('');
                     onFormChange((prev: typeof editForm) => ({ ...prev, location: '' }));
                   }}
                 >
@@ -287,14 +352,12 @@ export const ProfileEditDialog = ({
               </div>
             ) : (
               <Select 
-                value={localLocation || undefined}
+                value={editForm.location || undefined}
                 onValueChange={(value) => {
                   if (value === 'Other') {
                     setShowCustomLocation(true);
-                    setLocalLocation('');
                     onFormChange((prev: typeof editForm) => ({ ...prev, location: '' }));
                   } else {
-                    setLocalLocation(value);
                     onFormChange((prev: typeof editForm) => ({ ...prev, location: value }));
                   }
                 }}
@@ -317,16 +380,15 @@ export const ProfileEditDialog = ({
           </FieldWrapper>
 
           <FieldWrapper label="Bio" fieldLabel="Bio (20+ chars)">
-            <Textarea
+            <UncontrolledTextarea
               id="bio"
-              value={localBio}
-              onChange={(e) => setLocalBio(e.target.value)}
-              onBlur={() => syncToParent('bio', localBio)}
+              defaultValue={editForm.bio}
+              onValueChange={(value) => handleFieldChange('bio', value)}
               rows={4}
               placeholder="Tell others about yourself, your experience, and what you're looking for... (minimum 20 characters)"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {localBio?.length || 0}/20 characters minimum
+              {bioLength}/20 characters minimum
               {getFieldStatus("Bio (20+ chars)") === 'incomplete' && " - A detailed bio increases profile views by 60%"}
             </p>
           </FieldWrapper>

@@ -2594,11 +2594,15 @@ export type Database = {
           job_title: string | null
           last_active_date: string | null
           last_swipe_reset: string | null
+          latitude: number | null
           level: number | null
           linkedin_connections: number | null
           linkedin_url: string | null
           location: string | null
+          location_updated_at: string | null
+          location_visible: boolean | null
           longest_streak: number | null
+          longitude: number | null
           membership_number: string | null
           og_promotion_expires_at: string | null
           og_promotion_used: boolean | null
@@ -2701,11 +2705,15 @@ export type Database = {
           job_title?: string | null
           last_active_date?: string | null
           last_swipe_reset?: string | null
+          latitude?: number | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          location_updated_at?: string | null
+          location_visible?: boolean | null
           longest_streak?: number | null
+          longitude?: number | null
           membership_number?: string | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
@@ -2808,11 +2816,15 @@ export type Database = {
           job_title?: string | null
           last_active_date?: string | null
           last_swipe_reset?: string | null
+          latitude?: number | null
           level?: number | null
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          location_updated_at?: string | null
+          location_visible?: boolean | null
           longest_streak?: number | null
+          longitude?: number | null
           membership_number?: string | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
@@ -4996,6 +5008,26 @@ export type Database = {
           role: string
         }[]
       }
+      get_nearby_creators: {
+        Args: {
+          limit_count?: number
+          radius_km?: number
+          user_lat: number
+          user_lon: number
+        }
+        Returns: {
+          avatar_url: string
+          bio: string
+          distance_km: number
+          full_name: string
+          latitude: number
+          location: string
+          longitude: number
+          professional_skills: Json
+          role: string
+          user_id: string
+        }[]
+      }
       get_network_stats: {
         Args: { p_user_id: string }
         Returns: {
@@ -5038,6 +5070,10 @@ export type Database = {
       send_opportunity_alerts: {
         Args: { opportunity_id_param: string }
         Returns: undefined
+      }
+      update_my_location: {
+        Args: { lat: number; lon: number }
+        Returns: boolean
       }
       use_invite_code:
         | { Args: { code: string; user_email: string }; Returns: boolean }

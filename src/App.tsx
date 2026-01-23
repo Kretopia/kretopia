@@ -50,6 +50,7 @@ const MyPurchases = lazy(() => import("./pages/MyPurchases"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 const Wallet = lazy(() => import("./pages/Wallet"));
 const AIAgent = lazy(() => import("./pages/AIAgent"));
+const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -151,6 +152,9 @@ const AppContent = () => {
             
             {/* AI Agent */}
             <Route path="/agent" element={<ProtectedRoute><AIAgent /></ProtectedRoute>} />
+            
+            {/* Nearby Creators */}
+            <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

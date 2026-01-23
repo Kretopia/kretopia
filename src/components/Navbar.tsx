@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard, Bot } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard, Bot, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,6 +103,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <div className="hidden lg:flex items-center gap-1">
             {[
               { path: "/circle", icon: Users, label: "Match" },
+              { path: "/nearby", icon: MapPin, label: "Nearby" },
               { path: "/profile", icon: User, label: "Profile" },
               { path: "/desk", icon: Briefcase, label: "Desk" },
               { path: "/messages", icon: MessageCircle, label: "Messages" },

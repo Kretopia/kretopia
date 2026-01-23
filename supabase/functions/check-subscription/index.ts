@@ -148,6 +148,8 @@ serve(async (req) => {
       // If this is an internal/complimentary Pro account, keep Pro tier
       if (profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active') {
         logStep("Complimentary Pro profile detected, skipping downgrade (no active Stripe sub)");
+        // Keep the tier as 'pro' for the response
+        tier = 'pro';
       } else {
         logStep("No active Stripe sub and no complimentary tier, updating to free");
         // Update profile to free tier

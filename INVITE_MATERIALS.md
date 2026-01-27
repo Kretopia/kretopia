@@ -17,7 +17,7 @@ https://thrivein.io/auth?invite=ThriveOGs
 ```
 Hey! Saw your work — you'd be perfect for ThriveIN.
 
-It's basically Tinder for finding creative collaborators. You swipe through verified portfolios, AI tells you why you're compatible, and you can start projects right from the app.
+It's basically Tinder for finding creative collaborators. Swipe through verified portfolios, AI tells you why you're compatible, and discover creators near you or join local creative sessions.
 
 I have an invite if you're interested:
 👉 thrivein.io/auth?invite=ThriveOGs
@@ -73,9 +73,9 @@ Check it out when you have 2 minutes!"
 
 When someone asks "What is it?":
 - **Simple pitch:** "Tinder for creative collaborations — swipe through portfolios, match with people who fit your style"
-- **How it works:** "AI matches you based on your portfolio, skills, and vibe. Swipe right, match, start a project"
-- **Why it's different:** "Verified portfolios + AI match scores. No cold DMs, no Facebook groups"
-- **Time to start:** "2 minutes to upload your work, then start swiping"
+- **Full pitch:** "AI matches you with verified creatives — online or at local sessions near you. Swipe, match, collaborate."
+- **How it works:** "Swipe portfolios, get AI match scores, discover nearby creators, join creative sessions, manage projects with built-in payments"
+- **Why it's different:** "Verified portfolios + AI matching + local discovery. No cold DMs, no Facebook groups"
 
 ---
 

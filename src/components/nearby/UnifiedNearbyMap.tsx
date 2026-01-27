@@ -32,6 +32,7 @@ interface NearbySession {
   max_participants: number;
   creator_name: string;
   creator_avatar?: string;
+  created_by: string;
 }
 
 type MapItemType = 'creator' | 'session';

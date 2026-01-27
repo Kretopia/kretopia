@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Sparkles } from "lucide-react";
 import { NearbyCreatorsMap } from "@/components/nearby/NearbyCreatorsMap";
-import { JamsSection } from "@/components/jams/JamsSection";
+import { SessionsSection } from "@/components/sessions";
 import { analytics } from "@/lib/analytics";
 
 interface NearbyCreator {
@@ -453,10 +453,10 @@ const NearbyCreators = () => {
         </div>
       )}
 
-      {/* Creative Jams Section */}
+      {/* Creative Sessions Section */}
       {userLocation && (
         <div className="mt-8">
-          <JamsSection userLocation={userLocation} />
+          <SessionsSection userLocation={userLocation} />
         </div>
       )}
     </div>

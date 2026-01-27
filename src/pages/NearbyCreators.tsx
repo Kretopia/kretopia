@@ -3,16 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Sparkles } from "lucide-react";
-import { NearbyCreatorsMap } from "@/components/nearby/NearbyCreatorsMap";
-import { SessionsSection } from "@/components/sessions";
+import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Plus, Calendar, Sparkles } from "lucide-react";
+import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
+import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
+import { SessionCard } from "@/components/sessions/SessionCard";
 import { analytics } from "@/lib/analytics";
 
 interface NearbyCreator {
@@ -28,6 +29,26 @@ interface NearbyCreator {
   distance_km: number;
 }
 
+interface NearbySession {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  venue_name?: string;
+  venue_address?: string;
+  start_time: string;
+  latitude: number;
+  longitude: number;
+  distance_km: number;
+  participant_count: number;
+  max_participants: number;
+  creator_name: string;
+  creator_avatar?: string;
+  created_by: string;
+}
+
+type MapItemType = 'creator' | 'session';
+
 const NearbyCreators = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -36,11 +57,13 @@ const NearbyCreators = () => {
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
   const [creators, setCreators] = useState<NearbyCreator[]>([]);
+  const [sessions, setSessions] = useState<NearbySession[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState(25); // km
   const [locationVisible, setLocationVisible] = useState(true);
-  const [selectedCreator, setSelectedCreator] = useState<NearbyCreator | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{ type: MapItemType; id: string } | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [showCreateSession, setShowCreateSession] = useState(false);
 
   // Track page view
   useEffect(() => {
@@ -162,8 +185,8 @@ const NearbyCreators = () => {
     }
   }, [user, toast]);
 
-  // Fetch nearby creators
-  const fetchNearbyCreators = useCallback(async () => {
+  // Fetch nearby creators and sessions
+  const fetchNearbyData = useCallback(async () => {
     if (!userLocation) {
       setLoading(false);
       return;
@@ -172,22 +195,38 @@ const NearbyCreators = () => {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.rpc('get_nearby_creators', {
-        user_lat: userLocation.lat,
-        user_lon: userLocation.lng,
-        radius_km: radius,
-        limit_count: 50,
-      });
+      // Fetch both creators and sessions in parallel
+      const [creatorsResult, sessionsResult] = await Promise.all([
+        supabase.rpc('get_nearby_creators', {
+          user_lat: userLocation.lat,
+          user_lon: userLocation.lng,
+          radius_km: radius,
+          limit_count: 50,
+        }),
+        supabase.rpc('get_nearby_jams', {
+          user_lat: userLocation.lat,
+          user_lon: userLocation.lng,
+          radius_km: radius,
+          limit_count: 20,
+        })
+      ]);
 
-      if (error) throw error;
+      if (creatorsResult.error) throw creatorsResult.error;
+      if (sessionsResult.error) throw sessionsResult.error;
       
-      setCreators(data || []);
-      analytics.featureUsed("nearby_creators_loaded", { count: data?.length || 0, radius });
+      setCreators(creatorsResult.data || []);
+      setSessions((sessionsResult.data || []) as NearbySession[]);
+      
+      analytics.featureUsed("nearby_data_loaded", { 
+        creators: creatorsResult.data?.length || 0, 
+        sessions: sessionsResult.data?.length || 0,
+        radius 
+      });
       
     } catch (error: any) {
-      console.error('Error fetching nearby creators:', error);
+      console.error('Error fetching nearby data:', error);
       toast({
-        title: "Error loading creators",
+        title: "Error loading nearby data",
         description: error.message,
         variant: "destructive",
       });
@@ -199,9 +238,9 @@ const NearbyCreators = () => {
   // Fetch when location or radius changes
   useEffect(() => {
     if (userLocation) {
-      fetchNearbyCreators();
+      fetchNearbyData();
     }
-  }, [userLocation, radius, fetchNearbyCreators]);
+  }, [userLocation, radius, fetchNearbyData]);
 
   // Toggle location visibility
   const toggleVisibility = async () => {
@@ -342,7 +381,7 @@ const NearbyCreators = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={fetchNearbyCreators}
+              onClick={fetchNearbyData}
               disabled={!userLocation || loading}
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -358,7 +397,7 @@ const NearbyCreators = () => {
             <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Enable Location</h3>
             <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-              To discover creators near you, please enable location services. 
+              To discover creators and sessions near you, please enable location services. 
               Your exact location is never shared—only your approximate area.
             </p>
             <Button onClick={detectLocation} disabled={locating} variant="gradient">
@@ -379,11 +418,25 @@ const NearbyCreators = () => {
           {/* Map or List View */}
           <div className={viewMode === 'map' ? 'lg:col-span-2' : 'lg:col-span-3'}>
             {viewMode === 'map' ? (
-              <NearbyCreatorsMap
+              <UnifiedNearbyMap
                 creators={creators}
+                sessions={sessions}
                 userLocation={userLocation}
-                selectedCreator={selectedCreator}
-                onSelectCreator={setSelectedCreator}
+                selectedItem={selectedItem}
+                onSelectCreator={(creator) => {
+                  if (creator) {
+                    setSelectedItem({ type: 'creator', id: creator.user_id });
+                  } else {
+                    setSelectedItem(null);
+                  }
+                }}
+                onSelectSession={(session) => {
+                  if (session) {
+                    setSelectedItem({ type: 'session', id: session.id });
+                  } else {
+                    setSelectedItem(null);
+                  }
+                }}
                 loading={loading}
               />
             ) : (
@@ -392,73 +445,140 @@ const NearbyCreators = () => {
                   <div className="col-span-full flex justify-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
-                ) : creators.length === 0 ? (
+                ) : creators.length === 0 && sessions.length === 0 ? (
                   <Card className="col-span-full py-12">
                     <CardContent className="text-center">
                       <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No creators nearby</h3>
-                      <p className="text-muted-foreground">
-                        Try increasing your search radius or check back later
+                      <h3 className="text-lg font-semibold mb-2">Nothing nearby</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Try increasing your search radius or create a session!
                       </p>
+                      <Button variant="gradient" onClick={() => setShowCreateSession(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Session
+                      </Button>
                     </CardContent>
                   </Card>
                 ) : (
-                  creators.map((creator) => (
-                    <CreatorCard
-                      key={creator.user_id}
-                      creator={creator}
-                      onViewProfile={handleViewProfile}
-                      onMessage={handleMessage}
-                      formatDistance={formatDistance}
-                      getSkills={getSkills}
-                    />
-                  ))
+                  <>
+                    {creators.map((creator) => (
+                      <CreatorCard
+                        key={creator.user_id}
+                        creator={creator}
+                        onViewProfile={handleViewProfile}
+                        onMessage={handleMessage}
+                        formatDistance={formatDistance}
+                        getSkills={getSkills}
+                      />
+                    ))}
+                    {sessions.map((session) => (
+                      <SessionCard
+                        key={session.id}
+                        session={session}
+                        onJoin={fetchNearbyData}
+                      />
+                    ))}
+                  </>
                 )}
               </div>
             )}
           </div>
 
-          {/* Creator List (Map View Sidebar) */}
+          {/* Sidebar (Map View) */}
           {viewMode === 'map' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">{creators.length} Creators Found</h3>
+              {/* Host Session Button */}
+              <Button 
+                className="w-full" 
+                variant="gradient"
+                onClick={() => setShowCreateSession(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Host a Session
+              </Button>
+
+              {/* Creators Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-3 h-3 rounded-full bg-cyan-500" />
+                  <h3 className="font-semibold text-sm">{creators.length} Creators</h3>
+                </div>
+                <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                  {loading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    </div>
+                  ) : creators.length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-4 text-center">
+                      No creators found nearby
+                    </p>
+                  ) : (
+                    creators.slice(0, 10).map((creator) => (
+                      <CreatorListItem
+                        key={creator.user_id}
+                        creator={creator}
+                        isSelected={selectedItem?.type === 'creator' && selectedItem?.id === creator.user_id}
+                        onClick={() => setSelectedItem({ type: 'creator', id: creator.user_id })}
+                        onViewProfile={handleViewProfile}
+                        formatDistance={formatDistance}
+                        getSkills={getSkills}
+                      />
+                    ))
+                  )}
+                </div>
               </div>
-              
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                {loading ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  </div>
-                ) : creators.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    No creators found in this area
-                  </p>
-                ) : (
-                  creators.map((creator) => (
-                    <CreatorListItem
-                      key={creator.user_id}
-                      creator={creator}
-                      isSelected={selectedCreator?.user_id === creator.user_id}
-                      onClick={() => setSelectedCreator(creator)}
-                      onViewProfile={handleViewProfile}
-                      formatDistance={formatDistance}
-                      getSkills={getSkills}
-                    />
-                  ))
-                )}
+
+              {/* Sessions Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-3 h-3 rounded-full bg-amber-500" />
+                  <h3 className="font-semibold text-sm">{sessions.length} Sessions</h3>
+                </div>
+                <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                  {loading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    </div>
+                  ) : sessions.length === 0 ? (
+                    <Card className="p-3">
+                      <p className="text-xs text-muted-foreground text-center mb-2">
+                        No sessions nearby
+                      </p>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="w-full text-xs"
+                        onClick={() => setShowCreateSession(true)}
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Be the first to host
+                      </Button>
+                    </Card>
+                  ) : (
+                    sessions.map((session) => (
+                      <SessionListItem
+                        key={session.id}
+                        session={session}
+                        isSelected={selectedItem?.type === 'session' && selectedItem?.id === session.id}
+                        onClick={() => setSelectedItem({ type: 'session', id: session.id })}
+                        formatDistance={formatDistance}
+                      />
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Creative Sessions Section */}
-      {userLocation && (
-        <div className="mt-8">
-          <SessionsSection userLocation={userLocation} />
-        </div>
-      )}
+      {/* Create Session Dialog */}
+      <CreateSessionDialog
+        open={showCreateSession}
+        onOpenChange={setShowCreateSession}
+        onCreated={fetchNearbyData}
+        defaultLocation={userLocation || undefined}
+      />
     </div>
   );
 };
@@ -587,6 +707,53 @@ const CreatorListItem = ({ creator, isSelected, onClick, onViewProfile, formatDi
           >
             <User className="h-4 w-4" />
           </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Session List Item (Map View Sidebar)
+interface SessionListItemProps {
+  session: NearbySession;
+  isSelected: boolean;
+  onClick: () => void;
+  formatDistance: (km: number) => string;
+}
+
+const SessionListItem = ({ session, isSelected, onClick, formatDistance }: SessionListItemProps) => {
+  const startTime = new Date(session.start_time);
+  const timeStr = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const dateStr = startTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  
+  return (
+    <Card 
+      className={`cursor-pointer transition-all ${isSelected ? 'ring-2 ring-amber-500 shadow-md' : 'hover:shadow-md'}`}
+      onClick={onClick}
+    >
+      <CardContent className="p-3">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Avatar className="h-10 w-10 border-2 border-dashed border-amber-500">
+              <AvatarImage src={session.creator_avatar || undefined} />
+              <AvatarFallback className="bg-amber-500/10 text-amber-600 text-sm">
+                🎯
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center">
+              {session.participant_count}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-sm truncate">{session.title}</h4>
+            <p className="text-xs text-muted-foreground truncate">{session.category}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-amber-600 flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {dateStr} {timeStr}
+              </span>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

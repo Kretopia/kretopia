@@ -22,12 +22,30 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const { userId, userProfile, profile } = await req.json();
-    const actualProfile = userProfile || profile;
+    // Safely parse request body - handle empty or invalid JSON
+    let userId: string | undefined;
+    let actualProfile: any;
+    
+    try {
+      const contentType = req.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
+        const text = await req.text();
+        if (text && text.trim()) {
+          const body = JSON.parse(text);
+          userId = body.userId;
+          actualProfile = body.userProfile || body.profile;
+        }
+      }
+    } catch (parseError) {
+      console.warn("Could not parse request body:", parseError);
+    }
 
     if (!userId) {
       console.error("Missing userId in request");
-      throw new Error("User ID is required");
+      return new Response(
+        JSON.stringify({ error: "User ID is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
     
     console.log("Processing feed request for user:", userId);

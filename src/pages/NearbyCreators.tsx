@@ -14,6 +14,7 @@ import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCirc
 import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionCard } from "@/components/sessions/SessionCard";
+import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
 import { analytics } from "@/lib/analytics";
 
 interface NearbyCreator {
@@ -64,6 +65,7 @@ const NearbyCreators = () => {
   const [selectedItem, setSelectedItem] = useState<{ type: MapItemType; id: string } | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [showCreateSession, setShowCreateSession] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<NearbySession | null>(null);
 
   // Track page view
   useEffect(() => {
@@ -433,6 +435,7 @@ const NearbyCreators = () => {
                 onSelectSession={(session) => {
                   if (session) {
                     setSelectedItem({ type: 'session', id: session.id });
+                    setSelectedSession(session);
                   } else {
                     setSelectedItem(null);
                   }
@@ -476,6 +479,7 @@ const NearbyCreators = () => {
                         key={session.id}
                         session={session}
                         onJoin={fetchNearbyData}
+                        onClick={() => setSelectedSession(session)}
                       />
                     ))}
                   </>
@@ -560,7 +564,10 @@ const NearbyCreators = () => {
                         key={session.id}
                         session={session}
                         isSelected={selectedItem?.type === 'session' && selectedItem?.id === session.id}
-                        onClick={() => setSelectedItem({ type: 'session', id: session.id })}
+                        onClick={() => {
+                          setSelectedItem({ type: 'session', id: session.id });
+                          setSelectedSession(session);
+                        }}
                         formatDistance={formatDistance}
                       />
                     ))
@@ -578,6 +585,16 @@ const NearbyCreators = () => {
         onOpenChange={setShowCreateSession}
         onCreated={fetchNearbyData}
         defaultLocation={userLocation || undefined}
+      />
+
+      {/* Session Detail Dialog */}
+      <SessionDetailDialog
+        session={selectedSession}
+        open={!!selectedSession}
+        onOpenChange={(open) => {
+          if (!open) setSelectedSession(null);
+        }}
+        onRefresh={fetchNearbyData}
       />
     </div>
   );

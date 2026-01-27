@@ -14,30 +14,31 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
-interface CreateJamDialogProps {
+interface CreateSessionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: () => void;
   defaultLocation?: { lat: number; lng: number };
 }
 
-const JAM_CATEGORIES = [
+const SESSION_CATEGORIES = [
   { value: 'music', label: '🎵 Music Session' },
   { value: 'film', label: '🎬 Film Shoot' },
   { value: 'photo', label: '📸 Photo Session' },
   { value: 'art', label: '🎨 Art Collab' },
   { value: 'podcast', label: '🎙️ Podcast Recording' },
+  { value: 'content', label: '📱 Content Creation' },
   { value: 'workshop', label: '📚 Workshop' },
   { value: 'networking', label: '🤝 Networking' },
   { value: 'general', label: '✨ General Creative' },
 ];
 
-export const CreateJamDialog = ({ 
+export const CreateSessionDialog = ({ 
   open, 
   onOpenChange, 
   onCreated,
   defaultLocation 
-}: CreateJamDialogProps) => {
+}: CreateSessionDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -84,7 +85,7 @@ export const CreateJamDialog = ({
       if (error) throw error;
 
       toast({
-        title: "Jam created! 🎉",
+        title: "Session created! 🎉",
         description: "Others can now find and join your creative session",
       });
 
@@ -106,7 +107,7 @@ export const CreateJamDialog = ({
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to create jam",
+        description: error.message || "Failed to create session",
         variant: "destructive",
       });
     } finally {
@@ -151,7 +152,7 @@ export const CreateJamDialog = ({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            ✨ Create a Jam
+            ✨ Create a Session
           </DialogTitle>
           <DialogDescription>
             Host a creative session and invite other creators to collaborate
@@ -163,7 +164,7 @@ export const CreateJamDialog = ({
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"
-              placeholder="e.g., Sunset Photo Walk"
+              placeholder="e.g., Sunset Photo Walk, Music Jam"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               required
@@ -180,7 +181,7 @@ export const CreateJamDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {JAM_CATEGORIES.map(cat => (
+                {SESSION_CATEGORIES.map(cat => (
                   <SelectItem key={cat.value} value={cat.value}>
                     {cat.label}
                   </SelectItem>
@@ -314,7 +315,7 @@ export const CreateJamDialog = ({
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Create Jam
+              Create Session
             </Button>
           </div>
         </form>

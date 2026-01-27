@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { LaunchingInBaliSection } from "@/components/landing/LaunchingInBaliSection";
+import { SEO } from "@/components/SEO";
 
 const Landing = () => {
   useEffect(() => {
@@ -25,6 +26,11 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen">
+      <SEO 
+        title="ThriveIN - Swipe to Find Your Next Creative Collaborator"
+        description="Stop scrolling Facebook groups. AI-powered matching for verified creatives — videographers, photographers, musicians, designers. Find your next collab in minutes."
+        url="https://thrivein.io"
+      />
       <HeroSection />
       <HowItWorksSection />
       <WhyCreatorsChooseSection />

@@ -45,7 +45,7 @@ export const WhyCreatorsChooseSection = () => {
             </span>
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Built by creators, for creators who are done with networking BS.
+            No more Facebook groups. No more cold DMs. Just verified portfolios and smart matching.
           </p>
         </div>
 

@@ -26,33 +26,35 @@ export const HeroSection = () => {
           
           {/* Pain-first headline */}
           <h1 className="mb-4 sm:mb-6 md:mb-8 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight sm:leading-[1.1] tracking-tight px-4">
-            Your Creative{" "}
+            Stop Scrolling for{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Portfolio. Network. Workspace.
+              Collaborators.
             </span>
+            <br className="hidden sm:block" />
+            <span className="text-foreground/90"> Start Swiping.</span>
           </h1>
           
           <p className="mx-auto mb-2 sm:mb-3 max-w-3xl text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold leading-tight text-foreground px-6 sm:px-4">
-            One link. Everything you need to showcase, connect & work.
+            Tinder for creative collaborations.
           </p>
           
           <p className="mx-auto mb-6 sm:mb-8 md:mb-10 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
-            Verified portfolios, AI-powered matching, and ThriveDesk — your complete workspace to manage collaborations and client projects.
+            AI matches you with verified videographers, photographers, musicians & designers based on your portfolio and style.
           </p>
           
           {/* Value props */}
           <div className="mx-auto mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground px-4">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              Shareable EPK Profile
+              Swipe Verified Portfolios
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-secondary" />
-              AI Creator Matching
+              AI Match Scores
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-              ThriveDesk Workspace
+              Start Projects Instantly
             </span>
           </div>
           

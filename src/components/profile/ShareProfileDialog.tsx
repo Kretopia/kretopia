@@ -37,15 +37,15 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
 
   const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
   
-  const shareText = `Check out my creative portfolio on ThriveIN! 🎨✨
+  const shareText = `Looking for creative collaborators? Check out my profile on ThriveIN 🎬✨
 
 ${profile.full_name} | ${profile.role}
 ${profile.bio ? profile.bio.slice(0, 100) + (profile.bio.length > 100 ? '...' : '') : ''}
 
-View my work, collaborations, and achievements:
+Swipe through verified portfolios & find your next collab:
 ${profileUrl}
 
-#CreativePortfolio #ThriveIN`;
+#ThriveIN #CreativeCollabs`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {

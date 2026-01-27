@@ -74,23 +74,44 @@ const NearbyCreators = () => {
     setLocating(true);
     
     try {
+      // Check if geolocation is available
+      if (!navigator.geolocation) {
+        throw new Error("Geolocation is not supported by this browser");
+      }
+
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
-          timeout: 10000,
+          timeout: 15000,
           maximumAge: 300000, // 5 minutes cache
         });
       });
 
       const { latitude, longitude } = position.coords;
+      console.log('[NearbyCreators] Location detected:', { latitude, longitude });
       setUserLocation({ lat: latitude, lng: longitude });
 
       // Save to profile
       if (user) {
-        await supabase.rpc('update_my_location', {
+        console.log('[NearbyCreators] Saving location for user:', user.id);
+        const { data, error: rpcError } = await supabase.rpc('update_my_location', {
           lat: latitude,
           lon: longitude,
         });
+        
+        if (rpcError) {
+          console.error('[NearbyCreators] RPC error:', rpcError);
+          toast({
+            title: "Failed to save location",
+            description: rpcError.message || "Could not save your location to your profile",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        console.log('[NearbyCreators] Location saved successfully:', data);
+      } else {
+        console.warn('[NearbyCreators] No user logged in, location not saved to profile');
       }
 
       toast({
@@ -101,10 +122,24 @@ const NearbyCreators = () => {
       analytics.featureUsed("location_detected", { latitude, longitude });
       
     } catch (error: any) {
-      console.error('Geolocation error:', error);
+      console.error('[NearbyCreators] Geolocation error:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Please enable location services to find nearby creators";
+      
+      if (error.code === 1) {
+        errorMessage = "Location permission denied. Please allow location access in your browser settings.";
+      } else if (error.code === 2) {
+        errorMessage = "Location unavailable. Please check your device's location settings.";
+      } else if (error.code === 3) {
+        errorMessage = "Location request timed out. Please try again.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Location access denied",
-        description: "Please enable location services to find nearby creators",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

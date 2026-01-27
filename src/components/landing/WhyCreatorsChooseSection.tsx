@@ -3,19 +3,24 @@ import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, Sta
 export const WhyCreatorsChooseSection = () => {
   const features = [
     {
-      icon: <Share2 className="h-5 w-5" />,
-      title: "One-Link EPK",
-      text: "Portfolio, credits, services — share your profile anywhere"
+      icon: <Brain className="h-5 w-5" />,
+      title: "AI Matching",
+      text: "Swipe through portfolios, get matched by style & skills"
+    },
+    {
+      icon: <Palette className="h-5 w-5" />,
+      title: "Nearby Creators",
+      text: "Discover verified creatives in your area on a map"
+    },
+    {
+      icon: <Zap className="h-5 w-5" />,
+      title: "Creative Sessions",
+      text: "Join local meetups, co-working & creative jams"
     },
     {
       icon: <Shield className="h-5 w-5" />,
       title: "Verified Credentials",
       text: "AI checks IMDB, Spotify, Grammy & more"
-    },
-    {
-      icon: <Brain className="h-5 w-5" />,
-      title: "AI Matching",
-      text: "Find collaborators that fit your style"
     },
     {
       icon: <MessageSquare className="h-5 w-5" />,
@@ -26,11 +31,6 @@ export const WhyCreatorsChooseSection = () => {
       icon: <DollarSign className="h-5 w-5" />,
       title: "Escrow Payments",
       text: "Secure payments for freelance & client work"
-    },
-    {
-      icon: <FileText className="h-5 w-5" />,
-      title: "Invoicing",
-      text: "Generate and send professional invoices"
     }
   ];
 

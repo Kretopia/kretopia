@@ -21,7 +21,7 @@ export const LaunchingInBaliSection = () => {
             
             <p className="mb-6 text-base sm:text-lg opacity-90 max-w-2xl mx-auto">
               130+ verified creatives already ditched the Facebook groups. 
-              Swipe through portfolios and get matched with people who fit your style.
+              Swipe through portfolios, discover creators nearby, and join local creative sessions.
             </p>
             
             {/* Stats row */}

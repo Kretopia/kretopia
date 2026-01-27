@@ -37,12 +37,12 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
 
   const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
   
-  const shareText = `Looking for creative collaborators? Check out my profile on ThriveIN 🎬✨
+  const shareText = `Find your next creative collaborator on ThriveIN 🎬✨
 
 ${profile.full_name} | ${profile.role}
 ${profile.bio ? profile.bio.slice(0, 100) + (profile.bio.length > 100 ? '...' : '') : ''}
 
-Swipe through verified portfolios & find your next collab:
+Swipe verified portfolios or discover creators near you:
 ${profileUrl}
 
 #ThriveIN #CreativeCollabs`;

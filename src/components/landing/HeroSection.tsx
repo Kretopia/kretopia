@@ -39,7 +39,7 @@ export const HeroSection = () => {
           </p>
           
           <p className="mx-auto mb-6 sm:mb-8 md:mb-10 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
-            AI matches you with verified videographers, photographers, musicians & designers based on your portfolio and style.
+            AI matches you with verified videographers, photographers, musicians & designers — online or at creative sessions near you.
           </p>
           
           {/* Value props */}

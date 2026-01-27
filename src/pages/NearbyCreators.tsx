@@ -79,13 +79,27 @@ const NearbyCreators = () => {
         throw new Error("Geolocation is not supported by this browser");
       }
 
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 300000, // 5 minutes cache
+      // Try with high accuracy first, fallback to low accuracy if it times out
+      const getPosition = (highAccuracy: boolean, timeout: number): Promise<GeolocationPosition> => {
+        return new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: highAccuracy,
+            timeout: timeout,
+            maximumAge: 300000, // 5 minutes cache
+          });
         });
-      });
+      };
+
+      let position: GeolocationPosition;
+      try {
+        // First attempt: high accuracy with 30 second timeout (mobile GPS can be slow)
+        console.log('[NearbyCreators] Attempting high accuracy location...');
+        position = await getPosition(true, 30000);
+      } catch (firstError: any) {
+        console.log('[NearbyCreators] High accuracy failed, trying low accuracy...', firstError);
+        // Fallback: low accuracy with 20 second timeout
+        position = await getPosition(false, 20000);
+      }
 
       const { latitude, longitude } = position.coords;
       console.log('[NearbyCreators] Location detected:', { latitude, longitude });

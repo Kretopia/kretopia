@@ -5208,7 +5208,6 @@ export type Database = {
           full_name: string
           latitude: number
           location: string
-          location_precision: Database["public"]["Enums"]["location_precision"]
           longitude: number
           professional_skills: Json
           role: string

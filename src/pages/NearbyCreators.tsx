@@ -15,6 +15,7 @@ import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionCard } from "@/components/sessions/SessionCard";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
+import { LocationPrivacySelect, LocationPrecision } from "@/components/nearby/LocationPrivacySelect";
 import { analytics } from "@/lib/analytics";
 
 interface NearbyCreator {
@@ -28,6 +29,7 @@ interface NearbyCreator {
   latitude: number;
   longitude: number;
   distance_km: number;
+  location_precision?: 'exact' | 'approximate' | 'area_only';
 }
 
 interface NearbySession {
@@ -62,6 +64,7 @@ const NearbyCreators = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState(25); // km
   const [locationVisible, setLocationVisible] = useState(true);
+  const [locationPrecision, setLocationPrecision] = useState<LocationPrecision>('approximate');
   const [selectedItem, setSelectedItem] = useState<{ type: MapItemType; id: string } | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [showCreateSession, setShowCreateSession] = useState(false);
@@ -80,12 +83,13 @@ const NearbyCreators = () => {
       
       const { data } = await supabase
         .from('profiles')
-        .select('location_visible, latitude, longitude')
+        .select('location_visible, location_precision, latitude, longitude')
         .eq('user_id', user.id)
         .single();
       
       if (data) {
         setLocationVisible(data.location_visible ?? true);
+        setLocationPrecision((data.location_precision as LocationPrecision) ?? 'approximate');
         if (data.latitude && data.longitude) {
           setUserLocation({ lat: data.latitude, lng: data.longitude });
         }
@@ -266,6 +270,31 @@ const NearbyCreators = () => {
     analytics.featureUsed("location_visibility_toggled", { visible: newValue });
   };
 
+  // Update location precision
+  const handlePrecisionChange = async (newPrecision: LocationPrecision) => {
+    if (!user) return;
+    
+    setLocationPrecision(newPrecision);
+    
+    await supabase
+      .from('profiles')
+      .update({ location_precision: newPrecision })
+      .eq('user_id', user.id);
+    
+    const precisionLabels = {
+      exact: 'Exact location',
+      approximate: 'Approximate area (~1.5km)',
+      area_only: 'General area (~5km)',
+    };
+    
+    toast({
+      title: "Privacy updated",
+      description: `Others will see: ${precisionLabels[newPrecision]}`,
+    });
+    
+    analytics.featureUsed("location_precision_changed", { precision: newPrecision });
+  };
+
   const handleViewProfile = (userId: string) => {
     navigate(`/profile/${userId}`);
   };
@@ -341,9 +370,9 @@ const NearbyCreators = () => {
       {/* Controls */}
       <Card>
         <CardContent className="py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
             {/* Radius Slider */}
-            <div className="flex-1 w-full sm:w-auto">
+            <div className="flex-1 w-full lg:w-auto">
               <Label className="text-sm font-medium mb-2 block">
                 Search Radius: {radius}km
               </Label>
@@ -379,12 +408,21 @@ const NearbyCreators = () => {
               </Label>
             </div>
 
+            {/* Location Privacy Selector - Only show when visible */}
+            {locationVisible && (
+              <LocationPrivacySelect
+                value={locationPrecision}
+                onChange={handlePrecisionChange}
+              />
+            )}
+
             {/* Refresh */}
             <Button
               variant="ghost"
               size="icon"
               onClick={fetchNearbyData}
               disabled={!userLocation || loading}
+              className="shrink-0"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
@@ -400,7 +438,7 @@ const NearbyCreators = () => {
             <h3 className="text-lg font-semibold mb-2">Enable Location</h3>
             <p className="text-muted-foreground mb-4 max-w-md mx-auto">
               To discover creators and sessions near you, please enable location services. 
-              Your exact location is never shared—only your approximate area.
+              Your location is protected by default—others only see an approximate area, not your exact position.
             </p>
             <Button onClick={detectLocation} disabled={locating} variant="gradient">
               {locating ? (

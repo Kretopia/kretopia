@@ -7,17 +7,17 @@ export const HowItWorksSection = () => {
         <div className="text-center mb-12 sm:mb-16">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
             <Sparkles className="h-4 w-4" />
-            <span>Your Complete Creative Platform</span>
+            <span>How It Works</span>
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            Showcase.{" "}
+            Swipe.{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Connect.
+              Match.
             </span>{" "}
-            Thrive.
+            Create.
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            From portfolio to payment — everything creatives need in one platform.
+            Find collaborators in minutes, not months. No more cold DMs or endless scrolling.
           </p>
         </div>
 

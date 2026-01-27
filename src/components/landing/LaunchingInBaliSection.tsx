@@ -20,8 +20,8 @@ export const LaunchingInBaliSection = () => {
             </h2>
             
             <p className="mb-6 text-base sm:text-lg opacity-90 max-w-2xl mx-auto">
-              Join 130+ verified creators who've already ditched Facebook groups and endless networking. 
-              Get matched with the right people, today.
+              130+ verified creatives already ditched the Facebook groups. 
+              Swipe through portfolios and get matched with people who fit your style.
             </p>
             
             {/* Stats row */}

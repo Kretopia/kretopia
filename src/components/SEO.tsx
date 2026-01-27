@@ -25,10 +25,10 @@ interface SEOProps {
 }
 
 export const SEO = ({
-  title = "ThriveIN - Connect, Collaborate & Create with Creatives",
-  description = "ThriveIN is a creative platform that allows talents such as singers, producers, musicians, models and others, to find each other and collaborate—all in one place.",
+  title = "ThriveIN - Swipe to Find Your Next Creative Collaborator",
+  description = "Stop scrolling Facebook groups. ThriveIN uses AI to match verified creatives — videographers, photographers, musicians, designers — based on your portfolio and style.",
   type = "website",
-  image = "https://lovable.dev/opengraph-image-p98pqg.png",
+  image = "https://thrivein.io/og-image.png",
   url,
   profile
 }: SEOProps) => {

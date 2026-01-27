@@ -15,14 +15,14 @@ https://thrivein.io/auth?invite=ThriveOGs
 ## 📱 Short DM Template (Instagram/WhatsApp)
 
 ```
-Hey! I'm part of this new platform called ThriveIN - it's like Tinder but for finding creative collaborators.
+Hey! Saw your work — you'd be perfect for ThriveIN.
 
-AI matches you with other verified creatives (videographers, photographers, designers, musicians) based on your skills and portfolio.
+It's basically Tinder for finding creative collaborators. You swipe through verified portfolios, AI tells you why you're compatible, and you can start projects right from the app.
 
-I have an invite if you want to check it out:
+I have an invite if you're interested:
 👉 thrivein.io/auth?invite=ThriveOGs
 
-Takes 2 mins to set up. Let me know what you think!
+2 mins to set up. Let me know what you think!
 ```
 
 ---
@@ -72,10 +72,10 @@ Check it out when you have 2 minutes!"
 ## 📋 Key Talking Points
 
 When someone asks "What is it?":
-- **Simple pitch:** "Tinder for creative collaborations"
-- **How it works:** "Swipe through verified portfolios, match with creatives you want to work with"
-- **Why it's different:** "AI-powered matching + verified portfolios, not random Facebook posts"
-- **Time to start:** "2 minutes to set up, then start swiping"
+- **Simple pitch:** "Tinder for creative collaborations — swipe through portfolios, match with people who fit your style"
+- **How it works:** "AI matches you based on your portfolio, skills, and vibe. Swipe right, match, start a project"
+- **Why it's different:** "Verified portfolios + AI match scores. No cold DMs, no Facebook groups"
+- **Time to start:** "2 minutes to upload your work, then start swiping"
 
 ---
 

@@ -2732,6 +2732,9 @@ export type Database = {
           linkedin_connections: number | null
           linkedin_url: string | null
           location: string | null
+          location_precision:
+            | Database["public"]["Enums"]["location_precision"]
+            | null
           location_updated_at: string | null
           location_visible: boolean | null
           longest_streak: number | null
@@ -2843,6 +2846,9 @@ export type Database = {
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          location_precision?:
+            | Database["public"]["Enums"]["location_precision"]
+            | null
           location_updated_at?: string | null
           location_visible?: boolean | null
           longest_streak?: number | null
@@ -2954,6 +2960,9 @@ export type Database = {
           linkedin_connections?: number | null
           linkedin_url?: string | null
           location?: string | null
+          location_precision?:
+            | Database["public"]["Enums"]["location_precision"]
+            | null
           location_updated_at?: string | null
           location_visible?: boolean | null
           longest_streak?: number | null
@@ -5199,6 +5208,7 @@ export type Database = {
           full_name: string
           latitude: number
           location: string
+          location_precision: Database["public"]["Enums"]["location_precision"]
           longitude: number
           professional_skills: Json
           role: string
@@ -5298,6 +5308,7 @@ export type Database = {
     Enums: {
       account_type: "individual" | "company"
       app_role: "admin" | "moderator" | "user"
+      location_precision: "exact" | "approximate" | "area_only"
       user_badge: "og" | "beta" | "official" | "founder" | "odos"
     }
     CompositeTypes: {
@@ -5428,6 +5439,7 @@ export const Constants = {
     Enums: {
       account_type: ["individual", "company"],
       app_role: ["admin", "moderator", "user"],
+      location_precision: ["exact", "approximate", "area_only"],
       user_badge: ["og", "beta", "official", "founder", "odos"],
     },
   },

@@ -16,6 +16,8 @@ import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionCard } from "@/components/sessions/SessionCard";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
 import { LocationPrivacySelect, LocationPrecision } from "@/components/nearby/LocationPrivacySelect";
+import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 
 interface NearbyCreator {
@@ -69,6 +71,65 @@ const NearbyCreators = () => {
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [showCreateSession, setShowCreateSession] = useState(false);
   const [selectedSession, setSelectedSession] = useState<NearbySession | null>(null);
+  const [profileVisibility, setProfileVisibility] = useState<{
+    isVisible: boolean;
+    missingFields: string[];
+  }>({ isVisible: true, missingFields: [] });
+
+  // Check current user's profile visibility requirements
+  useEffect(() => {
+    const checkProfileVisibility = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('avatar_url, bio')
+          .eq('user_id', user.id)
+          .single();
+        
+        // Check for portfolio items OR credits (matching the database function)
+        const [portfolioResult, creditsResult] = await Promise.all([
+          supabase
+            .from('portfolio_items')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id),
+          supabase
+            .from('credits')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+        ]);
+        
+        const portfolioCount = portfolioResult.count || 0;
+        const creditsCount = creditsResult.count || 0;
+        const hasWork = portfolioCount > 0 || creditsCount > 0;
+        
+        if (profile) {
+          // Use discovery fields but adjust for credits as alternative to portfolio
+          const missingFields: string[] = [];
+          
+          if (!profile.avatar_url) {
+            missingFields.push('Profile Picture');
+          }
+          if (!profile.bio || profile.bio.length < 20) {
+            missingFields.push('Bio (20+ characters)');
+          }
+          if (!hasWork) {
+            missingFields.push('At least 1 Portfolio Item');
+          }
+          
+          setProfileVisibility({
+            isVisible: missingFields.length === 0,
+            missingFields
+          });
+        }
+      } catch (error) {
+        console.error('[NearbyCreators] Error checking profile visibility:', error);
+      }
+    };
+    
+    checkProfileVisibility();
+  }, [user?.id]);
 
   // Track page view
   useEffect(() => {
@@ -333,6 +394,12 @@ const NearbyCreators = () => {
 
   return (
     <div className="container max-w-7xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">
+      {/* Profile Visibility Banner - Show if user doesn't meet requirements */}
+      <ProfileVisibilityBanner 
+        isVisible={profileVisibility.isVisible} 
+        missingFields={profileVisibility.missingFields} 
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

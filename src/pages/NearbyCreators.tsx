@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User } from "lucide-react";
+import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Sparkles } from "lucide-react";
 import { NearbyCreatorsMap } from "@/components/nearby/NearbyCreatorsMap";
+import { JamsSection } from "@/components/jams/JamsSection";
 import { analytics } from "@/lib/analytics";
 
 interface NearbyCreator {
@@ -449,6 +450,13 @@ const NearbyCreators = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Creative Jams Section */}
+      {userLocation && (
+        <div className="mt-8">
+          <JamsSection userLocation={userLocation} />
         </div>
       )}
     </div>

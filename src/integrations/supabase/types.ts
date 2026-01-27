@@ -860,23 +860,92 @@ export type Database = {
         Row: {
           connected_user_id: string
           created_at: string | null
+          declined_at: string | null
           id: string
+          is_message_request: boolean | null
           status: string | null
           user_id: string
         }
         Insert: {
           connected_user_id: string
           created_at?: string | null
+          declined_at?: string | null
           id?: string
+          is_message_request?: boolean | null
           status?: string | null
           user_id: string
         }
         Update: {
           connected_user_id?: string
           created_at?: string | null
+          declined_at?: string | null
           id?: string
+          is_message_request?: boolean | null
           status?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      creative_jams: {
+        Row: {
+          category: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          end_time: string | null
+          id: string
+          is_public: boolean | null
+          latitude: number | null
+          longitude: number | null
+          max_participants: number | null
+          start_time: string
+          status: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          venue_address: string | null
+          venue_name: string | null
+        }
+        Insert: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          is_public?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          max_participants?: number | null
+          start_time: string
+          status?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          venue_address?: string | null
+          venue_name?: string | null
+        }
+        Update: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          is_public?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          max_participants?: number | null
+          start_time?: string
+          status?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          venue_address?: string | null
+          venue_name?: string | null
         }
         Relationships: []
       }
@@ -1431,6 +1500,38 @@ export type Database = {
           },
         ]
       }
+      jam_participants: {
+        Row: {
+          id: string
+          jam_id: string
+          joined_at: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          jam_id: string
+          joined_at?: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          jam_id?: string
+          joined_at?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jam_participants_jam_id_fkey"
+            columns: ["jam_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           created_at: string | null
@@ -1466,6 +1567,7 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          is_message_request: boolean | null
           match_id: string | null
           read: boolean | null
           receiver_id: string
@@ -1477,6 +1579,7 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_message_request?: boolean | null
           match_id?: string | null
           read?: boolean | null
           receiver_id: string
@@ -1488,6 +1591,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_message_request?: boolean | null
           match_id?: string | null
           read?: boolean | null
           receiver_id?: string
@@ -5026,6 +5130,37 @@ export type Database = {
           professional_skills: Json
           role: string
           user_id: string
+        }[]
+      }
+      get_nearby_jams: {
+        Args: {
+          limit_count?: number
+          radius_km?: number
+          user_lat: number
+          user_lon: number
+        }
+        Returns: {
+          category: string
+          cover_image_url: string
+          created_at: string
+          created_by: string
+          creator_avatar: string
+          creator_name: string
+          description: string
+          distance_km: number
+          end_time: string
+          id: string
+          is_public: boolean
+          latitude: number
+          longitude: number
+          max_participants: number
+          participant_count: number
+          start_time: string
+          status: string
+          tags: string[]
+          title: string
+          venue_address: string
+          venue_name: string
         }[]
       }
       get_network_stats: {

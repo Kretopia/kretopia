@@ -20,6 +20,8 @@ import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFr
 import { IceBreakers } from "@/components/messages/IceBreakers";
 import { TypingIndicator, useTypingStatus } from "@/components/messages/TypingIndicator";
 import { MessageAttachments, AttachmentPreview } from "@/components/messages/MessageAttachments";
+import { MessageRequests } from "@/components/messages/MessageRequests";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Conversation {
   conversation_id: string;
@@ -78,6 +80,8 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [connections, setConnections] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox');
+  const [requestCount, setRequestCount] = useState(0);
   const [otherUser, setOtherUser] = useState<{
     id: string;
     name: string;
@@ -411,27 +415,46 @@ const Messages = () => {
         <div className="p-3 sm:p-4 border-b border-border space-y-2.5 sm:space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg sm:text-2xl font-bold">Messages</h2>
-            {conversationCount > 0 && (
-              <Badge variant="secondary">
-                {conversationCount}
-              </Badge>
-            )}
           </div>
           
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search messages..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 rounded-full h-9 sm:h-10 text-sm"
-            />
-          </div>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'requests')}>
+            <TabsList className="w-full">
+              <TabsTrigger value="inbox" className="flex-1">
+                Inbox {conversationCount > 0 && <Badge variant="secondary" className="ml-1">{conversationCount}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="flex-1">
+                Requests {requestCount > 0 && <Badge variant="destructive" className="ml-1">{requestCount}</Badge>}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          {activeTab === 'inbox' && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search messages..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 rounded-full h-9 sm:h-10 text-sm"
+              />
+            </div>
+          )}
         </div>
         
         <ScrollArea className="flex-1">
-          
-          {filteredConversations.length === 0 ? (
+          {activeTab === 'requests' ? (
+            <MessageRequests 
+              currentUserId={currentUserId}
+              onAccept={() => {
+                fetchConnections();
+                fetchConversations();
+              }}
+              onSelectConversation={(userId) => {
+                setActiveTab('inbox');
+                setSelectedConversation(userId);
+              }}
+            />
+          ) : filteredConversations.length === 0 ? (
             <div className="p-8 text-center">
               <div className="mb-4 mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
                 <MessageCircle className="h-8 w-8 text-primary" />

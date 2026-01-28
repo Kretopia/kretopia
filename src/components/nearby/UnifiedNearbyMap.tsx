@@ -159,7 +159,7 @@ export const UnifiedNearbyMap = ({
             <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
             <span class="text-[10px] uppercase tracking-wide text-cyan-600 font-medium">Creator</span>
           </div>
-          <p class="font-semibold text-sm">${creator.full_name}</p>
+          <p class="font-semibold text-sm cursor-pointer hover:text-cyan-600 transition-colors creator-name-link" data-user-id="${creator.user_id}">${creator.full_name}</p>
           <p class="text-xs text-gray-500">${creator.role}</p>
           <p class="text-xs text-cyan-600 mt-1">${creator.distance_km < 1 
             ? `${Math.round(creator.distance_km * 1000)}m away` 
@@ -167,6 +167,17 @@ export const UnifiedNearbyMap = ({
           }${creator.location_precision && creator.location_precision !== 'exact' ? ' (approx)' : ''}</p>
         </div>
       `);
+      
+      // Add click handler for the name link after popup opens
+      popup.on('open', () => {
+        const nameLink = document.querySelector(`.creator-name-link[data-user-id="${creator.user_id}"]`);
+        if (nameLink) {
+          nameLink.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.location.href = `/profile/${creator.user_id}`;
+          });
+        }
+      });
 
       const marker = new mapboxgl.Marker(el)
         .setLngLat([creator.longitude, creator.latitude])

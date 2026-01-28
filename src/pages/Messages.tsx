@@ -70,6 +70,7 @@ const Messages = () => {
   const { user } = useAuth();
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
   
   // Check for receiverId from navigation state first, then search params
   const navigationState = location.state as { receiverId?: string; receiverName?: string } | null;
@@ -195,18 +196,37 @@ const Messages = () => {
 
   const fetchConversations = async () => {
     try {
-      const { data, error } = await supabase
-        .from("conversation_list")
-        .select("*")
-        .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
-        .order("created_at", { ascending: false });
+      // Fetch conversations and unread counts in parallel
+      const [conversationsResult, unreadResult] = await Promise.all([
+        supabase
+          .from("conversation_list")
+          .select("*")
+          .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+          .order("created_at", { ascending: false }),
+        // Get actual unread message counts per sender
+        supabase
+          .from("messages")
+          .select("sender_id")
+          .eq("receiver_id", currentUserId)
+          .eq("read", false)
+      ]);
 
-      if (error) {
-        console.error("Error fetching conversations:", error);
+      if (conversationsResult.error) {
+        console.error("Error fetching conversations:", conversationsResult.error);
         return;
       }
 
-      setConversations(data || []);
+      setConversations(conversationsResult.data || []);
+
+      // Calculate unread counts per sender
+      if (unreadResult.data) {
+        const counts = new Map<string, number>();
+        unreadResult.data.forEach((msg) => {
+          const current = counts.get(msg.sender_id) || 0;
+          counts.set(msg.sender_id, current + 1);
+        });
+        setUnreadCounts(counts);
+      }
     } catch (error) {
       console.error('[Messages] Error fetching conversations:', error);
       setConversations([]);
@@ -293,12 +313,21 @@ const Messages = () => {
   };
 
   const markMessagesAsRead = async (userId: string) => {
-    await supabase
+    const { error } = await supabase
       .from("messages")
       .update({ read: true })
       .eq("receiver_id", currentUserId)
       .eq("sender_id", userId)
       .eq("read", false);
+    
+    // Update local unread counts immediately for responsive UI
+    if (!error) {
+      setUnreadCounts(prev => {
+        const newCounts = new Map(prev);
+        newCounts.delete(userId);
+        return newCounts;
+      });
+    }
   };
 
   const sendMessage = async () => {
@@ -364,12 +393,8 @@ const Messages = () => {
   };
 
   const getUnreadCount = (userId: string) => {
-    return conversations.filter(
-      (c) =>
-        !c.read &&
-        c.sender_id === userId &&
-        c.receiver_id === currentUserId
-    ).length;
+    // Use the actual unread message counts from the messages table
+    return unreadCounts.get(userId) || 0;
   };
 
   const isConnectionAccepted = (userId: string) => connections.has(userId);

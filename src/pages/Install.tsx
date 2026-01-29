@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Smartphone, Share, Plus, CheckCircle2, ArrowRight } from "lucide-react";
+import { Download, Smartphone, Share, Plus, CheckCircle2, ArrowRight, QrCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
+import { useToast } from "@/hooks/use-toast";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -13,8 +15,12 @@ const Install = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const navigate = useNavigate();
-
+  const { toast } = useToast();
+  const qrRef = useRef<HTMLDivElement>(null);
+  
+  const installUrl = "https://thrivein.io/install";
   useEffect(() => {
     // Check if already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {
@@ -48,6 +54,86 @@ const Install = () => {
       setIsInstalled(true);
     }
     setDeferredPrompt(null);
+  };
+
+  const handleDownloadQR = () => {
+    const svg = qrRef.current?.querySelector("svg");
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    img.onload = () => {
+      canvas.width = 1000;
+      canvas.height = 1200;
+      
+      if (ctx) {
+        // White background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw QR code centered
+        ctx.drawImage(img, 100, 150, 800, 800);
+        
+        // Add text
+        ctx.fillStyle = "#000000";
+        ctx.font = "bold 48px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Install ThriveIN", canvas.width / 2, 80);
+        
+        ctx.font = "28px Arial";
+        ctx.fillStyle = "#666666";
+        ctx.fillText("Scan to install on your phone", canvas.width / 2, 1050);
+        ctx.fillText("thrivein.io/install", canvas.width / 2, 1100);
+      }
+
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = "ThriveIN-Install-QR.png";
+      downloadLink.href = pngFile;
+      downloadLink.click();
+
+      toast({
+        title: "Downloaded!",
+        description: "QR code saved to your device",
+      });
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
+  const handleShareQR = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Install ThriveIN",
+          text: "Scan to install ThriveIN on your phone",
+          url: installUrl,
+        });
+      } catch (error) {
+        // User cancelled or error
+        handleCopyLink();
+      }
+    } else {
+      handleCopyLink();
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(installUrl);
+      toast({
+        title: "Link Copied!",
+        description: "Share this link to help others install ThriveIN",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to copy",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isInstalled) {
@@ -161,6 +247,45 @@ const Install = () => {
                 No app store needed
               </li>
             </ul>
+          </div>
+
+          <div className="pt-4 border-t space-y-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowQR(!showQR)} 
+              className="w-full gap-2"
+            >
+              <QrCode className="h-4 w-4" />
+              {showQR ? "Hide QR Code" : "Get Shareable QR Code"}
+            </Button>
+
+            {showQR && (
+              <div className="space-y-4 p-4 bg-muted rounded-lg">
+                <div ref={qrRef} className="flex justify-center">
+                  <div className="bg-white p-4 rounded-xl">
+                    <QRCodeSVG
+                      value={installUrl}
+                      size={200}
+                      level="H"
+                      includeMargin={false}
+                    />
+                  </div>
+                </div>
+                <p className="text-center text-sm text-muted-foreground">
+                  Share this QR code so others can install ThriveIN
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={handleDownloadQR} size="sm" className="flex-1 gap-2">
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                  <Button onClick={handleShareQR} variant="outline" size="sm" className="flex-1 gap-2">
+                    <Share className="h-4 w-4" />
+                    Share
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <Button variant="outline" onClick={() => navigate("/")} className="w-full">

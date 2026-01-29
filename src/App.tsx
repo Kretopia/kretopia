@@ -51,6 +51,7 @@ const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 const Wallet = lazy(() => import("./pages/Wallet"));
 const AIAgent = lazy(() => import("./pages/AIAgent"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
+const Install = lazy(() => import("./pages/Install"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -155,6 +156,9 @@ const AppContent = () => {
             
             {/* Nearby Creators */}
             <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />
+            
+            {/* PWA Install Page */}
+            <Route path="/install" element={<Install />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

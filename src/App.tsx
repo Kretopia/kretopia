@@ -52,6 +52,7 @@ const Wallet = lazy(() => import("./pages/Wallet"));
 const AIAgent = lazy(() => import("./pages/AIAgent"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
+const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -159,6 +160,9 @@ const AppContent = () => {
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />
+            
+            {/* Invite Link with Code */}
+            <Route path="/join/:code" element={<JoinWithCode />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

@@ -20,6 +20,9 @@ const Install = () => {
   const { toast } = useToast();
   const qrRef = useRef<HTMLDivElement>(null);
   
+  // Default invite code for OG users
+  const defaultInviteCode = "THRIVEOGS";
+  const joinUrl = `https://thrivein.io/join/${defaultInviteCode}`;
   const installUrl = "https://thrivein.io/install";
   useEffect(() => {
     // Check if already installed
@@ -81,17 +84,17 @@ const Install = () => {
         ctx.fillStyle = "#000000";
         ctx.font = "bold 48px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("Install ThriveIN", canvas.width / 2, 80);
+        ctx.fillText("Join ThriveIN", canvas.width / 2, 80);
         
         ctx.font = "28px Arial";
         ctx.fillStyle = "#666666";
-        ctx.fillText("Scan to install on your phone", canvas.width / 2, 1050);
-        ctx.fillText("thrivein.io/install", canvas.width / 2, 1100);
+        ctx.fillText("Scan to join with invite code", canvas.width / 2, 1050);
+        ctx.fillText("Code: " + defaultInviteCode, canvas.width / 2, 1100);
       }
 
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = "ThriveIN-Install-QR.png";
+      downloadLink.download = "ThriveIN-Invite-QR.png";
       downloadLink.href = pngFile;
       downloadLink.click();
 
@@ -108,9 +111,9 @@ const Install = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Install ThriveIN",
-          text: "Scan to install ThriveIN on your phone",
-          url: installUrl,
+          title: "Join ThriveIN",
+          text: `Join ThriveIN with invite code ${defaultInviteCode}`,
+          url: joinUrl,
         });
       } catch (error) {
         // User cancelled or error
@@ -123,10 +126,10 @@ const Install = () => {
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(installUrl);
+      await navigator.clipboard.writeText(joinUrl);
       toast({
-        title: "Link Copied!",
-        description: "Share this link to help others install ThriveIN",
+        title: "Invite Link Copied!",
+        description: `Share this link with code ${defaultInviteCode}`,
       });
     } catch (error) {
       toast({
@@ -256,7 +259,7 @@ const Install = () => {
               className="w-full gap-2"
             >
               <QrCode className="h-4 w-4" />
-              {showQR ? "Hide QR Code" : "Get Shareable QR Code"}
+              {showQR ? "Hide QR Code" : "Get Invite QR Code"}
             </Button>
 
             {showQR && (
@@ -264,7 +267,7 @@ const Install = () => {
                 <div ref={qrRef} className="flex justify-center">
                   <div className="bg-white p-4 rounded-xl">
                     <QRCodeSVG
-                      value={installUrl}
+                      value={joinUrl}
                       size={200}
                       level="H"
                       includeMargin={false}
@@ -272,7 +275,10 @@ const Install = () => {
                   </div>
                 </div>
                 <p className="text-center text-sm text-muted-foreground">
-                  Share this QR code so others can install ThriveIN
+                  Share this QR code so others can join with your invite code
+                </p>
+                <p className="text-center text-xs font-mono bg-primary/10 text-primary py-1 px-2 rounded">
+                  Code: {defaultInviteCode}
                 </p>
                 <div className="flex gap-2">
                   <Button onClick={handleDownloadQR} size="sm" className="flex-1 gap-2">

@@ -22,8 +22,9 @@ const Install = () => {
   
   // Default invite code for OG users
   const defaultInviteCode = "THRIVEOGS";
-  const joinUrl = `https://thrivein.io/join/${defaultInviteCode}`;
-  const installUrl = "https://thrivein.io/install";
+  // Use actual published domain
+  const baseUrl = "https://thrivein-new-beta.lovable.app";
+  const joinUrl = `${baseUrl}/join/${defaultInviteCode}`;
   useEffect(() => {
     // Check if already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {

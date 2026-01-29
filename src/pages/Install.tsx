@@ -175,12 +175,33 @@ const Install = () => {
             </p>
           </div>
 
-          {deferredPrompt && (
+          {deferredPrompt ? (
             <Button onClick={handleInstall} className="w-full" size="lg">
               <Download className="mr-2 h-5 w-5" />
               Install App
             </Button>
-          )}
+          ) : !isIOS ? (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
+                  <Download className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-sm">To install on Android:</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Tap the menu (⋮) in your browser → "Install app" or "Add to Home screen"
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate("/auth")} 
+                className="w-full"
+              >
+                Already installed? Sign Up
+              </Button>
+            </div>
+          ) : null}
 
           {isIOS && (
             <div className="space-y-4">
@@ -220,14 +241,13 @@ const Install = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {!isIOS && !deferredPrompt && (
-            <div className="text-center space-y-2 py-4">
-              <p className="text-sm text-muted-foreground">
-                On Android Chrome, look for "Install app" or "Add to Home screen" in the browser menu (⋮)
-              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate("/auth")} 
+                className="w-full mt-4"
+              >
+                Already installed? Sign Up
+              </Button>
             </div>
           )}
 

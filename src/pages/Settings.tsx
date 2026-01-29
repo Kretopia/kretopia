@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 import { useAuth } from "@/hooks/useAuth";
@@ -63,12 +63,22 @@ const RestartTourButton = () => {
   );
 };
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 const Settings = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // PWA Install
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   
   // Password change
   const [newPassword, setNewPassword] = useState("");
@@ -96,6 +106,30 @@ const Settings = () => {
   });
   const [saving, setSaving] = useState(false);
 
+  // PWA install detection
+  useEffect(() => {
+    // Check if already installed
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsInstalled(true);
+    }
+
+    // Detect iOS
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+
+    // Listen for install prompt (Android/Chrome)
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+    };
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchNotificationPreferences();
@@ -108,6 +142,22 @@ const Settings = () => {
       trackPage();
     }
   }, [user]);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === "accepted") {
+      setIsInstalled(true);
+      toast({
+        title: "App Installed! 🎉",
+        description: "ThriveIN has been added to your home screen",
+      });
+    }
+    setDeferredPrompt(null);
+  };
 
   const fetchNotificationPreferences = async () => {
     if (!user) return;
@@ -642,6 +692,85 @@ const Settings = () => {
                   onCheckedChange={setAllowMessages}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Install App */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Smartphone className="h-5 w-5" />
+                Install App
+              </CardTitle>
+              <CardDescription>
+                Add ThriveIN to your home screen for the best experience
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {isInstalled ? (
+                <div className="flex items-center gap-3 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <div>
+                    <p className="font-medium text-green-600 dark:text-green-400">App Installed</p>
+                    <p className="text-sm text-muted-foreground">ThriveIN is on your home screen</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {deferredPrompt && (
+                    <Button onClick={handleInstallApp} className="w-full" size="lg">
+                      <Download className="mr-2 h-5 w-5" />
+                      Install App Now
+                    </Button>
+                  )}
+
+                  {isIOS && (
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium">To install on iPhone/iPad:</p>
+                      <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                        <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
+                          <Share className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">1. Tap Share</p>
+                          <p className="text-xs text-muted-foreground">
+                            Tap the share button at the bottom of Safari
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                        <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
+                          <Plus className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">2. Add to Home Screen</p>
+                          <p className="text-xs text-muted-foreground">
+                            Scroll down and tap "Add to Home Screen"
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isIOS && !deferredPrompt && (
+                    <div className="text-center py-2">
+                      <p className="text-sm text-muted-foreground">
+                        On Android Chrome, look for "Install app" or "Add to Home screen" in the browser menu (⋮)
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t">
+                    <p className="text-xs text-muted-foreground mb-2">Why install?</p>
+                    <ul className="space-y-1 text-xs text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-3 h-3 text-green-500" />
+                        Faster access • Works offline • Full-screen experience
+                      </li>
+                    </ul>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 

@@ -9,6 +9,7 @@ import { MatchExplanationDialog } from '@/components/discover/MatchExplanationDi
 import { SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from '@/components/circle/SwipeFilters';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface SwipeFeatureProps {
   onMatch?: (profile: any) => void;
@@ -17,6 +18,7 @@ interface SwipeFeatureProps {
 }
 
 export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfilesCountChange }: SwipeFeatureProps) {
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   
   console.log('[SwipeFeature] Render - user:', user?.id, 'authLoading:', authLoading);
@@ -117,7 +119,11 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
     }
   }, [previewProfile, handleSwipe]);
 
-
+  // Handle sending a message request to a non-connected profile
+  const handleSendMessage = useCallback((profile: SwipeProfile) => {
+    // Navigate to messages with the user - this will trigger message request flow
+    navigate(`/messages?user=${profile.user_id}`);
+  }, [navigate]);
   const handleUndo = useCallback(async () => {
     const lastProfile = swipeHistory[0];
     if (!lastProfile || !user?.id) return;
@@ -157,6 +163,7 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
         onSwipe={handleSwipe}
         onViewProfile={handleViewProfile}
         onMatchBadgeClick={handleMatchBadgeClick}
+        onMessage={handleSendMessage}
         onUndo={swipeHistory.length > 0 ? handleUndo : undefined}
         canUndo={swipeHistory.length > 0}
         loading={loading}
@@ -190,6 +197,7 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
         open={showProfilePreview}
         onOpenChange={setShowProfilePreview}
         onSwipe={handlePreviewSwipe}
+        onMessage={handleSendMessage}
       />
     </div>
   );

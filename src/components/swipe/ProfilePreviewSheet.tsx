@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SwipeProfile } from '@/hooks/useSwipeProfiles';
-import { MapPin, Briefcase, Star, Sparkles, ExternalLink, X, Heart } from 'lucide-react';
+import { MapPin, Briefcase, Star, Sparkles, ExternalLink, X, Heart, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,6 +13,7 @@ interface ProfilePreviewSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSwipe: (direction: 'left' | 'right') => void;
+  onMessage?: (profile: SwipeProfile) => void;
   matchReasons?: string[];
   matchScore?: number;
 }
@@ -30,6 +31,7 @@ export function ProfilePreviewSheet({
   open,
   onOpenChange,
   onSwipe,
+  onMessage,
   matchReasons = [],
   matchScore
 }: ProfilePreviewSheetProps) {
@@ -78,6 +80,17 @@ export function ProfilePreviewSheet({
   const handleLike = () => {
     onOpenChange(false);
     onSwipe('right');
+  };
+
+  const handleMessage = () => {
+    if (onMessage && profile) {
+      onOpenChange(false);
+      onMessage(profile);
+    } else {
+      // Fallback: navigate to messages with user
+      onOpenChange(false);
+      navigate(`/messages?user=${profile.user_id}`);
+    }
   };
 
   return (
@@ -210,7 +223,7 @@ export function ProfilePreviewSheet({
 
         {/* Fixed Action Buttons at Bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-3">
             <Button
               variant="outline"
               size="lg"
@@ -218,6 +231,16 @@ export function ProfilePreviewSheet({
               onClick={handlePass}
             >
               <X className="h-6 w-6 text-red-500" />
+            </Button>
+            
+            {/* Send Message Button */}
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-14 w-14 rounded-full border-2 border-primary/50 hover:bg-primary/10"
+              onClick={handleMessage}
+            >
+              <MessageCircle className="h-6 w-6 text-primary" />
             </Button>
             
             <Button

@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X, Mail, RefreshCw } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X, Mail, RefreshCw, Chrome } from "lucide-react";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
@@ -54,6 +55,7 @@ const Auth = () => {
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState("");
   const [resendingEmail, setResendingEmail] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -258,6 +260,31 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      const { error } = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      
+      if (error) {
+        toast({
+          title: "Google Sign-In Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        setGoogleLoading(false);
+      }
+    } catch (err) {
+      console.error("Google sign-in error:", err);
+      toast({
+        title: "Error",
+        description: "Failed to sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+      setGoogleLoading(false);
+    }
+  };
 
   const validateInviteCode = async (code: string) => {
     if (!code.trim()) {
@@ -650,7 +677,6 @@ const Auth = () => {
                 )}
               </Button>
 
-              {/* Google Sign In temporarily disabled
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
@@ -667,12 +693,15 @@ const Auth = () => {
                 variant="outline"
                 className="w-full"
                 onClick={handleGoogleSignIn}
-                disabled={loading}
+                disabled={loading || googleLoading}
               >
-                <Chrome className="mr-2 h-4 w-4" />
-                Google
+                {googleLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Chrome className="mr-2 h-4 w-4" />
+                )}
+                {googleLoading ? "Signing in..." : "Continue with Google"}
               </Button>
-              */}
               
               <div className="mt-4 text-center">
                 <button

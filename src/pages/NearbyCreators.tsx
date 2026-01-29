@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Plus, Calendar, Sparkles } from "lucide-react";
+import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Plus, Calendar, Sparkles, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionCard } from "@/components/sessions/SessionCard";
@@ -75,6 +76,7 @@ const NearbyCreators = () => {
     isVisible: boolean;
     missingFields: string[];
   }>({ isVisible: true, missingFields: [] });
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Check current user's profile visibility requirements
   useEffect(() => {
@@ -434,12 +436,94 @@ const NearbyCreators = () => {
         </div>
       </div>
 
-      {/* Controls */}
-      <Card>
+      {/* Controls - Collapsible on mobile */}
+      <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen} className="lg:hidden">
+        <Card className="overflow-hidden">
+          <CollapsibleTrigger asChild>
+            <button className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-primary" />
+                <span className="font-medium text-sm">Filters</span>
+                <Badge variant="secondary" className="text-xs">
+                  {radius}km • {locationVisible ? 'Visible' : 'Hidden'}
+                </Badge>
+              </div>
+              {filtersOpen ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-4 space-y-4">
+              {/* Radius Slider */}
+              <div className="w-full">
+                <Label className="text-sm font-medium mb-2 block">
+                  Search Radius: {radius}km
+                </Label>
+                <Slider
+                  value={[radius]}
+                  onValueChange={(value) => setRadius(value[0])}
+                  min={5}
+                  max={100}
+                  step={5}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Visibility Toggle */}
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="location-visible-mobile"
+                  checked={locationVisible}
+                  onCheckedChange={toggleVisibility}
+                />
+                <Label htmlFor="location-visible-mobile" className="flex items-center gap-2 cursor-pointer">
+                  {locationVisible ? (
+                    <>
+                      <Eye className="h-4 w-4 text-primary" />
+                      <span>Visible on map</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <span>Hidden from map</span>
+                    </>
+                  )}
+                </Label>
+              </div>
+
+              {/* Location Privacy Selector */}
+              {locationVisible && (
+                <LocationPrivacySelect
+                  value={locationPrecision}
+                  onChange={handlePrecisionChange}
+                />
+              )}
+
+              {/* Refresh */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchNearbyData}
+                disabled={!userLocation || loading}
+                className="w-full"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh Results
+              </Button>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Controls - Always visible on desktop */}
+      <Card className="hidden lg:block">
         <CardContent className="py-4">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+          <div className="flex flex-row items-center gap-6">
             {/* Radius Slider */}
-            <div className="flex-1 w-full lg:w-auto">
+            <div className="flex-1">
               <Label className="text-sm font-medium mb-2 block">
                 Search Radius: {radius}km
               </Label>
@@ -449,18 +533,18 @@ const NearbyCreators = () => {
                 min={5}
                 max={100}
                 step={5}
-                className="w-full sm:w-64"
+                className="w-64"
               />
             </div>
 
             {/* Visibility Toggle */}
             <div className="flex items-center gap-3">
               <Switch
-                id="location-visible"
+                id="location-visible-desktop"
                 checked={locationVisible}
                 onCheckedChange={toggleVisibility}
               />
-              <Label htmlFor="location-visible" className="flex items-center gap-2 cursor-pointer">
+              <Label htmlFor="location-visible-desktop" className="flex items-center gap-2 cursor-pointer">
                 {locationVisible ? (
                   <>
                     <Eye className="h-4 w-4 text-primary" />
@@ -475,7 +559,7 @@ const NearbyCreators = () => {
               </Label>
             </div>
 
-            {/* Location Privacy Selector - Only show when visible */}
+            {/* Location Privacy Selector */}
             {locationVisible && (
               <LocationPrivacySelect
                 value={locationPrecision}

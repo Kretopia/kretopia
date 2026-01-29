@@ -85,10 +85,16 @@ const Auth = () => {
       }
     }
     
-    // Pre-fill invite code from URL
+    // Pre-fill invite code from URL or sessionStorage (from /join/:code route)
     const inviteFromUrl = searchParams.get("invite") || searchParams.get("inviteCode");
+    const inviteFromSession = sessionStorage.getItem("invite_code");
+    
     if (inviteFromUrl) {
-      setInviteCode(inviteFromUrl);
+      setInviteCode(inviteFromUrl.toUpperCase());
+    } else if (inviteFromSession) {
+      setInviteCode(inviteFromSession.toUpperCase());
+      // Clear it after use so it doesn't persist
+      sessionStorage.removeItem("invite_code");
     }
     
     // Fetch opportunities count for social proof

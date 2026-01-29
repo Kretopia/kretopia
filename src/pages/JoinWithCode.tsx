@@ -16,8 +16,8 @@ const JoinWithCode = () => {
       console.log(`Invite code "${code}" stored for signup`);
     }
     
-    // Redirect to auth page
-    navigate("/auth", { replace: true });
+    // Redirect to install page first (so they install, then sign up with code)
+    navigate("/install", { replace: true });
   }, [code, navigate]);
 
   return (

@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard, Bot, MapPin } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard, Bot, MapPin, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -213,6 +213,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Settings className="h-5 w-5" />
                       Settings
                     </Button>
+                    
+                    {/* Admin Section - Only visible to admin */}
+                    {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (
+                      <>
+                        <Separator className="my-3" />
+                        <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Admin</p>
+                        <Button 
+                          variant="ghost" 
+                          className="justify-start gap-3 h-12 w-full"
+                          onClick={() => handleNavigation("/waitlist-admin")}
+                        >
+                          <Shield className="h-5 w-5" />
+                          Waitlist Management
+                        </Button>
+                      </>
+                    )}
                     
                     <Separator className="my-3" />
                     

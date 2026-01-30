@@ -6,9 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNetworkStats } from "@/hooks/useNetworkStats";
 import { NetworkReachStats } from "./NetworkReachStats";
-import { Users, Sparkles, UserPlus, Compass } from "lucide-react";
+import { NetworkHealthScore } from "./NetworkHealthScore";
+import { IndustryMap } from "./IndustryMap";
+import { PathFinder } from "./PathFinder";
+import { DegreeExplorerDrawer } from "./DegreeExplorerDrawer";
+import { Users, Sparkles, UserPlus, Compass, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 interface ConnectionProfile {
   user_id: string;
   full_name: string;
@@ -27,6 +30,9 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [connections, setConnections] = useState<ConnectionProfile[]>([]);
   const [connectionCount, setConnectionCount] = useState(0);
+  const [degreeDrawerOpen, setDegreeDrawerOpen] = useState(false);
+  const [selectedDegree, setSelectedDegree] = useState<1 | 2 | 3>(1);
+  const [showPathFinder, setShowPathFinder] = useState(false);
   
   // Use the network stats hook
   const { stats, loading: statsLoading } = useNetworkStats(user?.id);
@@ -93,6 +99,11 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
     navigate(`/profile/${userId}`);
   };
 
+  const handleDegreeClick = (degree: 1 | 2 | 3) => {
+    setSelectedDegree(degree);
+    setDegreeDrawerOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -120,8 +131,10 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
       {/* Interactive Visualization */}
       <div className="relative mx-auto mb-6" style={{ width: 240, height: 240 }}>
         {/* 3rd degree ring */}
-        <div 
-          className="absolute inset-0 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center"
+        <button 
+          onClick={() => stats.degree3 > 0 && handleDegreeClick(3)}
+          className="absolute inset-0 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center hover:border-muted-foreground/40 hover:bg-muted/5 transition-colors cursor-pointer disabled:cursor-default disabled:hover:bg-transparent"
+          disabled={stats.degree3 === 0}
           style={{ width: 240, height: 240 }}
         >
           {stats.degree3 > 0 && (
@@ -129,11 +142,13 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
               3° • {stats.degree3.toLocaleString()}
             </span>
           )}
-        </div>
+        </button>
         
         {/* 2nd degree ring */}
-        <div 
-          className="absolute rounded-full border-2 border-dashed border-accent/40"
+        <button 
+          onClick={() => stats.degree2 > 0 && handleDegreeClick(2)}
+          className="absolute rounded-full border-2 border-dashed border-accent/40 hover:border-accent hover:bg-accent/5 transition-colors cursor-pointer disabled:cursor-default disabled:hover:bg-transparent"
+          disabled={stats.degree2 === 0}
           style={{ 
             width: 170, 
             height: 170,
@@ -147,11 +162,12 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
               2° • {stats.degree2.toLocaleString()}
             </span>
           )}
-        </div>
+        </button>
         
         {/* 1st degree ring - active connections */}
-        <div 
-          className="absolute rounded-full border-2 border-primary/70"
+        <button 
+          onClick={() => handleDegreeClick(1)}
+          className="absolute rounded-full border-2 border-primary/70 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer"
           style={{ 
             width: 105, 
             height: 105,
@@ -163,7 +179,7 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
           <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] text-primary bg-background px-1.5 rounded-full font-medium">
             1° • {stats.degree1}
           </span>
-        </div>
+        </button>
         
         {/* Center - User Avatar */}
         <div 
@@ -240,12 +256,32 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
         })}
       </div>
 
+      {/* Path Finder Toggle */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setShowPathFinder(!showPathFinder)}
+        className="w-full mb-4 gap-2"
+      >
+        <Search className="h-4 w-4" />
+        {showPathFinder ? "Hide Path Finder" : "Find Connection Path"}
+      </Button>
+
+      {/* Path Finder */}
+      {showPathFinder && <PathFinder className="mb-4" />}
+
       {/* Network Reach Stats Card */}
       <NetworkReachStats 
         stats={stats} 
         loading={statsLoading} 
         className="mb-4" 
       />
+
+      {/* Network Health Score */}
+      <NetworkHealthScore compact className="mb-4" />
+
+      {/* Industry Map */}
+      <IndustryMap className="mb-4" />
 
       {/* Current Direct Connection Stats */}
       <Card className="p-3 mb-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
@@ -276,6 +312,13 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
           Every connection expands your reach exponentially
         </p>
       </div>
+
+      {/* Degree Explorer Drawer */}
+      <DegreeExplorerDrawer
+        open={degreeDrawerOpen}
+        onOpenChange={setDegreeDrawerOpen}
+        initialDegree={selectedDegree}
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,14 +21,14 @@ interface Profile {
 }
 
 interface DegreeExplorerDrawerProps {
-  children: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   initialDegree?: 1 | 2 | 3;
 }
 
-export function DegreeExplorerDrawer({ children, initialDegree = 1 }: DegreeExplorerDrawerProps) {
+export function DegreeExplorerDrawer({ open, onOpenChange, initialDegree = 1 }: DegreeExplorerDrawerProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
   const [selectedDegree, setSelectedDegree] = useState<1 | 2 | 3>(initialDegree);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -112,12 +112,12 @@ export function DegreeExplorerDrawer({ children, initialDegree = 1 }: DegreeExpl
   };
 
   const handleViewProfile = (userId: string) => {
-    setOpen(false);
+    onOpenChange(false);
     navigate(`/profile/${userId}`);
   };
 
   const handleMessage = (userId: string) => {
-    setOpen(false);
+    onOpenChange(false);
     navigate(`/messages?user=${userId}`);
   };
 
@@ -126,10 +126,7 @@ export function DegreeExplorerDrawer({ children, initialDegree = 1 }: DegreeExpl
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        {children}
-      </SheetTrigger>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
         <SheetHeader className="pb-4">
           <SheetTitle className="text-left">Explore Your Network</SheetTitle>

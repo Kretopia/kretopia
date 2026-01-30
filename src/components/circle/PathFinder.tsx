@@ -30,7 +30,11 @@ interface PathProfile {
   avatar_url: string | null;
 }
 
-export function PathFinder() {
+interface PathFinderProps {
+  className?: string;
+}
+
+export function PathFinder({ className }: PathFinderProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -137,7 +141,7 @@ export function PathFinder() {
   };
 
   return (
-    <Card className="p-4">
+    <Card className={cn("p-4", className)}>
       <div className="flex items-center gap-2 mb-3">
         <Compass className="h-5 w-5 text-primary" />
         <h3 className="font-semibold">Find Connection Path</h3>

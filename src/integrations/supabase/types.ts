@@ -5688,6 +5688,25 @@ export type Database = {
           venue_name: string
         }[]
       }
+      get_network_health: {
+        Args: { p_user_id: string }
+        Returns: {
+          active_connections: number
+          connectivity_score: number
+          diversity_score: number
+          growth_potential: number
+          overall_score: number
+          pending_requests: number
+          unique_roles: number
+        }[]
+      }
+      get_network_industry_breakdown: {
+        Args: { p_user_id: string }
+        Returns: {
+          count: number
+          role_category: string
+        }[]
+      }
       get_network_stats: {
         Args: { p_user_id: string }
         Returns: {
@@ -5701,6 +5720,24 @@ export type Database = {
           stripe_customer_id: string
           subscription_status: string
           subscription_tier: string
+        }[]
+      }
+      get_profiles_by_degree: {
+        Args: {
+          p_degree: number
+          p_limit?: number
+          p_offset?: number
+          p_user_id: string
+        }
+        Returns: {
+          avatar_url: string
+          badge: Database["public"]["Enums"]["user_badge"]
+          bio: string
+          full_name: string
+          location: string
+          professional_skills: Json
+          role: string
+          user_id: string
         }[]
       }
       get_review_request_by_token: {

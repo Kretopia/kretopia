@@ -1,4 +1,7 @@
 // Service Worker for Push Notifications
+// Version: 2025-01-30-v2 - Forces update check
+const CACHE_VERSION = 'v2025-01-30';
+
 self.addEventListener('push', function(event) {
   if (!event.data) return;
 
@@ -27,9 +30,29 @@ self.addEventListener('notificationclick', function(event) {
 });
 
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing new version:', CACHE_VERSION);
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
+  console.log('[SW] Activating new version:', CACHE_VERSION);
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          // Delete old caches
+          if (!cacheName.includes(CACHE_VERSION)) {
+            console.log('[SW] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => clients.claim())
+  );
+});
+
+// Force update check on fetch
+self.addEventListener('fetch', (event) => {
+  // Let the PWA workbox handle most caching
+  // This just ensures the SW stays active
 });

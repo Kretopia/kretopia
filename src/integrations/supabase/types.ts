@@ -5584,6 +5584,22 @@ export type Database = {
         }
         Returns: string
       }
+      find_matching_unclaimed_profiles: {
+        Args: { p_full_name: string; p_limit?: number }
+        Returns: {
+          avatar_url: string
+          bio: string
+          claim_token: string
+          full_name: string
+          imported_data: Json
+          imported_from_url: string
+          location: string
+          professional_skills: Json
+          role: string
+          similarity_score: number
+          user_id: string
+        }[]
+      }
       generate_claim_token: { Args: never; Returns: string }
       generate_invite_codes: {
         Args: { num_codes?: number; user_id_param: string }

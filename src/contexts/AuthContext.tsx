@@ -136,11 +136,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Handle session errors (corrupted tokens, network issues)
         if (error) {
           console.warn('[AuthContext] Session error, clearing local storage:', error.message);
-          // Clear corrupted session data
+          // Clear corrupted session data aggressively
           if (error.message.includes('Failed to fetch') || error.message.includes('refresh_token')) {
             retryCount++;
             if (retryCount >= MAX_RETRIES) {
-              console.warn('[AuthContext] Max retries reached, signing out locally');
+              console.warn('[AuthContext] Max retries reached, force clearing storage');
+              // Force clear localStorage directly
+              try {
+                localStorage.removeItem('sb-kwmcocsitwssrtzkdojh-auth-token');
+                sessionStorage.clear();
+              } catch (e) {
+                console.warn('[AuthContext] Storage clear error:', e);
+              }
               await supabase.auth.signOut({ scope: 'local' });
               setSession(null);
               setUser(null);

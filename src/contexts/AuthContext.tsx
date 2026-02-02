@@ -102,10 +102,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const MAX_RETRIES = 2;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
+        
+        // Handle session errors/sign out
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          retryCount = 0; // Reset retry count on successful events
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -123,8 +130,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         if (!isMounted) return;
+        
+        // Handle session errors (corrupted tokens, network issues)
+        if (error) {
+          console.warn('[AuthContext] Session error, clearing local storage:', error.message);
+          // Clear corrupted session data
+          if (error.message.includes('Failed to fetch') || error.message.includes('refresh_token')) {
+            retryCount++;
+            if (retryCount >= MAX_RETRIES) {
+              console.warn('[AuthContext] Max retries reached, signing out locally');
+              await supabase.auth.signOut({ scope: 'local' });
+              setSession(null);
+              setUser(null);
+            }
+          }
+          setLoading(false);
+          return;
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -141,9 +165,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             })
             .catch(err => console.error('[AuthContext] Error loading subscription:', err));
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('[AuthContext] Error getting session:', error);
-        if (isMounted) setLoading(false);
+        // On network errors, clear corrupted session to prevent infinite loops
+        if (error?.message?.includes('Failed to fetch')) {
+          console.warn('[AuthContext] Network error, clearing corrupted session');
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch (e) {
+            // Ignore signout errors
+          }
+        }
+        if (isMounted) {
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+        }
       }
     };
     

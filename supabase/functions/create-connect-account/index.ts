@@ -20,6 +20,47 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Validate Stripe key before proceeding
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not configured");
+      return new Response(JSON.stringify({
+        error: "Stripe not configured",
+        message: "STRIPE_SECRET_KEY is not set. Please add it in your secrets.",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    // Check for restricted keys - they don't have Connect permissions
+    if (stripeKey.startsWith("rk_")) {
+      logStep("ERROR: Restricted key detected");
+      return new Response(JSON.stringify({
+        error: "Invalid Stripe key type",
+        message: "You're using a restricted Stripe key (rk_*) which doesn't have Connect permissions. Please use a full secret key (sk_test_* or sk_live_*) from your Stripe Dashboard.",
+        instructions: "Go to Stripe Dashboard → Developers → API Keys → Copy the Secret key (starts with sk_)"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    // Check for publishable key used by mistake
+    if (stripeKey.startsWith("pk_")) {
+      logStep("ERROR: Publishable key detected");
+      return new Response(JSON.stringify({
+        error: "Invalid Stripe key type",
+        message: "You're using a publishable key (pk_*). Please use the secret key (sk_*) instead.",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    logStep("Stripe key validated");
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""

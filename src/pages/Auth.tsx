@@ -217,8 +217,15 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Clear any corrupted session before attempting login
-      await supabase.auth.signOut({ scope: 'local' });
+      // Aggressively clear any corrupted session data before login
+      try {
+        localStorage.removeItem('sb-kwmcocsitwssrtzkdojh-auth-token');
+        sessionStorage.clear();
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch (cleanupErr) {
+        console.warn('[Auth] Session cleanup warning:', cleanupErr);
+        // Continue anyway - we want to try the login
+      }
       
       const { error } = await supabase.auth.signInWithPassword({
         email,

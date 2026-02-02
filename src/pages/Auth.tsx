@@ -216,52 +216,72 @@ const Auth = () => {
     setPasswordError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      if (error.message.includes("Invalid login credentials")) {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    } else {
-      // Track successful sign in
-      const { analytics } = await import("@/lib/analytics");
-      analytics.signIn('email');
+    try {
+      // Clear any corrupted session before attempting login
+      await supabase.auth.signOut({ scope: 'local' });
       
-      // Check if user is admin and redirect accordingly
-      const { data: { user: signedInUser } } = await supabase.auth.getUser();
-      if (signedInUser) {
-        const { data: adminData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", signedInUser.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        
-        console.log('[Auth] Admin check result:', adminData);
-        const isAdmin = !!adminData;
-        
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in",
-        });
-        
-        navigate(isAdmin ? "/admin" : redirectTo);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        // Handle network errors specifically
+        if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+          toast({
+            title: "Connection Error",
+            description: "Please check your internet connection and try again.",
+            variant: "destructive",
+          });
+        } else if (error.message.includes("Invalid login credentials")) {
+          toast({
+            title: "Login Failed",
+            description: "Invalid email or password. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       } else {
-        navigate(redirectTo);
+        // Track successful sign in
+        const { analytics } = await import("@/lib/analytics");
+        analytics.signIn('email');
+        
+        // Check if user is admin and redirect accordingly
+        const { data: { user: signedInUser } } = await supabase.auth.getUser();
+        if (signedInUser) {
+          const { data: adminData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", signedInUser.id)
+            .eq("role", "admin")
+            .maybeSingle();
+          
+          console.log('[Auth] Admin check result:', adminData);
+          const isAdmin = !!adminData;
+          
+          toast({
+            title: "Welcome back!",
+            description: "You've successfully signed in",
+          });
+          
+          navigate(isAdmin ? "/admin" : redirectTo);
+        } else {
+          navigate(redirectTo);
+        }
       }
+    } catch (err: any) {
+      // Handle any unexpected errors (like network failures)
+      console.error('[Auth] Sign in error:', err);
+      toast({
+        title: "Connection Error",
+        description: "Unable to connect. Please check your internet and try again.",
+        variant: "destructive",
+      });
     }
     setLoading(false);
   };

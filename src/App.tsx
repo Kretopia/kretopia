@@ -53,6 +53,8 @@ const AIAgent = lazy(() => import("./pages/AIAgent"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
+const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
+const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -164,10 +166,14 @@ const AppContent = () => {
             {/* Invite Link with Code */}
             <Route path="/join/:code" element={<JoinWithCode />} />
             
+            {/* Project Invitation Accept */}
+            <Route path="/accept-invite/:projectId" element={<AcceptInvite />} />
+            
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
+            <Route path="/waitlist-admin" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
             <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
 
             {/* Legal & Info Pages */}

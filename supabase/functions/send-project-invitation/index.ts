@@ -41,15 +41,18 @@ const handler = async (req: Request): Promise<Response> => {
     if (inviteeUserId) {
       const supabase = createClient(supabaseUrl, supabaseKey);
       
+      // Use accept-invite flow for existing users too (they need to formally accept)
+      const acceptUrl = `/accept-invite/${projectId}?email=${encodeURIComponent(`user-${inviteeUserId}@platform.invite`)}`;
+      
       console.log(`Creating in-app notification for user ${inviteeUserId}`);
       const { error: notifError } = await supabase.from('notifications').insert({
         user_id: inviteeUserId,
         title: 'Project Invitation 🎯',
         message: `${inviterName} invited you to collaborate on "${projectTitle}"`,
         type: 'project',
-        link: `/desk/${projectId}`,
-        action_url: `/desk/${projectId}`,
-        action_text: 'View Project',
+        link: acceptUrl,
+        action_url: acceptUrl,
+        action_text: 'Accept Invitation',
         priority: 'high',
         category: 'project'
       });

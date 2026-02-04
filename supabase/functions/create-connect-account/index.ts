@@ -61,9 +61,16 @@ serve(async (req) => {
 
     logStep("Stripe key validated");
 
+    // Use anon key for auth verification
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    
+    // Use service role key for database operations (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     const authHeader = req.headers.get("Authorization")!;
@@ -76,12 +83,16 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check if user already has a Connect account
-    const { data: profile } = await supabaseClient
+    // Check if user already has a Connect account (use admin to bypass RLS)
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("stripe_account_id, stripe_account_status, full_name")
       .eq("user_id", user.id)
       .single();
+
+    if (profileError) {
+      logStep("Error fetching profile", { error: profileError.message });
+    }
 
     if (profile?.stripe_account_id && profile?.stripe_account_status === 'active') {
       logStep("User already has active Connect account", { accountId: profile.stripe_account_id });
@@ -121,14 +132,20 @@ serve(async (req) => {
       accountId = account.id;
       logStep("Stripe Connect account created", { accountId });
 
-      // Save account ID to profile
-      await supabaseClient
+      // Save account ID to profile (use admin to bypass RLS)
+      const { error: updateError } = await supabaseAdmin
         .from("profiles")
         .update({ 
           stripe_account_id: accountId,
           stripe_account_status: 'pending'
         })
         .eq("user_id", user.id);
+
+      if (updateError) {
+        logStep("ERROR: Failed to save account ID to profile", { error: updateError.message });
+      } else {
+        logStep("Account ID saved to profile");
+      }
     }
 
     // Create account link for onboarding

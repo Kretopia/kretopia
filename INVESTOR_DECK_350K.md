@@ -1,8 +1,8 @@
 # ThriveIN Investor Deck
-## Pre-Seed Round: $350K Minimum
+## Pre-Seed Round: $350K+
 
-**Prepared:** February 2026  
-**Contact:** [Your Email]  
+**Prepared:** February 2026
+**Founder:** Ethan Auguste
 **Website:** thrivein.io
 
 ---
@@ -12,11 +12,11 @@
 ### ThriveIN
 # The Operating System for Creative Collaboration
 
-**Stop scrolling for collaborators. Start swiping.**
+**13 years of community building. Now going digital.**
 
-AI-powered matching • Verified portfolios • End-to-end payments
+AI-powered matching • Verified portfolios • End-to-end payments • Global creator network
 
-*Raising $350K Pre-Seed at $1.75M-$2M pre-money valuation*
+*Raising $350K+ Pre-Seed at $1.75M-$2M pre-money valuation*
 
 ---
 
@@ -88,57 +88,94 @@ AI-powered matching • Verified portfolios • End-to-end payments
 
 ### Early Metrics That Matter
 
-| Metric | Value | Benchmark |
-|--------|-------|-----------|
-| **Total Users** | 251 | - |
-| **Activated Users** | 110 (44%) | Target: 60% |
-| **Pro Tier Users** | 245 (98%) | Exceptional conversion |
-| **Monthly Active Users** | 106 (42%) | - |
-| **Portfolio Items** | 19 | Growing |
-| **Matches** | 11 | Early engagement |
-| **Projects Started** | 8 | Validation of work flow |
+**Platform Metrics (V3 Relaunch - Feb 2026):**
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **Registered Users** | 53 | Organic signups since relaunch |
+| **Pre-Populated Profiles** | 199 | Existing network ready to onboard |
+| **Pro Tier Conversion** | Growing | Active subscription testing |
+| **Matches Created** | 11 | Early engagement validation |
+| **Projects Started** | 8 | End-to-end flow working |
 
-**Growth Trajectory:**
-- 137 signups in week of Dec 29
-- 70 new users in last 30 days
-- Organic growth via word-of-mouth in Bali creator community
+**Distribution Channels Ready to Activate:**
+| Channel | Reach | Status |
+|---------|-------|--------|
+| **Bali WhatsApp Community** | 2,000+ | Active, engaged |
+| **Social Media Following** | 6,000+ | Multi-platform |
+| **Email List** | 10,000+ | Curated over 13 years |
 
 **What This Proves:**
-- ✅ Creators WANT this (98% Pro conversion)
-- ✅ Activation is working (44% complete profiles)
-- ✅ Ready to pour fuel on the fire
+- ✅ Platform is live and functional
+- ✅ Core user journey validated (Match → Project → Payment)
+- ✅ 18,000+ person distribution network ready to activate
+- ✅ 13 years of community trust = low CAC opportunity
 
 ---
 
 ## Slide 6: User Composition
 
-### Who's Already Using ThriveIN?
+### Our Existing Network & Community
 
-**Creator Breakdown (Top Roles):**
-| Role | Count | % |
-|------|-------|---|
-| Engineers/Mixers | 41 | 16% |
-| Cinematographers | 38 | 15% |
-| Producers | 25 | 10% |
-| Music Producers | 11 | 4% |
-| Mastering Engineers | 9 | 4% |
-| Content Creators | 9 | 4% |
-| Directors/DPs | 8 | 3% |
-| Actors/Actresses | 9 | 4% |
-| Others | 101 | 40% |
+**International Industry Professionals:**
+- Grammy Award Winners
+- Major Label Artists & Producers
+- Influencers & Content Creators
+- Celebrity Network
 
-**Geographic Distribution:**
-- 🇮🇩 Bali, Indonesia: 10+ (launch hub)
-- 🇺🇸 United States: 6
-- 🇵🇭 Philippines: 2
-- 🇬🇧 UK: 2
-- 🌍 15+ countries represented
+**Geographic Expansion Ready:**
+| Region | Status |
+|--------|--------|
+| 🇮🇩 **Bali, Indonesia** | Active launch hub |
+| 🇹🇹 **Caribbean** | Strong existing community |
+| 🇦🇪 **Dubai** | Established network |
+| 🇪🇺 **Europe** | Ready for expansion |
+| 🇺🇸 **Los Angeles** | Industry connections |
+
+**Creator Breakdown (Pre-Populated Profiles):**
+| Role | Count |
+|------|-------|
+| Engineers/Mixers | 41 |
+| Cinematographers | 38 |
+| Producers | 25 |
+| Music Producers | 11 |
+| Content Creators | 9 |
+| Directors/DPs | 8 |
+| Other Creatives | 100+ |
 
 **Key Insight:** Cross-industry mix proves the horizontal platform thesis. Audio engineers matching with cinematographers = new collaboration patterns.
 
 ---
 
-## Slide 7: Market Opportunity
+## Slide 7: The Thrive Ecosystem (Our Unfair Advantage)
+
+### 13 Years of Community Building
+
+**Thrive Collective (Est. 2013):**
+| Asset | Scale | Value |
+|-------|-------|-------|
+| **Events Hosted** | 500+ | Dubai, LA, Geneva, Trinidad, Bali |
+| **Creatives Showcased** | 1,000s | Verified track record |
+| **Speakers Featured** | 90+ | Industry credibility |
+| **Attendees** | 1,000s | Built-in user base |
+
+**Event Brands:**
+- **ThriveXchange** - Industry networking
+- **ThriveIN Bali** - Local creator community
+- **ThriveIN Dine** - Intimate creator dinners
+- **Thrive Master Class** - Educational workshops
+
+**Owned Media Properties:**
+| Property | Reach | Status |
+|----------|-------|--------|
+| **Discover A Thriver Podcast** | Top industry guests | Active |
+| **ThriveIN Magazine** | 400+ locations in Bali | Bali's top print magazine |
+
+**Why This Matters:**
+> Most startups spend years building community trust. We've spent 13 years doing it—now we're digitizing it.
+
+---
+
+## Slide 8: Market Opportunity
 
 ### The Creator Economy is Massive and Underserved
 
@@ -162,7 +199,30 @@ AI-powered matching • Verified portfolios • End-to-end payments
 
 ---
 
-## Slide 8: Competitive Landscape
+## Slide 9: Product Timeline & Validation
+
+### From Movement to Platform
+
+| Year | Milestone | Validation |
+|------|-----------|------------|
+| **2013** | Thrive Collective founded | Community-first approach |
+| **2020** | ThriveIN V1 Launch | 1,000 users acquired |
+| **2023** | ThriveIN V2 | $50K grant from NEAR Protocol |
+| **2026** | ThriveIN V3 Relaunch | Full-stack platform with AI matching |
+
+**V3 Platform Features:**
+- ✅ AI-powered swipe matching (Circle)
+- ✅ Local creator discovery (Nearby)
+- ✅ Project workspaces with milestones (ThriveDesk)
+- ✅ Escrow payments via Stripe (ThrivePay)
+- ✅ Digital marketplace
+- ✅ Creative Sessions (real-world meetups)
+
+**Grant Validation:** Received $50K from NEAR Protocol in 2023, demonstrating early institutional confidence in the vision.
+
+---
+
+## Slide 10: Competitive Landscape
 
 ### Why ThriveIN Wins
 
@@ -183,7 +243,7 @@ AI-powered matching • Verified portfolios • End-to-end payments
 
 ---
 
-## Slide 9: Business Model
+## Slide 11: Business Model
 
 ### How We Make Money
 
@@ -210,60 +270,79 @@ AI-powered matching • Verified portfolios • End-to-end payments
 
 ---
 
-## Slide 10: Go-to-Market Strategy
+## Slide 12: Go-to-Market Strategy
 
-### Land & Expand from Bali
+### Land & Expand (Community-First)
 
-**Phase 1: Bali (Now - Month 6)**
-- Dense creative community (digital nomads, filmmakers, musicians)
-- In-person onboarding and community building
-- Target: 1,000 active users
-- Host weekly Creative Sessions
+**Phase 1: Activate Existing Network (Now - Month 6)**
+- Convert 18,000+ person distribution list
+- In-person onboarding via existing events
+- Target: 2,500 active users
+- Leverage ThriveIN Magazine, Podcast, Events
 
-**Phase 2: Southeast Asia (Month 6-12)**
-- Expand to Bangkok, Manila, Singapore
-- Partner with co-working spaces and creator hubs
-- Target: 5,000 active users
+**Phase 2: Caribbean, Dubai, Europe (Month 6-12)**
+- Activate existing communities in these regions
+- Partner with established venue networks
+- Target: 10,000 active users
 
-**Phase 3: Global (Month 12-18)**
-- Los Angeles, London, Berlin, Lagos
+**Phase 3: Global Expansion (Month 12-18)**
+- Los Angeles, London, Lagos
 - Industry-specific campaigns (Film festivals, music conferences)
-- Target: 25,000 active users
+- Target: 50,000 active users
 
 **Growth Channels:**
-1. **Community-led growth** - Invite system, referral rewards
-2. **Content marketing** - Creator success stories, collaboration tips
-3. **Partnerships** - Co-working spaces, creator tools, education platforms
-4. **Events** - Creative Sessions, workshops, meetups
+1. **Owned distribution** - 18K+ email/social/WhatsApp (FREE)
+2. **Event integration** - ThriveXchange, ThriveIN Dine, Master Class
+3. **Media amplification** - Podcast, Magazine, Press
+4. **Community-led growth** - Invite system, referral rewards
 
 ---
 
-## Slide 11: The Team
+## Slide 13: Press & Credibility
 
-### Solo Founder + Network
+### As Seen In
 
-**Founder:**
-- [Your Name, Title]
-- [Background - industry experience, previous startups, relevant expertise]
-- Deep network in music/film industry (Grammy winners, nominated talent)
-- Based in Bali, connected to global creative hubs
+- **Swagger Magazine**
+- **Loop Caribbean**
+- **Trinidad Express**
 
-**Advisors / Network:**
-- [List any advisors, mentors, or notable connections]
+**Industry Recognition:**
+- 13 years of consistent community building
+- Trusted by Grammy winners and industry professionals
+- Established presence across 5+ countries
+
+---
+
+## Slide 14: The Founder
+
+### Ethan Auguste
+
+**21+ Years in Events, Media & Creative Industries**
+
+Ethan Auguste is the Founder of Thrive, a global creative and community-driven ecosystem built to connect, empower, and monetize the world's next generation of creators, entrepreneurs, and cultural leaders.
+
+**Track Record:**
+- 🎪 **500+ events produced** across Dubai, Geneva, LA, Trinidad & Bali
+- 🎨 **1,000s of creatives showcased** before "creator economy" was a term
+- 🌍 **Global network** spanning Grammy winners to emerging talent
+- 📱 **Platform builder** - V1 (1K users), V2 ($50K grant), V3 (full-stack)
+
+**Leadership Philosophy:**
+> "Culture-first thinking—merging real-world connection with digital infrastructure, building businesses that prioritize community, authenticity, and long-term value over short-term hype."
+
+**Why Ethan Wins:**
+- Not a tech founder trying to build community
+- A community builder who's learned tech
+- 13 years of trust = unfair distribution advantage
 
 **Hiring Plan (Post-Raise):**
 - **Full-Stack Engineer** - Scale platform, mobile app
 - **Head of Growth** - Community building, partnerships
 - **Contractors** - Design, content, support
 
-**Why Solo Works (For Now):**
-- Platform is built and functional
-- Focus on growth, not management overhead
-- Ready to hire once capital secured
-
 ---
 
-## Slide 12: Use of Funds
+## Slide 15: Use of Funds
 
 ### $350K Allocation (18 Months Runway)
 
@@ -275,18 +354,18 @@ AI-powered matching • Verified portfolios • End-to-end payments
 | **Buffer** | $35K (10%) | Unexpected opportunities, market shifts |
 
 **Key Milestones:**
-- Month 6: 1,000 active users, $10K MRR
-- Month 12: 5,000 users, $50K MRR, seed-ready metrics
-- Month 18: 15,000 users, $150K MRR, Series A conversations
+- Month 6: 2,500 active users, $15K MRR
+- Month 12: 10,000 users, $75K MRR, seed-ready metrics
+- Month 18: 25,000 users, $200K MRR, Series A conversations
 
 ---
 
-## Slide 13: The Ask
+## Slide 16: The Ask
 
-### Raising $350K Pre-Seed
+### Raising $350K+ Pre-Seed
 
 **Terms:**
-- **Raise:** $350K minimum
+- **Raise:** $350K+
 - **Valuation:** $1.75M - $2M pre-money
 - **Instrument:** SAFE or Priced Round (flexible)
 - **Use:** 18 months runway to Series A metrics
@@ -298,12 +377,14 @@ AI-powered matching • Verified portfolios • End-to-end payments
 
 **What You Get:**
 - Ground floor of the creator economy operating system
-- 98% Pro conversion proves product-market fit
-- Clear path to $1M+ ARR within 24 months
+- 13 years of community trust = built-in distribution
+- 18,000+ person network ready to activate
+- Proven founder with 500+ events and global network
+- Clear path to $2M+ ARR within 24 months
 
 ---
 
-## Slide 14: Vision
+## Slide 17: Vision
 
 ### The Future of Creative Work
 
@@ -328,7 +409,7 @@ AI-powered matching • Verified portfolios • End-to-end payments
 
 ---
 
-## Slide 15: Contact / Next Steps
+## Slide 18: Contact / Next Steps
 
 ### Let's Build the Future of Creative Collaboration
 
@@ -338,9 +419,9 @@ AI-powered matching • Verified portfolios • End-to-end payments
 - Partnership opportunities
 
 **Contact:**
-- Email: [your email]
+- Founder: Ethan Auguste
 - Website: thrivein.io
-- LinkedIn: [your LinkedIn]
+- Email: [your email]
 
 ---
 

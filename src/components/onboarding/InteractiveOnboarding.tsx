@@ -132,28 +132,27 @@ export function InteractiveOnboarding() {
         .eq("user_id", user.id)
         .single();
 
-      if (profile && !profile.onboarding_completed) {
-        setCurrentStep(profile.onboarding_step || 0);
-        setIsVisible(true);
+      // Only show interactive tour AFTER onboarding is completed
+      // The onboarding_step field is used by Onboarding.tsx for profile setup (steps 1-7)
+      // The interactive tour uses localStorage to avoid conflicting with profile setup
+      if (profile?.onboarding_completed) {
+        const tourCompleted = localStorage.getItem(`tour_completed_${user.id}`);
+        if (!tourCompleted) {
+          setCurrentStep(0);
+          setIsVisible(true);
+        }
       }
     } catch (error) {
       console.error("Error checking onboarding status:", error);
     }
   };
 
-  const saveProgress = useCallback(async (step: number, completed: boolean = false) => {
+  const saveProgress = useCallback(async (_step: number, completed: boolean = false) => {
     if (!userId) return;
     
-    try {
-      await supabase
-        .from("profiles")
-        .update({ 
-          onboarding_step: step,
-          onboarding_completed: completed 
-        })
-        .eq("user_id", userId);
-    } catch (error) {
-      console.error("Error saving onboarding progress:", error);
+    // Use localStorage instead of database to avoid conflicting with Onboarding.tsx
+    if (completed) {
+      localStorage.setItem(`tour_completed_${userId}`, 'true');
     }
   }, [userId]);
 
@@ -190,7 +189,7 @@ export function InteractiveOnboarding() {
   const completeTour = async () => {
     setIsVisible(false);
     await saveProgress(ONBOARDING_STEPS.length - 1, true);
-    navigate("/dashboard");
+    navigate("/circle");
   };
 
   const handleSkip = async () => {

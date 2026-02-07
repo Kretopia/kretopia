@@ -1901,6 +1901,133 @@ export type Database = {
         }
         Relationships: []
       }
+      oauth_apps: {
+        Row: {
+          client_id: string
+          client_secret: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          owner_id: string | null
+          redirect_uris: string[]
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string
+          client_secret?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          owner_id?: string | null
+          redirect_uris?: string[]
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          client_secret?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          owner_id?: string | null
+          redirect_uris?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      oauth_codes: {
+        Row: {
+          app_id: string
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          redirect_uri: string
+          scopes: string[]
+          used: boolean
+          user_id: string
+        }
+        Insert: {
+          app_id: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          redirect_uri: string
+          scopes?: string[]
+          used?: boolean
+          user_id: string
+        }
+        Update: {
+          app_id?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          redirect_uri?: string
+          scopes?: string[]
+          used?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_codes_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oauth_tokens: {
+        Row: {
+          access_token: string
+          app_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          revoked: boolean
+          scopes: string[]
+          user_id: string
+        }
+        Insert: {
+          access_token?: string
+          app_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          revoked?: boolean
+          scopes?: string[]
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          app_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          revoked?: boolean
+          scopes?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_tokens_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opportunities: {
         Row: {
           compensation: string | null

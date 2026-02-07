@@ -149,3 +149,12 @@ verify_jwt = true
 
 [functions.generate-agent-actions]
 verify_jwt = true
+
+[functions.sso-authorize]
+verify_jwt = false
+
+[functions.sso-token]
+verify_jwt = false
+
+[functions.sso-userinfo]
+verify_jwt = false

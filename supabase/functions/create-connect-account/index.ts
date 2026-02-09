@@ -34,17 +34,9 @@ serve(async (req) => {
       });
     }
 
-    // Check for restricted keys - they don't have Connect permissions
+    // Log key type for debugging (restricted keys work if Connect permissions are enabled)
     if (stripeKey.startsWith("rk_")) {
-      logStep("ERROR: Restricted key detected");
-      return new Response(JSON.stringify({
-        error: "Invalid Stripe key type",
-        message: "You're using a restricted Stripe key (rk_*) which doesn't have Connect permissions. Please use a full secret key (sk_test_* or sk_live_*) from your Stripe Dashboard.",
-        instructions: "Go to Stripe Dashboard → Developers → API Keys → Copy the Secret key (starts with sk_)"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      });
+      logStep("Using restricted key - ensure Connect permissions are enabled in Stripe Dashboard");
     }
 
     // Check for publishable key used by mistake

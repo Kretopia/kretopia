@@ -45,8 +45,7 @@ export const LaunchingInBaliSection = () => {
                   className="w-full sm:w-auto border-2 border-white/70 bg-white hover:bg-white/90 text-primary backdrop-blur-sm font-semibold group"
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
-                  <span className="sm:hidden">Get Access Now</span>
-                  <span className="hidden sm:inline">I Have an Invite Code</span>
+                  Get Started Free
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>

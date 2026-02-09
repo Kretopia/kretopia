@@ -28,7 +28,7 @@ const Landing = () => {
     <div className="min-h-screen">
       <SEO 
         title="ThriveIN - Swipe to Find Your Next Creative Collaborator"
-        description="Stop scrolling Facebook groups. AI-powered matching for verified creatives — videographers, photographers, musicians, designers. Find your next collab in minutes."
+        description="Tired of flaky collaborators and juggling 5 apps? ThriveIN helps verified creatives find collaborators, manage projects, and get paid — all in one place."
         url="https://thrivein.io"
       />
       <HeroSection />

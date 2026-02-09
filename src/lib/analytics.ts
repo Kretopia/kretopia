@@ -85,6 +85,7 @@ export const EventCategory = {
   COLLABORATION: 'collaboration',
   PROJECT: 'project',
   PAYWALL: 'paywall',
+  PAYMENT: 'payment',
 } as const;
 
 // Common event tracking functions
@@ -348,5 +349,61 @@ export const analytics = {
       eventName: 'session_end',
       eventCategory: EventCategory.ENGAGEMENT,
       properties: { duration_seconds: duration },
+    }),
+
+  // Payment & Milestone events
+  milestoneCreated: (projectId: string, amount: number) =>
+    trackEvent({
+      eventName: 'milestone_created',
+      eventCategory: EventCategory.PAYMENT,
+      properties: { project_id: projectId, amount },
+    }),
+
+  milestoneEscrowAttempt: (projectId: string, milestoneId: string, amount: number) =>
+    trackEvent({
+      eventName: 'milestone_escrow_attempt',
+      eventCategory: EventCategory.PAYMENT,
+      properties: { project_id: projectId, milestone_id: milestoneId, amount },
+    }),
+
+  milestonePaymentAttempt: (projectId: string, milestoneId: string, amount: number) =>
+    trackEvent({
+      eventName: 'milestone_payment_attempt',
+      eventCategory: EventCategory.PAYMENT,
+      properties: { project_id: projectId, milestone_id: milestoneId, amount },
+    }),
+
+  milestoneEscrowRelease: (projectId: string, milestoneId: string, amount: number) =>
+    trackEvent({
+      eventName: 'milestone_escrow_release',
+      eventCategory: EventCategory.PAYMENT,
+      properties: { project_id: projectId, milestone_id: milestoneId, amount },
+    }),
+
+  milestoneEscrowRefund: (projectId: string, milestoneId: string) =>
+    trackEvent({
+      eventName: 'milestone_escrow_refund',
+      eventCategory: EventCategory.PAYMENT,
+      properties: { project_id: projectId, milestone_id: milestoneId },
+    }),
+
+  milestoneStatusChange: (projectId: string, milestoneId: string, newStatus: string) =>
+    trackEvent({
+      eventName: 'milestone_status_change',
+      eventCategory: EventCategory.PAYMENT,
+      properties: { project_id: projectId, milestone_id: milestoneId, new_status: newStatus },
+    }),
+
+  checkoutAttempt: (tier: string, priceId: string) =>
+    trackEvent({
+      eventName: 'checkout_attempt',
+      eventCategory: EventCategory.SUBSCRIPTION,
+      properties: { tier, price_id: priceId },
+    }),
+
+  customerPortalOpened: () =>
+    trackEvent({
+      eventName: 'customer_portal_opened',
+      eventCategory: EventCategory.SUBSCRIPTION,
     }),
 };

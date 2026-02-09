@@ -26,6 +26,13 @@ const Install = () => {
   const baseUrl = "https://thrivein.io";
   const joinUrl = `${baseUrl}/join/${defaultInviteCode}`;
   useEffect(() => {
+    // Track install page view
+    const trackView = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.pageView("install");
+    };
+    trackView();
+
     // Check if already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
@@ -51,11 +58,18 @@ const Install = () => {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
+    // Track install attempt
+    const { analytics } = await import("@/lib/analytics");
+    analytics.featureUsed("pwa_install_prompt");
+
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
 
     if (outcome === "accepted") {
       setIsInstalled(true);
+      analytics.featureUsed("pwa_installed");
+    } else {
+      analytics.featureUsed("pwa_install_dismissed");
     }
     setDeferredPrompt(null);
   };

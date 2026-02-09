@@ -106,6 +106,15 @@ const Settings = () => {
   });
   const [saving, setSaving] = useState(false);
 
+  // Track settings page view
+  useEffect(() => {
+    const trackView = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.pageView("settings");
+    };
+    trackView();
+  }, []);
+
   // PWA install detection
   useEffect(() => {
     // Check if already installed

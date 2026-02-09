@@ -156,6 +156,13 @@ const Messages = () => {
     if (selectedConversation && currentUserId) {
       fetchMessages(selectedConversation);
       markMessagesAsRead(selectedConversation);
+      
+      // Track conversation opened
+      const trackConversation = async () => {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.featureUsed("conversation_opened", { partner_id: selectedConversation });
+      };
+      trackConversation();
     }
   }, [selectedConversation, currentUserId]);
 

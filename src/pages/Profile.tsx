@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag, Lock, Crown } from "lucide-react";
@@ -77,6 +77,15 @@ const ProfileContent = () => {
     isLoading,
   } = useProfileContext();
 
+  // Track profile page view
+  useEffect(() => {
+    const trackView = async () => {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.pageView("profile");
+    };
+    trackView();
+  }, []);
+
   // Get user's subscription tier
   const userTier: SubscriptionTier = (profile?.subscription_tier as SubscriptionTier) || "free";
   const hasAdvancedProfile = TIER_LIMITS[userTier].hasAdvancedProfile;
@@ -106,7 +115,11 @@ const ProfileContent = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleShare = () => setIsShareDialogOpen(true);
+  const handleShare = async () => {
+    const { analytics } = await import("@/lib/analytics");
+    analytics.featureUsed("profile_shared");
+    setIsShareDialogOpen(true);
+  };
   
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -212,8 +225,12 @@ const ProfileContent = () => {
     });
   };
 
-  const handleDownloadEPK = () => {
+  const handleDownloadEPK = async () => {
     if (!profile) return;
+
+    // Track EPK download
+    const { analytics } = await import("@/lib/analytics");
+    analytics.featureUsed("epk_downloaded");
 
     const doc = new jsPDF();
     doc.setFontSize(20);

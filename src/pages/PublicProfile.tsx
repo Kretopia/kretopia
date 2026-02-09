@@ -392,11 +392,18 @@ const PublicProfile = () => {
       return;
     }
 
+    // Track message from profile
+    const { analytics } = await import("@/lib/analytics");
+    analytics.conversationStarted(userId || '', 'profile');
+
     // Navigate to messages page with the receiver ID
     navigate(`/messages?user=${userId}`);
   };
 
-  const handleStartProject = () => {
+  const handleStartProject = async () => {
+    // Track start project from profile
+    const { analytics } = await import("@/lib/analytics");
+    analytics.featureUsed("start_project_from_profile", { target_user_id: userId });
     setShowStartProjectDialog(true);
   };
 

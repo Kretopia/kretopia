@@ -145,12 +145,21 @@ export default function Circle() {
     }
   }, [activeTab, user?.id, fetchConnections]);
 
-  const handleMatch = (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
+  const handleMatch = async (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
     console.log('[Circle] Match detected:', matchedUserData);
+    const { analytics } = await import("@/lib/analytics");
+    analytics.match(matchedUserData.userId);
   };
 
   const handleMessage = (userId: string) => {
     navigate(`/messages?user=${userId}`);
+  };
+
+  // Track tab changes
+  const handleTabChange = async (tab: string) => {
+    setActiveTab(tab);
+    const { analytics } = await import("@/lib/analytics");
+    analytics.featureUsed("circle_tab_switch", { tab });
   };
 
   const handleFiltersChange = (newFilters: SwipeFiltersState) => {
@@ -200,7 +209,7 @@ export default function Circle() {
           missingFields={profileVisibility.missingFields} 
         />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

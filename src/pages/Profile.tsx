@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag, Lock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -241,7 +240,7 @@ const ProfileContent = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen pb-20 md:pb-6 bg-background">
-        <div className="container mx-auto px-3 sm:px-4 max-w-7xl">
+        <div className="container mx-auto px-3 sm:px-4 max-w-3xl">
           <SkeletonProfile />
         </div>
       </div>
@@ -282,134 +281,141 @@ const ProfileContent = () => {
         className="hidden"
       />
 
-      <div className="container mx-auto px-2 sm:px-3 md:px-4 max-w-7xl">
-        {/* Profile Hero - Always visible */}
-        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-lg border-b mb-3 sm:mb-4">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
+        {/* Profile Hero - Clean, no sticky */}
         <ProfileHero
-            profile={profile}
-            stats={stats}
-            isOwnProfile={true}
-            creditsCount={credits?.length || 0}
-            awardsCount={awards?.length || 0}
-            onEdit={() => {
-              setEditForm({
-                full_name: profile.full_name || "",
-                role: profile.role || "",
-                bio: profile.bio || "",
-                location: profile.location || "",
-                avatar_url: profile.avatar_url || "",
-                company_size: profile.company_size || "",
-                collab_intent: (profile as any).collab_intent || "seeking_collaborators",
-              });
-              setIsEditOpen(true);
-            }}
-            onShare={handleShare}
-            onAvatarClick={() => fileInputRef.current?.click()}
-            isUploadingAvatar={isUploadingAvatar}
-            onShowQR={() => setIsQRDialogOpen(true)}
-          />
-        </div>
-
-        {/* Pro Trial Banner */}
-        <ProTrialBanner 
-          subscriptionStatus={profile.subscription_status}
-          subscriptionEndDate={profile.subscription_end_date}
-          subscriptionTier={profile.subscription_tier}
-        />
-
-        {/* Profile Visibility Banner */}
-        {(() => {
-          const missingFields = getDiscoveryMissingFields(profile as any, portfolioItems.length);
-          const isVisible = missingFields.length === 0;
-          return (
-            <ProfileVisibilityBanner 
-              isVisible={isVisible} 
-              missingFields={missingFields} 
-            />
-          );
-        })()}
-
-        {/* Achievement Badges - Show verified credentials (tier shown in ProfileHero, don't duplicate) */}
-        {(profile.achievement_badges?.length > 0) && (
-          <AchievementBadges 
-            achievements={profile.achievement_badges || []}
-            showAll={false}
-          />
-        )}
-
-        {/* Credential Verification Card with Progress Modal & Report */}
-        <CredentialVerificationCard 
-          userId={profile.user_id}
-          fullName={profile.full_name}
-          role={profile.role || ''}
-          bio={profile.bio || ''}
-          socialLinks={{
-            spotify: profile.spotify_url || '',
-            youtube: profile.youtube_url || '',
-            imdb: profile.imdb_url || '',
-            instagram: profile.instagram_url || '',
-            linkedin: profile.linkedin_url || '',
+          profile={profile}
+          stats={stats}
+          isOwnProfile={true}
+          creditsCount={credits?.length || 0}
+          awardsCount={awards?.length || 0}
+          onEdit={() => {
+            setEditForm({
+              full_name: profile.full_name || "",
+              role: profile.role || "",
+              bio: profile.bio || "",
+              location: profile.location || "",
+              avatar_url: profile.avatar_url || "",
+              company_size: profile.company_size || "",
+              collab_intent: (profile as any).collab_intent || "seeking_collaborators",
+            });
+            setIsEditOpen(true);
           }}
-          currentTier={profile.verification_tier || undefined}
-          currentAchievements={profile.achievement_badges || []}
-          verifiedCredentials={(profile as any).verified_credentials || []}
-          verificationScore={profile.verification_score || undefined}
-          verifiedAt={profile.verified_at || undefined}
-          breakdown={(profile as any).verification_breakdown || undefined}
-          onVerificationComplete={() => fetchData()}
+          onShare={handleShare}
+          onAvatarClick={() => fileInputRef.current?.click()}
+          isUploadingAvatar={isUploadingAvatar}
+          onShowQR={() => setIsQRDialogOpen(true)}
         />
 
-        {/* Import & Verify Credits - Key Feature */}
-        <PlatformConnectionCard onCreditsImported={() => fetchData()} />
-
-        {/* AI Insights Section - Differentiator */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-          <AIPortfolioInsights 
-            portfolioItems={portfolioItems}
-            userRole={profile.role || 'Creator'}
-            isPro={userTier === 'pro'}
+        {/* Banners - compact */}
+        <div className="space-y-2 mb-2">
+          <ProTrialBanner 
+            subscriptionStatus={profile.subscription_status}
+            subscriptionEndDate={profile.subscription_end_date}
+            subscriptionTier={profile.subscription_tier}
           />
-          <AIProfileOptimizer 
-            profile={{
-              full_name: profile.full_name,
-              role: profile.role,
-              bio: profile.bio,
-              professional_skills: Array.isArray(profile.professional_skills) ? profile.professional_skills as string[] : [],
-              avatar_url: profile.avatar_url,
-              location: profile.location
-            }}
-            portfolioCount={portfolioItems.length}
-            isPro={userTier === 'pro'}
-          />
+          {(() => {
+            const missingFields = getDiscoveryMissingFields(profile as any, portfolioItems.length);
+            const isVisible = missingFields.length === 0;
+            return (
+              <ProfileVisibilityBanner 
+                isVisible={isVisible} 
+                missingFields={missingFields} 
+              />
+            );
+          })()}
         </div>
 
-        {/* Simplified Content - Portfolio First */}
-        <div className="space-y-3 sm:space-y-4">
-            {/* Portfolio Section */}
-            <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm">
-              <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">My Work</h2>
-              <PortfolioSection 
-                items={portfolioItems} 
-                isOwnProfile={true}
-                onRefresh={fetchData}
-                subscriptionTier={userTier}
+        {/* Tools & Verification - Collapsible */}
+        <details className="group mb-6">
+          <summary className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors py-2 select-none">
+            <TrendingUp className="h-4 w-4" />
+            <span>Profile Tools & Verification</span>
+            <span className="ml-auto text-xs group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div className="pt-3 space-y-3">
+            {(profile.achievement_badges?.length > 0) && (
+              <AchievementBadges 
+                achievements={profile.achievement_badges || []}
+                showAll={false}
+              />
+            )}
+            <CredentialVerificationCard 
+              userId={profile.user_id}
+              fullName={profile.full_name}
+              role={profile.role || ''}
+              bio={profile.bio || ''}
+              socialLinks={{
+                spotify: profile.spotify_url || '',
+                youtube: profile.youtube_url || '',
+                imdb: profile.imdb_url || '',
+                instagram: profile.instagram_url || '',
+                linkedin: profile.linkedin_url || '',
+              }}
+              currentTier={profile.verification_tier || undefined}
+              currentAchievements={profile.achievement_badges || []}
+              verifiedCredentials={(profile as any).verified_credentials || []}
+              verificationScore={profile.verification_score || undefined}
+              verifiedAt={profile.verified_at || undefined}
+              breakdown={(profile as any).verification_breakdown || undefined}
+              onVerificationComplete={() => fetchData()}
+            />
+            <PlatformConnectionCard onCreditsImported={() => fetchData()} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <AIPortfolioInsights 
+                portfolioItems={portfolioItems}
+                userRole={profile.role || 'Creator'}
+                isPro={userTier === 'pro'}
+              />
+              <AIProfileOptimizer 
+                profile={{
+                  full_name: profile.full_name,
+                  role: profile.role,
+                  bio: profile.bio,
+                  professional_skills: Array.isArray(profile.professional_skills) ? profile.professional_skills as string[] : [],
+                  avatar_url: profile.avatar_url,
+                  location: profile.location
+                }}
+                portfolioCount={portfolioItems.length}
+                isPro={userTier === 'pro'}
               />
             </div>
+          </div>
+        </details>
 
-            {/* Skills Section - Always show for own profile so users can add skills */}
-            <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm">
-              <SkillsSection
-                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
-                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
-                jobTitle={profile.job_title}
-                industry={profile.industry}
-                isOwnProfile={true}
-                userId={profile.user_id}
-                onRefresh={fetchData}
-              />
-            </div>
+        {/* === Content Sections — flat, no card wrappers === */}
+        <div className="space-y-8">
+          
+          {/* Portfolio / EPK */}
+          <section>
+            <h2 className="text-xl font-bold mb-4">My Work</h2>
+            <PortfolioSection 
+              items={portfolioItems} 
+              isOwnProfile={true}
+              onRefresh={fetchData}
+              subscriptionTier={userTier}
+            />
+          </section>
 
-            {/* Social Stats */}
+          <hr className="border-border" />
+
+          {/* Skills */}
+          <section>
+            <SkillsSection
+              professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+              passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
+              jobTitle={profile.job_title}
+              industry={profile.industry}
+              isOwnProfile={true}
+              userId={profile.user_id}
+              onRefresh={fetchData}
+            />
+          </section>
+
+          <hr className="border-border" />
+
+          {/* Social Stats */}
+          <section>
             <SocialStatsSection 
               youtubeSubscribers={profile.youtube_subscribers}
               instagramFollowers={profile.instagram_followers}
@@ -419,131 +425,134 @@ const ProfileContent = () => {
               linkedinConnections={profile.linkedin_connections}
               verifiedMetrics={profile.social_verified}
             />
+          </section>
 
-
-            {industryStats.length > 0 && (
-              <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm">
-                <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Industry Stats</h2>
+          {industryStats.length > 0 && (
+            <>
+              <hr className="border-border" />
+              <section>
+                <h2 className="text-xl font-bold mb-4">Industry Stats</h2>
                 <IndustryStatsSection 
                   stats={industryStats}
                   isOwnProfile={true}
                   onRefresh={fetchData}
                 />
+              </section>
+            </>
+          )}
+
+          <hr className="border-border" />
+
+          {/* Experience & Credits */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Experience & Credits</h2>
+              {!hasAdvancedProfile && (
+                <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
+                  <Crown className="h-3 w-3" />
+                  Pro
+                </Badge>
+              )}
+            </div>
+            {hasAdvancedProfile ? (
+              <UnifiedWorkHistory 
+                userId={profile.user_id}
+                isOwnProfile={true}
+                onRefresh={fetchData}
+              />
+            ) : (
+              <div className="text-center py-8">
+                <Lock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <p className="text-muted-foreground mb-4">Upgrade to Pro to add your professional credits</p>
+                <Button onClick={() => navigate("/subscription")} className="gap-2">
+                  <Crown className="h-4 w-4" />
+                  Upgrade to Pro
+                </Button>
               </div>
             )}
+          </section>
 
-            {/* Pro Feature: Experience & Credits - Now Unified */}
-            <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm relative">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <h2 className="text-lg sm:text-xl font-bold">Experience & Credits</h2>
+          <hr className="border-border" />
+
+          {/* Press & Awards - side by side */}
+          <section className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                Press Coverage
                 {!hasAdvancedProfile && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
+                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
                     <Crown className="h-3 w-3" />
                     Pro
                   </Badge>
                 )}
-              </div>
+              </h3>
               {hasAdvancedProfile ? (
-                <UnifiedWorkHistory 
+                <PressLinksSection 
                   userId={profile.user_id}
                   isOwnProfile={true}
                   onRefresh={fetchData}
                 />
               ) : (
-                <div className="text-center py-8">
-                  <Lock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                  <p className="text-muted-foreground mb-4">Upgrade to Pro to add your professional credits</p>
-                  <Button onClick={() => navigate("/subscription")} className="gap-2">
-                    <Crown className="h-4 w-4" />
-                    Upgrade to Pro
+                <div className="text-center py-6">
+                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                    <Crown className="h-3 w-3" />
+                    Unlock
                   </Button>
                 </div>
               )}
             </div>
-
-            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-              {/* Pro Feature: Press Links */}
-              <div className="rounded-xl border bg-card p-3 sm:p-4 md:p-6 shadow-sm relative">
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className="font-semibold text-sm sm:text-base flex items-center gap-2">
-                    Press Coverage
-                    {!hasAdvancedProfile && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-[10px] sm:text-xs">
-                        <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        Pro
-                      </Badge>
-                    )}
-                  </h3>
-                </div>
-                {hasAdvancedProfile ? (
-                  <PressLinksSection 
-                    userId={profile.user_id}
-                    isOwnProfile={true}
-                    onRefresh={fetchData}
-                  />
-                ) : (
-                  <div className="text-center py-6">
-                    <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                    <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
-                    <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                      <Crown className="h-3 w-3" />
-                      Unlock
-                    </Button>
-                  </div>
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                Awards
+                {!hasAdvancedProfile && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                    <Crown className="h-3 w-3" />
+                    Pro
+                  </Badge>
                 )}
-              </div>
-
-              {/* Pro Feature: Awards */}
-              <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm relative">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    Awards
-                    {!hasAdvancedProfile && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                        <Crown className="h-3 w-3" />
-                        Pro
-                      </Badge>
-                    )}
-                  </h3>
+              </h3>
+              {hasAdvancedProfile ? (
+                <AwardsSection 
+                  userId={profile.user_id}
+                  isOwnProfile={true}
+                  onRefresh={fetchData}
+                />
+              ) : (
+                <div className="text-center py-6">
+                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                    <Crown className="h-3 w-3" />
+                    Unlock
+                  </Button>
                 </div>
-                {hasAdvancedProfile ? (
-                  <AwardsSection 
-                    userId={profile.user_id}
-                    isOwnProfile={true}
-                    onRefresh={fetchData}
-                  />
-                ) : (
-                  <div className="text-center py-6">
-                    <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                    <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
-                    <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                      <Crown className="h-3 w-3" />
-                      Unlock
-                    </Button>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
+          </section>
 
-            {/* Reviews Section */}
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <ReviewsSection 
-                reviews={reviews}
-                isOwnProfile={true}
-                profileUserId={profile.user_id}
-                onRefresh={fetchData}
-              />
-            </div>
+          <hr className="border-border" />
 
-            {/* Products & Services Section */}
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <DigitalProductsSection 
-                userId={profile.user_id}
-                isOwner={true}
-              />
-            </div>
+          {/* Reviews */}
+          <section>
+            <ReviewsSection 
+              reviews={reviews}
+              isOwnProfile={true}
+              profileUserId={profile.user_id}
+              onRefresh={fetchData}
+            />
+          </section>
 
-            {/* Media Kit section hidden for now - to be improved later */}
+          <hr className="border-border" />
+
+          {/* Products & Services */}
+          <section>
+            <DigitalProductsSection 
+              userId={profile.user_id}
+              isOwner={true}
+            />
+          </section>
         </div>
       </div>
 

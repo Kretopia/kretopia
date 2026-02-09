@@ -315,7 +315,10 @@ const Install = () => {
             )}
           </div>
 
-          <Button variant="outline" onClick={() => navigate("/")} className="w-full">
+          <Button onClick={() => navigate("/auth")} className="w-full" size="lg">
+            Skip — Sign Up Now <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+          <Button variant="ghost" onClick={() => navigate("/")} className="w-full text-muted-foreground">
             Continue in Browser
           </Button>
         </CardContent>

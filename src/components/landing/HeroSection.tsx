@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Lock, CheckCircle2, ArrowRight } from "lucide-react";
+import { Sparkles, CheckCircle2, ArrowRight, Zap } from "lucide-react";
 
 export const HeroSection = () => {
   const handleCtaClick = async () => {
     const { analytics } = await import("@/lib/analytics");
-    analytics.ctaClick("hero_get_access", "landing_hero");
+    analytics.ctaClick("hero_get_started", "landing_hero");
   };
   
   return (
@@ -18,43 +18,43 @@ export const HeroSection = () => {
       
       <div className="container relative mx-auto max-w-6xl">
         <div className="animate-slide-up text-center">
-          {/* Invite-Only Badge */}
-          <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-amber-500/50 bg-amber-500/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105">
-            <Lock className="h-3 w-3 sm:h-4 sm:w-4 text-amber-500" />
-            <span className="font-medium text-amber-500">Invite Only Beta • Limited Spots</span>
+          {/* Social proof badge */}
+          <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105">
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+            <span className="font-medium text-primary">130+ Verified Creatives Already On Board</span>
           </div>
           
-          {/* Pain-first headline */}
+          {/* Problem-first headline */}
           <h1 className="mb-4 sm:mb-6 md:mb-8 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight sm:leading-[1.1] tracking-tight px-4">
-            Stop Scrolling for{" "}
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Collaborators.
-            </span>
+            Tired of Flaky Collaborators,{" "}
             <br className="hidden sm:block" />
-            <span className="text-foreground/90"> Start Swiping.</span>
+            Endless DMs &{" "}
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Juggling 5 Apps?
+            </span>
           </h1>
           
           <p className="mx-auto mb-2 sm:mb-3 max-w-3xl text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold leading-tight text-foreground px-6 sm:px-4">
-            Tinder for creative collaborations.
+            Find. Verify. Work. Get Paid.
           </p>
           
           <p className="mx-auto mb-6 sm:mb-8 md:mb-10 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
-            AI matches you with verified videographers, photographers, musicians & designers — online or at creative sessions near you.
+            ThriveIN helps verified creatives find collaborators near them, manage projects, and get paid — all in one place.
           </p>
           
           {/* Value props */}
           <div className="mx-auto mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground px-4">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              Swipe Verified Portfolios
+              AI-Verified Portfolios
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-secondary" />
-              AI Match Scores
+              Smart Matching
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-              Start Projects Instantly
+              Secure Payments
             </span>
           </div>
           
@@ -62,12 +62,15 @@ export const HeroSection = () => {
             <Link to="/auth" className="w-full sm:w-auto" onClick={handleCtaClick}>
               <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 shadow-glow transition-smooth hover:-translate-y-1 text-base sm:text-lg group">
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="sm:hidden">Get Access</span>
-                <span className="hidden sm:inline">I Have an Invite Code</span>
+                Get Started Free
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
           </div>
+          
+          <p className="mt-4 text-xs sm:text-sm text-muted-foreground">
+            No credit card required • Free to start • Pro when you're ready
+          </p>
           
           {/* Live stats */}
           <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-center">

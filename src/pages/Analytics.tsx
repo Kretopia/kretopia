@@ -72,6 +72,10 @@ const Analytics = () => {
     messages: 0,
     paywallViews: 0,
     subscriptions: 0,
+    milestoneCreated: 0,
+    escrowAttempts: 0,
+    paymentAttempts: 0,
+    checkoutAttempts: 0,
   });
 
   useEffect(() => {
@@ -165,7 +169,7 @@ const Analytics = () => {
   const fetchFunnelData = async () => {
     try {
       // Get counts for each funnel stage
-      const [pageViews, signups, onboardingStarts, onboardingCompletes, swipes, matches, messages, paywallViews, subscriptions] = await Promise.all([
+      const [pageViews, signups, onboardingStarts, onboardingCompletes, swipes, matches, messages, paywallViews, subscriptions, milestoneCreated, escrowAttempts, paymentAttempts, checkoutAttempts] = await Promise.all([
         supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'page_view'),
         supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'sign_up'),
         supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'onboarding_started'),
@@ -175,6 +179,10 @@ const Analytics = () => {
         supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'message_sent'),
         supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'paywall_viewed'),
         supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'subscription_started'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'milestone_created'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'milestone_escrow_attempt'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'milestone_payment_attempt'),
+        supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_name', 'checkout_attempt'),
       ]);
       
       setFunnelData({
@@ -187,6 +195,10 @@ const Analytics = () => {
         messages: messages.count || 0,
         paywallViews: paywallViews.count || 0,
         subscriptions: subscriptions.count || 0,
+        milestoneCreated: milestoneCreated.count || 0,
+        escrowAttempts: escrowAttempts.count || 0,
+        paymentAttempts: paymentAttempts.count || 0,
+        checkoutAttempts: checkoutAttempts.count || 0,
       });
     } catch (error) {
       console.error('Error fetching funnel data:', error);

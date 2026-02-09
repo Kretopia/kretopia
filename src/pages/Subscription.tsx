@@ -108,9 +108,9 @@ export default function Subscription() {
       return;
     }
 
-    // Track subscription attempt
+    // Track checkout attempt
     const { analytics } = await import("@/lib/analytics");
-    analytics.subscriptionStart(tier);
+    analytics.checkoutAttempt(tier, priceId);
 
     try {
       setLoading(priceId);
@@ -149,7 +149,8 @@ export default function Subscription() {
   const handleManageSubscription = async () => {
     try {
       setLoading("portal");
-      
+      const { analytics } = await import("@/lib/analytics");
+      analytics.customerPortalOpened();
       const { data, error } = await supabase.functions.invoke("customer-portal");
       
       if (error) throw error;

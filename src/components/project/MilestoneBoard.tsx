@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard } from "lucide-react";
 import { awardXP } from "@/lib/xpSystem";
+import { analytics } from "@/lib/analytics";
 
 interface Milestone {
   id: string;
@@ -72,6 +73,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Milestone created! 🎯" });
+      analytics.milestoneCreated(projectId, parseFloat(newMilestone.amount));
       setNewMilestone({ title: '', description: '', amount: '', due_date: '' });
       setCreateDialogOpen(false);
       onUpdate();
@@ -87,6 +89,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      analytics.milestoneStatusChange(projectId, milestoneId, newStatus);
       // Award XP when milestone is completed
       if (newStatus === 'completed') {
         const { data: { user } } = await supabase.auth.getUser();
@@ -123,6 +126,13 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
 
   const handleStripePayment = async (milestone: Milestone, useEscrow: boolean = false) => {
     try {
+      // Track the attempt
+      if (useEscrow) {
+        analytics.milestoneEscrowAttempt(projectId, milestone.id, milestone.amount);
+      } else {
+        analytics.milestonePaymentAttempt(projectId, milestone.id, milestone.amount);
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({ title: "Error", description: "Please sign in to make a payment", variant: "destructive" });
@@ -156,6 +166,8 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
 
   const handleCapturePayment = async (milestone: Milestone) => {
     try {
+      analytics.milestoneEscrowRelease(projectId, milestone.id, milestone.amount);
+
       if (!milestone.payment_intent_id) {
         toast({ title: "Error", description: "No payment to capture", variant: "destructive" });
         return;
@@ -183,6 +195,8 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
 
   const handleCancelPayment = async (milestone: Milestone) => {
     try {
+      analytics.milestoneEscrowRefund(projectId, milestone.id);
+
       if (!milestone.payment_intent_id) {
         toast({ title: "Error", description: "No payment to cancel", variant: "destructive" });
         return;

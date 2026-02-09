@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Users, Globe } from "lucide-react";
 
 export const LaunchingInBaliSection = () => {
+  const handleCtaClick = async () => {
+    const { analytics } = await import("@/lib/analytics");
+    analytics.ctaClick("bottom_get_started", "landing_bottom_cta");
+  };
+
   return (
     <section className="px-4 sm:px-6 py-16 sm:py-20 md:py-24 bg-muted/30">
       <div className="container mx-auto max-w-4xl">
@@ -38,7 +43,7 @@ export const LaunchingInBaliSection = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/auth">
+              <Link to="/auth" onClick={handleCtaClick}>
                 <Button
                   variant="outline" 
                   size="xl"

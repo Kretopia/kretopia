@@ -295,12 +295,18 @@ const Auth = () => {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    
+    // Track Google sign-in attempt
+    const { analytics } = await import("@/lib/analytics");
+    analytics.featureUsed("google_signin_attempt");
+    
     try {
       const { error } = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
       
       if (error) {
+        analytics.errorOccurred("google_signin", error.message, "auth");
         toast({
           title: "Google Sign-In Failed",
           description: error.message,
@@ -349,9 +355,12 @@ const Auth = () => {
   };
 
   const handleNextStep = async () => {
+    const { analytics } = await import("@/lib/analytics");
+    
     // Validate current step before proceeding
     if (signupStep === 1) {
       // Account type is always selected (has default)
+      analytics.featureUsed("signup_step", { step: 1, step_name: "account_type", account_type: accountType });
       setSignupStep(2);
     } else if (signupStep === 2) {
       // Validate email
@@ -361,6 +370,7 @@ const Auth = () => {
         return;
       }
       setEmailError("");
+      analytics.featureUsed("signup_step", { step: 2, step_name: "email" });
       setSignupStep(3);
     }
   };
@@ -454,6 +464,10 @@ const Auth = () => {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Track forgot password attempt
+    const { analytics } = await import("@/lib/analytics");
+    analytics.featureUsed("forgot_password_attempt");
+    
     const emailValidation = validateEmail(resetEmail);
     if (!emailValidation.valid) {
       toast({
@@ -477,6 +491,7 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
+      analytics.featureUsed("forgot_password_sent");
       toast({
         title: "Check Your Email",
         description: "We've sent you a password reset link. Please check your inbox.",

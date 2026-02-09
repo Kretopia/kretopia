@@ -128,6 +128,9 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     // Check swipe limit for non-Pro users
     if (isSwipeLimitReached) {
       toast.error("Daily swipe limit reached!");
+      // Track swipe limit hit
+      const { analytics: limitAnalytics } = await import("@/lib/analytics");
+      limitAnalytics.swipeLimitHit('free');
       navigate('/subscription');
       return;
     }
@@ -162,6 +165,9 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
         if (theirSwipe) {
           console.log('[ForYou] 🎉 MUTUAL MATCH DETECTED!');
+          
+          // Track match creation
+          analytics.match(currentCreator.user_id);
           
           // It's a match! Create match record
           const { error: matchError } = await supabase.from('matches').insert({

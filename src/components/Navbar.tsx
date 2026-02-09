@@ -1,14 +1,16 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard, Bot, MapPin, Shield } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard, Bot, MapPin, Shield, Crown, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getTierDisplayName } from "@/lib/subscriptionConfig";
 import {
   Sheet,
   SheetContent,
@@ -27,8 +29,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { subscriptionInfo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const isLandingPage = location.pathname === "/";
+  const isPro = subscriptionInfo.subscribed;
+  const tierName = getTierDisplayName(subscriptionInfo.tier as any);
 
   const handleSignOut = async () => {
     try {
@@ -200,6 +205,42 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     >
                       <ShoppingBag className="h-5 w-5" />
                       Purchases & Sales
+                    </Button>
+
+                    {/* Subscription / Account */}
+                    <Separator className="my-3" />
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Account</p>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-auto w-full py-3"
+                      onClick={() => handleNavigation("/subscription")}
+                    >
+                      {isPro ? (
+                        <Crown className="h-5 w-5 text-amber-500" />
+                      ) : (
+                        <Sparkles className="h-5 w-5 text-blue-500" />
+                      )}
+                      <div className="flex flex-col items-start gap-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Subscription</span>
+                          <Badge 
+                            variant="secondary" 
+                            className={cn(
+                              "text-[10px] uppercase tracking-wider",
+                              isPro 
+                                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" 
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {tierName}
+                          </Badge>
+                        </div>
+                        {!isPro && (
+                          <span className="text-xs text-blue-500 font-medium">
+                            Upgrade to Pro →
+                          </span>
+                        )}
+                      </div>
                     </Button>
 
                     <Separator className="my-3" />

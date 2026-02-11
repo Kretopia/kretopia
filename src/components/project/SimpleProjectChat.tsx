@@ -5,7 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MessageSquare, Send, Reply, Pin, PinOff, SmilePlus, X, ChevronDown } from "lucide-react";
+import { MessageSquare, Send, Reply, Pin, PinOff, SmilePlus, X, ChevronDown, Pencil, Trash2, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -52,6 +53,8 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [editText, setEditText] = useState("");
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [showMentions, setShowMentions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -230,6 +233,27 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     }
   };
 
+  const handleEditMessage = async () => {
+    if (!editingMessage || !editText.trim()) return;
+    const { error } = await supabase.from('project_messages').update({ message: editText.trim() }).eq('id', editingMessage.id);
+    if (error) {
+      toast({ title: "Failed to edit message", variant: "destructive" });
+    } else {
+      setEditingMessage(null);
+      setEditText("");
+      onMessageSent();
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    const { error } = await supabase.from('project_messages').delete().eq('id', messageId);
+    if (error) {
+      toast({ title: "Failed to delete message", variant: "destructive" });
+    } else {
+      onMessageSent();
+    }
+  };
+
   const getReplyMessage = (replyToId: string | null | undefined) => {
     if (!replyToId) return null;
     return messages.find(m => m.id === replyToId);
@@ -356,9 +380,23 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                                 </span>
                                 {msg.is_pinned && <Pin className="h-3 w-3 text-primary" />}
                               </div>
-                              <p className="text-sm whitespace-pre-wrap break-words leading-relaxed mt-0.5">
-                                {renderMessageText(msg.message)}
-                              </p>
+                              {editingMessage?.id === msg.id ? (
+                                <div className="flex gap-2 mt-0.5">
+                                  <Input
+                                    value={editText}
+                                    onChange={(e) => setEditText(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleEditMessage(); if (e.key === 'Escape') { setEditingMessage(null); setEditText(""); } }}
+                                    className="h-8 text-sm"
+                                    autoFocus
+                                  />
+                                  <Button size="sm" onClick={handleEditMessage} className="h-8 px-2 text-xs">Save</Button>
+                                  <Button size="sm" variant="ghost" onClick={() => { setEditingMessage(null); setEditText(""); }} className="h-8 px-2 text-xs">Cancel</Button>
+                                </div>
+                              ) : (
+                                <p className="text-sm whitespace-pre-wrap break-words leading-relaxed mt-0.5">
+                                  {renderMessageText(msg.message)}
+                                </p>
+                              )}
 
                               {/* Reactions display */}
                               {msgReactions.length > 0 && (
@@ -424,6 +462,23 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                                   </TooltipTrigger>
                                   <TooltipContent side="top"><p className="text-xs">{msg.is_pinned ? 'Unpin' : 'Pin'}</p></TooltipContent>
                                 </Tooltip>
+                                {isOwn && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button className="p-1 hover:bg-accent rounded transition-colors">
+                                        <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" side="top">
+                                      <DropdownMenuItem onClick={() => { setEditingMessage(msg); setEditText(msg.message); }}>
+                                        <Pencil className="h-3.5 w-3.5 mr-2" /> Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteMessage(msg.id)}>
+                                        <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </div>
                             )}
                           </div>

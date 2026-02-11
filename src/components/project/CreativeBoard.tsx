@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   Image, StickyNote, Sparkles, Plus, Trash2, ExternalLink,
-  Loader2, X, Upload, Palette, Search, LayoutGrid, List
+  Loader2, X, Upload, Palette, Search, LayoutGrid, List, Pencil, RefreshCw, MoreVertical
 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 interface BoardItem {
@@ -181,6 +182,27 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
     const { error } = await supabase.from("board_items").delete().eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else toast({ title: "Removed" });
+  };
+
+  const handleEditNote = async (id: string, title: string | null, content: string, color: string) => {
+    const { error } = await supabase.from("board_items").update({ title, content, color }).eq("id", id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else toast({ title: "Updated" });
+  };
+
+  const handleReplaceImage = async (id: string, file: File) => {
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${currentUserId}/${projectId}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("board-assets").upload(path, file);
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("board-assets").getPublicUrl(path);
+      const { error } = await supabase.from("board_items").update({ image_url: pub.publicUrl }).eq("id", id);
+      if (error) throw error;
+      toast({ title: "Image replaced" });
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    }
   };
 
   const filtered = items.filter((item) => {
@@ -353,7 +375,7 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
       ) : (
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
           {filtered.map((item) => (
-            <BoardItemCard key={item.id} item={item} onDelete={handleDelete} />
+            <BoardItemCard key={item.id} item={item} onDelete={handleDelete} onEditNote={handleEditNote} onReplaceImage={handleReplaceImage} />
           ))}
         </div>
       )}
@@ -361,25 +383,67 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
   );
 }
 
-function BoardItemCard({ item, onDelete }: { item: BoardItem; onDelete: (id: string) => void }) {
+function BoardItemCard({ item, onDelete, onEditNote, onReplaceImage }: { 
+  item: BoardItem; 
+  onDelete: (id: string) => void;
+  onEditNote: (id: string, title: string | null, content: string, color: string) => void;
+  onReplaceImage: (id: string, file: File) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(item.title || "");
+  const [editContent, setEditContent] = useState(item.content || "");
+  const [editColor, setEditColor] = useState(item.color || "#FEF3C7");
+  const replaceRef = useRef<HTMLInputElement>(null);
 
   if (item.type === "note") {
+    if (editing) {
+      return (
+        <div
+          className="break-inside-avoid rounded-lg p-4 shadow-sm border border-border/50 space-y-2"
+          style={{ backgroundColor: editColor }}
+        >
+          <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Title (optional)" className="h-8 text-sm bg-white/50" />
+          <Textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} placeholder="Content..." rows={4} className="text-sm bg-white/50" />
+          <div className="flex gap-1.5">
+            {STICKY_COLORS.map((c) => (
+              <button key={c.value} onClick={() => setEditColor(c.value)} className={cn("w-6 h-6 rounded-full border-2 transition-all", editColor === c.value ? "border-foreground scale-110" : "border-transparent")} style={{ backgroundColor: c.value }} />
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" className="text-xs" onClick={() => { onEditNote(item.id, editTitle || null, editContent, editColor); setEditing(false); }}>Save</Button>
+            <Button size="sm" variant="ghost" className="text-xs" onClick={() => setEditing(false)}>Cancel</Button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div
         className="break-inside-avoid rounded-lg p-4 shadow-sm border border-border/50 group relative cursor-pointer transition-transform hover:scale-[1.02]"
         style={{ backgroundColor: item.color || "#FEF3C7" }}
         onClick={() => setExpanded(!expanded)}
       >
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-black/10 hover:bg-black/20"
-        >
-          <X className="h-3 w-3" />
-        </button>
-        {item.title && <p className="font-semibold text-sm mb-1 text-gray-800">{item.title}</p>}
-        <p className={cn("text-sm text-gray-700 whitespace-pre-wrap", !expanded && "line-clamp-6")}>{item.content}</p>
-        <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button onClick={(e) => e.stopPropagation()} className="p-1 rounded-full bg-black/10 hover:bg-black/20">
+                <MoreVertical className="h-3.5 w-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem onClick={() => setEditing(true)}>
+                <Pencil className="h-3.5 w-3.5 mr-2" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={() => onDelete(item.id)}>
+                <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        {item.title && <p className="font-semibold text-sm mb-1 text-foreground/80">{item.title}</p>}
+        <p className={cn("text-sm text-foreground/70 whitespace-pre-wrap", !expanded && "line-clamp-6")}>{item.content}</p>
+        <div className="mt-2 flex items-center gap-1 text-xs text-foreground/50">
           <StickyNote className="h-3 w-3" />
           {new Date(item.created_at).toLocaleDateString()}
         </div>
@@ -390,12 +454,29 @@ function BoardItemCard({ item, onDelete }: { item: BoardItem; onDelete: (id: str
   // Pin or AI image
   return (
     <div className="break-inside-avoid rounded-lg overflow-hidden border border-border bg-card group relative transition-transform hover:scale-[1.02]">
-      <button
-        onClick={() => onDelete(item.id)}
-        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white"
-      >
-        <X className="h-3 w-3" />
-      </button>
+      <input ref={replaceRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onReplaceImage(item.id, f); }} />
+      <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white">
+              <MoreVertical className="h-3.5 w-3.5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => replaceRef.current?.click()}>
+              <RefreshCw className="h-3.5 w-3.5 mr-2" /> Replace Image
+            </DropdownMenuItem>
+            {item.image_url && (
+              <DropdownMenuItem onClick={() => window.open(item.image_url!, '_blank')}>
+                <ExternalLink className="h-3.5 w-3.5 mr-2" /> Open Full Size
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem className="text-destructive" onClick={() => onDelete(item.id)}>
+              <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       {item.type === "ai_image" && (
         <Badge className="absolute top-2 left-2 z-10 bg-primary/80 text-primary-foreground text-xs gap-1">
           <Sparkles className="h-3 w-3" /> AI

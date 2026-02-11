@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Upload, Download, FileText, Image as ImageIcon, Film, Music, File } from "lucide-react";
+import { Upload, Download, FileText, Image as ImageIcon, Film, Music, File, Trash2, MoreVertical, RefreshCw } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -26,7 +27,9 @@ interface SimpleFileSharingProps {
 export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFileSharingProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [replacingFileId, setReplacingFileId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
 
   const getFileIcon = (fileType: string | null) => {
     if (!fileType) return <File className="h-5 w-5" />;
@@ -47,18 +50,12 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Max file size: 50MB
     if (file.size > 50 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Maximum file size is 50MB",
-        variant: "destructive",
-      });
+      toast({ title: "File too large", description: "Maximum file size is 50MB", variant: "destructive" });
       return;
     }
 
     setUploading(true);
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
@@ -66,82 +63,113 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
       const fileExt = file.name.split('.').pop();
       const fileName = `${projectId}/${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('project-files')
-        .upload(fileName, file);
-
+      const { error: uploadError } = await supabase.storage.from('project-files').upload(fileName, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('project-files')
-        .getPublicUrl(fileName);
+      const { data: { publicUrl } } = supabase.storage.from('project-files').getPublicUrl(fileName);
 
-      const { error: dbError } = await supabase
-        .from('project_files')
-        .insert({
-          project_id: projectId,
-          user_id: user.id,
-          file_name: file.name,
-          file_url: publicUrl,
-          file_size: file.size,
-          file_type: file.type,
-        });
-
+      const { error: dbError } = await supabase.from('project_files').insert({
+        project_id: projectId,
+        user_id: user.id,
+        file_name: file.name,
+        file_url: publicUrl,
+        file_size: file.size,
+        file_type: file.type,
+      });
       if (dbError) throw dbError;
 
-      toast({
-        title: "File uploaded",
-        description: `${file.name} uploaded successfully`,
-      });
-
+      toast({ title: "File uploaded", description: `${file.name} uploaded successfully` });
       onFileUploaded();
     } catch (error: any) {
       console.error('File upload error:', error);
-      toast({
-        title: "Upload failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteFile = async (file: ProjectFile) => {
+    try {
+      // Delete from storage
+      const url = new URL(file.file_url);
+      const pathParts = url.pathname.split('/');
+      const filePath = pathParts.slice(pathParts.indexOf('project-files') + 1).join('/');
+      await supabase.storage.from('project-files').remove([filePath]);
+
+      // Delete from DB
+      const { error } = await supabase.from('project_files').delete().eq('id', file.id);
+      if (error) throw error;
+
+      toast({ title: "File deleted" });
+      onFileUploaded();
+    } catch (error: any) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleReplaceFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !replacingFileId) return;
+
+    const existingFile = files.find(f => f.id === replacingFileId);
+    if (!existingFile) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Maximum file size is 50MB", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${projectId}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage.from('project-files').upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('project-files').getPublicUrl(fileName);
+
+      const { error: dbError } = await supabase.from('project_files').update({
+        file_name: file.name,
+        file_url: publicUrl,
+        file_size: file.size,
+        file_type: file.type,
+      }).eq('id', replacingFileId);
+      if (dbError) throw dbError;
+
+      toast({ title: "File replaced", description: `Updated to ${file.name}` });
+      onFileUploaded();
+    } catch (error: any) {
+      toast({ title: "Replace failed", description: error.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      setReplacingFileId(null);
+      if (replaceInputRef.current) replaceInputRef.current.value = '';
     }
   };
 
   const handleFileClick = async (file: ProjectFile, forceDownload = false) => {
     try {
-      // Extract the file path from the URL
       const url = new URL(file.file_url);
       const pathParts = url.pathname.split('/');
       const filePath = pathParts.slice(pathParts.indexOf('project-files') + 1).join('/');
       
-      // Generate a signed URL with download option (1 hour expiry)
       const { data, error } = await supabase.storage
         .from('project-files')
         .createSignedUrl(filePath, 3600, {
           download: forceDownload ? file.file_name : undefined,
         });
-
       if (error) throw error;
 
-      // For images and not forcing download, open in new tab for preview
       if (file.file_type?.startsWith('image/') && !forceDownload) {
         window.open(data.signedUrl, '_blank');
         return;
       }
-      
-      // For downloads, use the signed URL with download parameter
-      // The download parameter in createSignedUrl forces browser download
       window.location.href = data.signedUrl;
     } catch (error) {
       console.error('Error accessing file:', error);
-      toast({
-        title: "Error",
-        description: "Failed to access file. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to access file. Please try again.", variant: "destructive" });
     }
   };
 
@@ -153,20 +181,12 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
             <FileText className="h-5 w-5" />
             Files ({files.length})
           </CardTitle>
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            size="sm"
-          >
+          <Button onClick={() => fileInputRef.current?.click()} disabled={uploading} size="sm">
             <Upload className="h-4 w-4 mr-2" />
             {uploading ? "Uploading..." : "Upload"}
           </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
+          <input ref={replaceInputRef} type="file" className="hidden" onChange={handleReplaceFile} />
         </div>
       </CardHeader>
       <CardContent>
@@ -194,16 +214,24 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
                       {formatFileSize(file.file_size)} • {formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFileClick(file, true); // Force download
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuItem onClick={() => handleFileClick(file, true)}>
+                        <Download className="h-4 w-4 mr-2" /> Download
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setReplacingFileId(file.id); replaceInputRef.current?.click(); }}>
+                        <RefreshCw className="h-4 w-4 mr-2" /> Replace
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteFile(file)}>
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ))}
             </div>

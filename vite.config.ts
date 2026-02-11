@@ -22,6 +22,8 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         // Clean old caches
         cleanupOutdatedCaches: true,
+        // CRITICAL: Don't cache OAuth redirect route
+        navigateFallbackDenylist: [/^\/~oauth/],
         // Cache strategy - network first for pages
         runtimeCaching: [
           {

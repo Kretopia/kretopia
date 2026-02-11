@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, Search, Send, Bot } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import AIChatTab from "@/components/thrive-ai/AIChatTab";
+import LeadsTab from "@/components/thrive-ai/LeadsTab";
+import OutreachTab from "@/components/thrive-ai/OutreachTab";
 
 const ThriveAI = () => {
   const { user, loading } = useAuth();
@@ -43,15 +44,13 @@ const ThriveAI = () => {
             <MessageSquare className="h-4 w-4" />
             <span>Chat</span>
           </TabsTrigger>
-          <TabsTrigger value="leads" className="gap-1.5 text-xs sm:text-sm" disabled>
+          <TabsTrigger value="leads" className="gap-1.5 text-xs sm:text-sm">
             <Search className="h-4 w-4" />
             <span>Leads</span>
-            <Badge variant="secondary" className="text-[9px] px-1 py-0">Soon</Badge>
           </TabsTrigger>
-          <TabsTrigger value="outreach" className="gap-1.5 text-xs sm:text-sm" disabled>
+          <TabsTrigger value="outreach" className="gap-1.5 text-xs sm:text-sm">
             <Send className="h-4 w-4" />
             <span>Outreach</span>
-            <Badge variant="secondary" className="text-[9px] px-1 py-0">Soon</Badge>
           </TabsTrigger>
         </TabsList>
 
@@ -60,19 +59,11 @@ const ThriveAI = () => {
         </TabsContent>
 
         <TabsContent value="leads">
-          <div className="text-center py-12 text-muted-foreground">
-            <Search className="h-12 w-12 mx-auto mb-4 opacity-30" />
-            <p className="font-medium">Web Scout — Coming Soon</p>
-            <p className="text-sm">AI-powered lead generation from the web</p>
-          </div>
+          <LeadsTab />
         </TabsContent>
 
         <TabsContent value="outreach">
-          <div className="text-center py-12 text-muted-foreground">
-            <Send className="h-12 w-12 mx-auto mb-4 opacity-30" />
-            <p className="font-medium">Smart Outreach — Coming Soon</p>
-            <p className="text-sm">AI-generated personalized outreach messages</p>
-          </div>
+          <OutreachTab />
         </TabsContent>
       </Tabs>
     </div>

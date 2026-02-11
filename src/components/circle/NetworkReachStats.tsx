@@ -12,9 +12,10 @@ interface NetworkReachStatsProps {
   };
   loading?: boolean;
   className?: string;
+  onDegreeClick?: (degree: number) => void;
 }
 
-export function NetworkReachStats({ stats, loading, className }: NetworkReachStatsProps) {
+export function NetworkReachStats({ stats, loading, className, onDegreeClick }: NetworkReachStatsProps) {
   if (loading) {
     return (
       <Card className={cn("p-4", className)}>
@@ -87,10 +88,12 @@ export function NetworkReachStats({ stats, loading, className }: NetworkReachSta
         {degrees.map((deg) => {
           const Icon = deg.icon;
           return (
-            <div
+            <button
               key={deg.degree}
+              onClick={() => onDegreeClick?.(deg.degree)}
               className={cn(
-                "p-3 rounded-lg border transition-colors",
+                "p-3 rounded-lg border transition-all text-left",
+                "hover:scale-[1.02] hover:shadow-md active:scale-[0.98] cursor-pointer",
                 deg.bgColor,
                 deg.borderColor
               )}
@@ -100,8 +103,13 @@ export function NetworkReachStats({ stats, loading, className }: NetworkReachSta
                 <span className={cn("text-xs font-medium", deg.color)}>{deg.label}</span>
               </div>
               <p className="text-xl font-bold">{deg.count.toLocaleString()}</p>
-              <p className="text-[10px] text-muted-foreground">{deg.sublabel}</p>
-            </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] text-muted-foreground">{deg.sublabel}</p>
+                {deg.count > 0 && (
+                  <span className="text-[10px] text-primary font-medium">View →</span>
+                )}
+              </div>
+            </button>
           );
         })}
       </div>

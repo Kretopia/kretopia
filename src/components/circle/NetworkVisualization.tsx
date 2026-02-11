@@ -274,7 +274,11 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
       <NetworkReachStats 
         stats={stats} 
         loading={statsLoading} 
-        className="mb-4" 
+        className="mb-4"
+        onDegreeClick={(degree) => {
+          setSelectedDegree(degree as 1 | 2 | 3);
+          setDegreeDrawerOpen(true);
+        }}
       />
 
       {/* Network Health Score */}

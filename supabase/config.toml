@@ -164,3 +164,6 @@ verify_jwt = false
 
 [functions.thrive-ai-chat]
 verify_jwt = false
+
+[functions.send-outreach-email]
+verify_jwt = false

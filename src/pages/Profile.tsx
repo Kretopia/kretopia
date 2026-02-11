@@ -53,6 +53,7 @@ import { DigitalProductsSection } from "@/components/profile/DigitalProductsSect
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { AIPortfolioInsights, AIProfileOptimizer } from "@/components/ai";
+import { ProGate } from "@/components/project/ProGate";
 
 import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
 import { ProTrialBanner } from "@/components/profile/ProTrialBanner";
@@ -344,40 +345,54 @@ const ProfileContent = () => {
         </div>
 
         {/* Tools & Verification - Collapsible */}
-        <details className="group mb-6">
-          <summary className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors py-2 select-none">
-            <TrendingUp className="h-4 w-4" />
-            <span>Profile Tools & Verification</span>
-            <span className="ml-auto text-xs group-open:rotate-180 transition-transform">▼</span>
+        <details className="group mb-6 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 overflow-hidden">
+          <summary className="flex items-center gap-3 cursor-pointer px-4 py-3 select-none hover:bg-primary/5 transition-colors">
+            <div className="p-1.5 rounded-lg bg-primary/10">
+              <Crown className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1">
+              <span className="font-semibold text-sm">Pro Tools & Verification</span>
+              <p className="text-xs text-muted-foreground">AI verification, credit imports & profile optimizer</p>
+            </div>
+            {userTier !== 'pro' && (
+              <Badge variant="outline" className="border-primary/30 text-primary text-[10px] gap-1">
+                <Lock className="h-3 w-3" /> PRO
+              </Badge>
+            )}
+            <span className="text-xs text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
           </summary>
-          <div className="pt-3 space-y-3">
+          <div className="px-4 pb-4 pt-3 space-y-3 border-t border-primary/10">
             {(profile.achievement_badges?.length > 0) && (
               <AchievementBadges 
                 achievements={profile.achievement_badges || []}
                 showAll={false}
               />
             )}
-            <CredentialVerificationCard 
-              userId={profile.user_id}
-              fullName={profile.full_name}
-              role={profile.role || ''}
-              bio={profile.bio || ''}
-              socialLinks={{
-                spotify: profile.spotify_url || '',
-                youtube: profile.youtube_url || '',
-                imdb: profile.imdb_url || '',
-                instagram: profile.instagram_url || '',
-                linkedin: profile.linkedin_url || '',
-              }}
-              currentTier={profile.verification_tier || undefined}
-              currentAchievements={profile.achievement_badges || []}
-              verifiedCredentials={(profile as any).verified_credentials || []}
-              verificationScore={profile.verification_score || undefined}
-              verifiedAt={profile.verified_at || undefined}
-              breakdown={(profile as any).verification_breakdown || undefined}
-              onVerificationComplete={() => fetchData()}
-            />
-            <PlatformConnectionCard onCreditsImported={() => fetchData()} />
+            <ProGate feature="AI Credential Verification" isPro={userTier === 'pro'} description="Get AI-verified credentials across IMDB, Grammy, Spotify and more.">
+              <CredentialVerificationCard 
+                userId={profile.user_id}
+                fullName={profile.full_name}
+                role={profile.role || ''}
+                bio={profile.bio || ''}
+                socialLinks={{
+                  spotify: profile.spotify_url || '',
+                  youtube: profile.youtube_url || '',
+                  imdb: profile.imdb_url || '',
+                  instagram: profile.instagram_url || '',
+                  linkedin: profile.linkedin_url || '',
+                }}
+                currentTier={profile.verification_tier || undefined}
+                currentAchievements={profile.achievement_badges || []}
+                verifiedCredentials={(profile as any).verified_credentials || []}
+                verificationScore={profile.verification_score || undefined}
+                verifiedAt={profile.verified_at || undefined}
+                breakdown={(profile as any).verification_breakdown || undefined}
+                onVerificationComplete={() => fetchData()}
+              />
+            </ProGate>
+            <ProGate feature="Import & Verify Credits" isPro={userTier === 'pro'} description="Auto-import credits from Spotify, IMDB, Discogs, YouTube and more.">
+              <PlatformConnectionCard onCreditsImported={() => fetchData()} />
+            </ProGate>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <AIPortfolioInsights 
                 portfolioItems={portfolioItems}

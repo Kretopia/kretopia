@@ -1985,6 +1985,13 @@ export type Database = {
             referencedRelation: "oauth_apps"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "oauth_codes_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_apps_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       oauth_tokens: {
@@ -2024,6 +2031,13 @@ export type Database = {
             columns: ["app_id"]
             isOneToOne: false
             referencedRelation: "oauth_apps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oauth_tokens_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_apps_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4826,6 +4840,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      oauth_apps_public: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          logo_url: string | null
+          name: string | null
+          owner_id: string | null
+          redirect_uris: string[] | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string | null
+          owner_id?: string | null
+          redirect_uris?: string[] | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string | null
+          owner_id?: string | null
+          redirect_uris?: string[] | null
+        }
+        Relationships: []
       }
       public_profiles: {
         Row: {

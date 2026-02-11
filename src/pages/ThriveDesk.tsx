@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X } from "lucide-react";
+import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X, CheckCircle2, Library, LayoutTemplate } from "lucide-react";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
 import { SimpleTaskList } from "@/components/project/SimpleTaskList";
@@ -15,6 +15,9 @@ import { AIBriefBuilder } from "@/components/project/AIBriefBuilder";
 import { AIAutomation } from "@/components/project/AIAutomation";
 import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
 import { WorkspaceQuickPanel } from "@/components/project/WorkspaceQuickPanel";
+import { ApprovalWorkflows } from "@/components/project/ApprovalWorkflows";
+import { CreativeAssetLibrary } from "@/components/project/CreativeAssetLibrary";
+import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicker";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -184,8 +187,11 @@ const ThriveDesk = () => {
     { id: "messages", label: "Messages", icon: MessageSquare },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "files", label: "Files", icon: FolderOpen },
+    { id: "approvals", label: "Approvals", icon: CheckCircle2 },
+    { id: "assets", label: "Assets", icon: Library },
     { id: "board", label: "Board", icon: LayoutGrid },
     { id: "notes", label: "Notes", icon: StickyNote },
+    { id: "templates", label: "Templates", icon: LayoutTemplate },
     { id: "ai", label: "AI", icon: Sparkles },
   ];
 
@@ -277,6 +283,20 @@ const ThriveDesk = () => {
                   onFileUploaded={fetchProjectData}
                 />
               )}
+              {activeTab === "approvals" && (
+                <ApprovalWorkflows
+                  projectId={projectId!}
+                  currentUserId={user?.id || ''}
+                  collaborators={collaborators}
+                  userRole={userRole}
+                />
+              )}
+              {activeTab === "assets" && (
+                <CreativeAssetLibrary
+                  projectId={projectId!}
+                  currentUserId={user?.id || ''}
+                />
+              )}
               {activeTab === "board" && (
                 <div className="space-y-4">
                   <MilestoneBoard
@@ -292,6 +312,13 @@ const ThriveDesk = () => {
               )}
               {activeTab === "notes" && (
                 <ProjectNotes projectId={projectId!} />
+              )}
+              {activeTab === "templates" && (
+                <ProjectTemplatePicker
+                  projectId={projectId!}
+                  currentUserId={user?.id || ''}
+                  onApplied={fetchProjectData}
+                />
               )}
               {activeTab === "ai" && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -270,6 +270,95 @@ export type Database = {
           },
         ]
       }
+      asset_folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          parent_id: string | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "asset_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_folders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      asset_versions: {
+        Row: {
+          asset_id: string
+          change_note: string | null
+          created_at: string
+          file_size: number | null
+          file_url: string
+          id: string
+          uploaded_by: string
+          version: number
+        }
+        Insert: {
+          asset_id: string
+          change_note?: string | null
+          created_at?: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          uploaded_by: string
+          version: number
+        }
+        Update: {
+          asset_id?: string
+          change_note?: string | null
+          created_at?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          uploaded_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_versions_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "creative_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       award_comments: {
         Row: {
           award_id: string
@@ -907,6 +996,75 @@ export type Database = {
         }
         Relationships: []
       }
+      creative_assets: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          folder_id: string | null
+          id: string
+          media_type: string | null
+          name: string
+          project_id: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          updated_at: string
+          uploaded_by: string
+          version: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          folder_id?: string | null
+          id?: string
+          media_type?: string | null
+          name: string
+          project_id: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          uploaded_by: string
+          version?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          folder_id?: string | null
+          id?: string
+          media_type?: string | null
+          name?: string
+          project_id?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          uploaded_by?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creative_assets_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "asset_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creative_assets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creative_jams: {
         Row: {
           category: string
@@ -1094,6 +1252,88 @@ export type Database = {
           year?: number | null
         }
         Relationships: []
+      }
+      deliverable_comments: {
+        Row: {
+          annotation_x: number | null
+          annotation_y: number | null
+          content: string
+          created_at: string
+          deliverable_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annotation_x?: number | null
+          annotation_y?: number | null
+          content: string
+          created_at?: string
+          deliverable_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annotation_x?: number | null
+          annotation_y?: number | null
+          content?: string
+          created_at?: string
+          deliverable_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliverable_comments_deliverable_id_fkey"
+            columns: ["deliverable_id"]
+            isOneToOne: false
+            referencedRelation: "project_deliverables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deliverable_versions: {
+        Row: {
+          change_note: string | null
+          created_at: string
+          deliverable_id: string
+          file_url: string
+          id: string
+          thumbnail_url: string | null
+          uploaded_by: string
+          version: number
+        }
+        Insert: {
+          change_note?: string | null
+          created_at?: string
+          deliverable_id: string
+          file_url: string
+          id?: string
+          thumbnail_url?: string | null
+          uploaded_by: string
+          version: number
+        }
+        Update: {
+          change_note?: string | null
+          created_at?: string
+          deliverable_id?: string
+          file_url?: string
+          id?: string
+          thumbnail_url?: string | null
+          uploaded_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliverable_versions_deliverable_id_fkey"
+            columns: ["deliverable_id"]
+            isOneToOne: false
+            referencedRelation: "project_deliverables"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       digital_product_purchases: {
         Row: {
@@ -3362,6 +3602,78 @@ export type Database = {
           },
         ]
       }
+      project_deliverables: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_id: string | null
+          file_url: string | null
+          id: string
+          media_type: string | null
+          project_id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_by: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_id?: string | null
+          file_url?: string | null
+          id?: string
+          media_type?: string | null
+          project_id: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_id?: string | null
+          file_url?: string | null
+          id?: string
+          media_type?: string | null
+          project_id?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_deliverables_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "project_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deliverables_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_files: {
         Row: {
           created_at: string | null
@@ -3618,11 +3930,13 @@ export type Database = {
       project_templates: {
         Row: {
           category: string
+          color: string | null
           complexity: string | null
           created_at: string | null
           created_by: string
           description: string | null
           estimated_duration: string | null
+          icon: string | null
           id: string
           is_public: boolean | null
           milestones: Json | null
@@ -3635,11 +3949,13 @@ export type Database = {
         }
         Insert: {
           category: string
+          color?: string | null
           complexity?: string | null
           created_at?: string | null
           created_by: string
           description?: string | null
           estimated_duration?: string | null
+          icon?: string | null
           id?: string
           is_public?: boolean | null
           milestones?: Json | null
@@ -3652,11 +3968,13 @@ export type Database = {
         }
         Update: {
           category?: string
+          color?: string | null
           complexity?: string | null
           created_at?: string | null
           created_by?: string
           description?: string | null
           estimated_duration?: string | null
+          icon?: string | null
           id?: string
           is_public?: boolean | null
           milestones?: Json | null

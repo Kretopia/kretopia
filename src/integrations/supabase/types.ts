@@ -448,6 +448,68 @@ export type Database = {
         }
         Relationships: []
       }
+      board_items: {
+        Row: {
+          color: string | null
+          content: string | null
+          created_at: string
+          created_by: string
+          height: number | null
+          id: string
+          image_url: string | null
+          position_x: number | null
+          position_y: number | null
+          project_id: string
+          tags: string[] | null
+          title: string | null
+          type: string
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          color?: string | null
+          content?: string | null
+          created_at?: string
+          created_by: string
+          height?: number | null
+          id?: string
+          image_url?: string | null
+          position_x?: number | null
+          position_y?: number | null
+          project_id: string
+          tags?: string[] | null
+          title?: string | null
+          type?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          color?: string | null
+          content?: string | null
+          created_at?: string
+          created_by?: string
+          height?: number | null
+          id?: string
+          image_url?: string | null
+          position_x?: number | null
+          position_y?: number | null
+          project_id?: string
+          tags?: string[] | null
+          title?: string | null
+          type?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_entries: {
         Row: {
           challenge_id: string

@@ -1582,37 +1582,61 @@ export type Database = {
       }
       feed_posts: {
         Row: {
+          auto_activity_message: string | null
+          category: string | null
           content: string | null
           created_at: string
           id: string
           is_portfolio_item: boolean | null
+          link_title: string | null
+          link_url: string | null
           media_type: string | null
           media_urls: Json | null
           portfolio_item_id: string | null
+          post_type: string
+          prompt_id: string | null
+          source_id: string | null
+          source_type: string | null
           tags: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          auto_activity_message?: string | null
+          category?: string | null
           content?: string | null
           created_at?: string
           id?: string
           is_portfolio_item?: boolean | null
+          link_title?: string | null
+          link_url?: string | null
           media_type?: string | null
           media_urls?: Json | null
           portfolio_item_id?: string | null
+          post_type?: string
+          prompt_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
           tags?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          auto_activity_message?: string | null
+          category?: string | null
           content?: string | null
           created_at?: string
           id?: string
           is_portfolio_item?: boolean | null
+          link_title?: string | null
+          link_url?: string | null
           media_type?: string | null
           media_urls?: Json | null
           portfolio_item_id?: string | null
+          post_type?: string
+          prompt_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
           tags?: string[] | null
           updated_at?: string
           user_id?: string
@@ -1623,6 +1647,13 @@ export type Database = {
             columns: ["portfolio_item_id"]
             isOneToOne: false
             referencedRelation: "portfolio_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_posts_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "spark_prompts"
             referencedColumns: ["id"]
           },
         ]

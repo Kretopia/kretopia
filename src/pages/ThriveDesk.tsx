@@ -257,85 +257,87 @@ const ThriveDesk = () => {
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Main Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-4 md:p-6 pb-24 md:pb-6">
-              {activeTab === "messages" && (
+          <div className={cn("flex-1", activeTab === "messages" ? "flex flex-col min-h-0" : "overflow-y-auto")}>
+            {activeTab === "messages" && (
               <SimpleProjectChat
-                  projectId={projectId!}
-                  messages={messages}
-                  currentUserId={user?.id || ''}
-                  onMessageSent={fetchProjectData}
-                  collaborators={collaborators}
-                />
-              )}
-              {activeTab === "tasks" && (
-                <SimpleTaskList
-                  projectId={projectId!}
-                  tasks={tasks}
-                  onTasksChanged={fetchProjectData}
-                  currentUserId={user?.id || ''}
-                />
-              )}
-              {activeTab === "files" && (
-                <SimpleFileSharing
-                  projectId={projectId!}
-                  files={files}
-                  onFileUploaded={fetchProjectData}
-                />
-              )}
-              {activeTab === "approvals" && (
-                <ApprovalWorkflows
-                  projectId={projectId!}
-                  currentUserId={user?.id || ''}
-                  collaborators={collaborators}
-                  userRole={userRole}
-                />
-              )}
-              {activeTab === "assets" && (
-                <CreativeAssetLibrary
-                  projectId={projectId!}
-                  currentUserId={user?.id || ''}
-                />
-              )}
-              {activeTab === "board" && (
-                <div className="space-y-4">
-                  <MilestoneBoard
-                    milestones={milestones}
+                projectId={projectId!}
+                messages={messages}
+                currentUserId={user?.id || ''}
+                onMessageSent={fetchProjectData}
+                collaborators={collaborators}
+              />
+            )}
+            {activeTab !== "messages" && (
+              <div className="p-4 md:p-6 pb-24 md:pb-6">
+                {activeTab === "tasks" && (
+                  <SimpleTaskList
                     projectId={projectId!}
-                    onUpdate={fetchProjectData}
+                    tasks={tasks}
+                    onTasksChanged={fetchProjectData}
+                    currentUserId={user?.id || ''}
+                  />
+                )}
+                {activeTab === "files" && (
+                  <SimpleFileSharing
+                    projectId={projectId!}
+                    files={files}
+                    onFileUploaded={fetchProjectData}
+                  />
+                )}
+                {activeTab === "approvals" && (
+                  <ApprovalWorkflows
+                    projectId={projectId!}
+                    currentUserId={user?.id || ''}
+                    collaborators={collaborators}
                     userRole={userRole}
                   />
-                  <div className="flex justify-end">
-                    <InvoiceGenerator projectId={projectId!} />
+                )}
+                {activeTab === "assets" && (
+                  <CreativeAssetLibrary
+                    projectId={projectId!}
+                    currentUserId={user?.id || ''}
+                  />
+                )}
+                {activeTab === "board" && (
+                  <div className="space-y-4">
+                    <MilestoneBoard
+                      milestones={milestones}
+                      projectId={projectId!}
+                      onUpdate={fetchProjectData}
+                      userRole={userRole}
+                    />
+                    <div className="flex justify-end">
+                      <InvoiceGenerator projectId={projectId!} />
+                    </div>
                   </div>
-                </div>
-              )}
-              {activeTab === "notes" && (
-                <ProjectNotes projectId={projectId!} />
-              )}
-              {activeTab === "templates" && (
-                <ProjectTemplatePicker
-                  projectId={projectId!}
-                  currentUserId={user?.id || ''}
-                  onApplied={fetchProjectData}
-                />
-              )}
-              {activeTab === "ai" && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <AIBriefBuilder
+                )}
+                {activeTab === "notes" && (
+                  <ProjectNotes projectId={projectId!} />
+                )}
+                {activeTab === "templates" && (
+                  <ProjectTemplatePicker
                     projectId={projectId!}
-                    projectTitle={project.title}
-                    projectDescription={project.description}
+                    currentUserId={user?.id || ''}
+                    onApplied={fetchProjectData}
                   />
-                  <AIAutomation
-                    projectId={projectId!}
-                    projectTitle={project.title}
-                    projectDescription={project.description}
-                    onUpdate={fetchProjectData}
-                  />
-                </div>
-              )}
-            </div>
+                )}
+                {activeTab === "ai" && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <AIBriefBuilder
+                      projectId={projectId!}
+                      projectTitle={project.title}
+                      projectDescription={project.description}
+                    />
+                    <AIAutomation
+                      projectId={projectId!}
+                      projectTitle={project.title}
+                      projectDescription={project.description}
+                      onUpdate={fetchProjectData}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right Quick Panel - Desktop only */}

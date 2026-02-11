@@ -94,7 +94,8 @@ export const ProjectTemplatePicker = ({ projectId, currentUserId, onApplied }: P
         await supabase.from('asset_folders').insert(folderInserts);
       }
 
-      await supabase.from('project_templates').update({ usage_count: (template.usage_count || 0) + 1 }).eq('id', template.id);
+      // Non-critical: increment usage count (ignore errors)
+      await supabase.from('project_templates').update({ usage_count: (template.usage_count || 0) + 1 }).eq('id', template.id).then(() => {});
 
       setSelectedTemplate(null);
       onApplied();

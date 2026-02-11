@@ -89,12 +89,12 @@ const Auth = () => {
             .eq('user_id', user.id)
             .single();
           
-          if (profile && !profile.onboarding_completed) {
-            // New user needs onboarding
+          if (!profile || !profile.onboarding_completed) {
+            // New user or incomplete onboarding
             const { analytics } = await import("@/lib/analytics");
             analytics.onboardingStart();
             
-            if (profile.account_type === 'company') {
+            if (profile?.account_type === 'company') {
               navigate("/company-onboarding");
             } else {
               navigate("/onboarding");

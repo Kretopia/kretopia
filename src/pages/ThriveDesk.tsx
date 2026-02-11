@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X, CheckCircle2, Library, LayoutTemplate, Wallet, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X, CheckCircle2, Library, LayoutTemplate, Wallet, PanelRightClose, PanelRightOpen, Crown } from "lucide-react";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
 import { SimpleTaskList } from "@/components/project/SimpleTaskList";
@@ -19,6 +19,7 @@ import { ApprovalWorkflows } from "@/components/project/ApprovalWorkflows";
 import { CreativeAssetLibrary } from "@/components/project/CreativeAssetLibrary";
 import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicker";
 import { CreativeBoard } from "@/components/project/CreativeBoard";
+import { ProGate, UsageLimitBanner } from "@/components/project/ProGate";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +27,8 @@ const ThriveDesk = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
+  const isPro = subscriptionInfo.tier === 'pro';
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState<any>(null);
   const [collaborators, setCollaborators] = useState<any[]>([]);
@@ -185,17 +187,19 @@ const ThriveDesk = () => {
     );
   }
 
+  const FREE_LIMITS = { files: 10, tasks: 20, boardItems: 15 };
+
   const tabs = [
     { id: "messages", label: "Messages", icon: MessageSquare },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "files", label: "Files", icon: FolderOpen },
     { id: "board", label: "Board", icon: LayoutGrid },
-    { id: "approvals", label: "Approvals", icon: CheckCircle2 },
+    { id: "approvals", label: "Approvals", icon: CheckCircle2, proOnly: true },
     { id: "assets", label: "Assets", icon: Library },
-    { id: "finance", label: "Finance", icon: Wallet },
+    { id: "finance", label: "Finance", icon: Wallet, proOnly: true },
     { id: "notes", label: "Notes", icon: StickyNote },
-    { id: "templates", label: "Templates", icon: LayoutTemplate },
-    { id: "ai", label: "AI", icon: Sparkles },
+    { id: "templates", label: "Templates", icon: LayoutTemplate, proOnly: true },
+    { id: "ai", label: "AI", icon: Sparkles, proOnly: true },
   ];
 
   return (
@@ -251,6 +255,9 @@ const ThriveDesk = () => {
                 >
                   <Icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
+                  {tab.proOnly && !isPro && (
+                    <Crown className="h-3 w-3 text-amber-500" />
+                  )}
                 </button>
               );
             })}
@@ -273,27 +280,35 @@ const ThriveDesk = () => {
             {activeTab !== "messages" && (
               <div className="p-4 md:p-6 pb-24 md:pb-6">
                 {activeTab === "tasks" && (
-                  <SimpleTaskList
-                    projectId={projectId!}
-                    tasks={tasks}
-                    onTasksChanged={fetchProjectData}
-                    currentUserId={user?.id || ''}
-                  />
+                  <>
+                    <UsageLimitBanner current={tasks.length} limit={FREE_LIMITS.tasks} itemName="tasks" isPro={isPro} />
+                    <SimpleTaskList
+                      projectId={projectId!}
+                      tasks={tasks}
+                      onTasksChanged={fetchProjectData}
+                      currentUserId={user?.id || ''}
+                    />
+                  </>
                 )}
                 {activeTab === "files" && (
-                  <SimpleFileSharing
-                    projectId={projectId!}
-                    files={files}
-                    onFileUploaded={fetchProjectData}
-                  />
+                  <>
+                    <UsageLimitBanner current={files.length} limit={FREE_LIMITS.files} itemName="files" isPro={isPro} />
+                    <SimpleFileSharing
+                      projectId={projectId!}
+                      files={files}
+                      onFileUploaded={fetchProjectData}
+                    />
+                  </>
                 )}
                 {activeTab === "approvals" && (
-                  <ApprovalWorkflows
-                    projectId={projectId!}
-                    currentUserId={user?.id || ''}
-                    collaborators={collaborators}
-                    userRole={userRole}
-                  />
+                  <ProGate feature="Approval Workflows" description="Get client sign-off with professional review workflows, visual feedback, and status tracking." isPro={isPro}>
+                    <ApprovalWorkflows
+                      projectId={projectId!}
+                      currentUserId={user?.id || ''}
+                      collaborators={collaborators}
+                      userRole={userRole}
+                    />
+                  </ProGate>
                 )}
                 {activeTab === "assets" && (
                   <CreativeAssetLibrary
@@ -308,17 +323,48 @@ const ThriveDesk = () => {
                   />
                 )}
                 {activeTab === "finance" && (
-                  <div className="space-y-6">
-                    <MilestoneBoard
-                      milestones={milestones}
-                      projectId={projectId!}
-                      onUpdate={fetchProjectData}
-                      userRole={userRole}
-                    />
-                    <div className="flex justify-end">
-                      <InvoiceGenerator projectId={projectId!} />
+                  <ProGate feature="Finance Tools" description="Track milestones, generate professional invoices, and manage project payments all in one place." isPro={isPro}>
+                    <div className="space-y-6">
+                      <MilestoneBoard
+                        milestones={milestones}
+                        projectId={projectId!}
+                        onUpdate={fetchProjectData}
+                        userRole={userRole}
+                      />
+                      <div className="flex justify-end">
+                        <InvoiceGenerator projectId={projectId!} />
+                      </div>
                     </div>
-                  </div>
+                  </ProGate>
+                )}
+                {activeTab === "notes" && (
+                  <ProjectNotes projectId={projectId!} />
+                )}
+                {activeTab === "templates" && (
+                  <ProGate feature="Project Templates" description="Kickstart projects with professional templates for music videos, brand campaigns, podcasts, and more." isPro={isPro}>
+                    <ProjectTemplatePicker
+                      projectId={projectId!}
+                      currentUserId={user?.id || ''}
+                      onApplied={fetchProjectData}
+                    />
+                  </ProGate>
+                )}
+                {activeTab === "ai" && (
+                  <ProGate feature="AI Tools" description="Generate creative briefs, automate tasks, and unlock AI-powered productivity." isPro={isPro}>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <AIBriefBuilder
+                        projectId={projectId!}
+                        projectTitle={project.title}
+                        projectDescription={project.description}
+                      />
+                      <AIAutomation
+                        projectId={projectId!}
+                        projectTitle={project.title}
+                        projectDescription={project.description}
+                        onUpdate={fetchProjectData}
+                      />
+                    </div>
+                  </ProGate>
                 )}
                 {activeTab === "notes" && (
                   <ProjectNotes projectId={projectId!} />

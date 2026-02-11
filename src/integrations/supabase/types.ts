@@ -1481,8 +1481,10 @@ export type Database = {
       }
       digital_products: {
         Row: {
+          availability_info: string | null
           average_rating: number | null
           category: string | null
+          condition: string | null
           created_at: string | null
           currency: string | null
           demo_url: string | null
@@ -1491,19 +1493,29 @@ export type Database = {
           file_urls: string[] | null
           id: string
           is_active: boolean | null
+          is_virtual: boolean | null
+          item_location: string | null
           license_type: string | null
+          listing_type: string
+          pickup_location: string | null
           preview_urls: string[] | null
           price: number
           product_type: string
           review_count: number | null
+          service_duration: string | null
+          service_format: string | null
+          shipping_method: string | null
+          shipping_price: number | null
           tags: string[] | null
           title: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          availability_info?: string | null
           average_rating?: number | null
           category?: string | null
+          condition?: string | null
           created_at?: string | null
           currency?: string | null
           demo_url?: string | null
@@ -1512,19 +1524,29 @@ export type Database = {
           file_urls?: string[] | null
           id?: string
           is_active?: boolean | null
+          is_virtual?: boolean | null
+          item_location?: string | null
           license_type?: string | null
+          listing_type?: string
+          pickup_location?: string | null
           preview_urls?: string[] | null
           price: number
           product_type: string
           review_count?: number | null
+          service_duration?: string | null
+          service_format?: string | null
+          shipping_method?: string | null
+          shipping_price?: number | null
           tags?: string[] | null
           title: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          availability_info?: string | null
           average_rating?: number | null
           category?: string | null
+          condition?: string | null
           created_at?: string | null
           currency?: string | null
           demo_url?: string | null
@@ -1533,11 +1555,19 @@ export type Database = {
           file_urls?: string[] | null
           id?: string
           is_active?: boolean | null
+          is_virtual?: boolean | null
+          item_location?: string | null
           license_type?: string | null
+          listing_type?: string
+          pickup_location?: string | null
           preview_urls?: string[] | null
           price?: number
           product_type?: string
           review_count?: number | null
+          service_duration?: string | null
+          service_format?: string | null
+          shipping_method?: string | null
+          shipping_price?: number | null
           tags?: string[] | null
           title?: string
           updated_at?: string | null

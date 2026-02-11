@@ -444,6 +444,11 @@ const Circle = () => {
       const { analytics } = await import("@/lib/analytics");
       analytics.connectionRequest(userId);
 
+      // Send email notification (fire-and-forget)
+      supabase.functions.invoke('send-user-email', {
+        body: { type: 'connection_request', recipientId: userId }
+      }).catch(err => console.error('[Spark] Connection email failed:', err));
+
       toast({
         title: "Connection request sent",
         description: "They'll be notified of your request"

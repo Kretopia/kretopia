@@ -271,7 +271,7 @@ const AIChatTab = () => {
                 )}
               >
                 {msg.role === "assistant" ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                  <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:mb-3 [&_ul]:mb-3 [&_ol]:mb-3 [&_h1]:mb-2 [&_h2]:mb-2 [&_h3]:mb-2 [&_h3]:mt-4 [&_li]:mb-1.5 [&_p]:leading-relaxed [&_li]:leading-relaxed">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : (

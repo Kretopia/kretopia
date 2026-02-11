@@ -180,9 +180,9 @@ BODY: [email body with paragraphs]`,
 
       if (seqError || !sequence) throw new Error("Sequence not found");
 
-      // Get the lead email
-      let recipientEmail: string | null = null;
-      if (sequence.lead_id) {
+      // Get recipient email — from sequence.recipient_email or linked lead
+      let recipientEmail: string | null = sequence.recipient_email || null;
+      if (!recipientEmail && sequence.lead_id) {
         const { data: lead } = await supabaseAdmin
           .from("leads")
           .select("email, name")

@@ -2707,6 +2707,7 @@ export type Database = {
           id: string
           lead_id: string | null
           name: string
+          recipient_email: string | null
           status: string
           total_steps: number | null
           updated_at: string
@@ -2719,6 +2720,7 @@ export type Database = {
           id?: string
           lead_id?: string | null
           name: string
+          recipient_email?: string | null
           status?: string
           total_steps?: number | null
           updated_at?: string
@@ -2731,6 +2733,7 @@ export type Database = {
           id?: string
           lead_id?: string | null
           name?: string
+          recipient_email?: string | null
           status?: string
           total_steps?: number | null
           updated_at?: string

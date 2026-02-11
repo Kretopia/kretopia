@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink } from "lucide-react";
+import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip } from "lucide-react";
 
 type Lead = {
   id: string;
@@ -29,6 +29,7 @@ type Sequence = {
   description: string | null;
   status: string;
   lead_id: string | null;
+  recipient_email: string | null;
   total_steps: number;
   completed_steps: number;
   created_at: string;
@@ -60,9 +61,11 @@ const OutreachTab = () => {
   const [linkLeadTo, setLinkLeadTo] = useState<string | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeLead, setComposeLead] = useState<Lead | null>(null);
-  const [form, setForm] = useState({ name: "", description: "" });
+  const [form, setForm] = useState({ name: "", description: "", recipient_email: "" });
   const [emailForm, setEmailForm] = useState({ subject: "", body: "", delay_days: 0 });
   const [composeForm, setComposeForm] = useState({ to: "", subject: "", body: "" });
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [seqAttachments, setSeqAttachments] = useState<File[]>([]);
   const [generating, setGenerating] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
 
@@ -120,13 +123,14 @@ const OutreachTab = () => {
         user_id: user!.id,
         name: form.name,
         description: form.description || null,
+        recipient_email: form.recipient_email || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["outreach_sequences"] });
       setAddOpen(false);
-      setForm({ name: "", description: "" });
+      setForm({ name: "", description: "", recipient_email: "" });
       toast.success("Sequence created");
     },
     onError: () => toast.error("Failed to create sequence"),
@@ -245,12 +249,30 @@ const OutreachTab = () => {
     if (!composeForm.to || !composeForm.subject || !composeForm.body) return;
     setSending("compose");
     try {
+      // Upload attachments to storage if any
+      let attachmentUrls: { name: string; url: string }[] = [];
+      if (attachments.length > 0) {
+        for (const file of attachments) {
+          const path = `outreach/${user!.id}/${Date.now()}_${file.name}`;
+          const { error: uploadError } = await supabase.storage.from("project-files").upload(path, file);
+          if (uploadError) { toast.error(`Failed to upload ${file.name}`); continue; }
+          const { data: urlData } = supabase.storage.from("project-files").getPublicUrl(path);
+          attachmentUrls.push({ name: file.name, url: urlData.publicUrl });
+        }
+      }
+
+      // Append attachment links to body if any
+      let finalBody = composeForm.body;
+      if (attachmentUrls.length > 0) {
+        finalBody += "\n\n---\nAttachments:\n" + attachmentUrls.map(a => `• ${a.name}: ${a.url}`).join("\n");
+      }
+
       const { data, error } = await supabase.functions.invoke("send-outreach-email", {
         body: {
           action: "send",
           to: composeForm.to,
           subject: composeForm.subject,
-          body: composeForm.body,
+          body: finalBody,
           leadId: composeLead?.id,
         },
       });
@@ -260,6 +282,7 @@ const OutreachTab = () => {
       setComposeOpen(false);
       setComposeForm({ to: "", subject: "", body: "" });
       setComposeLead(null);
+      setAttachments([]);
       queryClient.invalidateQueries({ queryKey: ["leads"] });
     } catch (e) {
       console.error(e);
@@ -318,6 +341,11 @@ const OutreachTab = () => {
                 <div>
                   <Label>Sequence Name *</Label>
                   <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Brand Partnership Outreach" />
+                </div>
+                <div>
+                  <Label>Recipient Email</Label>
+                  <Input type="email" value={form.recipient_email} onChange={(e) => setForm({ ...form, recipient_email: e.target.value })} placeholder="recipient@example.com (or link a lead later)" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Set directly or link a lead with an email later</p>
                 </div>
                 <div>
                   <Label>Description</Label>
@@ -380,6 +408,11 @@ const OutreachTab = () => {
                             <Link2 className="h-3 w-3" /> {linkedLead.name}{linkedLead.email ? ` · ${linkedLead.email}` : ""}
                           </p>
                         )}
+                        {!linkedLead && seq.recipient_email && (
+                          <p className="text-xs text-primary mt-0.5 flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {seq.recipient_email}
+                          </p>
+                        )}
                         {seq.description && (
                           <p className="text-xs text-muted-foreground truncate">{seq.description}</p>
                         )}
@@ -390,7 +423,7 @@ const OutreachTab = () => {
                       </div>
                       <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                         {/* Send next email */}
-                        {pendingEmails > 0 && linkedLead?.email && (
+                        {pendingEmails > 0 && (linkedLead?.email || seq.recipient_email) && (
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleSendSequence(seq.id)}
                             disabled={sending === seq.id} title="Send next email">
                             {sending === seq.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5 text-primary" />}
@@ -563,6 +596,23 @@ const OutreachTab = () => {
             <div>
               <Label>Body *</Label>
               <Textarea value={composeForm.body} onChange={(e) => setComposeForm({ ...composeForm, body: e.target.value })} placeholder="Write your message..." rows={8} />
+            </div>
+            <div>
+              <Label className="flex items-center gap-1.5"><Paperclip className="h-3.5 w-3.5" /> Attachments</Label>
+              <input type="file" multiple className="text-xs mt-1" onChange={(e) => {
+                if (e.target.files) setAttachments(prev => [...prev, ...Array.from(e.target.files!)]);
+              }} />
+              {attachments.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {attachments.map((f, i) => (
+                    <Badge key={i} variant="secondary" className="text-[10px] gap-1">
+                      {f.name}
+                      <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} className="hover:text-destructive">×</button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <p className="text-[10px] text-muted-foreground mt-1">Files will be uploaded and linked in the email</p>
             </div>
             <Button className="w-full gap-1.5" onClick={handleSendCompose}
               disabled={!composeForm.to.trim() || !composeForm.subject.trim() || !composeForm.body.trim() || sending === "compose"}>

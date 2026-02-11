@@ -68,6 +68,7 @@ export default function Onboarding() {
   });
   
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [bioGenerating, setBioGenerating] = useState(false);
 
   // Calculate visibility status
   const hasAvatar = !!avatarUrl;
@@ -926,9 +927,39 @@ export default function Onboarding() {
                   maxLength={500}
                   className={profile.bio.length >= 20 ? 'border-green-500 focus:ring-green-500' : ''}
                 />
-                <p className="text-xs text-muted-foreground text-right mt-1">
-                  {profile.bio.length}/500 characters
-                </p>
+                <div className="flex items-center justify-between mt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={!profile.role || bioGenerating}
+                    onClick={async () => {
+                      setBioGenerating(true);
+                      try {
+                        const { data, error } = await supabase.functions.invoke('generate-content', {
+                          body: {
+                            messages: [{
+                              role: 'user',
+                              content: `Generate a compelling 2-3 sentence professional bio for a ${profile.role} on a creative collaboration platform. Their name is ${profile.full_name}. Make it authentic, warm, and mention openness to collaboration. Return ONLY the bio text.`
+                            }]
+                          }
+                        });
+                        if (!error && data?.content) {
+                          setProfile(prev => ({ ...prev, bio: data.content.trim() }));
+                        }
+                      } catch (e) { console.error(e); }
+                      finally { setBioGenerating(false); }
+                    }}
+                    className="gap-1.5"
+                  >
+                    {bioGenerating ? (
+                      <><Loader2 className="h-3 w-3 animate-spin" /> Generating...</>
+                    ) : (
+                      <><Sparkles className="h-3 w-3" /> Generate with AI</>
+                    )}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">{profile.bio.length}/500</span>
+                </div>
               </div>
               
               <div>

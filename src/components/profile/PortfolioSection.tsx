@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Upload, ExternalLink, Trash2, Eye, Play, Lock, Crown, Music, Video, Image as ImageIcon, Mic2 } from "lucide-react";
+import { Plus, Upload, ExternalLink, Trash2, Eye, Play, Lock, Crown, Music, Video, Image as ImageIcon, Mic2, Sparkles } from "lucide-react";
+import { AIPortfolioReview } from "./AIPortfolioReview";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaPlayerModal } from "./MediaPlayerModal";
@@ -631,9 +632,9 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                     )}
                   </div>
                 </div>
-                <div className="p-3 md:p-4">
+                <div className="p-3 md:p-4 space-y-2">
                   <h4 className="font-semibold mb-0.5 md:mb-1 text-sm md:text-base">{item.title}</h4>
-                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-1.5 md:mb-2">{item.description}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">{item.description}</p>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span className="bg-primary/10 text-primary px-1.5 md:px-2 py-0.5 md:py-1 rounded text-xs">{item.category}</span>
                     <span className="flex items-center gap-1">
@@ -641,6 +642,9 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                       {item.view_count}
                     </span>
                   </div>
+                  {isOwnProfile && (
+                    <AIPortfolioReview item={item} />
+                  )}
                 </div>
               </div>
             );

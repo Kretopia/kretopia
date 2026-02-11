@@ -55,7 +55,7 @@ const Install = lazy(() => import("./pages/Install"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
-
+const Spark = lazy(() => import("./pages/Spark"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -193,7 +193,7 @@ const AppContent = () => {
             
             {/* Redirect old routes to Circle */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
-            <Route path="/spark" element={<Navigate to="/circle" replace />} />
+            <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
             <Route path="/discover" element={<Navigate to="/circle" replace />} />
             <Route path="/community" element={<Navigate to="/circle" replace />} />
             <Route path="/cre8" element={<Navigate to="/circle" replace />} />

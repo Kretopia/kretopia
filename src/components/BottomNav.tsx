@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { MessageCircle, User, Users, Briefcase, MapPin } from "lucide-react";
+import { MessageCircle, User, Users, Briefcase, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 
@@ -13,7 +13,7 @@ const BottomNav = memo(() => {
   
   const navItems = [
     { path: "/circle", icon: Users, label: "Match", tourId: "circle-tab" },
-    { path: "/nearby", icon: MapPin, label: "Nearby", tourId: "nearby-tab" },
+    { path: "/spark", icon: Flame, label: "Spark", tourId: "spark-tab" },
     { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
     { path: "/desk", icon: Briefcase, label: "Desk", tourId: "projects-tab" },
     { path: "/messages", icon: MessageCircle, label: "Messages", tourId: "messages-tab" },

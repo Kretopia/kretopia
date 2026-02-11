@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, GripVertical, Calendar, CheckSquare } from "lucide-react";
@@ -39,11 +41,21 @@ interface Task {
   created_at: string;
 }
 
+interface Collaborator {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  role?: string;
+}
+
 interface TaskBoardProps {
   tasks: Task[];
   projectId: string;
   onUpdate: () => void;
+  collaborators?: Collaborator[];
 }
+
+const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
 const STATUSES = [
   { value: 'backlog', label: 'Backlog', color: 'bg-slate-100 dark:bg-slate-800' },
@@ -53,7 +65,7 @@ const STATUSES = [
   { value: 'done', label: 'Done', color: 'bg-accent/20' }
 ];
 
-function SortableTask({ task, onUpdate, isDraggingAny }: { task: Task; onUpdate: () => void; isDraggingAny: boolean }) {
+function SortableTask({ task, onUpdate, isDraggingAny, collaborators = [] }: { task: Task; onUpdate: () => void; isDraggingAny: boolean; collaborators?: Collaborator[] }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
     id: task.id,
     transition: {
@@ -157,6 +169,23 @@ function SortableTask({ task, onUpdate, isDraggingAny }: { task: Task; onUpdate:
                 <span className="xs:hidden">{new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
               </div>
             )}
+            {(() => {
+              const assignee = collaborators.find(c => c.id === task.assigned_to);
+              if (!assignee) return null;
+              return (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Avatar className="h-5 w-5 md:h-6 md:w-6">
+                      <AvatarImage src={assignee.avatar_url || ''} />
+                      <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                        {getInitials(assignee.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="text-xs">{assignee.full_name}</TooltipContent>
+                </Tooltip>
+              );
+            })()}
           </div>
         </div>
       </Card>
@@ -164,12 +193,13 @@ function SortableTask({ task, onUpdate, isDraggingAny }: { task: Task; onUpdate:
   );
 }
 
-function DroppableColumn({ status, tasks, onUpdate, isOver, isDraggingAny }: { 
+function DroppableColumn({ status, tasks, onUpdate, isOver, isDraggingAny, collaborators = [] }: { 
   status: typeof STATUSES[0]; 
   tasks: Task[]; 
   onUpdate: () => void;
   isOver: boolean;
   isDraggingAny: boolean;
+  collaborators?: Collaborator[];
 }) {
   const { setNodeRef } = useDroppable({ id: status.value });
 
@@ -207,7 +237,7 @@ function DroppableColumn({ status, tasks, onUpdate, isOver, isDraggingAny }: {
             </div>
           ) : (
             tasks.map(task => (
-              <SortableTask key={task.id} task={task} onUpdate={onUpdate} isDraggingAny={isDraggingAny} />
+              <SortableTask key={task.id} task={task} onUpdate={onUpdate} isDraggingAny={isDraggingAny} collaborators={collaborators} />
             ))
           )}
         </div>
@@ -216,7 +246,7 @@ function DroppableColumn({ status, tasks, onUpdate, isOver, isDraggingAny }: {
   );
 }
 
-export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
+export function TaskBoard({ tasks, projectId, onUpdate, collaborators = [] }: TaskBoardProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -224,7 +254,8 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
     title: '',
     description: '',
     due_date: '',
-    status: 'todo'
+    status: 'todo',
+    assigned_to: 'unassigned'
   });
   const { toast } = useToast();
 
@@ -318,7 +349,8 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
         title: newTask.title,
         description: newTask.description || null,
         due_date: newTask.due_date || null,
-        status: newTask.status
+        status: newTask.status,
+        assigned_to: newTask.assigned_to === 'unassigned' ? null : newTask.assigned_to
       });
 
     if (error) {
@@ -326,13 +358,14 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Task created! ✅" });
-      setNewTask({ title: '', description: '', due_date: '', status: 'todo' });
+      setNewTask({ title: '', description: '', due_date: '', status: 'todo', assigned_to: 'unassigned' });
       setCreateDialogOpen(false);
       onUpdate();
     }
   };
 
   return (
+    <TooltipProvider>
     <div className="space-y-2 md:space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -393,6 +426,30 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
                   onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
                 />
               </div>
+              {collaborators.length > 1 && (
+                <div className="space-y-2">
+                  <Label>Assign To</Label>
+                  <Select value={newTask.assigned_to} onValueChange={(val) => setNewTask({ ...newTask, assigned_to: val })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Unassigned" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {collaborators.map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage src={c.avatar_url || ''} />
+                              <AvatarFallback className="text-[8px]">{getInitials(c.full_name)}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs">{c.full_name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <Button onClick={handleCreateTask} className="w-full">Create Task</Button>
             </div>
           </DialogContent>
@@ -430,6 +487,7 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
                   onUpdate={onUpdate}
                   isOver={isOver}
                   isDraggingAny={!!activeId}
+                  collaborators={collaborators}
                 />
               );
             })}
@@ -455,5 +513,6 @@ export function TaskBoard({ tasks, projectId, onUpdate }: TaskBoardProps) {
         </DndContext>
       )}
     </div>
+    </TooltipProvider>
   );
 }

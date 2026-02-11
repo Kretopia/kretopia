@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X, CheckCircle2, Library, LayoutTemplate, Wallet } from "lucide-react";
+import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X, CheckCircle2, Library, LayoutTemplate, Wallet, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
 import { SimpleTaskList } from "@/components/project/SimpleTaskList";
@@ -37,6 +37,7 @@ const ThriveDesk = () => {
   const [activeTab, setActiveTab] = useState("messages");
   const [userRole, setUserRole] = useState<'creator' | 'client'>('creator');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [quickPanelOpen, setQuickPanelOpen] = useState(true);
   const [projects, setProjects] = useState<any[]>([]);
 
   useEffect(() => {
@@ -348,18 +349,35 @@ const ThriveDesk = () => {
             )}
           </div>
 
+          {/* Quick Panel Toggle - Desktop only */}
+          {!quickPanelOpen && (
+            <div className="hidden xl:flex items-start pt-3 pr-2 shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setQuickPanelOpen(true)}>
+                <PanelRightOpen className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
           {/* Right Quick Panel - Desktop only */}
-          <div className="hidden xl:block w-80 border-l border-border bg-card/30 overflow-y-auto shrink-0">
-            <WorkspaceQuickPanel
-              tasks={tasks}
-              files={files}
-              collaborators={collaborators}
-              projectId={projectId!}
-              onTasksChanged={fetchProjectData}
-              currentUserId={user?.id || ''}
-              onNavigateToTab={setActiveTab}
-            />
-          </div>
+          {quickPanelOpen && (
+            <div className="hidden xl:block w-80 border-l border-border bg-card/30 overflow-y-auto shrink-0">
+              <div className="flex items-center justify-between px-4 pt-3 pb-1">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Panel</span>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQuickPanelOpen(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <WorkspaceQuickPanel
+                tasks={tasks}
+                files={files}
+                collaborators={collaborators}
+                projectId={projectId!}
+                onTasksChanged={fetchProjectData}
+                currentUserId={user?.id || ''}
+                onNavigateToTab={setActiveTab}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

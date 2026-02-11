@@ -24,17 +24,22 @@ serve(async (req) => {
 
     if (authHeader) {
       try {
-        const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+        const token = authHeader.replace("Bearer ", "");
+        const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
           global: { headers: { Authorization: authHeader } },
         });
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        console.log("Auth result:", user?.id, userError?.message);
         if (user) {
           const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-          const { data: profile } = await adminClient
+          const { data: profile, error: profileError } = await adminClient
             .from("profiles")
             .select("full_name, role, bio, professional_skills, location, account_type")
             .eq("user_id", user.id)
             .single();
+
+          console.log("Profile result:", profile?.full_name, profileError?.message);
 
           if (profile) {
             userContext = `
@@ -45,6 +50,8 @@ User Profile Context:
 - Skills: ${JSON.stringify(profile.professional_skills || [])}
 - Location: ${profile.location || "Unknown"}
 - Account Type: ${profile.account_type || "individual"}
+
+IMPORTANT: Always address the user by their name and reference their skills/role when giving advice.
 `;
           }
         }

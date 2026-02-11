@@ -192,10 +192,26 @@ export const NotificationCenter = () => {
                                 View Connections
                               </Button>
                             )}
+                            {/* Project desk action buttons */}
+                            {notification.action_url && notification.action_url.includes('/desk/') && (
+                              <Button 
+                                variant="default" 
+                                size="sm" 
+                                className="h-7 text-xs"
+                                onClick={(e) => handleActionClick(e, notification)}
+                              >
+                                {notification.action_url.includes('tab=messages') ? (
+                                  <><MessageCircle className="h-3 w-3 mr-1" />{notification.action_text || 'View Messages'}</>
+                                ) : (
+                                  <><ExternalLink className="h-3 w-3 mr-1" />{notification.action_text || 'Open Project'}</>
+                                )}
+                              </Button>
+                            )}
                             {/* Generic action button for other notifications */}
                             {notification.action_url && 
                              !notification.action_url.includes('/messages') && 
-                             !notification.action_url.includes('/circle') && (
+                             !notification.action_url.includes('/circle') && 
+                             !notification.action_url.includes('/desk/') && (
                               <Button 
                                 variant="default" 
                                 size="sm" 

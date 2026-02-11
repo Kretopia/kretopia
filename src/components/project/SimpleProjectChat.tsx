@@ -196,9 +196,9 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
             type: 'project',
             category: 'project',
             priority: isMentioned ? 'high' : 'normal',
-            link: `/desk/${projectId}`,
-            action_url: `/desk/${projectId}`,
-            action_text: 'View Project',
+            link: `/desk/${projectId}?tab=messages`,
+            action_url: `/desk/${projectId}?tab=messages`,
+            action_text: 'View Messages',
           });
         }
       } catch (notifError) {

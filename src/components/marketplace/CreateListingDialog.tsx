@@ -44,12 +44,20 @@ const SERVICE_FORMATS = [
 
 interface CreateListingDialogProps {
   onCreated: () => void;
+  /** Controlled mode: pass open/onOpenChange to use without the built-in trigger button */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Hide the trigger button (when using controlled mode) */
+  triggerless?: boolean;
 }
 
-const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
+const CreateListingDialog = ({ onCreated, open: controlledOpen, onOpenChange: controlledOnOpenChange, triggerless }: CreateListingDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
   const [loading, setLoading] = useState(false);
   const [listingType, setListingType] = useState<string>("");
   const [images, setImages] = useState<string[]>([]);
@@ -151,11 +159,13 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" /> Create Listing
-        </Button>
-      </DialogTrigger>
+      {!triggerless && (
+        <DialogTrigger asChild>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" /> Create Listing
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create a Listing</DialogTitle>

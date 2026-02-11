@@ -4613,6 +4613,130 @@ export type Database = {
           },
         ]
       }
+      spark_likes: {
+        Row: {
+          created_at: string
+          id: string
+          response_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          response_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          response_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_likes_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "spark_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spark_prompts: {
+        Row: {
+          active_date: string
+          category: string
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          prompt_type: string
+          response_count: number
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active_date?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          prompt_type?: string
+          response_count?: number
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active_date?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          prompt_type?: string
+          response_count?: number
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      spark_responses: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          like_count: number
+          link_title: string | null
+          link_url: string | null
+          media_url: string | null
+          prompt_id: string
+          response_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          like_count?: number
+          link_title?: string | null
+          link_url?: string | null
+          media_url?: string | null
+          prompt_id: string
+          response_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          like_count?: number
+          link_title?: string | null
+          link_url?: string | null
+          media_url?: string | null
+          prompt_id?: string
+          response_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_responses_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "spark_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_messages: {
         Row: {
           content: string

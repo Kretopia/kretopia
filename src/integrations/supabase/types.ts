@@ -2015,6 +2015,69 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          avatar_url: string | null
+          company: string | null
+          created_at: string
+          email: string | null
+          id: string
+          last_contacted_at: string | null
+          name: string
+          next_follow_up_at: string | null
+          notes: string | null
+          priority: string | null
+          profile_url: string | null
+          role: string | null
+          source: string | null
+          stage: string
+          tags: string[] | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          name: string
+          next_follow_up_at?: string | null
+          notes?: string | null
+          priority?: string | null
+          profile_url?: string | null
+          role?: string | null
+          source?: string | null
+          stage?: string
+          tags?: string[] | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          name?: string
+          next_follow_up_at?: string | null
+          notes?: string | null
+          priority?: string | null
+          profile_url?: string | null
+          role?: string | null
+          source?: string | null
+          stage?: string
+          tags?: string[] | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_orders: {
         Row: {
           amount: number
@@ -2635,6 +2698,53 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      outreach_sequences: {
+        Row: {
+          completed_steps: number | null
+          created_at: string
+          description: string | null
+          id: string
+          lead_id: string | null
+          name: string
+          status: string
+          total_steps: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_steps?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          lead_id?: string | null
+          name: string
+          status?: string
+          total_steps?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_steps?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          lead_id?: string | null
+          name?: string
+          status?: string
+          total_steps?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_sequences_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partner_discounts: {
         Row: {
@@ -4599,6 +4709,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      sequence_emails: {
+        Row: {
+          body: string
+          created_at: string
+          delay_days: number | null
+          id: string
+          opened_at: string | null
+          replied_at: string | null
+          sent_at: string | null
+          sequence_id: string
+          status: string
+          step_number: number
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          delay_days?: number | null
+          id?: string
+          opened_at?: string | null
+          replied_at?: string | null
+          sent_at?: string | null
+          sequence_id: string
+          status?: string
+          step_number?: number
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          delay_days?: number | null
+          id?: string
+          opened_at?: string | null
+          replied_at?: string | null
+          sent_at?: string | null
+          sequence_id?: string
+          status?: string
+          step_number?: number
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_emails_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "outreach_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       session_messages: {
         Row: {

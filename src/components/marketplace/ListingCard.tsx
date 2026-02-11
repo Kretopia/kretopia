@@ -47,7 +47,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
   return (
     <Card
       className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
-      onClick={() => navigate(`/profile/${listing.user_id}`)}
+      onClick={() => navigate(`/market/${listing.id}`)}
     >
       {listing.preview_urls?.[0] ? (
         <div className="aspect-video bg-muted relative overflow-hidden">

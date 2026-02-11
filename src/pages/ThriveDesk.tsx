@@ -124,7 +124,7 @@ const ThriveDesk = () => {
       setFiles(filesData || []);
 
       // Fetch messages with profiles
-      const { data: messagesData } = await supabase.from('project_messages').select('*').eq('project_id', projectId).order('created_at', { ascending: true });
+      const { data: messagesData } = await supabase.from('project_messages').select('*, reply_to, is_pinned').eq('project_id', projectId).order('created_at', { ascending: true });
       if (messagesData) {
         const enrichedMessages = await Promise.all(
           messagesData.map(async (msg) => {
@@ -254,11 +254,12 @@ const ThriveDesk = () => {
           <div className="flex-1 overflow-y-auto">
             <div className="p-4 md:p-6 pb-24 md:pb-6">
               {activeTab === "messages" && (
-                <SimpleProjectChat
+              <SimpleProjectChat
                   projectId={projectId!}
                   messages={messages}
                   currentUserId={user?.id || ''}
                   onMessageSent={fetchProjectData}
+                  collaborators={collaborators}
                 />
               )}
               {activeTab === "tasks" && (

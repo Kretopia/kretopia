@@ -1626,6 +1626,38 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "project_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -3414,8 +3446,10 @@ export type Database = {
           file_type: string | null
           file_url: string | null
           id: string
+          is_pinned: boolean | null
           message: string
           project_id: string
+          reply_to: string | null
           user_id: string
         }
         Insert: {
@@ -3425,8 +3459,10 @@ export type Database = {
           file_type?: string | null
           file_url?: string | null
           id?: string
+          is_pinned?: boolean | null
           message: string
           project_id: string
+          reply_to?: string | null
           user_id: string
         }
         Update: {
@@ -3436,8 +3472,10 @@ export type Database = {
           file_type?: string | null
           file_url?: string | null
           id?: string
+          is_pinned?: boolean | null
           message?: string
           project_id?: string
+          reply_to?: string | null
           user_id?: string
         }
         Relationships: [
@@ -3446,6 +3484,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "project_messages"
             referencedColumns: ["id"]
           },
           {

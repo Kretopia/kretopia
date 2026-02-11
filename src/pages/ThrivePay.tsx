@@ -321,12 +321,6 @@ export default function ThrivePay() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-            {connectStatus === "active" && (
-              <Button onClick={handleManageAccount} variant="outline" size="sm">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Stripe
-              </Button>
-            )}
           </div>
         </div>
 

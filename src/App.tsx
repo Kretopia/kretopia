@@ -56,6 +56,7 @@ const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
 const Spark = lazy(() => import("./pages/Spark"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -194,11 +195,12 @@ const AppContent = () => {
             {/* Redirect old routes to Circle */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
             <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
+            <Route path="/market" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
             <Route path="/discover" element={<Navigate to="/circle" replace />} />
             <Route path="/community" element={<Navigate to="/circle" replace />} />
             <Route path="/cre8" element={<Navigate to="/circle" replace />} />
             <Route path="/connect" element={<Navigate to="/circle" replace />} />
-            <Route path="/marketplace" element={<Navigate to="/circle" replace />} />
+            <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             <Route path="/projects" element={<Navigate to="/circle" replace />} />
             <Route path="/leaderboard" element={<Navigate to="/circle" replace />} />
             <Route path="/membership" element={<Navigate to="/circle" replace />} />

@@ -60,7 +60,10 @@ export const SparkPromptCard = ({ prompt, isSelected, onSelect }: SparkPromptCar
 
         <div className="flex items-center justify-between">
           <div className="flex gap-1.5 flex-wrap">
-            {prompt.tags?.slice(0, 3).map(tag => (
+            <Badge variant="default" className="text-[10px] px-2 py-0 capitalize">
+              {prompt.category}
+            </Badge>
+            {prompt.tags?.slice(0, 2).map(tag => (
               <Badge key={tag} variant="outline" className="text-[10px] px-2 py-0">
                 {tag}
               </Badge>

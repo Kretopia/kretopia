@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X, CheckCircle2, Library, LayoutTemplate, Wallet, PanelRightClose, PanelRightOpen, Crown } from "lucide-react";
+import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
 import { SimpleTaskList } from "@/components/project/SimpleTaskList";
@@ -195,11 +196,7 @@ const ThriveDesk = () => {
     { id: "files", label: "Files", icon: FolderOpen },
     { id: "board", label: "Board", icon: LayoutGrid },
     { id: "approvals", label: "Approvals", icon: CheckCircle2, proOnly: true },
-    { id: "assets", label: "Assets", icon: Library },
     { id: "finance", label: "Finance", icon: Wallet, proOnly: true },
-    { id: "notes", label: "Notes", icon: StickyNote },
-    { id: "templates", label: "Templates", icon: LayoutTemplate, proOnly: true },
-    { id: "ai", label: "AI", icon: Sparkles, proOnly: true },
   ];
 
   return (
@@ -234,6 +231,14 @@ const ThriveDesk = () => {
             collaborators={collaborators} 
             onCollaboratorsChanged={fetchProjectData}
             compact
+          />
+          
+          <ProjectSettingsMenu
+            project={project}
+            currentUserId={user?.id || ''}
+            isPro={isPro}
+            onProjectUpdated={fetchProjectData}
+            onNavigateToTab={setActiveTab}
           />
         </header>
 
@@ -365,31 +370,6 @@ const ThriveDesk = () => {
                       />
                     </div>
                   </ProGate>
-                )}
-                {activeTab === "notes" && (
-                  <ProjectNotes projectId={projectId!} />
-                )}
-                {activeTab === "templates" && (
-                  <ProjectTemplatePicker
-                    projectId={projectId!}
-                    currentUserId={user?.id || ''}
-                    onApplied={fetchProjectData}
-                  />
-                )}
-                {activeTab === "ai" && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <AIBriefBuilder
-                      projectId={projectId!}
-                      projectTitle={project.title}
-                      projectDescription={project.description}
-                    />
-                    <AIAutomation
-                      projectId={projectId!}
-                      projectTitle={project.title}
-                      projectDescription={project.description}
-                      onUpdate={fetchProjectData}
-                    />
-                  </div>
                 )}
               </div>
             )}

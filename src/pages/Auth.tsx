@@ -323,20 +323,64 @@ const Auth = () => {
     analytics.featureUsed("google_signin_attempt");
     
     try {
-      const { error } = await lovable.auth.signInWithOAuth("google", {
+      const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
       
-      if (error) {
-        analytics.errorOccurred("google_signin", error.message, "auth");
+      // If redirected (full page navigation), nothing more to do
+      if ('redirected' in result && result.redirected) {
+        return;
+      }
+      
+      if (result.error) {
+        const errorMsg = result.error.message;
+        
+        // User cancelled the popup - not a real error
+        if (errorMsg.includes("cancelled")) {
+          setGoogleLoading(false);
+          return;
+        }
+        
+        // Popup was blocked
+        if (errorMsg.includes("Popup was blocked") || errorMsg.includes("blocked")) {
+          analytics.errorOccurred("google_signin", "popup_blocked", "auth");
+          toast({
+            title: "Pop-up Blocked",
+            description: "Please allow pop-ups for this site or try opening the app in a new tab.",
+            variant: "destructive",
+          });
+          setGoogleLoading(false);
+          return;
+        }
+
+        // Preview mode issue
+        if (errorMsg.includes("Preview mode") || errorMsg.includes("not supported")) {
+          toast({
+            title: "Open in New Tab",
+            description: "Google sign-in works best when the app is opened directly. Click the arrow icon to open in a new tab.",
+            variant: "destructive",
+          });
+          setGoogleLoading(false);
+          return;
+        }
+        
+        analytics.errorOccurred("google_signin", errorMsg, "auth");
         toast({
           title: "Google Sign-In Failed",
-          description: error.message,
+          description: errorMsg,
           variant: "destructive",
         });
         setGoogleLoading(false);
+      } else {
+        // Success! Tokens were set via setSession in the lovable module
+        analytics.signIn('google');
+        toast({
+          title: "Welcome!",
+          description: "Signed in with Google successfully.",
+        });
+        // The auth state change listener will handle navigation
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Google sign-in error:", err);
       toast({
         title: "Error",

@@ -82,21 +82,20 @@ serve(async (req) => {
     // Verify the user's token
     const supabaseUser = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get("SUPABASE_ANON_KEY")!
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claims, error: claimsError } = await supabaseUser.auth.getClaims(token);
+    const { data: { user: authUser }, error: userError } = await supabaseUser.auth.getUser(token);
 
-    if (claimsError || !claims?.claims?.sub) {
+    if (userError || !authUser) {
       return new Response(
         JSON.stringify({ error: "invalid_token", message: "Invalid or expired authentication token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const userId = claims.claims.sub;
+    const userId = authUser.id;
     const scopes = scope.split(",").map((s: string) => s.trim());
 
     // Generate authorization code

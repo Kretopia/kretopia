@@ -13,6 +13,7 @@ serve(async (req) => {
   }
 
   try {
+    // Use anon key client for auth verification
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -25,7 +26,13 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Not authenticated");
 
-    const { data: profile } = await supabaseClient
+    // Use service role client for data queries (RLS bypass needed)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("stripe_account_id")
       .eq("user_id", userData.user.id)

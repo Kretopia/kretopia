@@ -16,38 +16,47 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.png", "apple-touch-icon.png"],
+      // Inject push notification handlers from public/sw.js
+      injectManifest: undefined,
       workbox: {
-        // Force immediate update
+        // Force immediate update - critical for PWA freshness
         skipWaiting: true,
         clientsClaim: true,
-        // Clean old caches
+        // Clean old caches on update
         cleanupOutdatedCaches: true,
         // CRITICAL: Don't cache OAuth redirect route
         navigateFallbackDenylist: [/^\/~oauth/],
-        // Cache strategy - network first for pages
+        // Import push notification scripts
+        importScripts: ['/sw.js'],
+        // Cache strategy
         runtimeCaching: [
           {
+            // API calls: always network first
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-cache',
+              cacheName: 'supabase-api',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 5, // 5 minutes
+                maxAgeSeconds: 60 * 5,
               },
             },
           },
           {
-            urlPattern: /\.(js|css|png|jpg|jpeg|svg|gif|woff|woff2)$/,
+            // Static assets: cache but revalidate quickly
+            urlPattern: /\.(png|jpg|jpeg|svg|gif|woff|woff2)$/,
             handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'assets-cache',
+              cacheName: 'static-assets',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                maxAgeSeconds: 60 * 60 * 24,
               },
             },
           },
+          // NOTE: JS/CSS are NOT cached via runtimeCaching — 
+          // Vite uses content-hashed filenames so workbox precaching handles them.
+          // This prevents stale JS bundles from being served after deploys.
         ],
       },
       manifest: {

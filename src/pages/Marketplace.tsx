@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingBag, Search, Download, Package, Wrench } from "lucide-react";
+import { ShoppingBag, Search, Download, Package, Wrench, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
@@ -108,7 +108,15 @@ const Marketplace = () => {
           {user && <CreateListingDialog onCreated={fetchProducts} />}
         </div>
 
-        {/* Listing Type Tabs */}
+        {/* Marketplace Disclaimer Banner */}
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/30 border border-border">
+          <ShieldAlert className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <span className="font-medium">Peer-to-peer marketplace.</span> ThriveIN connects buyers and sellers but does not verify listings, 
+            process payments for physical items, or guarantee transactions. Please do your own due diligence before purchasing.
+          </p>
+        </div>
+
         <div className="flex gap-2 overflow-x-auto pb-1">
           {LISTING_TYPE_TABS.map((tab) => {
             const isActive = listingTypeFilter === tab.value;

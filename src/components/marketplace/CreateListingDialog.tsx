@@ -6,10 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, Wrench, Download, MapPin } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Package, Wrench, Download, MapPin, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import ListingImageUpload from "./ListingImageUpload";
 
 const LISTING_TYPES = [
   { value: "digital", label: "Digital Product", icon: Download, description: "Beats, presets, templates, courses" },
@@ -50,6 +52,8 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [listingType, setListingType] = useState<string>("");
+  const [images, setImages] = useState<string[]>([]);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   const [form, setForm] = useState({
     title: "",
@@ -58,13 +62,11 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
     category: "",
     product_type: "",
     tags: "",
-    // Physical
     condition: "",
     shipping_method: "",
     shipping_price: "",
     item_location: "",
     pickup_location: "",
-    // Service
     service_format: "",
     service_duration: "",
     availability_info: "",
@@ -81,6 +83,14 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
       toast({ title: "Missing fields", description: "Please fill in title, price, and listing type", variant: "destructive" });
       return;
     }
+    if (!agreedToTerms) {
+      toast({ title: "Agreement required", description: "Please agree to the marketplace terms", variant: "destructive" });
+      return;
+    }
+    if (listingType === "physical" && images.length === 0) {
+      toast({ title: "Photos required", description: "Please add at least one photo of your item", variant: "destructive" });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -93,6 +103,7 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
         product_type: form.product_type || listingType,
         listing_type: listingType,
         tags: form.tags ? form.tags.split(",").map(t => t.trim()) : [],
+        preview_urls: images,
         is_active: true,
       };
 
@@ -129,6 +140,8 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
 
   const resetForm = () => {
     setListingType("");
+    setImages([]);
+    setAgreedToTerms(false);
     setForm({
       title: "", description: "", price: "", category: "", product_type: "", tags: "",
       condition: "", shipping_method: "", shipping_price: "", item_location: "", pickup_location: "",
@@ -149,7 +162,6 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
         </DialogHeader>
 
         <div className="space-y-5">
-          {/* Step 1: Choose Type */}
           {!listingType ? (
             <div className="space-y-3">
               <Label>What are you listing?</Label>
@@ -173,22 +185,40 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
             </div>
           ) : (
             <>
-              {/* Type Badge */}
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="capitalize">{listingType}</Badge>
-                <button onClick={() => setListingType("")} className="text-xs text-muted-foreground underline">Change</button>
+                <button onClick={() => { setListingType(""); setImages([]); }} className="text-xs text-muted-foreground underline">Change</button>
               </div>
+
+              {/* Image Upload */}
+              {user && (
+                <ListingImageUpload
+                  userId={user.id}
+                  images={images}
+                  onImagesChange={setImages}
+                  maxImages={listingType === "physical" ? 8 : 6}
+                  listingType={listingType}
+                />
+              )}
 
               {/* Common Fields */}
               <div className="space-y-4">
                 <div>
                   <Label>Title *</Label>
-                  <Input placeholder="e.g. Vintage Fender Stratocaster" value={form.title} onChange={e => updateForm("title", e.target.value)} />
+                  <Input placeholder={
+                    listingType === "physical" ? "e.g. Vintage Fender Stratocaster" :
+                    listingType === "service" ? "e.g. 1-on-1 Guitar Lessons" :
+                    "e.g. Lo-Fi Beat Pack Vol. 3"
+                  } value={form.title} onChange={e => updateForm("title", e.target.value)} />
                 </div>
 
                 <div>
-                  <Label>Description</Label>
-                  <Textarea placeholder="Describe your listing..." value={form.description} onChange={e => updateForm("description", e.target.value)} rows={3} />
+                  <Label>Description *</Label>
+                  <Textarea placeholder={
+                    listingType === "physical" ? "Describe condition, history, what's included..." :
+                    listingType === "service" ? "What will the client learn/get? What's your experience?..." :
+                    "What's included? File formats, usage rights..."
+                  } value={form.description} onChange={e => updateForm("description", e.target.value)} rows={4} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -219,10 +249,9 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
               {listingType === "physical" && (
                 <div className="space-y-4 border-t border-border pt-4">
                   <p className="text-sm font-medium text-muted-foreground">Physical Item Details</p>
-                  
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Condition</Label>
+                      <Label>Condition *</Label>
                       <Select value={form.condition} onValueChange={v => updateForm("condition", v)}>
                         <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>
@@ -233,7 +262,7 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
                       </Select>
                     </div>
                     <div>
-                      <Label>Delivery Method</Label>
+                      <Label>Delivery Method *</Label>
                       <Select value={form.shipping_method} onValueChange={v => updateForm("shipping_method", v)}>
                         <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>
@@ -270,10 +299,9 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
               {listingType === "service" && (
                 <div className="space-y-4 border-t border-border pt-4">
                   <p className="text-sm font-medium text-muted-foreground">Service Details</p>
-                  
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Format</Label>
+                      <Label>Format *</Label>
                       <Select value={form.service_format} onValueChange={v => updateForm("service_format", v)}>
                         <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>
@@ -285,10 +313,9 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
                     </div>
                     <div>
                       <Label>Duration</Label>
-                      <Input placeholder="e.g. 1 hour, 30 min" value={form.service_duration} onChange={e => updateForm("service_duration", e.target.value)} />
+                      <Input placeholder="e.g. 1 hour" value={form.service_duration} onChange={e => updateForm("service_duration", e.target.value)} />
                     </div>
                   </div>
-
                   <div>
                     <Label>Availability</Label>
                     <Textarea placeholder="e.g. Weekdays 9am-5pm EST, book 48hrs in advance" value={form.availability_info} onChange={e => updateForm("availability_info", e.target.value)} rows={2} />
@@ -296,7 +323,35 @@ const CreateListingDialog = ({ onCreated }: CreateListingDialogProps) => {
                 </div>
               )}
 
-              <Button onClick={handleSubmit} disabled={loading} className="w-full">
+              {/* Disclaimer & Agreement */}
+              <div className="border-t border-border pt-4 space-y-3">
+                <div className="p-3 rounded-lg bg-muted/30 border border-border">
+                  <div className="flex items-start gap-2">
+                    <ShieldAlert className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      By listing on ThriveIN Market, you confirm that you own or have the right to sell this item/service, 
+                      that your listing is accurate and not misleading, and that you will fulfill orders in good faith.
+                      ThriveIN is not responsible for transaction disputes, shipping issues, or service quality.
+                      Fraudulent or misleading listings will result in account suspension.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="terms"
+                    checked={agreedToTerms}
+                    onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                    I agree to the marketplace terms. I understand ThriveIN acts as a platform only and is not liable for 
+                    any transactions, disputes, or outcomes arising from this listing.
+                  </label>
+                </div>
+              </div>
+
+              <Button onClick={handleSubmit} disabled={loading || !agreedToTerms} className="w-full">
                 {loading ? "Creating..." : "Publish Listing"}
               </Button>
             </>

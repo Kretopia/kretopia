@@ -172,16 +172,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       My Dashboard
                     </Button>
                     
-                    {/* AI Agent hidden for beta - uncomment when ready
+                    {/* Profile moved from bottom nav to hamburger */}
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/agent")}
+                      onClick={() => handleNavigation("/profile")}
                     >
-                      <Bot className="h-5 w-5" />
-                      AI Agent
+                      <User className="h-5 w-5" />
+                      My Profile
                     </Button>
-                    */}
 
                     <Separator className="my-3" />
                     

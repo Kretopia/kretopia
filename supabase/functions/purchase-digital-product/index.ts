@@ -1,17 +1,17 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Platform fees by subscription tier
 const PLATFORM_FEES: Record<string, number> = {
-  'free': 0.15,      // 15% for free tier
-  'thriver': 0.15,   // 15% for thriver
-  'creator_pro': 0.07 // 7% for Creator Pro
+  'free': 0.15,
+  'thriver': 0.15,
+  'pro': 0.07,
+  'creator_pro': 0.07
 };
 
 const getPlatformFee = (tier: string | null): number => {
@@ -49,10 +49,16 @@ serve(async (req) => {
     const { productId } = await req.json();
     if (!productId) throw new Error("Product ID is required");
 
-    // Get product details
-    const { data: product, error: productError } = await supabaseClient
+    // Use service role for cross-user queries
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Get product details with seller profile
+    const { data: product, error: productError } = await supabaseAdmin
       .from('digital_products')
-      .select('*, profiles!digital_products_user_id_fkey(stripe_account_id, subscription_tier, full_name)')
+      .select('*')
       .eq('id', productId)
       .single();
 
@@ -60,14 +66,18 @@ serve(async (req) => {
       throw new Error("Product not found");
     }
 
-    logStep("Product found", { productId, title: product.title, price: product.price });
+    // Get seller profile separately
+    const { data: sellerProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('stripe_account_id, subscription_tier, full_name')
+      .eq('user_id', product.user_id)
+      .single();
 
-    const sellerProfile = product.profiles;
+    logStep("Product found", { productId, title: product.title, price: product.price, listing_type: product.listing_type });
+
     if (!sellerProfile?.stripe_account_id) {
       throw new Error("Seller has not set up payment receiving. They need to connect ThrivePay first.");
     }
-
-    logStep("Seller account found", { sellerId: product.user_id, stripeAccountId: sellerProfile.stripe_account_id });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -87,15 +97,19 @@ serve(async (req) => {
 
     logStep("Fee calculation", { 
       price: product.price, 
+      listingType: product.listing_type,
       platformFeePercent, 
       applicationFee: applicationFee / 100,
-      sellerReceives: (priceInCents - applicationFee) / 100
     });
 
     const origin = req.headers.get("origin") || "https://www.thrivein.io";
+    const listingType = product.listing_type || 'digital';
 
-    // Create checkout session with Connect transfer
-    const session = await stripe.checkout.sessions.create({
+    // For digital products: instant capture
+    // For physical/service: authorize only (escrow), capture later
+    const captureMethod = listingType === 'digital' ? 'automatic' : 'manual';
+
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -104,7 +118,7 @@ serve(async (req) => {
             currency: product.currency || 'usd',
             product_data: {
               name: product.title,
-              description: product.description || `Digital product by ${sellerProfile.full_name}`,
+              description: product.description || `${listingType} listing by ${sellerProfile.full_name}`,
               images: product.preview_urls?.length ? [product.preview_urls[0]] : [],
             },
             unit_amount: priceInCents,
@@ -118,28 +132,49 @@ serve(async (req) => {
         transfer_data: {
           destination: sellerProfile.stripe_account_id,
         },
+        capture_method: captureMethod,
         metadata: {
           product_id: productId,
           buyer_id: user.id,
           seller_id: product.user_id,
+          listing_type: listingType,
           product_title: product.title,
         },
       },
-      success_url: `${origin}/purchase-success?product_id=${productId}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/profile/${product.user_id}?purchase=cancelled`,
+      success_url: `${origin}/purchase-success?product_id=${productId}&session_id={CHECKOUT_SESSION_ID}&type=${listingType}`,
+      cancel_url: `${origin}/market/${productId}?purchase=cancelled`,
       metadata: {
         product_id: productId,
         buyer_id: user.id,
         seller_id: product.user_id,
-        type: 'digital_product',
+        listing_type: listingType,
+        type: 'marketplace_purchase',
       },
-    });
+    };
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    // Add shipping price for physical items
+    if (listingType === 'physical' && product.shipping_price > 0) {
+      sessionConfig.line_items.push({
+        price_data: {
+          currency: product.currency || 'usd',
+          product_data: {
+            name: 'Shipping',
+          },
+          unit_amount: Math.round(product.shipping_price * 100),
+        },
+        quantity: 1,
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    logStep("Checkout session created", { sessionId: session.id, captureMethod });
 
     return new Response(JSON.stringify({ 
       url: session.url,
       sessionId: session.id,
+      listingType,
+      captureMethod,
       applicationFee: applicationFee / 100,
       sellerReceives: (priceInCents - applicationFee) / 100,
     }), {

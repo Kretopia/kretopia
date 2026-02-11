@@ -1959,6 +1959,92 @@ export type Database = {
           },
         ]
       }
+      marketplace_orders: {
+        Row: {
+          amount: number
+          auto_release_at: string | null
+          buyer_confirmed_at: string | null
+          buyer_id: string
+          checkout_session_id: string | null
+          created_at: string
+          currency: string | null
+          delivered_at: string | null
+          delivery_notes: string | null
+          delivery_status: string | null
+          dispute_reason: string | null
+          download_urls: string[] | null
+          escrow_released_at: string | null
+          id: string
+          listing_id: string
+          listing_type: string
+          payment_intent_id: string | null
+          platform_fee: number | null
+          seller_id: string
+          shipped_at: string | null
+          status: string
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          auto_release_at?: string | null
+          buyer_confirmed_at?: string | null
+          buyer_id: string
+          checkout_session_id?: string | null
+          created_at?: string
+          currency?: string | null
+          delivered_at?: string | null
+          delivery_notes?: string | null
+          delivery_status?: string | null
+          dispute_reason?: string | null
+          download_urls?: string[] | null
+          escrow_released_at?: string | null
+          id?: string
+          listing_id: string
+          listing_type?: string
+          payment_intent_id?: string | null
+          platform_fee?: number | null
+          seller_id: string
+          shipped_at?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          auto_release_at?: string | null
+          buyer_confirmed_at?: string | null
+          buyer_id?: string
+          checkout_session_id?: string | null
+          created_at?: string
+          currency?: string | null
+          delivered_at?: string | null
+          delivery_notes?: string | null
+          delivery_status?: string | null
+          dispute_reason?: string | null
+          download_urls?: string[] | null
+          escrow_released_at?: string | null
+          id?: string
+          listing_id?: string
+          listing_type?: string
+          payment_intent_id?: string | null
+          platform_fee?: number | null
+          seller_id?: string
+          shipped_at?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           created_at: string | null

@@ -10,11 +10,13 @@ import { SEO } from "@/components/SEO";
 import {
   CheckCircle,
   Download,
-  ExternalLink,
   Package,
   ArrowRight,
   Loader2,
   AlertCircle,
+  Clock,
+  Lock,
+  MessageCircle,
 } from "lucide-react";
 
 export default function PurchaseSuccess() {
@@ -24,12 +26,16 @@ export default function PurchaseSuccess() {
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState<any>(null);
   const [downloadUrls, setDownloadUrls] = useState<string[]>([]);
+  const [orderStatus, setOrderStatus] = useState<string>('completed');
+  const [listingType, setListingType] = useState<string>('digital');
   const [error, setError] = useState<string | null>(null);
 
   const productId = searchParams.get('product_id');
   const sessionId = searchParams.get('session_id');
+  const type = searchParams.get('type') || 'digital';
 
   useEffect(() => {
+    setListingType(type);
     if (productId && sessionId) {
       completePurchase();
     } else {
@@ -42,12 +48,9 @@ export default function PurchaseSuccess() {
     try {
       setLoading(true);
 
-      // Complete the purchase and get download URLs
       const { data, error: completeError } = await supabase.functions.invoke(
         'complete-product-purchase',
-        {
-          body: { sessionId, productId }
-        }
+        { body: { sessionId, productId } }
       );
 
       if (completeError) throw completeError;
@@ -55,11 +58,16 @@ export default function PurchaseSuccess() {
       if (data?.downloadUrls) {
         setDownloadUrls(data.downloadUrls);
       }
+      if (data?.orderStatus) {
+        setOrderStatus(data.orderStatus);
+      }
+      if (data?.listingType) {
+        setListingType(data.listingType);
+      }
 
-      // Fetch product details
       const { data: productData } = await supabase
         .from('digital_products')
-        .select('*, profiles!digital_products_user_id_fkey(full_name)')
+        .select('*')
         .eq('id', productId)
         .single();
 
@@ -69,7 +77,7 @@ export default function PurchaseSuccess() {
 
       toast({
         title: "Purchase Complete! 🎉",
-        description: "Your files are ready to download",
+        description: listingType === 'digital' ? "Your files are ready to download" : "Your order has been placed",
       });
 
     } catch (err: any) {
@@ -132,7 +140,11 @@ export default function PurchaseSuccess() {
             </div>
             <CardTitle className="text-2xl">Purchase Complete!</CardTitle>
             <CardDescription>
-              Thank you for your purchase. Your files are ready.
+              {listingType === 'digital' 
+                ? "Thank you for your purchase. Your files are ready." 
+                : listingType === 'physical'
+                ? "Your order has been placed. The seller will arrange delivery."
+                : "Your booking is confirmed. The seller will be in touch."}
             </CardDescription>
           </CardHeader>
           
@@ -150,11 +162,8 @@ export default function PurchaseSuccess() {
                   )}
                   <div className="flex-1">
                     <h3 className="font-semibold">{product.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      by {product.profiles?.full_name}
-                    </p>
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="secondary">{product.product_type}</Badge>
+                      <Badge variant="secondary" className="capitalize">{listingType}</Badge>
                       <span className="font-bold text-primary">${product.price}</span>
                     </div>
                   </div>
@@ -164,36 +173,92 @@ export default function PurchaseSuccess() {
 
             <Separator />
 
-            {/* Download Section */}
-            <div>
-              <h4 className="font-semibold mb-3 flex items-center gap-2">
-                <Package className="h-4 w-4" />
-                Your Downloads
-              </h4>
-              
-              {downloadUrls.length > 0 ? (
-                <div className="space-y-2">
-                  {downloadUrls.map((url, index) => (
-                    <Button 
-                      key={index}
-                      variant="outline" 
-                      className="w-full justify-between"
-                      onClick={() => window.open(url, '_blank')}
-                    >
-                      <span className="flex items-center gap-2">
-                        <Download className="h-4 w-4" />
-                        Download File {downloadUrls.length > 1 ? index + 1 : ''}
-                      </span>
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  ))}
+            {/* Digital: Download Section */}
+            {listingType === 'digital' && (
+              <div>
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Your Downloads
+                </h4>
+                
+                {downloadUrls.length > 0 ? (
+                  <div className="space-y-2">
+                    {downloadUrls.map((url, index) => (
+                      <Button 
+                        key={index}
+                        variant="outline" 
+                        className="w-full justify-between"
+                        onClick={() => window.open(url, '_blank')}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Download className="h-4 w-4" />
+                          Download File {downloadUrls.length > 1 ? index + 1 : ''}
+                        </span>
+                      </Button>
+                    ))}
+                    <p className="text-xs text-muted-foreground">
+                      Download links expire in 7 days. Access them anytime from your purchases.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Download links will be available in your purchases.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Physical/Service: Escrow Info */}
+            {listingType !== 'digital' && (
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
+                  <Lock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Payment Protected</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {listingType === 'physical'
+                        ? "Your payment is held securely in escrow until you confirm receipt of the item. You have 14 days to confirm or open a dispute."
+                        : "Your payment is held securely in escrow until the service is completed. You have 7 days to confirm or open a dispute."}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Download links will be sent to your email and available in your purchases.
-                </p>
-              )}
-            </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    What happens next
+                  </h4>
+                  <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                    {listingType === 'physical' ? (
+                      <>
+                        <li>The seller will be notified and arrange shipping/pickup</li>
+                        <li>Message the seller to coordinate delivery details</li>
+                        <li>When you receive the item, confirm delivery in your orders</li>
+                        <li>Payment is released to the seller after confirmation</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>The seller will be notified about your booking</li>
+                        <li>Message the seller to schedule your session</li>
+                        <li>After the service is delivered, confirm completion</li>
+                        <li>Payment is released to the seller after confirmation</li>
+                      </>
+                    )}
+                  </ol>
+                </div>
+
+                {product && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full gap-2"
+                    onClick={() => navigate(`/messages?to=${product.user_id}`)}
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Message Seller
+                  </Button>
+                )}
+              </div>
+            )}
 
             <Separator />
 
@@ -206,9 +271,9 @@ export default function PurchaseSuccess() {
                 </Button>
               </Link>
               
-              <Link to="/spark" className="block">
+              <Link to="/market" className="block">
                 <Button className="w-full">
-                  Continue Exploring
+                  Continue Shopping
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>

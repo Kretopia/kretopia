@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import ListingImageUpload from "./ListingImageUpload";
+import ProductFileUpload from "./ProductFileUpload";
 
 const LISTING_TYPES = [
   { value: "digital", label: "Digital Product", icon: Download, description: "Beats, presets, templates, courses" },
@@ -61,6 +62,7 @@ const CreateListingDialog = ({ onCreated, open: controlledOpen, onOpenChange: co
   const [loading, setLoading] = useState(false);
   const [listingType, setListingType] = useState<string>("");
   const [images, setImages] = useState<string[]>([]);
+  const [productFiles, setProductFiles] = useState<string[]>([]);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   const [form, setForm] = useState({
@@ -99,6 +101,10 @@ const CreateListingDialog = ({ onCreated, open: controlledOpen, onOpenChange: co
       toast({ title: "Photos required", description: "Please add at least one photo of your item", variant: "destructive" });
       return;
     }
+    if (listingType === "digital" && productFiles.length === 0) {
+      toast({ title: "Product files required", description: "Please upload the files buyers will receive", variant: "destructive" });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -114,6 +120,10 @@ const CreateListingDialog = ({ onCreated, open: controlledOpen, onOpenChange: co
         preview_urls: images,
         is_active: true,
       };
+
+      if (listingType === "digital") {
+        insertData.file_urls = productFiles;
+      }
 
       if (listingType === "physical") {
         insertData.condition = form.condition || null;
@@ -149,6 +159,7 @@ const CreateListingDialog = ({ onCreated, open: controlledOpen, onOpenChange: co
   const resetForm = () => {
     setListingType("");
     setImages([]);
+    setProductFiles([]);
     setAgreedToTerms(false);
     setForm({
       title: "", description: "", price: "", category: "", product_type: "", tags: "",
@@ -197,8 +208,17 @@ const CreateListingDialog = ({ onCreated, open: controlledOpen, onOpenChange: co
             <>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="capitalize">{listingType}</Badge>
-                <button onClick={() => { setListingType(""); setImages([]); }} className="text-xs text-muted-foreground underline">Change</button>
+                <button onClick={() => { setListingType(""); setImages([]); setProductFiles([]); }} className="text-xs text-muted-foreground underline">Change</button>
               </div>
+
+              {/* Digital Product Files Upload */}
+              {listingType === "digital" && user && (
+                <ProductFileUpload
+                  userId={user.id}
+                  files={productFiles}
+                  onFilesChange={setProductFiles}
+                />
+              )}
 
               {/* Image Upload */}
               {user && (

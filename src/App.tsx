@@ -48,7 +48,6 @@ const TestEmails = lazy(() => import("./pages/TestEmails"));
 const PurchaseSuccess = lazy(() => import("./pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("./pages/MyPurchases"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
-const Wallet = lazy(() => import("./pages/Wallet"));
 const AIAgent = lazy(() => import("./pages/AIAgent"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
@@ -150,7 +149,7 @@ const AppContent = () => {
             {/* Subscription & Payment Routes */}
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
-            <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+            <Route path="/wallet" element={<Navigate to="/thrivepay" replace />} />
             <Route path="/purchases" element={<ProtectedRoute><MyPurchases /></ProtectedRoute>} />
             <Route path="/purchase-success" element={<ProtectedRoute><PurchaseSuccess /></ProtectedRoute>} />
             <Route path="/payment-success" element={<PaymentSuccess />} />

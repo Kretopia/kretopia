@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, CreditCard, Bot, Shield, Crown, Sparkles, Flame } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Bot, Shield, Crown, Sparkles, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -190,17 +190,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/wallet")}
-                    >
-                      <Wallet className="h-5 w-5" />
-                      Wallet
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
                       onClick={() => handleNavigation("/thrivepay")}
                     >
-                      <CreditCard className="h-5 w-5" />
+                      <Wallet className="h-5 w-5" />
                       ThrivePay
                     </Button>
                     <Button 

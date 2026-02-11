@@ -1,10 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const logStep = (step: string, details?: any) => {
@@ -56,19 +56,24 @@ serve(async (req) => {
       throw new Error("Product not found");
     }
 
-    // Check if purchase already exists
-    const { data: existingPurchase } = await supabaseClient
-      .from('digital_product_purchases')
-      .select('id')
-      .eq('payment_intent_id', session.payment_intent)
-      .single();
+    const listingType = product.listing_type || 'digital';
+    const buyerId = session.metadata?.buyer_id;
+    const sellerId = session.metadata?.seller_id || product.user_id;
 
-    if (existingPurchase) {
-      logStep("Purchase already recorded", { purchaseId: existingPurchase.id });
+    // Check if order already exists
+    const { data: existingOrder } = await supabaseClient
+      .from('marketplace_orders')
+      .select('id, download_urls')
+      .eq('checkout_session_id', sessionId)
+      .maybeSingle();
+
+    if (existingOrder) {
+      logStep("Order already recorded", { orderId: existingOrder.id });
       return new Response(JSON.stringify({ 
         success: true,
-        purchaseId: existingPurchase.id,
-        downloadUrls: product.file_urls,
+        orderId: existingOrder.id,
+        downloadUrls: existingOrder.download_urls,
+        listingType,
         message: 'Purchase already completed'
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -76,11 +81,71 @@ serve(async (req) => {
       });
     }
 
-    // Record the purchase
-    const buyerId = session.metadata?.buyer_id;
-    const sellerId = session.metadata?.seller_id || product.user_id;
+    // Calculate auto-release date based on listing type
+    const autoReleaseDate = new Date();
+    if (listingType === 'digital') {
+      // Digital: instant release (already captured)
+      autoReleaseDate.setDate(autoReleaseDate.getDate() + 3); // 3-day dispute window
+    } else if (listingType === 'physical') {
+      autoReleaseDate.setDate(autoReleaseDate.getDate() + 14); // 14 days for shipping
+    } else {
+      autoReleaseDate.setDate(autoReleaseDate.getDate() + 7); // 7 days for services
+    }
 
-    const { data: purchase, error: purchaseError } = await supabaseClient
+    // Determine delivery status
+    const deliveryStatus = listingType === 'digital' ? 'delivered' : 'pending';
+    const orderStatus = listingType === 'digital' ? 'completed' : 'escrow';
+
+    // For digital products, generate signed download URLs
+    let downloadUrls: string[] = [];
+    if (listingType === 'digital' && product.file_urls?.length > 0) {
+      for (const filePath of product.file_urls) {
+        const { data: signedData } = await supabaseClient
+          .storage
+          .from('product-files')
+          .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7-day expiry
+        
+        if (signedData?.signedUrl) {
+          downloadUrls.push(signedData.signedUrl);
+        }
+      }
+    }
+
+    // Also include legacy file_urls (public URLs from old system)
+    if (listingType === 'digital' && (!downloadUrls.length) && product.file_urls?.length > 0) {
+      downloadUrls = product.file_urls;
+    }
+
+    // Create marketplace order
+    const { data: order, error: orderError } = await supabaseClient
+      .from('marketplace_orders')
+      .insert({
+        listing_id: productId,
+        buyer_id: buyerId,
+        seller_id: sellerId,
+        listing_type: listingType,
+        amount: product.price,
+        currency: product.currency || 'usd',
+        status: orderStatus,
+        payment_intent_id: session.payment_intent as string,
+        checkout_session_id: sessionId,
+        delivery_status: deliveryStatus,
+        delivered_at: listingType === 'digital' ? new Date().toISOString() : null,
+        auto_release_at: autoReleaseDate.toISOString(),
+        download_urls: downloadUrls.length > 0 ? downloadUrls : null,
+      })
+      .select()
+      .single();
+
+    if (orderError) {
+      logStep("Error creating order", { error: orderError });
+      throw new Error("Failed to record purchase");
+    }
+
+    logStep("Order created", { orderId: order.id, status: orderStatus });
+
+    // Also record in legacy purchases table for backward compat
+    await supabaseClient
       .from('digital_product_purchases')
       .insert({
         product_id: productId,
@@ -90,53 +155,53 @@ serve(async (req) => {
         currency: product.currency || 'usd',
         payment_status: 'completed',
         payment_intent_id: session.payment_intent as string,
-        download_urls: product.file_urls,
-      })
-      .select()
-      .single();
+        download_urls: downloadUrls.length > 0 ? downloadUrls : product.file_urls,
+      });
 
-    if (purchaseError) {
-      logStep("Error recording purchase", { error: purchaseError });
-      throw new Error("Failed to record purchase");
+    // Update download count for digital
+    if (listingType === 'digital') {
+      await supabaseClient
+        .from('digital_products')
+        .update({ download_count: (product.download_count || 0) + 1 })
+        .eq('id', productId);
     }
 
-    logStep("Purchase recorded", { purchaseId: purchase.id });
-
-    // Update download count
-    await supabaseClient
-      .from('digital_products')
-      .update({ download_count: (product.download_count || 0) + 1 })
-      .eq('id', productId);
-
-    // Record transaction for seller
+    // Record transaction
     await supabaseClient
       .from('transactions')
       .insert({
         user_id: sellerId,
         amount: product.price,
-        type: 'payment_received',
-        description: `Sale: ${product.title}`,
-        status: 'completed',
+        type: listingType === 'digital' ? 'payment_received' : 'escrow_received',
+        description: `${listingType === 'digital' ? 'Sale' : 'Escrow'}: ${product.title}`,
+        status: listingType === 'digital' ? 'completed' : 'pending',
       });
 
-    // Create notification for seller
+    // Notify seller
+    const statusMessage = listingType === 'digital' 
+      ? `Someone purchased "${product.title}" for $${product.price}` 
+      : `New order for "${product.title}" ($${product.price}) — payment held in escrow`;
+
     await supabaseClient
       .from('notifications')
       .insert({
         user_id: sellerId,
-        title: 'New Sale! 💰',
-        message: `Someone purchased "${product.title}" for $${product.price}`,
+        title: listingType === 'digital' ? 'New Sale! 💰' : 'New Order! 📦',
+        message: statusMessage,
         type: 'sale',
         category: 'sale',
         priority: 'high',
+        link: '/orders',
       });
 
-    logStep("Purchase completed successfully", { purchaseId: purchase.id });
+    logStep("Purchase completed successfully", { orderId: order.id });
 
     return new Response(JSON.stringify({ 
       success: true,
-      purchaseId: purchase.id,
-      downloadUrls: product.file_urls,
+      orderId: order.id,
+      downloadUrls,
+      listingType,
+      orderStatus,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

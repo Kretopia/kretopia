@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, Download, Package, Wrench, MapPin, Clock, MessageCircle,
-  ShieldAlert, Share2, Flag, Heart, ChevronLeft, ChevronRight
+  ShieldAlert, Share2, Flag, Heart, ChevronLeft, ChevronRight, ShoppingCart, Loader2, Lock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +29,7 @@ const ListingDetail = () => {
   const [listing, setListing] = useState<any>(null);
   const [seller, setSeller] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [purchasing, setPurchasing] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
@@ -69,6 +70,35 @@ const ListingDetail = () => {
       return;
     }
     navigate(`/messages?to=${listing.user_id}`);
+  };
+
+  const handleBuy = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setPurchasing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('purchase-digital-product', {
+        body: { productId: listing.id }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      console.error('Purchase error:', err);
+      toast({ 
+        title: "Purchase failed", 
+        description: err.message || "Failed to initiate checkout", 
+        variant: "destructive" 
+      });
+    } finally {
+      setPurchasing(false);
+    }
   };
 
   const handleShare = async () => {
@@ -303,9 +333,32 @@ const ListingDetail = () => {
               {/* Actions */}
               {!isOwner && (
                 <div className="space-y-2">
-                  <Button className="w-full gap-2" size="lg" onClick={handleContact}>
+                  <Button 
+                    className="w-full gap-2" 
+                    size="lg" 
+                    onClick={handleBuy}
+                    disabled={purchasing}
+                  >
+                    {purchasing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ShoppingCart className="h-4 w-4" />
+                    )}
+                    {purchasing ? "Processing..." : `Buy Now — $${listing.price}`}
+                  </Button>
+                  
+                  {listing.listing_type !== 'digital' && (
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                      <Lock className="h-3 w-3 text-primary shrink-0" />
+                      <p className="text-[11px] text-muted-foreground">
+                        Payment held in escrow until {listing.listing_type === 'physical' ? 'you confirm delivery' : 'service is completed'}
+                      </p>
+                    </div>
+                  )}
+
+                  <Button variant="outline" className="w-full gap-2" onClick={handleContact}>
                     <MessageCircle className="h-4 w-4" />
-                    {listing.listing_type === "service" ? "Book This Service" : "Contact Seller"}
+                    {listing.listing_type === "service" ? "Message Seller" : "Contact Seller"}
                   </Button>
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1 gap-2" onClick={handleShare}>

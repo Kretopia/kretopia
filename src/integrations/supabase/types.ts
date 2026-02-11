@@ -3323,6 +3323,7 @@ export type Database = {
           tiktok_url: string | null
           total_engagement_rate: number | null
           total_reviews: number | null
+          tour_completed: boolean | null
           twitter_followers: number | null
           twitter_url: string | null
           updated_at: string | null
@@ -3437,6 +3438,7 @@ export type Database = {
           tiktok_url?: string | null
           total_engagement_rate?: number | null
           total_reviews?: number | null
+          tour_completed?: boolean | null
           twitter_followers?: number | null
           twitter_url?: string | null
           updated_at?: string | null
@@ -3551,6 +3553,7 @@ export type Database = {
           tiktok_url?: string | null
           total_engagement_rate?: number | null
           total_reviews?: number | null
+          tour_completed?: boolean | null
           twitter_followers?: number | null
           twitter_url?: string | null
           updated_at?: string | null

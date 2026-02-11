@@ -243,7 +243,7 @@ const ViewProfile = () => {
           message: `${profile?.full_name || 'Someone'} wants to connect with you`,
           type: 'connection',
           link: `/profile/${user.id}`,
-          action_url: '/circle',
+          action_url: '/circle?tab=network',
           action_text: 'View Request'
         });
       }

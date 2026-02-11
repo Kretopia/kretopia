@@ -18,9 +18,11 @@ export const NotificationCenter = () => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
-    if (notification.link) {
-      setIsOpen(false); // Close sheet before navigating
-      setTimeout(() => navigate(notification.link), 100);
+    // Prefer action_url (more specific) over link
+    const destination = notification.action_url || notification.link;
+    if (destination) {
+      setIsOpen(false);
+      setTimeout(() => navigate(destination), 100);
     }
   };
 

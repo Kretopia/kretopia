@@ -158,3 +158,6 @@ verify_jwt = false
 
 [functions.sso-userinfo]
 verify_jwt = false
+
+[functions.create-connect-login-link]
+verify_jwt = false

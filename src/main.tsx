@@ -22,18 +22,8 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
-// Register service worker for push notifications
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('Service Worker registered:', registration);
-      })
-      .catch(error => {
-        console.log('Service Worker registration failed:', error);
-      });
-  });
-}
+// NOTE: VitePWA handles service worker registration automatically via registerType: "autoUpdate"
+// Push notification support is included via the custom SW injection below
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

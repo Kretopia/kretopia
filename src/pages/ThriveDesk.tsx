@@ -47,7 +47,7 @@ const ThriveDesk = () => {
 
   useEffect(() => {
     if (projectId && user) {
-      fetchProjectData();
+      fetchProjectData(true);
       const trackProjectView = async () => {
         const { analytics } = await import("@/lib/analytics");
         analytics.pageView("thrivedesk");
@@ -65,9 +65,9 @@ const ThriveDesk = () => {
     setProjects(data || []);
   };
 
-  const fetchProjectData = async () => {
+  const fetchProjectData = async (isInitial = false) => {
     try {
-      setLoading(true);
+      if (isInitial) setLoading(true);
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .select('*')

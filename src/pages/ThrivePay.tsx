@@ -27,6 +27,19 @@ import {
   Percent,
 } from "lucide-react";
 
+interface ConnectRequirements {
+  status: string;
+  chargesEnabled?: boolean;
+  payoutsEnabled?: boolean;
+  detailsSubmitted?: boolean;
+  disabledReason?: string | null;
+  requirements: string[];
+  pastDue: number;
+  currentlyDue: number;
+  eventuallyDue: number;
+  deadline?: string | null;
+}
+
 export default function ThrivePay() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -37,6 +50,8 @@ export default function ThrivePay() {
   const [balance, setBalance] = useState({ available: 0, pending: 0, currency: "usd" });
   const [accountId, setAccountId] = useState<string | null>(null);
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>("free");
+  const [connectDetails, setConnectDetails] = useState<ConnectRequirements | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   useEffect(() => {
     // Check for success callback
@@ -83,6 +98,11 @@ export default function ThrivePay() {
             setBalance(balanceData);
           }
         }
+
+        // If pending or restricted, check detailed status from Stripe
+        if (profile.stripe_account_status === "pending" || profile.stripe_account_status === "restricted") {
+          await checkConnectStatus();
+        }
       }
     } catch (error) {
       console.error("Error fetching account status:", error);
@@ -93,6 +113,32 @@ export default function ThrivePay() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkConnectStatus = async () => {
+    try {
+      setCheckingStatus(true);
+      const { data, error } = await supabase.functions.invoke("check-connect-status");
+      
+      if (error) throw error;
+      
+      if (data) {
+        setConnectDetails(data);
+        if (data.status && data.status !== connectStatus) {
+          setConnectStatus(data.status);
+          if (data.status === "active") {
+            toast({
+              title: "Account Active! 🎉",
+              description: "Your Stripe account is now fully verified and ready to receive payments.",
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking connect status:", error);
+    } finally {
+      setCheckingStatus(false);
     }
   };
 
@@ -253,17 +299,108 @@ export default function ThrivePay() {
           </Card>
         )}
 
-        {/* Pending State */}
-        {connectStatus === "pending" && (
-          <Alert className="mb-8">
-            <Clock className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>Your account is being verified by Stripe. This usually takes a few minutes.</span>
-              <Button variant="outline" size="sm" onClick={fetchAccountStatus}>
-                Refresh Status
+        {(connectStatus === "pending" || connectStatus === "restricted") && (
+          <Card className="mb-8 border-yellow-500/30 bg-yellow-500/5">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                  {connectStatus === "restricted" ? (
+                    <AlertCircle className="h-5 w-5" />
+                  ) : (
+                    <Clock className="h-5 w-5" />
+                  )}
+                  {connectStatus === "restricted" ? "Action Required" : "Setup Incomplete"}
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={checkConnectStatus}
+                  disabled={checkingStatus}
+                >
+                  {checkingStatus ? "Checking..." : "Refresh Status"}
+                </Button>
+              </div>
+              <CardDescription>
+                {connectStatus === "restricted"
+                  ? "Your account has restrictions. Complete the items below to start receiving payments."
+                  : "Complete the Stripe onboarding to start receiving payments for your listings and services."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Status Checklist */}
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className={`flex items-center gap-2 rounded-lg border p-3 ${connectDetails?.detailsSubmitted ? 'border-green-500/30 bg-green-500/5' : 'border-yellow-500/30 bg-yellow-500/5'}`}>
+                  {connectDetails?.detailsSubmitted ? (
+                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                  )}
+                  <span className="text-sm font-medium">Details Submitted</span>
+                </div>
+                <div className={`flex items-center gap-2 rounded-lg border p-3 ${connectDetails?.chargesEnabled ? 'border-green-500/30 bg-green-500/5' : 'border-yellow-500/30 bg-yellow-500/5'}`}>
+                  {connectDetails?.chargesEnabled ? (
+                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                  )}
+                  <span className="text-sm font-medium">Charges Enabled</span>
+                </div>
+                <div className={`flex items-center gap-2 rounded-lg border p-3 ${connectDetails?.payoutsEnabled ? 'border-green-500/30 bg-green-500/5' : 'border-yellow-500/30 bg-yellow-500/5'}`}>
+                  {connectDetails?.payoutsEnabled ? (
+                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                  )}
+                  <span className="text-sm font-medium">Payouts Enabled</span>
+                </div>
+              </div>
+
+              {/* Missing Requirements */}
+              {connectDetails?.requirements && connectDetails.requirements.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-foreground">Missing Information:</h4>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {connectDetails.requirements.map((req, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="h-1.5 w-1.5 rounded-full bg-yellow-500 flex-shrink-0" />
+                        {req}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Deadline Warning */}
+              {connectDetails?.deadline && (
+                <Alert variant="destructive" className="border-red-500/30">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Deadline:</strong> Complete by{" "}
+                    {new Date(connectDetails.deadline).toLocaleDateString(undefined, {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}{" "}
+                    or your account may be restricted.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {connectDetails?.disabledReason && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Reason:</strong> {connectDetails.disabledReason.replace(/_/g, " ")}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Button onClick={handleConnectAccount} size="lg" className="w-full sm:w-auto">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Complete Setup on Stripe
               </Button>
-            </AlertDescription>
-          </Alert>
+            </CardContent>
+          </Card>
         )}
 
         {/* Active State - Balance Cards */}

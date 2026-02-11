@@ -81,7 +81,29 @@ const Auth = () => {
       if (connectUserId) {
         handleAutoConnect(connectUserId);
       } else {
-        navigate(redirectTo);
+        // Check if user needs onboarding (especially for Google sign-up)
+        const checkOnboarding = async () => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('onboarding_completed, account_type')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (profile && !profile.onboarding_completed) {
+            // New user needs onboarding
+            const { analytics } = await import("@/lib/analytics");
+            analytics.onboardingStart();
+            
+            if (profile.account_type === 'company') {
+              navigate("/company-onboarding");
+            } else {
+              navigate("/onboarding");
+            }
+          } else {
+            navigate(redirectTo);
+          }
+        };
+        checkOnboarding();
       }
     }
     

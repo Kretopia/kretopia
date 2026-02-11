@@ -79,7 +79,7 @@ export default function Connect() {
     
     if (data) {
       setUserLevel(data.level || 1);
-      setIsPremium(data.subscription_tier === 'creator_pro');
+      setIsPremium(data.subscription_tier === 'pro');
     }
   };
 

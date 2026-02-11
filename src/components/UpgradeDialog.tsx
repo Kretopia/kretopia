@@ -79,7 +79,7 @@ export function UpgradeDialog({
               <span className="text-muted-foreground">/month</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Start your free trial today. Cancel anytime.
+              Cancel anytime. No hidden fees.
             </p>
           </div>
 

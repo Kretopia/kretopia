@@ -45,13 +45,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) throw error;
 
     if (profile) {
-      // Check if trial is still valid
-      const isTrialValid = profile.subscription_status === 'trial' && 
-        profile.subscription_end_date && 
-        new Date(profile.subscription_end_date) > new Date();
-      
-      // User is "subscribed" if active OR on valid trial
-      const isSubscribed = profile.subscription_status === 'active' || isTrialValid;
+      // User is "subscribed" only if actively paying
+      const isSubscribed = profile.subscription_status === 'active';
       
       return {
         tier: isSubscribed ? (profile.subscription_tier || 'pro') : 'free',

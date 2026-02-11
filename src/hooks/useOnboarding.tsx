@@ -81,6 +81,16 @@ export function useOnboarding() {
         currentStep: 6,
         shouldShowTour: false,
       });
+
+      // Send welcome email after onboarding completes
+      try {
+        await supabase.functions.invoke('send-user-email', {
+          body: { type: 'welcome' }
+        });
+        console.log('[Onboarding] Welcome email sent');
+      } catch (emailErr) {
+        console.error('[Onboarding] Failed to send welcome email:', emailErr);
+      }
     } catch (error) {
       console.error('Error completing onboarding:', error);
     }

@@ -58,16 +58,20 @@ export const SparkResponseForm = ({ promptId, userId, onSubmitted, onCancel }: S
 
     setSubmitting(true);
     try {
+      const mediaUrls = imageUrl ? [{ type: 'image', url: imageUrl }] : null;
+
       const { error } = await supabase
-        .from('spark_responses')
+        .from('feed_posts')
         .insert({
           user_id: userId,
           prompt_id: promptId,
-          response_type: responseType,
+          post_type: 'prompt_response',
           content: content.trim() || null,
-          media_url: imageUrl || null,
+          media_urls: mediaUrls,
+          media_type: imageUrl ? 'image' : null,
           link_url: linkUrl || null,
           link_title: linkTitle || null,
+          category: 'general',
         });
 
       if (error) throw error;

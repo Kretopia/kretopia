@@ -187,7 +187,17 @@ export function InteractiveOnboarding() {
 
   const completeTour = async () => {
     setIsVisible(false);
-    await saveProgress(ONBOARDING_STEPS.length - 1, true);
+    if (userId) {
+      try {
+        await supabase
+          .from("profiles")
+          .update({ tour_completed: true })
+          .eq("user_id", userId);
+        console.log("[Tour] Marked tour as completed for user", userId);
+      } catch (err) {
+        console.error("[Tour] Failed to save tour completion:", err);
+      }
+    }
     navigate("/circle");
   };
 

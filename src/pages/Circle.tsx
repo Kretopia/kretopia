@@ -10,7 +10,7 @@ import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus } from "lucide-react";
+import { Users, Sparkles, UserPlus, MapPin } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 
@@ -210,10 +210,14 @@ export default function Circle() {
         />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
+          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Connect
+            </TabsTrigger>
+            <TabsTrigger value="nearby" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
+              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Nearby
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -228,6 +232,19 @@ export default function Circle() {
               filters={filters}
               onProfilesCountChange={setProfilesCount}
             />
+          </TabsContent>
+
+          {/* Nearby Tab */}
+          <TabsContent value="nearby" className="space-y-4">
+            <div className="text-center py-8">
+              <MapPin className="h-10 w-10 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold text-lg mb-2">Discover Nearby Creators</h3>
+              <p className="text-sm text-muted-foreground mb-4">Find creators and sessions near you</p>
+              <Button onClick={() => navigate('/nearby')} className="gap-2">
+                <MapPin className="h-4 w-4" />
+                Open Map View
+              </Button>
+            </div>
           </TabsContent>
 
           {/* My Network Tab */}

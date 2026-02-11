@@ -9,6 +9,19 @@ import { SparkResponseForm } from "@/components/spark/SparkResponseForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, Flame, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+const CREATIVE_CATEGORIES = [
+  { id: "all", label: "All", emoji: "✨" },
+  { id: "music", label: "Music", emoji: "🎵" },
+  { id: "visual", label: "Visual Art", emoji: "🎨" },
+  { id: "fashion", label: "Fashion", emoji: "👗" },
+  { id: "film", label: "Film", emoji: "🎬" },
+  { id: "photography", label: "Photo", emoji: "📸" },
+  { id: "design", label: "Design", emoji: "✏️" },
+  { id: "writing", label: "Writing", emoji: "✍️" },
+];
 
 interface SparkPrompt {
   id: string;
@@ -29,6 +42,7 @@ const Spark = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   useEffect(() => {
     fetchPrompts();
@@ -113,6 +127,11 @@ const Spark = () => {
   const dailyPrompts = prompts.filter(p => p.prompt_type === 'daily');
   const weeklyChallenge = prompts.find(p => p.prompt_type === 'weekly_challenge');
 
+  // Filter prompts by selected category
+  const filteredDailyPrompts = selectedCategory === "all" 
+    ? dailyPrompts 
+    : dailyPrompts.filter(p => p.category === selectedCategory);
+
   return (
     <div className="min-h-screen bg-background">
       <SEO title="Spark - Daily Creative Prompts | ThriveIN" description="Daily creative prompts and weekly challenges to keep your creative spark alive." />
@@ -126,6 +145,26 @@ const Spark = () => {
           <p className="text-sm text-muted-foreground">
             Daily creative prompts to fuel your fire
           </p>
+        </div>
+
+        {/* Creative Category Filter */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+          {CREATIVE_CATEGORIES.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all",
+                "border",
+                selectedCategory === cat.id
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+              )}
+            >
+              <span>{cat.emoji}</span>
+              {cat.label}
+            </button>
+          ))}
         </div>
 
         <Tabs defaultValue="daily" className="w-full">
@@ -143,7 +182,7 @@ const Spark = () => {
           </TabsList>
 
           <TabsContent value="daily" className="space-y-4 mt-4">
-            {dailyPrompts.map(prompt => (
+            {filteredDailyPrompts.map(prompt => (
               <SparkPromptCard
                 key={prompt.id}
                 prompt={prompt}
@@ -154,6 +193,12 @@ const Spark = () => {
                 }}
               />
             ))}
+
+            {filteredDailyPrompts.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">No sparks for this category yet today</p>
+              </div>
+            )}
 
             {selectedPrompt && showForm && selectedPrompt.prompt_type === 'daily' && (
               <SparkResponseForm

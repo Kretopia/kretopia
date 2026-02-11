@@ -41,9 +41,10 @@ interface SimpleProjectHeaderProps {
     role: string;
   }>;
   onCollaboratorsChanged?: () => void;
+  compact?: boolean;
 }
 
-export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsChanged }: SimpleProjectHeaderProps) => {
+export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsChanged, compact }: SimpleProjectHeaderProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -98,6 +99,62 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
     setCollaboratorToRemove({ id: collab.id, name: collab.full_name });
     setRemoveDialogOpen(true);
   };
+
+  if (compact) {
+    return (
+      <>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-base font-semibold truncate">{project.title}</h1>
+              <Badge variant="outline" className={`${getStatusColor(project.status)} text-[10px] px-1.5 py-0`}>
+                {project.status || 'Planning'}
+              </Badge>
+            </div>
+            {project.description && (
+              <p className="text-xs text-muted-foreground truncate">{project.description}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex -space-x-1.5">
+            {collaborators.slice(0, 3).map((collab) => (
+              <Avatar key={collab.id} className="h-6 w-6 border-2 border-background">
+                <AvatarImage src={collab.avatar_url || undefined} />
+                <AvatarFallback className="text-[9px]">{collab.full_name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            ))}
+            {collaborators.length > 3 && (
+              <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[9px] font-medium">
+                +{collaborators.length - 3}
+              </div>
+            )}
+          </div>
+          {isOwner && (
+            <InviteCollaboratorDialog projectId={project.id} onInvite={() => onCollaboratorsChanged?.()} />
+          )}
+        </div>
+
+        {/* Remove Confirmation Dialog */}
+        <AlertDialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove collaborator?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to remove {collaboratorToRemove?.name} from this project?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleRemoveCollaborator} disabled={removing} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {removing ? "Removing..." : "Remove"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    );
+  }
 
   return (
     <div className="space-y-4">

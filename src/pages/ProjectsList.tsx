@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, Plus, Briefcase } from "lucide-react";
+import { Loader2, Plus, Briefcase, Clock, CheckCircle2, Circle, ArrowRight, Sparkles, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
+import { formatDistanceToNow } from "date-fns";
 
 const ProjectsList = () => {
   const navigate = useNavigate();
@@ -20,8 +21,6 @@ const ProjectsList = () => {
   useEffect(() => {
     if (user) {
       fetchProjects();
-      
-      // Track page view
       const trackPage = async () => {
         const { analytics } = await import("@/lib/analytics");
         analytics.pageView("projects_list");
@@ -33,24 +32,25 @@ const ProjectsList = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      
-      // Query all projects - RLS will filter to only those user has access to
       const { data: projectsData, error } = await supabase
         .from('projects')
         .select('*')
         .order('updated_at', { ascending: false });
-
       if (error) throw error;
       setProjects(projectsData || []);
     } catch (error: any) {
       console.error('Error fetching projects:', error);
-      toast({
-        title: "Error loading projects",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error loading projects", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getStatusIcon = (status: string | null) => {
+    switch (status) {
+      case 'active': return <Circle className="h-3 w-3 fill-green-500 text-green-500" />;
+      case 'completed': return <CheckCircle2 className="h-3 w-3 text-blue-500" />;
+      default: return <Clock className="h-3 w-3 text-muted-foreground" />;
     }
   };
 
@@ -62,60 +62,99 @@ const ProjectsList = () => {
     );
   }
 
+  const activeProjects = projects.filter(p => p.status === 'active');
+  const otherProjects = projects.filter(p => p.status !== 'active');
+
   return (
-    <div className="container max-w-4xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6 overflow-y-auto">
+    <div className="container max-w-5xl mx-auto py-8 px-4 space-y-8 pb-24 md:pb-8 overflow-y-auto">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">ThriveDesk</h1>
-          <p className="text-muted-foreground">Your collaboration spaces</p>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">ThriveDesk</h1>
+              <p className="text-sm text-muted-foreground">Your collaboration workspaces</p>
+            </div>
+          </div>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Project
+        <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">New Project</span>
         </Button>
       </div>
 
-      {/* Show pending invitations at the top */}
+      {/* Pending Invitations */}
       <MyPendingInvitations />
 
+      {/* Stats row */}
+      {projects.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          <Card className="p-4 text-center bg-card/50">
+            <p className="text-2xl font-bold">{projects.length}</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Total</p>
+          </Card>
+          <Card className="p-4 text-center bg-card/50">
+            <p className="text-2xl font-bold text-green-500">{activeProjects.length}</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Active</p>
+          </Card>
+          <Card className="p-4 text-center bg-card/50">
+            <p className="text-2xl font-bold text-blue-500">{projects.filter(p => p.status === 'completed').length}</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Completed</p>
+          </Card>
+        </div>
+      )}
+
       {projects.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Briefcase className="h-16 w-16 text-muted-foreground mb-4" />
-            <CardTitle className="mb-2">No Projects Yet</CardTitle>
-            <CardDescription className="text-center mb-4">
-              Start by matching with creators in Circle, then create projects to collaborate
-            </CardDescription>
-            <Button onClick={() => navigate('/circle')}>
-              Find Collaborators
-            </Button>
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+              <FolderOpen className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-xl font-semibold mb-2">No Projects Yet</h2>
+            <p className="text-muted-foreground text-center mb-6 max-w-sm">
+              Start by matching with creators in Circle, then create projects to collaborate seamlessly.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => navigate('/circle')}>
+                Find Collaborators
+              </Button>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Project
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-2">
           {projects.map((project) => (
-            <Card 
+            <Card
               key={project.id}
-              className="cursor-pointer hover:bg-accent/50 transition-colors"
+              className="group cursor-pointer hover:bg-accent/30 transition-all hover:shadow-md border-border/50"
               onClick={() => navigate(`/desk/${project.id}`)}
             >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>{project.title}</CardTitle>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    project.status === 'active' ? 'bg-green-500/20 text-green-500' :
-                    project.status === 'completed' ? 'bg-blue-500/20 text-blue-500' :
-                    'bg-gray-500/20 text-gray-500'
-                  }`}>
-                    {project.status}
-                  </span>
+              <div className="flex items-center gap-4 p-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    {getStatusIcon(project.status)}
+                    <h3 className="font-semibold truncate">{project.title}</h3>
+                  </div>
+                  {project.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-1 ml-5">
+                      {project.description}
+                    </p>
+                  )}
                 </div>
-                {project.description && (
-                  <CardDescription className="line-clamp-2">
-                    {project.description}
-                  </CardDescription>
-                )}
-              </CardHeader>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs text-muted-foreground hidden sm:block">
+                    {formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })}
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+              </div>
             </Card>
           ))}
         </div>

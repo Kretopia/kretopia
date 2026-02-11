@@ -786,31 +786,7 @@ const Auth = () => {
                 )}
               </Button>
 
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleGoogleSignIn}
-                disabled={loading || googleLoading}
-              >
-                {googleLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Chrome className="mr-2 h-4 w-4" />
-                )}
-                {googleLoading ? "Signing in..." : "Continue with Google"}
-              </Button>
+              {/* Google auth hidden temporarily due to redirect_uri_mismatch on PWA */}
               
               <div className="mt-4 text-center">
                 <button

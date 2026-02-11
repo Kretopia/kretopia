@@ -295,6 +295,15 @@ export function StartProjectFromMatchDialog({
           priority: 'high',
           link: `/desk/${project.id}`,
         });
+
+        // Send email notification for project invite (fire-and-forget)
+        supabase.functions.invoke('send-user-email', {
+          body: {
+            type: 'project_invite',
+            recipientId: matchedUser.id,
+            data: { projectTitle: validationResult.data.title, projectId: project.id }
+          }
+        }).catch(err => console.error('[StartProject] Email failed:', err));
       }
 
       // Track successful project creation from match

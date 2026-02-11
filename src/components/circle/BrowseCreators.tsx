@@ -209,6 +209,11 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
           status: 'pending',
         });
 
+        // Send email notification (fire-and-forget)
+        supabase.functions.invoke('send-user-email', {
+          body: { type: 'connection_request', recipientId: creator.user_id }
+        }).catch(err => console.error('[Browse] Connection email failed:', err));
+
         setPendingIds(prev => new Set(prev).add(creator.user_id));
         toast.success(`Request sent to ${creator.full_name}!`);
       }

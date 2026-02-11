@@ -370,11 +370,21 @@ const Messages = () => {
 
     if (senderProfile) {
       const { notifyMessage } = await import("@/lib/pushNotifications");
+      const preview = attachment ? (attachment.type === 'image' ? '📷 Sent an image' : '📎 Sent a file') : messageContent;
       await notifyMessage(
         selectedConversation,
         senderProfile.full_name || 'Someone',
-        attachment ? (attachment.type === 'image' ? '📷 Sent an image' : '📎 Sent a file') : messageContent
+        preview
       );
+
+      // Send email notification (fire-and-forget)
+      supabase.functions.invoke('send-user-email', {
+        body: {
+          type: 'message',
+          recipientId: selectedConversation,
+          data: { messagePreview: preview }
+        }
+      }).catch(err => console.error('[Messages] Email notification failed:', err));
     }
 
     // Track message sent

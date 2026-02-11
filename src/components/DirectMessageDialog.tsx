@@ -163,6 +163,15 @@ export const DirectMessageDialog = ({
         messageContent
       );
 
+      // Send email notification (fire-and-forget)
+      supabase.functions.invoke('send-user-email', {
+        body: {
+          type: 'message',
+          recipientId,
+          data: { messagePreview: messageContent.substring(0, 100) }
+        }
+      }).catch(err => console.error('[DM] Email notification failed:', err));
+
     } catch (error) {
       console.error('Error sending message:', error);
       toast({

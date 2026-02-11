@@ -161,8 +161,17 @@ export default function ThrivePay() {
     }
   };
 
-  const handleManageAccount = () => {
-    window.open(`https://connect.stripe.com/express/${accountId}`, "_blank");
+  const handleManageAccount = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("create-connect-login-link");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error) {
+      console.error("Error creating login link:", error);
+      toast({ title: "Error", description: "Failed to open Stripe dashboard", variant: "destructive" });
+    }
   };
 
   // --- Wallet logic ---
@@ -620,9 +629,11 @@ export default function ThrivePay() {
                     </div>
                     <p className="text-sm text-muted-foreground">per transaction</p>
                   </div>
-                  <Button variant="outline" onClick={() => navigate("/membership")}>
-                    Upgrade to Save
-                  </Button>
+                  {subscriptionTier === "free" && (
+                    <Button variant="outline" onClick={() => navigate("/subscription")}>
+                      Upgrade to Save
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -292,6 +292,7 @@ const ThriveDesk = () => {
                       tasks={tasks}
                       onTasksChanged={fetchProjectData}
                       currentUserId={user?.id || ''}
+                      collaborators={collaborators}
                     />
                   </>
                 )}

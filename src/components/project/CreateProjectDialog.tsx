@@ -9,8 +9,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Plus, UserPlus, Loader2, Users, Mail } from "lucide-react";
+import { Plus, UserPlus, Loader2, Users, Mail, Crown, Lock } from "lucide-react";
 import { z } from "zod";
+import { useProjectLimit } from "@/hooks/useProjectLimit";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1, "Project name is required").max(100),
@@ -27,6 +28,7 @@ interface CreateProjectDialogProps {
 export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreateProjectDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { canCreateProject, remaining, limit, isPro, loading: limitLoading } = useProjectLimit();
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -296,6 +298,26 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
           </DialogDescription>
         </DialogHeader>
 
+        {!canCreateProject && !isPro ? (
+          <div className="py-6 text-center space-y-4">
+            <div className="mx-auto w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+              <Crown className="h-7 w-7 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold mb-1">Monthly Limit Reached</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Free accounts can create {limit} project per month. Upgrade to Pro for unlimited projects.
+              </p>
+            </div>
+            <Button
+              onClick={() => { onOpenChange(false); navigate("/subscription"); }}
+              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2"
+            >
+              <Crown className="h-4 w-4" />
+              Upgrade to Pro — $12/mo
+            </Button>
+          </div>
+        ) : (
         <div className="space-y-5 py-4">
           {/* Project Name */}
           <div className="space-y-2">
@@ -474,6 +496,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
             </Button>
           </div>
         </div>
+        )}
 
         {/* Info footer */}
         <div className="bg-muted/50 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">

@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Sparkles, Rocket, Calendar, DollarSign } from "lucide-react";
+import { Loader2, Sparkles, Rocket, Calendar, DollarSign, Crown } from "lucide-react";
 import { trackEvent, EventCategory } from "@/lib/analytics";
 import { z } from "zod";
+import { useProjectLimit } from "@/hooks/useProjectLimit";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1, "Project name is required").max(100),
@@ -50,6 +51,7 @@ export function StartProjectFromMatchDialog({
 }: StartProjectFromMatchDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { canCreateProject, limit, isPro } = useProjectLimit();
   const [creating, setCreating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
   const [formData, setFormData] = useState({
@@ -191,6 +193,16 @@ export function StartProjectFromMatchDialog({
   const handleCreate = async () => {
     try {
       setCreating(true);
+
+      if (!canCreateProject) {
+        toast({
+          title: "Monthly project limit reached",
+          description: `Free accounts can create ${limit} project per month. Upgrade to Pro for unlimited.`,
+          variant: "destructive",
+        });
+        navigate("/subscription");
+        return;
+      }
 
       const validationResult = projectSchema.safeParse(formData);
       if (!validationResult.success) {

@@ -156,7 +156,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <SheetHeader>
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col gap-1 mt-6">
+                  <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
                     {/* My Dashboard */}
                     <Button 
                       variant="ghost" 

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X, CheckCircle2, Library, LayoutTemplate } from "lucide-react";
+import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote, Sparkles, LayoutGrid, Plus, Search, Bell, ChevronLeft, Menu, X, CheckCircle2, Library, LayoutTemplate, Wallet } from "lucide-react";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
 import { SimpleTaskList } from "@/components/project/SimpleTaskList";
@@ -18,6 +18,7 @@ import { WorkspaceQuickPanel } from "@/components/project/WorkspaceQuickPanel";
 import { ApprovalWorkflows } from "@/components/project/ApprovalWorkflows";
 import { CreativeAssetLibrary } from "@/components/project/CreativeAssetLibrary";
 import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicker";
+import { CreativeBoard } from "@/components/project/CreativeBoard";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -187,9 +188,10 @@ const ThriveDesk = () => {
     { id: "messages", label: "Messages", icon: MessageSquare },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "files", label: "Files", icon: FolderOpen },
+    { id: "board", label: "Board", icon: LayoutGrid },
     { id: "approvals", label: "Approvals", icon: CheckCircle2 },
     { id: "assets", label: "Assets", icon: Library },
-    { id: "board", label: "Board", icon: LayoutGrid },
+    { id: "finance", label: "Finance", icon: Wallet },
     { id: "notes", label: "Notes", icon: StickyNote },
     { id: "templates", label: "Templates", icon: LayoutTemplate },
     { id: "ai", label: "AI", icon: Sparkles },
@@ -299,7 +301,13 @@ const ThriveDesk = () => {
                   />
                 )}
                 {activeTab === "board" && (
-                  <div className="space-y-4">
+                  <CreativeBoard
+                    projectId={projectId!}
+                    currentUserId={user?.id || ''}
+                  />
+                )}
+                {activeTab === "finance" && (
+                  <div className="space-y-6">
                     <MilestoneBoard
                       milestones={milestones}
                       projectId={projectId!}

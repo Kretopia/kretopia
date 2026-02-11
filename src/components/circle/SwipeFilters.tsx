@@ -148,7 +148,7 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
         </Button>
       </SheetTrigger>
       
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
+      <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl flex flex-col">
         <SheetHeader className="text-left pb-4 border-b">
           <div className="flex items-center justify-between">
             <SheetTitle className="flex items-center gap-2">
@@ -169,7 +169,7 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
           </p>
         </SheetHeader>
 
-        <div className="py-6 space-y-6 overflow-y-auto max-h-[calc(85vh-140px)]">
+        <div className="py-6 space-y-6 overflow-y-auto flex-1 pb-24">
           {/* AI Match - Pro Feature */}
           <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl p-4 border border-purple-500/20">
             <div className="flex items-center justify-between">
@@ -352,7 +352,7 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
         </div>
 
         {/* Apply Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
+        <div className="sticky bottom-0 left-0 right-0 p-4 bg-background border-t shrink-0">
           <Button 
             className="w-full" 
             size="lg"

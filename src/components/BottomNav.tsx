@@ -13,10 +13,10 @@ const BottomNav = memo(() => {
   
   const navItems = [
     { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab" },
-    { path: "/spark", icon: Flame, label: "Spark", tourId: "spark-tab" },
-    { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
-    { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab" },
     { path: "/desk", icon: Briefcase, label: "Desk", tourId: "projects-tab" },
+    { path: "/spark", icon: Flame, label: "Spark", tourId: "spark-tab" },
+    { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab" },
+    { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
   ];
 
   return (

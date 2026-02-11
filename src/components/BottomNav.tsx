@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { User, Users, Briefcase, Flame, ShoppingBag } from "lucide-react";
+import { Bot, Users, Briefcase, Flame, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 
@@ -16,7 +16,7 @@ const BottomNav = memo(() => {
     { path: "/desk", icon: Briefcase, label: "Desk", tourId: "projects-tab" },
     { path: "/spark", icon: Flame, label: "Spark", tourId: "spark-tab" },
     { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab" },
-    { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
+    { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
   ];
 
   return (

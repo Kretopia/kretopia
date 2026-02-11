@@ -161,3 +161,6 @@ verify_jwt = false
 
 [functions.create-connect-login-link]
 verify_jwt = false
+
+[functions.thrive-ai-chat]
+verify_jwt = false

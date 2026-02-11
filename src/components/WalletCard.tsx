@@ -61,7 +61,7 @@ export const WalletCard = () => {
   };
 
   return (
-    <Card className="cursor-pointer hover:shadow-glow transition-smooth" onClick={() => navigate('/wallet')}>
+    <Card className="cursor-pointer hover:shadow-glow transition-smooth" onClick={() => navigate('/thrivepay')}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <Wallet className="h-5 w-5" />
@@ -81,7 +81,7 @@ export const WalletCard = () => {
               className="h-7 text-xs"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate('/thrivepay');
+                navigate('/thrivepay?tab=payments');
               }}
             >
               Setup ThrivePay

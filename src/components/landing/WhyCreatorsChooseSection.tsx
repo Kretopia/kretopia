@@ -29,8 +29,8 @@ export const WhyCreatorsChooseSection = () => {
     },
     {
       icon: <DollarSign className="h-5 w-5" />,
-      title: "Escrow Payments",
-      text: "Secure payments for freelance & client work"
+      title: "Marketplace & Services",
+      text: "Sell digital products, offer services & get hired"
     }
   ];
 

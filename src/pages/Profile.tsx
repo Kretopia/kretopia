@@ -579,12 +579,12 @@ const ProfileContent = () => {
 
           <hr className="border-border" />
 
-          {/* On-Chain Identity / Wallet */}
-          <section>
+          {/* On-Chain Identity / Wallet — hidden until ready */}
+          {/* <section>
             <WalletSection isOwnProfile={true} userId={profile.user_id} />
           </section>
 
-          <hr className="border-border" />
+          <hr className="border-border" /> */}
 
           {/* Products & Services */}
           <section>

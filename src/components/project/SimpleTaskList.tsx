@@ -215,7 +215,7 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
               <p className="text-sm mt-1">Add tasks to track your project progress</p>
             </div>
           ) : (
-            <ScrollArea className="max-h-[50vh] md:max-h-[400px]">
+            <ScrollArea className="max-h-[60vh]">
               <div className="space-y-2 pr-4">
               {optimisticTasks.map((task) => {
                 const assignee = getCollaborator(task.assigned_to);

@@ -272,7 +272,7 @@ const ThriveDesk = () => {
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Main Content */}
-          <div className={cn("flex-1", activeTab === "messages" ? "flex flex-col min-h-0" : "overflow-y-auto")}>
+          <div className={cn("flex-1 min-h-0", activeTab === "messages" ? "flex flex-col" : "overflow-y-auto")}>
             {activeTab === "messages" && (
               <SimpleProjectChat
                 projectId={projectId!}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { ConnectButton } from "thirdweb/react";
+import { ConnectButton, useActiveAccount, useActiveWalletChain } from "thirdweb/react";
 import { inAppWallet, createWallet } from "thirdweb/wallets";
 import { thirdwebClient, defaultChain } from "@/lib/thirdweb";
 import { useWalletConnection, WalletConnection } from "@/hooks/useWalletConnection";
@@ -148,7 +148,18 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
     disconnectWallet,
     setPrimary,
     getChainName,
+    saveThirdwebWallet,
   } = useWalletConnection();
+
+  const activeAccount = useActiveAccount();
+  const activeChain = useActiveWalletChain();
+
+  // Auto-save thirdweb wallet when connected
+  useEffect(() => {
+    if (activeAccount?.address) {
+      saveThirdwebWallet(activeAccount.address, activeChain?.id || 8453);
+    }
+  }, [activeAccount?.address, activeChain?.id, saveThirdwebWallet]);
 
   const [expanded, setExpanded] = useState(false);
   const hasWallets = savedWallets.length > 0;

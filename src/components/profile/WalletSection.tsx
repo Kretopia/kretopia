@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Wallet,
-  Link2,
   Unlink,
   Shield,
   Star,
@@ -15,6 +14,9 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { ConnectButton } from "thirdweb/react";
+import { inAppWallet, createWallet } from "thirdweb/wallets";
+import { thirdwebClient, defaultChain } from "@/lib/thirdweb";
 import { useWalletConnection, WalletConnection } from "@/hooks/useWalletConnection";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +27,19 @@ interface WalletSectionProps {
 
 const formatAddress = (addr: string) =>
   `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+
+// Thirdweb wallet config: embedded + external
+const wallets = [
+  inAppWallet({
+    auth: {
+      options: ["email", "google", "apple", "passkey"],
+    },
+  }),
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("io.rabby"),
+  createWallet("me.rainbow"),
+];
 
 const WalletItem = ({
   wallet,
@@ -81,24 +96,14 @@ const WalletItem = ({
       </div>
 
       <div className="flex items-center gap-1 shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={handleCopy}
-        >
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopy}>
           {copied ? (
             <Check className="h-3.5 w-3.5 text-accent" />
           ) : (
             <Copy className="h-3.5 w-3.5" />
           )}
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          asChild
-        >
+        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
           <a
             href={`https://basescan.org/address/${wallet.wallet_address}`}
             target="_blank"
@@ -136,7 +141,7 @@ const WalletItem = ({
 
 export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
   const {
-    wallets,
+    wallets: savedWallets,
     isLoading,
     isConnecting,
     connectExternalWallet,
@@ -146,7 +151,7 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
   } = useWalletConnection();
 
   const [expanded, setExpanded] = useState(false);
-  const hasWallets = wallets.length > 0;
+  const hasWallets = savedWallets.length > 0;
 
   if (!isOwnProfile && !hasWallets) return null;
 
@@ -170,7 +175,7 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
               </>
             ) : (
               <>
-                <ChevronDown className="h-3 w-3" /> {wallets.length} wallet{wallets.length !== 1 ? "s" : ""}
+                <ChevronDown className="h-3 w-3" /> {savedWallets.length} wallet{savedWallets.length !== 1 ? "s" : ""}
               </>
             )}
           </Button>
@@ -185,22 +190,25 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
             </div>
             <h3 className="font-semibold mb-1">Add On-Chain Verification</h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-              Connect your wallet to unlock secure on-chain agreements, 
+              Connect your wallet to unlock secure on-chain agreements,
               escrow payments, and verified credentials.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center">
-              <Button
-                onClick={connectExternalWallet}
-                disabled={isConnecting}
-                className="gap-2"
-              >
-                {isConnecting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Link2 className="h-4 w-4" />
-                )}
-                Connect Wallet
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+              {/* Thirdweb ConnectButton — supports embedded + external wallets */}
+              <ConnectButton
+                client={thirdwebClient}
+                wallets={wallets}
+                chain={defaultChain}
+                connectButton={{
+                  label: "Connect Wallet",
+                  className: "!rounded-md !font-medium",
+                }}
+                connectModal={{
+                  title: "Connect to ThriveIN",
+                  size: "compact",
+                  showThirdwebBranding: false,
+                }}
+              />
             </div>
             <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">✔ Funds locked securely</span>
@@ -213,9 +221,8 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
 
       {hasWallets && (
         <div className="space-y-2">
-          {/* Always show primary */}
-          {wallets
-            .filter((w) => expanded || w.is_primary || wallets.length <= 2)
+          {savedWallets
+            .filter((w) => expanded || w.is_primary || savedWallets.length <= 2)
             .map((wallet) => (
               <WalletItem
                 key={wallet.id}
@@ -228,20 +235,23 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
             ))}
 
           {isOwnProfile && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={connectExternalWallet}
-              disabled={isConnecting}
-              className="w-full gap-2 mt-2"
-            >
-              {isConnecting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Link2 className="h-4 w-4" />
-              )}
-              Connect Another Wallet
-            </Button>
+            <div className="mt-2">
+              <ConnectButton
+                client={thirdwebClient}
+                wallets={wallets}
+                chain={defaultChain}
+                connectButton={{
+                  label: "Connect Another Wallet",
+                  className: "!w-full !rounded-md !font-medium !text-sm",
+                  style: { width: "100%" },
+                }}
+                connectModal={{
+                  title: "Connect to ThriveIN",
+                  size: "compact",
+                  showThirdwebBranding: false,
+                }}
+              />
+            </div>
           )}
         </div>
       )}

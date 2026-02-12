@@ -15,31 +15,36 @@
 const EMBEDDED_VERSION = __BUILD_VERSION__;
 
 export async function checkForNewVersion() {
-  // Only run in production — dev mode has a static "dev" version that would loop
-  if (import.meta.env.DEV) return;
+  // In dev the embedded version is "dev" and version.json also says "dev" — no-op
+  if (EMBEDDED_VERSION === 'dev') return;
 
-  // Guard against infinite reload: only attempt once per page load
+  // Guard against infinite reload: only attempt once per 30s window
   const key = 'version_check_ts';
   const last = sessionStorage.getItem(key);
   const now = Date.now();
-  if (last && now - Number(last) < 10_000) return; // skip if checked <10s ago
+  if (last && now - Number(last) < 30_000) return;
   sessionStorage.setItem(key, String(now));
 
   try {
-    const res = await fetch(`/version.json?t=${now}`, {
+    // Bypass ALL caches — service worker, disk cache, CDN
+    const res = await fetch(`/version.json?_=${now}`, {
       cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache' },
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
     });
     if (!res.ok) return;
 
     const { version } = await res.json();
 
-    if (version && version !== EMBEDDED_VERSION) {
+    if (version && version !== 'dev' && version !== EMBEDDED_VERSION) {
       console.log(
         `[Version Check] Stale build detected (have: ${EMBEDDED_VERSION}, server: ${version}). Purging caches…`
       );
       await purgeAllCaches();
-      window.location.reload();
+      // Use replace so back-button doesn't loop
+      window.location.replace(window.location.href);
     }
   } catch {
     // Offline or first deploy without version.json — ignore

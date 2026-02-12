@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveAccount, useActiveWalletChain } from "thirdweb/react";
 import { useToast } from "@/hooks/use-toast";
 
 export interface WalletConnection {
@@ -51,6 +52,43 @@ export function useWalletConnection() {
   useEffect(() => {
     fetchWallets();
   }, [fetchWallets]);
+
+  // Auto-save wallet when connected via Thirdweb
+  const activeAccount = useActiveAccount();
+  const activeChain = useActiveWalletChain();
+
+  useEffect(() => {
+    if (!user || !activeAccount?.address) return;
+    const address = activeAccount.address.toLowerCase();
+    const chainId = activeChain?.id || 8453; // default Base
+
+    // Check if already saved
+    const alreadySaved = wallets.find(
+      (w) => w.wallet_address.toLowerCase() === address
+    );
+    if (alreadySaved) return;
+
+    // Save to DB
+    const saveWallet = async () => {
+      const isPrimary = wallets.length === 0;
+      const { error } = await supabase.from("wallet_connections").insert({
+        user_id: user.id,
+        wallet_address: address,
+        wallet_type: "external",
+        chain_id: chainId,
+        is_primary: isPrimary,
+        label: "Thirdweb",
+      });
+      if (!error) {
+        toast({
+          title: "Wallet connected! 🎉",
+          description: `${address.slice(0, 6)}...${address.slice(-4)} linked to your profile.`,
+        });
+        fetchWallets();
+      }
+    };
+    saveWallet();
+  }, [activeAccount?.address, activeChain?.id, user, wallets, toast, fetchWallets]);
 
   const connectExternalWallet = useCallback(async () => {
     if (!user) return;

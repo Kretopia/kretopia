@@ -1,30 +1,8 @@
-// SW Version - update to force cache invalidation
-const SW_VERSION = "2.0.0-20260212";
-console.log(`[SW ${SW_VERSION}] Service worker loaded`);
+// Push Notification handlers for the VitePWA service worker
+// IMPORTANT: Do NOT add install/activate handlers here — they conflict with Workbox.
+// VitePWA's workbox config (skipWaiting, clientsClaim) handles SW lifecycle.
+// This file is merged via importScripts in the Workbox-generated SW.
 
-// Force immediate activation on update
-self.addEventListener('install', function(event) {
-  console.log(`[SW ${SW_VERSION}] Installing...`);
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', function(event) {
-  console.log(`[SW ${SW_VERSION}] Activating...`);
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          console.log(`[SW ${SW_VERSION}] Clearing cache: ${cacheName}`);
-          return caches.delete(cacheName);
-        })
-      );
-    }).then(function() {
-      return self.clients.claim();
-    })
-  );
-});
-
-// Push Notification handlers
 self.addEventListener('push', function(event) {
   if (!event.data) return;
 

@@ -18,29 +18,50 @@ export function initSWUpdateListener() {
     window.location.reload();
   });
 
-  // Periodically check for SW updates (every 5 min)
-  setInterval(async () => {
-    try {
-      const reg = await navigator.serviceWorker.getRegistration();
-      if (reg) {
-        await reg.update();
-      }
-    } catch (e) {
-      // Silently ignore — network may be offline
-    }
-  }, 5 * 60 * 1000);
-
-  // Also check immediately on page visibility change (user returns to tab/app)
-  document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible') {
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (reg) {
-          await reg.update();
-        }
-      } catch (e) {
-        // Silently ignore
-      }
+  // Force-skip waiting on any new SW immediately
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'SW_UPDATED') {
+      window.location.reload();
     }
   });
+
+  // Check for updates IMMEDIATELY on load
+  checkForUpdate();
+
+  // Periodically check for SW updates (every 2 min)
+  setInterval(checkForUpdate, 2 * 60 * 1000);
+
+  // Also check on page visibility change (user returns to tab/app)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkForUpdate();
+    }
+  });
+}
+
+async function checkForUpdate() {
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+      await reg.update();
+      // If there's a waiting SW, force it to activate
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      // Listen for future waiting SWs
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        if (newSW) {
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              // New SW installed while old one still controls — force skip
+              newSW.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        }
+      });
+    }
+  } catch (e) {
+    // Silently ignore — network may be offline
+  }
 }

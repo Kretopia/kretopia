@@ -3,6 +3,13 @@
 // VitePWA's workbox config (skipWaiting, clientsClaim) handles SW lifecycle.
 // This file is merged via importScripts in the Workbox-generated SW.
 
+// Handle SKIP_WAITING message from the app to force immediate activation
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('push', function(event) {
   if (!event.data) return;
 

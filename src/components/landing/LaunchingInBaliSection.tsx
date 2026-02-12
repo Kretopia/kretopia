@@ -17,16 +17,16 @@ export const LaunchingInBaliSection = () => {
           <div className="relative text-primary-foreground">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm">
               <Globe className="h-4 w-4" />
-              <span>Open Beta • January 2026</span>
+              <span>Now Live — Free to Join</span>
             </div>
             
             <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold">
-              Ready to Find Your Next Collab?
+              Your Creative Network Starts Here
             </h2>
             
             <p className="mb-6 text-base sm:text-lg opacity-90 max-w-2xl mx-auto">
               130+ verified creatives already ditched the Facebook groups. 
-              Swipe through portfolios, discover creators nearby, and join local creative sessions.
+              Build your profile, get matched, manage projects in ThriveDesk, and sell your services — all in one place.
             </p>
             
             {/* Stats row */}

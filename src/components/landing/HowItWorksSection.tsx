@@ -67,7 +67,7 @@ export const HowItWorksSection = () => {
               </div>
               <h3 className="mb-2 text-xl font-bold">ThriveDesk Workspace</h3>
               <p className="text-muted-foreground">
-                Manage collaborations & client work: real-time chat, task boards, file sharing, milestones & escrow payments.
+                Manage collaborations & client work: real-time chat, task boards, file sharing, milestones & payments — plus sell your services in the Marketplace.
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-accent" />

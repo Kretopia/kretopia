@@ -21,7 +21,7 @@ export const HeroSection = () => {
           {/* Social proof badge */}
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105">
             <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-            <span className="font-medium text-primary">130+ Verified Creatives Already On Board</span>
+            <span className="font-medium text-primary">Now Live — Join 130+ Verified Creatives</span>
           </div>
           
           {/* Problem-first headline */}
@@ -39,7 +39,7 @@ export const HeroSection = () => {
           </p>
           
           <p className="mx-auto mb-6 sm:mb-8 md:mb-10 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
-            ThriveIN helps verified creatives find collaborators near them, manage projects, and get paid — all in one place.
+            ThriveIN helps verified creatives find collaborators near them, manage projects with ThriveDesk, and sell services — all in one place.
           </p>
           
           {/* Value props */}
@@ -54,7 +54,7 @@ export const HeroSection = () => {
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-              Secure Payments
+              ThriveDesk Workspaces
             </span>
           </div>
           
@@ -85,8 +85,8 @@ export const HeroSection = () => {
             </div>
             <div className="h-8 w-px bg-border/50 hidden sm:block" />
             <div className="hidden sm:block">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Free</div>
-              <div className="text-xs sm:text-sm text-muted-foreground">to Start</div>
+              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Live</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">& Free to Start</div>
             </div>
           </div>
         </div>

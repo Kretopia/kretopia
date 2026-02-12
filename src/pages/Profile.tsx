@@ -54,6 +54,7 @@ import { CredentialVerificationCard } from "@/components/profile/CredentialVerif
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { AIPortfolioInsights, AIProfileOptimizer } from "@/components/ai";
 import { ProGate } from "@/components/project/ProGate";
+import { WalletSection } from "@/components/profile/WalletSection";
 
 import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
 import { ProTrialBanner } from "@/components/profile/ProTrialBanner";
@@ -574,6 +575,13 @@ const ProfileContent = () => {
               profileUserId={profile.user_id}
               onRefresh={fetchData}
             />
+          </section>
+
+          <hr className="border-border" />
+
+          {/* On-Chain Identity / Wallet */}
+          <section>
+            <WalletSection isOwnProfile={true} userId={profile.user_id} />
           </section>
 
           <hr className="border-border" />

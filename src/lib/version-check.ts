@@ -6,13 +6,27 @@
  * If the server version differs from the embedded one, we nuke every
  * SW cache + unregister the service worker and hard-reload so the user
  * always sees the latest deploy.
+ *
+ * IMPORTANT: Only runs in production builds. In dev mode the version.json
+ * contains "dev" which would never match the build hash, causing an
+ * infinite reload loop.
  */
 
 const EMBEDDED_VERSION = __BUILD_VERSION__;
 
 export async function checkForNewVersion() {
+  // Only run in production — dev mode has a static "dev" version that would loop
+  if (import.meta.env.DEV) return;
+
+  // Guard against infinite reload: only attempt once per page load
+  const key = 'version_check_ts';
+  const last = sessionStorage.getItem(key);
+  const now = Date.now();
+  if (last && now - Number(last) < 10_000) return; // skip if checked <10s ago
+  sessionStorage.setItem(key, String(now));
+
   try {
-    const res = await fetch(`/version.json?t=${Date.now()}`, {
+    const res = await fetch(`/version.json?t=${now}`, {
       cache: 'no-store',
       headers: { 'Cache-Control': 'no-cache' },
     });

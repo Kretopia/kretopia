@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "next-themes";
 import * as Sentry from "@sentry/react";
 import App from "./App.tsx";
+import { initSWUpdateListener } from "./lib/sw-update";
 import "./index.css";
 
 // Initialize Sentry for error monitoring
@@ -22,8 +23,9 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
-// NOTE: VitePWA handles service worker registration automatically via registerType: "autoUpdate"
-// Push notification support is included via the custom SW injection below
+// VitePWA handles SW registration via registerType: "autoUpdate"
+// Our listener detects when a new SW activates and force-reloads for freshness
+initSWUpdateListener();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

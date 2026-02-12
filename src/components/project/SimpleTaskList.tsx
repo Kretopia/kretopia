@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -215,8 +215,7 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
               <p className="text-sm mt-1">Add tasks to track your project progress</p>
             </div>
           ) : (
-            <ScrollArea className="max-h-[60vh]">
-              <div className="space-y-2 pr-4">
+              <div className="space-y-2">
               {optimisticTasks.map((task) => {
                 const assignee = getCollaborator(task.assigned_to);
                 return (
@@ -297,7 +296,6 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
                 );
               })}
               </div>
-            </ScrollArea>
           )}
         </CardContent>
       </Card>

@@ -121,7 +121,7 @@ export const ApplyToOpportunityDialog = ({
       .eq('id', opportunityId)
       .single();
 
-    if (opportunity) {
+    if (opportunity?.created_by) {
       const { notifyOpportunity } = await import("@/lib/pushNotifications");
       await notifyOpportunity(
         opportunity.created_by,

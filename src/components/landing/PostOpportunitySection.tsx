@@ -79,32 +79,7 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
           })}
         </div>
 
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Button
-            size="xl"
-            className="bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 gap-2"
-            onClick={() => setDialogOpen(true)}
-          >
-            <Briefcase className="h-5 w-5" />
-            Post an Opportunity
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="gap-2"
-            onClick={() => navigate("/auth")}
-          >
-            Browse Opportunities
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-        <PostOpportunityDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          onSuccess={() => setDialogOpen(false)}
-        />
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground">
           AI-moderated to keep our community safe
         </p>
       </div>

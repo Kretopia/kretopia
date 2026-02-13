@@ -120,20 +120,26 @@ export const OpportunitiesFeed = () => {
           <h3 className="font-semibold text-lg">Opportunities</h3>
           <p className="text-sm text-muted-foreground">Jobs, collabs & barter from the community</p>
         </div>
-        <PostOpportunityDialog
-          open={postDialogOpen}
-          onOpenChange={setPostDialogOpen}
-          onSuccess={() => {
-            setPostDialogOpen(false);
-            fetchOpportunities();
-          }}
-          trigger={
-            <Button size="sm" className="gap-1.5">
-              <Plus className="h-4 w-4" />
-              Post
-            </Button>
-          }
-        />
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
+            <Briefcase className="h-4 w-4" />
+            <span className="hidden sm:inline">My Listings</span>
+          </Button>
+          <PostOpportunityDialog
+            open={postDialogOpen}
+            onOpenChange={setPostDialogOpen}
+            onSuccess={() => {
+              setPostDialogOpen(false);
+              fetchOpportunities();
+            }}
+            trigger={
+              <Button size="sm" className="gap-1.5">
+                <Plus className="h-4 w-4" />
+                Post
+              </Button>
+            }
+          />
+        </div>
       </div>
 
       {/* Type Filters */}

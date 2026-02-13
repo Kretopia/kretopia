@@ -249,12 +249,77 @@ Return ONLY valid JSON array:
 
     if (error) {
       toast.error('Failed to update status');
-    } else {
-      setApplicants(prev => prev.map(a => 
-        a.id === applicationId ? { ...a, status: newStatus } : a
-      ));
-      toast.success(`Application ${newStatus}`);
+      return;
     }
+
+    setApplicants(prev => prev.map(a => 
+      a.id === applicationId ? { ...a, status: newStatus } : a
+    ));
+
+    if (newStatus === 'accepted') {
+      // Create a ThriveDesk project for the accepted applicant
+      const applicant = applicants.find(a => a.id === applicationId);
+      const opp = opportunities.find(o => o.id === selectedOppId);
+      
+      if (applicant && opp && user) {
+        try {
+          const { data: project, error: projectError } = await supabase
+            .from('projects')
+            .insert({
+              title: opp.title,
+              description: `Project created from opportunity: ${opp.title}`,
+              created_by: user.id,
+              status: 'active' as const,
+            })
+            .select()
+            .single();
+
+          if (projectError) throw projectError;
+
+          // Invite the accepted applicant as a collaborator
+          await supabase
+            .from('project_collaborators')
+            .insert({
+              project_id: project.id,
+              user_id: applicant.applicant_id,
+              email: `user-${applicant.applicant_id}@platform.invite`,
+              invited_by: user.id,
+              role: 'member',
+              status: 'pending',
+            });
+
+          // Send project invitation notification
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('user_id', user.id)
+            .single();
+
+          await supabase.functions.invoke('send-project-invitation', {
+            body: {
+              projectTitle: opp.title,
+              projectId: project.id,
+              inviterName: userProfile?.full_name || 'A ThriveIN user',
+              inviteeUserId: applicant.applicant_id,
+            }
+          });
+
+          toast.success(`Application accepted! ThriveDesk project "${opp.title}" created.`, {
+            action: {
+              label: 'Open Project',
+              onClick: () => navigate(`/desk/${project.id}`),
+            },
+          });
+          return;
+        } catch (err) {
+          console.error('Project creation error:', err);
+          toast.success('Application accepted! (Project creation failed — you can create one manually)');
+          return;
+        }
+      }
+    }
+
+    toast.success(`Application ${newStatus}`);
   };
 
   const getMatchBadge = (score?: number) => {

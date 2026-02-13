@@ -5,12 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { SwipeFeature } from "@/components/swipe";
+import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus, MapPin } from "lucide-react";
+import { Users, Sparkles, UserPlus, MapPin, Briefcase } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 
@@ -210,16 +211,22 @@ export default function Circle() {
         />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
-            <TabsTrigger value="foryou" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
+          <TabsList className="grid w-full grid-cols-4 mb-3 sm:mb-4 h-10 sm:h-11">
+            <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Connect
+              <span className="hidden sm:inline">Connect</span>
+              <span className="sm:hidden">Match</span>
             </TabsTrigger>
-            <TabsTrigger value="nearby" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
+            <TabsTrigger value="opportunities" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+              <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Opportunities</span>
+              <span className="sm:hidden">Opps</span>
+            </TabsTrigger>
+            <TabsTrigger value="nearby" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Nearby
             </TabsTrigger>
-            <TabsTrigger value="network" className="gap-1.5 sm:gap-2 text-sm sm:text-base">
+            <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Network
             </TabsTrigger>
@@ -232,6 +239,11 @@ export default function Circle() {
               filters={filters}
               onProfilesCountChange={setProfilesCount}
             />
+          </TabsContent>
+
+          {/* Opportunities Tab */}
+          <TabsContent value="opportunities" className="space-y-4">
+            <OpportunitiesFeed />
           </TabsContent>
 
           {/* Nearby Tab */}

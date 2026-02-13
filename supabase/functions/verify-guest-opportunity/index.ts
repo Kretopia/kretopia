@@ -70,17 +70,17 @@ Deno.serve(async (req) => {
       const siteUrl = Deno.env.get("SITE_URL") || "https://thrivein-new-beta.lovable.app";
       const verifyUrl = `${siteUrl}/verify-opportunity?token=${token}`;
 
-      // Use send-notification-email edge function pattern
+      // Send verification email via Resend
       const resendKey = Deno.env.get("RESEND_API_KEY");
       if (resendKey) {
-        await fetch("https://api.resend.com/emails", {
+        const emailRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${resendKey}`,
           },
           body: JSON.stringify({
-            from: "ThriveIN <noreply@thrivein.app>",
+            from: "ThriveIN <noreply@thrivein.io>",
             to: [email],
             subject: `Verify your opportunity: ${title}`,
             html: `
@@ -99,6 +99,15 @@ Deno.serve(async (req) => {
             `,
           }),
         });
+
+        const emailBody = await emailRes.text();
+        if (!emailRes.ok) {
+          console.error("Resend API error:", emailRes.status, emailBody);
+        } else {
+          console.log("Verification email sent successfully:", emailBody);
+        }
+      } else {
+        console.error("RESEND_API_KEY not configured");
       }
 
       return new Response(

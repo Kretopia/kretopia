@@ -23,7 +23,7 @@ interface Opportunity {
   skills: string[] | null;
   tags: string[] | null;
   created_at: string | null;
-  created_by: string;
+  created_by: string | null;
   duration: string | null;
   image_url: string | null;
   status: string | null;
@@ -83,18 +83,20 @@ export const OpportunitiesFeed = () => {
       if (error) throw error;
       setOpportunities(data || []);
 
-      // Fetch creator profiles
+      // Fetch creator profiles (filter out null created_by for guest posts)
       if (data && data.length > 0) {
-        const creatorIds = [...new Set(data.map(o => o.created_by))];
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, avatar_url, role")
-          .in("user_id", creatorIds);
+        const creatorIds = [...new Set(data.map(o => o.created_by).filter(Boolean))] as string[];
+        if (creatorIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, full_name, avatar_url, role")
+            .in("user_id", creatorIds);
 
-        if (profiles) {
-          const map: Record<string, CreatorProfile> = {};
-          profiles.forEach(p => { map[p.user_id] = p; });
-          setCreators(map);
+          if (profiles) {
+            const map: Record<string, CreatorProfile> = {};
+            profiles.forEach(p => { map[p.user_id] = p; });
+            setCreators(map);
+          }
         }
       }
     } catch (error) {
@@ -197,10 +199,10 @@ export const OpportunitiesFeed = () => {
       {!loading && opportunities.map(opp => {
         const config = getTypeConfig(opp.type);
         const TypeIcon = config.icon;
-        const creator = creators[opp.created_by];
+        const creator = opp.created_by ? creators[opp.created_by] : null;
 
         return (
-          <Card key={opp.id} className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer group">
+          <Card key={opp.id} className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer group" onClick={() => navigate(`/opportunity/${opp.id}`)}>
             <CardContent className="p-4">
               <div className="flex gap-3">
                 {/* Image or Icon */}

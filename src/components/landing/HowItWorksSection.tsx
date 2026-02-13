@@ -65,13 +65,13 @@ export const HowItWorksSection = () => {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-2xl font-bold text-accent">
                 <Briefcase className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-bold">ThriveDesk Workspace</h3>
+              <h3 className="mb-2 text-xl font-bold">Work & Collaborate</h3>
               <p className="text-muted-foreground">
-                Manage collaborations & client work: real-time chat, task boards, file sharing, milestones & payments — plus sell your services in the Marketplace.
+                Browse jobs, collabs & barter opportunities — or post your own. Manage everything with ThriveDesk workspaces, milestone payments & the Marketplace.
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-accent" />
-                <span className="text-sm text-accent font-medium">Secure escrow payments</span>
+                <span className="text-sm text-accent font-medium">Jobs • Collabs • Barter • Escrow</span>
               </div>
             </div>
           </div>

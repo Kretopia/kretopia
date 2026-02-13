@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, CheckCircle2, ArrowRight, Zap } from "lucide-react";
+import { Sparkles, CheckCircle2, ArrowRight, Zap, Briefcase } from "lucide-react";
 
 export const HeroSection = () => {
   const handleCtaClick = async () => {
@@ -63,6 +63,13 @@ export const HeroSection = () => {
               <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 shadow-glow transition-smooth hover:-translate-y-1 text-base sm:text-lg group">
                 <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Get Started Free
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            <Link to="/post-opportunity" className="w-full sm:w-auto">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto sm:px-8 text-base sm:text-lg group border-primary/30 hover:border-primary/60">
+                <Briefcase className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Hire Talent
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>

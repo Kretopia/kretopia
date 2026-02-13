@@ -283,6 +283,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
             </>
           ) : !user && isLandingPage ? (
             <>
+              <Link to="/post-opportunity" className="hidden sm:inline-flex">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Hire Talent
+                </Button>
+              </Link>
               <Link to="/auth">
                 <Button variant="ghost">Sign In</Button>
               </Link>

@@ -69,8 +69,8 @@ const VerifyOpportunity = () => {
                 Your opportunity is now published on ThriveIN's Discover page. Creatives can start applying immediately.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button asChild className="w-full gap-2">
+            <CardContent className="space-y-5">
+              <Button asChild className="w-full gap-2" size="lg">
                 <Link to={`/opportunity/${result?.opportunityId}`}>
                   <Briefcase className="h-4 w-4" />
                   View Your Listing
@@ -78,25 +78,45 @@ const VerifyOpportunity = () => {
               </Button>
 
               {result?.claimToken && (
-                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20 space-y-2">
-                  <p className="text-sm font-medium flex items-center gap-2 justify-center">
-                    <UserPlus className="h-4 w-4 text-primary" />
-                    Claim your Brand profile
+                <div className="p-5 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl border border-primary/25 space-y-3">
+                  <div className="flex items-center gap-2 justify-center">
+                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <UserPlus className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-base font-semibold">Claim Your Brand Profile</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                    We've set up a <strong>{result?.companyName}</strong> brand page on ThriveIN. 
+                    Claim it to:
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Sign up to manage applications, message talent, and post more opportunities.
-                  </p>
-                  <Button variant="outline" size="sm" asChild className="w-full">
+                  <ul className="text-sm text-muted-foreground space-y-1.5 pl-1">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                      Review & message applicants directly
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                      Post unlimited opportunities
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                      Accept payments with ThrivePay
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                      Build your brand reputation with reviews
+                    </li>
+                  </ul>
+                  <Button asChild className="w-full bg-gradient-to-r from-primary to-primary/80" size="lg">
                     <Link to={`/auth?claim=${result.claimToken}`}>
-                      Create Free Account
+                      Claim Profile — It's Free
                     </Link>
                   </Button>
+                  <p className="text-[11px] text-muted-foreground text-center">
+                    Takes 30 seconds • No credit card required
+                  </p>
                 </div>
               )}
-
-              <p className="text-xs text-muted-foreground">
-                We've created a brand profile for {result?.companyName}. Sign up anytime to claim it.
-              </p>
             </CardContent>
           </>
         )}

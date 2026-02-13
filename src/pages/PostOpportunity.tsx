@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, ImageIcon } from "lucide-react";
+import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, ImageIcon, Crop } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 const PostOpportunity = () => {
   const [step, setStep] = useState<"form" | "sent" | "error">("form");
@@ -17,6 +18,8 @@ const PostOpportunity = () => {
   const [skillInput, setSkillInput] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [rawImageUrl, setRawImageUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     company_name: "",
@@ -24,7 +27,7 @@ const PostOpportunity = () => {
     logo_url: "",
     title: "",
     description: "",
-    type: "collaboration",
+    type: "collab",
     compensation: "",
     skills: [] as string[],
     requirements: "",
@@ -54,12 +57,22 @@ const PostOpportunity = () => {
         toast({ title: "File too large", description: "Image must be under 5MB.", variant: "destructive" });
         return;
       }
-      setImageFile(file);
-      setFormData({ ...formData, image_url: "" });
       const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.onloadend = () => {
+        setRawImageUrl(reader.result as string);
+        setShowCropDialog(true);
+      };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], "cover.jpg", { type: "image/jpeg" });
+    setImageFile(file);
+    setFormData({ ...formData, image_url: "" });
+    const url = URL.createObjectURL(croppedBlob);
+    setImagePreview(url);
+    setShowCropDialog(false);
   };
 
   const clearImage = () => {
@@ -249,10 +262,8 @@ const PostOpportunity = () => {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="job">Paid Job</SelectItem>
-                      <SelectItem value="collaboration">Collaboration</SelectItem>
+                      <SelectItem value="collab">Collaboration</SelectItem>
                       <SelectItem value="barter">Barter/Trade</SelectItem>
-                      <SelectItem value="internship">Internship</SelectItem>
-                      <SelectItem value="gig">Gig</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -368,15 +379,40 @@ const PostOpportunity = () => {
                       alt="Cover preview"
                       className="w-full h-full object-cover"
                     />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-7 w-7"
-                      onClick={clearImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      {imagePreview && (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            setRawImageUrl(imagePreview);
+                            setShowCropDialog(true);
+                          }}
+                        >
+                          <Crop className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={clearImage}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <button
@@ -421,6 +457,13 @@ const PostOpportunity = () => {
           </div>
         </form>
       </div>
+
+      <ImageCropDialog
+        imageUrl={rawImageUrl}
+        open={showCropDialog}
+        onClose={() => setShowCropDialog(false)}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 };

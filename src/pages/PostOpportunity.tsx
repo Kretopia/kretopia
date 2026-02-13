@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,13 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X } from "lucide-react";
+import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, ImageIcon } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 
 const PostOpportunity = () => {
   const [step, setStep] = useState<"form" | "sent" | "error">("form");
   const [posting, setPosting] = useState(false);
   const [skillInput, setSkillInput] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     company_name: "",
     email: "",
@@ -44,6 +47,28 @@ const PostOpportunity = () => {
     setFormData({ ...formData, skills: formData.skills.filter((s) => s !== skill) });
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: "File too large", description: "Image must be under 5MB.", variant: "destructive" });
+        return;
+      }
+      setImageFile(file);
+      setFormData({ ...formData, image_url: "" });
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    setFormData({ ...formData, image_url: "" });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -60,8 +85,19 @@ const PostOpportunity = () => {
 
     setPosting(true);
     try {
+      // If user uploaded a file, convert to base64 for the edge function
+      let imageData = null;
+      if (imageFile) {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(imageFile);
+        });
+        imageData = base64;
+      }
+
       const { data, error } = await supabase.functions.invoke("verify-guest-opportunity", {
-        body: { action: "send-verification", ...formData },
+        body: { action: "send-verification", ...formData, image_data: imageData },
       });
 
       if (error) throw error;
@@ -317,15 +353,56 @@ const PostOpportunity = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="image_url">Cover Image URL (optional)</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://example.com/opportunity-image.jpg"
-                  maxLength={500}
+                <Label>Cover Image (optional)</Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
                 />
-                <p className="text-xs text-muted-foreground">Add a cover image to make your listing stand out</p>
+                {imagePreview || formData.image_url ? (
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
+                    <img
+                      src={imagePreview || formData.image_url}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 h-7 w-7"
+                      onClick={clearImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-32 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                  >
+                    <Upload className="h-6 w-6" />
+                    <span className="text-sm font-medium">Click to upload an image</span>
+                    <span className="text-xs">PNG, JPG up to 5MB</span>
+                  </button>
+                )}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Or paste a URL:</span>
+                  <Input
+                    value={formData.image_url}
+                    onChange={(e) => {
+                      setFormData({ ...formData, image_url: e.target.value });
+                      setImageFile(null);
+                      setImagePreview("");
+                    }}
+                    placeholder="https://example.com/image.jpg"
+                    className="h-7 text-xs"
+                    maxLength={500}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

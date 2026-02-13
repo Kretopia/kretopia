@@ -59,6 +59,9 @@ const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
 const Spark = lazy(() => import("./pages/Spark"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const ListingDetail = lazy(() => import("./pages/ListingDetail"));
+const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
+const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
+const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -199,6 +202,9 @@ const AppContent = () => {
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
             <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
             <Route path="/market" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+            <Route path="/opportunity/:id" element={<OpportunityDetail />} />
+            <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
+            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
             <Route path="/market/:listingId" element={<ProtectedRoute><ListingDetail /></ProtectedRoute>} />
             <Route path="/discover" element={<Navigate to="/circle" replace />} />
             <Route path="/community" element={<Navigate to="/circle" replace />} />

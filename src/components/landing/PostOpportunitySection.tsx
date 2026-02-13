@@ -1,47 +1,110 @@
 import { useState } from "react";
-import { Briefcase, Sparkles } from "lucide-react";
+import { Briefcase, Handshake, ArrowRightLeft, Sparkles, ChevronRight } from "lucide-react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface PostOpportunitySectionProps {
   opportunitiesCount: number;
 }
 
+const OPPORTUNITY_TYPES = [
+  {
+    icon: Briefcase,
+    title: "Paid Jobs",
+    description: "Hire verified creatives for your next project — from video shoots to brand campaigns.",
+    color: "from-green-500/20 to-green-500/5",
+    iconColor: "text-green-500",
+  },
+  {
+    icon: Handshake,
+    title: "Collaborations",
+    description: "Find creative partners who complement your skills. Build together, grow together.",
+    color: "from-blue-500/20 to-blue-500/5",
+    iconColor: "text-blue-500",
+  },
+  {
+    icon: ArrowRightLeft,
+    title: "Barter & Trade",
+    description: "Exchange skills and services — a music video for a logo, a photoshoot for a website.",
+    color: "from-purple-500/20 to-purple-500/5",
+    iconColor: "text-purple-500",
+  },
+];
+
 export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySectionProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <section className="px-6 py-16 bg-muted/30">
-      <div className="container mx-auto max-w-4xl text-center">
-        <div className="mb-6">
-          <Briefcase className="mx-auto h-12 w-12 text-primary mb-4" />
-          <h2 className="text-3xl font-bold mb-3 md:text-4xl">
-            For Brands: Access Verified Creative Talent
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
-            Connect with creators who have verified stats, professional portfolios, and proven track records. 
-            Our AI matches your campaign requirements with qualified talent—faster than traditional agencies, more reliable than marketplaces.
-          </p>
-          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
+    <section className="px-4 sm:px-6 py-16 sm:py-20 bg-muted/30">
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-10 sm:mb-12">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
             <Sparkles className="h-4 w-4" />
-            <span>{opportunitiesCount} Active Opportunities Available</span>
+            <span>{opportunitiesCount} Active Opportunities</span>
           </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight tracking-tight">
+            Jobs, Collabs &{" "}
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Barter
+            </span>
+          </h2>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+            Post what you need or browse what's available. From paid gigs to creative trades — 
+            every opportunity is AI-moderated and connected to verified portfolios.
+          </p>
         </div>
-        <Button 
-          variant="default" 
-          size="xl" 
-          className="bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-          onClick={() => setDialogOpen(true)}
-        >
-          <Briefcase className="mr-2 h-5 w-5" />
-          Post an Opportunity
-        </Button>
-        <PostOpportunityDialog 
+
+        {/* Opportunity Type Cards */}
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-3 mb-10">
+          {OPPORTUNITY_TYPES.map((type) => {
+            const Icon = type.icon;
+            return (
+              <div
+                key={type.title}
+                className="relative group cursor-pointer"
+                onClick={() => navigate("/auth")}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${type.color} rounded-2xl blur-xl group-hover:blur-2xl transition-all`} />
+                <div className="relative bg-card border border-border/50 rounded-2xl p-6 hover:border-primary/30 transition-all h-full">
+                  <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-muted ${type.iconColor}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-1">{type.title}</h3>
+                  <p className="text-sm text-muted-foreground">{type.description}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            size="xl"
+            className="bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 gap-2"
+            onClick={() => setDialogOpen(true)}
+          >
+            <Briefcase className="h-5 w-5" />
+            Post an Opportunity
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="gap-2"
+            onClick={() => navigate("/auth")}
+          >
+            Browse Opportunities
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+        <PostOpportunityDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           onSuccess={() => setDialogOpen(false)}
         />
-        <p className="mt-4 text-sm text-muted-foreground">
+        <p className="mt-4 text-center text-sm text-muted-foreground">
           AI-moderated to keep our community safe
         </p>
       </div>

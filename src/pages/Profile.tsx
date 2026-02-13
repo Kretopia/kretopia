@@ -279,13 +279,64 @@ const ProfileContent = () => {
   // Company profile view
   if (profile.account_type === 'company') {
     return (
-      <CompanyProfileView
-        profile={profile}
-        reviews={companyReviews}
-        partnerDiscounts={partnerDiscounts}
-        isOwnProfile={true}
-        onRefresh={fetchData}
-      />
+      <>
+        <CompanyProfileView
+          profile={profile}
+          reviews={companyReviews}
+          partnerDiscounts={partnerDiscounts}
+          isOwnProfile={true}
+          onRefresh={fetchData}
+          onEdit={() => {
+            setEditForm({
+              full_name: profile.company_name || profile.full_name || "",
+              role: profile.company_industry || profile.role || "",
+              bio: profile.company_about || profile.bio || "",
+              location: profile.company_address || profile.location || "",
+              avatar_url: profile.company_logo_url || profile.avatar_url || "",
+              company_size: profile.company_size || "",
+              collab_intent: "seeking_collaborators",
+            });
+            setIsEditOpen(true);
+          }}
+          onShare={handleShare}
+        />
+        <CompanyProfileEditDialog
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          editForm={editForm}
+          onFormChange={setEditForm}
+          onSave={handleEditSave}
+          onAvatarUpload={handleAvatarUpload}
+          isUploadingAvatar={isUploadingAvatar}
+          galleryPreviews={galleryPreviews}
+          onGalleryChange={(e) => {
+            const files = Array.from(e.target.files || []);
+            setGalleryFiles(prev => [...prev, ...files]);
+            files.forEach(f => {
+              const reader = new FileReader();
+              reader.onload = (ev) => setGalleryPreviews(prev => [...prev, ev.target?.result as string]);
+              reader.readAsDataURL(f);
+            });
+          }}
+          onRemoveGalleryImage={(index) => {
+            setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
+            setGalleryFiles(prev => prev.filter((_, i) => i !== index));
+          }}
+        />
+        <ShareProfileDialog
+          profile={{
+            full_name: profile.company_name || profile.full_name || '',
+            role: profile.company_industry || profile.role || '',
+            bio: profile.company_about || profile.bio || '',
+            user_id: profile.user_id,
+            avatar_url: profile.company_logo_url || profile.avatar_url || '',
+            location: profile.company_address || profile.location || '',
+          }}
+          portfolioItems={[]}
+          open={isShareDialogOpen}
+          onOpenChange={setIsShareDialogOpen}
+        />
+      </>
     );
   }
 

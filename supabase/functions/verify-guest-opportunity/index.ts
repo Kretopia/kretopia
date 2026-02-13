@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
           guest_company_name: company_name,
           guest_logo_url: logo_url || null,
           verification_token: token,
-          created_by: "00000000-0000-0000-0000-000000000000", // placeholder for guest
+          created_by: null, // guest post - no auth user
         })
         .select()
         .single();

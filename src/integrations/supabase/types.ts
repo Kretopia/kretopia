@@ -2650,8 +2650,13 @@ export type Database = {
           deliverables: string | null
           description: string
           duration: string | null
+          guest_company_name: string | null
+          guest_email: string | null
+          guest_logo_url: string | null
+          guest_profile_id: string | null
           id: string
           image_url: string | null
+          is_guest_post: boolean | null
           location: string | null
           requirements: string | null
           skills: string[] | null
@@ -2660,6 +2665,8 @@ export type Database = {
           title: string
           type: string
           updated_at: string | null
+          verification_token: string | null
+          verified_at: string | null
         }
         Insert: {
           compensation?: string | null
@@ -2668,8 +2675,13 @@ export type Database = {
           deliverables?: string | null
           description: string
           duration?: string | null
+          guest_company_name?: string | null
+          guest_email?: string | null
+          guest_logo_url?: string | null
+          guest_profile_id?: string | null
           id?: string
           image_url?: string | null
+          is_guest_post?: boolean | null
           location?: string | null
           requirements?: string | null
           skills?: string[] | null
@@ -2678,6 +2690,8 @@ export type Database = {
           title: string
           type: string
           updated_at?: string | null
+          verification_token?: string | null
+          verified_at?: string | null
         }
         Update: {
           compensation?: string | null
@@ -2686,8 +2700,13 @@ export type Database = {
           deliverables?: string | null
           description?: string
           duration?: string | null
+          guest_company_name?: string | null
+          guest_email?: string | null
+          guest_logo_url?: string | null
+          guest_profile_id?: string | null
           id?: string
           image_url?: string | null
+          is_guest_post?: boolean | null
           location?: string | null
           requirements?: string | null
           skills?: string[] | null
@@ -2696,6 +2715,8 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string | null
+          verification_token?: string | null
+          verified_at?: string | null
         }
         Relationships: []
       }

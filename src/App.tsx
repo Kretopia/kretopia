@@ -62,6 +62,8 @@ const ListingDetail = lazy(() => import("./pages/ListingDetail"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
+const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
+const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -197,6 +199,8 @@ const AppContent = () => {
             <Route path="/endorse" element={<EndorseSkill />} />
             <Route path="/submit-review" element={<SubmitReview />} />
             <Route path="/claim/:claimToken" element={<ClaimProfile />} />
+            <Route path="/post-opportunity" element={<PostOpportunity />} />
+            <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
             {/* Redirect old routes to Circle */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />

@@ -123,47 +123,55 @@ const OpportunityDashboard = () => {
   const fetchApplicants = async (opportunityId: string) => {
     setLoading(true);
     
-    const { data, error } = await supabase
+    // Fetch applications first
+    const { data: appsData, error: appsError } = await supabase
       .from('applications')
-      .select(`
-        id,
-        applicant_id,
-        cover_letter,
-        portfolio_links,
-        status,
-        created_at,
-        expected_rate,
-        availability,
-        profiles:applicant_id(
-          full_name,
-          avatar_url,
-          role,
-          professional_skills
-        )
-      `)
+      .select('id, applicant_id, cover_letter, portfolio_links, status, created_at, expected_rate, availability')
       .eq('opportunity_id', opportunityId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching applicants:', error);
+    if (appsError) {
+      console.error('Error fetching applicants:', appsError);
       toast.error('Failed to load applications');
-    } else {
-      const formatted = (data || []).map((app: any) => ({
+      setLoading(false);
+      return;
+    }
+
+    const apps = appsData || [];
+    
+    // Fetch profiles separately using the applicant IDs
+    const applicantIds = [...new Set(apps.map(a => a.applicant_id))];
+    let profilesMap: Record<string, any> = {};
+    
+    if (applicantIds.length > 0) {
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role, professional_skills')
+        .in('user_id', applicantIds);
+      
+      if (profilesData) {
+        profilesMap = Object.fromEntries(profilesData.map(p => [p.user_id, p]));
+      }
+    }
+
+    const formatted = apps.map((app: any) => {
+      const profile = profilesMap[app.applicant_id];
+      return {
         id: app.id,
         applicant_id: app.applicant_id,
-        full_name: app.profiles?.full_name || 'Unknown',
-        avatar_url: app.profiles?.avatar_url,
-        role: app.profiles?.role || 'Creator',
+        full_name: profile?.full_name || 'Unknown',
+        avatar_url: profile?.avatar_url,
+        role: profile?.role || 'Creator',
         cover_letter: app.cover_letter,
         portfolio_links: app.portfolio_links,
         status: app.status,
         created_at: app.created_at,
         expected_rate: app.expected_rate,
         availability: app.availability,
-        professional_skills: app.profiles?.professional_skills || [],
-      }));
-      setApplicants(formatted);
-    }
+        professional_skills: profile?.professional_skills || [],
+      };
+    });
+    setApplicants(formatted);
     setLoading(false);
   };
 

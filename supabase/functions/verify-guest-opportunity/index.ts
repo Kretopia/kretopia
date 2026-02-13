@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
     if (action === "send-verification") {
       // Create guest opportunity and send verification email
-      const { email, company_name, logo_url, title, description, type, compensation, skills, requirements, deliverables, location } = params;
+      const { email, company_name, logo_url, title, description, type, compensation, skills, requirements, deliverables, location, location_city, location_country, image_url } = params;
 
       if (!email || !title || !description || !company_name) {
         return new Response(
@@ -44,6 +44,9 @@ Deno.serve(async (req) => {
           requirements: requirements || null,
           deliverables: deliverables || null,
           location: location || "remote",
+          location_city: location_city || null,
+          location_country: location_country || null,
+          image_url: image_url || null,
           status: "pending_verification",
           is_guest_post: true,
           guest_email: email,

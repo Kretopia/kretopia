@@ -2658,6 +2658,8 @@ export type Database = {
           image_url: string | null
           is_guest_post: boolean | null
           location: string | null
+          location_city: string | null
+          location_country: string | null
           requirements: string | null
           skills: string[] | null
           status: string | null
@@ -2683,6 +2685,8 @@ export type Database = {
           image_url?: string | null
           is_guest_post?: boolean | null
           location?: string | null
+          location_city?: string | null
+          location_country?: string | null
           requirements?: string | null
           skills?: string[] | null
           status?: string | null
@@ -2708,6 +2712,8 @@ export type Database = {
           image_url?: string | null
           is_guest_post?: boolean | null
           location?: string | null
+          location_city?: string | null
+          location_country?: string | null
           requirements?: string | null
           skills?: string[] | null
           status?: string | null

@@ -27,6 +27,9 @@ const PostOpportunity = () => {
     requirements: "",
     deliverables: "",
     location: "remote",
+    location_city: "",
+    location_country: "",
+    image_url: "",
   });
   const { toast } = useToast();
 
@@ -218,7 +221,7 @@ const PostOpportunity = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Location</Label>
+                  <Label>Location Type</Label>
                   <Select value={formData.location} onValueChange={(val) => setFormData({ ...formData, location: val })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -229,6 +232,31 @@ const PostOpportunity = () => {
                   </Select>
                 </div>
               </div>
+
+              {(formData.location === "hybrid" || formData.location === "onsite") && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="location_city">City</Label>
+                    <Input
+                      id="location_city"
+                      value={formData.location_city}
+                      onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
+                      placeholder="e.g., Dubai, Los Angeles"
+                      maxLength={100}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location_country">Country</Label>
+                    <Input
+                      id="location_country"
+                      value={formData.location_country}
+                      onChange={(e) => setFormData({ ...formData, location_country: e.target.value })}
+                      placeholder="e.g., UAE, United States"
+                      maxLength={100}
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="compensation">Compensation</Label>
@@ -287,6 +315,17 @@ const PostOpportunity = () => {
                   rows={2}
                   maxLength={1000}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="image_url">Cover Image URL (optional)</Label>
+                <Input
+                  id="image_url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="https://example.com/opportunity-image.jpg"
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground">Add a cover image to make your listing stand out</p>
               </div>
             </CardContent>
           </Card>

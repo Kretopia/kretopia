@@ -241,8 +241,8 @@ export function StartProjectDialog({
         .eq('user_id', user.id)
         .single();
 
-      // Add collaborator to project directly as accepted (since they're matched/connected)
-      const { error: collabError } = await supabase
+      // Add collaborator to project then auto-accept (since they're matched/connected)
+      const { data: collabData, error: collabError } = await supabase
         .from('project_collaborators')
         .insert({
           project_id: project.id,
@@ -250,11 +250,22 @@ export function StartProjectDialog({
           email: `user-${collaborator.id}@platform.internal`,
           invited_by: user.id,
           role: 'member',
-          status: 'accepted', // Auto-accept since they're connected
-        });
+        })
+        .select('id')
+        .single();
 
       if (collabError) {
         console.error('Error adding collaborator:', collabError);
+      } else {
+        // Update status to accepted (default is 'pending', explicit update ensures it sticks)
+        const { error: acceptError } = await supabase
+          .from('project_collaborators')
+          .update({ status: 'accepted' })
+          .eq('id', collabData.id);
+
+        if (acceptError) {
+          console.error('Error auto-accepting collaborator:', acceptError);
+        }
       }
 
       // Create in-app notification for the collaborator

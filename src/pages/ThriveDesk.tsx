@@ -200,7 +200,7 @@ const ThriveDesk = () => {
   ];
 
   return (
-    <div className="flex flex-col overflow-hidden bg-background h-[calc(100dvh-7.5rem)] lg:h-[100dvh]">
+    <div className="flex flex-col lg:flex-row overflow-hidden bg-background h-[calc(100dvh-7.5rem)] lg:h-[100dvh]">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />

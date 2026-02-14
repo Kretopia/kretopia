@@ -356,14 +356,14 @@ const Analytics = () => {
     <div className="min-h-screen bg-background pb-16 lg:pb-0">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Analytics Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
               Track your performance and engagement on the platform
             </p>
           </div>
-          <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
+          <Button variant="outline" className="w-full sm:w-auto" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>

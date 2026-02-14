@@ -341,18 +341,18 @@ Return ONLY valid JSON array:
   const renderApplicantCard = (applicant: Applicant) => (
     <Card key={applicant.id} className="hover:shadow-lg transition-all">
       <CardHeader>
-        <div className="flex items-start gap-4">
-          <Avatar className="h-16 w-16">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 shrink-0">
             <AvatarImage src={applicant.avatar_url} />
             <AvatarFallback>{applicant.full_name[0]}</AvatarFallback>
           </Avatar>
-          <div className="flex-1">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <CardTitle className="text-lg">{applicant.full_name}</CardTitle>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-1">
+              <div className="min-w-0">
+                <CardTitle className="text-base sm:text-lg truncate">{applicant.full_name}</CardTitle>
                 <p className="text-sm text-muted-foreground">{applicant.role}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 shrink-0">
                 {getMatchBadge(applicant.ai_match_score)}
                 <Badge variant={
                   applicant.status === 'accepted' ? 'default' :
@@ -395,18 +395,20 @@ Return ONLY valid JSON array:
             </div>
           )}
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 pt-2">
             <Button
               size="sm"
               variant="outline"
+              className="text-xs"
               onClick={() => navigate(`/profile/${applicant.applicant_id}`)}
             >
               <Eye className="w-3 h-3 mr-1" />
-              View Profile
+              Profile
             </Button>
             <Button
               size="sm"
               variant="outline"
+              className="text-xs"
               onClick={() => navigate(`/spark?user=${applicant.applicant_id}`)}
             >
               <Mail className="w-3 h-3 mr-1" />
@@ -416,6 +418,7 @@ Return ONLY valid JSON array:
               <>
                 <Button
                   size="sm"
+                  className="text-xs"
                   onClick={() => updateApplicationStatus(applicant.id, 'accepted')}
                 >
                   Accept
@@ -423,6 +426,7 @@ Return ONLY valid JSON array:
                 <Button
                   size="sm"
                   variant="destructive"
+                  className="text-xs"
                   onClick={() => updateApplicationStatus(applicant.id, 'rejected')}
                 >
                   Reject
@@ -521,9 +525,9 @@ Return ONLY valid JSON array:
       </div>
 
       {selectedOpp && (
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold">{selectedOpp.title}</h2>
+            <h2 className="text-lg sm:text-xl font-semibold">{selectedOpp.title}</h2>
             <p className="text-sm text-muted-foreground">
               {applicants.length} total applications
             </p>
@@ -531,6 +535,7 @@ Return ONLY valid JSON array:
           <Button
             onClick={analyzeWithAI}
             disabled={analyzingAI || applicants.length === 0}
+            className="w-full sm:w-auto"
           >
             <Sparkles className="w-4 h-4 mr-2" />
             {analyzingAI ? 'Analyzing...' : 'AI Match Score'}

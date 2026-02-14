@@ -95,13 +95,13 @@ const Marketplace = () => {
 
       <div className="container mx-auto max-w-7xl px-4 py-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <ShoppingBag className="h-8 w-8" />
+            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
+              <ShoppingBag className="h-7 w-7 sm:h-8 sm:w-8" />
               Market
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Digital products, gear, and creative services from the community
             </p>
           </div>
@@ -138,7 +138,7 @@ const Marketplace = () => {
         </div>
 
         {/* Search & Category Filter */}
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -149,7 +149,7 @@ const Marketplace = () => {
             />
           </div>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>

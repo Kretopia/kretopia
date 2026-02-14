@@ -76,16 +76,30 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
   };
 
   const fetchComments = async () => {
-    const { data } = await supabase
+    const { data: commentsData } = await supabase
       .from('feed_comments')
-      .select(`
-        *,
-        profiles!feed_comments_user_id_fkey(full_name, avatar_url)
-      `)
+      .select('*')
       .eq('post_id', post.id)
       .order('created_at', { ascending: true });
 
-    setComments(data || []);
+    if (!commentsData || commentsData.length === 0) {
+      setComments([]);
+      return;
+    }
+
+    // Fetch profiles separately since FK points to auth.users not profiles
+    const userIds = [...new Set(commentsData.map(c => c.user_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, avatar_url')
+      .in('user_id', userIds);
+
+    const enriched = commentsData.map(comment => ({
+      ...comment,
+      profiles: profiles?.find(p => p.user_id === comment.user_id) || { full_name: 'User', avatar_url: null }
+    }));
+
+    setComments(enriched);
   };
 
   const handleReaction = async () => {

@@ -27,8 +27,12 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, projectTitle, projectId, inviterName, inviteeUserId }: InvitationRequest = await req.json();
 
-    if (!email || !projectTitle || !projectId || !inviterName) {
-      throw new Error("Missing required fields");
+    if (!projectTitle || !projectId || !inviterName) {
+      throw new Error("Missing required fields: projectTitle, projectId, and inviterName are required");
+    }
+
+    if (!email && !inviteeUserId) {
+      throw new Error("Either email or inviteeUserId must be provided");
     }
 
     // Create invitation link with email token for auto-acceptance

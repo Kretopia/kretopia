@@ -34,8 +34,8 @@ const ProductFileUpload = ({ userId, files, onFilesChange, maxFiles = 5 }: Produ
       const uploadedUrls: string[] = [];
 
       for (const file of filesToUpload) {
-        if (file.size > 10 * 1024 * 1024) {
-          toast({ title: "File too large", description: `${file.name} exceeds 10MB limit. Try compressing or splitting your files.`, variant: "destructive" });
+        if (file.size > 25 * 1024 * 1024) {
+          toast({ title: "File too large", description: `${file.name} exceeds 25MB limit. Try compressing your file.`, variant: "destructive" });
           continue;
         }
 
@@ -80,7 +80,7 @@ const ProductFileUpload = ({ userId, files, onFilesChange, maxFiles = 5 }: Produ
     <div className="space-y-3">
       <Label>Product Files * (buyers will download these)</Label>
       <p className="text-xs text-muted-foreground">
-        Upload the files buyers will receive after purchase (ZIP, PDF, audio, video, etc. up to 10MB each)
+        Upload the files buyers will receive after purchase (ZIP, PDF, audio, video, etc. up to 25MB each)
       </p>
       
       {files.length > 0 && (

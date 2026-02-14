@@ -112,6 +112,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
               { path: "/profile", icon: User, label: "Profile" },
               { path: "/market", icon: ShoppingBag, label: "Market" },
               { path: "/desk", icon: Briefcase, label: "Desk" },
+              { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
             ].map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
               return (

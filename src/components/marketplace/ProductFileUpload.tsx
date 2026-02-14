@@ -42,6 +42,13 @@ const ProductFileUpload = ({ userId, files, onFilesChange, maxFiles = 5 }: Produ
         const fileExt = file.name.split(".").pop();
         const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
+        // Verify auth before upload
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          toast({ title: "Not authenticated", description: "Please log in to upload files", variant: "destructive" });
+          return;
+        }
+
         const { error: uploadError } = await supabase.storage
           .from("product-files")
           .upload(filePath, file, {

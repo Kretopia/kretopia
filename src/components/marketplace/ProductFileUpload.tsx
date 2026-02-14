@@ -34,8 +34,8 @@ const ProductFileUpload = ({ userId, files, onFilesChange, maxFiles = 5 }: Produ
       const uploadedUrls: string[] = [];
 
       for (const file of filesToUpload) {
-        if (file.size > 50 * 1024 * 1024) {
-          toast({ title: "File too large", description: `${file.name} exceeds 50MB limit`, variant: "destructive" });
+        if (file.size > 10 * 1024 * 1024) {
+          toast({ title: "File too large", description: `${file.name} exceeds 10MB limit. Try compressing or splitting your files.`, variant: "destructive" });
           continue;
         }
 
@@ -44,7 +44,10 @@ const ProductFileUpload = ({ userId, files, onFilesChange, maxFiles = 5 }: Produ
 
         const { error: uploadError } = await supabase.storage
           .from("product-files")
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false,
+          });
 
         if (uploadError) throw uploadError;
 
@@ -77,7 +80,7 @@ const ProductFileUpload = ({ userId, files, onFilesChange, maxFiles = 5 }: Produ
     <div className="space-y-3">
       <Label>Product Files * (buyers will download these)</Label>
       <p className="text-xs text-muted-foreground">
-        Upload the files buyers will receive after purchase (ZIP, PDF, audio, video, etc. up to 50MB each)
+        Upload the files buyers will receive after purchase (ZIP, PDF, audio, video, etc. up to 10MB each)
       </p>
       
       {files.length > 0 && (

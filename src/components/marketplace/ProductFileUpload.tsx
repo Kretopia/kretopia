@@ -49,9 +49,16 @@ const ProductFileUpload = ({ userId, files, onFilesChange, maxFiles = 5 }: Produ
           return;
         }
 
+        // Use signed upload URL to bypass preview proxy limitations
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from("product-files")
+          .createSignedUploadUrl(filePath);
+
+        if (signedError || !signedData) throw signedError || new Error("Failed to create upload URL");
+
         const { error: uploadError } = await supabase.storage
           .from("product-files")
-          .upload(filePath, file, {
+          .uploadToSignedUrl(filePath, signedData.token, file, {
             cacheControl: '3600',
             upsert: false,
           });

@@ -177,15 +177,16 @@ const ManageOpportunities = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-6">
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold mb-2">My Applications</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">My Applications</h1>
+          <p className="text-sm text-muted-foreground">
             Track and manage your opportunity applications
           </p>
         </div>
         <Button
           variant="outline"
+          className="w-full sm:w-auto"
           onClick={() => navigate('/opportunity-dashboard')}
         >
           <Briefcase className="mr-2 h-4 w-4" />
@@ -194,7 +195,7 @@ const ManageOpportunities = () => {
       </div>
 
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
+        <TabsList className="w-full overflow-x-auto flex mb-6">
           <TabsTrigger value="all">
             All ({applications.length})
           </TabsTrigger>

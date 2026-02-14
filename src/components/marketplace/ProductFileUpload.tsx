@@ -56,14 +56,25 @@ const ProductFileUpload = ({ userId, files, onFilesChange, maxFiles = 5 }: Produ
 
         if (signedError || !signedData) throw signedError || new Error("Failed to create upload URL");
 
-        const { error: uploadError } = await supabase.storage
-          .from("product-files")
-          .uploadToSignedUrl(filePath, signedData.token, file, {
-            cacheControl: '3600',
-            upsert: false,
-          });
-
-        if (uploadError) throw uploadError;
+        // Use XMLHttpRequest to bypass the preview proxy that intercepts window.fetch
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const uploadUrl = signedData.signedUrl;
+        
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', uploadUrl, true);
+          xhr.setRequestHeader('x-upsert', 'false');
+          xhr.setRequestHeader('cache-control', '3600');
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve();
+            } else {
+              reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.responseText}`));
+            }
+          };
+          xhr.onerror = () => reject(new Error('Upload failed - network error'));
+          xhr.send(file);
+        });
 
         // Store the path (not public URL since bucket is private)
         uploadedUrls.push(filePath);

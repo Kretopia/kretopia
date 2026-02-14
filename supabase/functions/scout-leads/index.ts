@@ -50,7 +50,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         query: searchQuery,
-        limit: 10,
+        limit: 20,
         scrapeOptions: { formats: ["markdown"] },
       }),
     });
@@ -73,8 +73,8 @@ serve(async (req) => {
 
     // Step 2: Use AI to extract structured leads from the search results
     const snippets = results
-      .slice(0, 8)
-      .map((r: any, i: number) => `[${i + 1}] URL: ${r.url}\nTitle: ${r.title || "N/A"}\nContent: ${(r.markdown || r.description || "").slice(0, 800)}`)
+      .slice(0, 20)
+      .map((r: any, i: number) => `[${i + 1}] URL: ${r.url}\nTitle: ${r.title || "N/A"}\nContent: ${(r.markdown || r.description || "").slice(0, 600)}`)
       .join("\n\n---\n\n");
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -88,7 +88,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You extract potential business leads/contacts from web search results. For each lead found, extract: name, company, role/title, email (if found), website, and a brief note about why they're relevant. Return ONLY valid JSON array. If you can't find leads, return empty array [].`,
+            content: `You extract potential business leads/contacts from web search results. Extract as many leads as possible (aim for 15-25). For each lead found, extract: name, company, role/title, email (if found), website, and a brief note about why they're relevant. Return ONLY valid JSON array. If you can't find leads, return empty array [].`,
           },
           {
             role: "user",

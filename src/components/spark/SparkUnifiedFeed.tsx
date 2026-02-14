@@ -62,10 +62,38 @@ export const SparkUnifiedFeed = ({ currentUserId, categoryFilter }: SparkUnified
         .select("user_id, full_name, avatar_url, role")
         .in("user_id", userIds);
 
+      // Fetch portfolio item data for activity posts that reference portfolio items
+      const portfolioSourceIds = data
+        .filter((p) => p.source_type === "portfolio" && p.source_id)
+        .map((p) => p.source_id);
+      
+      let portfolioItems: any[] = [];
+      if (portfolioSourceIds.length > 0) {
+        const { data: items } = await supabase
+          .from("portfolio_items")
+          .select("id, title, media_type, media_url, thumbnail_url")
+          .in("id", portfolioSourceIds);
+        portfolioItems = items || [];
+      }
+
       const enriched = data.map((post) => {
         const profile = profiles?.find((p) => p.user_id === post.user_id);
+        
+        // Enrich portfolio activity posts with media URL
+        let linkUrl = post.link_url;
+        let linkTitle = post.link_title;
+        if (!linkUrl && post.source_type === "portfolio" && post.source_id) {
+          const portfolioItem = portfolioItems.find((pi) => pi.id === post.source_id);
+          if (portfolioItem?.media_url) {
+            linkUrl = portfolioItem.media_url;
+            linkTitle = portfolioItem.title;
+          }
+        }
+
         return {
           ...post,
+          link_url: linkUrl,
+          link_title: linkTitle,
           media_urls: post.media_urls || [],
           tags: post.tags || [],
           profile: {

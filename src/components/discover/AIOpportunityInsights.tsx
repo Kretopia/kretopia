@@ -66,7 +66,12 @@ Return as JSON:
       if (error) throw error;
 
       if (data?.content) {
-        const parsed = JSON.parse(data.content);
+        let raw = data.content.trim();
+        // Strip markdown code fences if present
+        if (raw.startsWith('```')) {
+          raw = raw.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+        }
+        const parsed = JSON.parse(raw);
         setInsights(parsed);
       }
     } catch (error: any) {

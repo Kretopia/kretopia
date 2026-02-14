@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { LocationSearchInput } from "./LocationSearchInput";
 
 interface CreateSessionDialogProps {
   open: boolean;
@@ -246,37 +247,34 @@ export const CreateSessionDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="venue_name">Venue Name</Label>
-            <Input
-              id="venue_name"
-              placeholder="e.g., Central Park, Studio 42"
-              value={formData.venue_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, venue_name: e.target.value }))}
+            <Label>Location</Label>
+            <LocationSearchInput
+              value={formData.venue_address}
+              onChange={(val) => setFormData(prev => ({ ...prev, venue_address: val }))}
+              onSelect={(result) => setFormData(prev => ({
+                ...prev,
+                venue_name: result.venueName,
+                venue_address: result.address,
+                latitude: result.lat,
+                longitude: result.lng,
+              }))}
+              placeholder="Search for a venue, address, or place..."
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="venue_address">Address</Label>
-            <div className="flex gap-2">
-              <Input
-                id="venue_address"
-                placeholder="Enter address or use current location"
-                value={formData.venue_address}
-                onChange={(e) => setFormData(prev => ({ ...prev, venue_address: e.target.value }))}
-                className="flex-1"
-              />
+            <div className="flex items-center gap-2">
               <Button 
                 type="button" 
                 variant="outline" 
-                size="icon"
+                size="sm"
                 onClick={detectLocation}
+                className="text-xs gap-1.5"
               >
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-3.5 w-3.5" />
+                Use current location
               </Button>
             </div>
             {formData.latitude && formData.longitude && (
               <p className="text-xs text-muted-foreground">
-                📍 Location set ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})
+                📍 {formData.venue_name || 'Location set'} ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})
               </p>
             )}
           </div>

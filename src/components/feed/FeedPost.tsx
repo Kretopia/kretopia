@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
-import { Flame, MessageCircle, Send, MoreVertical, Trash2, Play } from "lucide-react";
+import { Flame, MessageCircle, Send, MoreVertical, Trash2, Play, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
+import { parseMediaUrl } from "@/lib/mediaUtils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +22,12 @@ interface FeedPostProps {
     id: string;
     user_id: string;
     content: string | null;
+    auto_activity_message?: string | null;
     media_urls: any[];
     media_type: string | null;
+    link_url?: string | null;
+    link_title?: string | null;
+    source_type?: string | null;
     tags: string[];
     created_at: string;
     profile: {
@@ -235,6 +240,11 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
         </div>
       </div>
 
+      {/* Auto Activity Message */}
+      {post.auto_activity_message && !post.content && (
+        <p className="text-sm text-muted-foreground italic">{post.auto_activity_message}</p>
+      )}
+
       {/* Content */}
       {post.content && (
         <p className="text-sm whitespace-pre-wrap">{post.content}</p>
@@ -253,6 +263,38 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
 
       {/* Media */}
       {renderMedia()}
+
+      {/* Link Embed - inline playable media for YouTube, Spotify, etc. */}
+      {post.link_url && (() => {
+        const mediaInfo = parseMediaUrl(post.link_url);
+        if (mediaInfo) {
+          const isAudioEmbed = mediaInfo.platform === 'spotify' || mediaInfo.platform === 'soundcloud';
+          return (
+            <div className={`w-full rounded-lg overflow-hidden bg-black mt-2 ${isAudioEmbed ? 'aspect-[4/3]' : 'aspect-video'}`}>
+              <iframe
+                src={mediaInfo.embedUrl}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          );
+        }
+        // Non-embeddable link - show as clickable card
+        return (
+          <a
+            href={post.link_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors mt-2"
+          >
+            <ExternalLink className="h-4 w-4 text-primary flex-shrink-0" />
+            <span className="text-sm text-primary truncate">
+              {post.link_title || post.link_url}
+            </span>
+          </a>
+        );
+      })()}
 
       {/* Actions */}
       <div className="flex items-center gap-4 pt-2 border-t">

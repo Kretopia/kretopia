@@ -102,7 +102,8 @@ const ListingDetail = () => {
   };
 
   const handleShare = async () => {
-    const url = window.location.href;
+    const path = window.location.pathname;
+    const url = `https://www.thrivein.io${path}`;
     try {
       await navigator.share({ title: listing.title, url });
     } catch {

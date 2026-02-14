@@ -87,7 +87,12 @@ const ListingDetail = () => {
       if (data?.error) throw new Error(data.error);
 
       if (data?.url) {
-        window.location.href = data.url;
+        // Use window.open for better compatibility in embedded/iframe contexts
+        const opened = window.open(data.url, '_blank');
+        if (!opened) {
+          // Fallback if popup blocked
+          window.location.href = data.url;
+        }
       }
     } catch (err: any) {
       console.error('Purchase error:', err);

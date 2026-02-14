@@ -84,7 +84,8 @@ const OpportunityDetail = () => {
   }, [id, user]);
 
   const handleShare = () => {
-    const url = window.location.href;
+    const path = window.location.pathname;
+    const url = `https://www.thrivein.io${path}`;
     navigator.clipboard.writeText(url);
     toast({
       title: "Link Copied! 📋",

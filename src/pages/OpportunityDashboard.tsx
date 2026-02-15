@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, User, Users, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List, BarChart3 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { ProGate } from "@/components/project/ProGate";
 import { ApplicantPipeline } from "@/components/opportunity/ApplicantPipeline";
+import { OpportunityAnalytics } from "@/components/opportunity/OpportunityAnalytics";
 
 interface Applicant {
   id: string;
@@ -55,6 +56,7 @@ const OpportunityDashboard = () => {
   const [editingOpportunityId, setEditingOpportunityId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'date' | 'score'>('date');
   const [viewMode, setViewMode] = useState<'list' | 'pipeline'>('list');
+  const [dashboardTab, setDashboardTab] = useState<'applicants' | 'analytics'>('applicants');
   const autoAnalyzedRef = useRef<Set<string>>(new Set());
   const { user, loading: authLoading, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
@@ -556,6 +558,40 @@ Return ONLY valid JSON array:
 
       {selectedOpp && (
         <>
+          {/* Dashboard Tab Toggle */}
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex rounded-md border border-input overflow-hidden">
+              <Button
+                variant={dashboardTab === 'applicants' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-none"
+                onClick={() => setDashboardTab('applicants')}
+              >
+                <Users className="w-4 h-4 mr-1" />
+                Applicants
+              </Button>
+              <Button
+                variant={dashboardTab === 'analytics' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-none"
+                onClick={() => setDashboardTab('analytics')}
+              >
+                <BarChart3 className="w-4 h-4 mr-1" />
+                Analytics
+                {!isPro && <Crown className="w-3 h-3 ml-1 text-primary" />}
+              </Button>
+            </div>
+          </div>
+
+          {dashboardTab === 'analytics' ? (
+            <OpportunityAnalytics
+              userId={user!.id}
+              isPro={isPro}
+              opportunities={opportunities}
+              selectedOppId={selectedOppId}
+            />
+          ) : (
+          <>
           <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-lg sm:text-xl font-semibold">{selectedOpp.title}</h2>
@@ -716,6 +752,8 @@ Return ONLY valid JSON array:
             </div>
           </TabsContent>
         </Tabs>
+      )}
+      </>
       )}
 
       {editingOpportunityId && (

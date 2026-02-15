@@ -83,6 +83,17 @@ const OpportunityDetail = () => {
     };
   }, [id, user]);
 
+  // Track view
+  useEffect(() => {
+    if (!id) return;
+    supabase
+      .from("opportunity_views")
+      .insert({ opportunity_id: id, viewer_id: user?.id || null })
+      .then(({ error }) => {
+        if (error) console.error("View tracking error:", error);
+      });
+  }, [id]);
+
   const handleShare = () => {
     const path = window.location.pathname;
     const url = `https://www.thrivein.io${path}`;

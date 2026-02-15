@@ -361,9 +361,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       doc.rect(0, 0, 210, 6, "F");
 
       // Business name
+      doc.setTextColor(0, 0, 0);
       doc.setFontSize(16);
       doc.setFont(undefined!, "bold");
       doc.text(invoice.brand_name || "Invoice", 20, 20);
+      doc.setTextColor(80, 80, 80);
       doc.setFontSize(9);
       doc.setFont(undefined!, "normal");
       let yPos = 26;
@@ -376,7 +378,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       doc.setFont(undefined!, "bold");
       doc.setTextColor(rgb[0], rgb[1], rgb[2]);
       doc.text("INVOICE", 140, 20);
-      doc.setTextColor(100, 100, 100);
+      doc.setTextColor(60, 60, 60);
       doc.setFontSize(9);
       doc.setFont(undefined!, "normal");
       doc.text(`#${invoice.invoice_number}`, 140, 27);
@@ -409,8 +411,8 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         body: items,
         theme: "grid",
         headStyles: { fillColor: rgb, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 9 },
-        bodyStyles: { fontSize: 9 },
-        alternateRowStyles: { fillColor: [rgb[0], rgb[1], rgb[2], 0.05] as any },
+        bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
       });
 
       const finalY = (doc as any).lastAutoTable.finalY || 72;

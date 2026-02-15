@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { EXPENSE_CATEGORIES } from "./ExpenseCategories";
 
@@ -23,6 +23,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [categorizing, setCategorizing] = useState(false);
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -36,6 +37,28 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     recurring_interval: "monthly",
     payment_method: "card",
   });
+
+  const handleAutoCategorize = async () => {
+    if (!form.title) return;
+    setCategorizing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-finance", {
+        body: { action: "categorize", expense: { title: form.title, vendor: form.vendor } },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setForm(prev => ({
+        ...prev,
+        category: data.category || prev.category,
+        tax_deductible: data.tax_deductible ?? prev.tax_deductible,
+      }));
+      toast.success(`Categorized as ${data.category}${data.tax_deductible ? " (tax deductible)" : ""}`);
+    } catch (err: any) {
+      toast.error("Auto-categorize failed");
+    } finally {
+      setCategorizing(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!user || !form.title || !form.amount) return;
@@ -128,7 +151,14 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
             </div>
           </div>
           <div>
-            <Label className="text-xs">Vendor / Payee</Label>
+            <div className="flex items-center justify-between mb-1">
+              <Label className="text-xs">Vendor / Payee</Label>
+              <Button type="button" variant="ghost" size="sm" className="h-6 text-[10px] gap-1 text-primary"
+                onClick={handleAutoCategorize} disabled={categorizing || !form.title}>
+                {categorizing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                AI Categorize
+              </Button>
+            </div>
             <Input placeholder="e.g. Adobe, WeWork" value={form.vendor}
               onChange={(e) => setForm({ ...form, vendor: e.target.value })} className="h-8 text-sm" />
           </div>

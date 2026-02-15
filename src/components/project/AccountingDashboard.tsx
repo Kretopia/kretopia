@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { ExpenseForm } from "./expense/ExpenseForm";
 import { ExpenseList } from "./expense/ExpenseList";
 import { SpendingAnalytics } from "./expense/SpendingAnalytics";
+import { AIFinanceInsights } from "./expense/AIFinanceInsights";
 
 interface AccountingDashboardProps {
   projectId?: string;
@@ -415,7 +416,8 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics">
+        <TabsContent value="analytics" className="space-y-4">
+          <AIFinanceInsights expenses={filteredExpenses} invoices={filteredInvoices} />
           <SpendingAnalytics expenses={filteredExpenses} income={stats.totalCollected} />
         </TabsContent>
       </Tabs>

@@ -179,9 +179,14 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
   };
 
   const handleDelete = async (id: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
     const { error } = await supabase.from("board_items").delete().eq("id", id);
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else toast({ title: "Removed" });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      fetchItems();
+    } else {
+      toast({ title: "Removed" });
+    }
   };
 
   const handleEditNote = async (id: string, title: string | null, content: string, color: string) => {

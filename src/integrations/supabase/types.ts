@@ -2000,7 +2000,7 @@ export type Database = {
           id: string
           invoice_number: string
           issued_by: string
-          issued_to: string
+          issued_to: string | null
           line_items: Json | null
           milestone_id: string | null
           notes: string | null
@@ -2008,7 +2008,7 @@ export type Database = {
           payment_details: Json | null
           payment_link_url: string | null
           payment_method: string | null
-          project_id: string
+          project_id: string | null
           recipient_address: string | null
           recipient_email: string | null
           recipient_name: string | null
@@ -2040,7 +2040,7 @@ export type Database = {
           id?: string
           invoice_number: string
           issued_by: string
-          issued_to: string
+          issued_to?: string | null
           line_items?: Json | null
           milestone_id?: string | null
           notes?: string | null
@@ -2048,7 +2048,7 @@ export type Database = {
           payment_details?: Json | null
           payment_link_url?: string | null
           payment_method?: string | null
-          project_id: string
+          project_id?: string | null
           recipient_address?: string | null
           recipient_email?: string | null
           recipient_name?: string | null
@@ -2080,7 +2080,7 @@ export type Database = {
           id?: string
           invoice_number?: string
           issued_by?: string
-          issued_to?: string
+          issued_to?: string | null
           line_items?: Json | null
           milestone_id?: string | null
           notes?: string | null
@@ -2088,7 +2088,7 @@ export type Database = {
           payment_details?: Json | null
           payment_link_url?: string | null
           payment_method?: string | null
-          project_id?: string
+          project_id?: string | null
           recipient_address?: string | null
           recipient_email?: string | null
           recipient_name?: string | null

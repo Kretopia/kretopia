@@ -18,6 +18,7 @@ import { ExpenseForm } from "./expense/ExpenseForm";
 import { ExpenseList } from "./expense/ExpenseList";
 import { SpendingAnalytics } from "./expense/SpendingAnalytics";
 import { AIFinanceInsights } from "./expense/AIFinanceInsights";
+import { InvoiceGenerator } from "./InvoiceGenerator";
 
 interface AccountingDashboardProps {
   projectId?: string;
@@ -193,10 +194,11 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
               <SelectItem value="all">All Time</SelectItem>
             </SelectContent>
           </Select>
-          <ExpenseForm projectId={projectId} onExpenseAdded={fetchAccountingData} />
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={exportCSV}>
-            <Download className="h-3 w-3" /> Export
-          </Button>
+           <ExpenseForm projectId={projectId} onExpenseAdded={fetchAccountingData} />
+           <InvoiceGenerator />
+           <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={exportCSV}>
+             <Download className="h-3 w-3" /> Export
+           </Button>
         </div>
       </div>
 

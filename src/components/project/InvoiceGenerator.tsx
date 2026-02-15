@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign } from "lucide-react";
+import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
@@ -249,6 +249,72 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     setDueDate(""); setTaxRate("0"); setNotes(""); setDiscountType(""); setDiscountValue("0");
     setLineItems([{ description: "", quantity: 1, rate: 0, amount: 0 }]);
     setCreateStep("details");
+  };
+
+  const handleDuplicateInvoice = (invoice: any) => {
+    // Pre-fill form with existing invoice data
+    setRecipientName(invoice.recipient_name || "");
+    setRecipientEmail(invoice.recipient_email || "");
+    setRecipientAddress(invoice.recipient_address || "");
+    setDueDate("");
+    setTaxRate(String(invoice.tax_rate || 0));
+    setNotes(invoice.notes || "");
+    setCurrency(invoice.currency || "USD");
+    setDiscountType(invoice.discount_type || "");
+    setDiscountValue(String(invoice.discount_value || 0));
+    setLineItems(
+      (invoice.line_items || []).length > 0
+        ? (invoice.line_items as LineItem[])
+        : [{ description: "", quantity: 1, rate: 0, amount: 0 }]
+    );
+    setBranding({
+      brand_name: invoice.brand_name || "",
+      brand_logo_url: invoice.brand_logo_url || "",
+      brand_address: invoice.brand_address || "",
+      brand_email: invoice.brand_email || "",
+      brand_website: invoice.brand_website || "",
+      brand_color: invoice.brand_color || "#6366f1",
+    });
+    setPaymentConfig({
+      payment_method: invoice.payment_method || "bank_transfer",
+      payment_details: invoice.payment_details || {},
+      terms_conditions: invoice.terms_conditions || "",
+    });
+    setCreateStep("details");
+    // Open the main dialog first, then the nested create dialog needs user click
+    toast.success("Invoice data loaded — click 'Create Professional Invoice' to continue");
+  };
+
+  const handleMarkAsPaid = async (invoice: any) => {
+    try {
+      // Update invoice status
+      const { error: updateError } = await supabase
+        .from("invoices")
+        .update({ status: "paid", paid_at: new Date().toISOString() } as any)
+        .eq("id", invoice.id);
+      if (updateError) throw updateError;
+
+      // Record in payment_history for accounting
+      const { error: paymentError } = await supabase
+        .from("payment_history")
+        .insert({
+          user_id: user!.id,
+          project_id: projectId,
+          invoice_id: invoice.id,
+          amount: Number(invoice.total_amount || invoice.amount || 0),
+          currency: invoice.currency || "USD",
+          type: "payment_received",
+          status: "completed",
+          description: `Invoice ${invoice.invoice_number} — ${invoice.recipient_name || "Client"}`,
+        });
+      if (paymentError) console.error("Payment history error:", paymentError);
+
+      toast.success("Invoice marked as paid!");
+      fetchInvoices();
+    } catch (error) {
+      console.error("Error marking invoice as paid:", error);
+      toast.error("Failed to update invoice");
+    }
   };
 
   const handleSendInvoice = async (invoice: any) => {
@@ -729,7 +795,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                       </div>
                     </div>
 
-                    <div className="flex gap-1.5 mt-2 pt-2 border-t">
+                    <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
                       <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handlePreview(inv)}>
                         <Eye className="h-3 w-3" /> Preview
                       </Button>
@@ -739,6 +805,14 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                       <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleSendInvoice(inv)}>
                         <Mail className="h-3 w-3" /> Send
                       </Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDuplicateInvoice(inv)}>
+                        <Copy className="h-3 w-3" /> Duplicate
+                      </Button>
+                      {inv.status !== "paid" && (
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-green-600 hover:text-green-700" onClick={() => handleMarkAsPaid(inv)}>
+                          <CreditCard className="h-3 w-3" /> Mark Paid
+                        </Button>
+                      )}
                     </div>
                   </Card>
                 ))}

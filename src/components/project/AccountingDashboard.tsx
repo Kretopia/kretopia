@@ -170,18 +170,18 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" /> Accounting
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {projectId ? "Project financial overview" : "Your complete financial overview"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <Select value={period} onValueChange={(v: any) => setPeriod(v)}>
-            <SelectTrigger className="w-40 h-8 text-xs">
+            <SelectTrigger className="w-32 sm:w-40 h-8 text-xs">
               <Calendar className="h-3 w-3 mr-1" />
               <SelectValue />
             </SelectTrigger>
@@ -194,70 +194,70 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
               <SelectItem value="all">All Time</SelectItem>
             </SelectContent>
           </Select>
-           <ExpenseForm projectId={projectId} onExpenseAdded={fetchAccountingData} />
-           <InvoiceGenerator />
-           <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={exportCSV}>
-             <Download className="h-3 w-3" /> Export
-           </Button>
+          <ExpenseForm projectId={projectId} onExpenseAdded={fetchAccountingData} />
+          <InvoiceGenerator />
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={exportCSV}>
+            <Download className="h-3 w-3" /> <span className="hidden sm:inline">Export</span>
+          </Button>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Card>
-          <CardHeader className="pb-1 pt-3 px-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
+        <Card className="min-w-0">
+          <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
               <TrendingUp className="h-3 w-3" /> Total Invoiced
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-4 pb-3">
-            <p className="text-xl font-bold">${stats.totalInvoiced.toFixed(2)}</p>
+          <CardContent className="px-3 sm:px-4 pb-3">
+            <p className="text-lg sm:text-xl font-bold truncate">${stats.totalInvoiced.toFixed(2)}</p>
             <p className="text-[10px] text-muted-foreground">{stats.totalInvoiceCount} invoices</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-1 pt-3 px-4">
+        <Card className="min-w-0">
+          <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3 text-green-500" /> Collected
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-4 pb-3">
-            <p className="text-xl font-bold text-green-600">${stats.totalCollected.toFixed(2)}</p>
+          <CardContent className="px-3 sm:px-4 pb-3">
+            <p className="text-lg sm:text-xl font-bold text-green-600 truncate">${stats.totalCollected.toFixed(2)}</p>
             <p className="text-[10px] text-muted-foreground">{stats.paidCount} paid • {stats.collectionRate.toFixed(0)}%</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-1 pt-3 px-4">
+        <Card className="min-w-0">
+          <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
               <TrendingDown className="h-3 w-3 text-red-500" /> Expenses
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-4 pb-3">
-            <p className="text-xl font-bold text-red-600">${stats.totalExpenses.toFixed(2)}</p>
+          <CardContent className="px-3 sm:px-4 pb-3">
+            <p className="text-lg sm:text-xl font-bold text-red-600 truncate">${stats.totalExpenses.toFixed(2)}</p>
             <p className="text-[10px] text-muted-foreground">{filteredExpenses.length} tracked</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-1 pt-3 px-4">
+        <Card className="min-w-0">
+          <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
               <DollarSign className="h-3 w-3 text-primary" /> Net Profit
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-4 pb-3">
-            <p className={`text-xl font-bold ${(stats.totalCollected - stats.totalExpenses) >= 0 ? "text-green-600" : "text-red-600"}`}>
+          <CardContent className="px-3 sm:px-4 pb-3">
+            <p className={`text-lg sm:text-xl font-bold truncate ${(stats.totalCollected - stats.totalExpenses) >= 0 ? "text-green-600" : "text-red-600"}`}>
               ${(stats.totalCollected - stats.totalExpenses).toFixed(2)}
             </p>
             <p className="text-[10px] text-muted-foreground">Collected − Expenses</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-1 pt-3 px-4">
+        <Card className="min-w-0 col-span-2 sm:col-span-1">
+          <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
               <AlertCircle className="h-3 w-3 text-amber-500" /> Outstanding
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-4 pb-3">
-            <p className="text-xl font-bold text-amber-600">${stats.pendingAmount.toFixed(2)}</p>
+          <CardContent className="px-3 sm:px-4 pb-3">
+            <p className="text-lg sm:text-xl font-bold text-amber-600 truncate">${stats.pendingAmount.toFixed(2)}</p>
             <p className="text-[10px] text-muted-foreground">{stats.pendingCount} pending • {stats.overdueCount} overdue</p>
           </CardContent>
         </Card>
@@ -265,7 +265,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
 
       {/* Tabs: Overview / Expenses / Analytics */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="h-9">
+        <TabsList className="h-9 w-full overflow-x-auto justify-start sm:justify-center">
           <TabsTrigger value="overview" className="text-xs gap-1"><FileText className="h-3 w-3" /> Overview</TabsTrigger>
           <TabsTrigger value="expenses" className="text-xs gap-1"><Receipt className="h-3 w-3" /> Expenses</TabsTrigger>
           <TabsTrigger value="analytics" className="text-xs gap-1"><PieChart className="h-3 w-3" /> Analytics</TabsTrigger>

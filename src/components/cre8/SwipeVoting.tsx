@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useVoteDailyCap } from "@/hooks/useVoteDailyCap";
 import { toast } from "sonner";
-import { Heart, X, ChevronLeft, Loader2 } from "lucide-react";
+import { Heart, X, ChevronLeft, Loader2, Info } from "lucide-react";
 
 interface SwipeEntry {
   id: string;
@@ -29,7 +30,7 @@ export const SwipeVoting = ({ challengeId, onBack }: SwipeVotingProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [swiping, setSwiping] = useState<"left" | "right" | null>(null);
-  const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
+  const { canVote, votesRemaining, maxDailyVotes, recordVote } = useVoteDailyCap(user?.id);
   const cardRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
   const currentX = useRef(0);
@@ -49,7 +50,6 @@ export const SwipeVoting = ({ challengeId, onBack }: SwipeVotingProps) => {
 
       if (error) throw error;
 
-      // Load profiles + existing votes in parallel
       const [entriesWithProfiles, votesData] = await Promise.all([
         Promise.all(
           (data || []).map(async (entry) => {
@@ -70,10 +70,9 @@ export const SwipeVoting = ({ challengeId, onBack }: SwipeVotingProps) => {
           : Promise.resolve({ data: [] }),
       ]);
 
-      setVotedIds(new Set((votesData.data || []).map((v: any) => v.entry_id)));
-      // Filter out own entries and already-voted
+      const votedSet = new Set((votesData.data || []).map((v: any) => v.entry_id));
       const filtered = entriesWithProfiles.filter(
-        (e) => e.user_id !== user?.id && !new Set((votesData.data || []).map((v: any) => v.entry_id)).has(e.id)
+        (e) => e.user_id !== user?.id && !votedSet.has(e.id)
       );
       setEntries(filtered);
     } catch (err) {
@@ -87,7 +86,7 @@ export const SwipeVoting = ({ challengeId, onBack }: SwipeVotingProps) => {
     if (!user) return;
     try {
       await supabase.from("challenge_votes").insert({ entry_id: entryId, user_id: user.id });
-      // Award XP
+      recordVote();
       try {
         const { awardXP } = await import("@/lib/xpSystem");
         await awardXP(user.id, "CHALLENGE_VOTE", "Voted via swipe");
@@ -96,6 +95,11 @@ export const SwipeVoting = ({ challengeId, onBack }: SwipeVotingProps) => {
   };
 
   const advance = (direction: "left" | "right") => {
+    if (direction === "right" && !canVote) {
+      toast.error(`Daily vote limit reached (${maxDailyVotes}/day). Come back tomorrow!`);
+      return;
+    }
+
     setSwiping(direction);
     const entry = entries[currentIndex];
 
@@ -150,6 +154,14 @@ export const SwipeVoting = ({ challengeId, onBack }: SwipeVotingProps) => {
         <h3 className="font-bold text-lg">Swipe to Vote</h3>
         <span className="text-sm text-muted-foreground ml-auto">
           {currentIndex}/{entries.length}
+        </span>
+      </div>
+
+      {/* Vote cap indicator */}
+      <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-muted/50 border">
+        <Info className="h-3 w-3 text-muted-foreground" />
+        <span className="text-muted-foreground">
+          {canVote ? `${votesRemaining} votes left today` : "Daily vote limit reached"}
         </span>
       </div>
 
@@ -215,6 +227,7 @@ export const SwipeVoting = ({ challengeId, onBack }: SwipeVotingProps) => {
               size="lg"
               className="h-16 w-16 rounded-full bg-primary"
               onClick={() => advance("right")}
+              disabled={!canVote}
             >
               <Heart className="h-7 w-7" />
             </Button>

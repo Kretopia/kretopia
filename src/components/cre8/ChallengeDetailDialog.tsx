@@ -5,10 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Calendar, Trophy, Users, Upload, Loader2, Sparkles } from "lucide-react";
+import { Calendar, Trophy, Users, Upload, Loader2, Sparkles, Info } from "lucide-react";
 import { SubmitEntryDialog } from "./SubmitEntryDialog";
 import { ChallengeEntryCard } from "./ChallengeEntryCard";
 import { SwipeVoting } from "./SwipeVoting";
+import { useVoteDailyCap } from "@/hooks/useVoteDailyCap";
 
 interface Challenge {
   id: string;
@@ -16,6 +17,7 @@ interface Challenge {
   description: string;
   category: string;
   type: string;
+  cadence: string;
   deadline: string;
   prize_description: string | null;
   prize_amount: number | null;
@@ -23,6 +25,7 @@ interface Challenge {
   thumbnail_url: string | null;
   brand_name: string | null;
   brand_logo_url: string | null;
+  xp_reward: number;
 }
 
 interface Entry {
@@ -56,13 +59,13 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [swipeMode, setSwipeMode] = useState(false);
+  const { canVote, votesRemaining, maxDailyVotes, recordVote, removeVote } = useVoteDailyCap(user?.id);
 
   const loadChallengeData = async () => {
     if (!challengeId) return;
 
     setLoading(true);
     try {
-      // Load challenge
       const { data: challengeData, error: challengeError } = await supabase
         .from('challenges')
         .select('*')
@@ -72,7 +75,6 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
       if (challengeError) throw challengeError;
       setChallenge(challengeData);
 
-      // Load entries with user profiles
       const { data: entriesData, error: entriesError } = await supabase
         .from('challenge_entries')
         .select('*')
@@ -81,7 +83,6 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
 
       if (entriesError) throw entriesError;
 
-      // Get profiles for entries
       const entriesWithProfiles = await Promise.all(
         (entriesData || []).map(async (entry) => {
           const { data: profile } = await supabase
@@ -99,12 +100,10 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
 
       setEntries(entriesWithProfiles);
       
-      // Check if user has submitted
       if (user) {
         const hasEntry = entriesWithProfiles.some(entry => entry.user_id === user.id);
         setHasSubmitted(!!hasEntry);
 
-        // Load user's votes
         const { data: votesData } = await supabase
           .from('challenge_votes')
           .select('entry_id')
@@ -135,9 +134,14 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
 
     const hasVoted = myVotes.has(entryId);
 
+    // Check daily cap for new votes
+    if (!hasVoted && !canVote) {
+      toast.error(`Daily vote limit reached (${maxDailyVotes}/day). Come back tomorrow!`);
+      return;
+    }
+
     try {
       if (hasVoted) {
-        // Remove vote
         const { error } = await supabase
           .from('challenge_votes')
           .delete()
@@ -157,8 +161,8 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
             ? { ...entry, vote_count: entry.vote_count - 1 }
             : entry
         ));
+        removeVote();
       } else {
-        // Add vote
         const { error } = await supabase
           .from('challenge_votes')
           .insert({
@@ -175,6 +179,7 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
             ? { ...entry, vote_count: entry.vote_count + 1 }
             : entry
         ));
+        recordVote();
 
         // Award XP for voting (fire and forget)
         try {
@@ -206,6 +211,8 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
     (new Date(challenge.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
 
+  const cadenceLabel = challenge.cadence === '48hr' ? '48hr Sprint' : challenge.cadence === 'daily' ? 'Daily' : 'Weekly';
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -222,11 +229,17 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
 
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <Badge>{challenge.category}</Badge>
+                  <Badge variant="outline">{cadenceLabel}</Badge>
                   <Badge variant={challenge.type === 'brand' ? 'default' : 'secondary'}>
-                    {challenge.type === 'brand' ? 'Brand Challenge' : 'Platform Challenge'}
+                    {challenge.type === 'brand' ? 'Brand' : 'Platform'}
                   </Badge>
+                  {challenge.xp_reward > 0 && (
+                    <Badge variant="secondary" className="text-primary">
+                      🏆 {challenge.xp_reward} XP
+                    </Badge>
+                  )}
                 </div>
                 <h2 className="text-3xl font-bold mb-2">{challenge.title}</h2>
                 {challenge.brand_name && (
@@ -256,7 +269,7 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
               </div>
               <div className="flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-muted-foreground" />
-                <span>{challenge.prize_description || challenge.budget}</span>
+                <span>{challenge.prize_description || challenge.budget || `${challenge.xp_reward} XP`}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -266,6 +279,18 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
 
             <p className="text-muted-foreground">{challenge.description}</p>
           </div>
+
+          {/* Vote Cap Banner */}
+          {user && (
+            <div className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg bg-muted/50 border">
+              <Info className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground">
+                {canVote
+                  ? `${votesRemaining} votes remaining today (${maxDailyVotes}/day)`
+                  : `Daily vote limit reached (${maxDailyVotes}/day) — come back tomorrow!`}
+              </span>
+            </div>
+          )}
 
           {/* Entries Grid */}
           <div className="space-y-4">
@@ -302,6 +327,7 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
                     entry={entry}
                     hasVoted={myVotes.has(entry.id)}
                     onVote={() => handleVote(entry.id)}
+                    disabled={!myVotes.has(entry.id) && !canVote}
                   />
                 ))}
               </div>

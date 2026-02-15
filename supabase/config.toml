@@ -167,3 +167,6 @@ verify_jwt = false
 
 [functions.send-outreach-email]
 verify_jwt = false
+
+[functions.ai-finance]
+verify_jwt = false

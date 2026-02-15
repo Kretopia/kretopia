@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Bot, Users, Briefcase, ShoppingBag } from "lucide-react";
+import { Bot, Users, Briefcase, ShoppingBag, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 
@@ -15,7 +15,8 @@ const BottomNav = memo(() => {
     { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab" },
     { path: "/desk", icon: Briefcase, label: "Desk", tourId: "projects-tab" },
     { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab" },
-    { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab", comingSoon: true },
+    { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
+    { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
   ];
 
   return (
@@ -26,7 +27,7 @@ const BottomNav = memo(() => {
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
     >
       <div className="flex items-center justify-around px-2 py-2">
-        {navItems.map(({ path, icon: Icon, label, tourId, comingSoon }) => {
+        {navItems.map(({ path, icon: Icon, label, tourId }) => {
           const isActive = location.pathname === path;
           return (
             <Link
@@ -45,12 +46,7 @@ const BottomNav = memo(() => {
               )}
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <div className="relative">
-                <Icon className={cn("h-5 w-5 transition-all duration-200", isActive && "scale-110")} aria-hidden="true" />
-                {comingSoon && (
-                  <span className="absolute -top-1 -right-2 text-[7px] font-bold bg-primary/20 text-primary px-1 rounded-full leading-tight">Soon</span>
-                )}
-              </div>
+              <Icon className={cn("h-5 w-5 transition-all duration-200", isActive && "scale-110")} aria-hidden="true" />
               <span className={cn(
                 "text-[10px] font-medium leading-tight transition-all duration-200",
                 isActive && "font-semibold"

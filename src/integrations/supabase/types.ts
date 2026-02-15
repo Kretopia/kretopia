@@ -1908,8 +1908,17 @@ export type Database = {
       invoices: {
         Row: {
           amount: number
+          brand_address: string | null
+          brand_color: string | null
+          brand_email: string | null
+          brand_logo_url: string | null
+          brand_name: string | null
+          brand_website: string | null
           created_at: string | null
           currency: string
+          discount_amount: number | null
+          discount_type: string | null
+          discount_value: number | null
           due_date: string | null
           id: string
           invoice_number: string
@@ -1919,17 +1928,37 @@ export type Database = {
           milestone_id: string | null
           notes: string | null
           paid_at: string | null
+          payment_details: Json | null
+          payment_link_url: string | null
+          payment_method: string | null
           project_id: string
+          recipient_address: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          reminder_count: number | null
+          reminder_sent_at: string | null
+          sent_at: string | null
           status: string
           tax_amount: number | null
           tax_rate: number | null
+          terms_conditions: string | null
           total_amount: number | null
           updated_at: string | null
+          viewed_at: string | null
         }
         Insert: {
           amount: number
+          brand_address?: string | null
+          brand_color?: string | null
+          brand_email?: string | null
+          brand_logo_url?: string | null
+          brand_name?: string | null
+          brand_website?: string | null
           created_at?: string | null
           currency?: string
+          discount_amount?: number | null
+          discount_type?: string | null
+          discount_value?: number | null
           due_date?: string | null
           id?: string
           invoice_number: string
@@ -1939,17 +1968,37 @@ export type Database = {
           milestone_id?: string | null
           notes?: string | null
           paid_at?: string | null
+          payment_details?: Json | null
+          payment_link_url?: string | null
+          payment_method?: string | null
           project_id: string
+          recipient_address?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          reminder_count?: number | null
+          reminder_sent_at?: string | null
+          sent_at?: string | null
           status?: string
           tax_amount?: number | null
           tax_rate?: number | null
+          terms_conditions?: string | null
           total_amount?: number | null
           updated_at?: string | null
+          viewed_at?: string | null
         }
         Update: {
           amount?: number
+          brand_address?: string | null
+          brand_color?: string | null
+          brand_email?: string | null
+          brand_logo_url?: string | null
+          brand_name?: string | null
+          brand_website?: string | null
           created_at?: string | null
           currency?: string
+          discount_amount?: number | null
+          discount_type?: string | null
+          discount_value?: number | null
           due_date?: string | null
           id?: string
           invoice_number?: string
@@ -1959,12 +2008,23 @@ export type Database = {
           milestone_id?: string | null
           notes?: string | null
           paid_at?: string | null
+          payment_details?: Json | null
+          payment_link_url?: string | null
+          payment_method?: string | null
           project_id?: string
+          recipient_address?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          reminder_count?: number | null
+          reminder_sent_at?: string | null
+          sent_at?: string | null
           status?: string
           tax_amount?: number | null
           tax_rate?: number | null
+          terms_conditions?: string | null
           total_amount?: number | null
           updated_at?: string | null
+          viewed_at?: string | null
         }
         Relationships: [
           {

@@ -126,7 +126,7 @@ ${inviteUrl}`;
             <div className="rounded-lg bg-gradient-to-r from-primary/10 to-secondary/10 p-3 border border-primary/20">
               <p className="text-xs font-medium flex items-center gap-1">
                 <Gift className="h-3 w-3 text-primary" />
-                Earn <span className="text-primary font-bold">+50 XP</span> for each person who joins!
+                Earn <span className="text-primary font-bold">+200 XP</span> for each person who joins!
               </p>
             </div>
 

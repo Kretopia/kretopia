@@ -48,12 +48,18 @@ export default function PurchaseSuccess() {
     try {
       setLoading(true);
 
-      const { data, error: completeError } = await supabase.functions.invoke(
-        'complete-product-purchase',
-        { body: { sessionId, productId } }
+      // Call edge function without auth - it uses service role key and validates via Stripe session
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/complete-product-purchase`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ sessionId, productId }),
+        }
       );
-
-      if (completeError) throw completeError;
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to complete purchase');
 
       if (data?.downloadUrls) {
         setDownloadUrls(data.downloadUrls);

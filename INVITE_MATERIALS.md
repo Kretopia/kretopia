@@ -4,10 +4,10 @@ Use these templates when inviting creatives to join ThriveIN.
 
 ---
 
-## 🔗 Your Invite Link
+## 🔗 Your Personal Invite Link
 
 ```
-https://thrivein.io/auth?invite=ThriveOGs
+https://thrivein.io/join/ThriveOGs
 ```
 
 ---

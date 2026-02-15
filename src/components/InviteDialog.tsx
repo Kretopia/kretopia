@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Copy, CheckCircle2, Target, QrCode } from "lucide-react";
+import { Copy, CheckCircle2, Target, QrCode, Link2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
@@ -21,9 +21,14 @@ interface InviteDialogProps {
 
 export const InviteDialog = ({ open, onOpenChange }: InviteDialogProps) => {
   const [inviteCodes, setInviteCodes] = useState<any[]>([]);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [showQRCode, setShowQRCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
   const { toast } = useToast();
+
+  const primaryInvite = inviteCodes.find(i => i.current_uses < i.max_uses) || inviteCodes[0];
+  const personalLink = primaryInvite ? `https://www.thrivein.io/join/${primaryInvite.invite_code}` : null;
+  const totalUsed = inviteCodes.reduce((sum: number, i: any) => sum + (i.current_uses || 0), 0);
+  const totalSlots = inviteCodes.reduce((sum: number, i: any) => sum + (i.max_uses || 0), 0);
 
   useEffect(() => {
     if (open) {
@@ -46,22 +51,22 @@ export const InviteDialog = ({ open, onOpenChange }: InviteDialogProps) => {
     setInviteCodes(data || []);
   };
 
-  const copyInviteCode = async (code: string) => {
+  const copyLink = async () => {
+    if (!personalLink) return;
     try {
-      const inviteUrl = `https://www.thrivein.io/auth?invite=${code}`;
       const inviteMessage = `🎨 Join my creative circle on ThriveIN!
 
 Find your perfect collaborator with AI-powered matching. Swipe, match, and create together.
 
-${inviteUrl}`;
+${personalLink}`;
       
       await navigator.clipboard.writeText(inviteMessage);
-      setCopiedCode(code);
+      setCopied(true);
       toast({
         title: "Copied!",
-        description: "Invite link copied to clipboard"
+        description: "Your personal invite link copied to clipboard"
       });
-      setTimeout(() => setCopiedCode(null), 2000);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       toast({
         title: "Error",
@@ -75,79 +80,79 @@ ${inviteUrl}`;
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Invite Link</DialogTitle>
+          <DialogTitle>Share Your Invite Link</DialogTitle>
           <DialogDescription>
-            Share these codes to invite people to ThriveIN
+            Share your personal link to invite creatives and earn +200 XP per signup
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 mt-4">
-          {inviteCodes.length === 0 ? (
+        <div className="space-y-4 mt-4">
+          {!personalLink ? (
             <Card className="p-8 text-center">
               <Target className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">No invite codes available</p>
+              <p className="text-muted-foreground">No invite link available yet</p>
             </Card>
           ) : (
-            inviteCodes.map((invite) => (
-              <Card key={invite.id} className="p-4">
+            <>
+              {/* Personal Link Card */}
+              <Card className="p-4">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <code className="text-lg font-mono font-semibold bg-secondary px-3 py-1 rounded">
-                          {invite.invite_code}
-                        </code>
-                        <Badge variant="outline">
-                          {invite.current_uses}/{invite.max_uses} used
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Created {new Date(invite.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowQRCode(showQRCode === invite.invite_code ? null : invite.invite_code)}
-                        className="gap-2"
-                      >
-                        <QrCode className="h-4 w-4" />
-                        QR
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyInviteCode(invite.invite_code)}
-                        className="gap-2"
-                      >
-                        {copiedCode === invite.invite_code ? (
-                          <CheckCircle2 className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                        {copiedCode === invite.invite_code ? 'Copied!' : 'Copy'}
-                      </Button>
-                    </div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Link2 className="h-3 w-3" />
+                    Your personal invite link
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <code className="text-sm font-mono bg-secondary/50 px-3 py-2 rounded flex-1 truncate">
+                      {personalLink.replace('https://', '')}
+                    </code>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowQRCode(!showQRCode)}
+                      className="gap-2 flex-1"
+                    >
+                      <QrCode className="h-4 w-4" />
+                      QR Code
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={copyLink}
+                      className="gap-2 flex-1"
+                    >
+                      {copied ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                      {copied ? 'Copied!' : 'Copy Link'}
+                    </Button>
                   </div>
                   
-                  {showQRCode === invite.invite_code && (
+                  {showQRCode && (
                     <div className="flex flex-col items-center gap-3 pt-3 border-t border-border">
                       <div className="bg-white p-4 rounded-lg">
                         <QRCodeSVG
-                          value={`https://www.thrivein.io/auth?invite=${invite.invite_code}`}
+                          value={personalLink}
                           size={200}
                           level="H"
                           includeMargin
                         />
                       </div>
                       <p className="text-xs text-center text-muted-foreground">
-                        Scan to join ThriveIN with this invite code
+                        Scan to join ThriveIN via your link
                       </p>
                     </div>
                   )}
                 </div>
               </Card>
-            ))
+
+              {/* Stats */}
+              <div className="flex items-center justify-between text-sm px-1">
+                <span className="text-muted-foreground">Signups from your link</span>
+                <Badge variant="secondary">{totalUsed} / {totalSlots}</Badge>
+              </div>
+            </>
           )}
         </div>
       </DialogContent>

@@ -39,7 +39,9 @@ const QUICK_SKILLS = [
   "Photography", "Videography", "Music Production", "Graphic Design", "UI/UX Design",
   "Video Editing", "Audio Engineering", "Content Creation", "Social Media", "Copywriting",
   "Illustration", "3D Modeling", "Motion Graphics", "Animation", "Web Development",
-  "Film Production", "Sound Design", "Brand Design", "Art Direction", "Creative Direction"
+  "Film Production", "Sound Design", "Brand Design", "Art Direction", "Creative Direction",
+  "Dance", "Choreography", "Singing", "Rapping", "Instrument Performance", "DJing",
+  "Songwriting", "Acting", "Voice Acting", "Styling", "Makeup Artistry", "Set Design"
 ];
 
 export default function Onboarding() {

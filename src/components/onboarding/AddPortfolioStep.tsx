@@ -40,6 +40,14 @@ const CATEGORIES = [
   "Photography",
   "Design",
   "Audio Production",
+  "Dance & Choreography",
+  "Singing & Vocals",
+  "Rap & Hip-Hop",
+  "Instrument Performance",
+  "DJing & Live Set",
+  "Acting & Theatre",
+  "Fashion & Styling",
+  "Podcast",
   "Other"
 ];
 

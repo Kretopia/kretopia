@@ -17,7 +17,7 @@ export const parseMediaUrl = (url: string): MediaInfo | null => {
       platform: 'youtube',
       id,
       embedUrl: `https://www.youtube.com/embed/${id}`,
-      thumbnailUrl: `https://img.youtube.com/vi/${id}/maxresdefault.jpg`
+      thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`
     };
   }
 

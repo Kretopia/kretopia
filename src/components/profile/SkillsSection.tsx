@@ -38,7 +38,12 @@ const SKILL_OPTIONS: Record<string, string[]> = {
   ],
   "Audio & Music": [
     "Music Production", "Audio Engineering", "Sound Design", "Mixing & Mastering",
-    "Composition", "Beat Making", "Podcast Production", "Voiceover"
+    "Composition", "Beat Making", "Podcast Production", "Voiceover",
+    "Singing", "Rapping", "Songwriting", "DJing"
+  ],
+  "Performance & Movement": [
+    "Dance", "Choreography", "Acting", "Voice Acting",
+    "Instrument Performance", "Live Performance", "Stage Direction", "Improvisation"
   ],
   "Design": [
     "Graphic Design", "UI/UX Design", "Brand Design", "Logo Design",
@@ -51,6 +56,10 @@ const SKILL_OPTIONS: Record<string, string[]> = {
   "Content & Social": [
     "Content Creation", "Social Media Management", "Copywriting", "Influencer Marketing",
     "YouTube Content", "TikTok Content", "Instagram Strategy", "Community Management"
+  ],
+  "Styling & Production": [
+    "Styling", "Makeup Artistry", "Hair Styling", "Set Design",
+    "Wardrobe Design", "Prop Design", "Event Production"
   ],
   "Creative Direction": [
     "Creative Direction", "Art Direction", "Brand Strategy", "Campaign Development",

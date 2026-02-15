@@ -17,9 +17,10 @@ interface ChallengeEntryCardProps {
   };
   hasVoted: boolean;
   onVote: () => void;
+  disabled?: boolean;
 }
 
-export const ChallengeEntryCard = ({ entry, hasVoted, onVote }: ChallengeEntryCardProps) => {
+export const ChallengeEntryCard = ({ entry, hasVoted, onVote, disabled }: ChallengeEntryCardProps) => {
   return (
     <div className="group relative rounded-lg overflow-hidden border bg-card hover-lift">
       <div className="aspect-square relative overflow-hidden">
@@ -51,6 +52,7 @@ export const ChallengeEntryCard = ({ entry, hasVoted, onVote }: ChallengeEntryCa
             size="sm"
             variant={hasVoted ? "default" : "outline"}
             onClick={onVote}
+            disabled={disabled && !hasVoted}
             className="gap-1"
           >
             <Heart className={`h-4 w-4 ${hasVoted ? 'fill-current' : ''}`} />

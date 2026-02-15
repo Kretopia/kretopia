@@ -35,12 +35,7 @@ serve(async (req) => {
     // Fetch invoice details
     const { data: invoice, error: invoiceError } = await supabaseClient
       .from("invoices")
-      .select(`
-        *,
-        issuer:profiles!invoices_issued_by_fkey(full_name, email),
-        recipient:profiles!invoices_issued_to_fkey(full_name, email),
-        project:projects(title)
-      `)
+      .select("*")
       .eq("id", invoiceId)
       .single();
 
@@ -84,18 +79,17 @@ serve(async (req) => {
           <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
             <div>
               <h3 style="margin: 0 0 10px 0; color: #111827;">From</h3>
-              <p style="margin: 0; color: #6b7280;">${invoice.issuer.full_name}</p>
-              <p style="margin: 5px 0 0 0; color: #6b7280;">${invoice.issuer.email}</p>
+              <p style="margin: 0; color: #6b7280;">${invoice.brand_name || 'N/A'}</p>
+              <p style="margin: 5px 0 0 0; color: #6b7280;">${invoice.brand_email || ''}</p>
             </div>
             <div style="text-align: right;">
               <h3 style="margin: 0 0 10px 0; color: #111827;">To</h3>
-              <p style="margin: 0; color: #6b7280;">${invoice.recipient.full_name}</p>
+              <p style="margin: 0; color: #6b7280;">${invoice.recipient_name || 'N/A'}</p>
               <p style="margin: 5px 0 0 0; color: #6b7280;">${recipientEmail}</p>
             </div>
           </div>
 
           <div style="margin-bottom: 30px;">
-            <p style="margin: 5px 0;"><strong>Project:</strong> ${invoice.project.title}</p>
             ${invoice.due_date ? `<p style="margin: 5px 0;"><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</p>` : ''}
             <p style="margin: 5px 0;"><strong>Status:</strong> <span style="text-transform: capitalize; padding: 4px 8px; background-color: #dbeafe; color: #1e40af; border-radius: 4px;">${invoice.status}</span></p>
           </div>
@@ -155,7 +149,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: "ThriveIN <noreply@thrivein.io>",
         to: [recipientEmail],
-        subject: `Invoice ${invoice.invoice_number} from ${invoice.issuer.full_name}`,
+        subject: `Invoice ${invoice.invoice_number} from ${invoice.brand_name || 'ThriveIN'}`,
         html: emailHtml,
       }),
     });

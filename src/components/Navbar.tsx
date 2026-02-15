@@ -122,12 +122,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
         {user && !isLandingPage && (
           <div className="hidden lg:flex items-center gap-1">
             {[
-              { path: "/circle", icon: Users, label: "Circle", comingSoon: false },
-              { path: "/profile", icon: User, label: "Profile", comingSoon: false },
-              { path: "/market", icon: ShoppingBag, label: "Market", comingSoon: false },
-              { path: "/desk", icon: Briefcase, label: "Desk", comingSoon: false },
-              { path: "/thrive-ai", icon: Bot, label: "ThriveAI", comingSoon: true },
-            ].map(({ path, icon: Icon, label, comingSoon }) => {
+              { path: "/circle", icon: Users, label: "Circle" },
+              { path: "/profile", icon: User, label: "Profile" },
+              { path: "/market", icon: ShoppingBag, label: "Market" },
+              { path: "/desk", icon: Briefcase, label: "Desk" },
+              { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
+            ].map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
               return (
                 <Link
@@ -142,9 +142,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 >
                   <Icon className="h-4 w-4" />
                   {label}
-                  {comingSoon && (
-                    <span className="text-[9px] font-semibold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full leading-none">Soon</span>
-                  )}
                 </Link>
               );
             })}

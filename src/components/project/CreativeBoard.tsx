@@ -34,12 +34,12 @@ interface CreativeBoardProps {
 }
 
 const STICKY_COLORS = [
-  { label: "Yellow", value: "#FEF3C7" },
-  { label: "Pink", value: "#FCE7F3" },
-  { label: "Blue", value: "#DBEAFE" },
-  { label: "Green", value: "#D1FAE5" },
-  { label: "Purple", value: "#EDE9FE" },
-  { label: "Orange", value: "#FFEDD5" },
+  { label: "Yellow", value: "#FACC15" },
+  { label: "Pink", value: "#F472B6" },
+  { label: "Blue", value: "#60A5FA" },
+  { label: "Green", value: "#34D399" },
+  { label: "Purple", value: "#A78BFA" },
+  { label: "Orange", value: "#FB923C" },
 ];
 
 export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) {

@@ -113,6 +113,8 @@ const ProfileContent = () => {
     avatar_url: "",
     company_size: "",
     collab_intent: "seeking_collaborators",
+    company_tagline: "",
+    cover_image_url: "",
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -160,6 +162,8 @@ const ProfileContent = () => {
       company_address: formData.location,
       company_size: formData.company_size,
       company_logo_url: formData.avatar_url || editForm.avatar_url,
+      company_tagline: formData.company_tagline || null,
+      cover_image_url: formData.cover_image_url || null,
       full_name: formData.full_name,
     } : {
       full_name: formData.full_name,
@@ -289,6 +293,7 @@ const ProfileContent = () => {
           reviews={companyReviews}
           partnerDiscounts={partnerDiscounts}
           isOwnProfile={true}
+          isPro={userTier === 'pro'}
           onRefresh={fetchData}
           onEdit={() => {
             setEditForm({
@@ -299,6 +304,8 @@ const ProfileContent = () => {
               avatar_url: profile.company_logo_url || profile.avatar_url || "",
               company_size: profile.company_size || "",
               collab_intent: "seeking_collaborators",
+              company_tagline: profile.company_tagline || "",
+              cover_image_url: profile.cover_image_url || "",
             });
             setIsEditOpen(true);
           }}
@@ -372,6 +379,8 @@ const ProfileContent = () => {
               avatar_url: profile.avatar_url || "",
               company_size: profile.company_size || "",
               collab_intent: (profile as any).collab_intent || "seeking_collaborators",
+              company_tagline: "",
+              cover_image_url: "",
             });
             setIsEditOpen(true);
           }}

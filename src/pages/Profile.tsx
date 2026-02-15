@@ -149,6 +149,7 @@ const ProfileContent = () => {
 
     // Use directly passed data if available (from inner form), fallback to editForm state
     const formData = directData || editForm;
+    console.log('[Profile] handleEditSave called with:', formData);
 
     const isCompany = profile?.account_type === 'company';
     

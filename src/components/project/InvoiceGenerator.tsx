@@ -19,7 +19,7 @@ import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm"
 import { InvoicePreview } from "./invoice/InvoicePreview";
 
 interface InvoiceGeneratorProps {
-  projectId: string;
+  projectId?: string;
 }
 
 interface LineItem {
@@ -72,21 +72,29 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
 
   useEffect(() => {
     fetchInvoices();
-    fetchCollaborators();
+    if (projectId) fetchCollaborators();
   }, [projectId]);
 
   const fetchInvoices = async () => {
     try {
-      const { data: invoicesData, error } = await supabase
+      let query = supabase
         .from("invoices")
         .select("*")
-        .eq("project_id", projectId)
         .order("created_at", { ascending: false });
+
+      if (projectId) {
+        query = query.eq("project_id", projectId);
+      } else {
+        // Standalone invoices: fetch all invoices by this user (with or without project)
+        query = query.eq("issued_by", user!.id);
+      }
+
+      const { data: invoicesData, error } = await query;
 
       if (error) throw error;
 
       if (invoicesData && invoicesData.length > 0) {
-        const userIds = [...new Set([...invoicesData.map(inv => inv.issued_to), ...invoicesData.map(inv => inv.issued_by)])];
+        const userIds = [...new Set([...invoicesData.map(inv => inv.issued_to).filter(Boolean), ...invoicesData.map(inv => inv.issued_by)])];
         const { data: profilesData } = await supabase
           .from("profiles")
           .select("user_id, full_name, avatar_url")
@@ -194,14 +202,14 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       const total = calculateTotal();
       const tempInvoiceNumber = `INV-${new Date().getFullYear()}-${Date.now()}`;
 
-      // Find the issued_to user id from collaborators or use the first collaborator
-      const issuedTo = collaborators.find(c => c.full_name === recipientName)?.user_id || collaborators[0]?.user_id || user?.id!;
+      // Find the issued_to user id from collaborators or leave null for external clients
+      const issuedTo = collaborators.find(c => c.full_name === recipientName)?.user_id || collaborators[0]?.user_id || null;
 
       const invoiceData: any = {
         invoice_number: tempInvoiceNumber,
-        project_id: projectId,
+        project_id: projectId || null,
         issued_by: user?.id!,
-        issued_to: issuedTo,
+        issued_to: issuedTo || user?.id!,
         amount: subtotal,
         tax_rate: parseFloat(taxRate),
         tax_amount: tax,
@@ -299,14 +307,14 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         .from("payment_history")
         .insert({
           user_id: user!.id,
-          project_id: projectId,
+          project_id: invoice.project_id || projectId || null,
           invoice_id: invoice.id,
           amount: Number(invoice.total_amount || invoice.amount || 0),
           currency: invoice.currency || "USD",
           type: "payment_received",
           status: "completed",
           description: `Invoice ${invoice.invoice_number} — ${invoice.recipient_name || "Client"}`,
-        });
+        } as any);
       if (paymentError) console.error("Payment history error:", paymentError);
 
       toast.success("Invoice marked as paid!");
@@ -582,17 +590,15 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                       <div className="grid grid-cols-3 gap-3">
                         <div>
                           <Label className="text-xs">Client Name *</Label>
-                          {collaborators.length > 0 ? (
-                            <Select value={recipientName} onValueChange={setRecipientName}>
-                              <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select client" /></SelectTrigger>
-                              <SelectContent>
-                                {collaborators.map((c) => (
-                                  <SelectItem key={c.user_id} value={c.full_name}>{c.full_name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <Input className="h-8 text-sm" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Client name" />
+                          <Input className="h-8 text-sm" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Client or company name" />
+                          {collaborators.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {collaborators.map((c) => (
+                                <button key={c.user_id} type="button" className="text-[10px] px-1.5 py-0.5 rounded bg-muted hover:bg-accent text-muted-foreground" onClick={() => setRecipientName(c.full_name)}>
+                                  {c.full_name}
+                                </button>
+                              ))}
+                            </div>
                           )}
                         </div>
                         <div>

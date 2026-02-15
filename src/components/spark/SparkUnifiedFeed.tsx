@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { FeedPost } from "@/components/feed/FeedPost";
 import { Loader2, Flame } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 interface SparkUnifiedFeedProps {
   currentUserId: string;
@@ -130,35 +129,14 @@ export const SparkUnifiedFeed = ({ currentUserId, categoryFilter }: SparkUnified
   }
 
   return (
-    <div className="space-y-4">
-      {posts.map((post) => {
-        const typeInfo = POST_TYPE_LABELS[post.post_type] || POST_TYPE_LABELS.post;
-        const sourceInfo = post.source_type ? SOURCE_TYPE_LABELS[post.source_type] : null;
-
-        return (
-          <div key={post.id}>
-            {/* Activity / feedback badge */}
-            {(typeInfo.label || sourceInfo) && (
-              <div className="flex items-center gap-2 mb-2 ml-1">
-                {sourceInfo && (
-                  <Badge variant="outline" className={`text-[10px] ${sourceInfo.color}`}>
-                    {sourceInfo.label}
-                  </Badge>
-                )}
-                {typeInfo.label && (
-                  <Badge variant="secondary" className="text-[10px]">
-                    {typeInfo.emoji} {typeInfo.label}
-                  </Badge>
-                )}
-              </div>
-            )}
-            <FeedPost
-              post={post}
-              onDelete={fetchPosts}
-            />
-          </div>
-        );
-      })}
+    <div className="space-y-3">
+      {posts.map((post) => (
+        <FeedPost
+          key={post.id}
+          post={post}
+          onDelete={fetchPosts}
+        />
+      ))}
     </div>
   );
 };

@@ -9,7 +9,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft } from "lucide-react";
+import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,6 +74,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [showPassword, setShowPassword] = useState(false);
   
   // PWA Install
@@ -114,6 +116,19 @@ const Settings = () => {
     };
     trackView();
   }, []);
+
+  // Fetch account type
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("account_type")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.account_type) setAccountType(data.account_type);
+      });
+  }, [user?.id]);
 
   // PWA install detection
   useEffect(() => {
@@ -426,6 +441,22 @@ const Settings = () => {
         </div>
 
         <div className="space-y-6">
+          {/* Account Type Switcher */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ArrowRightLeft className="h-5 w-5" />
+                Account Type
+              </CardTitle>
+              <CardDescription>
+                Switch between personal creator and company/brand profiles
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AccountSwitcher currentAccountType={accountType} variant="settings" />
+            </CardContent>
+          </Card>
+
           {/* Password & Security */}
           <Card>
             <CardHeader>

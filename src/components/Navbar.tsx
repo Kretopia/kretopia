@@ -198,6 +198,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     </Button>
 
                     <Separator className="my-3" />
+
+                    {/* Explore */}
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Explore</p>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/market")}
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      Marketplace
+                    </Button>
+
+                    <Separator className="my-3" />
                     
                     {/* Wallet & Payments */}
                     <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Wallet & Payments</p>

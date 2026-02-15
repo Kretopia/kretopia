@@ -101,7 +101,7 @@ interface ProfileEditDialogProps {
     collab_intent: string;
   };
   onFormChange: (updater: any | ((prev: any) => any)) => void;
-  onSave: () => void;
+  onSave: (data?: Record<string, any>) => void;
   onQuickFill: () => void;
 }
 
@@ -386,8 +386,7 @@ export const ProfileEditDialog = ({
       ...data,
     };
     onFormChange(updated);
-    // Pass data directly to onSave to avoid stale state issues
-    (onSave as any)(updated);
+    onSave(updated);
   };
 
   return (

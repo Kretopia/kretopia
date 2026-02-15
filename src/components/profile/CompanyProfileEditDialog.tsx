@@ -21,7 +21,7 @@ interface CompanyProfileEditDialogProps {
     company_size: string;
   };
   onFormChange: (form: any) => void;
-  onSave: () => void;
+  onSave: (data?: Record<string, any>) => void;
   onAvatarUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isUploadingAvatar: boolean;
   galleryPreviews: string[];
@@ -213,8 +213,7 @@ export const CompanyProfileEditDialog = ({
   const handleSave = (data: { full_name: string; role: string; bio: string; location: string; company_size: string }) => {
     const updated = { ...editForm, ...data };
     onFormChange(updated);
-    // Pass data directly to onSave to avoid stale state issues
-    (onSave as any)(updated);
+    onSave(updated);
   };
 
   return (

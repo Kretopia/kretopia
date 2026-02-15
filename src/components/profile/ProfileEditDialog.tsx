@@ -381,11 +381,13 @@ export const ProfileEditDialog = ({
     location: string;
     collab_intent: string;
   }) => {
-    onFormChange({
+    const updated = {
       ...editForm,
       ...data,
-    });
-    setTimeout(() => onSave(), 50);
+    };
+    onFormChange(updated);
+    // Pass data directly to onSave to avoid stale state issues
+    (onSave as any)(updated);
   };
 
   return (

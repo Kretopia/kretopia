@@ -144,26 +144,29 @@ const ProfileContent = () => {
     });
   };
 
-  const handleEditSave = async () => {
+  const handleEditSave = async (directData?: Record<string, any>) => {
     if (!user) return;
+
+    // Use directly passed data if available (from inner form), fallback to editForm state
+    const formData = directData || editForm;
 
     const isCompany = profile?.account_type === 'company';
     
     let updateData = isCompany ? {
-      company_name: editForm.full_name,
-      company_industry: editForm.role,
-      company_about: editForm.bio,
-      company_address: editForm.location,
-      company_size: editForm.company_size,
-      company_logo_url: editForm.avatar_url,
-      full_name: editForm.full_name,
+      company_name: formData.full_name,
+      company_industry: formData.role,
+      company_about: formData.bio,
+      company_address: formData.location,
+      company_size: formData.company_size,
+      company_logo_url: formData.avatar_url || editForm.avatar_url,
+      full_name: formData.full_name,
     } : {
-      full_name: editForm.full_name,
-      role: editForm.role,
-      bio: editForm.bio,
-      location: editForm.location,
-      avatar_url: editForm.avatar_url,
-      collab_intent: editForm.collab_intent,
+      full_name: formData.full_name,
+      role: formData.role,
+      bio: formData.bio,
+      location: formData.location,
+      avatar_url: formData.avatar_url || editForm.avatar_url,
+      collab_intent: formData.collab_intent,
     };
 
     // Upload gallery images for company accounts

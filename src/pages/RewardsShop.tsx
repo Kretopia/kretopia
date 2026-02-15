@@ -160,8 +160,11 @@ const RewardsShop = () => {
 
   const buyCustomFrame = async () => {
     if (!user) return;
-    await deductXP(1500);
-    await recordActivity("custom_frame_purchased", 1500, "Purchased Custom Profile Frame");
+    await supabase
+      .from("profiles")
+      .update({ xp: userXP - 1500, profile_frame: "gradient_gold" })
+      .eq("user_id", user.id);
+    await recordActivity("custom_frame_purchased", 1500, "Purchased Custom Profile Frame (Gold)");
   };
 
   // --- Gift XP ---

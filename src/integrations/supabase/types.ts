@@ -3813,6 +3813,7 @@ export type Database = {
           portfolio_verified: boolean | null
           press_links: Json | null
           professional_skills: Json | null
+          profile_frame: string | null
           profile_source: string | null
           project_credits: number | null
           rate_range: string | null
@@ -3931,6 +3932,7 @@ export type Database = {
           portfolio_verified?: boolean | null
           press_links?: Json | null
           professional_skills?: Json | null
+          profile_frame?: string | null
           profile_source?: string | null
           project_credits?: number | null
           rate_range?: string | null
@@ -4049,6 +4051,7 @@ export type Database = {
           portfolio_verified?: boolean | null
           press_links?: Json | null
           professional_skills?: Json | null
+          profile_frame?: string | null
           profile_source?: string | null
           project_credits?: number | null
           rate_range?: string | null

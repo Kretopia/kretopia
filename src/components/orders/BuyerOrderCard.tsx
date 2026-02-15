@@ -51,6 +51,7 @@ export function BuyerOrderCard({ order, onAction }: BuyerOrderCardProps) {
   const [confirming, setConfirming] = useState(false);
   const [disputing, setDisputing] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
+  const [downloading, setDownloading] = useState(false);
 
   const handleConfirmDelivery = async () => {
     setConfirming(true);
@@ -82,6 +83,39 @@ export function BuyerOrderCard({ order, onAction }: BuyerOrderCardProps) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setDisputing(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Please log in");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-download-urls`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ orderId: order.id }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to get download links');
+
+      if (data.downloadUrls?.length) {
+        data.downloadUrls.forEach((url: string) => window.open(url, '_blank'));
+      } else {
+        toast({ title: "No files available", variant: "destructive" });
+      }
+    } catch (err: any) {
+      toast({ title: "Download error", description: err.message, variant: "destructive" });
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -161,12 +195,10 @@ export function BuyerOrderCard({ order, onAction }: BuyerOrderCardProps) {
         <div className="flex sm:flex-col gap-2 shrink-0">
           {/* Digital downloads */}
           {order.listing_type === "digital" && order.download_urls?.length ? (
-            order.download_urls.map((url, i) => (
-              <Button key={i} size="sm" variant="outline" onClick={() => window.open(url, "_blank")} className="gap-1">
-                <Download className="h-3.5 w-3.5" />
-                {order.download_urls!.length > 1 ? `File ${i + 1}` : "Download"}
-              </Button>
-            ))
+            <Button size="sm" variant="outline" onClick={handleDownload} disabled={downloading} className="gap-1">
+              <Download className="h-3.5 w-3.5" />
+              {downloading ? "Loading..." : order.download_urls.length > 1 ? `Download (${order.download_urls.length} files)` : "Download"}
+            </Button>
           ) : null}
 
           {/* Confirm delivery */}

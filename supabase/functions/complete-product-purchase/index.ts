@@ -136,24 +136,26 @@ serve(async (req) => {
     const deliveryStatus = listingType === 'digital' ? 'delivered' : 'pending';
     const orderStatus = listingType === 'digital' ? 'completed' : 'escrow';
 
-    // For digital products, generate signed download URLs
+    // Store raw file paths (NOT signed URLs) — signed URLs are generated on demand
+    const filePaths: string[] = product.file_urls || [];
+
+    // Generate temporary signed URLs for immediate download on success page
     let downloadUrls: string[] = [];
-    if (listingType === 'digital' && product.file_urls?.length > 0) {
-      for (const filePath of product.file_urls) {
+    if (listingType === 'digital' && filePaths.length > 0) {
+      for (const filePath of filePaths) {
+        if (filePath.startsWith('http')) {
+          downloadUrls.push(filePath);
+          continue;
+        }
         const { data: signedData } = await supabaseClient
           .storage
           .from('product-files')
-          .createSignedUrl(filePath, 60 * 60 * 24 * 7);
+          .createSignedUrl(filePath, 60 * 60); // 1 hour expiry
         
         if (signedData?.signedUrl) {
           downloadUrls.push(signedData.signedUrl);
         }
       }
-    }
-
-    // Also include legacy file_urls (public URLs from old system)
-    if (listingType === 'digital' && (!downloadUrls.length) && product.file_urls?.length > 0) {
-      downloadUrls = product.file_urls;
     }
 
     // Create marketplace order
@@ -172,7 +174,7 @@ serve(async (req) => {
         delivery_status: deliveryStatus,
         delivered_at: listingType === 'digital' ? new Date().toISOString() : null,
         auto_release_at: autoReleaseDate.toISOString(),
-        download_urls: downloadUrls.length > 0 ? downloadUrls : null,
+        download_urls: filePaths.length > 0 ? filePaths : null,
       })
       .select()
       .single();
@@ -195,7 +197,7 @@ serve(async (req) => {
         currency: product.currency || 'usd',
         payment_status: 'completed',
         payment_intent_id: session.payment_intent as string,
-        download_urls: downloadUrls.length > 0 ? downloadUrls : product.file_urls,
+        download_urls: filePaths.length > 0 ? filePaths : null,
       });
 
     // Update download count for digital

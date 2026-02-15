@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (profile) {
       // User is "subscribed" only if actively paying
-      const isSubscribed = profile.subscription_status === 'active';
+      const isSubscribed = profile.subscription_status === 'active' || profile.subscription_status === 'trialing';
       
       return {
         tier: isSubscribed ? (profile.subscription_tier || 'pro') : 'free',

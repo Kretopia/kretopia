@@ -1631,6 +1631,83 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          currency: string
+          date: string
+          id: string
+          is_recurring: boolean | null
+          notes: string | null
+          payment_method: string | null
+          project_id: string | null
+          receipt_url: string | null
+          recurring_interval: string | null
+          status: string
+          subcategory: string | null
+          tags: string[] | null
+          tax_deductible: boolean | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          vendor: string | null
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string | null
+          currency?: string
+          date?: string
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          payment_method?: string | null
+          project_id?: string | null
+          receipt_url?: string | null
+          recurring_interval?: string | null
+          status?: string
+          subcategory?: string | null
+          tags?: string[] | null
+          tax_deductible?: boolean | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          currency?: string
+          date?: string
+          id?: string
+          is_recurring?: boolean | null
+          notes?: string | null
+          payment_method?: string | null
+          project_id?: string | null
+          receipt_url?: string | null
+          recurring_interval?: string | null
+          status?: string
+          subcategory?: string | null
+          tags?: string[] | null
+          tax_deductible?: boolean | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feed_comments: {
         Row: {
           content: string

@@ -48,12 +48,23 @@ export default function PurchaseSuccess() {
     try {
       setLoading(true);
 
-      // Call edge function without auth - it uses service role key and validates via Stripe session
+      // Get auth session for authenticated call
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token;
+      
+      if (!authToken) {
+        throw new Error("Please log in to complete your purchase");
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/complete-product-purchase`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          headers: { 
+            'Content-Type': 'application/json', 
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${authToken}`,
+          },
           body: JSON.stringify({ sessionId, productId }),
         }
       );

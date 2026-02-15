@@ -21,6 +21,34 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Authenticate the user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const anonClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      logStep("Auth failed", { error: claimsError?.message });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const authenticatedUserId = claimsData.claims.sub;
+    logStep("User authenticated", { userId: authenticatedUserId });
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -61,6 +89,15 @@ serve(async (req) => {
     const buyerId = session.metadata?.buyer_id;
     const sellerId = session.metadata?.seller_id || product.user_id;
     const buyerEmail = session.customer_details?.email || session.customer_email;
+
+    // Verify the authenticated user owns this purchase
+    if (buyerId && buyerId !== authenticatedUserId) {
+      logStep("Ownership mismatch", { buyerId, authenticatedUserId });
+      return new Response(JSON.stringify({ error: 'Unauthorized: session does not belong to you' }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     logStep("Buyer info", { buyerId, buyerEmail, listingType });
 

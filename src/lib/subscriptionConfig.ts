@@ -6,6 +6,7 @@ export const SUBSCRIPTION_PRODUCTS = {
     name: "Pro",
     tier: "pro" as const,
     price: 12,
+    trialDays: 7,
     priceId: "price_1SZYrBJvOS7zG18hDW2eE4NG",
     productId: "prod_TWc5tpvPKjy8hG",
     features: [

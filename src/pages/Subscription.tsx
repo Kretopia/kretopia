@@ -173,6 +173,9 @@ export default function Subscription() {
         <p className="text-xl text-muted-foreground">
           Unlock the full potential of ThriveIN
         </p>
+        <p className="text-sm text-primary font-medium mt-2">
+          🎉 Start with a 7-day free trial — no commitment
+        </p>
         
         {currentTier !== "free" && subscriptionStatus === "active" && (
           <Button
@@ -229,6 +232,9 @@ export default function Subscription() {
                     {tier.tier !== "free" && (
                       <div className="text-sm text-muted-foreground">/month</div>
                     )}
+                    {tier.tier !== "free" && !isCurrentTier && (
+                      <div className="text-xs text-primary font-medium">7 days free</div>
+                    )}
                   </div>
                 </div>
                 <CardTitle>{tier.name}</CardTitle>
@@ -266,7 +272,7 @@ export default function Subscription() {
                     ) : tier.tier === "free" ? (
                       "Current Plan"
                     ) : (
-                      `Upgrade to ${tier.name}`
+                      `Start 7-Day Free Trial`
                     )}
                   </Button>
                 )}
@@ -277,8 +283,8 @@ export default function Subscription() {
       </div>
 
       <div className="mt-12 text-center text-sm text-muted-foreground">
-        <p>All plans include secure payments and 24/7 support</p>
-        <p className="mt-2">Cancel anytime • No hidden fees</p>
+        <p>All plans include a 7-day free trial, secure payments, and 24/7 support</p>
+        <p className="mt-2">Cancel anytime during trial • No charge until day 8 • No hidden fees</p>
       </div>
     </div>
   );

@@ -209,4 +209,14 @@ export const POINT_REWARDS = {
   REFERRAL_FIRST_PROJECT: 150, // When your referral creates first project
   REFERRAL_MILESTONE: 50, // For each milestone your referral completes (max 5)
   OG_PROMOTION_ACTIVATED: 500, // Bonus for activating OG promotion
+  // Cre8 Challenge rewards
+  CHALLENGE_ENTRY: 25,
+  CHALLENGE_VOTE: 5,
+  CHALLENGE_WIN_DAILY: 100,
+  CHALLENGE_WIN_48HR: 200,
+  CHALLENGE_WIN_WEEKLY: 500,
+  // Spark rewards
+  CLIP_POST: 5,
+  ROOM_CREATE: 20,
+  ROOM_MESSAGE: 5,
 } as const;

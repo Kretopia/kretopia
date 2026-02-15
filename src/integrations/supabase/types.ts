@@ -619,6 +619,36 @@ export type Database = {
           },
         ]
       }
+      challenge_leaderboard: {
+        Row: {
+          current_streak: number
+          id: string
+          total_challenge_xp: number
+          total_votes_received: number
+          total_wins: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          total_challenge_xp?: number
+          total_votes_received?: number
+          total_wins?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          total_challenge_xp?: number
+          total_votes_received?: number
+          total_wins?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       challenge_votes: {
         Row: {
           created_at: string
@@ -653,6 +683,7 @@ export type Database = {
           brand_logo_url: string | null
           brand_name: string | null
           budget: string | null
+          cadence: string
           category: string
           created_at: string
           created_by: string
@@ -670,11 +701,13 @@ export type Database = {
           type: string
           updated_at: string
           voting_ends_at: string | null
+          xp_reward: number
         }
         Insert: {
           brand_logo_url?: string | null
           brand_name?: string | null
           budget?: string | null
+          cadence?: string
           category: string
           created_at?: string
           created_by: string
@@ -692,11 +725,13 @@ export type Database = {
           type: string
           updated_at?: string
           voting_ends_at?: string | null
+          xp_reward?: number
         }
         Update: {
           brand_logo_url?: string | null
           brand_name?: string | null
           budget?: string | null
+          cadence?: string
           category?: string
           created_at?: string
           created_by?: string
@@ -714,6 +749,7 @@ export type Database = {
           type?: string
           updated_at?: string
           voting_ends_at?: string | null
+          xp_reward?: number
         }
         Relationships: []
       }
@@ -1704,6 +1740,35 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_clips: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_clips_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
             referencedColumns: ["id"]
           },
         ]
@@ -5319,6 +5384,83 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      spark_room_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          media_url: string | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spark_rooms: {
+        Row: {
+          category: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean
+          member_count: number
+          message_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          member_count?: number
+          message_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          member_count?: number
+          message_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       support_messages: {
         Row: {

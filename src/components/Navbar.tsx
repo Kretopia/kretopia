@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Bot, Shield, Crown, Sparkles, Building2, PieChart } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Bot, Shield, Crown, Sparkles, Building2, PieChart, Flame, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -201,6 +201,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                     {/* Explore */}
                     <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Explore</p>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/spark")}
+                    >
+                      <Flame className="h-5 w-5" />
+                      Spark
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/cre8")}
+                    >
+                      <Trophy className="h-5 w-5" />
+                      Cre8 Challenge
+                    </Button>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"

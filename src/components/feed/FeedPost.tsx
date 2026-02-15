@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDistanceToNow } from "date-fns";
-import { Flame, MessageCircle, Send, MoreVertical, Trash2, Play, ExternalLink } from "lucide-react";
+import { Flame, MessageCircle, Send, MoreVertical, Trash2, Play, ExternalLink, Paperclip } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
@@ -48,17 +48,52 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
+  const [isClipped, setIsClipped] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchReactions();
     fetchComments();
     getCurrentUser();
+    checkIfClipped();
   }, [post.id]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id || null);
+  };
+
+  const checkIfClipped = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from('feed_clips')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('post_id', post.id)
+      .maybeSingle();
+    setIsClipped(!!data);
+  };
+
+  const handleClip = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Sign in to clip posts", variant: "destructive" });
+      return;
+    }
+    setIsClipped(!isClipped);
+    try {
+      if (isClipped) {
+        await supabase.from('feed_clips').delete().eq('user_id', user.id).eq('post_id', post.id);
+        toast({ title: "Removed from clips" });
+      } else {
+        await supabase.from('feed_clips').insert({ user_id: user.id, post_id: post.id });
+        toast({ title: "Clipped! 📎" });
+      }
+    } catch {
+      setIsClipped(isClipped);
+      toast({ title: "Failed to clip", variant: "destructive" });
+    }
   };
 
   const fetchReactions = async () => {
@@ -328,6 +363,15 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
         >
           <MessageCircle className="h-4 w-4 mr-1" />
           {comments.length}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleClip}
+          className={isClipped ? 'text-primary' : ''}
+        >
+          <Paperclip className={`h-4 w-4 mr-1 ${isClipped ? 'fill-current rotate-12' : ''}`} />
+          {isClipped ? 'Clipped' : 'Clip'}
         </Button>
       </div>
 

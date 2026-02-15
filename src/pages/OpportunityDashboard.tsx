@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye, Edit } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
+import { ProGate } from "@/components/project/ProGate";
 
 interface Applicant {
   id: string;
@@ -41,6 +42,8 @@ interface Opportunity {
   new_applications: number;
 }
 
+const PIPELINE_STATUSES = ['pending', 'shortlisted', 'accepted', 'rejected'] as const;
+
 const OpportunityDashboard = () => {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [selectedOppId, setSelectedOppId] = useState<string | null>(null);
@@ -49,8 +52,11 @@ const OpportunityDashboard = () => {
   const [analyzingAI, setAnalyzingAI] = useState(false);
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [editingOpportunityId, setEditingOpportunityId] = useState<string | null>(null);
-  const { user, loading: authLoading } = useAuth();
+  const [sortBy, setSortBy] = useState<'date' | 'score'>('date');
+  const autoAnalyzedRef = useRef<Set<string>>(new Set());
+  const { user, loading: authLoading, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
+  const isPro = subscriptionInfo.tier === 'pro';
 
   useEffect(() => {
     console.log('[OpportunityDashboard] Auth state - loading:', authLoading, 'user:', user?.id);
@@ -175,12 +181,11 @@ const OpportunityDashboard = () => {
     setLoading(false);
   };
 
-  const analyzeWithAI = async () => {
+  const analyzeWithAI = useCallback(async () => {
     if (!selectedOppId || applicants.length === 0) return;
 
     setAnalyzingAI(true);
     try {
-      // Get opportunity details
       const { data: oppData } = await supabase
         .from('opportunities')
         .select('title, description, skills, requirements')
@@ -189,13 +194,13 @@ const OpportunityDashboard = () => {
 
       if (!oppData) throw new Error('Opportunity not found');
 
-      // Call AI to score applicants
       const { data, error } = await supabase.functions.invoke('generate-content', {
         body: {
+          type: 'ranking',
           messages: [
             {
               role: 'user',
-              content: `Score these applicants for the opportunity. Be generous with scores (60+ is good match).
+              content: `Score and rank these applicants for the opportunity. Be generous with scores (60+ is good match).
 
 OPPORTUNITY:
 Title: ${oppData.title}
@@ -212,42 +217,53 @@ Availability: ${a.availability || 'Not specified'}`).join('\n\n')}
 
 For each applicant, provide:
 1. Match score (0-100) - Be generous, most should be 60+
-2. 3 specific reasons why they're a good match
-3. Focus on: skills alignment, experience, availability, cultural fit
+2. 3 specific reasons why they're a good/bad match
+3. 1 risk or concern (if any)
 
 Return ONLY valid JSON array:
-[{"index": 0, "score": 85, "reasons": ["Strong skill match in required areas", "Relevant portfolio work", "Available for project timeline"]}]`
+[{"index": 0, "score": 85, "reasons": ["Strong skill match", "Relevant portfolio", "Good availability"], "risk": "No concern"}]`
             }
           ],
-          type: 'suggest'
         }
       });
 
       if (error) throw error;
 
-      const scores = data?.content ? JSON.parse(data.content) : [];
+      const content = data?.content;
+      if (!content) throw new Error('No content returned');
+
+      const jsonStr = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const scores = JSON.parse(jsonStr);
       
-      // Update applicants with AI scores
       const scoredApplicants = applicants.map((applicant, index) => {
         const scoreData = scores.find((s: any) => s.index === index);
         return {
           ...applicant,
           ai_match_score: scoreData?.score || 50,
-          match_reasons: scoreData?.reasons || []
+          match_reasons: scoreData?.reasons || [],
+          ai_risk: scoreData?.risk || null,
         };
       });
 
-      // Sort by score descending
       scoredApplicants.sort((a, b) => (b.ai_match_score || 0) - (a.ai_match_score || 0));
       setApplicants(scoredApplicants);
-      toast.success('AI analysis complete!');
+      setSortBy('score');
+      toast.success('AI ranking complete!');
     } catch (error) {
       console.error('AI analysis error:', error);
       toast.error('AI analysis failed');
     } finally {
       setAnalyzingAI(false);
     }
-  };
+  }, [selectedOppId, applicants]);
+
+  // Auto-trigger AI ranking for Pro users when applicants load
+  useEffect(() => {
+    if (isPro && selectedOppId && applicants.length > 0 && !analyzingAI && !autoAnalyzedRef.current.has(selectedOppId)) {
+      autoAnalyzedRef.current.add(selectedOppId);
+      analyzeWithAI();
+    }
+  }, [isPro, selectedOppId, applicants.length]);
 
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
     const { error } = await supabase
@@ -332,9 +348,9 @@ Return ONLY valid JSON array:
 
   const getMatchBadge = (score?: number) => {
     if (!score) return null;
-    if (score >= 80) return <Badge className="bg-green-500"><Star className="w-3 h-3 mr-1" />Perfect Match</Badge>;
-    if (score >= 70) return <Badge className="bg-blue-500">Great Match</Badge>;
-    if (score >= 60) return <Badge className="bg-yellow-500">Good Match</Badge>;
+    if (score >= 80) return <Badge className="bg-primary text-primary-foreground"><Star className="w-3 h-3 mr-1" />Perfect Match</Badge>;
+    if (score >= 70) return <Badge className="bg-accent text-accent-foreground">Great Match</Badge>;
+    if (score >= 60) return <Badge variant="outline" className="border-primary/50 text-primary">Good Match</Badge>;
     return <Badge variant="secondary">Fair Match</Badge>;
   };
 
@@ -356,8 +372,9 @@ Return ONLY valid JSON array:
                 {getMatchBadge(applicant.ai_match_score)}
                 <Badge variant={
                   applicant.status === 'accepted' ? 'default' :
-                  applicant.status === 'rejected' ? 'destructive' : 'secondary'
-                }>
+                  applicant.status === 'rejected' ? 'destructive' :
+                  applicant.status === 'shortlisted' ? 'outline' : 'secondary'
+                } className={applicant.status === 'shortlisted' ? 'border-primary text-primary' : ''}>
                   {applicant.status}
                 </Badge>
               </div>
@@ -414,8 +431,19 @@ Return ONLY valid JSON array:
               <Mail className="w-3 h-3 mr-1" />
               Message
             </Button>
-            {applicant.status === 'pending' && (
+            {(applicant.status === 'pending' || applicant.status === 'shortlisted') && (
               <>
+                {applicant.status === 'pending' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={() => updateApplicationStatus(applicant.id, 'shortlisted')}
+                  >
+                    <Star className="w-3 h-3 mr-1" />
+                    Shortlist
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   className="text-xs"
@@ -525,29 +553,97 @@ Return ONLY valid JSON array:
       </div>
 
       {selectedOpp && (
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg sm:text-xl font-semibold">{selectedOpp.title}</h2>
-            <p className="text-sm text-muted-foreground">
-              {applicants.length} total applications
-            </p>
+        <>
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold">{selectedOpp.title}</h2>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                <span>{applicants.length} total</span>
+                <span>·</span>
+                <span>{applicants.filter(a => a.status === 'shortlisted').length} shortlisted</span>
+                <span>·</span>
+                <span>{applicants.filter(a => a.status === 'accepted').length} accepted</span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Select value={sortBy} onValueChange={(v) => {
+                setSortBy(v as 'date' | 'score');
+                setApplicants(prev => [...prev].sort((a, b) => 
+                  v === 'score' 
+                    ? (b.ai_match_score || 0) - (a.ai_match_score || 0)
+                    : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                ));
+              }}>
+                <SelectTrigger className="w-36">
+                  <Filter className="w-3 h-3 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date">By Date</SelectItem>
+                  <SelectItem value="score">By AI Score</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={analyzeWithAI}
+                disabled={analyzingAI || applicants.length === 0}
+                variant={isPro ? 'default' : 'outline'}
+                className="w-full sm:w-auto"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {analyzingAI ? 'Ranking...' : isPro ? 'Re-rank with AI' : 'AI Match Score'}
+              </Button>
+            </div>
           </div>
-          <Button
-            onClick={analyzeWithAI}
-            disabled={analyzingAI || applicants.length === 0}
-            className="w-full sm:w-auto"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {analyzingAI ? 'Analyzing...' : 'AI Match Score'}
-          </Button>
-        </div>
+
+          {/* Top Pick Card - Pro only */}
+          {isPro && applicants.length > 0 && applicants[0].ai_match_score ? (
+            <Card className="mb-6 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+              <CardContent className="flex items-center gap-4 py-4">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Trophy className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-primary">Top Pick</p>
+                  <p className="text-base font-bold truncate">{applicants[0].full_name}</p>
+                  <p className="text-xs text-muted-foreground">{applicants[0].role} · {applicants[0].ai_match_score}% match</p>
+                </div>
+                <Button size="sm" onClick={() => navigate(`/profile/${applicants[0].applicant_id}`)}>
+                  <Eye className="w-3 h-3 mr-1" />
+                  View
+                </Button>
+              </CardContent>
+            </Card>
+          ) : !isPro && applicants.length > 0 ? (
+            <ProGate
+              feature="AI Applicant Ranking"
+              description="Auto-rank applicants by match score, see top picks, and shortlist the best talent."
+              isPro={false}
+            >
+              <Card className="mb-6 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+                <CardContent className="flex items-center gap-4 py-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Trophy className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-primary">Top Pick</p>
+                    <p className="text-base font-bold">John Creator</p>
+                    <p className="text-xs text-muted-foreground">Video Editor · 92% match</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </ProGate>
+          ) : null}
+        </>
       )}
 
       <Tabs defaultValue="all">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="all">All ({applicants.length})</TabsTrigger>
           <TabsTrigger value="pending">
             Pending ({applicants.filter(a => a.status === 'pending').length})
+          </TabsTrigger>
+          <TabsTrigger value="shortlisted">
+            Shortlisted ({applicants.filter(a => a.status === 'shortlisted').length})
           </TabsTrigger>
           <TabsTrigger value="accepted">
             Accepted ({applicants.filter(a => a.status === 'accepted').length})
@@ -563,6 +659,15 @@ Return ONLY valid JSON array:
         <TabsContent value="pending" className="mt-6">
           <div className="grid gap-4">
             {applicants.filter(a => a.status === 'pending').map(renderApplicantCard)}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="shortlisted" className="mt-6">
+          <div className="grid gap-4">
+            {applicants.filter(a => a.status === 'shortlisted').map(renderApplicantCard)}
+            {applicants.filter(a => a.status === 'shortlisted').length === 0 && (
+              <p className="text-center text-muted-foreground py-8">No shortlisted applicants yet. Use AI ranking to find the best matches.</p>
+            )}
           </div>
         </TabsContent>
 

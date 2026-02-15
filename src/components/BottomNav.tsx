@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Bot, Users, Briefcase, ShoppingBag, User } from "lucide-react";
+import { Bot, Users, Briefcase, PieChart, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 
@@ -13,10 +13,10 @@ const BottomNav = memo(() => {
   
   const navItems = [
     { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab" },
-    { path: "/desk", icon: Briefcase, label: "Desk", tourId: "projects-tab" },
-    { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab" },
+    { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab" },
+    { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
+    { path: "/accounting", icon: PieChart, label: "Money", tourId: "accounting-tab" },
     { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
-    { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
   ];
 
   return (

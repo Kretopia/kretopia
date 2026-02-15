@@ -66,6 +66,7 @@ const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
 const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const Accounting = lazy(() => import("./pages/Accounting"));
+const Opportunities = lazy(() => import("./pages/Opportunities"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -204,6 +205,7 @@ const AppContent = () => {
             <Route path="/claim/:claimToken" element={<ClaimProfile />} />
             <Route path="/post-opportunity" element={<PostOpportunity />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
+            <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
             
             {/* Redirect old routes to Circle */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />

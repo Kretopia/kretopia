@@ -12,6 +12,7 @@ import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
 import { ProjectNotes } from "@/components/project/ProjectNotes";
+import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { AIBriefBuilder } from "@/components/project/AIBriefBuilder";
 import { AIAutomation } from "@/components/project/AIAutomation";
 import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
@@ -331,6 +332,7 @@ const ThriveDesk = () => {
                 {activeTab === "finance" && (
                   <ProGate feature="Finance Tools" description="Track milestones, generate professional invoices, and manage project payments all in one place." isPro={isPro}>
                     <div className="space-y-6">
+                      <AccountingDashboard projectId={projectId!} />
                       <MilestoneBoard
                         milestones={milestones}
                         projectId={projectId!}

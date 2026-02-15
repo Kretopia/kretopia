@@ -212,7 +212,6 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         issued_to: issuedTo || user?.id!,
         amount: subtotal,
         tax_rate: parseFloat(taxRate),
-        tax_amount: tax,
         total_amount: total,
         due_date: dueDate || null,
         notes,

@@ -18,43 +18,38 @@ export const HeroSection = () => {
       
       <div className="container relative mx-auto max-w-6xl">
         <div className="animate-slide-up text-center">
-          {/* Social proof badge */}
+          {/* Badge */}
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105">
             <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-            <span className="font-medium text-primary">Now Live — Join 130+ Verified Creatives</span>
+            <span className="font-medium text-primary">The All-in-One Platform for Creatives</span>
           </div>
           
-          {/* Problem-first headline */}
+          {/* Single clear headline */}
           <h1 className="mb-4 sm:mb-6 md:mb-8 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight sm:leading-[1.1] tracking-tight px-4">
-            Tired of Flaky Collaborators,{" "}
+            Find Verified Collaborators.{" "}
             <br className="hidden sm:block" />
-            Endless DMs &{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Juggling 5 Apps?
+              Ship Creative Work.
             </span>
           </h1>
           
-          <p className="mx-auto mb-2 sm:mb-3 max-w-3xl text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold leading-tight text-foreground px-6 sm:px-4">
-            Find. Verify. Work. Get Paid.
-          </p>
-          
           <p className="mx-auto mb-6 sm:mb-8 md:mb-10 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
-            ThriveIN helps verified creatives find collaborators near them, manage projects with ThriveDesk, and sell services — all in one place.
+            AI-powered matching, project workspaces, invoicing & a marketplace — stop juggling 5 apps and manage your entire creative business in one place.
           </p>
           
           {/* Value props */}
           <div className="mx-auto mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground px-4">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              AI-Verified Portfolios
+              Verified Portfolios
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-secondary" />
-              Smart Matching
+              AI Matching & Jobs
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-              ThriveDesk Workspaces
+              Workspaces & Invoicing
             </span>
           </div>
           
@@ -76,26 +71,8 @@ export const HeroSection = () => {
           </div>
           
           <p className="mt-4 text-xs sm:text-sm text-muted-foreground">
-            No credit card required • Free to start • Pro when you're ready
+            Free to start • No credit card required
           </p>
-          
-          {/* Live stats */}
-          <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-center">
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-foreground">130+</div>
-              <div className="text-xs sm:text-sm text-muted-foreground">Verified Creators</div>
-            </div>
-            <div className="h-8 w-px bg-border/50" />
-            <div>
-              <div className="text-2xl sm:text-3xl font-bold text-foreground">IMDB</div>
-              <div className="text-xs sm:text-sm text-muted-foreground">Spotify • Grammy</div>
-            </div>
-            <div className="h-8 w-px bg-border/50 hidden sm:block" />
-            <div className="hidden sm:block">
-              <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Live</div>
-              <div className="text-xs sm:text-sm text-muted-foreground">& Free to Start</div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Briefcase, Handshake, ArrowRightLeft, Sparkles, ChevronRight } from "lucide-react";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 interface PostOpportunitySectionProps {
   opportunitiesCount: number;
@@ -79,9 +79,17 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
           })}
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">
-          AI-moderated to keep our community safe
-        </p>
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground mb-4">
+            Every opportunity is AI-moderated and linked to verified portfolios
+          </p>
+          <Link to="/auth">
+            <Button variant="gradient" size="lg" className="gap-2">
+              <Sparkles className="h-4 w-4" />
+              Browse Opportunities
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );

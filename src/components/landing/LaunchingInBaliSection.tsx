@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Users, Globe } from "lucide-react";
+import { Sparkles, ArrowRight, Globe } from "lucide-react";
 
 export const LaunchingInBaliSection = () => {
   const handleCtaClick = async () => {
@@ -17,30 +17,16 @@ export const LaunchingInBaliSection = () => {
           <div className="relative text-primary-foreground">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm">
               <Globe className="h-4 w-4" />
-              <span>Now Live — Free to Join</span>
+              <span>Free to Join</span>
             </div>
             
             <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold">
-              Your Creative Network Starts Here
+              Ready to Work Smarter?
             </h2>
             
-            <p className="mb-6 text-base sm:text-lg opacity-90 max-w-2xl mx-auto">
-              130+ verified creatives already ditched the Facebook groups. 
-              Build your profile, get matched, manage projects in ThriveDesk, and sell your services — all in one place.
+            <p className="mb-8 text-base sm:text-lg opacity-90 max-w-2xl mx-auto">
+              Build your verified profile, get AI-matched with collaborators, manage projects, and grow your creative business — all in one place.
             </p>
-            
-            {/* Stats row */}
-            <div className="mb-8 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-sm">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 opacity-80" />
-                <span>130+ Verified Creators</span>
-              </div>
-              <div className="h-4 w-px bg-white/30 hidden sm:block" />
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 opacity-80" />
-                <span>AI-Powered Matching</span>
-              </div>
-            </div>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/auth" onClick={handleCtaClick}>

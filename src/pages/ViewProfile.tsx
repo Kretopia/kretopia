@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,6 +71,7 @@ interface Profile {
   industry?: string;
   is_claimed?: boolean;
   badge?: string;
+  profile_frame?: string | null;
 }
 
 const ViewProfile = () => {
@@ -395,13 +397,13 @@ const ViewProfile = () => {
               )}
               
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                {/* Avatar */}
-                <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                  <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
-                  <AvatarFallback className="text-2xl">
-                    {profile.full_name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                {/* Avatar with Frame */}
+                <FramedAvatar
+                  src={profile.avatar_url}
+                  fallback={profile.full_name?.charAt(0) || 'U'}
+                  frame={profile.profile_frame}
+                  className="h-24 w-24 border-4 border-background shadow-lg"
+                />
 
                 {/* Info */}
                 <div className="flex-1 text-center sm:text-left">

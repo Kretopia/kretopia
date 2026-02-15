@@ -89,7 +89,7 @@ serve(async (req) => {
       
       if (videoId) {
         console.log(`Processing YouTube video ID: ${videoId}`);
-        data.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        data.thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
         data.embedCode = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         data.mediaUrl = `https://www.youtube.com/watch?v=${videoId}`;
         

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Upload, ExternalLink, Trash2, Eye, Play, Lock, Crown, Music, Video, Image as ImageIcon, Mic2, Sparkles } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AIPortfolioReview } from "./AIPortfolioReview";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -381,12 +382,16 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                           className="text-sm"
                         />
                         <div className="grid grid-cols-2 gap-2">
-                          <Input
-                            value={newItem.category}
-                            onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                            placeholder="Category"
-                            className="text-sm"
-                          />
+                          <Select value={newItem.category} onValueChange={(v) => setNewItem({ ...newItem, category: v })}>
+                            <SelectTrigger className="text-sm">
+                              <SelectValue placeholder="Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {["Music Video", "Short Film", "Commercial", "Animation", "Photography", "Design", "Audio Production", "Dance & Choreography", "Singing & Vocals", "Rap & Hip-Hop", "Instrument Performance", "DJing & Live Set", "Acting & Theatre", "Fashion & Styling", "Podcast", "Other"].map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <Input
                             value={newItem.tags}
                             onChange={(e) => setNewItem({ ...newItem, tags: e.target.value })}
@@ -476,12 +481,16 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                           className="text-sm"
                         />
                         <div className="grid grid-cols-2 gap-2">
-                          <Input
-                            value={newItem.category}
-                            onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                            placeholder="Category"
-                            className="text-sm"
-                          />
+                          <Select value={newItem.category} onValueChange={(v) => setNewItem({ ...newItem, category: v })}>
+                            <SelectTrigger className="text-sm">
+                              <SelectValue placeholder="Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {["Music Video", "Short Film", "Commercial", "Animation", "Photography", "Design", "Audio Production", "Dance & Choreography", "Singing & Vocals", "Rap & Hip-Hop", "Instrument Performance", "DJing & Live Set", "Acting & Theatre", "Fashion & Styling", "Podcast", "Other"].map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <Input
                             value={newItem.tags}
                             onChange={(e) => setNewItem({ ...newItem, tags: e.target.value })}

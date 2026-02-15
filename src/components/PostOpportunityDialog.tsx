@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Briefcase, Loader2, Upload, X } from "lucide-react";
+import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PostOpportunityDialogProps {
   variant?: "default" | "outline" | "hero";
@@ -36,6 +38,8 @@ export const PostOpportunityDialog = ({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { subscriptionInfo } = useAuth();
+  const isPro = subscriptionInfo.tier === "pro";
 
   // Check for pending opportunity data on mount
   useEffect(() => {
@@ -290,6 +294,21 @@ export const PostOpportunityDialog = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          <AIJobDescriptionGenerator
+            isPro={isPro}
+            onGenerated={(data) => {
+              setFormData((prev) => ({
+                ...prev,
+                title: data.title || prev.title,
+                description: data.description || prev.description,
+                requirements: data.requirements || prev.requirements,
+                deliverables: data.deliverables || prev.deliverables,
+                skills: data.skills?.join(", ") || prev.skills,
+                compensation: data.compensation || prev.compensation,
+              }));
+            }}
+          />
+
           <div className="space-y-2">
             <Label htmlFor="email">Your Email *</Label>
             <Input

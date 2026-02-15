@@ -10,7 +10,7 @@ import { NetworkHealthScore } from "./NetworkHealthScore";
 import { IndustryMap } from "./IndustryMap";
 import { PathFinder } from "./PathFinder";
 import { DegreeExplorerDrawer } from "./DegreeExplorerDrawer";
-import { Users, Sparkles, UserPlus, Compass, Search } from "lucide-react";
+import { Users, Sparkles, UserPlus, Compass, Search, Gift, Trophy, Flame, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 interface ConnectionProfile {
   user_id: string;
@@ -284,10 +284,28 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
       {/* Network Health Score */}
       <NetworkHealthScore compact className="mb-4" />
 
-      {/* Industry Map */}
-      <IndustryMap className="mb-4" />
+      {/* Gamified Invite CTA */}
+      <Card className="p-4 mb-4 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 border-primary/20">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 rounded-full bg-primary/20">
+            <Gift className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm">Invite & Earn XP</p>
+            <p className="text-xs text-muted-foreground">+200 XP per friend who joins</p>
+          </div>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold">
+            <Star className="h-3 w-3" />
+            200 XP
+          </div>
+        </div>
+        <Button onClick={onInvite} className="gap-2 w-full" size="default">
+          <UserPlus className="h-4 w-4" />
+          Invite Creators
+        </Button>
+      </Card>
 
-      {/* Current Direct Connection Stats */}
+      {/* Direct Connections + Quick Actions */}
       <Card className="p-3 mb-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -306,16 +324,34 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
         </div>
       </Card>
 
-      {/* CTA Section */}
-      <div className="space-y-2 text-center">
-        <Button onClick={onInvite} className="gap-2 w-full" size="default">
-          <UserPlus className="h-4 w-4" />
-          Expand Your Network
+      {/* XP & Rewards Quick Links */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate('/rewards')} 
+          className="gap-1.5 h-auto py-2.5 flex-col items-center"
+        >
+          <Trophy className="h-4 w-4 text-primary" />
+          <span className="text-xs">Rewards Shop</span>
+          <span className="text-[10px] text-muted-foreground">Spend your XP</span>
         </Button>
-        <p className="text-[11px] text-muted-foreground">
-          Every connection expands your reach exponentially
-        </p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate('/dashboard')} 
+          className="gap-1.5 h-auto py-2.5 flex-col items-center"
+        >
+          <Flame className="h-4 w-4 text-destructive" />
+          <span className="text-xs">Daily Streak</span>
+          <span className="text-[10px] text-muted-foreground">Keep it going!</span>
+        </Button>
       </div>
+
+      {/* Growth tip */}
+      <p className="text-[11px] text-muted-foreground text-center">
+        Every connection expands your reach exponentially
+      </p>
 
       {/* Degree Explorer Drawer */}
       <DegreeExplorerDrawer

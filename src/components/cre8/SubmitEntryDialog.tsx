@@ -55,7 +55,15 @@ export const SubmitEntryDialog = ({ open, onOpenChange, challengeId, onSuccess }
 
       if (error) throw error;
 
-      toast.success("Entry submitted successfully!");
+      // Award XP for challenge entry
+      try {
+        const { awardXP } = await import("@/lib/xpSystem");
+        await awardXP(user.id, 'CHALLENGE_ENTRY', `Submitted entry to challenge`);
+      } catch (xpError) {
+        console.error('XP award error:', xpError);
+      }
+
+      toast.success("Entry submitted! +25 XP 🎉");
       onSuccess();
       onOpenChange(false);
       setTitle("");

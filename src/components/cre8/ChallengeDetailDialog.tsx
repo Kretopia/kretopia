@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Calendar, Trophy, Users, Upload, Loader2 } from "lucide-react";
+import { Calendar, Trophy, Users, Upload, Loader2, Sparkles } from "lucide-react";
 import { SubmitEntryDialog } from "./SubmitEntryDialog";
 import { ChallengeEntryCard } from "./ChallengeEntryCard";
+import { SwipeVoting } from "./SwipeVoting";
 
 interface Challenge {
   id: string;
@@ -54,6 +55,7 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
   const [loading, setLoading] = useState(true);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [swipeMode, setSwipeMode] = useState(false);
 
   const loadChallengeData = async () => {
     if (!challengeId) return;
@@ -173,6 +175,14 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
             ? { ...entry, vote_count: entry.vote_count + 1 }
             : entry
         ));
+
+        // Award XP for voting (fire and forget)
+        try {
+          const { awardXP } = await import("@/lib/xpSystem");
+          await awardXP(user.id, 'CHALLENGE_VOTE', 'Voted on a challenge entry');
+        } catch (xpError) {
+          console.error('XP award error:', xpError);
+        }
       }
     } catch (error: any) {
       console.error('Vote error:', error);
@@ -261,9 +271,25 @@ export const ChallengeDetailDialog = ({ open, onOpenChange, challengeId }: Chall
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold">Entries ({entries.length})</h3>
+              {entries.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSwipeMode(!swipeMode)}
+                  className="gap-1.5"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {swipeMode ? "Grid View" : "Swipe Vote"}
+                </Button>
+              )}
             </div>
 
-            {entries.length === 0 ? (
+            {swipeMode ? (
+              <SwipeVoting
+                challengeId={challengeId}
+                onBack={() => setSwipeMode(false)}
+              />
+            ) : entries.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No entries yet. Be the first to submit!</p>

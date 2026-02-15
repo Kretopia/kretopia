@@ -120,7 +120,24 @@ serve(async (req) => {
     if (hasActiveSub) {
       const subscription = subscriptions.data[0] || trialingSubs.data[0];
       subscriptionStatus = subscription.status; // 'active' or 'trialing'
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      
+      // Handle current_period_end safely - may be number (unix), string, or object
+      try {
+        const periodEnd = subscription.current_period_end;
+        if (typeof periodEnd === 'number') {
+          subscriptionEnd = new Date(periodEnd * 1000).toISOString();
+        } else if (typeof periodEnd === 'string') {
+          subscriptionEnd = new Date(periodEnd).toISOString();
+        } else if (periodEnd && typeof periodEnd === 'object' && 'toISOString' in periodEnd) {
+          subscriptionEnd = (periodEnd as Date).toISOString();
+        } else {
+          logStep("Could not parse current_period_end", { periodEnd, type: typeof periodEnd });
+          subscriptionEnd = null;
+        }
+      } catch (dateErr) {
+        logStep("Error parsing subscription end date", { error: String(dateErr) });
+        subscriptionEnd = null;
+      }
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
       productId = subscription.items.data[0].price.product as string;

@@ -2669,6 +2669,7 @@ export type Database = {
           updated_at: string | null
           verification_token: string | null
           verified_at: string | null
+          view_count: number
         }
         Insert: {
           compensation?: string | null
@@ -2696,6 +2697,7 @@ export type Database = {
           updated_at?: string | null
           verification_token?: string | null
           verified_at?: string | null
+          view_count?: number
         }
         Update: {
           compensation?: string | null
@@ -2723,8 +2725,41 @@ export type Database = {
           updated_at?: string | null
           verification_token?: string | null
           verified_at?: string | null
+          view_count?: number
         }
         Relationships: []
+      }
+      opportunity_views: {
+        Row: {
+          id: string
+          opportunity_id: string
+          referrer: string | null
+          viewed_at: string
+          viewer_id: string | null
+        }
+        Insert: {
+          id?: string
+          opportunity_id: string
+          referrer?: string | null
+          viewed_at?: string
+          viewer_id?: string | null
+        }
+        Update: {
+          id?: string
+          opportunity_id?: string
+          referrer?: string | null
+          viewed_at?: string
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_views_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       outreach_sequences: {
         Row: {

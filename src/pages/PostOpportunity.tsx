@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Briefcase, Building2, CheckCircle2, Loader2, Mail, X, Upload, ImageIcon, Crop } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
+import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
+import { useAuth } from "@/hooks/useAuth";
 
 const PostOpportunity = () => {
   const [step, setStep] = useState<"form" | "sent" | "error">("form");
@@ -38,6 +40,8 @@ const PostOpportunity = () => {
     image_url: "",
   });
   const { toast } = useToast();
+  const { subscriptionInfo } = useAuth();
+  const isPro = subscriptionInfo.tier === "pro";
 
   const handleAddSkill = () => {
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
@@ -230,6 +234,21 @@ const PostOpportunity = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <AIJobDescriptionGenerator
+                isPro={isPro}
+                onGenerated={(data) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    title: data.title || prev.title,
+                    description: data.description || prev.description,
+                    requirements: data.requirements || prev.requirements,
+                    deliverables: data.deliverables || prev.deliverables,
+                    skills: data.skills?.length ? data.skills : prev.skills,
+                    compensation: data.compensation || prev.compensation,
+                  }));
+                }}
+              />
+
               <div className="space-y-2">
                 <Label htmlFor="title">Title *</Label>
                 <Input

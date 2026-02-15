@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Briefcase, Loader2, X } from "lucide-react";
+import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PostAsOpportunityDialogProps {
   projectId: string;
@@ -34,6 +36,8 @@ export function PostAsOpportunityDialog({
   });
   const [skillInput, setSkillInput] = useState("");
   const { toast } = useToast();
+  const { subscriptionInfo } = useAuth();
+  const isPro = subscriptionInfo.tier === "pro";
 
   const handleAddSkill = () => {
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
@@ -119,6 +123,21 @@ export function PostAsOpportunityDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          <AIJobDescriptionGenerator
+            isPro={isPro}
+            onGenerated={(data) => {
+              setFormData((prev) => ({
+                ...prev,
+                title: data.title || prev.title,
+                description: data.description || prev.description,
+                requirements: data.requirements || prev.requirements,
+                deliverables: data.deliverables || prev.deliverables,
+                skills: data.skills?.length ? data.skills : prev.skills,
+                compensation: data.compensation || prev.compensation,
+              }));
+            }}
+          />
+
           <div className="space-y-2">
             <Label htmlFor="title">Opportunity Title *</Label>
             <Input

@@ -123,9 +123,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <div className="hidden lg:flex items-center gap-1">
             {[
               { path: "/circle", icon: Users, label: "Circle" },
-              { path: "/profile", icon: User, label: "Profile" },
-              { path: "/market", icon: ShoppingBag, label: "Market" },
+              { path: "/opportunities", icon: Briefcase, label: "Opportunities" },
               { path: "/desk", icon: Briefcase, label: "Desk" },
+              { path: "/accounting", icon: PieChart, label: "Accounting" },
               { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
             ].map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;

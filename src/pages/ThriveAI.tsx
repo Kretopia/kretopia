@@ -6,11 +6,13 @@ import { MessageSquare, Search, Send, Bot } from "lucide-react";
 import AIChatTab from "@/components/thrive-ai/AIChatTab";
 import LeadsTab from "@/components/thrive-ai/LeadsTab";
 import OutreachTab from "@/components/thrive-ai/OutreachTab";
+import { ProGate } from "@/components/project/ProGate";
 
 const ThriveAI = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("chat");
+  const isPro = subscriptionInfo?.tier === 'pro' && subscriptionInfo?.subscribed;
 
   if (loading) {
     return (
@@ -59,11 +61,15 @@ const ThriveAI = () => {
         </TabsContent>
 
         <TabsContent value="leads">
-          <LeadsTab />
+          <ProGate feature="AI Lead Scout" description="Find and manage potential clients and collaborators with AI-powered web scouting, CRM pipeline, and CSV import." isPro={isPro}>
+            <LeadsTab />
+          </ProGate>
         </TabsContent>
 
         <TabsContent value="outreach">
-          <OutreachTab />
+          <ProGate feature="AI Outreach" description="Create multi-step email sequences, draft personalized outreach with AI, and manage your outbound pipeline." isPro={isPro}>
+            <OutreachTab />
+          </ProGate>
         </TabsContent>
       </Tabs>
     </div>

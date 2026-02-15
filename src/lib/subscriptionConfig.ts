@@ -10,6 +10,8 @@ export const SUBSCRIPTION_PRODUCTS = {
     productId: "prod_TWc5tpvPKjy8hG",
     features: [
       "Unlimited swipes & matches",
+      "🤖 AI Lead Scout & CRM",
+      "🤖 AI Outreach Sequences",
       "🤖 AI Portfolio Insights",
       "🤖 AI Collaboration Ideas",
       "🤖 AI Profile Optimizer",

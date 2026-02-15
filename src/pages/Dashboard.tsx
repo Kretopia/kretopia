@@ -34,6 +34,10 @@ import { LevelBadge } from "@/components/dashboard/LevelBadge";
 import { useStreakUpdate } from "@/hooks/useStreakUpdate";
 import { LeaderboardWidget } from "@/components/dashboard/LeaderboardWidget";
 import { DailyGoals } from "@/components/dashboard/DailyGoals";
+import { AchievementBadges } from "@/components/dashboard/AchievementBadges";
+import { StreakCalendar } from "@/components/dashboard/StreakCalendar";
+import { LevelUpCelebration } from "@/components/dashboard/LevelUpCelebration";
+import { ShoppingBag } from "lucide-react";
 import { FirstTimeUserGuide } from "@/components/FirstTimeUserGuide";
 import { useFirstTimeUser } from "@/hooks/useFirstTimeUser";
 import { SEO } from "@/components/SEO";
@@ -58,6 +62,8 @@ const Dashboard = () => {
   const [portfolioCount, setPortfolioCount] = useState(0);
   const [activeProjects, setActiveProjects] = useState<any[]>([]);
   const [hasAppliedToOpportunity, setHasAppliedToOpportunity] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [previousLevel, setPreviousLevel] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -94,6 +100,12 @@ const Dashboard = () => {
         console.warn('[Dashboard] Profile not found for user:', user.id);
         navigate("/onboarding");
         return;
+      }
+
+      // Detect level-up
+      if (profile && profileData.level && profile.level && profileData.level > profile.level) {
+        setPreviousLevel(profile.level);
+        setShowLevelUp(true);
       }
 
       setProfile(profileData);
@@ -361,15 +373,32 @@ const Dashboard = () => {
         {/* Level, Streak & Gamification Section */}
         {profile && (
           <div className="mb-6 sm:mb-8 grid gap-4 sm:gap-6 lg:grid-cols-3">
-            <Card className="p-6">
+            <Card className="p-6 space-y-4">
               <LevelBadge level={profile.level || 1} xp={profile.xp || 0} />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full gap-2"
+                onClick={() => navigate('/rewards')}
+              >
+                <ShoppingBag className="h-4 w-4" />
+                XP Rewards Shop
+              </Button>
             </Card>
-            <StreakCard 
-              streakCount={profile.streak_count || 0}
-              longestStreak={profile.longest_streak || 0}
-              freezeCount={profile.streak_freeze_count || 0}
-              onUpdate={fetchProfile}
-            />
+            <div className="space-y-4">
+              <StreakCard 
+                streakCount={profile.streak_count || 0}
+                longestStreak={profile.longest_streak || 0}
+                freezeCount={profile.streak_freeze_count || 0}
+                onUpdate={fetchProfile}
+              />
+              <Card className="p-4">
+                <StreakCalendar 
+                  streakCount={profile.streak_count || 0}
+                  lastActiveDate={profile.last_active_date}
+                />
+              </Card>
+            </div>
             <LeaderboardWidget />
           </div>
         )}
@@ -378,6 +407,22 @@ const Dashboard = () => {
         <div className="mb-6 sm:mb-8">
           <DailyGoals />
         </div>
+
+        {/* Achievement Badges */}
+        <div className="mb-6 sm:mb-8">
+          <AchievementBadges />
+        </div>
+
+        {/* Level Up Celebration */}
+        {profile && (
+          <LevelUpCelebration
+            newLevel={profile.level || 1}
+            xp={profile.xp || 0}
+            previousLevel={previousLevel}
+            open={showLevelUp}
+            onClose={() => setShowLevelUp(false)}
+          />
+        )}
 
         {/* Success Metrics - Admin view */}
         {profile && profile.badge === 'og' && (

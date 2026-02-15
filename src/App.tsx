@@ -63,6 +63,7 @@ const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
+const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -217,6 +218,7 @@ const AppContent = () => {
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             <Route path="/projects" element={<Navigate to="/circle" replace />} />
             <Route path="/leaderboard" element={<Navigate to="/circle" replace />} />
+            <Route path="/rewards" element={<ProtectedRoute><RewardsShop /></ProtectedRoute>} />
             <Route path="/membership" element={<Navigate to="/circle" replace />} />
             <Route path="/earn-credits" element={<Navigate to="/circle" replace />} />
             

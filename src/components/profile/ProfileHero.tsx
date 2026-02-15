@@ -1,4 +1,5 @@
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, Verified, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, Check, UserCheck } from "lucide-react";
@@ -121,16 +122,12 @@ export const ProfileHero = ({
         <div className="flex items-start gap-4 sm:gap-6">
           {/* Large Avatar */}
           <div className="relative group flex-shrink-0">
-            <Avatar className="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-2xl border-2 border-border">
-              <AvatarImage 
-                src={displayAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
-                alt={displayName}
-                className="object-cover rounded-2xl"
-              />
-              <AvatarFallback className="text-2xl sm:text-3xl md:text-4xl rounded-2xl">
-                {displayName.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
+            <FramedAvatar
+              src={displayAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
+              fallback={displayName.split(' ').map(n => n[0]).join('')}
+              frame={profile.profile_frame}
+              className="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-2xl border-2 border-border"
+            />
             
             {isOwnProfile && (
               <Button

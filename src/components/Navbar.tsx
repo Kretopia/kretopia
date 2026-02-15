@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Bot, Shield, Crown, Sparkles, Flame } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Bot, Shield, Crown, Sparkles, Flame, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getTierDisplayName } from "@/lib/subscriptionConfig";
+import { AccountSwitcher } from "@/components/AccountSwitcher";
 import {
   Sheet,
   SheetContent,
@@ -31,9 +32,23 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const isLandingPage = location.pathname === "/";
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
+
+  // Fetch account type
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("account_type")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.account_type) setAccountType(data.account_type);
+      });
+  }, [user?.id]);
 
   const handleSignOut = async () => {
     try {
@@ -239,6 +254,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         )}
                       </div>
                     </Button>
+
+                    {/* Account Switcher */}
+                    <AccountSwitcher 
+                      currentAccountType={accountType} 
+                      onSwitch={() => setIsOpen(false)}
+                    />
 
                     <Separator className="my-3" />
 

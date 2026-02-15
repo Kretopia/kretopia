@@ -316,12 +316,13 @@ const RewardsShop = () => {
     {
       id: "custom_badge",
       name: "Custom Profile Frame",
-      description: "Unlock a special animated frame around your avatar.",
+      description: "A glowing gold animated ring around your avatar — auto-equipped on your profile instantly. Visible to everyone who views your profile.",
       cost: 1500,
       icon: <Palette className="h-6 w-6 text-pink-400" />,
       category: "cosmetics",
       action: buyCustomFrame,
       available: userLevel >= 5,
+      badge: "Level 5+",
     },
     {
       id: "gift_xp",

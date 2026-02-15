@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, User, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { ProGate } from "@/components/project/ProGate";
+import { ApplicantPipeline } from "@/components/opportunity/ApplicantPipeline";
 
 interface Applicant {
   id: string;
@@ -53,6 +54,7 @@ const OpportunityDashboard = () => {
   const [showPostDialog, setShowPostDialog] = useState(false);
   const [editingOpportunityId, setEditingOpportunityId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'date' | 'score'>('date');
+  const [viewMode, setViewMode] = useState<'list' | 'pipeline'>('list');
   const autoAnalyzedRef = useRef<Set<string>>(new Set());
   const { user, loading: authLoading, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
@@ -565,7 +567,38 @@ Return ONLY valid JSON array:
                 <span>{applicants.filter(a => a.status === 'accepted').length} accepted</span>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              {isPro ? (
+                <div className="flex rounded-md border border-input overflow-hidden">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="rounded-none"
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'pipeline' ? 'default' : 'ghost'}
+                    size="sm"
+                    className="rounded-none"
+                    onClick={() => setViewMode('pipeline')}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="opacity-60"
+                  onClick={() => toast.info('Upgrade to Pro for Pipeline view')}
+                >
+                  <LayoutGrid className="w-4 h-4 mr-1" />
+                  Pipeline
+                  <Crown className="w-3 h-3 ml-1 text-primary" />
+                </Button>
+              )}
               <Select value={sortBy} onValueChange={(v) => {
                 setSortBy(v as 'date' | 'score');
                 setApplicants(prev => [...prev].sort((a, b) => 
@@ -636,47 +669,54 @@ Return ONLY valid JSON array:
         </>
       )}
 
-      <Tabs defaultValue="all">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="all">All ({applicants.length})</TabsTrigger>
-          <TabsTrigger value="pending">
-            Pending ({applicants.filter(a => a.status === 'pending').length})
-          </TabsTrigger>
-          <TabsTrigger value="shortlisted">
-            Shortlisted ({applicants.filter(a => a.status === 'shortlisted').length})
-          </TabsTrigger>
-          <TabsTrigger value="accepted">
-            Accepted ({applicants.filter(a => a.status === 'accepted').length})
-          </TabsTrigger>
-        </TabsList>
+      {viewMode === 'pipeline' && isPro ? (
+        <ApplicantPipeline
+          applicants={applicants}
+          onStatusChange={updateApplicationStatus}
+        />
+      ) : (
+        <Tabs defaultValue="all">
+          <TabsList className="flex-wrap">
+            <TabsTrigger value="all">All ({applicants.length})</TabsTrigger>
+            <TabsTrigger value="pending">
+              Pending ({applicants.filter(a => a.status === 'pending').length})
+            </TabsTrigger>
+            <TabsTrigger value="shortlisted">
+              Shortlisted ({applicants.filter(a => a.status === 'shortlisted').length})
+            </TabsTrigger>
+            <TabsTrigger value="accepted">
+              Accepted ({applicants.filter(a => a.status === 'accepted').length})
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="all" className="mt-6">
-          <div className="grid gap-4">
-            {applicants.map(renderApplicantCard)}
-          </div>
-        </TabsContent>
+          <TabsContent value="all" className="mt-6">
+            <div className="grid gap-4">
+              {applicants.map(renderApplicantCard)}
+            </div>
+          </TabsContent>
 
-        <TabsContent value="pending" className="mt-6">
-          <div className="grid gap-4">
-            {applicants.filter(a => a.status === 'pending').map(renderApplicantCard)}
-          </div>
-        </TabsContent>
+          <TabsContent value="pending" className="mt-6">
+            <div className="grid gap-4">
+              {applicants.filter(a => a.status === 'pending').map(renderApplicantCard)}
+            </div>
+          </TabsContent>
 
-        <TabsContent value="shortlisted" className="mt-6">
-          <div className="grid gap-4">
-            {applicants.filter(a => a.status === 'shortlisted').map(renderApplicantCard)}
-            {applicants.filter(a => a.status === 'shortlisted').length === 0 && (
-              <p className="text-center text-muted-foreground py-8">No shortlisted applicants yet. Use AI ranking to find the best matches.</p>
-            )}
-          </div>
-        </TabsContent>
+          <TabsContent value="shortlisted" className="mt-6">
+            <div className="grid gap-4">
+              {applicants.filter(a => a.status === 'shortlisted').map(renderApplicantCard)}
+              {applicants.filter(a => a.status === 'shortlisted').length === 0 && (
+                <p className="text-center text-muted-foreground py-8">No shortlisted applicants yet. Use AI ranking to find the best matches.</p>
+              )}
+            </div>
+          </TabsContent>
 
-        <TabsContent value="accepted" className="mt-6">
-          <div className="grid gap-4">
-            {applicants.filter(a => a.status === 'accepted').map(renderApplicantCard)}
-          </div>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="accepted" className="mt-6">
+            <div className="grid gap-4">
+              {applicants.filter(a => a.status === 'accepted').map(renderApplicantCard)}
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
 
       {editingOpportunityId && (
         <EditOpportunityDialog

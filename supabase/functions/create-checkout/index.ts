@@ -37,7 +37,17 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    const session = await stripe.checkout.sessions.create({
+    // Check if this customer already had a subscription (no trial for returning users)
+    let hadPreviousSub = false;
+    if (customerId) {
+      const prevSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        limit: 1,
+      });
+      hadPreviousSub = prevSubs.data.length > 0;
+    }
+
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -49,7 +59,16 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
-    });
+    };
+
+    // Add 7-day free trial for new subscribers
+    if (!hadPreviousSub) {
+      sessionParams.subscription_data = {
+        trial_period_days: 7,
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

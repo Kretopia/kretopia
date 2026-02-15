@@ -101,13 +101,25 @@ serve(async (req) => {
       status: "active",
       limit: 1,
     });
-    const hasActiveSub = subscriptions.data.length > 0;
+
+    // Also check for trialing subscriptions
+    let trialingSubs: any = { data: [] };
+    if (subscriptions.data.length === 0) {
+      trialingSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "trialing",
+        limit: 1,
+      });
+    }
+    const hasActiveSub = subscriptions.data.length > 0 || trialingSubs.data.length > 0;
     let productId = null;
     let subscriptionEnd = null;
     let tier = 'free';
+    let subscriptionStatus = 'none';
 
     if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
+      const subscription = subscriptions.data[0] || trialingSubs.data[0];
+      subscriptionStatus = subscription.status; // 'active' or 'trialing'
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
@@ -130,12 +142,11 @@ serve(async (req) => {
       
       logStep("Determined subscription tier", { productId, tier });
       
-      // Update profile with subscription info
       await supabaseClient
         .from('profiles')
         .update({
           subscription_tier: tier,
-          subscription_status: 'active',
+          subscription_status: subscriptionStatus,
           subscription_product_id: productId,
           subscription_end_date: subscriptionEnd,
           stripe_customer_id: customerId,

@@ -2,7 +2,7 @@
 
 ## Overview
 
-ThriveIN uses Stripe for subscription management with three tiers: Free, Thriver ($9/month), and Creator Pro ($29/month).
+ThriveIN uses Stripe for subscription management with two tiers: Free and Pro ($12/month with 7-day free trial).
 
 ## Subscription Tiers
 

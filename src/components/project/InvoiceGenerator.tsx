@@ -2,15 +2,21 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Plus, Trash2, Mail, Download, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign } from "lucide-react";
 import { toast } from "sonner";
+import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
+import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
+import { InvoicePreview } from "./invoice/InvoicePreview";
 
 interface InvoiceGeneratorProps {
   projectId: string;
@@ -29,17 +35,44 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const { user } = useAuth();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [issuedTo, setIssuedTo] = useState("");
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [previewInvoice, setPreviewInvoice] = useState<any>(null);
+  const [createStep, setCreateStep] = useState<"details" | "branding" | "payment" | "preview">("details");
+  const [loading, setLoading] = useState(false);
+
+  // Form state
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [recipientAddress, setRecipientAddress] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [taxRate, setTaxRate] = useState("0");
   const [notes, setNotes] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [discountType, setDiscountType] = useState("");
+  const [discountValue, setDiscountValue] = useState("0");
   const [lineItems, setLineItems] = useState<LineItem[]>([
     { description: "", quantity: 1, rate: 0, amount: 0 }
   ]);
-  const [loading, setLoading] = useState(false);
+
+  // Branding
+  const [branding, setBranding] = useState<InvoiceBranding>({
+    brand_name: "", brand_logo_url: "", brand_address: "",
+    brand_email: "", brand_website: "", brand_color: "#6366f1"
+  });
+
+  // Payment
+  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig>({
+    payment_method: "bank_transfer",
+    payment_details: {},
+    terms_conditions: ""
+  });
+
+  // Collaborators for recipient picker
+  const [collaborators, setCollaborators] = useState<any[]>([]);
 
   useEffect(() => {
     fetchInvoices();
+    fetchCollaborators();
   }, [projectId]);
 
   const fetchInvoices = async () => {
@@ -51,28 +84,71 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      
-      // Fetch profiles separately to avoid foreign key hint errors
+
       if (invoicesData && invoicesData.length > 0) {
         const userIds = [...new Set([...invoicesData.map(inv => inv.issued_to), ...invoicesData.map(inv => inv.issued_by)])];
         const { data: profilesData } = await supabase
           .from("profiles")
-          .select("user_id, full_name")
+          .select("user_id, full_name, avatar_url")
           .in("user_id", userIds);
-        
-        // Combine invoices with profile data
+
         const invoicesWithProfiles = invoicesData.map(inv => ({
           ...inv,
           issued_to_profile: profilesData?.find(p => p.user_id === inv.issued_to),
           issued_by_profile: profilesData?.find(p => p.user_id === inv.issued_by),
         }));
-        
         setInvoices(invoicesWithProfiles);
       } else {
         setInvoices([]);
       }
     } catch (error) {
       console.error("Error fetching invoices:", error);
+    }
+  };
+
+  const fetchCollaborators = async () => {
+    try {
+      // Get project match users + collaborators
+      const { data: project } = await supabase
+        .from("projects")
+        .select("created_by, match_id")
+        .eq("id", projectId)
+        .single();
+
+      if (!project) return;
+
+      const userIds: string[] = [];
+      if (project.match_id) {
+        const { data: match } = await supabase
+          .from("matches")
+          .select("user1_id, user2_id")
+          .eq("id", project.match_id)
+          .single();
+        if (match) {
+          userIds.push(match.user1_id, match.user2_id);
+        }
+      }
+
+      const { data: collabs } = await supabase
+        .from("project_collaborators")
+        .select("user_id")
+        .eq("project_id", projectId)
+        .eq("status", "accepted");
+
+      if (collabs) {
+        userIds.push(...collabs.map(c => c.user_id));
+      }
+
+      const uniqueIds = [...new Set(userIds.filter(id => id !== user?.id))];
+      if (uniqueIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, avatar_url")
+          .in("user_id", uniqueIds);
+        setCollaborators(profiles || []);
+      }
+    } catch (err) {
+      console.error("Error fetching collaborators:", err);
     }
   };
 
@@ -95,21 +171,19 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     setLineItems(updated);
   };
 
-  const calculateSubtotal = () => {
-    return lineItems.reduce((sum, item) => sum + item.amount, 0);
+  const calculateSubtotal = () => lineItems.reduce((sum, item) => sum + item.amount, 0);
+  const calculateDiscount = () => {
+    const sub = calculateSubtotal();
+    if (discountType === "percentage") return sub * (parseFloat(discountValue) / 100);
+    if (discountType === "fixed") return parseFloat(discountValue) || 0;
+    return 0;
   };
-
-  const calculateTax = () => {
-    return calculateSubtotal() * (parseFloat(taxRate) / 100);
-  };
-
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
-  };
+  const calculateTax = () => (calculateSubtotal() - calculateDiscount()) * (parseFloat(taxRate) / 100);
+  const calculateTotal = () => calculateSubtotal() - calculateDiscount() + calculateTax();
 
   const handleCreateInvoice = async () => {
-    if (!issuedTo || lineItems.some(item => !item.description)) {
-      toast.error("Please fill in all required fields");
+    if (!recipientName || lineItems.some(item => !item.description)) {
+      toast.error("Please fill in client name and all line item descriptions");
       return;
     }
 
@@ -118,11 +192,12 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       const subtotal = calculateSubtotal();
       const tax = calculateTax();
       const total = calculateTotal();
-
-      // Generate temporary invoice number - will be replaced by database trigger
       const tempInvoiceNumber = `INV-${new Date().getFullYear()}-${Date.now()}`;
 
-      const invoiceData: InvoiceInsert = {
+      // Find the issued_to user id from collaborators or use the first collaborator
+      const issuedTo = collaborators.find(c => c.full_name === recipientName)?.user_id || collaborators[0]?.user_id || user?.id!;
+
+      const invoiceData: any = {
         invoice_number: tempInvoiceNumber,
         project_id: projectId,
         issued_by: user?.id!,
@@ -134,15 +209,31 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         due_date: dueDate || null,
         notes,
         line_items: lineItems as any,
-        status: "draft"
+        status: "draft",
+        currency,
+        brand_name: branding.brand_name,
+        brand_logo_url: branding.brand_logo_url,
+        brand_address: branding.brand_address,
+        brand_email: branding.brand_email,
+        brand_website: branding.brand_website,
+        brand_color: branding.brand_color,
+        recipient_name: recipientName,
+        recipient_email: recipientEmail,
+        recipient_address: recipientAddress,
+        payment_method: paymentConfig.payment_method,
+        payment_details: paymentConfig.payment_details,
+        terms_conditions: paymentConfig.terms_conditions,
+        discount_type: discountType || null,
+        discount_value: parseFloat(discountValue) || 0,
+        discount_amount: calculateDiscount(),
       };
 
       const { error } = await supabase.from("invoices").insert(invoiceData);
-
       if (error) throw error;
 
       toast.success("Invoice created successfully!");
       setShowCreateDialog(false);
+      setCreateStep("details");
       fetchInvoices();
       resetForm();
     } catch (error) {
@@ -154,25 +245,23 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   };
 
   const resetForm = () => {
-    setIssuedTo("");
-    setDueDate("");
-    setTaxRate("0");
-    setNotes("");
+    setRecipientName(""); setRecipientEmail(""); setRecipientAddress("");
+    setDueDate(""); setTaxRate("0"); setNotes(""); setDiscountType(""); setDiscountValue("0");
     setLineItems([{ description: "", quantity: 1, rate: 0, amount: 0 }]);
+    setCreateStep("details");
   };
 
   const handleSendInvoice = async (invoice: any) => {
     try {
-      const recipientEmail = invoice.profiles?.email || prompt("Enter recipient email:");
-      if (!recipientEmail) return;
+      const email = invoice.recipient_email || prompt("Enter recipient email:");
+      if (!email) return;
 
-      const { data, error } = await supabase.functions.invoke("send-invoice-email", {
-        body: { invoiceId: invoice.id, recipientEmail }
+      const { error } = await supabase.functions.invoke("send-invoice-email", {
+        body: { invoiceId: invoice.id, recipientEmail: email }
       });
 
       if (error) throw error;
-
-      toast.success("Invoice sent successfully!");
+      toast.success("Invoice sent!");
       fetchInvoices();
     } catch (error) {
       console.error("Error sending invoice:", error);
@@ -184,274 +273,522 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     try {
       const jsPDF = (await import("jspdf")).default;
       const autoTable = (await import("jspdf-autotable")).default;
-      
       const doc = new jsPDF();
-      
-      // Header
-      doc.setFontSize(24);
-      doc.text("INVOICE", 20, 20);
-      doc.setFontSize(12);
-      doc.text(`#${invoice.invoice_number}`, 20, 28);
-      
-      // From/To
-      doc.setFontSize(10);
-      doc.text("From:", 20, 45);
-      doc.text(invoice.profiles?.full_name || "Unknown", 20, 50);
-      
-      doc.text("To:", 120, 45);
-      doc.text(invoice.profiles?.full_name || "Unknown", 120, 50);
-      
-      // Invoice Details
-      doc.text(`Status: ${invoice.status}`, 20, 60);
+      const brandColor = invoice.brand_color || "#6366f1";
+      const hexToRgb = (hex: string) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return [r, g, b] as [number, number, number];
+      };
+      const rgb = hexToRgb(brandColor);
+
+      // Color bar
+      doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+      doc.rect(0, 0, 210, 6, "F");
+
+      // Business name
+      doc.setFontSize(16);
+      doc.setFont(undefined!, "bold");
+      doc.text(invoice.brand_name || "Invoice", 20, 20);
+      doc.setFontSize(9);
+      doc.setFont(undefined!, "normal");
+      let yPos = 26;
+      if (invoice.brand_email) { doc.text(invoice.brand_email, 20, yPos); yPos += 4; }
+      if (invoice.brand_address) { doc.text(invoice.brand_address, 20, yPos); yPos += 4; }
+      if (invoice.brand_website) { doc.text(invoice.brand_website, 20, yPos); }
+
+      // Invoice title
+      doc.setFontSize(28);
+      doc.setFont(undefined!, "bold");
+      doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+      doc.text("INVOICE", 140, 20);
+      doc.setTextColor(100, 100, 100);
+      doc.setFontSize(9);
+      doc.setFont(undefined!, "normal");
+      doc.text(`#${invoice.invoice_number}`, 140, 27);
       if (invoice.due_date) {
-        doc.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, 20, 65);
+        doc.text(`Due: ${new Date(invoice.due_date).toLocaleDateString()}`, 140, 32);
       }
-      
-      // Line Items Table
-      const lineItems = (invoice.line_items || []).map((item: any) => [
-        item.description,
-        item.quantity.toString(),
-        `$${item.rate.toFixed(2)}`,
-        `$${item.amount.toFixed(2)}`
+
+      // Bill To
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(8);
+      doc.text("BILL TO", 20, 48);
+      doc.setFontSize(11);
+      doc.setFont(undefined!, "bold");
+      doc.text(invoice.recipient_name || invoice.issued_to_profile?.full_name || "Client", 20, 54);
+      doc.setFont(undefined!, "normal");
+      doc.setFontSize(9);
+      let billY = 59;
+      if (invoice.recipient_email) { doc.text(invoice.recipient_email, 20, billY); billY += 4; }
+      if (invoice.recipient_address) { doc.text(invoice.recipient_address, 20, billY); }
+
+      // Line Items
+      const items = (invoice.line_items || []).map((item: any) => [
+        item.description, item.quantity.toString(),
+        `$${item.rate.toFixed(2)}`, `$${item.amount.toFixed(2)}`
       ]);
-      
+
       autoTable(doc, {
-        startY: 75,
+        startY: 72,
         head: [["Description", "Qty", "Rate", "Amount"]],
-        body: lineItems,
-        theme: "striped",
-        headStyles: { fillColor: [59, 130, 246] }
+        body: items,
+        theme: "grid",
+        headStyles: { fillColor: rgb, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 9 },
+        bodyStyles: { fontSize: 9 },
+        alternateRowStyles: { fillColor: [rgb[0], rgb[1], rgb[2], 0.05] as any },
       });
-      
-      // Totals
-      const finalY = (doc as any).lastAutoTable.finalY || 75;
-      doc.text(`Subtotal: $${Number(invoice.amount).toFixed(2)}`, 140, finalY + 10);
-      
-      if (invoice.tax_rate) {
-        doc.text(`Tax (${invoice.tax_rate}%): $${Number(invoice.tax_amount).toFixed(2)}`, 140, finalY + 16);
+
+      const finalY = (doc as any).lastAutoTable.finalY || 72;
+      let totY = finalY + 10;
+
+      doc.setFontSize(9);
+      doc.text(`Subtotal:`, 140, totY);
+      doc.text(`$${Number(invoice.amount).toFixed(2)}`, 190, totY, { align: "right" });
+
+      if (invoice.discount_amount && invoice.discount_amount > 0) {
+        totY += 6;
+        doc.setTextColor(22, 163, 74);
+        doc.text(`Discount:`, 140, totY);
+        doc.text(`-$${Number(invoice.discount_amount).toFixed(2)}`, 190, totY, { align: "right" });
+        doc.setTextColor(0, 0, 0);
       }
-      
+
+      if (invoice.tax_rate) {
+        totY += 6;
+        doc.text(`Tax (${invoice.tax_rate}%):`, 140, totY);
+        doc.text(`$${Number(invoice.tax_amount).toFixed(2)}`, 190, totY, { align: "right" });
+      }
+
+      totY += 8;
+      doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+      doc.line(140, totY - 2, 190, totY - 2);
       doc.setFontSize(14);
-      doc.setFont(undefined, "bold");
-      doc.text(`Total: $${Number(invoice.total_amount).toFixed(2)}`, 140, finalY + 26);
-      
+      doc.setFont(undefined!, "bold");
+      doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+      doc.text("Total:", 140, totY + 4);
+      doc.text(`$${Number(invoice.total_amount).toFixed(2)}`, 190, totY + 4, { align: "right" });
+
+      // Payment details
+      doc.setTextColor(0, 0, 0);
+      let payY = totY + 18;
+      if (invoice.payment_method && invoice.payment_method !== "thrivepay") {
+        doc.setFontSize(8);
+        doc.text("PAYMENT DETAILS", 20, payY);
+        doc.setFontSize(9);
+        doc.setFont(undefined!, "normal");
+        payY += 5;
+        const pd = invoice.payment_details || {};
+        if (invoice.payment_method === "bank_transfer") {
+          if (pd.bank_name) { doc.text(`Bank: ${pd.bank_name}`, 20, payY); payY += 4; }
+          if (pd.account_name) { doc.text(`Account: ${pd.account_name}`, 20, payY); payY += 4; }
+          if (pd.account_number) { doc.text(`Number: ${pd.account_number}`, 20, payY); payY += 4; }
+          if (pd.routing_number) { doc.text(`Routing/SWIFT: ${pd.routing_number}`, 20, payY); payY += 4; }
+        } else if (invoice.payment_method === "paypal") {
+          doc.text(`PayPal: ${pd.paypal_email || ""}`, 20, payY); payY += 4;
+        } else if (pd.instructions) {
+          const lines = doc.splitTextToSize(pd.instructions, 170);
+          doc.text(lines, 20, payY); payY += lines.length * 4;
+        }
+      }
+
       // Notes
       if (invoice.notes) {
-        doc.setFontSize(10);
-        doc.setFont(undefined, "normal");
-        doc.text("Notes:", 20, finalY + 35);
-        const splitNotes = doc.splitTextToSize(invoice.notes, 170);
-        doc.text(splitNotes, 20, finalY + 40);
+        payY += 4;
+        doc.setFontSize(8);
+        doc.setFont(undefined!, "bold");
+        doc.text("NOTES", 20, payY);
+        doc.setFont(undefined!, "normal");
+        doc.setFontSize(9);
+        const noteLines = doc.splitTextToSize(invoice.notes, 170);
+        doc.text(noteLines, 20, payY + 5);
+        payY += 5 + noteLines.length * 4;
       }
-      
+
+      // Terms
+      if (invoice.terms_conditions) {
+        payY += 4;
+        doc.setFontSize(7);
+        doc.setFont(undefined!, "bold");
+        doc.text("TERMS & CONDITIONS", 20, payY);
+        doc.setFont(undefined!, "normal");
+        doc.setFontSize(7);
+        const termLines = doc.splitTextToSize(invoice.terms_conditions, 170);
+        doc.setTextColor(100, 100, 100);
+        doc.text(termLines, 20, payY + 4);
+      }
+
+      // Footer
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Powered by ThriveIN", 105, 285, { align: "center" });
+
       doc.save(`invoice-${invoice.invoice_number}.pdf`);
-      toast.success("PDF downloaded successfully!");
+      toast.success("PDF downloaded!");
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast.error("Failed to generate PDF");
     }
   };
 
-  return (
-    <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <FileText className="h-4 w-4 mr-2" />
-          Invoices {invoices.length > 0 && `(${invoices.length})`}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Invoice Manager</DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex-1 overflow-y-auto">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="sm" className="w-full mb-4">
-                <Plus className="mr-2 h-4 w-4" />
-                Create New Invoice
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Invoice</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="issuedTo">Issued To *</Label>
-                    <Input
-                      id="issuedTo"
-                      value={issuedTo}
-                      onChange={(e) => setIssuedTo(e.target.value)}
-                      placeholder="User ID or email"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="dueDate">Due Date</Label>
-                    <Input
-                      id="dueDate"
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                    />
-                  </div>
-                </div>
+  const handlePreview = (invoice: any) => {
+    setPreviewInvoice(invoice);
+    setShowPreviewDialog(true);
+  };
 
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>Line Items *</Label>
-                    <Button type="button" size="sm" variant="outline" onClick={addLineItem}>
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Item
-                    </Button>
-                  </div>
-                  {lineItems.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-2 mb-2">
-                      <div className="col-span-5">
-                        <Input
-                          placeholder="Description"
-                          value={item.description}
-                          onChange={(e) => updateLineItem(index, "description", e.target.value)}
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <Input
-                          type="number"
-                          placeholder="Qty"
-                          value={item.quantity}
-                          onChange={(e) => updateLineItem(index, "quantity", parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <Input
-                          type="number"
-                          placeholder="Rate"
-                          value={item.rate}
-                          onChange={(e) => updateLineItem(index, "rate", parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <Input
-                          value={`$${item.amount.toFixed(2)}`}
-                          disabled
-                        />
-                      </div>
-                      <div className="col-span-1">
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => removeLineItem(index)}
-                          disabled={lineItems.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+  const getStatusBadge = (status: string) => {
+    const styles: Record<string, string> = {
+      draft: "bg-muted text-muted-foreground",
+      sent: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      viewed: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+      paid: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      overdue: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    };
+    const icons: Record<string, any> = {
+      draft: FileText, sent: Send, viewed: Eye, paid: CheckCircle2, overdue: AlertCircle,
+    };
+    const Icon = icons[status] || FileText;
+    return (
+      <Badge variant="outline" className={`${styles[status] || ""} text-[10px] gap-1`}>
+        <Icon className="h-2.5 w-2.5" />
+        {status}
+      </Badge>
+    );
+  };
+
+  const currencySymbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : `${currency} `;
+
+  return (
+    <>
+      {/* Main Invoice Manager Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={(o) => { setShowCreateDialog(o); if (!o) setCreateStep("details"); }}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <FileText className="h-4 w-4 mr-2" />
+            Invoices {invoices.length > 0 && `(${invoices.length})`}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Invoice Manager
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto">
+            {/* Create New Invoice */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm" className="w-full mb-4 gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Professional Invoice
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
+                <DialogHeader>
+                  <DialogTitle>Create Invoice</DialogTitle>
+                </DialogHeader>
+
+                {/* Step Navigation */}
+                <div className="flex gap-1 mb-4">
+                  {(["details", "branding", "payment", "preview"] as const).map((step, i) => (
+                    <button
+                      key={step}
+                      onClick={() => setCreateStep(step)}
+                      className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all ${
+                        createStep === step
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      {i + 1}. {step.charAt(0).toUpperCase() + step.slice(1)}
+                    </button>
                   ))}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="taxRate">Tax Rate (%)</Label>
-                    <Input
-                      id="taxRate"
-                      type="number"
-                      value={taxRate}
-                      onChange={(e) => setTaxRate(e.target.value)}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Subtotal:</span>
-                      <span>${calculateSubtotal().toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Tax:</span>
-                      <span>${calculateTax().toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span>Total:</span>
-                      <span>${calculateTotal().toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
+                <div className="flex-1 overflow-y-auto">
+                  {/* Step 1: Invoice Details */}
+                  {createStep === "details" && (
+                    <div className="space-y-4">
+                      {/* Recipient */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <Label className="text-xs">Client Name *</Label>
+                          {collaborators.length > 0 ? (
+                            <Select value={recipientName} onValueChange={setRecipientName}>
+                              <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select client" /></SelectTrigger>
+                              <SelectContent>
+                                {collaborators.map((c) => (
+                                  <SelectItem key={c.user_id} value={c.full_name}>{c.full_name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input className="h-8 text-sm" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Client name" />
+                          )}
+                        </div>
+                        <div>
+                          <Label className="text-xs">Client Email</Label>
+                          <Input className="h-8 text-sm" value={recipientEmail} onChange={(e) => setRecipientEmail(e.target.value)} placeholder="client@email.com" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Client Address</Label>
+                          <Input className="h-8 text-sm" value={recipientAddress} onChange={(e) => setRecipientAddress(e.target.value)} placeholder="City, Country" />
+                        </div>
+                      </div>
 
-                <div>
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Payment terms, additional notes..."
-                    rows={3}
-                  />
-                </div>
+                      {/* Date & Currency */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <Label className="text-xs">Due Date</Label>
+                          <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Currency</Label>
+                          <Select value={currency} onValueChange={setCurrency}>
+                            <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "BRL", "ZAR", "INR", "NGN"].map(c => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs">Tax Rate (%)</Label>
+                          <Input className="h-8 text-sm" type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} placeholder="0" />
+                        </div>
+                      </div>
 
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCreateInvoice} disabled={loading}>
-                    Create Invoice
-                  </Button>
+                      {/* Line Items */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-xs font-semibold">Line Items *</Label>
+                          <Button type="button" size="sm" variant="outline" onClick={addLineItem} className="h-7 text-xs">
+                            <Plus className="h-3 w-3 mr-1" /> Add Item
+                          </Button>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="grid grid-cols-12 gap-1.5 text-[10px] text-muted-foreground font-medium px-1">
+                            <span className="col-span-5">Description</span>
+                            <span className="col-span-2 text-center">Qty</span>
+                            <span className="col-span-2 text-right">Rate</span>
+                            <span className="col-span-2 text-right">Amount</span>
+                          </div>
+
+                          {lineItems.map((item, index) => (
+                            <div key={index} className="grid grid-cols-12 gap-1.5 items-center">
+                              <Input className="col-span-5 h-8 text-sm" placeholder="Service description" value={item.description} onChange={(e) => updateLineItem(index, "description", e.target.value)} />
+                              <Input className="col-span-2 h-8 text-sm text-center" type="number" value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", parseFloat(e.target.value) || 0)} />
+                              <Input className="col-span-2 h-8 text-sm text-right" type="number" value={item.rate} onChange={(e) => updateLineItem(index, "rate", parseFloat(e.target.value) || 0)} />
+                              <span className="col-span-2 text-sm text-right font-medium">{currencySymbol}{item.amount.toFixed(2)}</span>
+                              <Button type="button" size="icon" variant="ghost" className="col-span-1 h-7 w-7" onClick={() => removeLineItem(index)} disabled={lineItems.length === 1}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Discount */}
+                      <div className="grid grid-cols-3 gap-3 items-end">
+                        <div>
+                          <Label className="text-xs">Discount</Label>
+                          <Select value={discountType} onValueChange={setDiscountType}>
+                            <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="No discount" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No discount</SelectItem>
+                              <SelectItem value="percentage">Percentage</SelectItem>
+                              <SelectItem value="fixed">Fixed Amount</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {discountType && discountType !== "none" && (
+                          <div className="relative">
+                            <Input className="h-8 text-sm pl-6" type="number" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} />
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                              {discountType === "percentage" ? "%" : currencySymbol}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Totals Summary */}
+                      <Card className="p-3 bg-muted/30">
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{currencySymbol}{calculateSubtotal().toFixed(2)}</span></div>
+                          {calculateDiscount() > 0 && (
+                            <div className="flex justify-between text-green-600"><span>Discount</span><span>-{currencySymbol}{calculateDiscount().toFixed(2)}</span></div>
+                          )}
+                          {parseFloat(taxRate) > 0 && (
+                            <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxRate}%)</span><span>{currencySymbol}{calculateTax().toFixed(2)}</span></div>
+                          )}
+                          <Separator />
+                          <div className="flex justify-between font-bold text-base"><span>Total</span><span>{currencySymbol}{calculateTotal().toFixed(2)}</span></div>
+                        </div>
+                      </Card>
+
+                      {/* Notes */}
+                      <div>
+                        <Label className="text-xs">Notes</Label>
+                        <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Additional notes for the client..." rows={2} className="text-sm" />
+                      </div>
+
+                      <Button className="w-full" onClick={() => setCreateStep("branding")}>
+                        Next: Your Branding →
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Step 2: Branding */}
+                  {createStep === "branding" && (
+                    <div className="space-y-4">
+                      <InvoiceBrandingForm branding={branding} onChange={setBranding} />
+                      <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setCreateStep("details")}>← Back</Button>
+                        <Button className="flex-1" onClick={() => setCreateStep("payment")}>Next: Payment →</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3: Payment */}
+                  {createStep === "payment" && (
+                    <div className="space-y-4">
+                      <InvoicePaymentForm config={paymentConfig} onChange={setPaymentConfig} />
+                      <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setCreateStep("branding")}>← Back</Button>
+                        <Button className="flex-1" onClick={() => setCreateStep("preview")}>Preview Invoice →</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 4: Preview */}
+                  {createStep === "preview" && (
+                    <div className="space-y-4">
+                      <InvoicePreview
+                        branding={branding}
+                        recipient={{ name: recipientName, email: recipientEmail, address: recipientAddress }}
+                        invoiceNumber="INV-DRAFT"
+                        dueDate={dueDate}
+                        lineItems={lineItems}
+                        taxRate={parseFloat(taxRate)}
+                        discount={{ type: discountType, value: parseFloat(discountValue), amount: calculateDiscount() }}
+                        notes={notes}
+                        payment={paymentConfig}
+                        currency={currency}
+                      />
+                      <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setCreateStep("payment")}>← Back</Button>
+                        <Button className="flex-1" onClick={handleCreateInvoice} disabled={loading}>
+                          {loading ? "Creating..." : "Create Invoice"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Invoice List */}
+            {invoices.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium">No invoices yet</p>
+                <p className="text-sm">Create your first branded, professional invoice</p>
               </div>
-            </DialogContent>
-          </Dialog>
+            ) : (
+              <div className="space-y-2">
+                {invoices.map((inv) => (
+                  <Card key={inv.id} className="p-3 hover:bg-accent/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      {/* Brand color indicator */}
+                      <div className="w-1 h-12 rounded-full" style={{ backgroundColor: inv.brand_color || "#6366f1" }} />
 
-          {invoices.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No invoices created yet</p>
-              <p className="text-sm">Create your first invoice to get started</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {invoices.map((inv) => (
-                <div key={inv.id} className="p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-medium">{inv.invoice_number}</p>
-                      <p className="text-sm text-muted-foreground">
-                        To: {inv.profiles?.full_name || "Unknown"}
-                      </p>
-                      {inv.due_date && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Due: {new Date(inv.due_date).toLocaleDateString()}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-mono text-xs font-medium">{inv.invoice_number}</p>
+                          {getStatusBadge(inv.status)}
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {inv.recipient_name || inv.issued_to_profile?.full_name || "Client"}
                         </p>
-                      )}
+                        {inv.due_date && (
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-2.5 w-2.5" />
+                            Due: {new Date(inv.due_date).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="text-right">
+                        <p className="font-bold text-lg">{currencySymbol}{Number(inv.total_amount).toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground">{inv.currency || "USD"}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg">${Number(inv.total_amount).toFixed(2)}</p>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        inv.status === "paid" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" :
-                        inv.status === "sent" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" :
-                        "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-                      }`}>
-                        {inv.status}
-                      </span>
+
+                    <div className="flex gap-1.5 mt-2 pt-2 border-t">
+                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handlePreview(inv)}>
+                        <Eye className="h-3 w-3" /> Preview
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDownloadPDF(inv)}>
+                        <Download className="h-3 w-3" /> PDF
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleSendInvoice(inv)}>
+                        <Mail className="h-3 w-3" /> Send
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(inv)}>
-                      <Download className="h-3 w-3 mr-1" />
-                      PDF
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleSendInvoice(inv)}>
-                      <Mail className="h-3 w-3 mr-1" />
-                      Send
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Invoice Preview</DialogTitle>
+          </DialogHeader>
+          {previewInvoice && (
+            <InvoicePreview
+              branding={{
+                brand_name: previewInvoice.brand_name || "",
+                brand_logo_url: previewInvoice.brand_logo_url || "",
+                brand_address: previewInvoice.brand_address || "",
+                brand_email: previewInvoice.brand_email || "",
+                brand_website: previewInvoice.brand_website || "",
+                brand_color: previewInvoice.brand_color || "#6366f1",
+              }}
+              recipient={{
+                name: previewInvoice.recipient_name || previewInvoice.issued_to_profile?.full_name || "",
+                email: previewInvoice.recipient_email || "",
+                address: previewInvoice.recipient_address || "",
+              }}
+              invoiceNumber={previewInvoice.invoice_number}
+              dueDate={previewInvoice.due_date}
+              lineItems={previewInvoice.line_items || []}
+              taxRate={previewInvoice.tax_rate || 0}
+              discount={{
+                type: previewInvoice.discount_type || "",
+                value: previewInvoice.discount_value || 0,
+                amount: previewInvoice.discount_amount || 0,
+              }}
+              notes={previewInvoice.notes || ""}
+              payment={{
+                payment_method: previewInvoice.payment_method || "",
+                payment_details: previewInvoice.payment_details || {},
+                terms_conditions: previewInvoice.terms_conditions || "",
+              }}
+              currency={previewInvoice.currency}
+            />
           )}
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

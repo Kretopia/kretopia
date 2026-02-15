@@ -4,6 +4,7 @@ import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PostOpportunitySection } from "@/components/landing/PostOpportunitySection";
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { LaunchingInBaliSection } from "@/components/landing/LaunchingInBaliSection";
+import { AccountingSuiteSection } from "@/components/landing/AccountingSuiteSection";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -49,6 +50,7 @@ const Landing = () => {
       <HowItWorksSection />
       <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
       <WhyCreatorsChooseSection />
+      <AccountingSuiteSection />
       <LaunchingInBaliSection />
     </div>
   );

@@ -1,7 +1,9 @@
 /**
  * Subscription tier limits and feature gating
- * Based on Beta Roadmap requirements
+ * Supports both individual and company account types
  */
+
+import type { AccountType } from "./subscriptionConfig";
 
 export type SubscriptionTier = "free" | "pro";
 
@@ -14,9 +16,16 @@ export interface TierLimits {
   hasAIMatchExplanations: boolean;
   hasAdvancedFilters: boolean;
   hasAdvancedProfile: boolean; // Press links, credits, awards
+  // Company-specific limits
+  maxOpportunityPostings: number; // -1 = unlimited, per month
+  hasApplicantTracking: boolean;
+  hasBrandedPage: boolean;
+  hasOpportunityAnalytics: boolean;
+  hasPriorityListing: boolean;
+  hasAITalentScout: boolean;
 }
 
-export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
+const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
   free: {
     swipesPerDay: 30,
     maxPortfolioItems: 5,
@@ -26,27 +35,89 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasAIMatchExplanations: false,
     hasAdvancedFilters: false,
     hasAdvancedProfile: false,
+    maxOpportunityPostings: 1,
+    hasApplicantTracking: false,
+    hasBrandedPage: false,
+    hasOpportunityAnalytics: false,
+    hasPriorityListing: false,
+    hasAITalentScout: false,
   },
   pro: {
-    swipesPerDay: -1, // unlimited
-    maxPortfolioItems: -1, // unlimited
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
     canUndoSwipe: true,
     undoSwipesPerDay: 3,
     canVerifyProfile: true,
     hasAIMatchExplanations: true,
     hasAdvancedFilters: true,
     hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: false,
+    hasBrandedPage: false,
+    hasOpportunityAnalytics: false,
+    hasPriorityListing: false,
+    hasAITalentScout: false,
   },
 };
 
+const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
+  free: {
+    swipesPerDay: 30,
+    maxPortfolioItems: 5,
+    canUndoSwipe: false,
+    undoSwipesPerDay: 0,
+    canVerifyProfile: false,
+    hasAIMatchExplanations: false,
+    hasAdvancedFilters: false,
+    hasAdvancedProfile: false,
+    maxOpportunityPostings: 3,
+    hasApplicantTracking: false,
+    hasBrandedPage: false,
+    hasOpportunityAnalytics: false,
+    hasPriorityListing: false,
+    hasAITalentScout: false,
+  },
+  pro: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: 3,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+  },
+};
+
+/** Legacy flat export for backward compatibility (defaults to individual) */
+export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = INDIVIDUAL_LIMITS;
+
 /**
- * Check if user can perform an action based on their tier
+ * Get tier limits based on account type
+ */
+export const getTierLimits = (
+  tier: SubscriptionTier,
+  accountType: AccountType = "individual"
+): TierLimits => {
+  const limitsMap = accountType === "company" ? COMPANY_LIMITS : INDIVIDUAL_LIMITS;
+  return limitsMap[tier];
+};
+
+/**
+ * Check if user can perform an action based on their tier and account type
  */
 export const canPerformAction = (
   userTier: SubscriptionTier,
-  action: keyof TierLimits
+  action: keyof TierLimits,
+  accountType: AccountType = "individual"
 ): boolean => {
-  const limits = TIER_LIMITS[userTier];
+  const limits = getTierLimits(userTier, accountType);
   return Boolean(limits[action]);
 };
 
@@ -55,10 +126,11 @@ export const canPerformAction = (
  */
 export const getRemainingSwipes = (
   userTier: SubscriptionTier,
-  dailySwipes: number
+  dailySwipes: number,
+  accountType: AccountType = "individual"
 ): number => {
-  const limit = TIER_LIMITS[userTier].swipesPerDay;
-  if (limit === -1) return -1; // unlimited
+  const limit = getTierLimits(userTier, accountType).swipesPerDay;
+  if (limit === -1) return -1;
   return Math.max(0, limit - dailySwipes);
 };
 
@@ -67,10 +139,11 @@ export const getRemainingSwipes = (
  */
 export const canAddPortfolioItem = (
   userTier: SubscriptionTier,
-  currentItems: number
+  currentItems: number,
+  accountType: AccountType = "individual"
 ): boolean => {
-  const limit = TIER_LIMITS[userTier].maxPortfolioItems;
-  if (limit === -1) return true; // unlimited
+  const limit = getTierLimits(userTier, accountType).maxPortfolioItems;
+  if (limit === -1) return true;
   return currentItems < limit;
 };
 
@@ -93,7 +166,7 @@ export const getUpgradeMessage = (
   currentTier: SubscriptionTier
 ): string => {
   if (currentTier === "free") {
-    const messages: Record<keyof TierLimits, string> = {
+    const messages: Partial<Record<keyof TierLimits, string>> = {
       swipesPerDay: "Upgrade to Pro for unlimited daily swipes",
       maxPortfolioItems: "Upgrade to Pro for unlimited portfolio items",
       canUndoSwipe: "Upgrade to Pro to undo swipes (3/day)",
@@ -102,6 +175,12 @@ export const getUpgradeMessage = (
       hasAIMatchExplanations: "Upgrade to Pro for AI match explanations",
       hasAdvancedFilters: "Upgrade to Pro for advanced search filters",
       hasAdvancedProfile: "Upgrade to Pro for press links, credits & awards",
+      maxOpportunityPostings: "Upgrade to Pro for unlimited opportunity postings",
+      hasApplicantTracking: "Upgrade to Pro for applicant tracking",
+      hasBrandedPage: "Upgrade to Pro for a branded company page",
+      hasOpportunityAnalytics: "Upgrade to Pro for opportunity analytics",
+      hasPriorityListing: "Upgrade to Pro for priority listing in search",
+      hasAITalentScout: "Upgrade to Pro for AI Talent Scout",
     };
     return messages[feature] || "Upgrade to Pro to unlock this feature";
   }

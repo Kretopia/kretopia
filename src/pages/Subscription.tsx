@@ -6,42 +6,39 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Loader2, Sparkles, Zap } from "lucide-react";
-import { SUBSCRIPTION_PRODUCTS } from "@/lib/subscriptionConfig";
+import { SUBSCRIPTION_PRODUCTS, PRO_FEATURES, FREE_FEATURES, type AccountType } from "@/lib/subscriptionConfig";
 
-const SUBSCRIPTION_TIERS = [
-  {
-    name: "Spark",
-    tier: "free",
-    price: "$0",
-    priceId: null,
-    productId: null,
-    icon: Zap,
-    description: "Perfect for getting started",
-    features: [
-      "30 swipes/day",
-      "Basic profile",
-      "Direct messaging",
-      "Portfolio (up to 5 items)",
-      "Browse matches",
-    ],
-  },
-  {
-    name: SUBSCRIPTION_PRODUCTS.pro.name,
-    tier: SUBSCRIPTION_PRODUCTS.pro.tier,
-    price: `$${SUBSCRIPTION_PRODUCTS.pro.price}`,
-    priceId: SUBSCRIPTION_PRODUCTS.pro.priceId,
-    productId: SUBSCRIPTION_PRODUCTS.pro.productId,
-    icon: Sparkles,
-    popular: true,
-    description: "For serious creators",
-    features: SUBSCRIPTION_PRODUCTS.pro.features,
-  },
-];
+function getSubscriptionTiers(accountType: AccountType) {
+  return [
+    {
+      name: "Spark",
+      tier: "free",
+      price: "$0",
+      priceId: null,
+      productId: null,
+      icon: Zap,
+      description: accountType === "company" ? "Get started hiring" : "Perfect for getting started",
+      features: FREE_FEATURES[accountType],
+    },
+    {
+      name: SUBSCRIPTION_PRODUCTS.pro.name,
+      tier: SUBSCRIPTION_PRODUCTS.pro.tier,
+      price: `$${SUBSCRIPTION_PRODUCTS.pro.price}`,
+      priceId: SUBSCRIPTION_PRODUCTS.pro.priceId,
+      productId: SUBSCRIPTION_PRODUCTS.pro.productId,
+      icon: Sparkles,
+      popular: true,
+      description: accountType === "company" ? "For serious brands & studios" : "For serious creators",
+      features: PRO_FEATURES[accountType],
+    },
+  ];
+}
 
 export default function Subscription() {
   const [loading, setLoading] = useState<string | null>(null);
   const [currentTier, setCurrentTier] = useState<string>("free");
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>("none");
+  const [accountType, setAccountType] = useState<AccountType>("individual");
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -70,7 +67,7 @@ export default function Subscription() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("subscription_tier, subscription_product_id, subscription_status")
+        .select("subscription_tier, subscription_product_id, subscription_status, account_type")
         .eq("user_id", session.user.id)
         .single();
       
@@ -79,6 +76,9 @@ export default function Subscription() {
       }
       if (profile?.subscription_status) {
         setSubscriptionStatus(profile.subscription_status);
+      }
+      if (profile?.account_type) {
+        setAccountType(profile.account_type as AccountType);
       }
     } catch (error: any) {
       console.error("Error checking subscription:", error);
@@ -89,10 +89,7 @@ export default function Subscription() {
 
   const handleSubscribe = async (priceId: string | null, tier: string) => {
     if (!priceId) {
-      toast({
-        title: "Free Tier",
-        description: "You're already on the free tier",
-      });
+      toast({ title: "Free Tier", description: "You're already on the free tier" });
       return;
     }
 
@@ -101,33 +98,18 @@ export default function Subscription() {
 
     try {
       setLoading(priceId);
-
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to subscribe",
-          variant: "destructive",
-        });
+        toast({ title: "Authentication required", description: "Please sign in to subscribe", variant: "destructive" });
         navigate("/auth");
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
-      });
-
+      const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });
       if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
+      if (data?.url) window.open(data.url, "_blank");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create checkout session",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Failed to create checkout session", variant: "destructive" });
     } finally {
       setLoading(null);
     }
@@ -139,18 +121,10 @@ export default function Subscription() {
       const { analytics } = await import("@/lib/analytics");
       analytics.customerPortalOpened();
       const { data, error } = await supabase.functions.invoke("customer-portal");
-      
       if (error) throw error;
-      
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
+      if (data?.url) window.open(data.url, "_blank");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to open customer portal",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Failed to open customer portal", variant: "destructive" });
     } finally {
       setLoading(null);
     }
@@ -166,18 +140,22 @@ export default function Subscription() {
     );
   }
 
+  const tiers = getSubscriptionTiers(accountType);
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
         <p className="text-xl text-muted-foreground">
-          Unlock the full potential of ThriveIN
+          {accountType === "company"
+            ? "Supercharge your hiring & brand presence"
+            : "Unlock the full potential of ThriveIN"}
         </p>
         <p className="text-sm text-primary font-medium mt-2">
           🎉 Start with a 7-day free trial — no commitment
         </p>
         
-        {currentTier !== "free" && subscriptionStatus === "active" && (
+        {currentTier !== "free" && (subscriptionStatus === "active" || subscriptionStatus === "trialing") && (
           <Button
             onClick={handleManageSubscription}
             variant="outline"
@@ -197,7 +175,7 @@ export default function Subscription() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {SUBSCRIPTION_TIERS.map((tier) => {
+        {tiers.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;
           const isLoading = loading === tier.priceId;

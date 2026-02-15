@@ -67,6 +67,8 @@ const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
+const Cre8 = lazy(() => import("./pages/Cre8"));
+const Cre8Leaderboard = lazy(() => import("./pages/Cre8Leaderboard"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -217,7 +219,8 @@ const AppContent = () => {
             <Route path="/market/:listingId" element={<ProtectedRoute><ListingDetail /></ProtectedRoute>} />
             <Route path="/discover" element={<Navigate to="/circle" replace />} />
             <Route path="/community" element={<Navigate to="/circle" replace />} />
-            <Route path="/cre8" element={<Navigate to="/circle" replace />} />
+            <Route path="/cre8" element={<ProtectedRoute><Cre8 /></ProtectedRoute>} />
+            <Route path="/cre8/leaderboard" element={<ProtectedRoute><Cre8Leaderboard /></ProtectedRoute>} />
             <Route path="/connect" element={<Navigate to="/circle" replace />} />
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             <Route path="/projects" element={<Navigate to="/circle" replace />} />

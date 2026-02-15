@@ -1,12 +1,16 @@
-import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useCallback } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Flame, Trophy, TrendingUp, DollarSign, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Flame, Trophy, DollarSign, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { ChallengeDetailDialog } from "@/components/cre8/ChallengeDetailDialog";
 import { ChallengeCard } from "@/components/cre8/ChallengeCard";
+import { CadenceTabs } from "@/components/cre8/CadenceTabs";
+import { LeaderboardPreview } from "@/components/cre8/LeaderboardPreview";
+import { MyActiveEntries } from "@/components/cre8/MyActiveEntries";
+import { PastWinners } from "@/components/cre8/PastWinners";
 
 interface Challenge {
   id: string;
@@ -14,6 +18,7 @@ interface Challenge {
   description: string;
   category: string;
   type: string;
+  cadence: string;
   deadline: string;
   prize_description: string | null;
   prize_amount: number | null;
@@ -21,174 +26,167 @@ interface Challenge {
   thumbnail_url: string | null;
   brand_name: string | null;
   brand_logo_url: string | null;
+  xp_reward: number;
   entries?: { count: number }[];
-  votes?: { count: number }[];
 }
 
 const Cre8 = () => {
-  const [activeTab, setActiveTab] = useState("platform");
+  const [mainTab, setMainTab] = useState("platform");
+  const [cadence, setCadence] = useState("all");
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadChallenges();
-  }, [activeTab]);
-
-  const loadChallenges = async () => {
+  const loadChallenges = useCallback(async () => {
     setLoading(true);
     try {
-      // Get challenges with entry counts in a single efficient query
-      const { data, error } = await supabase
-        .from('challenges')
-        .select(`
-          *,
-          entries:challenge_entries(count)
-        `)
-        .eq('type', activeTab)
-        .eq('status', 'active')
-        .order('deadline', { ascending: true });
+      let query = supabase
+        .from("challenges")
+        .select("*, entries:challenge_entries(count)")
+        .eq("type", mainTab)
+        .eq("status", "active")
+        .order("deadline", { ascending: true });
 
+      if (cadence !== "all") {
+        query = query.eq("cadence", cadence);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setChallenges(data || []);
     } catch (error) {
-      console.error('Load challenges error:', error);
+      console.error("Load challenges error:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [mainTab, cadence]);
 
-  const getDaysLeft = (deadline: string) => {
-    const days = Math.ceil(
-      (new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    );
-    return days;
-  };
+  useEffect(() => {
+    loadChallenges();
+  }, [loadChallenges]);
 
-  const renderChallenges = () => {
-    if (loading) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      );
-    }
-
-    if (challenges.length === 0) {
-      return (
-        <Card className="text-center py-12">
-          <CardContent>
-            <Trophy className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-xl font-bold mb-2">No Active Challenges</h3>
-            <p className="text-muted-foreground">
-              Check back soon for new creative challenges!
-            </p>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {challenges.map((challenge) => (
-          <ChallengeCard
-            key={challenge.id}
-            challenge={challenge}
-            entryCount={challenge.entries?.[0]?.count || 0}
-            daysLeft={getDaysLeft(challenge.deadline)}
-            onClick={() => setSelectedChallengeId(challenge.id)}
-          />
-        ))}
-      </div>
-    );
-  };
+  const getDaysLeft = (deadline: string) =>
+    Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
   return (
     <>
-      <SEO 
-        title="Cre8 Challenge - Creative Competitions & Paid Gigs"
-        description="Join weekly creative challenges, win prizes, and get discovered. Apply for brand-sponsored challenges and get paid for your creativity."
+      <SEO
+        title="Cre8 Arena - Creative Challenges & Competitions"
+        description="Daily, 48hr, and weekly creative challenges. Win XP, climb the leaderboard, and get discovered."
       />
-      
-      <div className="min-h-screen bg-gradient-accent pb-6">
-        <div className="container mx-auto px-4 py-6 max-w-7xl">
-          {/* Hero Section */}
-          <div className="text-center mb-8 animate-slide-up">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
-              <Flame className="h-5 w-5" />
-              <span className="font-semibold">Create. Compete. Conquer.</span>
+
+      <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b">
+          <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
+                <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                <h1 className="text-xl sm:text-2xl font-bold">Cre8 Arena</h1>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
-              Cre8 Challenge
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Push your creative boundaries with weekly challenges or get paid for brand collaborations
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Create. Compete. Conquer.
             </p>
           </div>
+        </div>
 
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-              <TabsTrigger value="platform" className="gap-2">
+        <div className="container mx-auto px-3 sm:px-4 py-4 space-y-5 max-w-4xl">
+          {/* Main Tabs: Platform vs Brand */}
+          <Tabs value={mainTab} onValueChange={(v) => { setMainTab(v); setCadence("all"); }}>
+            <TabsList className="grid w-full grid-cols-2 h-10">
+              <TabsTrigger value="platform" className="gap-1.5 text-sm">
                 <Trophy className="h-4 w-4" />
-                Platform Challenges
+                Challenges
               </TabsTrigger>
-              <TabsTrigger value="brand" className="gap-2">
+              <TabsTrigger value="brand" className="gap-1.5 text-sm">
                 <DollarSign className="h-4 w-4" />
                 Brand Challenges
               </TabsTrigger>
             </TabsList>
 
-            {/* Platform Challenges Tab */}
-            <TabsContent value="platform" className="space-y-6">
-              {renderChallenges()}
+            <TabsContent value="platform" className="space-y-5 mt-4">
+              {/* Cadence Filter */}
+              <CadenceTabs active={cadence} onChange={setCadence} />
 
-              <Card className="bg-gradient-primary text-primary-foreground border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    How Platform Challenges Work
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-primary-foreground/90">
-                  <p>✨ <strong>Free Entry:</strong> All platform challenges are free to join</p>
-                  <p>🎯 <strong>Submit Your Work:</strong> Upload your creative entry before the deadline</p>
-                  <p>🗳️ <strong>Community Voting:</strong> Members vote for their favorite entries</p>
-                  <p>🏆 <strong>Win Prizes:</strong> Top entries win XP, featured portfolios, and career boosts</p>
-                </CardContent>
-              </Card>
+              {/* Challenge Grid */}
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : challenges.length === 0 ? (
+                <Card className="text-center py-10">
+                  <CardContent>
+                    <Trophy className="h-12 w-12 mx-auto mb-3 text-muted-foreground/40" />
+                    <h3 className="font-bold text-lg mb-1">No Active Challenges</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {cadence !== "all"
+                        ? `No ${cadence} challenges right now. Try another cadence!`
+                        : "Check back soon for new creative challenges!"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {challenges.map((challenge) => (
+                    <ChallengeCard
+                      key={challenge.id}
+                      challenge={challenge}
+                      entryCount={challenge.entries?.[0]?.count || 0}
+                      daysLeft={getDaysLeft(challenge.deadline)}
+                      onClick={() => setSelectedChallengeId(challenge.id)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Leaderboard Preview */}
+              <LeaderboardPreview />
+
+              {/* My Active Entries */}
+              <MyActiveEntries onChallengeClick={setSelectedChallengeId} />
+
+              {/* Past Winners */}
+              <PastWinners />
             </TabsContent>
 
-            {/* Brand Challenges Tab */}
-            <TabsContent value="brand" className="space-y-6">
-              {renderChallenges()}
-
-              <Card className="bg-accent/5 border-accent/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-accent">
-                    <DollarSign className="h-5 w-5" />
-                    How Brand Challenges Work
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-muted-foreground">
-                  <p>💼 <strong>Brand Posts Challenge:</strong> Companies post paid creative challenges</p>
-                  <p>📤 <strong>Submit Proposal:</strong> Apply with your portfolio and approach</p>
-                  <p>🎨 <strong>Get Selected:</strong> Brand picks the best creator for the job</p>
-                  <p>💰 <strong>Get Paid:</strong> Complete work and receive payment through ThrivePay escrow</p>
-                </CardContent>
-              </Card>
+            <TabsContent value="brand" className="space-y-5 mt-4">
+              {/* Brand challenges share the same loading / grid logic */}
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : challenges.length === 0 ? (
+                <Card className="text-center py-10">
+                  <CardContent>
+                    <DollarSign className="h-12 w-12 mx-auto mb-3 text-muted-foreground/40" />
+                    <h3 className="font-bold text-lg mb-1">No Brand Challenges Yet</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Brand-sponsored challenges are coming soon!
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {challenges.map((challenge) => (
+                    <ChallengeCard
+                      key={challenge.id}
+                      challenge={challenge}
+                      entryCount={challenge.entries?.[0]?.count || 0}
+                      daysLeft={getDaysLeft(challenge.deadline)}
+                      onClick={() => setSelectedChallengeId(challenge.id)}
+                    />
+                  ))}
+                </div>
+              )}
 
               <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="pt-6">
-                  <div className="text-center space-y-4">
-                    <h3 className="text-xl font-bold">Want to Post a Brand Challenge?</h3>
-                    <p className="text-muted-foreground">
-                      Connect with talented creators for your next project
-                    </p>
-                    <Button variant="gradient" size="lg">
-                      Post a Challenge
-                    </Button>
-                  </div>
+                <CardContent className="pt-6 text-center space-y-3">
+                  <h3 className="font-bold text-lg">Want to Post a Brand Challenge?</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Connect with talented creators for your next project
+                  </p>
+                  <Button variant="default">Post a Challenge</Button>
                 </CardContent>
               </Card>
             </TabsContent>

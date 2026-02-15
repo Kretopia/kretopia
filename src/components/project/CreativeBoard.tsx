@@ -427,7 +427,7 @@ function BoardItemCard({ item, onDelete, onEditNote, onReplaceImage }: {
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button onClick={(e) => e.stopPropagation()} className="p-1 rounded-full bg-black/10 hover:bg-black/20">
+              <button onClick={(e) => e.stopPropagation()} className="p-1 rounded-full bg-black/10 hover:bg-black/20" style={{ color: "#333" }}>
                 <MoreVertical className="h-3.5 w-3.5" />
               </button>
             </DropdownMenuTrigger>
@@ -441,9 +441,9 @@ function BoardItemCard({ item, onDelete, onEditNote, onReplaceImage }: {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {item.title && <p className="font-semibold text-sm mb-1 text-foreground/80">{item.title}</p>}
-        <p className={cn("text-sm text-foreground/70 whitespace-pre-wrap", !expanded && "line-clamp-6")}>{item.content}</p>
-        <div className="mt-2 flex items-center gap-1 text-xs text-foreground/50">
+        {item.title && <p className="font-semibold text-sm mb-1" style={{ color: "#1a1a1a" }}>{item.title}</p>}
+        <p className={cn("text-sm whitespace-pre-wrap", !expanded && "line-clamp-6")} style={{ color: "#333" }}>{item.content}</p>
+        <div className="mt-2 flex items-center gap-1 text-xs" style={{ color: "#666" }}>
           <StickyNote className="h-3 w-3" />
           {new Date(item.created_at).toLocaleDateString()}
         </div>

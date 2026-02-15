@@ -3595,6 +3595,8 @@ export type Database = {
           company_logo_url: string | null
           company_name: string | null
           company_size: string | null
+          company_tagline: string | null
+          cover_image_url: string | null
           created_at: string | null
           daily_swipes: number | null
           discogs_verified: boolean | null
@@ -3662,6 +3664,7 @@ export type Database = {
           subscription_product_id: string | null
           subscription_status: string | null
           subscription_tier: string | null
+          team_member_ids: string[] | null
           tiktok_followers: number | null
           tiktok_url: string | null
           total_engagement_rate: number | null
@@ -3710,6 +3713,8 @@ export type Database = {
           company_logo_url?: string | null
           company_name?: string | null
           company_size?: string | null
+          company_tagline?: string | null
+          cover_image_url?: string | null
           created_at?: string | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
@@ -3777,6 +3782,7 @@ export type Database = {
           subscription_product_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
+          team_member_ids?: string[] | null
           tiktok_followers?: number | null
           tiktok_url?: string | null
           total_engagement_rate?: number | null
@@ -3825,6 +3831,8 @@ export type Database = {
           company_logo_url?: string | null
           company_name?: string | null
           company_size?: string | null
+          company_tagline?: string | null
+          cover_image_url?: string | null
           created_at?: string | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
@@ -3892,6 +3900,7 @@ export type Database = {
           subscription_product_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
+          team_member_ids?: string[] | null
           tiktok_followers?: number | null
           tiktok_url?: string | null
           total_engagement_rate?: number | null

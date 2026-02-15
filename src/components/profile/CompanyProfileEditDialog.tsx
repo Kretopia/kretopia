@@ -19,6 +19,8 @@ interface CompanyProfileEditDialogProps {
     location: string;
     avatar_url: string;
     company_size: string;
+    company_tagline?: string;
+    cover_image_url?: string;
   };
   onFormChange: (form: any) => void;
   onSave: (data?: Record<string, any>) => void;
@@ -59,7 +61,7 @@ const CompanyEditForm = memo(({
   onGalleryChange,
   onRemoveGalleryImage,
 }: {
-  initialData: { full_name: string; role: string; bio: string; location: string; company_size: string };
+  initialData: { full_name: string; role: string; bio: string; location: string; company_size: string; company_tagline?: string; cover_image_url?: string };
   avatarUrl: string;
   onSave: (data: typeof initialData) => void;
   onAvatarUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -74,6 +76,8 @@ const CompanyEditForm = memo(({
   const [bio, setBio] = useState(initialData.bio);
   const [location, setLocation] = useState(initialData.location);
   const [companySize, setCompanySize] = useState(initialData.company_size);
+  const [companyTagline, setCompanyTagline] = useState(initialData.company_tagline || '');
+  const [coverImageUrl, setCoverImageUrl] = useState(initialData.cover_image_url || '');
 
   const completion = useMemo(() => {
     const fields = [
@@ -94,7 +98,7 @@ const CompanyEditForm = memo(({
   const isMissing = (fieldLabel: string) => completion.missing.includes(fieldLabel);
 
   const handleSave = () => {
-    onSave({ full_name: fullName, role, bio, location, company_size: companySize });
+    onSave({ full_name: fullName, role, bio, location, company_size: companySize, company_tagline: companyTagline, cover_image_url: coverImageUrl });
   };
 
   return (
@@ -154,6 +158,18 @@ const CompanyEditForm = memo(({
           <p className="text-xs text-muted-foreground mt-1">{bio.length}/20 characters minimum</p>
         </FieldWrapper>
 
+        <div className="space-y-2">
+          <Label>Company Tagline (Optional)</Label>
+          <Input value={companyTagline} onChange={(e) => setCompanyTagline(e.target.value)} placeholder="e.g., Empowering creators worldwide" maxLength={120} />
+          <p className="text-xs text-muted-foreground">{companyTagline.length}/120 characters</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Cover Image URL (Pro)</Label>
+          <Input value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} placeholder="https://example.com/cover.jpg" />
+          <p className="text-xs text-muted-foreground">Paste a URL for your cover banner image</p>
+        </div>
+
         <div>
           <Label>Gallery Images (Optional)</Label>
           <Input type="file" accept="image/*" multiple onChange={onGalleryChange} className="mt-2" />
@@ -210,7 +226,7 @@ export const CompanyProfileEditDialog = ({
   onGalleryChange,
   onRemoveGalleryImage,
 }: CompanyProfileEditDialogProps) => {
-  const handleSave = (data: { full_name: string; role: string; bio: string; location: string; company_size: string }) => {
+  const handleSave = (data: Record<string, any>) => {
     const updated = { ...editForm, ...data };
     onFormChange(updated);
     onSave(updated);
@@ -237,6 +253,8 @@ export const CompanyProfileEditDialog = ({
               bio: editForm.bio,
               location: editForm.location,
               company_size: editForm.company_size,
+              company_tagline: editForm.company_tagline,
+              cover_image_url: editForm.cover_image_url,
             }}
             avatarUrl={editForm.avatar_url}
             onSave={handleSave}

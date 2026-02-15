@@ -74,6 +74,11 @@ interface Profile {
   achievement_badges?: string[];
   verification_tier?: string;
   verification_status?: string;
+  subscription_tier?: string;
+  cover_image_url?: string;
+  company_tagline?: string;
+  team_member_ids?: string[];
+  company_images?: string[];
 }
 
 const PublicProfile = () => {
@@ -475,6 +480,7 @@ const PublicProfile = () => {
               profile={profile}
               reviews={reviews}
               isOwnProfile={false}
+              isPro={profile.subscription_tier === 'pro'}
               onRefresh={fetchData}
             />
           </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Building2, MapPin, Users, Star, Award, Gift, Globe, Briefcase, Edit, Share2, QrCode, MessageCircle, CreditCard, Settings, ChevronRight, ExternalLink, Calendar, Clock } from "lucide-react";
+import { Building2, MapPin, Users, Star, Award, Gift, Globe, Briefcase, Edit, Share2, QrCode, MessageCircle, CreditCard, Settings, ChevronRight, ExternalLink, Calendar, Clock, Crown, Image as ImageIcon, UserPlus, TrendingUp, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaveCompanyReviewDialog } from "./LeaveCompanyReviewDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
+import { FeatureLockedBanner } from "@/components/FeatureLockedBanner";
 
 interface CompanyReview {
   id: string;
@@ -34,6 +35,7 @@ interface CompanyProfileViewProps {
   reviews: CompanyReview[];
   partnerDiscounts?: PartnerDiscount[];
   isOwnProfile: boolean;
+  isPro?: boolean;
   onLeaveReview?: () => void;
   onRefresh?: () => void;
   onEdit?: () => void;
@@ -45,6 +47,7 @@ export const CompanyProfileView = ({
   reviews,
   partnerDiscounts,
   isOwnProfile,
+  isPro = false,
   onLeaveReview,
   onRefresh,
   onEdit,
@@ -53,6 +56,8 @@ export const CompanyProfileView = ({
   const navigate = useNavigate();
   const [opportunities, setOpportunities] = useState<any[]>([]);
   const [loadingOpps, setLoadingOpps] = useState(true);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [companyStats, setCompanyStats] = useState({ oppsPosted: 0, talentsHired: 0 });
 
   useEffect(() => {
     const fetchOpportunities = async () => {
@@ -66,8 +71,49 @@ export const CompanyProfileView = ({
       setOpportunities(data || []);
       setLoadingOpps(false);
     };
-    if (profile.user_id) fetchOpportunities();
-  }, [profile.user_id]);
+
+    const fetchStats = async () => {
+      // Total opps posted
+      const { count: oppsCount } = await supabase
+        .from('opportunities')
+        .select('*', { count: 'exact', head: true })
+        .eq('created_by', profile.user_id);
+
+      // Talents hired (accepted applications)
+      const { data: ownOpps } = await supabase
+        .from('opportunities')
+        .select('id')
+        .eq('created_by', profile.user_id);
+
+      let talentsHired = 0;
+      if (ownOpps && ownOpps.length > 0) {
+        const { count } = await supabase
+          .from('applications')
+          .select('*', { count: 'exact', head: true })
+          .in('opportunity_id', ownOpps.map(o => o.id))
+          .eq('status', 'accepted');
+        talentsHired = count || 0;
+      }
+
+      setCompanyStats({ oppsPosted: oppsCount || 0, talentsHired });
+    };
+
+    const fetchTeamMembers = async () => {
+      const teamIds = profile.team_member_ids;
+      if (!teamIds || !Array.isArray(teamIds) || teamIds.length === 0) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role')
+        .in('user_id', teamIds);
+      setTeamMembers(data || []);
+    };
+
+    if (profile.user_id) {
+      fetchOpportunities();
+      fetchStats();
+      fetchTeamMembers();
+    }
+  }, [profile.user_id, profile.team_member_ids]);
 
   const displayName = profile.company_name || profile.full_name;
   const displayLogo = profile.company_logo_url || profile.avatar_url;
@@ -78,9 +124,15 @@ export const CompanyProfileView = ({
 
         {/* === COVER + HERO === */}
         <div className="relative mb-6">
-          {/* Cover Photo */}
+          {/* Cover Photo - Pro feature uses cover_image_url, fallback to gallery */}
           <div className="h-40 sm:h-52 rounded-b-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 overflow-hidden">
-            {profile.company_images && Array.isArray(profile.company_images) && profile.company_images.length > 0 ? (
+            {profile.cover_image_url ? (
+              <img
+                src={profile.cover_image_url}
+                alt="Cover"
+                className="w-full h-full object-cover"
+              />
+            ) : profile.company_images && Array.isArray(profile.company_images) && profile.company_images.length > 0 ? (
               <img
                 src={(profile.company_images as string[])[0]}
                 alt="Cover"
@@ -89,6 +141,13 @@ export const CompanyProfileView = ({
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Building2 className="h-16 w-16 text-primary/20" />
+              </div>
+            )}
+            {isOwnProfile && !isPro && !profile.cover_image_url && (
+              <div className="absolute top-3 right-3">
+                <Badge className="gap-1 bg-background/80 text-foreground backdrop-blur-sm border">
+                  <Crown className="h-3 w-3 text-primary" /> Pro Cover
+                </Badge>
               </div>
             )}
           </div>
@@ -127,6 +186,9 @@ export const CompanyProfileView = ({
               </div>
               {profile.company_industry && (
                 <p className="text-muted-foreground text-sm mt-0.5">{profile.company_industry}</p>
+              )}
+              {profile.company_tagline && (
+                <p className="text-sm mt-1 italic text-muted-foreground">"{profile.company_tagline}"</p>
               )}
             </div>
           </div>
@@ -225,6 +287,80 @@ export const CompanyProfileView = ({
                 <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{profile.company_about}</p>
               </div>
             )}
+
+            {/* Company Stats - Pro only */}
+            {isPro ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">{companyStats.oppsPosted}</p>
+                    <p className="text-xs text-muted-foreground">Opportunities Posted</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">{companyStats.talentsHired}</p>
+                    <p className="text-xs text-muted-foreground">Talents Hired</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">{reviews.length}</p>
+                    <p className="text-xs text-muted-foreground">Reviews</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">{profile.average_rating?.toFixed(1) || '—'}</p>
+                    <p className="text-xs text-muted-foreground">Avg Rating</p>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : isOwnProfile ? (
+              <FeatureLockedBanner
+                feature="Company Stats"
+                tier="pro"
+                description="Show your hiring track record to attract top talent."
+              />
+            ) : null}
+
+            {/* Team Members - Pro only */}
+            {isPro && teamMembers.length > 0 ? (
+              <div>
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" /> Team Members
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {teamMembers.map((member) => (
+                    <Link
+                      key={member.user_id}
+                      to={`/profile/${member.user_id}`}
+                      className="flex items-center gap-3 p-3 rounded-xl border bg-card hover:border-primary/30 transition-colors"
+                    >
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={member.avatar_url} />
+                        <AvatarFallback>{member.full_name?.[0] || '?'}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{member.full_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{member.role}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : isPro && teamMembers.length === 0 && isOwnProfile ? (
+              <div className="text-center py-6 border rounded-xl">
+                <UserPlus className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-sm text-muted-foreground">Add team members in your profile settings to showcase your team.</p>
+              </div>
+            ) : !isPro && isOwnProfile ? (
+              <FeatureLockedBanner
+                feature="Team Showcase"
+                tier="pro"
+                description="Highlight your team members on your company page."
+              />
+            ) : null}
 
             {/* Gallery */}
             {profile.company_images && Array.isArray(profile.company_images) && profile.company_images.length > 1 && (

@@ -83,16 +83,19 @@ const OpportunityDetail = () => {
     };
   }, [id, user]);
 
-  // Track view
+  // Track view (deduplicated per session)
   useEffect(() => {
     if (!id) return;
+    const sessionKey = `opp_viewed_${id}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, "1");
     supabase
       .from("opportunity_views")
-      .insert({ opportunity_id: id, viewer_id: user?.id || null })
+      .insert({ opportunity_id: id, viewer_id: user?.id ?? null })
       .then(({ error }) => {
         if (error) console.error("View tracking error:", error);
       });
-  }, [id]);
+  }, [id, user?.id]);
 
   const handleShare = () => {
     const path = window.location.pathname;

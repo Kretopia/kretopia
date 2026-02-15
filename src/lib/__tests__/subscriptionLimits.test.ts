@@ -6,10 +6,11 @@ import {
   canAddPortfolioItem,
   getTierDisplayName,
   getUpgradeMessage,
+  getTierLimits,
 } from "@/lib/subscriptionLimits";
 
 describe("Subscription Limits", () => {
-  describe("TIER_LIMITS", () => {
+  describe("TIER_LIMITS (backward compat - individual defaults)", () => {
     it("free tier has correct swipe limit", () => {
       expect(TIER_LIMITS.free.swipesPerDay).toBe(30);
     });
@@ -35,6 +36,38 @@ describe("Subscription Limits", () => {
     });
   });
 
+  describe("getTierLimits (account-type-aware)", () => {
+    it("company free tier allows 3 opportunity postings", () => {
+      const limits = getTierLimits("free", "company");
+      expect(limits.maxOpportunityPostings).toBe(3);
+    });
+
+    it("company pro tier has unlimited opportunity postings", () => {
+      const limits = getTierLimits("pro", "company");
+      expect(limits.maxOpportunityPostings).toBe(-1);
+    });
+
+    it("company pro tier has applicant tracking", () => {
+      const limits = getTierLimits("pro", "company");
+      expect(limits.hasApplicantTracking).toBe(true);
+    });
+
+    it("individual pro tier does NOT have applicant tracking", () => {
+      const limits = getTierLimits("pro", "individual");
+      expect(limits.hasApplicantTracking).toBe(false);
+    });
+
+    it("company pro tier has branded page", () => {
+      const limits = getTierLimits("pro", "company");
+      expect(limits.hasBrandedPage).toBe(true);
+    });
+
+    it("company pro tier has AI talent scout", () => {
+      const limits = getTierLimits("pro", "company");
+      expect(limits.hasAITalentScout).toBe(true);
+    });
+  });
+
   describe("canPerformAction", () => {
     it("returns false for free tier gated features", () => {
       expect(canPerformAction("free", "canUndoSwipe")).toBe(false);
@@ -51,6 +84,14 @@ describe("Subscription Limits", () => {
     it("returns true for free tier numeric limits (truthy check)", () => {
       expect(canPerformAction("free", "swipesPerDay")).toBe(true);
     });
+
+    it("company pro has applicant tracking", () => {
+      expect(canPerformAction("pro", "hasApplicantTracking", "company")).toBe(true);
+    });
+
+    it("company free does NOT have applicant tracking", () => {
+      expect(canPerformAction("free", "hasApplicantTracking", "company")).toBe(false);
+    });
   });
 
   describe("getRemainingSwipes", () => {
@@ -58,7 +99,7 @@ describe("Subscription Limits", () => {
       expect(getRemainingSwipes("free", 0)).toBe(30);
       expect(getRemainingSwipes("free", 10)).toBe(20);
       expect(getRemainingSwipes("free", 30)).toBe(0);
-      expect(getRemainingSwipes("free", 35)).toBe(0); // never negative
+      expect(getRemainingSwipes("free", 35)).toBe(0);
     });
 
     it("returns -1 (unlimited) for pro tier", () => {
@@ -92,6 +133,11 @@ describe("Subscription Limits", () => {
     it("returns upgrade messages for free tier", () => {
       const msg = getUpgradeMessage("swipesPerDay", "free");
       expect(msg).toContain("Upgrade to Pro");
+    });
+
+    it("returns upgrade messages for company features", () => {
+      const msg = getUpgradeMessage("hasApplicantTracking", "free");
+      expect(msg).toContain("applicant tracking");
     });
 
     it("returns unlocked message for pro tier", () => {

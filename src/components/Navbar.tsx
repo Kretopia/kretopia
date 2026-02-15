@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Bot, Shield, Crown, Sparkles, Flame, Building2, PieChart } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Bot, Shield, Crown, Sparkles, Building2, PieChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -122,13 +122,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
         {user && !isLandingPage && (
           <div className="hidden lg:flex items-center gap-1">
             {[
-              { path: "/circle", icon: Users, label: "Circle" },
-              { path: "/spark", icon: Flame, label: "Spark" },
-              { path: "/profile", icon: User, label: "Profile" },
-              { path: "/market", icon: ShoppingBag, label: "Market" },
-              { path: "/desk", icon: Briefcase, label: "Desk" },
-              { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
-            ].map(({ path, icon: Icon, label }) => {
+              { path: "/circle", icon: Users, label: "Circle", comingSoon: false },
+              { path: "/profile", icon: User, label: "Profile", comingSoon: false },
+              { path: "/market", icon: ShoppingBag, label: "Market", comingSoon: false },
+              { path: "/desk", icon: Briefcase, label: "Desk", comingSoon: false },
+              { path: "/thrive-ai", icon: Bot, label: "ThriveAI", comingSoon: true },
+            ].map(({ path, icon: Icon, label, comingSoon }) => {
               const isActive = location.pathname === path;
               return (
                 <Link
@@ -143,6 +142,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 >
                   <Icon className="h-4 w-4" />
                   {label}
+                  {comingSoon && (
+                    <span className="text-[9px] font-semibold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full leading-none">Soon</span>
+                  )}
                 </Link>
               );
             })}

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,6 +60,9 @@ serve(async (req) => {
     const listingType = product.listing_type || 'digital';
     const buyerId = session.metadata?.buyer_id;
     const sellerId = session.metadata?.seller_id || product.user_id;
+    const buyerEmail = session.customer_details?.email || session.customer_email;
+
+    logStep("Buyer info", { buyerId, buyerEmail, listingType });
 
     // Check if order already exists
     const { data: existingOrder } = await supabaseClient
@@ -84,12 +88,11 @@ serve(async (req) => {
     // Calculate auto-release date based on listing type
     const autoReleaseDate = new Date();
     if (listingType === 'digital') {
-      // Digital: instant release (already captured)
-      autoReleaseDate.setDate(autoReleaseDate.getDate() + 3); // 3-day dispute window
+      autoReleaseDate.setDate(autoReleaseDate.getDate() + 3);
     } else if (listingType === 'physical') {
-      autoReleaseDate.setDate(autoReleaseDate.getDate() + 14); // 14 days for shipping
+      autoReleaseDate.setDate(autoReleaseDate.getDate() + 14);
     } else {
-      autoReleaseDate.setDate(autoReleaseDate.getDate() + 7); // 7 days for services
+      autoReleaseDate.setDate(autoReleaseDate.getDate() + 7);
     }
 
     // Determine delivery status
@@ -103,7 +106,7 @@ serve(async (req) => {
         const { data: signedData } = await supabaseClient
           .storage
           .from('product-files')
-          .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7-day expiry
+          .createSignedUrl(filePath, 60 * 60 * 24 * 7);
         
         if (signedData?.signedUrl) {
           downloadUrls.push(signedData.signedUrl);
@@ -193,6 +196,74 @@ serve(async (req) => {
         priority: 'high',
         link: '/orders',
       });
+
+    // Send purchase confirmation email to buyer
+    if (buyerEmail) {
+      try {
+        const resendApiKey = Deno.env.get("RESEND_API_KEY");
+        if (resendApiKey) {
+          const resend = new Resend(resendApiKey);
+          
+          const downloadLinksHtml = listingType === 'digital' && downloadUrls.length > 0
+            ? downloadUrls.map((url, i) => 
+                `<a href="${url}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;margin:4px 0;">Download File ${downloadUrls.length > 1 ? i + 1 : ''}</a>`
+              ).join('<br/>')
+            : '';
+
+          const emailHtml = `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <div style="text-align:center;margin-bottom:24px;">
+                <h1 style="color:#7c3aed;margin:0;">Purchase Confirmed! 🎉</h1>
+              </div>
+              
+              <div style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:20px;">
+                <h2 style="margin:0 0 8px 0;font-size:18px;">${product.title}</h2>
+                <p style="margin:0;color:#6b7280;font-size:14px;">
+                  ${listingType.charAt(0).toUpperCase() + listingType.slice(1)} • $${product.price} ${(product.currency || 'usd').toUpperCase()}
+                </p>
+              </div>
+
+              ${listingType === 'digital' ? `
+                <div style="margin-bottom:20px;">
+                  <h3 style="margin:0 0 12px 0;">Your Downloads</h3>
+                  ${downloadLinksHtml || '<p style="color:#6b7280;">Your files are available in your <a href="https://www.thrivein.io/purchases">Purchases</a> dashboard.</p>'}
+                  <p style="color:#9ca3af;font-size:12px;margin-top:12px;">Download links expire in 7 days. You can always access them from your purchases.</p>
+                </div>
+              ` : `
+                <div style="margin-bottom:20px;">
+                  <h3 style="margin:0 0 8px 0;">What's Next</h3>
+                  <p style="color:#6b7280;font-size:14px;">
+                    ${listingType === 'physical' 
+                      ? 'The seller has been notified and will arrange delivery. Your payment is held securely until you confirm receipt.'
+                      : 'The seller has been notified about your booking. Your payment is held securely until the service is completed.'}
+                  </p>
+                </div>
+              `}
+
+              <div style="text-align:center;margin-top:24px;">
+                <a href="https://www.thrivein.io/purchases" style="display:inline-block;background:#7c3aed;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;">View Your Purchases</a>
+              </div>
+
+              <p style="color:#9ca3af;font-size:12px;text-align:center;margin-top:24px;">
+                Order ID: ${order.id}<br/>
+                If you have any issues, contact us at support@thrivein.io
+              </p>
+            </div>
+          `;
+
+          await resend.emails.send({
+            from: 'ThriveIN <noreply@thrivein.io>',
+            to: buyerEmail,
+            subject: `Purchase Confirmed: ${product.title}`,
+            html: emailHtml,
+          });
+
+          logStep("Confirmation email sent", { to: buyerEmail });
+        }
+      } catch (emailError) {
+        logStep("Failed to send email (non-fatal)", { error: String(emailError) });
+      }
+    }
 
     logStep("Purchase completed successfully", { orderId: order.id });
 

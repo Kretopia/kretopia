@@ -158,7 +158,7 @@ const AppContent = () => {
             <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
             <Route path="/wallet" element={<Navigate to="/thrivepay" replace />} />
             <Route path="/purchases" element={<ProtectedRoute><MyPurchases /></ProtectedRoute>} />
-            <Route path="/purchase-success" element={<ProtectedRoute><PurchaseSuccess /></ProtectedRoute>} />
+            <Route path="/purchase-success" element={<PurchaseSuccess />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             

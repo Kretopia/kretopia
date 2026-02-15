@@ -213,8 +213,8 @@ export const CompanyProfileEditDialog = ({
   const handleSave = (data: { full_name: string; role: string; bio: string; location: string; company_size: string }) => {
     const updated = { ...editForm, ...data };
     onFormChange(updated);
-    // setTimeout ensures React has processed the state update before save reads editForm
-    setTimeout(onSave, 50);
+    // Pass data directly to onSave to avoid stale state issues
+    (onSave as any)(updated);
   };
 
   return (

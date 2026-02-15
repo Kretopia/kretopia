@@ -304,8 +304,8 @@ Return ONLY valid JSON array:
 
           if (projectError) throw projectError;
 
-          // Invite the accepted applicant as a collaborator
-          await supabase
+          // Invite the accepted applicant as a collaborator (two-step: insert then update to accepted)
+          const { data: collabData } = await supabase
             .from('project_collaborators')
             .insert({
               project_id: project.id,
@@ -314,7 +314,16 @@ Return ONLY valid JSON array:
               invited_by: user.id,
               role: 'member',
               status: 'pending',
-            });
+            })
+            .select()
+            .single();
+
+          if (collabData) {
+            await supabase
+              .from('project_collaborators')
+              .update({ status: 'accepted' })
+              .eq('id', collabData.id);
+          }
 
           // Send project invitation notification
           const { data: userProfile } = await supabase

@@ -323,8 +323,19 @@ const Auth = () => {
     analytics.featureUsed("google_signin_attempt");
     
     try {
+      // Use the published Lovable URL for OAuth redirect when on custom domain
+      // The Lovable auth bridge only allows *.lovable.app redirect URIs
+      const isCustomDomain =
+        !window.location.hostname.includes("lovable.app") &&
+        !window.location.hostname.includes("lovableproject.com") &&
+        !window.location.hostname.includes("localhost");
+      
+      const redirectUri = isCustomDomain
+        ? "https://thrivein-new-beta.lovable.app"
+        : window.location.origin;
+
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: redirectUri,
       });
       
       // If redirected (full page navigation), nothing more to do

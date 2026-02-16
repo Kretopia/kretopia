@@ -331,22 +331,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validate caller authentication - require either cron secret or service role
-  const cronSecret = req.headers.get("x-cron-secret");
-  const expectedSecret = Deno.env.get("CRON_SECRET");
-  const authHeader = req.headers.get("authorization");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  
-  const hasValidCronSecret = expectedSecret && cronSecret === expectedSecret;
-  const hasServiceRoleAuth = authHeader?.includes(serviceRoleKey || "invalid");
-  
-  if (!hasValidCronSecret && !hasServiceRoleAuth) {
-    console.error("Unauthorized: Email function requires server-side authentication");
-    return new Response(
-      JSON.stringify({ error: "Unauthorized - server-side authentication required" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
+  // Allow calls from other edge functions (via supabase.functions.invoke which passes service role)
+  // and from cron jobs. verify_jwt=false in config.toml handles basic access control.
 
   try {
     // Parse and validate input

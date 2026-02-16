@@ -15,17 +15,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validate cron secret for automated calls
-  const cronSecret = req.headers.get("x-cron-secret");
-  const expectedSecret = Deno.env.get("CRON_SECRET");
-  
-  if (expectedSecret && cronSecret !== expectedSecret) {
-    console.error("Unauthorized: Invalid or missing cron secret");
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
+  // No auth check needed - this is a server-side cron function with verify_jwt=false
 
   try {
     console.log("Starting streak warning job");

@@ -1,199 +1,214 @@
-import { useState, useRef } from "react";
-import { MessageSquarePlus, Send, X, Camera, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { MessageSquarePlus, Send, X, Loader2, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const CATEGORIES = [
-  { value: "bug", label: "🐛 Bug", color: "destructive" as const },
-  { value: "feature", label: "💡 Feature", color: "default" as const },
-  { value: "ui", label: "🎨 UI/UX", color: "secondary" as const },
-  { value: "general", label: "💬 General", color: "outline" as const },
-];
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
 
 export function FeedbackWidget() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [category, setCategory] = useState("general");
-  const [screenshot, setScreenshot] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [category, setCategory] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Only show for logged-in users
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }, 50);
+  };
+
+  useEffect(() => {
+    if (open && messages.length === 0) {
+      setMessages([{
+        role: "assistant",
+        content: "Hey! 👋 I'm here to hear your thoughts on ThriveIN. Got a bug to report, a feature idea, or just general feedback? Let me know!",
+      }]);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [open]);
+
   if (!user) return null;
 
-  const handleScreenshot = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({ title: "File too large", description: "Max 5MB", variant: "destructive" });
-        return;
-      }
-      setScreenshot(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
+  const handleSend = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
 
-  const removeScreenshot = () => {
-    setScreenshot(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+    const userMsg: ChatMessage = { role: "user", content: text };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setInput("");
+    setLoading(true);
+    scrollToBottom();
 
-  const handleSubmit = async () => {
-    if (!message.trim()) {
-      toast({ title: "Please enter your feedback", variant: "destructive" });
-      return;
-    }
-
-    setSubmitting(true);
     try {
-      let screenshotUrl: string | null = null;
-
-      if (screenshot) {
-        const ext = screenshot.name.split(".").pop() || "png";
-        const path = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from("feedback-screenshots")
-          .upload(path, screenshot);
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage
-          .from("feedback-screenshots")
-          .getPublicUrl(path);
-        screenshotUrl = urlData.publicUrl;
-      }
-
-      const { error } = await supabase.from("feedback").insert({
-        user_id: user.id,
-        category,
-        message: message.trim(),
-        screenshot_url: screenshotUrl,
-        page_url: window.location.pathname,
+      const { data, error } = await supabase.functions.invoke("feedback-chat", {
+        body: {
+          messages: newMessages.filter(m => m.role === "user" || m.role === "assistant")
+            .map(m => ({ role: m.role, content: m.content })),
+          pageUrl: window.location.pathname,
+        },
       });
 
       if (error) throw error;
 
-      toast({ title: "Thanks for your feedback! 🙏", description: "We'll review it soon." });
-      setMessage("");
-      setCategory("general");
-      removeScreenshot();
-      setOpen(false);
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      if (data?.message) {
+        setMessages(prev => [...prev, { role: "assistant", content: data.message }]);
+      }
+      if (data?.saved) {
+        setSaved(true);
+        toast({ title: "Feedback saved! 🙏", description: "Thanks for helping us improve." });
+      }
+      if (data?.category) {
+        setCategory(data.category);
+      }
+    } catch (err: any) {
+      const errMsg = err?.message || "Something went wrong";
+      toast({ title: "Error", description: errMsg, variant: "destructive" });
     } finally {
-      setSubmitting(false);
+      setLoading(false);
+      scrollToBottom();
     }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    // Reset after animation
+    setTimeout(() => {
+      setMessages([]);
+      setSaved(false);
+      setCategory(null);
+    }, 300);
+  };
+
+  const categoryColors: Record<string, string> = {
+    bug: "bg-red-500/10 text-red-500",
+    feature: "bg-blue-500/10 text-blue-500",
+    ui: "bg-purple-500/10 text-purple-500",
+    general: "bg-muted text-muted-foreground",
+  };
+
+  const categoryLabels: Record<string, string> = {
+    bug: "🐛 Bug",
+    feature: "💡 Feature",
+    ui: "🎨 UI/UX",
+    general: "💬 General",
   };
 
   return (
     <>
-      {/* Floating Action Button */}
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center"
-        aria-label="Send feedback"
-      >
-        <MessageSquarePlus className="h-5 w-5" />
-      </button>
+      {/* FAB */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center"
+          aria-label="Send feedback"
+        >
+          <MessageSquarePlus className="h-5 w-5" />
+        </button>
+      )}
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Send Feedback</DialogTitle>
-            <DialogDescription>
-              Help us improve ThriveIN — bugs, ideas, anything goes!
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            {/* Category selector */}
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((cat) => (
-                <Badge
-                  key={cat.value}
-                  variant={category === cat.value ? "default" : "outline"}
-                  className={`cursor-pointer transition-all ${
-                    category === cat.value ? "ring-2 ring-primary/30" : "hover:bg-accent"
-                  }`}
-                  onClick={() => setCategory(cat.value)}
-                >
-                  {cat.label}
-                </Badge>
-              ))}
-            </div>
-
-            {/* Message */}
-            <Textarea
-              placeholder="What's on your mind? Tell us about a bug, suggest a feature, or share general feedback..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={4}
-              maxLength={2000}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground text-right">{message.length}/2000</p>
-
-            {/* Screenshot */}
+      {/* Chat panel */}
+      {open && (
+        <div className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 w-[340px] max-h-[480px] rounded-2xl border bg-card shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
             <div className="flex items-center gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleScreenshot}
-                className="hidden"
+              <Bot className="h-5 w-5 text-primary" />
+              <span className="font-semibold text-sm">Feedback</span>
+              {category && (
+                <Badge variant="secondary" className={`text-xs ${categoryColors[category] || ""}`}>
+                  {categoryLabels[category] || category}
+                </Badge>
+              )}
+            </div>
+            <button onClick={handleClose} className="h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[200px] max-h-[320px]">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                {msg.role === "assistant" && (
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Bot className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                )}
+                <div className={`rounded-2xl px-3 py-2 text-sm max-w-[240px] ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-br-md"
+                    : "bg-muted rounded-bl-md"
+                }`}>
+                  {msg.content}
+                </div>
+                {msg.role === "user" && (
+                  <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <User className="h-3.5 w-3.5 text-primary-foreground" />
+                  </div>
+                )}
+              </div>
+            ))}
+            {loading && (
+              <div className="flex gap-2 items-center">
+                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <div className="bg-muted rounded-2xl rounded-bl-md px-3 py-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              </div>
+            )}
+            {saved && (
+              <div className="text-center">
+                <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600">
+                  ✓ Feedback recorded
+                </Badge>
+              </div>
+            )}
+          </div>
+
+          {/* Input */}
+          <div className="border-t px-3 py-2">
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+              className="flex gap-2"
+            >
+              <Input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your feedback..."
+                className="text-sm h-9"
+                disabled={loading}
+                maxLength={1000}
               />
               <Button
-                type="button"
-                variant="outline"
+                type="submit"
                 size="sm"
-                onClick={() => fileInputRef.current?.click()}
+                className="h-9 w-9 p-0"
+                disabled={loading || !input.trim()}
               >
-                <Camera className="h-4 w-4 mr-1" />
-                {screenshot ? "Change" : "Add Screenshot"}
+                <Send className="h-4 w-4" />
               </Button>
-              {previewUrl && (
-                <div className="relative h-10 w-10 rounded border overflow-hidden">
-                  <img src={previewUrl} alt="Screenshot preview" className="h-full w-full object-cover" />
-                  <button
-                    onClick={removeScreenshot}
-                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Submit */}
-            <Button
-              onClick={handleSubmit}
-              disabled={submitting || !message.trim()}
-              className="w-full"
-            >
-              {submitting ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending...</>
-              ) : (
-                <><Send className="h-4 w-4 mr-2" />Send Feedback</>
-              )}
-            </Button>
+            </form>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   );
 }

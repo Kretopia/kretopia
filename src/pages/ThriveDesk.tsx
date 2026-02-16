@@ -7,7 +7,7 @@ import { Loader2, MessageSquare, CheckSquare, FolderOpen, DollarSign, StickyNote
 import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
-import { SimpleTaskList } from "@/components/project/SimpleTaskList";
+import { TaskBoard } from "@/components/project/TaskBoard";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
@@ -288,11 +288,10 @@ const ThriveDesk = () => {
                 {activeTab === "tasks" && (
                   <>
                     <UsageLimitBanner current={tasks.length} limit={FREE_LIMITS.tasks} itemName="tasks" isPro={isPro} />
-                    <SimpleTaskList
+                    <TaskBoard
                       projectId={projectId!}
                       tasks={tasks}
-                      onTasksChanged={fetchProjectData}
-                      currentUserId={user?.id || ''}
+                      onUpdate={fetchProjectData}
                       collaborators={collaborators}
                     />
                   </>

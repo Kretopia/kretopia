@@ -9,16 +9,16 @@ import { Check, Loader2, Sparkles, Zap, Crown, CircleDot } from "lucide-react";
 import { SUBSCRIPTION_PRODUCTS, PRO_FEATURES, FREE_FEATURES, type AccountType } from "@/lib/subscriptionConfig";
 
 const FOUNDER_FEATURES = [
-  "⭕ Exclusive Founder Circle badge",
-  "♾️ Lifetime Pro access — never pay again",
-  "🎁 5,000 Bonus XP on activation",
-  "💰 Only 5% platform fees (vs 15% free / 8% Pro)",
-  "🎟️ Free & discounted event access",
-  "🏷️ Premium Partner Membership (when launched)",
-  "🚀 All Pro features included forever",
-  "🎯 Priority support & early feature access",
-  "📊 All AI tools & analytics unlocked",
-  "🏆 Founding member recognition",
+  "Exclusive Founder Circle badge",
+  "Lifetime Pro access — never pay again",
+  "5,000 Bonus XP on activation",
+  "Only 5% platform fees (vs 15% free / 8% Pro)",
+  "Free & discounted event access",
+  "Premium Partner Membership (when launched)",
+  "All Pro features included forever",
+  "Priority support & early feature access",
+  "All AI tools & analytics unlocked",
+  "Founding member recognition",
 ];
 
 function getSubscriptionTiers(accountType: AccountType) {

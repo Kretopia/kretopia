@@ -5466,12 +5466,50 @@ export type Database = {
           },
         ]
       }
+      spark_room_members: {
+        Row: {
+          id: string
+          is_muted: boolean
+          joined_at: string
+          role: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_muted?: boolean
+          joined_at?: string
+          role?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_muted?: boolean
+          joined_at?: string
+          role?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spark_room_messages: {
         Row: {
           content: string
           created_at: string
           id: string
           media_url: string | null
+          pinned_at: string | null
+          pinned_by: string | null
+          reply_to_id: string | null
           room_id: string
           user_id: string
         }
@@ -5480,6 +5518,9 @@ export type Database = {
           created_at?: string
           id?: string
           media_url?: string | null
+          pinned_at?: string | null
+          pinned_by?: string | null
+          reply_to_id?: string | null
           room_id: string
           user_id: string
         }
@@ -5488,15 +5529,57 @@ export type Database = {
           created_at?: string
           id?: string
           media_url?: string | null
+          pinned_at?: string | null
+          pinned_by?: string | null
+          reply_to_id?: string | null
           room_id?: string
           user_id?: string
         }
         Relationships: [
           {
+            foreignKeyName: "spark_room_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "spark_room_messages"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "spark_room_messages_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spark_room_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_room_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "spark_room_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -5510,8 +5593,11 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          is_trending: boolean | null
+          last_message_at: string | null
           member_count: number
           message_count: number
+          rules: string | null
           title: string
           updated_at: string
         }
@@ -5523,8 +5609,11 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_trending?: boolean | null
+          last_message_at?: string | null
           member_count?: number
           message_count?: number
+          rules?: string | null
           title: string
           updated_at?: string
         }
@@ -5536,8 +5625,11 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_trending?: boolean | null
+          last_message_at?: string | null
           member_count?: number
           message_count?: number
+          rules?: string | null
           title?: string
           updated_at?: string
         }

@@ -56,9 +56,11 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No customer found");
 
-      // If this is an internal/complimentary Pro account, keep Pro tier
-      if (profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active') {
-        logStep("Complimentary Pro profile detected, skipping downgrade");
+      // If this is an internal/complimentary Pro account or active trial with future end date, keep Pro tier
+      const isComplimentary = profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active';
+      const isManualTrial = profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'trialing';
+      if (isComplimentary || isManualTrial) {
+        logStep("Complimentary/trial Pro profile detected, skipping downgrade", { status: profileData.subscription_status });
         return new Response(JSON.stringify({
           subscribed: false,
           tier: 'pro',
@@ -173,9 +175,11 @@ serve(async (req) => {
     } else {
       logStep("No active subscription found");
 
-      // If this is an internal/complimentary Pro account, keep Pro tier
-      if (profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active') {
-        logStep("Complimentary Pro profile detected, skipping downgrade (no active Stripe sub)");
+      // If this is an internal/complimentary Pro account or manual trial, keep Pro tier
+      const isComplimentaryNoSub = profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active';
+      const isManualTrialNoSub = profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'trialing';
+      if (isComplimentaryNoSub || isManualTrialNoSub) {
+        logStep("Complimentary/trial Pro profile detected, skipping downgrade (no active Stripe sub)");
         // Keep the tier as 'pro' for the response
         tier = 'pro';
       } else {

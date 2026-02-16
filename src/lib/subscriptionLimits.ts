@@ -5,7 +5,7 @@
 
 import type { AccountType } from "./subscriptionConfig";
 
-export type SubscriptionTier = "free" | "pro";
+export type SubscriptionTier = "free" | "pro" | "founder";
 
 export interface TierLimits {
   swipesPerDay: number; // -1 = unlimited
@@ -58,6 +58,22 @@ const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasPriorityListing: false,
     hasAITalentScout: false,
   },
+  founder: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: 3,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: false,
+    hasBrandedPage: false,
+    hasOpportunityAnalytics: false,
+    hasPriorityListing: false,
+    hasAITalentScout: false,
+  },
 };
 
 const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
@@ -93,20 +109,41 @@ const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasPriorityListing: true,
     hasAITalentScout: true,
   },
+  founder: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: 3,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+  },
 };
 
 /** Legacy flat export for backward compatibility (defaults to individual) */
-export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = INDIVIDUAL_LIMITS;
+export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
+  ...INDIVIDUAL_LIMITS,
+  founder: INDIVIDUAL_LIMITS.pro, // Founder gets all Pro perks
+};
 
 /**
  * Get tier limits based on account type
+ * Founder tier maps to Pro limits
  */
 export const getTierLimits = (
   tier: SubscriptionTier,
   accountType: AccountType = "individual"
 ): TierLimits => {
+  const effectiveTier = tier === "founder" ? "pro" : tier;
   const limitsMap = accountType === "company" ? COMPANY_LIMITS : INDIVIDUAL_LIMITS;
-  return limitsMap[tier];
+  return limitsMap[effectiveTier];
 };
 
 /**
@@ -154,6 +191,7 @@ export const getTierDisplayName = (tier: SubscriptionTier): string => {
   const names: Record<SubscriptionTier, string> = {
     free: "Spark",
     pro: "Pro",
+    founder: "Founder Circle ⭕",
   };
   return names[tier];
 };

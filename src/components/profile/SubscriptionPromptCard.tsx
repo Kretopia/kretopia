@@ -12,7 +12,7 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
   const navigate = useNavigate();
 
   // Only show for free tier users
-  if (currentTier !== 'free') return null;
+  if (currentTier !== 'free') return null; // Pro and Founder both hide this
 
   const proFeatures = [
     "Unlimited swipes & matches",

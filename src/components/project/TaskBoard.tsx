@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, GripVertical, Calendar, CheckSquare } from "lucide-react";
 import { 
   DndContext, 
-  closestCenter, 
+  rectIntersection, 
   KeyboardSensor, 
   PointerSensor, 
   TouchSensor,
@@ -246,10 +246,11 @@ function DroppableColumn({ status, tasks, onUpdate, isOver, isDraggingAny, colla
   );
 }
 
-export function TaskBoard({ tasks, projectId, onUpdate, collaborators = [] }: TaskBoardProps) {
+export function TaskBoard({ tasks: externalTasks, projectId, onUpdate, collaborators = [] }: TaskBoardProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Record<string, string>>({});
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -258,6 +259,11 @@ export function TaskBoard({ tasks, projectId, onUpdate, collaborators = [] }: Ta
     assigned_to: 'unassigned'
   });
   const { toast } = useToast();
+
+  // Apply optimistic updates to tasks
+  const tasks = externalTasks.map(t => 
+    optimisticUpdates[t.id] ? { ...t, status: optimisticUpdates[t.id] } : t
+  );
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
 
@@ -305,7 +311,9 @@ export function TaskBoard({ tasks, projectId, onUpdate, collaborators = [] }: Ta
     }
 
     if (activeTask && STATUSES.some(s => s.value === targetStatus) && activeTask.status !== targetStatus) {
-      // Optimistic update
+      // Optimistic update - instant UI feedback
+      setOptimisticUpdates(prev => ({ ...prev, [activeTask.id]: targetStatus }));
+
       const { error } = await supabase
         .from('project_tasks')
         .update({ status: targetStatus })
@@ -313,11 +321,23 @@ export function TaskBoard({ tasks, projectId, onUpdate, collaborators = [] }: Ta
 
       if (error) {
         console.error('Task update error:', error);
+        // Revert optimistic update
+        setOptimisticUpdates(prev => {
+          const next = { ...prev };
+          delete next[activeTask.id];
+          return next;
+        });
         toast({ title: "Error moving task", description: error.message, variant: "destructive" });
       } else {
         toast({ 
           title: "Task moved! ✅",
           description: `Moved to ${STATUSES.find(s => s.value === targetStatus)?.label}`
+        });
+        // Clear optimistic update and refetch
+        setOptimisticUpdates(prev => {
+          const next = { ...prev };
+          delete next[activeTask.id];
+          return next;
         });
         onUpdate();
       }
@@ -469,13 +489,13 @@ export function TaskBoard({ tasks, projectId, onUpdate, collaborators = [] }: Ta
       ) : (
         <DndContext 
           sensors={sensors} 
-          collisionDetection={closestCenter} 
+          collisionDetection={rectIntersection} 
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2 md:gap-3">
             {STATUSES.map(status => {
               const statusTasks = tasks.filter(t => t.status === status.value);
               const isOver = overId === status.value || statusTasks.some(t => t.id === overId);

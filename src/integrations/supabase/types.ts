@@ -1915,6 +1915,45 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          admin_notes: string | null
+          category: string
+          created_at: string
+          id: string
+          message: string
+          page_url: string | null
+          screenshot_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          page_url?: string | null
+          screenshot_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          page_url?: string | null
+          screenshot_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       founder_circle_purchases: {
         Row: {
           amount: number

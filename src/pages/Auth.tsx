@@ -56,6 +56,7 @@ const Auth = () => {
   const [confirmationEmail, setConfirmationEmail] = useState("");
   const [resendingEmail, setResendingEmail] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -315,53 +316,38 @@ const Auth = () => {
     setLoading(false);
   };
 
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
+  const handleOAuthSignIn = async (provider: "google" | "apple") => {
+    const setLoadingFn = provider === "google" ? setGoogleLoading : setAppleLoading;
+    setLoadingFn(true);
     
-    // Track Google sign-in attempt
     const { analytics } = await import("@/lib/analytics");
-    analytics.featureUsed("google_signin_attempt");
+    analytics.featureUsed(`${provider}_signin_attempt`);
     
     try {
-      // Detect if we're on a custom domain (not *.lovable.app or *.lovableproject.com)
       const isCustomDomain =
         !window.location.hostname.includes("lovable.app") &&
         !window.location.hostname.includes("lovableproject.com") &&
         !window.location.hostname.includes("localhost");
 
       if (isCustomDomain) {
-        // CUSTOM DOMAIN PATH: Bypass Lovable auth-bridge entirely
-        // The auth-bridge only allows *.lovable.app redirect URIs, so we use
-        // Supabase OAuth directly with skipBrowserRedirect to control the flow
-        console.log("[Google Auth] Custom domain detected:", window.location.origin);
+        console.log(`[${provider} Auth] Custom domain detected:`, window.location.origin);
         const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
+          provider,
           options: {
             redirectTo: `${window.location.origin}`,
             skipBrowserRedirect: true,
           },
         });
-        console.log("[Google Auth] OAuth response:", { url: data?.url, error });
+        console.log(`[${provider} Auth] OAuth response:`, { url: data?.url, error });
 
         if (error) throw error;
 
         if (data?.url) {
-          // Validate the OAuth URL for security (prevent open redirects)
-          const oauthUrl = new URL(data.url);
-          const allowedHosts = [
-            "accounts.google.com",
-            "kwmcocsitwssrtzkdojh.supabase.co",
-          ];
-          if (!allowedHosts.some((host) => oauthUrl.hostname === host)) {
-            throw new Error("Invalid OAuth redirect URL");
-          }
-          // Navigate to Google's OAuth consent screen
           window.location.href = data.url;
           return;
         }
       } else {
-        // LOVABLE DOMAIN PATH: Use managed auth-bridge (handles popup flow)
-        const result = await lovable.auth.signInWithOAuth("google");
+        const result = await lovable.auth.signInWithOAuth(provider);
         
         if ('redirected' in result && result.redirected) {
           return;
@@ -371,57 +357,60 @@ const Auth = () => {
           const errorMsg = result.error.message;
           
           if (errorMsg.includes("cancelled")) {
-            setGoogleLoading(false);
+            setLoadingFn(false);
             return;
           }
           
           if (errorMsg.includes("Popup was blocked") || errorMsg.includes("blocked")) {
-            analytics.errorOccurred("google_signin", "popup_blocked", "auth");
+            analytics.errorOccurred(`${provider}_signin`, "popup_blocked", "auth");
             toast({
               title: "Pop-up Blocked",
               description: "Please allow pop-ups for this site or try opening the app in a new tab.",
               variant: "destructive",
             });
-            setGoogleLoading(false);
+            setLoadingFn(false);
             return;
           }
 
           if (errorMsg.includes("Preview mode") || errorMsg.includes("not supported")) {
             toast({
               title: "Open in New Tab",
-              description: "Google sign-in works best when the app is opened directly. Click the arrow icon to open in a new tab.",
+              description: `${provider === "google" ? "Google" : "Apple"} sign-in works best when the app is opened directly. Click the arrow icon to open in a new tab.`,
               variant: "destructive",
             });
-            setGoogleLoading(false);
+            setLoadingFn(false);
             return;
           }
           
-          analytics.errorOccurred("google_signin", errorMsg, "auth");
+          analytics.errorOccurred(`${provider}_signin`, errorMsg, "auth");
           toast({
-            title: "Google Sign-In Failed",
+            title: `${provider === "google" ? "Google" : "Apple"} Sign-In Failed`,
             description: errorMsg,
             variant: "destructive",
           });
-          setGoogleLoading(false);
+          setLoadingFn(false);
           return;
         } else {
-          analytics.signIn('google');
+          analytics.signIn(provider);
           toast({
             title: "Welcome!",
-            description: "Signed in with Google successfully.",
+            description: `Signed in with ${provider === "google" ? "Google" : "Apple"} successfully.`,
           });
         }
       }
     } catch (err: any) {
-      console.error("Google sign-in error:", err);
+      console.error(`${provider} sign-in error:`, err);
       toast({
         title: "Error",
-        description: "Failed to sign in with Google. Please try again.",
+        description: `Failed to sign in with ${provider === "google" ? "Google" : "Apple"}. Please try again.`,
         variant: "destructive",
       });
-      setGoogleLoading(false);
+      setLoadingFn(false);
     }
   };
+
+  const handleGoogleSignIn = () => handleOAuthSignIn("google");
+  const handleAppleSignIn = () => handleOAuthSignIn("apple");
 
   const validateInviteCode = async (code: string) => {
     if (!code.trim()) {
@@ -829,21 +818,37 @@ const Auth = () => {
                 </div>
               </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleGoogleSignIn}
-                disabled={loading || googleLoading}
-              >
-                {googleLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Chrome className="mr-2 h-4 w-4" />
-                )}
-                Google
-              </Button>
-              
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading || googleLoading}
+                >
+                  {googleLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Chrome className="mr-2 h-4 w-4" />
+                  )}
+                  Google
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleAppleSignIn}
+                  disabled={loading || appleLoading}
+                >
+                  {appleLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                  )}
+                  Apple
+                </Button>
+              </div>
+
               <div className="mt-4 text-center">
                 <button
                   type="button"
@@ -990,20 +995,36 @@ const Auth = () => {
                   </div>
                 </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading || googleLoading}
-                >
-                  {googleLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Chrome className="mr-2 h-4 w-4" />
-                  )}
-                  Google
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleGoogleSignIn}
+                    disabled={loading || googleLoading}
+                  >
+                    {googleLoading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Chrome className="mr-2 h-4 w-4" />
+                    )}
+                    Google
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleAppleSignIn}
+                    disabled={loading || appleLoading}
+                  >
+                    {appleLoading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                    )}
+                    Apple
+                  </Button>
+                </div>
 
                 <div className="flex gap-2">
                   <Button

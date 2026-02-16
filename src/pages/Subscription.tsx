@@ -224,7 +224,7 @@ export default function Subscription() {
 
       {/* Founder Circle Card */}
       <div className="max-w-2xl mx-auto mb-12">
-        <Card className={`relative border-2 overflow-hidden ${
+        <Card className={`relative border-2 ${
           isFounder 
             ? 'border-amber-500 bg-gradient-to-br from-amber-500/10 via-background to-orange-500/10' 
             : 'border-amber-500/50 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5'
@@ -244,7 +244,7 @@ export default function Subscription() {
             <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
               <Crown className="h-7 w-7 text-white" />
             </div>
-            <CardTitle className="text-2xl">Founder Circle ⭕</CardTitle>
+            <CardTitle className="text-2xl">Founder Circle <span className="text-amber-500">⭕</span></CardTitle>
             <CardDescription>
               Join the founding members. Lifetime Pro access with exclusive perks.
             </CardDescription>

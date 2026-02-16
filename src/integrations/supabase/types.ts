@@ -1917,36 +1917,42 @@ export type Database = {
       }
       feedback: {
         Row: {
+          action_taken: string | null
           admin_notes: string | null
           category: string
           created_at: string
           id: string
           message: string
           page_url: string | null
+          priority: string | null
           screenshot_url: string | null
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          action_taken?: string | null
           admin_notes?: string | null
           category?: string
           created_at?: string
           id?: string
           message: string
           page_url?: string | null
+          priority?: string | null
           screenshot_url?: string | null
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          action_taken?: string | null
           admin_notes?: string | null
           category?: string
           created_at?: string
           id?: string
           message?: string
           page_url?: string | null
+          priority?: string | null
           screenshot_url?: string | null
           status?: string
           updated_at?: string

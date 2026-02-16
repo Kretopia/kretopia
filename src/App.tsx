@@ -70,6 +70,7 @@ const Accounting = lazy(() => import("./pages/Accounting"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const Cre8 = lazy(() => import("./pages/Cre8"));
 const Cre8Leaderboard = lazy(() => import("./pages/Cre8Leaderboard"));
+const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -191,6 +192,7 @@ const AppContent = () => {
             <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
             <Route path="/waitlist-admin" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
             <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
+            <Route path="/feedback-admin" element={<ProtectedRoute><FeedbackAdmin /></ProtectedRoute>} />
 
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />

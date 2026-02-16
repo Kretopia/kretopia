@@ -13,6 +13,7 @@ import BottomNav from "./components/BottomNav";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboarding";
 import { SkipLink } from "./components/ui/skip-link";
+import { FeedbackWidget } from "./components/FeedbackWidget";
 import { analytics } from "@/lib/analytics";
 
 // Lazy load active page components
@@ -251,6 +252,7 @@ const App = () => {
                 <VercelAnalytics />
                 <BrowserRouter>
                   <InteractiveOnboarding />
+                  <FeedbackWidget />
                   <AppContent />
                 </BrowserRouter>
               </TooltipProvider>

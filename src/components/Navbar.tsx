@@ -320,10 +320,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         <Button 
                           variant="ghost" 
                           className="justify-start gap-3 h-12 w-full"
-                          onClick={() => handleNavigation("/feedback-admin")}
+                          onClick={() => handleNavigation("/admin")}
                         >
                           <Shield className="h-5 w-5" />
-                          Feedback Dashboard
+                          Admin Panel
                         </Button>
                       </>
                     )}

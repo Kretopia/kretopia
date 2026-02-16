@@ -6,11 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone } from "lucide-react";
+import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare } from "lucide-react";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
 import { OutreachTab } from "@/components/admin/OutreachTab";
+import { FeedbackTab } from "@/components/admin/FeedbackTab";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -236,10 +237,14 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-6 h-auto p-1">
           <TabsTrigger value="users" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Users</span>
+          </TabsTrigger>
+          <TabsTrigger value="feedback" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <MessageSquare className="h-4 w-4" />
+            <span className="hidden sm:inline">Feedback</span>
           </TabsTrigger>
           <TabsTrigger value="unclaimed" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
             <UserPlus className="h-4 w-4" />
@@ -261,6 +266,10 @@ export default function Admin() {
 
         <TabsContent value="users" className="mt-4 sm:mt-6">
           <UsersTab />
+        </TabsContent>
+
+        <TabsContent value="feedback" className="mt-4 sm:mt-6">
+          <FeedbackTab />
         </TabsContent>
 
         <TabsContent value="unclaimed" className="mt-4 sm:mt-6">

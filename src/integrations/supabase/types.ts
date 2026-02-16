@@ -1915,6 +1915,42 @@ export type Database = {
           },
         ]
       }
+      founder_circle_purchases: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          purchased_at: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          purchased_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          purchased_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       industry_stats: {
         Row: {
           created_at: string
@@ -7124,6 +7160,7 @@ export type Database = {
           skill_name: string
         }[]
       }
+      get_founder_circle_count: { Args: never; Returns: number }
       get_mutual_connections: {
         Args: { user1_id: string; user2_id: string }
         Returns: {

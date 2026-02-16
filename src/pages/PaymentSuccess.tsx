@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, Loader2, Sparkles, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function PaymentSuccess() {
@@ -10,11 +10,12 @@ export default function PaymentSuccess() {
   const navigate = useNavigate();
   const [verifying, setVerifying] = useState(true);
   const [tier, setTier] = useState<string>("");
+  const [bonusXp, setBonusXp] = useState<number | null>(null);
+  const isFounder = searchParams.get("type") === "founder";
 
   useEffect(() => {
     const verifyPayment = async () => {
       try {
-        // Give Stripe a moment to process the payment
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         const { data: { user } } = await supabase.auth.getUser();
@@ -23,20 +24,37 @@ export default function PaymentSuccess() {
           return;
         }
 
-        // Call check-subscription to sync with Stripe and update profile
-        console.log('[PaymentSuccess] Syncing subscription with Stripe...');
-        const { data: syncData, error: syncError } = await supabase.functions.invoke("check-subscription");
-        
-        if (syncError) {
-          console.error('[PaymentSuccess] Error syncing subscription:', syncError);
+        if (isFounder) {
+          // Verify founder payment
+          const sessionId = searchParams.get("session_id");
+          if (sessionId) {
+            console.log('[PaymentSuccess] Verifying founder payment...');
+            const { data: founderData, error: founderError } = await supabase.functions.invoke(
+              "verify-founder-payment",
+              { body: { sessionId } }
+            );
+            if (founderError) {
+              console.error('[PaymentSuccess] Founder verification error:', founderError);
+            } else {
+              console.log('[PaymentSuccess] Founder verified:', founderData);
+              if (founderData?.bonus_xp) {
+                setBonusXp(founderData.bonus_xp);
+              }
+            }
+          }
         } else {
-          console.log('[PaymentSuccess] Subscription synced:', syncData);
+          // Regular subscription sync
+          console.log('[PaymentSuccess] Syncing subscription with Stripe...');
+          const { data: syncData, error: syncError } = await supabase.functions.invoke("check-subscription");
+          if (syncError) {
+            console.error('[PaymentSuccess] Error syncing subscription:', syncError);
+          } else {
+            console.log('[PaymentSuccess] Subscription synced:', syncData);
+          }
         }
 
-        // Wait a moment for the update to propagate
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Now fetch the updated subscription status
         const { data: profile } = await supabase
           .from("profiles")
           .select("subscription_tier")
@@ -47,7 +65,6 @@ export default function PaymentSuccess() {
           setTier(profile.subscription_tier);
           console.log('[PaymentSuccess] Updated tier:', profile.subscription_tier);
           
-          // Track subscription start
           const { analytics } = await import("@/lib/analytics");
           analytics.subscriptionStart(profile.subscription_tier);
         }
@@ -59,7 +76,7 @@ export default function PaymentSuccess() {
     };
 
     verifyPayment();
-  }, [navigate]);
+  }, [navigate, searchParams, isFounder]);
 
   if (verifying) {
     return (
@@ -77,16 +94,29 @@ export default function PaymentSuccess() {
     );
   }
 
+  const isFounderTier = tier === "founder";
+
   return (
     <div className="container mx-auto py-16 px-4 flex items-center justify-center min-h-screen">
-      <Card className="max-w-md w-full">
+      <Card className={`max-w-md w-full ${isFounderTier ? 'border-amber-500 border-2' : ''}`}>
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+          <div className={`mx-auto mb-4 h-16 w-16 rounded-full flex items-center justify-center ${
+            isFounderTier 
+              ? 'bg-gradient-to-br from-amber-400 to-orange-500' 
+              : 'bg-green-100 dark:bg-green-900/30'
+          }`}>
+            {isFounderTier 
+              ? <Crown className="h-10 w-10 text-white" />
+              : <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+            }
           </div>
-          <CardTitle className="text-2xl">Payment Successful!</CardTitle>
+          <CardTitle className="text-2xl">
+            {isFounderTier ? "Welcome to the Founder Circle! ⭕" : "Payment Successful!"}
+          </CardTitle>
           <CardDescription className="text-base mt-2">
-            Welcome to {tier === "creator_pro" ? "Creator Pro" : "Thriver"}! Your subscription is now active.
+            {isFounderTier 
+              ? "You're now a founding member with lifetime Pro access." 
+              : "Welcome to Pro! Your subscription is now active."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -96,15 +126,22 @@ export default function PaymentSuccess() {
               <div>
                 <p className="font-semibold text-sm">You now have access to:</p>
                 <ul className="text-sm text-muted-foreground mt-1 space-y-1">
-                  <li>• Unlimited daily swipes</li>
-                  <li>• AI match recommendations</li>
-                  <li>• Undo swipe feature</li>
-                  <li>• Unlimited projects</li>
-                  <li>• Profile verification</li>
-                  {tier === "creator_pro" && (
+                  {isFounderTier ? (
                     <>
-                      <li>• Featured profile</li>
-                      <li>• Priority matching</li>
+                      <li>• ⭕ Exclusive Founder Circle badge</li>
+                      <li>• ♾️ Lifetime Pro access</li>
+                      <li>• 💰 5% platform fees</li>
+                      <li>• 🎁 +{bonusXp || 5000} Bonus XP</li>
+                      <li>• 🎟️ Event access perks</li>
+                      <li>• All Pro features unlocked</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>• Unlimited daily swipes</li>
+                      <li>• AI match recommendations</li>
+                      <li>• Undo swipe feature</li>
+                      <li>• Unlimited portfolio items</li>
+                      <li>• Profile verification</li>
                     </>
                   )}
                 </ul>

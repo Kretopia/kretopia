@@ -12,6 +12,15 @@ export const SUBSCRIPTION_PRODUCTS = {
     priceId: "price_1SZYrBJvOS7zG18hDW2eE4NG",
     productId: "prod_TWc5tpvPKjy8hG",
   },
+  founder: {
+    name: "Founder Circle ⭕",
+    tier: "founder" as const,
+    price: 199,
+    oneTime: true,
+    priceId: "price_1T1O6yJvOS7zG18hgCeJU1cF",
+    productId: "prod_TzMqfksF7u6WBH",
+    maxSpots: 1000,
+  },
 } as const;
 
 /** Features shown on subscription page, split by account type */
@@ -81,9 +90,12 @@ export const LEGACY_PRODUCT_MAPPING = {
   'prod_TAoZwx40t99jYc': 'pro',
 } as const;
 
-export type SubscriptionTier = 'free' | 'pro';
+export type SubscriptionTier = 'free' | 'pro' | 'founder';
 
 export function mapProductIdToTier(productId: string): SubscriptionTier {
+  if (productId === SUBSCRIPTION_PRODUCTS.founder.productId) {
+    return 'founder';
+  }
   if (productId === SUBSCRIPTION_PRODUCTS.pro.productId) {
     return 'pro';
   }
@@ -96,6 +108,8 @@ export function mapProductIdToTier(productId: string): SubscriptionTier {
 
 export function getTierDisplayName(tier: SubscriptionTier): string {
   switch (tier) {
+    case 'founder':
+      return 'Founder Circle ⭕';
     case 'pro':
       return 'Pro';
     case 'free':
@@ -106,10 +120,17 @@ export function getTierDisplayName(tier: SubscriptionTier): string {
 
 export function getTierPrice(tier: SubscriptionTier): number {
   switch (tier) {
+    case 'founder':
+      return SUBSCRIPTION_PRODUCTS.founder.price;
     case 'pro':
       return SUBSCRIPTION_PRODUCTS.pro.price;
     case 'free':
     default:
       return 0;
   }
+}
+
+/** Check if tier has Pro-level access (pro or founder) */
+export function hasProAccess(tier: SubscriptionTier): boolean {
+  return tier === 'pro' || tier === 'founder';
 }

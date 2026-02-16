@@ -43,12 +43,26 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Fetch existing profile to support complimentary/internal tiers
+    // Fetch existing profile to support complimentary/internal/founder tiers
     const { data: profileData } = await supabaseClient
       .from('profiles')
       .select('subscription_tier, subscription_status')
       .eq('user_id', user.id)
       .single();
+
+    // Founder Circle members have lifetime access — never downgrade
+    if (profileData?.subscription_tier === 'founder') {
+      logStep("Founder Circle member detected, preserving lifetime access");
+      return new Response(JSON.stringify({
+        subscribed: true,
+        tier: 'founder',
+        product_id: 'prod_TzMqfksF7u6WBH',
+        subscription_end: null,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });

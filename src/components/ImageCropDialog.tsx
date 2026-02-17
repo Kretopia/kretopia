@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -23,35 +23,46 @@ export const ImageCropDialog = ({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  const onCropChange = (crop: { x: number; y: number }) => {
-    setCrop(crop);
-  };
-
-  const onZoomChange = (zoom: number) => {
-    setZoom(zoom);
-  };
+  // Reset state when dialog opens with new image
+  useEffect(() => {
+    if (open && imageUrl) {
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
+      setImageLoaded(false);
+      
+      // Pre-validate the image loads
+      const img = new Image();
+      img.onload = () => setImageLoaded(true);
+      img.onerror = () => console.error('[ImageCrop] Failed to load image');
+      img.src = imageUrl;
+    }
+  }, [open, imageUrl]);
 
   const onCropCompleteInternal = useCallback(
-    (croppedArea: any, croppedAreaPixels: any) => {
+    (_croppedArea: any, croppedAreaPixels: any) => {
       setCroppedAreaPixels(croppedAreaPixels);
     },
     []
   );
 
-  const createCroppedImage = async () => {
+  const createCroppedImage = async (): Promise<Blob | undefined> => {
     try {
+      if (!croppedAreaPixels) return;
+
       const image = new Image();
       image.src = imageUrl;
       
-      await new Promise((resolve) => {
+      await new Promise((resolve, reject) => {
         image.onload = resolve;
+        image.onerror = reject;
       });
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
-      if (!ctx || !croppedAreaPixels) return;
+      if (!ctx) return;
 
       canvas.width = croppedAreaPixels.width;
       canvas.height = croppedAreaPixels.height;
@@ -68,9 +79,10 @@ export const ImageCropDialog = ({
         croppedAreaPixels.height
       );
 
-      return new Promise<Blob>((resolve) => {
+      return new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((blob) => {
           if (blob) resolve(blob);
+          else reject(new Error('Failed to create blob'));
         }, 'image/jpeg', 0.95);
       });
     } catch (error) {
@@ -87,26 +99,38 @@ export const ImageCropDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Crop Your Photo</DialogTitle>
         </DialogHeader>
         
-        <div className="relative h-[400px] bg-black/5">
-          <Cropper
-            image={imageUrl}
-            crop={crop}
-            zoom={zoom}
-            aspect={1}
-            cropShape="round"
-            showGrid={false}
-            onCropChange={onCropChange}
-            onZoomChange={onZoomChange}
-            onCropComplete={onCropCompleteInternal}
-          />
+        <div className="relative w-full" style={{ height: 'min(60vh, 400px)' }}>
+          {imageUrl && (
+            <Cropper
+              image={imageUrl}
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              cropShape="round"
+              showGrid={false}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropCompleteInternal}
+              style={{
+                containerStyle: {
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  background: '#111',
+                },
+              }}
+            />
+          )}
         </div>
 
-        <div className="space-y-2 px-4">
+        <div className="space-y-2 px-1">
           <label className="text-sm font-medium">Zoom</label>
           <Slider
             value={[zoom]}
@@ -122,7 +146,7 @@ export const ImageCropDialog = ({
           <Button variant="outline" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button onClick={handleSave} disabled={loading || !croppedAreaPixels}>
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

@@ -96,8 +96,8 @@ export const SparkUnifiedFeed = ({ currentUserId, categoryFilter }: SparkUnified
           media_urls: post.media_urls || [],
           tags: post.tags || [],
           profile: {
-            full_name: profile?.full_name || "Creative",
-            avatar_url: profile?.avatar_url,
+            full_name: profile?.full_name || "New Creative",
+            avatar_url: profile?.avatar_url || null,
             role: profile?.role || "Creator",
           },
         };

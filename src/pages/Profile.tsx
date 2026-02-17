@@ -16,6 +16,7 @@ import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 
 // Components
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
@@ -104,6 +105,8 @@ const ProfileContent = () => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [tempImageUrl, setTempImageUrl] = useState("");
   
   const [editForm, setEditForm] = useState({
     full_name: "",
@@ -125,10 +128,21 @@ const ProfileContent = () => {
     setIsShareDialogOpen(true);
   };
   
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    const imageUrl = URL.createObjectURL(file);
+    setTempImageUrl(imageUrl);
+    setShowCropDialog(true);
+    // Reset input so same file can be re-selected
+    event.target.value = "";
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], `avatar-${Date.now()}.jpg`, { type: "image/jpeg" });
     await uploadAvatar(file, editForm, setEditForm, fetchData);
+    setShowCropDialog(false);
+    setTempImageUrl("");
   };
 
   const handleImportData = (data: any) => {
@@ -712,6 +726,16 @@ const ProfileContent = () => {
         userId={profile.user_id}
         userName={profile.full_name || ''}
         userAvatar={profile.avatar_url || undefined}
+      />
+      <ImageCropDialog
+        imageUrl={tempImageUrl}
+        open={showCropDialog}
+        onClose={() => {
+          setShowCropDialog(false);
+          setTempImageUrl("");
+        }}
+        onCropComplete={handleCropComplete}
+        loading={isUploadingAvatar}
       />
     </div>
   );

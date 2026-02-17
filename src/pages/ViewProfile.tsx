@@ -123,9 +123,10 @@ const ViewProfile = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
+      if (!profileData) return;
       setProfile(profileData);
 
       // Fetch portfolio items

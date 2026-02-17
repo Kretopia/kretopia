@@ -330,6 +330,80 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
             </div>
           );
         }
+        
+        // Check if it's a direct media file (image, video, audio from portfolio)
+        const url = post.link_url;
+        const isImage = /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url);
+        const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(url);
+        const isAudio = /\.(mp3|wav|ogg|m4a)(\?|$)/i.test(url);
+        
+        if (isImage) {
+          return (
+            <div className="mt-2 rounded-lg overflow-hidden">
+              <img 
+                src={url} 
+                alt={post.link_title || 'Portfolio item'} 
+                className="w-full max-h-96 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setSelectedMedia({
+                  title: post.link_title || 'Portfolio item',
+                  description: post.content || '',
+                  media_type: 'image',
+                  media_url: url,
+                })}
+              />
+              {post.link_title && (
+                <p className="text-xs text-muted-foreground mt-1 px-1">{post.link_title}</p>
+              )}
+            </div>
+          );
+        }
+        
+        if (isVideo) {
+          return (
+            <div 
+              className="mt-2 rounded-lg overflow-hidden relative cursor-pointer group"
+              onClick={() => setSelectedMedia({
+                title: post.link_title || 'Video',
+                description: post.content || '',
+                media_type: 'video',
+                media_url: url,
+              })}
+            >
+              <video src={url} className="w-full max-h-96 object-cover" preload="metadata" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                <Play className="h-12 w-12 text-white" />
+              </div>
+              {post.link_title && (
+                <p className="text-xs text-muted-foreground mt-1 px-1">{post.link_title}</p>
+              )}
+            </div>
+          );
+        }
+        
+        if (isAudio) {
+          return (
+            <div 
+              className="mt-2 rounded-lg overflow-hidden bg-muted/50 p-3 cursor-pointer hover:bg-muted transition-colors"
+              onClick={() => setSelectedMedia({
+                title: post.link_title || 'Audio',
+                description: post.content || '',
+                media_type: 'audio',
+                media_url: url,
+              })}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Play className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{post.link_title || 'Audio'}</p>
+                  <p className="text-xs text-muted-foreground">Tap to play</p>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
         // Non-embeddable link - show as clickable card
         return (
           <a

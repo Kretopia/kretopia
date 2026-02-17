@@ -12,9 +12,11 @@ import { CadenceTabs } from "@/components/cre8/CadenceTabs";
 import { LeaderboardPreview } from "@/components/cre8/LeaderboardPreview";
 import { MyActiveEntries } from "@/components/cre8/MyActiveEntries";
 import { PastWinners } from "@/components/cre8/PastWinners";
+import { PastChallenges } from "@/components/cre8/PastChallenges";
 import { FlashChallengesBanner } from "@/components/cre8/FlashChallengesBanner";
 import { ArenaRankProgress } from "@/components/cre8/ArenaRankProgress";
 import { RecentAchievements } from "@/components/cre8/AchievementBadges";
+import { useToast } from "@/hooks/use-toast";
 
 interface Challenge {
   id: string;
@@ -37,12 +39,58 @@ interface Challenge {
 
 const Cre8 = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [mainTab, setMainTab] = useState("platform");
   const [cadence, setCadence] = useState("all");
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const [myRankData, setMyRankData] = useState<any>(null);
+  const [generating, setGenerating] = useState(false);
+
+  // Auto-check and generate challenges on mount
+  useEffect(() => {
+    const autoRotate = async () => {
+      try {
+        // Check if there are expired challenges or missing cadences
+        const { data: active } = await supabase
+          .from("challenges")
+          .select("cadence, is_flash")
+          .eq("status", "active")
+          .eq("type", "platform");
+
+        const counts: Record<string, number> = { daily: 0, "48hr": 0, weekly: 0, flash: 0 };
+        for (const c of active || []) {
+          if (c.is_flash) counts.flash++;
+          else counts[c.cadence] = (counts[c.cadence] || 0) + 1;
+        }
+
+        // Check for expired
+        const { data: expired } = await supabase
+          .from("challenges")
+          .select("id")
+          .eq("status", "active")
+          .lt("deadline", new Date().toISOString())
+          .limit(1);
+
+        const needsGeneration =
+          (expired && expired.length > 0) ||
+          counts.daily < 1 ||
+          counts["48hr"] < 1 ||
+          counts.weekly < 1;
+
+        if (needsGeneration) {
+          setGenerating(true);
+          await supabase.functions.invoke("generate-challenges");
+          setGenerating(false);
+        }
+      } catch (err) {
+        console.error("Auto-rotate error:", err);
+        setGenerating(false);
+      }
+    };
+    autoRotate();
+  }, []);
 
   const loadChallenges = useCallback(async () => {
     setLoading(true);
@@ -85,8 +133,8 @@ const Cre8 = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    loadChallenges();
-  }, [loadChallenges]);
+    if (!generating) loadChallenges();
+  }, [loadChallenges, generating]);
 
   useEffect(() => {
     loadMyRank();
@@ -191,8 +239,8 @@ const Cre8 = () => {
               {/* My Active Entries */}
               <MyActiveEntries onChallengeClick={setSelectedChallengeId} />
 
-              {/* Past Winners */}
-              <PastWinners />
+              {/* Past Challenges (replaces old PastWinners) */}
+              <PastChallenges onChallengeClick={setSelectedChallengeId} />
             </TabsContent>
 
             <TabsContent value="brand" className="space-y-5 mt-4">

@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { SparkPromptStories } from "@/components/spark/SparkPromptStories";
+import { SparkCre8Banner } from "@/components/spark/SparkCre8Banner";
 import { SparkPostComposer } from "@/components/spark/SparkPostComposer";
 import { SparkUnifiedFeed } from "@/components/spark/SparkUnifiedFeed";
 import { SparkRoomList } from "@/components/spark/SparkRoomList";
@@ -188,6 +189,9 @@ const Spark = () => {
             onResponseSubmitted={handlePromptResponse}
           />
         )}
+
+        {/* Cre8 Arena cross-pollination */}
+        <SparkCre8Banner />
 
         {/* Post composer */}
         {user && (

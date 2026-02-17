@@ -125,7 +125,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
               { path: "/circle", icon: Users, label: "Circle" },
               { path: "/opportunities", icon: Briefcase, label: "Opportunities" },
               { path: "/desk", icon: Briefcase, label: "Desk" },
-              { path: "/accounting", icon: PieChart, label: "Accounting" },
+              { path: "/thrivemoney", icon: PieChart, label: "ThriveMoney" },
               { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
             ].map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
@@ -249,10 +249,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/accounting")}
+                      onClick={() => handleNavigation("/thrivemoney")}
                     >
                       <PieChart className="h-5 w-5" />
-                      Accounting
+                      ThriveMoney
                       {!isPro && (
                         <Crown className="h-3 w-3 text-amber-500 ml-auto" />
                       )}

@@ -40,7 +40,7 @@ export const AccountingSuiteSection = () => {
         <div className="text-center mb-12">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
             <Wallet className="h-4 w-4" />
-            <span>Built for Solopreneurs</span>
+            <span>ThriveMoney</span>
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             Your Money,{" "}

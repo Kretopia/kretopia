@@ -15,7 +15,7 @@ const BottomNav = memo(() => {
     { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab" },
     { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab" },
     { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
-    { path: "/accounting", icon: PieChart, label: "Money", tourId: "accounting-tab" },
+    { path: "/thrivemoney", icon: PieChart, label: "Money", tourId: "thrivemoney-tab" },
     { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
   ];
 

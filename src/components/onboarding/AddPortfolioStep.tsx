@@ -64,7 +64,13 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
     media_type: "video"
   });
 
+  const MAX_FREE_PORTFOLIO = 5;
+
   const fetchFromUrl = async (url: string) => {
+    if (items.length >= MAX_FREE_PORTFOLIO) {
+      toast.error(`Free accounts can add up to ${MAX_FREE_PORTFOLIO} portfolio items. Upgrade to Pro for unlimited.`);
+      return;
+    }
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('fetch-portfolio-data', {
@@ -96,6 +102,10 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
   };
 
   const addManualItem = () => {
+    if (items.length >= MAX_FREE_PORTFOLIO) {
+      toast.error(`Free accounts can add up to ${MAX_FREE_PORTFOLIO} portfolio items.`);
+      return;
+    }
     if (!manualData.title || !manualData.media_url) {
       toast.error("Title and URL are required");
       return;

@@ -189,6 +189,16 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Enforce portfolio limit for free tier
+    if (!canAddMore) {
+      toast({
+        title: "Portfolio limit reached",
+        description: `Free accounts can have up to ${tierLimits.maxPortfolioItems} portfolio items. Upgrade to Pro for unlimited.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!newItem.title || !newItem.media_url) {
       toast({
         title: "Missing information",

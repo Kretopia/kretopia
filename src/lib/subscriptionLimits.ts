@@ -1,6 +1,9 @@
 /**
  * Subscription tier limits and feature gating
  * Supports both individual and company account types
+ * 
+ * Strategy: Free users get limited monthly uses of all features.
+ * Pro users get unlimited access.
  */
 
 import type { AccountType } from "./subscriptionConfig";
@@ -23,6 +26,72 @@ export interface TierLimits {
   hasOpportunityAnalytics: boolean;
   hasPriorityListing: boolean;
   hasAITalentScout: boolean;
+}
+
+/**
+ * Free-tier monthly usage caps for previously hard-gated features.
+ * -1 = unlimited (Pro). These are per-calendar-month limits.
+ */
+export const FREE_TIER_MONTHLY_CAPS = {
+  // ThriveAI
+  aiLeadSearches: 3,       // 3 lead searches/month
+  aiOutreachDrafts: 5,     // 5 outreach drafts/month
+  aiChatMessages: 20,      // 20 AI chat messages/month (was unlimited, now soft cap)
+  
+  // ThriveDesk workspace
+  approvalRequests: 2,     // 2 approval workflows/month
+  milestones: 3,           // 3 milestones/month
+  invoices: 2,             // 2 invoices/month
+  templateUses: 1,         // 1 template/month
+  aiBriefs: 3,             // 3 AI briefs/month
+  
+  // ThriveMoney (Accounting)
+  expenses: 5,             // 5 expenses/month
+  
+  // Opportunities
+  aiApplicantRankings: 2,  // 2 AI rankings/month
+  aiJobDescriptions: 2,    // 2 AI job descriptions/month
+} as const;
+
+export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
+  aiLeadSearches: -1,
+  aiOutreachDrafts: -1,
+  aiChatMessages: -1,
+  approvalRequests: -1,
+  milestones: -1,
+  invoices: -1,
+  templateUses: -1,
+  aiBriefs: -1,
+  expenses: -1,
+  aiApplicantRankings: -1,
+  aiJobDescriptions: -1,
+};
+
+export type FreeTierFeature = keyof typeof FREE_TIER_MONTHLY_CAPS;
+
+export function getMonthlyCapForFeature(
+  feature: FreeTierFeature,
+  tier: SubscriptionTier
+): number {
+  if (tier === "pro" || tier === "founder") return -1;
+  return FREE_TIER_MONTHLY_CAPS[feature];
+}
+
+export function getFeatureDisplayName(feature: FreeTierFeature): string {
+  const names: Record<FreeTierFeature, string> = {
+    aiLeadSearches: "AI lead searches",
+    aiOutreachDrafts: "AI outreach drafts",
+    aiChatMessages: "AI chat messages",
+    approvalRequests: "approval requests",
+    milestones: "milestones",
+    invoices: "invoices",
+    templateUses: "template uses",
+    aiBriefs: "AI briefs",
+    expenses: "expenses",
+    aiApplicantRankings: "AI applicant rankings",
+    aiJobDescriptions: "AI job descriptions",
+  };
+  return names[feature];
 }
 
 const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {

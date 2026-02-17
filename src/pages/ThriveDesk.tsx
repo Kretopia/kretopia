@@ -21,7 +21,8 @@ import { ApprovalWorkflows } from "@/components/project/ApprovalWorkflows";
 import { CreativeAssetLibrary } from "@/components/project/CreativeAssetLibrary";
 import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicker";
 import { CreativeBoard } from "@/components/project/CreativeBoard";
-import { ProGate, UsageLimitBanner } from "@/components/project/ProGate";
+import { UsageLimitBanner } from "@/components/project/ProGate";
+import { FreeTierGate } from "@/components/FreeTierGate";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -196,8 +197,8 @@ const ThriveDesk = () => {
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "files", label: "Files", icon: FolderOpen },
     { id: "board", label: "Board", icon: LayoutGrid },
-    { id: "approvals", label: "Approvals", icon: CheckCircle2, proOnly: true },
-    { id: "finance", label: "Finance", icon: Wallet, proOnly: true },
+    { id: "approvals", label: "Approvals", icon: CheckCircle2 },
+    { id: "finance", label: "Finance", icon: Wallet },
   ];
 
   return (
@@ -261,9 +262,6 @@ const ThriveDesk = () => {
                 >
                   <Icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
-                  {tab.proOnly && !isPro && (
-                    <Crown className="h-3 w-3 text-amber-500" />
-                  )}
                 </button>
               );
             })}
@@ -307,14 +305,14 @@ const ThriveDesk = () => {
                   </>
                 )}
                 {activeTab === "approvals" && (
-                  <ProGate feature="Approval Workflows" description="Get client sign-off with professional review workflows, visual feedback, and status tracking." isPro={isPro}>
+                  <FreeTierGate feature="approvalRequests" featureLabel="Approval Workflows" description="Upgrade to Pro for unlimited approval workflows, visual feedback, and status tracking.">
                     <ApprovalWorkflows
                       projectId={projectId!}
                       currentUserId={user?.id || ''}
                       collaborators={collaborators}
                       userRole={userRole}
                     />
-                  </ProGate>
+                  </FreeTierGate>
                 )}
                 {activeTab === "assets" && (
                   <CreativeAssetLibrary
@@ -329,7 +327,7 @@ const ThriveDesk = () => {
                   />
                 )}
                 {activeTab === "finance" && (
-                  <ProGate feature="Finance Tools" description="Track milestones, generate professional invoices, and manage project payments all in one place." isPro={isPro}>
+                  <FreeTierGate feature="milestones" featureLabel="Finance Tools" description="Upgrade to Pro for unlimited milestones, invoices, and project payments.">
                     <div className="space-y-6">
                       <MilestoneBoard
                         milestones={milestones}
@@ -341,22 +339,22 @@ const ThriveDesk = () => {
                         <InvoiceGenerator projectId={projectId!} />
                       </div>
                     </div>
-                  </ProGate>
+                  </FreeTierGate>
                 )}
                 {activeTab === "notes" && (
                   <ProjectNotes projectId={projectId!} />
                 )}
                 {activeTab === "templates" && (
-                  <ProGate feature="Project Templates" description="Kickstart projects with professional templates for music videos, brand campaigns, podcasts, and more." isPro={isPro}>
+                  <FreeTierGate feature="templateUses" featureLabel="Project Templates" description="Upgrade to Pro for unlimited templates for music videos, brand campaigns, podcasts, and more.">
                     <ProjectTemplatePicker
                       projectId={projectId!}
                       currentUserId={user?.id || ''}
                       onApplied={fetchProjectData}
                     />
-                  </ProGate>
+                  </FreeTierGate>
                 )}
                 {activeTab === "ai" && (
-                  <ProGate feature="AI Tools" description="Generate creative briefs, automate tasks, and unlock AI-powered productivity." isPro={isPro}>
+                  <FreeTierGate feature="aiBriefs" featureLabel="AI Tools" description="Upgrade to Pro for unlimited AI-powered briefs, automation, and creative tools.">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <AIBriefBuilder
                         projectId={projectId!}
@@ -370,7 +368,7 @@ const ThriveDesk = () => {
                         onUpdate={fetchProjectData}
                       />
                     </div>
-                  </ProGate>
+                  </FreeTierGate>
                 )}
               </div>
             )}

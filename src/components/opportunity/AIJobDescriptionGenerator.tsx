@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Loader2, Wand2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { ProGate } from "@/components/project/ProGate";
+import { FreeTierGate } from "@/components/FreeTierGate";
 
 interface GeneratedJobDescription {
   title: string;
@@ -139,17 +139,13 @@ Make it professional but approachable. Use language that appeals to creative pro
     </div>
   );
 
-  if (!isPro) {
-    return (
-      <ProGate
-        feature="AI Job Description Generator"
-        description="Let AI craft a professional opportunity posting from a quick brief. Upgrade to Pro to unlock."
-        isPro={false}
-      >
-        {generatorContent}
-      </ProGate>
-    );
-  }
-
-  return generatorContent;
+  return (
+    <FreeTierGate
+      feature="aiJobDescriptions"
+      featureLabel="AI Job Description Generator"
+      description="Upgrade to Pro for unlimited AI-generated job descriptions."
+    >
+      {generatorContent}
+    </FreeTierGate>
+  );
 }

@@ -1,23 +1,22 @@
 import { useAuth } from "@/hooks/useAuth";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
-import { ProGate } from "@/components/project/ProGate";
+import { FreeTierGate } from "@/components/FreeTierGate";
 import { Navigate } from "react-router-dom";
 
 const Accounting = () => {
-  const { user, subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === 'pro';
+  const { user } = useAuth();
 
   if (!user) return <Navigate to="/auth" replace />;
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
-      <ProGate 
-        feature="ThriveMoney" 
-        description="Your complete financial suite — invoicing, expenses, P&L analytics, and AI-powered insights in one place."
-        isPro={isPro}
+      <FreeTierGate 
+        feature="expenses"
+        featureLabel="ThriveMoney" 
+        description="Upgrade to Pro for unlimited expense tracking, invoicing, P&L analytics, and AI-powered insights."
       >
         <AccountingDashboard />
-      </ProGate>
+      </FreeTierGate>
     </div>
   );
 };

@@ -6,13 +6,12 @@ import { MessageSquare, Search, Send, Bot } from "lucide-react";
 import AIChatTab from "@/components/thrive-ai/AIChatTab";
 import LeadsTab from "@/components/thrive-ai/LeadsTab";
 import OutreachTab from "@/components/thrive-ai/OutreachTab";
-import { ProGate } from "@/components/project/ProGate";
+import { FreeTierGate } from "@/components/FreeTierGate";
 
 const ThriveAI = () => {
-  const { user, loading, subscriptionInfo } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("chat");
-  const isPro = subscriptionInfo?.tier === 'pro' && subscriptionInfo?.subscribed;
 
   if (loading) {
     return (
@@ -57,19 +56,21 @@ const ThriveAI = () => {
         </TabsList>
 
         <TabsContent value="chat">
-          <AIChatTab />
+          <FreeTierGate feature="aiChatMessages" featureLabel="AI Chat">
+            <AIChatTab />
+          </FreeTierGate>
         </TabsContent>
 
         <TabsContent value="leads">
-          <ProGate feature="AI Lead Scout" description="Find and manage potential clients and collaborators with AI-powered web scouting, CRM pipeline, and CSV import." isPro={isPro}>
+          <FreeTierGate feature="aiLeadSearches" featureLabel="AI Lead Scout" description="Upgrade to Pro for unlimited lead searches, CRM pipeline, and CSV import.">
             <LeadsTab />
-          </ProGate>
+          </FreeTierGate>
         </TabsContent>
 
         <TabsContent value="outreach">
-          <ProGate feature="AI Outreach" description="Create multi-step email sequences, draft personalized outreach with AI, and manage your outbound pipeline." isPro={isPro}>
+          <FreeTierGate feature="aiOutreachDrafts" featureLabel="AI Outreach" description="Upgrade to Pro for unlimited outreach sequences and AI-powered email drafts.">
             <OutreachTab />
-          </ProGate>
+          </FreeTierGate>
         </TabsContent>
       </Tabs>
     </div>

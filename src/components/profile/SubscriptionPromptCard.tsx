@@ -16,11 +16,12 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
 
   const proFeatures = [
     "Unlimited swipes & matches",
-    "AI match explanations",
+    "Unlimited AI tools & insights",
+    "Unlimited workspace features",
     "Profile verification badge",
     "Unlimited portfolio items",
     "Advanced search filters",
-    "Press, credits & awards",
+    "Unlimited expense tracking & invoicing",
   ];
 
   return (

@@ -566,6 +566,51 @@ export type Database = {
           },
         ]
       }
+      challenge_achievements: {
+        Row: {
+          achievement_tier: string
+          awarded_at: string
+          challenge_id: string
+          entry_id: string
+          id: string
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          achievement_tier: string
+          awarded_at?: string
+          challenge_id: string
+          entry_id: string
+          id?: string
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          achievement_tier?: string
+          awarded_at?: string
+          challenge_id?: string
+          entry_id?: string
+          id?: string
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_achievements_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_achievements_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_entries: {
         Row: {
           challenge_id: string
@@ -619,29 +664,93 @@ export type Database = {
           },
         ]
       }
+      challenge_entry_swaps: {
+        Row: {
+          challenge_id: string
+          id: string
+          new_entry_id: string | null
+          old_entry_id: string
+          swapped_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          id?: string
+          new_entry_id?: string | null
+          old_entry_id: string
+          swapped_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          id?: string
+          new_entry_id?: string | null
+          old_entry_id?: string
+          swapped_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_entry_swaps_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_entry_swaps_new_entry_id_fkey"
+            columns: ["new_entry_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_entry_swaps_old_entry_id_fkey"
+            columns: ["old_entry_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_leaderboard: {
         Row: {
+          all_star_finishes: number
+          arena_rank: string
           current_streak: number
+          gurus_pick_count: number
           id: string
+          top_10_finishes: number
           total_challenge_xp: number
+          total_entries: number
           total_votes_received: number
           total_wins: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          all_star_finishes?: number
+          arena_rank?: string
           current_streak?: number
+          gurus_pick_count?: number
           id?: string
+          top_10_finishes?: number
           total_challenge_xp?: number
+          total_entries?: number
           total_votes_received?: number
           total_wins?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          all_star_finishes?: number
+          arena_rank?: string
           current_streak?: number
+          gurus_pick_count?: number
           id?: string
+          top_10_finishes?: number
           total_challenge_xp?: number
+          total_entries?: number
           total_votes_received?: number
           total_wins?: number
           updated_at?: string
@@ -680,6 +789,7 @@ export type Database = {
       }
       challenges: {
         Row: {
+          allow_swap: boolean
           brand_logo_url: string | null
           brand_name: string | null
           budget: string | null
@@ -690,7 +800,9 @@ export type Database = {
           deadline: string
           description: string
           id: string
+          is_flash: boolean
           max_entries: number | null
+          max_swaps: number
           prize_amount: number | null
           prize_description: string | null
           requirements: string | null
@@ -704,6 +816,7 @@ export type Database = {
           xp_reward: number
         }
         Insert: {
+          allow_swap?: boolean
           brand_logo_url?: string | null
           brand_name?: string | null
           budget?: string | null
@@ -714,7 +827,9 @@ export type Database = {
           deadline: string
           description: string
           id?: string
+          is_flash?: boolean
           max_entries?: number | null
+          max_swaps?: number
           prize_amount?: number | null
           prize_description?: string | null
           requirements?: string | null
@@ -728,6 +843,7 @@ export type Database = {
           xp_reward?: number
         }
         Update: {
+          allow_swap?: boolean
           brand_logo_url?: string | null
           brand_name?: string | null
           budget?: string | null
@@ -738,7 +854,9 @@ export type Database = {
           deadline?: string
           description?: string
           id?: string
+          is_flash?: boolean
           max_entries?: number | null
+          max_swaps?: number
           prize_amount?: number | null
           prize_description?: string | null
           requirements?: string | null
@@ -7409,6 +7527,15 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_arena_rank: {
+        Args: {
+          p_all_star_finishes: number
+          p_top_10_finishes: number
+          p_total_entries: number
+          p_total_wins: number
+        }
+        Returns: string
+      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number

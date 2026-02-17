@@ -1,8 +1,9 @@
-import { Zap, Timer, CalendarDays, Sparkles } from "lucide-react";
+import { Zap, Timer, CalendarDays, Sparkles, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CADENCE_OPTIONS = [
   { value: "all", label: "All", icon: Sparkles },
+  { value: "flash", label: "Flash", icon: Flame },
   { value: "daily", label: "Daily", icon: Zap },
   { value: "48hr", label: "48hr", icon: Timer },
   { value: "weekly", label: "Weekly", icon: CalendarDays },

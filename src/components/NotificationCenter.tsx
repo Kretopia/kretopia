@@ -52,6 +52,9 @@ export const NotificationCenter = () => {
       case 'message': return '💬';
       case 'project': return '📁';
       case 'opportunity': return '💼';
+      case 'social': return '🔥';
+      case 'connection': return '🤝';
+      case 'reward': return '🏆';
       default: return '🔔';
     }
   };

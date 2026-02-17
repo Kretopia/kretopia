@@ -12,8 +12,8 @@ const Accounting = () => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
       <ProGate 
-        feature="Accounting Suite" 
-        description="Track expenses, view spending analytics, AI financial insights, and manage your complete P&L — all in one place." 
+        feature="ThriveMoney" 
+        description="Your complete financial suite — invoicing, expenses, P&L analytics, and AI-powered insights in one place."
         isPro={isPro}
       >
         <AccountingDashboard />

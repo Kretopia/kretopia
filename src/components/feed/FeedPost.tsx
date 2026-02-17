@@ -29,6 +29,7 @@ interface FeedPostProps {
     link_url?: string | null;
     link_title?: string | null;
     source_type?: string | null;
+    portfolio_thumbnail?: string | null;
     tags: string[];
     created_at: string;
     profile: {
@@ -401,6 +402,34 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
                 </div>
               </div>
             </div>
+          );
+        }
+        
+        // If we have a portfolio thumbnail (e.g. Behance items), show image preview
+        if (post.portfolio_thumbnail) {
+          return (
+            <a
+              href={post.link_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-2 rounded-lg overflow-hidden group"
+            >
+              <div className="relative">
+                <img 
+                  src={post.portfolio_thumbnail} 
+                  alt={post.link_title || 'Portfolio item'} 
+                  className="w-full h-56 object-cover group-hover:opacity-90 transition-opacity"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                  <p className="text-sm font-medium text-white truncate">{post.link_title || 'Portfolio item'}</p>
+                  <p className="text-xs text-white/70 flex items-center gap-1">
+                    <ExternalLink className="h-3 w-3" />
+                    View on Behance
+                  </p>
+                </div>
+              </div>
+            </a>
           );
         }
         

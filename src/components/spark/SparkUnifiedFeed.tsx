@@ -78,14 +78,19 @@ export const SparkUnifiedFeed = ({ currentUserId, categoryFilter }: SparkUnified
       const enriched = data.map((post) => {
         const profile = profiles?.find((p) => p.user_id === post.user_id);
         
-        // Enrich portfolio activity posts with media URL
+        // Enrich portfolio activity posts with media URL and thumbnail
         let linkUrl = post.link_url;
         let linkTitle = post.link_title;
-        if (!linkUrl && post.source_type === "portfolio" && post.source_id) {
+        let portfolioThumbnail: string | null = null;
+        if (post.source_type === "portfolio" && post.source_id) {
           const portfolioItem = portfolioItems.find((pi) => pi.id === post.source_id);
-          if (portfolioItem?.media_url) {
-            linkUrl = portfolioItem.media_url;
-            linkTitle = portfolioItem.title;
+          if (portfolioItem) {
+            if (!linkUrl && portfolioItem.media_url) {
+              linkUrl = portfolioItem.media_url;
+              linkTitle = portfolioItem.title;
+            }
+            // Always grab the thumbnail for preview
+            portfolioThumbnail = portfolioItem.thumbnail_url || null;
           }
         }
 
@@ -93,6 +98,7 @@ export const SparkUnifiedFeed = ({ currentUserId, categoryFilter }: SparkUnified
           ...post,
           link_url: linkUrl,
           link_title: linkTitle,
+          portfolio_thumbnail: portfolioThumbnail,
           media_urls: post.media_urls || [],
           tags: post.tags || [],
           profile: {

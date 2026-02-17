@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -257,16 +258,16 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
     <Card className="p-4 space-y-3">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
+        <Link to={`/profile/${post.user_id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <Avatar>
             <AvatarImage src={post.profile.avatar_url || undefined} />
-            <AvatarFallback>{post.profile.full_name[0]}</AvatarFallback>
+            <AvatarFallback>{post.profile.full_name?.[0] || '?'}</AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold">{post.profile.full_name}</p>
+            <p className="font-semibold text-foreground">{post.profile.full_name}</p>
             <p className="text-xs text-muted-foreground">{post.profile.role}</p>
           </div>
-        </div>
+        </Link>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
@@ -381,13 +382,15 @@ export const FeedPost = ({ post, onDelete }: FeedPostProps) => {
           {/* Existing Comments */}
           {comments.map((comment) => (
             <div key={comment.id} className="flex gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={(comment.profiles as any)?.avatar_url || undefined} />
-                <AvatarFallback>{(comment.profiles as any)?.full_name?.[0]}</AvatarFallback>
-              </Avatar>
+              <Link to={`/profile/${comment.user_id}`}>
+                <Avatar className="h-8 w-8 hover:opacity-80 transition-opacity">
+                  <AvatarImage src={(comment.profiles as any)?.avatar_url || undefined} />
+                  <AvatarFallback>{(comment.profiles as any)?.full_name?.[0]}</AvatarFallback>
+                </Avatar>
+              </Link>
               <div className="flex-1">
                 <div className="bg-muted rounded-lg p-2">
-                  <p className="text-sm font-semibold">{(comment.profiles as any)?.full_name}</p>
+                  <Link to={`/profile/${comment.user_id}`} className="text-sm font-semibold hover:underline">{(comment.profiles as any)?.full_name}</Link>
                   <p className="text-sm">{comment.content}</p>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">

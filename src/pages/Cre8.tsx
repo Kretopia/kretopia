@@ -5,12 +5,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Flame, Trophy, DollarSign, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { ChallengeDetailDialog } from "@/components/cre8/ChallengeDetailDialog";
 import { ChallengeCard } from "@/components/cre8/ChallengeCard";
 import { CadenceTabs } from "@/components/cre8/CadenceTabs";
 import { LeaderboardPreview } from "@/components/cre8/LeaderboardPreview";
 import { MyActiveEntries } from "@/components/cre8/MyActiveEntries";
 import { PastWinners } from "@/components/cre8/PastWinners";
+import { FlashChallengesBanner } from "@/components/cre8/FlashChallengesBanner";
+import { ArenaRankProgress } from "@/components/cre8/ArenaRankProgress";
+import { RecentAchievements } from "@/components/cre8/AchievementBadges";
 
 interface Challenge {
   id: string;
@@ -27,15 +31,18 @@ interface Challenge {
   brand_name: string | null;
   brand_logo_url: string | null;
   xp_reward: number;
+  is_flash: boolean;
   entries?: { count: number }[];
 }
 
 const Cre8 = () => {
+  const { user } = useAuth();
   const [mainTab, setMainTab] = useState("platform");
   const [cadence, setCadence] = useState("all");
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const [myRankData, setMyRankData] = useState<any>(null);
 
   const loadChallenges = useCallback(async () => {
     setLoading(true);
@@ -47,8 +54,10 @@ const Cre8 = () => {
         .eq("status", "active")
         .order("deadline", { ascending: true });
 
-      if (cadence !== "all") {
-        query = query.eq("cadence", cadence);
+      if (cadence === "flash") {
+        query = query.eq("is_flash", true);
+      } else if (cadence !== "all") {
+        query = query.eq("cadence", cadence).eq("is_flash", false);
       }
 
       const { data, error } = await query;
@@ -61,9 +70,27 @@ const Cre8 = () => {
     }
   }, [mainTab, cadence]);
 
+  const loadMyRank = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const { data } = await supabase
+        .from("challenge_leaderboard")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setMyRankData(data);
+    } catch (err) {
+      console.error("Rank load error:", err);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     loadChallenges();
   }, [loadChallenges]);
+
+  useEffect(() => {
+    loadMyRank();
+  }, [loadMyRank]);
 
   const getDaysLeft = (deadline: string) =>
     Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -72,7 +99,7 @@ const Cre8 = () => {
     <>
       <SEO
         title="Cre8 Arena - Creative Challenges & Competitions"
-        description="Daily, 48hr, and weekly creative challenges. Win XP, climb the leaderboard, and get discovered."
+        description="Daily, 48hr, weekly, and flash creative challenges. Win XP, climb the leaderboard, and get discovered."
       />
 
       <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
@@ -80,10 +107,8 @@ const Cre8 = () => {
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b">
           <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2">
-                <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                <h1 className="text-xl sm:text-2xl font-bold">Cre8 Arena</h1>
-              </div>
+              <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <h1 className="text-xl sm:text-2xl font-bold">Cre8 Arena</h1>
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
               Create. Compete. Conquer.
@@ -92,6 +117,23 @@ const Cre8 = () => {
         </div>
 
         <div className="container mx-auto px-3 sm:px-4 py-4 space-y-5 max-w-4xl">
+          {/* My Arena Rank (logged in users) */}
+          {user && myRankData && (
+            <ArenaRankProgress
+              rank={myRankData.arena_rank || "rookie"}
+              totalWins={myRankData.total_wins || 0}
+              totalEntries={myRankData.total_entries || 0}
+              top10Finishes={myRankData.top_10_finishes || 0}
+              allStarFinishes={myRankData.all_star_finishes || 0}
+              currentStreak={myRankData.current_streak || 0}
+              totalVotes={myRankData.total_votes_received || 0}
+              totalXP={myRankData.total_challenge_xp || 0}
+            />
+          )}
+
+          {/* Flash Challenges Banner */}
+          <FlashChallengesBanner onSelect={setSelectedChallengeId} />
+
           {/* Main Tabs: Platform vs Brand */}
           <Tabs value={mainTab} onValueChange={(v) => { setMainTab(v); setCadence("all"); }}>
             <TabsList className="grid w-full grid-cols-2 h-10">
@@ -106,7 +148,7 @@ const Cre8 = () => {
             </TabsList>
 
             <TabsContent value="platform" className="space-y-5 mt-4">
-              {/* Cadence Filter */}
+              {/* Cadence Filter (now includes Flash) */}
               <CadenceTabs active={cadence} onChange={setCadence} />
 
               {/* Challenge Grid */}
@@ -140,8 +182,11 @@ const Cre8 = () => {
                 </div>
               )}
 
-              {/* Leaderboard Preview */}
-              <LeaderboardPreview />
+              {/* Leaderboard + Achievements side by side on larger screens */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <LeaderboardPreview />
+                <RecentAchievements />
+              </div>
 
               {/* My Active Entries */}
               <MyActiveEntries onChallengeClick={setSelectedChallengeId} />
@@ -151,7 +196,6 @@ const Cre8 = () => {
             </TabsContent>
 
             <TabsContent value="brand" className="space-y-5 mt-4">
-              {/* Brand challenges share the same loading / grid logic */}
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

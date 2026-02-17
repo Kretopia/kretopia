@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Crown, Medal, Trophy, ChevronRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { ArenaRankBadge } from "./ArenaRankBadge";
 
 interface LeaderboardEntry {
   user_id: string;
@@ -13,6 +14,7 @@ interface LeaderboardEntry {
   total_votes_received: number;
   total_challenge_xp: number;
   current_streak: number;
+  arena_rank: string;
   profile?: {
     full_name: string;
     avatar_url: string | null;
@@ -136,9 +138,12 @@ export const LeaderboardPreview = () => {
                     {entry.total_wins} wins · {entry.total_votes_received} votes
                   </p>
                 </div>
-                <Badge variant="secondary" className="text-xs font-bold tabular-nums">
-                  {entry.total_challenge_xp.toLocaleString()} XP
-                </Badge>
+                <div className="flex items-center gap-1.5">
+                  <ArenaRankBadge rank={entry.arena_rank || "rookie"} showTooltip={false} />
+                  <Badge variant="secondary" className="text-xs font-bold tabular-nums">
+                    {entry.total_challenge_xp.toLocaleString()} XP
+                  </Badge>
+                </div>
               </div>
             );
           })

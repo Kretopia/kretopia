@@ -423,15 +423,46 @@ const ProfileContent = () => {
           })()}
         </div>
 
-        {/* Tools & Verification - Collapsible */}
+        {/* Verification & Platform Connections */}
+        <div className="space-y-3 mb-6">
+          {(profile.achievement_badges?.length > 0) && (
+            <AchievementBadges 
+              achievements={profile.achievement_badges || []}
+              showAll={false}
+            />
+          )}
+          <CredentialVerificationCard 
+            userId={profile.user_id}
+            fullName={profile.full_name}
+            role={profile.role || ''}
+            bio={profile.bio || ''}
+            socialLinks={{
+              spotify: profile.spotify_url || '',
+              youtube: profile.youtube_url || '',
+              imdb: profile.imdb_url || '',
+              instagram: profile.instagram_url || '',
+              linkedin: profile.linkedin_url || '',
+            }}
+            currentTier={profile.verification_tier || undefined}
+            currentAchievements={profile.achievement_badges || []}
+            verifiedCredentials={(profile as any).verified_credentials || []}
+            verificationScore={profile.verification_score || undefined}
+            verifiedAt={profile.verified_at || undefined}
+            breakdown={(profile as any).verification_breakdown || undefined}
+            onVerificationComplete={() => fetchData()}
+          />
+          <PlatformConnectionCard onCreditsImported={() => fetchData()} />
+        </div>
+
+        {/* Pro Tools - Collapsible */}
         <details className="group mb-6 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 overflow-hidden">
           <summary className="flex items-center gap-3 cursor-pointer px-4 py-3 select-none hover:bg-primary/5 transition-colors">
             <div className="p-1.5 rounded-lg bg-primary/10">
               <Crown className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1">
-              <span className="font-semibold text-sm">Pro Tools & Verification</span>
-              <p className="text-xs text-muted-foreground">AI verification, credit imports & profile optimizer</p>
+              <span className="font-semibold text-sm">Pro Tools</span>
+              <p className="text-xs text-muted-foreground">AI portfolio insights & profile optimizer</p>
             </div>
             {userTier !== 'pro' && (
               <Badge variant="outline" className="border-primary/30 text-primary text-[10px] gap-1">
@@ -441,33 +472,6 @@ const ProfileContent = () => {
             <span className="text-xs text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
           </summary>
           <div className="px-4 pb-4 pt-3 space-y-3 border-t border-primary/10">
-            {(profile.achievement_badges?.length > 0) && (
-              <AchievementBadges 
-                achievements={profile.achievement_badges || []}
-                showAll={false}
-              />
-            )}
-            <CredentialVerificationCard 
-              userId={profile.user_id}
-              fullName={profile.full_name}
-              role={profile.role || ''}
-              bio={profile.bio || ''}
-              socialLinks={{
-                spotify: profile.spotify_url || '',
-                youtube: profile.youtube_url || '',
-                imdb: profile.imdb_url || '',
-                instagram: profile.instagram_url || '',
-                linkedin: profile.linkedin_url || '',
-              }}
-              currentTier={profile.verification_tier || undefined}
-              currentAchievements={profile.achievement_badges || []}
-              verifiedCredentials={(profile as any).verified_credentials || []}
-              verificationScore={profile.verification_score || undefined}
-              verifiedAt={profile.verified_at || undefined}
-              breakdown={(profile as any).verification_breakdown || undefined}
-              onVerificationComplete={() => fetchData()}
-            />
-            <PlatformConnectionCard onCreditsImported={() => fetchData()} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <AIPortfolioInsights 
                 portfolioItems={portfolioItems}

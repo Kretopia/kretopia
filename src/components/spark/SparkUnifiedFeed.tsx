@@ -56,10 +56,10 @@ export const SparkUnifiedFeed = ({ currentUserId, categoryFilter }: SparkUnified
 
       // Fetch profiles
       const userIds = [...new Set(data.map((p) => p.user_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
+      const { data: profiles } = await (supabase
+        .from("feed_profiles" as any)
         .select("user_id, full_name, avatar_url, role")
-        .in("user_id", userIds);
+        .in("user_id", userIds)) as { data: { user_id: string; full_name: string; avatar_url: string | null; role: string }[] | null };
 
       // Fetch portfolio item data for activity posts that reference portfolio items
       const portfolioSourceIds = data

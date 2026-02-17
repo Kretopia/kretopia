@@ -954,6 +954,13 @@ export type Database = {
             foreignKeyName: "company_reviews_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_reviews_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -998,6 +1005,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "company_reviews_reviewer_id_fkey"
@@ -1083,6 +1097,13 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "connected_platforms_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "connected_platforms_user_id_fkey"
             columns: ["user_id"]
@@ -1281,6 +1302,13 @@ export type Database = {
           venue_name?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "creative_jams_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "creative_jams_created_by_fkey"
             columns: ["created_by"]
@@ -2050,6 +2078,13 @@ export type Database = {
             foreignKeyName: "industry_stats_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "industry_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -2610,6 +2645,13 @@ export type Database = {
             foreignKeyName: "milestones_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -2639,6 +2681,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_paid_to_fkey"
+            columns: ["paid_to"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -3334,6 +3383,13 @@ export type Database = {
             foreignKeyName: "payment_disputes_disputed_by_fkey"
             columns: ["disputed_by"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "payment_disputes_disputed_by_fkey"
+            columns: ["disputed_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -3535,6 +3591,13 @@ export type Database = {
           view_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "portfolio_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "portfolio_items_user_id_fkey"
             columns: ["user_id"]
@@ -3850,6 +3913,13 @@ export type Database = {
           verification_proof?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "profile_claim_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "profile_claim_requests_profile_id_fkey"
             columns: ["profile_id"]
@@ -4300,6 +4370,13 @@ export type Database = {
             foreignKeyName: "project_collaborators_invited_by_fkey"
             columns: ["invited_by"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "project_collaborators_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -4455,6 +4532,13 @@ export type Database = {
             foreignKeyName: "project_files_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "project_files_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -4542,6 +4626,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "project_messages"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "project_messages_user_id_fkey"
@@ -4847,6 +4938,13 @@ export type Database = {
             foreignKeyName: "review_requests_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "review_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -4946,6 +5044,13 @@ export type Database = {
             foreignKeyName: "reviews_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -4975,6 +5080,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -5218,6 +5330,13 @@ export type Database = {
             foreignKeyName: "skill_endorsement_requests_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "skill_endorsement_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -5298,6 +5417,13 @@ export type Database = {
           verified?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "skill_endorsements_profile_id_fkey"
             columns: ["profile_id"]
@@ -6019,6 +6145,13 @@ export type Database = {
             foreignKeyName: "verified_credits_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "verified_credits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -6275,6 +6408,13 @@ export type Database = {
             foreignKeyName: "connected_platforms_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "connected_platforms_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -6332,6 +6472,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      feed_profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       oauth_apps_public: {
         Row: {
@@ -6762,6 +6923,13 @@ export type Database = {
             foreignKeyName: "reviews_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -6791,6 +6959,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -6874,6 +7049,13 @@ export type Database = {
           verified?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "skill_endorsements_profile_id_fkey"
             columns: ["profile_id"]
@@ -6975,6 +7157,13 @@ export type Database = {
             foreignKeyName: "reviews_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -7004,6 +7193,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -7051,6 +7247,13 @@ export type Database = {
           skill_name: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "skill_endorsements_profile_id_fkey"
             columns: ["profile_id"]
@@ -7129,6 +7332,13 @@ export type Database = {
           verified?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "skill_endorsements_profile_id_fkey"
             columns: ["profile_id"]

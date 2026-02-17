@@ -622,40 +622,97 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
   };
 
   const applyUrlImportData = async () => {
-    if (!urlImportResult) return;
+    if (!urlImportResult || !user) return;
     
     setImportingUrl(true);
     try {
+      const parts: string[] = [];
+
+      // Import portfolio items if found
+      if (urlImportResult.portfolio_items?.length > 0) {
+        const portfolioInserts = urlImportResult.portfolio_items
+          .filter((item: any) => item.title && item.media_url)
+          .map((item: any) => ({
+            user_id: user.id,
+            title: item.title,
+            description: item.description || null,
+            media_url: item.media_url,
+            media_type: item.media_type || 'image',
+            thumbnail_url: item.thumbnail_url || null,
+            tags: item.tags || null,
+            category: 'imported',
+          }));
+
+        if (portfolioInserts.length > 0) {
+          const { error: portfolioError } = await supabase
+            .from('portfolio_items')
+            .insert(portfolioInserts);
+
+          if (portfolioError) {
+            console.error('Error importing portfolio items:', portfolioError);
+          } else {
+            parts.push(`${portfolioInserts.length} portfolio items`);
+          }
+        }
+      }
+
       // Import credits if found
       if (urlImportResult.credits?.length > 0) {
-        for (const credit of urlImportResult.credits.slice(0, 20)) {
-          await supabase.from('credits').insert({
-            user_id: user?.id,
-            project_name: credit.title || credit.project_name,
-            role: credit.role || 'Contributor',
-            year: credit.year || null,
-            url: credit.url,
-            verification_status: 'pending',
-          });
-        }
+        const creditInserts = urlImportResult.credits.slice(0, 20).map((credit: any) => ({
+          user_id: user.id,
+          project_name: credit.title || credit.project_name,
+          role: credit.role || 'Contributor',
+          year: credit.year || null,
+          url: credit.url,
+          verification_status: 'pending',
+        }));
+        const { error } = await supabase.from('credits').insert(creditInserts);
+        if (!error) parts.push(`${creditInserts.length} credits`);
       }
 
       // Import awards if found
       if (urlImportResult.awards?.length > 0) {
-        for (const award of urlImportResult.awards.slice(0, 10)) {
-          await supabase.from('awards').insert({
-            user_id: user?.id,
-            title: award.title || award.name,
-            organization: award.organization || award.issuer || 'Unknown',
-            year: award.year || null,
-            verification_status: 'pending',
-          });
+        const awardInserts = urlImportResult.awards.slice(0, 10).map((award: any) => ({
+          user_id: user.id,
+          title: award.title || award.name,
+          organization: award.organization || award.issuer || 'Unknown',
+          year: award.year || null,
+          verification_status: 'pending',
+        }));
+        const { error } = await supabase.from('awards').insert(awardInserts);
+        if (!error) parts.push(`${awardInserts.length} awards`);
+      }
+
+      // Import skills if found
+      if (urlImportResult.skills?.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('professional_skills')
+          .eq('user_id', user.id)
+          .single();
+
+        const existingSkills = (profileData?.professional_skills as any[]) || [];
+        const existingNames = existingSkills.map((s: any) => typeof s === 'string' ? s : s.skill || s.name || '');
+        const newSkills = urlImportResult.skills
+          .map((s: any) => typeof s === 'string' ? s : s.skill || s)
+          .filter((s: string) => !existingNames.includes(s));
+
+        if (newSkills.length > 0) {
+          const merged = [
+            ...existingSkills,
+            ...newSkills.map((s: string) => ({ skill: s, level: 3, category: 'General' }))
+          ];
+          await supabase
+            .from('profiles')
+            .update({ professional_skills: merged as any })
+            .eq('user_id', user.id);
+          parts.push(`${newSkills.length} skills`);
         }
       }
 
       toast({
-        title: "Data Imported!",
-        description: `Added ${urlImportResult.credits?.length || 0} credits and ${urlImportResult.awards?.length || 0} awards`,
+        title: "Import Complete!",
+        description: parts.length > 0 ? `Added ${parts.join(", ")}` : "No new data to import",
       });
 
       setUrlImportDialogOpen(false);

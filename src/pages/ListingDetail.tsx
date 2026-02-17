@@ -394,7 +394,12 @@ const ListingDetail = () => {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={async () => {
-                          await supabase.from("digital_products").update({ is_active: false }).eq("id", listing.id);
+                          const { error } = await supabase.from("digital_products").update({ is_active: false }).eq("id", listing.id).eq("user_id", user?.id);
+                          if (error) {
+                            console.error("Failed to remove listing:", error);
+                            toast({ title: "Failed to remove listing", description: error.message, variant: "destructive" });
+                            return;
+                          }
                           toast({ title: "Listing removed" });
                           navigate("/market");
                         }}>Remove</AlertDialogAction>

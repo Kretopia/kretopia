@@ -823,20 +823,6 @@ const Auth = () => {
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading || googleLoading}
-                >
-                  {googleLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Chrome className="mr-2 h-4 w-4" />
-                  )}
-                  Google
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
                   onClick={handleAppleSignIn}
                   disabled={loading || appleLoading}
                 >
@@ -996,20 +982,6 @@ const Auth = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={handleGoogleSignIn}
-                    disabled={loading || googleLoading}
-                  >
-                    {googleLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Chrome className="mr-2 h-4 w-4" />
-                    )}
-                    Google
-                  </Button>
                   <Button
                     type="button"
                     variant="outline"

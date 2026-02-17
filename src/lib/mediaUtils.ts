@@ -83,29 +83,9 @@ export const parseMediaUrl = (url: string): MediaInfo | null => {
     };
   }
 
-  // Behance
-  const behanceGalleryRegex = /behance\.net\/gallery\/(\d+)/;
-  const behanceGalleryMatch = url.match(behanceGalleryRegex);
-  if (behanceGalleryMatch) {
-    const id = behanceGalleryMatch[1];
-    return {
-      platform: 'behance',
-      id,
-      embedUrl: `https://www.behance.net/gallery/${id}?embed=true`,
-      thumbnailUrl: '' // Will be fetched via oEmbed
-    };
-  }
-  
-  // Behance profile URL
+  // Behance - doesn't support iframe embeds, return null to show as link card
   if (url.includes('behance.net')) {
-    const profileMatch = url.match(/behance\.net\/([a-zA-Z0-9_-]+)/);
-    const id = profileMatch?.[1] || 'profile';
-    return {
-      platform: 'behance',
-      id,
-      embedUrl: url,
-      thumbnailUrl: ''
-    };
+    return null;
   }
 
   return null;

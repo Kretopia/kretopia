@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
-import { ProGate } from "@/components/project/ProGate";
+import { FreeTierGate } from "@/components/FreeTierGate";
 import { ApplicantPipeline } from "@/components/opportunity/ApplicantPipeline";
 import { OpportunityAnalytics } from "@/components/opportunity/OpportunityAnalytics";
 
@@ -692,10 +692,10 @@ Return ONLY valid JSON array:
               </CardContent>
             </Card>
           ) : !isPro && applicants.length > 0 ? (
-            <ProGate
-              feature="AI Applicant Ranking"
-              description="Auto-rank applicants by match score, see top picks, and shortlist the best talent."
-              isPro={false}
+            <FreeTierGate
+              feature="aiApplicantRankings"
+              featureLabel="AI Applicant Ranking"
+              description="Upgrade to Pro for unlimited AI applicant ranking, match scores, and shortlisting."
             >
               <Card className="mb-6 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
                 <CardContent className="flex items-center gap-4 py-4">
@@ -704,12 +704,12 @@ Return ONLY valid JSON array:
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-primary">Top Pick</p>
-                    <p className="text-base font-bold">John Creator</p>
-                    <p className="text-xs text-muted-foreground">Video Editor · 92% match</p>
+                    <p className="text-base font-bold">{applicants[0]?.full_name || "Applicant"}</p>
+                    <p className="text-xs text-muted-foreground">{applicants[0]?.role || "Creator"} · {applicants[0]?.ai_match_score || 0}% match</p>
                   </div>
                 </CardContent>
               </Card>
-            </ProGate>
+            </FreeTierGate>
           ) : null}
         </>
       )}

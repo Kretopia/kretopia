@@ -38,7 +38,7 @@ export const HeroSection = () => {
           </p>
           
           {/* Value props */}
-          <div className="mx-auto mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground px-4">
+          <div className="mx-auto mb-8 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4 text-xs sm:text-sm text-muted-foreground px-4">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
               Verified Portfolios

@@ -194,6 +194,21 @@ export const ImportFromWebsiteDialog = ({ open, onOpenChange, onImport }: Import
                     <Label className="text-xs text-muted-foreground">
                       Portfolio Items ({extractedData.portfolio_items.length})
                     </Label>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      {extractedData.portfolio_items.slice(0, 6).map((item: any, i: number) => (
+                        <div key={i} className="flex items-center gap-2 p-2 rounded-md bg-muted/30 text-xs">
+                          {item.thumbnail_url && (
+                            <img src={item.thumbnail_url} alt={item.title} className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                          )}
+                          <span className="truncate">{item.title}</span>
+                        </div>
+                      ))}
+                      {extractedData.portfolio_items.length > 6 && (
+                        <div className="flex items-center justify-center p-2 rounded-md bg-muted/30 text-xs text-muted-foreground">
+                          +{extractedData.portfolio_items.length - 6} more
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 

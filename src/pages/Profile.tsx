@@ -145,7 +145,10 @@ const ProfileContent = () => {
     setTempImageUrl("");
   };
 
-  const handleImportData = (data: any) => {
+  const handleImportData = async (data: any) => {
+    if (!user) return;
+    
+    // Update profile fields
     const updates: any = {};
     if (data.full_name) updates.full_name = data.full_name;
     if (data.role) updates.role = data.role;
@@ -153,10 +156,68 @@ const ProfileContent = () => {
     if (data.location) updates.location = data.location;
     
     setEditForm(prev => ({ ...prev, ...updates }));
+
+    // Import portfolio items directly to database
+    let importedCount = 0;
+    if (data.portfolio_items && data.portfolio_items.length > 0) {
+      const portfolioInserts = data.portfolio_items
+        .filter((item: any) => item.title && item.media_url)
+        .map((item: any) => ({
+          user_id: user.id,
+          title: item.title,
+          description: item.description || null,
+          media_url: item.media_url,
+          media_type: item.media_type || 'image',
+          thumbnail_url: item.thumbnail_url || null,
+          tags: item.tags || null,
+          category: 'imported',
+        }));
+
+      if (portfolioInserts.length > 0) {
+        const { error: portfolioError, data: inserted } = await supabase
+          .from('portfolio_items')
+          .insert(portfolioInserts)
+          .select('id');
+
+        if (portfolioError) {
+          console.error('Error importing portfolio items:', portfolioError);
+        } else {
+          importedCount = inserted?.length || 0;
+        }
+      }
+    }
+
+    // Import skills to profile if available
+    if (data.skills && data.skills.length > 0) {
+      const skillNames = data.skills.map((s: any) => typeof s === 'string' ? s : s.skill || s);
+      const existingSkills = (profile?.professional_skills as any[]) || [];
+      const existingNames = existingSkills.map((s: any) => typeof s === 'string' ? s : s.skill || s.name || '');
+      const newSkills = skillNames.filter((s: string) => !existingNames.includes(s));
+      
+      if (newSkills.length > 0) {
+        const mergedSkills = [
+          ...existingSkills,
+          ...newSkills.map((s: string) => ({ skill: s, level: 3, category: 'General' }))
+        ];
+        
+        await supabase
+          .from('profiles')
+          .update({ professional_skills: mergedSkills as any })
+          .eq('user_id', user.id);
+      }
+    }
+
+    // Refresh data to show new items
+    await fetchData();
+    
+    const parts = [];
+    if (Object.keys(updates).length > 0) parts.push("profile info updated");
+    if (importedCount > 0) parts.push(`${importedCount} portfolio items imported`);
+    if (data.skills?.length > 0) parts.push(`${data.skills.length} skills added`);
     
     toast({
-      title: "Success",
-      description: "Profile data imported successfully. Review and save when ready.",
+      title: "Import Complete",
+      description: parts.length > 0 ? parts.join(", ") + ". Review and save profile when ready." : "No data to import.",
     });
   };
 

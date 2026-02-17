@@ -447,31 +447,27 @@ const ProfileContent = () => {
                 showAll={false}
               />
             )}
-            <ProGate feature="AI Credential Verification" isPro={userTier === 'pro'} description="Get AI-verified credentials across IMDB, Grammy, Spotify and more.">
-              <CredentialVerificationCard 
-                userId={profile.user_id}
-                fullName={profile.full_name}
-                role={profile.role || ''}
-                bio={profile.bio || ''}
-                socialLinks={{
-                  spotify: profile.spotify_url || '',
-                  youtube: profile.youtube_url || '',
-                  imdb: profile.imdb_url || '',
-                  instagram: profile.instagram_url || '',
-                  linkedin: profile.linkedin_url || '',
-                }}
-                currentTier={profile.verification_tier || undefined}
-                currentAchievements={profile.achievement_badges || []}
-                verifiedCredentials={(profile as any).verified_credentials || []}
-                verificationScore={profile.verification_score || undefined}
-                verifiedAt={profile.verified_at || undefined}
-                breakdown={(profile as any).verification_breakdown || undefined}
-                onVerificationComplete={() => fetchData()}
-              />
-            </ProGate>
-            <ProGate feature="Import & Verify Credits" isPro={userTier === 'pro'} description="Auto-import credits from Spotify, IMDB, Discogs, YouTube and more.">
-              <PlatformConnectionCard onCreditsImported={() => fetchData()} />
-            </ProGate>
+            <CredentialVerificationCard 
+              userId={profile.user_id}
+              fullName={profile.full_name}
+              role={profile.role || ''}
+              bio={profile.bio || ''}
+              socialLinks={{
+                spotify: profile.spotify_url || '',
+                youtube: profile.youtube_url || '',
+                imdb: profile.imdb_url || '',
+                instagram: profile.instagram_url || '',
+                linkedin: profile.linkedin_url || '',
+              }}
+              currentTier={profile.verification_tier || undefined}
+              currentAchievements={profile.achievement_badges || []}
+              verifiedCredentials={(profile as any).verified_credentials || []}
+              verificationScore={profile.verification_score || undefined}
+              verifiedAt={profile.verified_at || undefined}
+              breakdown={(profile as any).verification_breakdown || undefined}
+              onVerificationComplete={() => fetchData()}
+            />
+            <PlatformConnectionCard onCreditsImported={() => fetchData()} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <AIPortfolioInsights 
                 portfolioItems={portfolioItems}

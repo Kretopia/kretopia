@@ -1,5 +1,5 @@
 export interface MediaInfo {
-  platform: 'youtube' | 'vimeo' | 'soundcloud' | 'spotify' | 'tiktok' | 'instagram' | 'unknown';
+  platform: 'youtube' | 'vimeo' | 'soundcloud' | 'spotify' | 'tiktok' | 'instagram' | 'behance' | 'unknown';
   id: string;
   embedUrl: string;
   thumbnailUrl: string;
@@ -79,7 +79,32 @@ export const parseMediaUrl = (url: string): MediaInfo | null => {
       platform: 'instagram',
       id,
       embedUrl: `https://www.instagram.com/p/${id}/embed`,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=400&h=300&fit=crop' // Instagram placeholder
+      thumbnailUrl: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=400&h=300&fit=crop'
+    };
+  }
+
+  // Behance
+  const behanceGalleryRegex = /behance\.net\/gallery\/(\d+)/;
+  const behanceGalleryMatch = url.match(behanceGalleryRegex);
+  if (behanceGalleryMatch) {
+    const id = behanceGalleryMatch[1];
+    return {
+      platform: 'behance',
+      id,
+      embedUrl: `https://www.behance.net/gallery/${id}?embed=true`,
+      thumbnailUrl: '' // Will be fetched via oEmbed
+    };
+  }
+  
+  // Behance profile URL
+  if (url.includes('behance.net')) {
+    const profileMatch = url.match(/behance\.net\/([a-zA-Z0-9_-]+)/);
+    const id = profileMatch?.[1] || 'profile';
+    return {
+      platform: 'behance',
+      id,
+      embedUrl: url,
+      thumbnailUrl: ''
     };
   }
 

@@ -238,6 +238,66 @@ serve(async (req) => {
       data.platform = "behance";
       data.mediaType = "image";
       data.mediaUrl = url;
+      
+      // Behance supports oEmbed — extract metadata
+      try {
+        const oembedUrl = `https://www.behance.net/services/oembed?url=${encodeURIComponent(url)}`;
+        console.log("Fetching Behance oEmbed:", oembedUrl);
+        const behanceResponse = await fetch(oembedUrl, {
+          headers: { "User-Agent": "Mozilla/5.0 (compatible; ThriveBot/1.0)" },
+        });
+        
+        if (behanceResponse.ok) {
+          const behanceData = await behanceResponse.json();
+          console.log("Behance oEmbed data:", JSON.stringify(behanceData));
+          data.title = behanceData.title || "";
+          data.description = behanceData.author_name ? `By ${behanceData.author_name}` : "";
+          data.thumbnailUrl = behanceData.thumbnail_url || "";
+          
+          // Use the oEmbed HTML if provided
+          if (behanceData.html) {
+            data.embedCode = behanceData.html;
+          }
+        } else {
+          console.log("Behance oEmbed failed:", behanceResponse.status);
+        }
+      } catch (e) {
+        console.error("Error fetching Behance oEmbed:", e);
+      }
+      
+      // Fallback: fetch OG data directly if oEmbed didn't return enough
+      if (!data.title || !data.thumbnailUrl) {
+        try {
+          const response = await fetch(url, {
+            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
+          });
+          
+          if (response.ok) {
+            const html = await response.text();
+            const extractMeta = (property: string) => {
+              const regex = new RegExp(
+                `<meta[^>]*(?:property|name)=["']${property}["'][^>]*content=["']([^"']*)["']`,
+                "i"
+              );
+              return html.match(regex)?.[1];
+            };
+            
+            if (!data.title) data.title = extractMeta("og:title") || extractMeta("twitter:title") || "";
+            if (!data.thumbnailUrl) data.thumbnailUrl = extractMeta("og:image") || extractMeta("twitter:image") || "";
+            if (!data.description) data.description = extractMeta("og:description") || extractMeta("twitter:description") || "";
+            
+            console.log("Behance OG fallback - title:", data.title, "thumb:", data.thumbnailUrl);
+          }
+        } catch (e) {
+          console.error("Error fetching Behance OG data:", e);
+        }
+      }
+      
+      // If it's a gallery project, create a nice embed iframe
+      const galleryMatch = url.match(/behance\.net\/gallery\/(\d+)/);
+      if (galleryMatch && !data.embedCode) {
+        data.embedCode = `<iframe src="https://www.behance.net/gallery/${galleryMatch[1]}?embed=true" width="100%" height="500" frameborder="0" allow="clipboard-write" allowfullscreen></iframe>`;
+      }
     }
 
     // If no specific platform detected, try to fetch OG data

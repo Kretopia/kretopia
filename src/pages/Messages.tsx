@@ -447,7 +447,7 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 sm:pb-0">
+    <div className="flex h-[calc(100dvh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 sm:pb-0">
       {/* Conversations List */}
       <div
         className={`${

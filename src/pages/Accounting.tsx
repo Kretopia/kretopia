@@ -9,7 +9,7 @@ const Accounting = () => {
   if (!user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
+    <div className="container mx-auto px-4 py-6 max-w-6xl pb-24 md:pb-6">
       <FreeTierGate 
         feature="expenses"
         featureLabel="ThriveMoney" 

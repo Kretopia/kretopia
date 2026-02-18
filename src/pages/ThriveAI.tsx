@@ -27,7 +27,7 @@ const ThriveAI = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 max-w-4xl">
+    <div className="container mx-auto px-4 py-4 max-w-4xl pb-24 md:pb-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 rounded-full bg-gradient-to-br from-primary/20 to-primary/5">

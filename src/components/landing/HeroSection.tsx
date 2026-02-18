@@ -20,8 +20,8 @@ export const HeroSection = () => {
         <div className="animate-slide-up text-center">
           {/* Social Proof Badge */}
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105">
-            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-            <span className="font-medium text-primary">130+ Verified Creatives Already Collaborating</span>
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+            <span className="font-medium text-primary">The All-in-One Creative Platform</span>
           </div>
           
           {/* Headline — more urgency & benefit */}

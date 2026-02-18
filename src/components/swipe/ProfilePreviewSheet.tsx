@@ -7,6 +7,7 @@ import { SwipeProfile } from '@/hooks/useSwipeProfiles';
 import { MapPin, Briefcase, Star, Sparkles, ExternalLink, X, Heart, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { UserActionMenu } from '@/components/user/UserActionMenu';
 
 interface ProfilePreviewSheetProps {
   profile: SwipeProfile | null;
@@ -121,7 +122,7 @@ export function ProfilePreviewSheet({
             {/* Basic Info */}
             <div className="mb-6">
               <div className="flex items-start justify-between">
-                <div>
+                <div className="flex-1">
                   <h2 className="text-2xl font-bold">{profile.full_name}</h2>
                   <div className="flex items-center gap-2 text-muted-foreground mt-1">
                     <Briefcase className="h-4 w-4" />
@@ -140,6 +141,15 @@ export function ProfilePreviewSheet({
                     {profile.badge === 'og' ? '⭐ OG' : '🚀 Beta'}
                   </Badge>
                 )}
+
+                <UserActionMenu
+                  targetUserId={profile.user_id}
+                  targetUserName={profile.full_name || 'User'}
+                  onBlocked={() => {
+                    onOpenChange(false);
+                    onSwipe('left');
+                  }}
+                />
               </div>
 
               {profile.location && (

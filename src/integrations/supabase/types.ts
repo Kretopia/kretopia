@@ -6090,6 +6090,27 @@ export type Database = {
           },
         ]
       }
+      user_blocks: {
+        Row: {
+          blocked_user_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_user_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_user_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       user_check_ins: {
         Row: {
           check_in_date: string
@@ -6133,6 +6154,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

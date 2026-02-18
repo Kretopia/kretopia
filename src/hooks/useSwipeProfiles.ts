@@ -67,6 +67,23 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       const swipedIds = new Set(swipedData?.map(s => s.target_id) || []);
       console.log('[useSwipeProfiles] Already swiped:', swipedIds.size);
 
+      // Step 1b: Get blocked users (exclude from feed)
+      const { data: blockedData } = await supabase
+        .from('user_blocks')
+        .select('blocked_user_id')
+        .eq('blocker_id', currentUserId);
+
+      const { data: blockedByData } = await supabase
+        .from('user_blocks')
+        .select('blocker_id')
+        .eq('blocked_user_id', currentUserId);
+
+      const blockedIds = new Set([
+        ...(blockedData?.map(b => b.blocked_user_id) || []),
+        ...(blockedByData?.map(b => b.blocker_id) || [])
+      ]);
+      console.log('[useSwipeProfiles] Blocked users:', blockedIds.size);
+
       // Step 2: Get accepted connections (exclude from feed)
       const { data: connectionsOut } = await supabase
         .from('connections')
@@ -134,6 +151,8 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         if (swipedIds.has(p.user_id)) return false;
         // Not already connected
         if (connectedIds.has(p.user_id)) return false;
+        // Not blocked (either direction)
+        if (blockedIds.has(p.user_id)) return false;
         // ALL profiles must have bio with minimum 20 characters
         if (!p.bio || p.bio.length < 20) return false;
         return true;

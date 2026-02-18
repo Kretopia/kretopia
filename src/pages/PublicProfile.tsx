@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MapPin, Star, Briefcase, ArrowLeft, MessageCircle, UserPlus, UserCheck } from "lucide-react";
+import { UserActionMenu } from "@/components/user/UserActionMenu";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -444,34 +445,45 @@ const PublicProfile = () => {
         currentUserRole={currentUserRole}
       />
       <div className="container mx-auto max-w-7xl px-4 py-6">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => {
-            const state = location.state as { from?: string; cardIndex?: number };
-            if (state?.from === 'match' || location.search?.includes('from=match')) {
-              navigate('/circle?tab=network');
-            } else if (state?.from === 'connect') {
-              navigate('/connect');
-            } else if (state?.from === 'spark') {
-              navigate('/spark');
-            } else if (state?.from === 'circle') {
-              navigate('/circle');
-            } else {
-              navigate(-1);
-            }
-          }}
-          className="mb-4 gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {isFromMatch 
-            ? 'Back to Network' 
-            : location.state && (location.state as any).from === 'circle' 
-            ? 'Back to Circle' 
-            : location.state && (location.state as any).from === 'connect' 
-            ? 'Back to Connect' 
-            : 'Back'}
-        </Button>
+        {/* Back Button + Actions */}
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              const state = location.state as { from?: string; cardIndex?: number };
+              if (state?.from === 'match' || location.search?.includes('from=match')) {
+                navigate('/circle?tab=network');
+              } else if (state?.from === 'connect') {
+                navigate('/connect');
+              } else if (state?.from === 'spark') {
+                navigate('/spark');
+              } else if (state?.from === 'circle') {
+                navigate('/circle');
+              } else {
+                navigate(-1);
+              }
+            }}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {isFromMatch 
+              ? 'Back to Network' 
+              : location.state && (location.state as any).from === 'circle' 
+              ? 'Back to Circle' 
+              : location.state && (location.state as any).from === 'connect' 
+              ? 'Back to Connect' 
+              : 'Back'}
+          </Button>
+
+          {/* Report/Block menu - only show for other users */}
+          {currentUser && userId && currentUser.id !== userId && (
+            <UserActionMenu
+              targetUserId={userId}
+              targetUserName={profile?.full_name || 'User'}
+              onBlocked={() => navigate(-1)}
+            />
+          )}
+        </div>
 
         {/* Render company view for company accounts */}
         {profile.account_type === 'company' ? (

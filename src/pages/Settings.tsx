@@ -408,7 +408,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-4 md:p-6 pb-24 md:pb-6">
       <div className="container mx-auto max-w-4xl">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">

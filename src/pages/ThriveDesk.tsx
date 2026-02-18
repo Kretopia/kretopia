@@ -202,7 +202,7 @@ const ThriveDesk = () => {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row overflow-hidden bg-background h-[calc(100dvh-7.5rem)] lg:h-[100dvh]">
+    <div className="flex flex-col lg:flex-row overflow-hidden bg-background h-[calc(100dvh-8rem)] lg:h-[100dvh]">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -271,7 +271,7 @@ const ThriveDesk = () => {
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Main Content */}
-          <div className={cn("flex-1 min-h-0", activeTab === "messages" ? "flex flex-col" : "overflow-y-auto")}>
+          <div className={cn("flex-1 min-h-0 min-w-0", activeTab === "messages" ? "flex flex-col" : "overflow-y-auto")}>
             {activeTab === "messages" && (
               <SimpleProjectChat
                 projectId={projectId!}

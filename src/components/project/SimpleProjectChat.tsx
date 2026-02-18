@@ -299,7 +299,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-[calc(100dvh-12rem)] md:h-[calc(100dvh-10rem)]">
+      <div className="flex flex-col h-full">
         {/* Pinned Messages Banner */}
         {pinnedMessages.length > 0 && (
           <div className="border-b border-border bg-accent/30 px-4 py-2 shrink-0">
@@ -508,7 +508,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
         )}
 
         {/* Message Input */}
-        <div className="border-t border-border pt-3 mt-auto shrink-0">
+        <div className="border-t border-border p-3 mt-auto shrink-0 bg-background">
           <div className="relative">
             {/* @Mention autocomplete */}
             {showMentions && filteredCollaborators.length > 0 && (

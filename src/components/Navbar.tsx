@@ -206,11 +206,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <ShoppingBag className="h-5 w-5" />
                       Marketplace
                     </Button>
-
-                    <Separator className="my-3" />
-
-                    {/* Sales Tools */}
-                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Sales Tools</p>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
@@ -218,7 +213,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     >
                       <Target className="h-5 w-5" />
                       Sales Dashboard
-                      <Crown className="h-3 w-3 text-amber-500 ml-auto" />
                     </Button>
 
                     <Separator className="my-3" />
@@ -248,9 +242,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     >
                       <DollarSign className="h-5 w-5" />
                       ThriveMoney
-                      {!isPro && (
-                        <Crown className="h-3 w-3 text-amber-500 ml-auto" />
-                      )}
                     </Button>
 
                     {/* Subscription / Account */}

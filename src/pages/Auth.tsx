@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X, Mail, RefreshCw, Chrome } from "lucide-react";
+import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X, Mail, RefreshCw, Chrome, Eye, EyeOff } from "lucide-react";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
@@ -57,6 +57,7 @@ const Auth = () => {
   const [resendingEmail, setResendingEmail] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -691,14 +692,13 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="mb-6 sm:mb-8 text-center">
           {/* Mobile-only branding */}
-          <div className="lg:hidden mb-6">
-            <span className="text-xl font-black tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <div className="lg:hidden mb-4">
+            <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               thriveIN
             </span>
-          </div>
-          
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-glow">
-            <Sparkles className="h-7 w-7 text-primary-foreground" />
+            <span className="ml-2 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+              Beta
+            </span>
           </div>
           <h1 className="mb-2 text-2xl sm:text-3xl font-bold">
             {isPasswordReset ? "Reset Your Password" : "Welcome to thriveIN"}
@@ -810,19 +810,31 @@ const Auth = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signin-password">Password</Label>
-                <Input
-                  id="signin-password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setPasswordError("");
-                  }}
-                  required
-                  className={`h-11 sm:h-10 text-base ${passwordError ? "border-destructive" : ""}`}
-                  autoComplete="current-password"
-                />
+                <div className="relative">
+                  <Input
+                    id="signin-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError("");
+                    }}
+                    required
+                    className={`h-11 sm:h-10 text-base pr-10 ${passwordError ? "border-destructive" : ""}`}
+                    autoComplete="current-password"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                  </Button>
+                </div>
                 {passwordError && (
                   <p className="text-sm text-destructive flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
@@ -1009,21 +1021,33 @@ const Auth = () => {
               <form onSubmit={handleSignUp} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Create Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setPasswordError("");
-                    }}
-                    required
-                    minLength={8}
-                    className={`h-11 text-base ${passwordError ? "border-destructive" : ""}`}
-                    autoComplete="new-password"
-                    autoFocus
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setPasswordError("");
+                      }}
+                      required
+                      minLength={8}
+                      className={`h-11 text-base pr-10 ${passwordError ? "border-destructive" : ""}`}
+                      autoComplete="new-password"
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    </Button>
+                  </div>
                   {passwordError && (
                     <p className="text-sm text-destructive flex items-center gap-1">
                       <AlertCircle className="h-3 w-3" />
@@ -1035,19 +1059,31 @@ const Auth = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      setConfirmPasswordError("");
-                    }}
-                    required
-                    className={`h-11 text-base ${confirmPasswordError ? "border-destructive" : ""}`}
-                    autoComplete="new-password"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        setConfirmPasswordError("");
+                      }}
+                      required
+                      className={`h-11 text-base pr-10 ${confirmPasswordError ? "border-destructive" : ""}`}
+                      autoComplete="new-password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    </Button>
+                  </div>
                   {confirmPasswordError && (
                     <p className="text-sm text-destructive flex items-center gap-1">
                       <AlertCircle className="h-3 w-3" />

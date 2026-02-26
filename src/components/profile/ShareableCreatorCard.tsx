@@ -211,7 +211,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
               {/* Join CTA */}
               <div className="mt-4 pt-3 border-t border-white/5">
                 <p className="text-white/30 text-[9px] tracking-widest">JOIN THE CREATIVE NETWORK</p>
-                <p className="text-purple-400 text-[10px] font-medium mt-0.5">thrivein.app</p>
+                <p className="text-purple-400 text-[10px] font-medium mt-0.5">thrivein.io</p>
               </div>
             </div>
           </div>

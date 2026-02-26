@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Download, Share2, Loader2, CheckCircle, Shield, Award } from "lucide-react";
+import { Download, Share2, Loader2, CheckCircle, Shield, Award, Copy, Check } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
@@ -40,6 +40,7 @@ export const ShareableProfileCard = ({
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Fetch user's invite code only for invite mode
   useEffect(() => {
@@ -129,39 +130,61 @@ export const ShareableProfileCard = ({
     toast.success("Card downloaded!");
   };
 
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(qrUrl);
+      toast.success("Link copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
   const handleShare = async () => {
-    // In the Lovable preview (inside an iframe), the Web Share API often fails.
-    // If we're not in the top window, fall back to download so users can still share.
     if (window.self !== window.top) {
       toast.info("In preview, sharing isn't supported. Downloading the card so you can share it.");
       await handleDownload();
       return;
     }
 
-    // Simplest & most reliable: use native share for URL + text only
-    if (navigator.share) {
-      try {
+    // Generate image and share as file for maximum app compatibility (IG, WhatsApp, LinkedIn etc.)
+    const canvas = await generateImage();
+    if (!canvas) return;
+
+    try {
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!blob) {
+        await handleDownload();
+        return;
+      }
+
+      const file = new File([blob], `thrivein-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`, { type: "image/png" });
+      const shareText = mode === "invite"
+        ? `Join me on ThriveIN! 🚀\n${qrUrl}`
+        : `Check out my creative profile on ThriveIN! 🚀\n${qrUrl}`;
+
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           title: `${profile.full_name} on ThriveIN`,
-          text:
-            mode === "invite"
-              ? `Join me on ThriveIN!\n${qrUrl}`
-              : `Check out my creative profile on ThriveIN!\n${qrUrl}`,
+          text: shareText,
+          files: [file],
+        });
+        toast.success("Shared successfully!");
+      } else if (navigator.share) {
+        await navigator.share({
+          title: `${profile.full_name} on ThriveIN`,
+          text: shareText,
           url: qrUrl,
         });
         toast.success("Shared successfully!");
-      } catch (error: any) {
-        if (error?.name === "AbortError") return; // user cancelled
-        console.error("Share error:", error);
-        // On real devices this is unlikely, but if it happens we just fall back silently
+      } else {
+        toast.info("Sharing not supported in this browser, downloading image instead");
         await handleDownload();
       }
-      return;
+    } catch (error: any) {
+      if (error?.name === "AbortError") return;
+      console.error("Share error:", error);
+      await handleDownload();
     }
-
-    // No Web Share API – fall back to download
-    toast.info("Sharing not supported in this browser, downloading image instead");
-    await handleDownload();
   };
 
   // Story size: 9:16 aspect ratio
@@ -310,7 +333,7 @@ export const ShareableProfileCard = ({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <Button
             onClick={handleDownload}
             disabled={isGenerating}
@@ -335,6 +358,9 @@ export const ShareableProfileCard = ({
               <Share2 className="h-4 w-4 mr-2" />
             )}
             Share
+          </Button>
+          <Button onClick={handleCopyLink} variant="ghost" size="icon" className="shrink-0">
+            {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
           </Button>
         </div>
       </DialogContent>

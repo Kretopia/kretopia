@@ -11,6 +11,8 @@ export const EXPENSE_CATEGORIES = [
   { value: "taxes", label: "Taxes & Fees", icon: "📋", color: "hsl(0, 60%, 50%)" },
   { value: "contractors", label: "Contractors & Help", icon: "🤝", color: "hsl(50, 75%, 50%)" },
   { value: "entertainment", label: "Entertainment", icon: "🎬", color: "hsl(300, 65%, 55%)" },
+  { value: "carnival", label: "Carnival & Fêtes", icon: "🎭", color: "hsl(330, 80%, 55%)" },
+  { value: "events", label: "Events & Production", icon: "🎪", color: "hsl(260, 70%, 55%)" },
   { value: "other", label: "Other", icon: "📦", color: "hsl(210, 15%, 55%)" },
 ] as const;
 

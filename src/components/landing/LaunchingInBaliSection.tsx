@@ -3,16 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Globe, MapPin } from "lucide-react";
 
 const TRINIDAD_CONTENT = {
-  badge: "🇹🇹 Built for Trinidad Creatives",
-  heading: "Trinidad's Creative Network",
+  badge: "🇹🇹 Made for T&T Creatives",
+  heading: "Link Up. Create. Get Paid.",
   subheading:
-    "Whether you're in Carnival, Soca, Film, Fashion, or Design — find verified local collaborators, manage projects, and grow your creative business from right here in T&T.",
-  tagline: "Free to start • Pro when you're ready • No credit card required",
+    "Whether yuh in Carnival, Soca, Film, Fashion, or Design — find verified creatives right here in T&T. Manage projects, send invoices, and grow your ting — all in one spot.",
+  tagline: "Free to start • Pro when you ready • No credit card needed",
 };
 
 const DEFAULT_CONTENT = {
   badge: "Free to Join",
-  heading: "Ready to Work Smarter?",
+  heading: "Ready to Level Up?",
   subheading:
     "Build your verified profile, get AI-matched with collaborators, manage projects, and grow your creative business — all in one place.",
   tagline: "Free to start • Pro when you're ready • No credit card required",

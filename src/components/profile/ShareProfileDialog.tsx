@@ -249,10 +249,19 @@ ${profileUrl}
             </div>
           )}
 
-          {/* Social share buttons */}
+          {/* Social share buttons — WhatsApp first for Caribbean market */}
           <div className="pt-2 border-t">
             <Label className="mb-3 block">Share on</Label>
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => handleSocialShare('whatsapp')}
+                type="button"
+                className="bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white"
+              >
+                💬 WhatsApp
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -276,14 +285,6 @@ ${profileUrl}
                 type="button"
               >
                 Facebook
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleSocialShare('whatsapp')}
-                type="button"
-              >
-                WhatsApp
               </Button>
               <Button
                 variant="outline"

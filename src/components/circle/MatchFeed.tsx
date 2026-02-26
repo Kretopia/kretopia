@@ -26,6 +26,7 @@ interface CreatorCard {
   verification_tier?: string;
   verification_status?: string;
   achievement_badges?: string[];
+  subscription_tier?: string;
   email_verified?: boolean;
   phone_verified?: boolean;
   id_verified?: boolean;
@@ -207,6 +208,13 @@ export const MatchFeed = ({
               {/* Collab Intent Badge */}
               {currentCard.collab_intent && (
                 <CollabIntentBadge intent={currentCard.collab_intent} size="md" />
+              )}
+              {/* Pro Badge */}
+              {(currentCard.subscription_tier === 'pro' || currentCard.subscription_tier === 'founder') && (
+                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 font-bold shadow-2xl text-sm px-3 py-1 gap-1">
+                  <Crown className="h-3 w-3" />
+                  PRO
+                </Badge>
               )}
               {currentCard.badge && (
                 <Badge 

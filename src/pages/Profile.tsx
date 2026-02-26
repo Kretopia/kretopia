@@ -57,6 +57,7 @@ import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { AIPortfolioInsights, AIProfileOptimizer } from "@/components/ai";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
+import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
 import { ProGate } from "@/components/project/ProGate";
 import { WalletSection } from "@/components/profile/WalletSection";
 
@@ -510,6 +511,14 @@ const ProfileContent = () => {
             isOwnProfile={true}
           />
         </Card>
+
+        {/* Who Viewed Your Profile - Pro Feature */}
+        <div className="mb-4">
+          <WhoViewedProfile 
+            userId={profile.user_id} 
+            isPro={userTier === 'pro' || userTier === 'founder'} 
+          />
+        </div>
 
         {/* Verification & Platform Connections */}
         <div className="space-y-3 mb-6">

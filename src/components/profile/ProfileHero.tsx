@@ -2,7 +2,7 @@ import { AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Verified, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, Check, UserCheck } from "lucide-react";
+import { MapPin, Star, Verified, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, Check, UserCheck, IdCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierByPoints } from "@/lib/tierSystem";
 import { AchievementBadges } from "./AchievementBadges";
@@ -26,6 +26,7 @@ interface ProfileHeroProps {
   isUploadingAvatar?: boolean;
   skills?: any[];
   onShowQR?: () => void;
+  onCreatorCard?: () => void;
   onStartProject?: () => void;
   isFromMatch?: boolean;
   onRefresh?: () => void;
@@ -47,6 +48,7 @@ export const ProfileHero = ({
   isUploadingAvatar,
   skills = [],
   onShowQR,
+  onCreatorCard,
   onStartProject,
   isFromMatch,
   onRefresh,
@@ -249,6 +251,12 @@ export const ProfileHero = ({
               <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
                 <Share2 className="h-4 w-4" />
               </Button>
+              {onCreatorCard && (
+                <Button variant="outline" size="sm" onClick={onCreatorCard} className="gap-1.5 h-9 text-sm">
+                  <IdCard className="h-4 w-4" />
+                  Creator Card
+                </Button>
+              )}
             </>
           ) : isUnclaimedProfile ? (
             <>

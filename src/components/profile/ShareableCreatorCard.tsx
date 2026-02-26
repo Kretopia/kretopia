@@ -1,0 +1,237 @@
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Download, Share2, Shield, Sparkles, Copy, Check } from "lucide-react";
+import html2canvas from "html2canvas";
+import { useToast } from "@/hooks/use-toast";
+
+interface CreatorCardProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  profile: {
+    full_name: string;
+    role: string;
+    avatar_url?: string | null;
+    bio?: string | null;
+    badge?: string | null;
+    level?: number;
+    xp?: number;
+    location?: string | null;
+    professional_skills?: Array<{ skill: string }> | null;
+  };
+}
+
+const BADGE_LABELS: Record<string, { label: string; color: string }> = {
+  og: { label: "OG Member", color: "from-yellow-400 to-amber-600" },
+  beta: { label: "Beta Pioneer", color: "from-amber-400 to-orange-600" },
+  official: { label: "Official", color: "from-blue-400 to-blue-600" },
+  founder: { label: "Founder", color: "from-purple-400 to-purple-600" },
+  odos: { label: "ODOS", color: "from-emerald-400 to-emerald-600" },
+};
+
+export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const skills = profile.professional_skills?.slice(0, 4) || [];
+  const badgeInfo = profile.badge ? BADGE_LABELS[profile.badge] : null;
+
+  const handleDownload = async () => {
+    if (!cardRef.current) return;
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 3,
+        backgroundColor: null,
+        useCORS: true,
+        logging: false,
+      });
+      const link = document.createElement("a");
+      link.download = `${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}-thrivein.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      toast({ title: "Card downloaded!", description: "Share it on your socials 🚀" });
+    } catch (err) {
+      console.error("Download error:", err);
+      toast({ title: "Download failed", variant: "destructive" });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const profileUrl = `${window.location.origin}/u/${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}`;
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({ title: "Link copied!" });
+    } catch {
+      toast({ title: "Failed to copy", variant: "destructive" });
+    }
+  };
+
+  const handleShare = async () => {
+    if (!cardRef.current) return;
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 3,
+        backgroundColor: null,
+        useCORS: true,
+        logging: false,
+      });
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], "creator-card.png", { type: "image/png" });
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: `${profile.full_name} on ThriveIN`,
+            text: `Check out ${profile.full_name}'s creative profile on ThriveIN! 🚀`,
+            files: [file],
+          });
+        } else {
+          handleDownload();
+        }
+      });
+    } catch (err) {
+      console.error("Share error:", err);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Your Creator Card
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* The actual card */}
+        <div className="flex justify-center py-4">
+          <div
+            ref={cardRef}
+            className="w-[360px] rounded-2xl overflow-hidden shadow-2xl"
+            style={{ background: "linear-gradient(135deg, #0f0f23 0%, #1a1a3e 40%, #2d1b69 70%, #1a0a2e 100%)" }}
+          >
+            {/* Top pattern */}
+            <div className="relative h-20 overflow-hidden">
+              <div className="absolute inset-0 opacity-20">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                      width: `${30 + i * 15}px`,
+                      height: `${30 + i * 15}px`,
+                      left: `${10 + i * 18}%`,
+                      top: `${-10 + (i % 2) * 30}%`,
+                      background: `radial-gradient(circle, ${i % 2 === 0 ? "#a855f7" : "#ec4899"} 0%, transparent 70%)`,
+                    }}
+                  />
+                ))}
+              </div>
+              {/* ThriveIN branding */}
+              <div className="absolute top-3 right-4 flex items-center gap-1">
+                <span className="text-white/60 text-[10px] font-medium tracking-wider">THRIVEIN</span>
+              </div>
+            </div>
+
+            {/* Profile section */}
+            <div className="px-6 -mt-8 pb-6 text-center">
+              {/* Avatar */}
+              <div className="relative inline-block mb-3">
+                <div className="w-20 h-20 rounded-full border-[3px] border-purple-500/50 overflow-hidden bg-gray-800">
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white/50">
+                      {profile.full_name?.[0] || "?"}
+                    </div>
+                  )}
+                </div>
+                {badgeInfo && (
+                  <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-to-r ${badgeInfo.color} rounded-full px-2 py-0.5 flex items-center gap-0.5`}>
+                    <Shield className="h-2.5 w-2.5 text-white" />
+                    <span className="text-[8px] text-white font-bold whitespace-nowrap">{badgeInfo.label}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Name & Role */}
+              <h3 className="text-white font-bold text-lg leading-tight">{profile.full_name || "Creator"}</h3>
+              <p className="text-purple-300 text-sm mt-0.5">{profile.role || "Creative"}</p>
+              {profile.location && (
+                <p className="text-white/40 text-xs mt-1">📍 {profile.location}</p>
+              )}
+
+              {/* Bio */}
+              {profile.bio && (
+                <p className="text-white/60 text-xs mt-3 leading-relaxed line-clamp-2">
+                  {profile.bio}
+                </p>
+              )}
+
+              {/* Skills */}
+              {skills.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+                  {skills.map((s, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-medium text-white/80 border border-purple-500/30 bg-purple-500/10"
+                    >
+                      {s.skill}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Stats bar */}
+              <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-white/10">
+                <div className="text-center">
+                  <p className="text-white font-bold text-sm">{profile.level || 1}</p>
+                  <p className="text-white/40 text-[9px]">LEVEL</p>
+                </div>
+                <div className="w-px h-6 bg-white/10" />
+                <div className="text-center">
+                  <p className="text-white font-bold text-sm">{profile.xp || 0}</p>
+                  <p className="text-white/40 text-[9px]">XP</p>
+                </div>
+                <div className="w-px h-6 bg-white/10" />
+                <div className="text-center">
+                  <p className="text-purple-400 font-bold text-sm">🔥</p>
+                  <p className="text-white/40 text-[9px]">CREATOR</p>
+                </div>
+              </div>
+
+              {/* Join CTA */}
+              <div className="mt-4 pt-3 border-t border-white/5">
+                <p className="text-white/30 text-[9px] tracking-widest">JOIN THE CREATIVE NETWORK</p>
+                <p className="text-purple-400 text-[10px] font-medium mt-0.5">thrivein.app</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Button onClick={handleDownload} disabled={downloading} variant="outline" className="flex-1 gap-2">
+            <Download className="h-4 w-4" />
+            {downloading ? "Saving..." : "Download"}
+          </Button>
+          <Button onClick={handleShare} className="flex-1 gap-2">
+            <Share2 className="h-4 w-4" />
+            Share
+          </Button>
+          <Button onClick={handleCopyLink} variant="ghost" size="icon">
+            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

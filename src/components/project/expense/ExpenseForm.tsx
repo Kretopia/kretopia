@@ -17,7 +17,7 @@ interface ExpenseFormProps {
   onExpenseAdded: () => void;
 }
 
-const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL"];
+const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL", "IDR", "TTD", "AED", "CHF"];
 
 export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const { user } = useAuth();

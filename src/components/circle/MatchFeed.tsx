@@ -9,6 +9,7 @@ import { CollabIntentBadge } from "@/components/profile/CollabIntentSelector";
 import { EmptyMatchState } from "./EmptyMatchState";
 import { SkeletonMatchCard } from "@/components/ui/skeleton-card";
 import { cn } from "@/lib/utils";
+import { TrustBadgeRow } from "@/components/profile/TrustSignals";
 interface CreatorCard {
   id: string;
   user_id: string;
@@ -25,6 +26,10 @@ interface CreatorCard {
   verification_tier?: string;
   verification_status?: string;
   achievement_badges?: string[];
+  email_verified?: boolean;
+  phone_verified?: boolean;
+  id_verified?: boolean;
+  payment_verified?: boolean;
 }
 
 interface MatchFeedProps {
@@ -245,8 +250,16 @@ export const MatchFeed = ({
                 <div className="flex items-center gap-1 text-white/80">
                   <MapPin className="h-4 w-4" />
                   <span className="text-sm font-medium">{currentCard.location}</span>
-                </div>
+               </div>
               )}
+
+              {/* Trust Signals */}
+              <TrustBadgeRow
+                emailVerified={currentCard.email_verified}
+                phoneVerified={currentCard.phone_verified}
+                idVerified={currentCard.id_verified}
+                paymentVerified={currentCard.payment_verified}
+              />
               
               {currentCard.description && (
                 <p className="text-sm text-white/80 line-clamp-2 mt-2 drop-shadow-md">

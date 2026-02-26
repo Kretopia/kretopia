@@ -43,6 +43,7 @@ import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
+import { TrustSignals } from "@/components/profile/TrustSignals";
 
 interface Profile {
   user_id: string;
@@ -582,6 +583,17 @@ const ViewProfile = () => {
               profileUrl={`https://www.thrivein.io/profile/${profile.user_id}`}
             />
           )}
+
+          {/* Trust Signals */}
+          <Card className="p-4 mb-6">
+            <TrustSignals
+              emailVerified={(profile as any).email_verified}
+              phoneVerified={(profile as any).phone_verified}
+              idVerified={(profile as any).id_verified}
+              paymentVerified={(profile as any).payment_verified}
+              isOwnProfile={false}
+            />
+          </Card>
 
           {/* Achievement Badges */}
           {profile.achievement_badges && profile.achievement_badges.length > 0 && (

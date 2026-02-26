@@ -183,7 +183,11 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         collab_intent: profile.collab_intent,
         verification_tier: profile.verification_tier,
         verification_status: profile.verification_status,
-        achievement_badges: profile.achievement_badges as string[] || []
+        achievement_badges: profile.achievement_badges as string[] || [],
+        email_verified: (profile as any).email_verified,
+        phone_verified: (profile as any).phone_verified,
+        id_verified: (profile as any).id_verified,
+        payment_verified: (profile as any).payment_verified,
       }));
 
       console.log('[useCircleData] Final cards:', cards.length);

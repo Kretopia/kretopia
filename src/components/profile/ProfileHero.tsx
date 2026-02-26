@@ -11,6 +11,7 @@ import { useConnectionDegree } from "@/hooks/useNetworkStats";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { ClaimProfileDialog } from "./ClaimProfileDialog";
+import { TrustSignals } from "./TrustSignals";
 
 interface ProfileHeroProps {
   profile: any;
@@ -309,20 +310,29 @@ export const ProfileHero = ({
           )}
         </div>
 
-        {/* Stats Row - inline */}
-        <div className="flex gap-6 text-sm">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg font-bold">{stats.circle}</span>
-            <span className="text-muted-foreground">In Circle</span>
+        {/* Stats Row + Trust Signals */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex gap-6 text-sm">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-bold">{stats.circle}</span>
+              <span className="text-muted-foreground">In Circle</span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-bold">{stats.projects}</span>
+              <span className="text-muted-foreground">Projects</span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-bold">{stats.responseRate}%</span>
+              <span className="text-muted-foreground">Response</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg font-bold">{stats.projects}</span>
-            <span className="text-muted-foreground">Projects</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg font-bold">{stats.responseRate}%</span>
-            <span className="text-muted-foreground">Response</span>
-          </div>
+          <TrustSignals
+            emailVerified={(profile as any).email_verified}
+            phoneVerified={(profile as any).phone_verified}
+            idVerified={(profile as any).id_verified}
+            paymentVerified={(profile as any).payment_verified}
+            compact
+          />
         </div>
 
         {/* Bio */}

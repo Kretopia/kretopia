@@ -4106,9 +4106,12 @@ export type Database = {
           created_at: string | null
           daily_swipes: number | null
           discogs_verified: boolean | null
+          email_verified: boolean
           full_name: string
           google_maps_place_id: string | null
           id: string
+          id_verified: boolean
+          id_verified_at: string | null
           imdb_url: string | null
           imdb_verified: boolean | null
           imported_data: Json | null
@@ -4144,6 +4147,9 @@ export type Database = {
           onboarding_step: number | null
           partner_location_id: string | null
           passion_skills: Json | null
+          payment_verified: boolean
+          phone_number: string | null
+          phone_verified: boolean
           portfolio_verified: boolean | null
           press_links: Json | null
           professional_skills: Json | null
@@ -4225,9 +4231,12 @@ export type Database = {
           created_at?: string | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
+          email_verified?: boolean
           full_name: string
           google_maps_place_id?: string | null
           id?: string
+          id_verified?: boolean
+          id_verified_at?: string | null
           imdb_url?: string | null
           imdb_verified?: boolean | null
           imported_data?: Json | null
@@ -4263,6 +4272,9 @@ export type Database = {
           onboarding_step?: number | null
           partner_location_id?: string | null
           passion_skills?: Json | null
+          payment_verified?: boolean
+          phone_number?: string | null
+          phone_verified?: boolean
           portfolio_verified?: boolean | null
           press_links?: Json | null
           professional_skills?: Json | null
@@ -4344,9 +4356,12 @@ export type Database = {
           created_at?: string | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
+          email_verified?: boolean
           full_name?: string
           google_maps_place_id?: string | null
           id?: string
+          id_verified?: boolean
+          id_verified_at?: string | null
           imdb_url?: string | null
           imdb_verified?: boolean | null
           imported_data?: Json | null
@@ -4382,6 +4397,9 @@ export type Database = {
           onboarding_step?: number | null
           partner_location_id?: string | null
           passion_skills?: Json | null
+          payment_verified?: boolean
+          phone_number?: string | null
+          phone_verified?: boolean
           portfolio_verified?: boolean | null
           press_links?: Json | null
           professional_skills?: Json | null

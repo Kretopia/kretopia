@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag, Lock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +55,7 @@ import { DigitalProductsSection } from "@/components/profile/DigitalProductsSect
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { AIPortfolioInsights, AIProfileOptimizer } from "@/components/ai";
+import { TrustSignals } from "@/components/profile/TrustSignals";
 import { ProGate } from "@/components/project/ProGate";
 import { WalletSection } from "@/components/profile/WalletSection";
 
@@ -496,6 +498,17 @@ const ProfileContent = () => {
             );
           })()}
         </div>
+
+        {/* Trust Signals */}
+        <Card className="p-4 mb-4">
+          <TrustSignals
+            emailVerified={(profile as any).email_verified}
+            phoneVerified={(profile as any).phone_verified}
+            idVerified={(profile as any).id_verified}
+            paymentVerified={(profile as any).payment_verified}
+            isOwnProfile={true}
+          />
+        </Card>
 
         {/* Verification & Platform Connections */}
         <div className="space-y-3 mb-6">

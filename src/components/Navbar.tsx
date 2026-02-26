@@ -193,15 +193,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       My Dashboard
                     </Button>
                     
-                    {/* Profile moved from bottom nav to hamburger */}
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/profile")}
-                    >
-                      <User className="h-5 w-5" />
-                      My Profile
-                    </Button>
 
                     <Separator className="my-3" />
 

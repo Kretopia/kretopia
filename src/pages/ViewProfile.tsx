@@ -22,7 +22,8 @@ import {
   Clock,
   Users,
   UserCheck,
-  Share2
+  Share2,
+  Handshake
 } from "lucide-react";
 import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { ShareUnclaimedProfileDialog } from "@/components/profile/ShareUnclaimedProfileDialog";
@@ -44,6 +45,7 @@ import { AwardsSection } from "@/components/profile/AwardsSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { TrustSignals } from "@/components/profile/TrustSignals";
+import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 
 interface Profile {
   user_id: string;
@@ -675,6 +677,19 @@ const ViewProfile = () => {
               userId={profile.user_id}
               isOwnProfile={false}
               onRefresh={fetchData}
+            />
+          </div>
+
+          {/* Collaboration History */}
+          <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <Handshake className="h-4 w-4 text-primary" />
+              Collaboration History
+            </h3>
+            <CollaborationHistory 
+              userId={profile.user_id}
+              isOwnProfile={false}
+              viewerUserId={user?.id}
             />
           </div>
 

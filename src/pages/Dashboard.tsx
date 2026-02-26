@@ -48,6 +48,7 @@ import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteCard } from "@/components/dashboard/InviteCard";
 import { QuickMatchBanner } from "@/components/discover/QuickMatchBanner";
 import { UnclaimedProfileSuggestion } from "@/components/profile/UnclaimedProfileSuggestion";
+import { CompanyHiringDashboard } from "@/components/dashboard/CompanyHiringDashboard";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -238,6 +239,20 @@ const Dashboard = () => {
         title="Dashboard - ThriveIN"
         description="Your creative hub. Track your progress, connect with creators, and discover new opportunities on ThriveIN."
       />
+      {/* Company accounts get a hiring-focused dashboard */}
+      {profile?.account_type === 'company' ? (
+        <div className="min-h-screen p-4 sm:p-6">
+          <div className="container mx-auto max-w-7xl">
+            <div className="mb-6 sm:mb-8">
+              <h1 className="mb-1 text-2xl sm:text-3xl md:text-4xl font-bold">
+                Welcome back, {profile?.full_name || 'Team'}! 👋
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Your hiring console</p>
+            </div>
+            <CompanyHiringDashboard />
+          </div>
+        </div>
+      ) : (
       <div className="min-h-screen p-4 sm:p-6">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
@@ -582,6 +597,7 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+    )}
     </>
   );
 };

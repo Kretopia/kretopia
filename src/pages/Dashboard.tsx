@@ -208,7 +208,7 @@ const Dashboard = () => {
       };
       
       updateWallet();
-      navigate("/spark", { replace: true });
+      navigate("/circle", { replace: true });
     }
     
     if (subscriptionSuccess === "true") {
@@ -221,7 +221,7 @@ const Dashboard = () => {
         
         await supabase.functions.invoke("check-subscription");
         await fetchProfile();
-        navigate("/spark", { replace: true });
+        navigate("/circle", { replace: true });
       };
       
       handleSubscriptionSuccess();
@@ -306,8 +306,7 @@ const Dashboard = () => {
               description="Get the most out of ThriveIN in 5 simple steps"
               tips={[
                 "Complete your profile (adds photo, bio, skills) to unlock Discovery and earn 50 XP",
-                "Visit Spark to see creative content from the community",
-                "Connect with creators in Discover to start building your network",
+                "Connect with creators in Circle to start building your network",
                 "Post an opportunity or apply to one to get your first collaboration started",
                 "Check Daily Goals to earn XP, credits, and climb the leaderboard"
               ]}
@@ -316,15 +315,15 @@ const Dashboard = () => {
         )}
 
         {/* Quick Access Cards */}
-        <div className="mb-6 sm:mb-8 grid gap-4 md:grid-cols-3">
-          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/spark')}>
+        <div className="mb-6 sm:mb-8 grid gap-4 md:grid-cols-2">
+          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/messages')}>
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-primary/10">
-                <Flame className="h-6 w-6 text-primary" />
+              <div className="p-3 rounded-full bg-accent/10">
+                <MessageCircle className="h-6 w-6 text-accent" />
               </div>
               <div>
-                <h3 className="font-semibold">Spark Feed</h3>
-                <p className="text-sm text-muted-foreground">Discover creators</p>
+                <h3 className="font-semibold">Messages</h3>
+                <p className="text-sm text-muted-foreground">Stay connected</p>
               </div>
             </div>
           </Card>

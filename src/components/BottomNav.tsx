@@ -1,23 +1,49 @@
 import { Link, useLocation } from "react-router-dom";
 import { Bot, Users, Briefcase, DollarSign, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const BottomNav = memo(() => {
   const location = useLocation();
-  
+  const { user } = useAuth();
+  const [accountType, setAccountType] = useState<"individual" | "company">("individual");
+
+  // Fetch account type
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from("profiles")
+      .select("account_type")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.account_type) setAccountType(data.account_type);
+      });
+  }, [user?.id]);
+
   // Hide bottom nav on landing page
   if (location.pathname === "/") {
     return null;
   }
+
+  const isCompany = accountType === "company";
   
-  const navItems = [
-    { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab" },
-    { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab" },
-    { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
-    { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
-    { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
-  ];
+  const navItems = isCompany
+    ? [
+        { path: "/opportunities", icon: Briefcase, label: "Jobs", tourId: "opportunities-tab" },
+        { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
+        { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
+        { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
+      ]
+    : [
+        { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab" },
+        { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab" },
+        { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
+        { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
+        { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
+      ];
 
   return (
     <nav 

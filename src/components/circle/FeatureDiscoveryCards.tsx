@@ -6,26 +6,6 @@ import { useState, useEffect } from "react";
 
 const FEATURES = [
   {
-    key: "spark",
-    icon: Flame,
-    title: "Spark Feed",
-    description: "Post updates, discover inspiration & join real-time Rooms",
-    route: "/spark",
-    gradient: "from-orange-500/10 to-red-500/10",
-    iconColor: "text-orange-500",
-    borderColor: "border-orange-500/20",
-  },
-  {
-    key: "cre8",
-    icon: Trophy,
-    title: "Cre8 Arena",
-    description: "Enter creative challenges, earn XP & climb the leaderboard",
-    route: "/cre8",
-    gradient: "from-yellow-500/10 to-amber-500/10",
-    iconColor: "text-yellow-500",
-    borderColor: "border-yellow-500/20",
-  },
-  {
     key: "market",
     icon: ShoppingBag,
     title: "Marketplace",

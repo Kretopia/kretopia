@@ -27,6 +27,23 @@ export default function Circle() {
   const [showInvite, setShowInvite] = useState(false);
   const [filters, setFilters] = useState<SwipeFiltersState>(DEFAULT_SWIPE_FILTERS);
   const [profilesCount, setProfilesCount] = useState(0);
+  const [accountType, setAccountType] = useState<string>("individual");
+
+  // Redirect company accounts away from Circle
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from("profiles")
+      .select("account_type")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.account_type) setAccountType(data.account_type);
+        if (data?.account_type === "company") {
+          navigate("/opportunities", { replace: true });
+        }
+      });
+  }, [user?.id, navigate]);
 
   // Check if user is Pro
   const isPro = subscriptionInfo.tier === 'pro';

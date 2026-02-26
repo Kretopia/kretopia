@@ -57,7 +57,13 @@ export const CompanyProfileView = ({
   const [opportunities, setOpportunities] = useState<any[]>([]);
   const [loadingOpps, setLoadingOpps] = useState(true);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [companyStats, setCompanyStats] = useState({ oppsPosted: 0, talentsHired: 0 });
+  const [companyStats, setCompanyStats] = useState({ 
+    oppsPosted: 0, 
+    activeJobs: 0, 
+    talentsHired: 0, 
+    completedHires: 0,
+    avgResponseDays: 0 
+  });
 
   useEffect(() => {
     const fetchOpportunities = async () => {
@@ -79,6 +85,13 @@ export const CompanyProfileView = ({
         .select('*', { count: 'exact', head: true })
         .eq('created_by', profile.user_id);
 
+      // Active jobs
+      const { count: activeCount } = await supabase
+        .from('opportunities')
+        .select('*', { count: 'exact', head: true })
+        .eq('created_by', profile.user_id)
+        .eq('status', 'active');
+
       // Talents hired (accepted applications)
       const { data: ownOpps } = await supabase
         .from('opportunities')
@@ -86,16 +99,31 @@ export const CompanyProfileView = ({
         .eq('created_by', profile.user_id);
 
       let talentsHired = 0;
+      let completedHires = 0;
       if (ownOpps && ownOpps.length > 0) {
-        const { count } = await supabase
+        const oppIds = ownOpps.map(o => o.id);
+        const { count: hiredCount } = await supabase
           .from('applications')
           .select('*', { count: 'exact', head: true })
-          .in('opportunity_id', ownOpps.map(o => o.id))
+          .in('opportunity_id', oppIds)
           .eq('status', 'accepted');
-        talentsHired = count || 0;
+        talentsHired = hiredCount || 0;
+        
+        const { count: completedCount } = await supabase
+          .from('applications')
+          .select('*', { count: 'exact', head: true })
+          .in('opportunity_id', oppIds)
+          .in('status', ['completed', 'accepted']);
+        completedHires = completedCount || 0;
       }
 
-      setCompanyStats({ oppsPosted: oppsCount || 0, talentsHired });
+      setCompanyStats({ 
+        oppsPosted: oppsCount || 0, 
+        activeJobs: activeCount || 0,
+        talentsHired, 
+        completedHires,
+        avgResponseDays: talentsHired > 0 ? 2 : 0 // placeholder
+      });
     };
 
     const fetchTeamMembers = async () => {
@@ -241,20 +269,25 @@ export const CompanyProfileView = ({
                 <Button variant="outline" size="sm" onClick={onEdit} className="gap-1.5 h-9 text-sm">
                   <Edit className="h-4 w-4" /> Edit Profile
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate('/thrivepay')} className="gap-1.5 h-9 text-sm">
-                  <CreditCard className="h-4 w-4" /> ThrivePay
-                </Button>
-                <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </>
-            )}
+                 <Button variant="outline" size="sm" onClick={() => navigate('/thrivepay')} className="gap-1.5 h-9 text-sm">
+                   <CreditCard className="h-4 w-4" /> ThrivePay
+                 </Button>
+                 <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
+                   <Share2 className="h-4 w-4" />
+                 </Button>
+               </>
+             ) : (
+               <>
+                 <LeaveCompanyReviewDialog
+                   companyId={profile.user_id}
+                   companyName={displayName}
+                   onReviewSubmitted={onRefresh}
+                 />
+                 <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
+                   <Share2 className="h-4 w-4" />
+                 </Button>
+               </>
+             )}
           </div>
         </div>
 
@@ -288,41 +321,39 @@ export const CompanyProfileView = ({
               </div>
             )}
 
-            {/* Company Stats - Pro only */}
-            {isPro ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold">{companyStats.oppsPosted}</p>
-                    <p className="text-xs text-muted-foreground">Opportunities Posted</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold">{companyStats.talentsHired}</p>
-                    <p className="text-xs text-muted-foreground">Talents Hired</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold">{reviews.length}</p>
-                    <p className="text-xs text-muted-foreground">Reviews</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold">{profile.average_rating?.toFixed(1) || '—'}</p>
-                    <p className="text-xs text-muted-foreground">Avg Rating</p>
-                  </CardContent>
-                </Card>
-              </div>
-            ) : isOwnProfile ? (
-              <FeatureLockedBanner
-                feature="Company Stats"
-                tier="pro"
-                description="Show your hiring track record to attract top talent."
-              />
-            ) : null}
+            {/* Company Stats - visible to all */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold">{companyStats.oppsPosted}</p>
+                  <p className="text-xs text-muted-foreground">Jobs Posted</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold">{companyStats.activeJobs}</p>
+                  <p className="text-xs text-muted-foreground">Active Jobs</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold">{companyStats.talentsHired}</p>
+                  <p className="text-xs text-muted-foreground">Creators Hired</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold">{reviews.length}</p>
+                  <p className="text-xs text-muted-foreground">Reviews</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-2xl font-bold">{profile.average_rating?.toFixed(1) || '—'}</p>
+                  <p className="text-xs text-muted-foreground">Avg Rating</p>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Team Members - Pro only */}
             {isPro && teamMembers.length > 0 ? (

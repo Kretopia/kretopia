@@ -26,7 +26,7 @@ export const ConnectionSuccessStep = ({
       title: "Send a Message",
       description: "Break the ice by sending a message to your new connections",
       action: "Open Messages",
-      route: "/spark",
+      route: "/messages",
       variant: "default" as const,
     },
     {

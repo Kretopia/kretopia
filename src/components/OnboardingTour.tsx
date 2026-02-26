@@ -38,10 +38,10 @@ const tourSteps: TourStep[] = [
     route: "/discover?tab=creators",
   },
   {
-    title: "Manage Your Spark",
+    title: "Your Network",
     description: "View your matches, send messages, and start collaborating on projects together.",
-    action: "View Spark",
-    route: "/spark",
+    action: "View Circle",
+    route: "/circle",
   },
   {
     title: "You're All Set! ✨",

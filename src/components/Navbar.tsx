@@ -121,13 +121,21 @@ const Navbar = memo(({ user }: NavbarProps) => {
         {/* Desktop Navigation */}
         {user && !isLandingPage && (
           <div className="hidden lg:flex items-center gap-1">
-            {[
-              { path: "/circle", icon: Users, label: "Circle" },
-              { path: "/opportunities", icon: Briefcase, label: "Opportunities" },
-              { path: "/desk", icon: Briefcase, label: "Desk" },
-              { path: "/thrivemoney", icon: DollarSign, label: "ThriveMoney" },
-              { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
-            ].map(({ path, icon: Icon, label }) => {
+            {(accountType === "company"
+              ? [
+                  { path: "/opportunities", icon: Briefcase, label: "Jobs" },
+                  { path: "/desk", icon: Briefcase, label: "Desk" },
+                  { path: "/thrivemoney", icon: DollarSign, label: "ThriveMoney" },
+                  { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
+                ]
+              : [
+                  { path: "/circle", icon: Users, label: "Circle" },
+                  { path: "/opportunities", icon: Briefcase, label: "Opportunities" },
+                  { path: "/desk", icon: Briefcase, label: "Desk" },
+                  { path: "/thrivemoney", icon: DollarSign, label: "ThriveMoney" },
+                  { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
+                ]
+            ).map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
               return (
                 <Link
@@ -201,22 +209,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                     {/* Explore */}
                     <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Explore</p>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/spark")}
-                    >
-                      <Flame className="h-5 w-5" />
-                      Spark
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/cre8")}
-                    >
-                      <Trophy className="h-5 w-5" />
-                      Cre8 Challenge
-                    </Button>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"

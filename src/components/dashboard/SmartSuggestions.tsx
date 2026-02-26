@@ -137,7 +137,7 @@ Return ONLY valid JSON array:
       case 'connection': return '/discover';
       case 'opportunity': return '/discover?tab=opportunities';
       case 'profile': return '/profile';
-      default: return '/spark';
+      default: return '/circle';
     }
   };
 

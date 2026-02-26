@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Bot, Shield, Crown, Sparkles, Building2, DollarSign, Flame, Trophy } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Shield, Crown, Sparkles, Building2, DollarSign, Flame, Trophy, Search, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -126,14 +126,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   { path: "/opportunities", icon: Briefcase, label: "Jobs" },
                   { path: "/desk", icon: Briefcase, label: "Desk" },
                   { path: "/thrivemoney", icon: DollarSign, label: "ThriveMoney" },
-                  { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
                 ]
               : [
                   { path: "/circle", icon: Users, label: "Circle" },
                   { path: "/opportunities", icon: Briefcase, label: "Opportunities" },
                   { path: "/desk", icon: Briefcase, label: "Desk" },
                   { path: "/thrivemoney", icon: DollarSign, label: "ThriveMoney" },
-                  { path: "/thrive-ai", icon: Bot, label: "ThriveAI" },
                 ]
             ).map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
@@ -216,6 +214,29 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     >
                       <ShoppingBag className="h-5 w-5" />
                       Marketplace
+                    </Button>
+
+                    <Separator className="my-3" />
+
+                    {/* Sales Tools */}
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Sales Tools</p>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/leads")}
+                    >
+                      <Search className="h-5 w-5" />
+                      Lead Scout
+                      <Crown className="h-3 w-3 text-amber-500 ml-auto" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/outreach")}
+                    >
+                      <Send className="h-5 w-5" />
+                      Outreach
+                      <Crown className="h-3 w-3 text-amber-500 ml-auto" />
                     </Button>
 
                     <Separator className="my-3" />

@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { SwipeCard } from "@/components/ui/swipe-card";
-import { MapPin, Star, X, Heart, Sparkles, User, Verified, Crown, Shield } from "lucide-react";
+import { MapPin, Star, X, Heart, Sparkles, User, Verified, Crown, Shield, Lock } from "lucide-react";
 import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { CollabIntentBadge } from "@/components/profile/CollabIntentSelector";
+import { useNavigate } from "react-router-dom";
 import { EmptyMatchState } from "./EmptyMatchState";
 import { SkeletonMatchCard } from "@/components/ui/skeleton-card";
 import { cn } from "@/lib/utils";
@@ -46,6 +48,7 @@ interface MatchFeedProps {
   onDragMove: (e: React.MouseEvent | React.TouchEvent) => void;
   onDragEnd: () => void;
   cardRef: React.RefObject<HTMLDivElement>;
+  isPro?: boolean;
 }
 
 const getBadgeColor = (badge: string) => {
@@ -97,10 +100,12 @@ export const MatchFeed = ({
   onDragStart,
   onDragMove,
   onDragEnd,
-  cardRef
+  cardRef,
+  isPro = false
 }: MatchFeedProps) => {
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
+  const [showProUpgrade, setShowProUpgrade] = useState(false);
   
   if (loading) {
     return (
@@ -232,13 +237,17 @@ export const MatchFeed = ({
             </div>
             {currentCard.matchScore && (
               <Badge 
-                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0 font-bold px-4 py-2 text-lg shadow-2xl cursor-pointer hover:scale-105 transition-transform"
+                className="bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0 font-bold px-4 py-2 text-lg shadow-2xl cursor-pointer hover:scale-105 transition-transform relative"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowMatchExplanation(true);
+                  if (isPro) {
+                    setShowMatchExplanation(true);
+                  } else {
+                    setShowProUpgrade(true);
+                  }
                 }}
               >
-                ✨ {currentCard.matchScore}%
+                {isPro ? '✨' : <Lock className="h-3.5 w-3.5 mr-1 inline" />} {currentCard.matchScore}%
               </Badge>
             )}
           </div>
@@ -333,14 +342,104 @@ export const MatchFeed = ({
         userName={currentCard.name}
       />
 
-      {/* Match Explanation Dialog */}
-      <MatchExplanationDialog
-        open={showMatchExplanation}
-        onOpenChange={setShowMatchExplanation}
-        match={currentCard}
-        onConnect={onSwipeRight}
-        onPass={onSwipeLeft}
-      />
+      {/* Match Explanation Dialog - Pro Only */}
+      {isPro && (
+        <MatchExplanationDialog
+          open={showMatchExplanation}
+          onOpenChange={setShowMatchExplanation}
+          match={currentCard}
+          onConnect={onSwipeRight}
+          onPass={onSwipeLeft}
+        />
+      )}
+
+      {/* Pro Upgrade Prompt for AI Match */}
+      {showProUpgrade && (
+        <ProMatchUpgradePrompt
+          open={showProUpgrade}
+          onOpenChange={setShowProUpgrade}
+          matchScore={currentCard.matchScore}
+          matchName={currentCard.name}
+        />
+      )}
     </div>
   );
 };
+
+// Pro Upgrade Prompt Component
+function ProMatchUpgradePrompt({ 
+  open, onOpenChange, matchScore, matchName 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  matchScore?: number; 
+  matchName: string;
+}) {
+  const navigate = useNavigate();
+  
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Crown className="h-5 w-5 text-primary" />
+            AI Match Insights
+          </DialogTitle>
+          <DialogDescription>
+            Unlock detailed AI analysis for why you and {matchName} would work great together
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4 py-2">
+          {/* Blurred preview */}
+          <div className="relative overflow-hidden rounded-lg">
+            <div className="blur-md pointer-events-none p-4 bg-muted/50 space-y-3">
+              <div className="flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center text-2xl font-bold">
+                  {matchScore ?? 85}%
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 bg-primary/20 rounded w-full" />
+                <div className="h-4 bg-primary/20 rounded w-3/4" />
+                <div className="h-4 bg-primary/20 rounded w-5/6" />
+              </div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <Lock className="h-8 w-8 text-muted-foreground mx-auto" />
+                <p className="text-sm font-medium">Pro Feature</p>
+              </div>
+            </div>
+          </div>
+
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+              See why AI thinks you're compatible
+            </li>
+            <li className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+              Get collaboration suggestions
+            </li>
+            <li className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+              Shared skills & complementary strengths
+            </li>
+          </ul>
+
+          <Button 
+            className="w-full" 
+            onClick={() => {
+              onOpenChange(false);
+              navigate('/subscription');
+            }}
+          >
+            <Crown className="h-4 w-4 mr-2" />
+            Upgrade to Pro
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

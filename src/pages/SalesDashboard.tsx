@@ -105,9 +105,8 @@ const SalesDashboard = () => {
           </div>
         </div>
         {!isPro && (
-          <Badge variant="outline" className="gap-1 text-amber-600 border-amber-500/30 bg-amber-500/5">
-            <Crown className="h-3 w-3" />
-            Free Plan
+          <Badge variant="outline" className="gap-1 text-muted-foreground border-border">
+            Spark Plan
           </Badge>
         )}
       </div>

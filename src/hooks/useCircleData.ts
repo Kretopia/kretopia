@@ -30,6 +30,7 @@ interface CreatorCard {
   verification_tier?: string;
   verification_status?: string;
   achievement_badges?: string[];
+  subscription_tier?: string;
 }
 
 interface CreatorFilters {
@@ -138,7 +139,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
       // Fetch all potential profiles WITH portfolio count for quality filtering
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills, collab_intent, verification_tier, verification_status, achievement_badges')
+        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills, collab_intent, verification_tier, verification_status, achievement_badges, subscription_tier')
         .neq('user_id', userId)
         .not('full_name', 'is', null)
         .order('created_at', { ascending: false })
@@ -169,7 +170,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
 
       // Transform profiles to cards
       const cards: CreatorCard[] = filtered.map(profile => ({
-        id: profile.user_id, // Use user_id as card id for consistent tracking
+        id: profile.user_id,
         user_id: profile.user_id,
         name: profile.full_name || 'Creator',
         title: profile.role || 'Creative',
@@ -178,30 +179,44 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
         description: profile.bio || '',
         badge: profile.badge,
         level: profile.level,
-        matchScore: Math.floor(Math.random() * 15) + 85, // 85-99%
+        matchScore: Math.floor(Math.random() * 15) + 85,
         matchReasons: [],
         collab_intent: profile.collab_intent,
         verification_tier: profile.verification_tier,
         verification_status: profile.verification_status,
         achievement_badges: profile.achievement_badges as string[] || [],
+        subscription_tier: (profile as any).subscription_tier,
         email_verified: (profile as any).email_verified,
         phone_verified: (profile as any).phone_verified,
         id_verified: (profile as any).id_verified,
         payment_verified: (profile as any).payment_verified,
       }));
 
-      console.log('[useCircleData] Final cards:', cards.length);
+      // Priority placement: Pro/Founder profiles get boosted to top
+      const proCards = cards.filter(c => c.subscription_tier === 'pro' || c.subscription_tier === 'founder');
+      const freeCards = cards.filter(c => c.subscription_tier !== 'pro' && c.subscription_tier !== 'founder');
+      // Shuffle within each group for fairness, then concatenate
+      const shuffleArray = <T,>(arr: T[]): T[] => {
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      };
+      const sortedCards = [...shuffleArray(proCards), ...shuffleArray(freeCards)];
+
+      console.log('[useCircleData] Final cards:', sortedCards.length, '(Pro boosted:', proCards.length, ')');
 
       // Set featured creator (OG badge priority)
-      const ogCreators = cards.filter(c => c.badge === 'og');
-      const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : cards[0];
+      const ogCreators = sortedCards.filter(c => c.badge === 'og');
+      const featuredCandidate = ogCreators.length > 0 ? ogCreators[0] : sortedCards[0];
       
       if (featuredCandidate) {
         setFeaturedCreator(featuredCandidate);
-        // Don't filter out featured - include all cards
       }
       
-      setMatchCards(cards);
+      setMatchCards(sortedCards);
       
       // Calculate remaining swipes
       await updateSwipesRemaining();

@@ -34,40 +34,63 @@ export function InvoicePreview({
   const total = afterDiscount + tax;
 
   const fmt = (n: number) => {
-    const sym = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : `${currency} `;
+    const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", INR: "₹", NGN: "₦", KES: "KSh ", BRL: "R$", ZAR: "R", AED: "د.إ ", IDR: "Rp ", TTD: "TT$", CHF: "CHF ", CAD: "C$", AUD: "A$" };
+    const sym = symbols[currency] || `${currency} `;
     return `${sym}${n.toFixed(2)}`;
   };
 
   return (
     <Card className="p-0 overflow-hidden shadow-lg border-0">
-      {/* Accent bar */}
-      <div className="h-2" style={{ backgroundColor: branding.brand_color }} />
+      {/* Letterhead or accent bar */}
+      {branding.letterhead_url ? (
+        <img src={branding.letterhead_url} alt="Letterhead" className="w-full h-auto object-cover" />
+      ) : (
+        <div className="h-2" style={{ backgroundColor: branding.brand_color }} />
+      )}
 
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            {branding.brand_logo_url && (
-              <img src={branding.brand_logo_url} alt="Logo" className="h-12 w-12 rounded-lg object-contain" />
-            )}
-            <div>
-              <h2 className="font-bold text-lg">{branding.brand_name || "Your Business"}</h2>
-              {branding.brand_email && <p className="text-xs text-muted-foreground">{branding.brand_email}</p>}
-              {branding.brand_address && <p className="text-xs text-muted-foreground">{branding.brand_address}</p>}
-              {branding.brand_website && <p className="text-xs text-muted-foreground">{branding.brand_website}</p>}
+      <div className="p-4 sm:p-6 space-y-5">
+        {/* Header - only show if no letterhead (letterhead replaces it) */}
+        {!branding.letterhead_url && (
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              {branding.brand_logo_url && (
+                <img src={branding.brand_logo_url} alt="Logo" className="h-12 w-12 rounded-lg object-contain flex-shrink-0" />
+              )}
+              <div className="min-w-0">
+                <h2 className="font-bold text-lg truncate">{branding.brand_name || "Your Business"}</h2>
+                {branding.brand_email && <p className="text-xs text-muted-foreground truncate">{branding.brand_email}</p>}
+                {branding.brand_address && <p className="text-xs text-muted-foreground truncate">{branding.brand_address}</p>}
+                {branding.brand_website && <p className="text-xs text-muted-foreground truncate">{branding.brand_website}</p>}
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{ color: branding.brand_color }}>INVOICE</h1>
+              <p className="text-xs text-muted-foreground font-mono">{invoiceNumber || "INV-DRAFT"}</p>
+              {dueDate && (
+                <p className="text-xs mt-1">
+                  <span className="text-muted-foreground">Due: </span>
+                  <span className="font-medium">{new Date(dueDate).toLocaleDateString()}</span>
+                </p>
+              )}
             </div>
           </div>
-          <div className="text-right">
-            <h1 className="text-2xl font-black tracking-tight" style={{ color: branding.brand_color }}>INVOICE</h1>
-            <p className="text-xs text-muted-foreground font-mono">{invoiceNumber || "INV-DRAFT"}</p>
+        )}
+
+        {/* Invoice number & date when letterhead is used */}
+        {branding.letterhead_url && (
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-black tracking-tight" style={{ color: branding.brand_color }}>INVOICE</h1>
+              <p className="text-xs text-muted-foreground font-mono">{invoiceNumber || "INV-DRAFT"}</p>
+            </div>
             {dueDate && (
-              <p className="text-xs mt-1">
+              <p className="text-xs">
                 <span className="text-muted-foreground">Due: </span>
                 <span className="font-medium">{new Date(dueDate).toLocaleDateString()}</span>
               </p>
             )}
           </div>
-        </div>
+        )}
 
         <Separator />
 

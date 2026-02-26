@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Building2, Upload, Palette } from "lucide-react";
+import { Building2, Upload, Palette, ImagePlus, X, FileImage } from "lucide-react";
+import { toast } from "sonner";
 
 export interface InvoiceBranding {
   brand_name: string;
@@ -13,6 +13,7 @@ export interface InvoiceBranding {
   brand_email: string;
   brand_website: string;
   brand_color: string;
+  letterhead_url?: string;
 }
 
 interface InvoiceBrandingFormProps {
@@ -29,8 +30,12 @@ const DEFAULT_COLORS = [
 export function InvoiceBrandingForm({ branding, onChange }: InvoiceBrandingFormProps) {
   const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
+  const [uploadingLetterhead, setUploadingLetterhead] = useState(false);
+  const [logoDragActive, setLogoDragActive] = useState(false);
+  const [letterheadDragActive, setLetterheadDragActive] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const letterheadInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-fill from profile on mount
   useEffect(() => {
     if (user?.id && !branding.brand_name) {
       loadProfileBranding();
@@ -57,63 +62,137 @@ export function InvoiceBrandingForm({ branding, onChange }: InvoiceBrandingFormP
     }
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user?.id) return;
+  const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
+    if (!user?.id) return null;
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/${prefix}-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
+    if (uploadError) throw uploadError;
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+    return publicUrl;
+  };
 
+  const handleLogoUpload = async (file: File) => {
+    if (!file || !user?.id) return;
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/invoice-logo-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(path);
-
-      onChange({ ...branding, brand_logo_url: publicUrl });
+      const url = await uploadFile(file, "invoice-logo");
+      if (url) onChange({ ...branding, brand_logo_url: url });
+      toast.success("Logo uploaded");
     } catch (err) {
       console.error("Logo upload error:", err);
+      toast.error("Failed to upload logo");
     } finally {
       setUploading(false);
     }
   };
 
+  const handleLetterheadUpload = async (file: File) => {
+    if (!file || !user?.id) return;
+    setUploadingLetterhead(true);
+    try {
+      const url = await uploadFile(file, "letterhead");
+      if (url) onChange({ ...branding, letterhead_url: url });
+      toast.success("Letterhead uploaded");
+    } catch (err) {
+      console.error("Letterhead upload error:", err);
+      toast.error("Failed to upload letterhead");
+    } finally {
+      setUploadingLetterhead(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, type: "logo" | "letterhead") => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (type === "logo") setLogoDragActive(false);
+    else setLetterheadDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      type === "logo" ? handleLogoUpload(file) : handleLetterheadUpload(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, type: "logo" | "letterhead") => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (type === "logo") setLogoDragActive(true);
+    else setLetterheadDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent, type: "logo" | "letterhead") => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (type === "logo") setLogoDragActive(false);
+    else setLetterheadDragActive(false);
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="space-y-5">
+      <div className="flex items-center gap-2 mb-1">
         <Building2 className="h-4 w-4 text-primary" />
         <h3 className="font-semibold text-sm">Your Branding</h3>
       </div>
 
-      {/* Logo */}
-      <div className="flex items-center gap-4">
-        <div className="h-16 w-16 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden bg-muted/50">
+      {/* Logo Upload - Clean drag/drop area */}
+      <div>
+        <Label className="text-xs font-medium mb-1.5 block">Business Logo</Label>
+        <div
+          onClick={() => logoInputRef.current?.click()}
+          onDrop={(e) => handleDrop(e, "logo")}
+          onDragOver={(e) => handleDragOver(e, "logo")}
+          onDragLeave={(e) => handleDragLeave(e, "logo")}
+          className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-200 p-4 flex items-center gap-4 ${
+            logoDragActive 
+              ? "border-primary bg-primary/5 scale-[1.01]" 
+              : branding.brand_logo_url 
+                ? "border-muted-foreground/20 bg-muted/30 hover:border-primary/50" 
+                : "border-muted-foreground/30 bg-muted/20 hover:border-primary/50 hover:bg-muted/40"
+          }`}
+        >
           {branding.brand_logo_url ? (
-            <img src={branding.brand_logo_url} alt="Logo" className="h-full w-full object-contain p-1" />
+            <>
+              <div className="h-14 w-14 rounded-lg bg-background border flex items-center justify-center overflow-hidden flex-shrink-0">
+                <img src={branding.brand_logo_url} alt="Logo" className="h-full w-full object-contain p-1" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium truncate">Logo uploaded</p>
+                <p className="text-[10px] text-muted-foreground">Tap to replace • Drag & drop supported</p>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onChange({ ...branding, brand_logo_url: "" }); }}
+                className="p-1 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </>
           ) : (
-            <Upload className="h-5 w-5 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center w-full py-2">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <ImagePlus className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-xs font-medium">{uploading ? "Uploading..." : "Upload your logo"}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Tap to browse or drag & drop • PNG, JPG, SVG
+              </p>
+            </div>
           )}
-        </div>
-        <div className="flex-1">
-          <Label htmlFor="logo-upload" className="text-xs text-muted-foreground">Business Logo</Label>
-          <Input
-            id="logo-upload"
+          <input
+            ref={logoInputRef}
             type="file"
             accept="image/*"
-            onChange={handleLogoUpload}
+            className="hidden"
+            onChange={(e) => e.target.files?.[0] && handleLogoUpload(e.target.files[0])}
             disabled={uploading}
-            className="text-xs h-8"
           />
         </div>
       </div>
 
       {/* Business Details */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Label className="text-xs">Business Name *</Label>
           <Input
@@ -174,6 +253,58 @@ export function InvoiceBrandingForm({ branding, onChange }: InvoiceBrandingFormP
             value={branding.brand_color}
             onChange={(e) => onChange({ ...branding, brand_color: e.target.value })}
             className="h-6 w-6 p-0 border-0 cursor-pointer"
+          />
+        </div>
+      </div>
+
+      {/* Letterhead Upload - Optional */}
+      <div>
+        <Label className="text-xs font-medium mb-1.5 flex items-center gap-1">
+          <FileImage className="h-3 w-3" /> Custom Letterhead <span className="text-muted-foreground font-normal">(optional)</span>
+        </Label>
+        <p className="text-[10px] text-muted-foreground mb-2">
+          Upload a designed header image that appears at the top of your invoice instead of the default layout.
+        </p>
+        <div
+          onClick={() => letterheadInputRef.current?.click()}
+          onDrop={(e) => handleDrop(e, "letterhead")}
+          onDragOver={(e) => handleDragOver(e, "letterhead")}
+          onDragLeave={(e) => handleDragLeave(e, "letterhead")}
+          className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-200 ${
+            letterheadDragActive
+              ? "border-primary bg-primary/5"
+              : branding.letterhead_url
+                ? "border-muted-foreground/20 bg-muted/30 hover:border-primary/50"
+                : "border-muted-foreground/30 bg-muted/20 hover:border-primary/50 hover:bg-muted/40"
+          }`}
+        >
+          {branding.letterhead_url ? (
+            <div className="relative">
+              <img src={branding.letterhead_url} alt="Letterhead" className="w-full h-24 object-cover rounded-lg" />
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onChange({ ...branding, letterhead_url: "" }); }}
+                className="absolute top-1.5 right-1.5 p-1 rounded-full bg-background/80 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+              <p className="text-[10px] text-center text-muted-foreground py-1.5">Tap to replace letterhead</p>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-4 gap-2">
+              <Upload className="h-4 w-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">
+                {uploadingLetterhead ? "Uploading..." : "Drop or tap to add letterhead"}
+              </p>
+            </div>
+          )}
+          <input
+            ref={letterheadInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => e.target.files?.[0] && handleLetterheadUpload(e.target.files[0])}
+            disabled={uploadingLetterhead}
           />
         </div>
       </div>

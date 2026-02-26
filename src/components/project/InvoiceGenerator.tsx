@@ -532,7 +532,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     );
   };
 
-  const currencySymbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : `${currency} `;
+  const getCurrencySymbol = (c: string) => {
+    const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", INR: "₹", NGN: "₦", KES: "KSh ", BRL: "R$", ZAR: "R", AED: "د.إ ", IDR: "Rp ", TTD: "TT$", CHF: "CHF ", CAD: "C$", AUD: "A$" };
+    return symbols[c] || `${c} `;
+  };
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <>
@@ -588,7 +592,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                   {createStep === "details" && (
                     <div className="space-y-4">
                       {/* Recipient */}
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                           <Label className="text-xs">Client Name *</Label>
                           <Input className="h-8 text-sm" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Client or company name" />
@@ -613,7 +617,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                       </div>
 
                       {/* Date & Currency */}
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                           <Label className="text-xs">Due Date</Label>
                           <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
@@ -623,7 +627,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                           <Select value={currency} onValueChange={setCurrency}>
                             <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "BRL", "ZAR", "INR", "NGN"].map(c => (
+                              {["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "BRL", "ZAR", "INR", "NGN", "IDR", "TTD", "AED", "KES"].map(c => (
                                 <SelectItem key={c} value={c}>{c}</SelectItem>
                               ))}
                             </SelectContent>

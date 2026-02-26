@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Building2, User, ArrowRightLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +26,7 @@ interface AccountSwitcherProps {
 export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu" }: AccountSwitcherProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [switching, setSwitching] = useState(false);
 
@@ -51,7 +53,8 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu"
       });
 
       onSwitch?.();
-      // Reload to refresh all profile-dependent UI
+      // Navigate to profile page after switch, then reload to refresh UI
+      navigate("/profile");
       window.location.reload();
     } catch (error: any) {
       toast({

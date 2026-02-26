@@ -216,7 +216,7 @@ const AppContent = () => {
             
             {/* Redirect old routes to Circle */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
-            <Route path="/spark" element={<ProtectedRoute><Spark /></ProtectedRoute>} />
+            <Route path="/spark" element={<Navigate to="/circle" replace />} />
             <Route path="/market" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
             <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
@@ -224,8 +224,8 @@ const AppContent = () => {
             <Route path="/market/:listingId" element={<ProtectedRoute><ListingDetail /></ProtectedRoute>} />
             <Route path="/discover" element={<Navigate to="/circle" replace />} />
             <Route path="/community" element={<Navigate to="/circle" replace />} />
-            <Route path="/cre8" element={<ProtectedRoute><Cre8 /></ProtectedRoute>} />
-            <Route path="/cre8/leaderboard" element={<ProtectedRoute><Cre8Leaderboard /></ProtectedRoute>} />
+            <Route path="/cre8" element={<Navigate to="/circle" replace />} />
+            <Route path="/cre8/leaderboard" element={<Navigate to="/circle" replace />} />
             <Route path="/connect" element={<Navigate to="/circle" replace />} />
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             <Route path="/projects" element={<Navigate to="/circle" replace />} />

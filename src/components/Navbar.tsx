@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Shield, Crown, Sparkles, Building2, DollarSign, Flame, Trophy, Search, Send } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Shield, Crown, Sparkles, Building2, DollarSign, Flame, Trophy, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,19 +214,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/leads")}
+                      onClick={() => handleNavigation("/sales")}
                     >
-                      <Search className="h-5 w-5" />
-                      Lead Scout
-                      <Crown className="h-3 w-3 text-amber-500 ml-auto" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/outreach")}
-                    >
-                      <Send className="h-5 w-5" />
-                      Outreach
+                      <Target className="h-5 w-5" />
+                      Sales Dashboard
                       <Crown className="h-3 w-3 text-amber-500 ml-auto" />
                     </Button>
 

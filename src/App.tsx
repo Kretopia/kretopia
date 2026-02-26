@@ -51,7 +51,7 @@ const PurchaseSuccess = lazy(() => import("./pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("./pages/MyPurchases"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 const AIAgent = lazy(() => import("./pages/AIAgent"));
-const ThriveAI = lazy(() => import("./pages/ThriveAI"));
+const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
@@ -174,9 +174,10 @@ const AppContent = () => {
             
             {/* AI Agent */}
             <Route path="/agent" element={<ProtectedRoute><AIAgent /></ProtectedRoute>} />
-            <Route path="/thrive-ai" element={<ProtectedRoute><ThriveAI /></ProtectedRoute>} />
-            <Route path="/leads" element={<ProtectedRoute><ThriveAI /></ProtectedRoute>} />
-            <Route path="/outreach" element={<ProtectedRoute><ThriveAI /></ProtectedRoute>} />
+            <Route path="/sales" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
+            <Route path="/leads" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
+            <Route path="/outreach" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
+            <Route path="/thrive-ai" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
             
             {/* Nearby Creators */}
             <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />

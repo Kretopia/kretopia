@@ -58,6 +58,7 @@ import { ProGate } from "@/components/project/ProGate";
 import { WalletSection } from "@/components/profile/WalletSection";
 
 import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
+import { ShareableCreatorCard } from "@/components/profile/ShareableCreatorCard";
 import { ProTrialBanner } from "@/components/profile/ProTrialBanner";
 import { checkProfileCompletion, getDiscoveryMissingFields, meetsDiscoveryRequirements } from "@/lib/profileCompletion";
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
@@ -105,8 +106,19 @@ const ProfileContent = () => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
+  const [isCreatorCardOpen, setIsCreatorCardOpen] = useState(false);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState("");
+
+  // Open creator card if ?share=true in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("share") === "true" && profile) {
+      setIsCreatorCardOpen(true);
+      // Clean URL
+      window.history.replaceState({}, "", "/profile");
+    }
+  }, [profile]);
   
   const [editForm, setEditForm] = useState({
     full_name: "",
@@ -463,6 +475,7 @@ const ProfileContent = () => {
           onAvatarClick={() => fileInputRef.current?.click()}
           isUploadingAvatar={isUploadingAvatar}
           onShowQR={() => setIsQRDialogOpen(true)}
+          onCreatorCard={() => setIsCreatorCardOpen(true)}
         />
 
         {/* Banners - compact */}
@@ -797,6 +810,21 @@ const ProfileContent = () => {
         }}
         onCropComplete={handleCropComplete}
         loading={isUploadingAvatar}
+      />
+      <ShareableCreatorCard
+        open={isCreatorCardOpen}
+        onOpenChange={setIsCreatorCardOpen}
+        profile={{
+          full_name: profile.full_name || "",
+          role: profile.role || "",
+          avatar_url: profile.avatar_url,
+          bio: profile.bio,
+          badge: profile.badge,
+          level: profile.level,
+          xp: profile.xp,
+          location: profile.location,
+          professional_skills: profile.professional_skills as Array<{ skill: string }> | null,
+        }}
       />
     </div>
   );

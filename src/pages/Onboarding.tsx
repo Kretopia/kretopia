@@ -16,6 +16,7 @@ import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
 import { AddPortfolioStep } from "@/components/onboarding/AddPortfolioStep";
 import { AIProfileDiscoveryStep } from "@/components/onboarding/AIProfileDiscoveryStep";
+import { OnboardingCelebration } from "@/components/onboarding/OnboardingCelebration";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS, LOCATION_OPTIONS } from "@/components/profile/ProfileEditDialog";
 
@@ -69,6 +70,8 @@ export default function Onboarding() {
   
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [bioGenerating, setBioGenerating] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [pendingConnectForCelebration, setPendingConnectForCelebration] = useState<string | null>(null);
 
   const hasAvatar = !!avatarUrl;
   const hasBio = profile.bio.length >= 20;
@@ -309,12 +312,9 @@ export default function Onboarding() {
         setCurrentStep(7);
         toast({ title: "Almost there! 📧", description: "Please verify your email to start matching." });
       } else {
-        toast({ title: "🎉 Welcome to ThriveIN!", description: "You have 1-month free Pro access! Enjoy all premium features." });
-        if (pendingConnect) {
-          navigate(`/profile/${pendingConnect}?from=match`);
-        } else {
-          navigate("/circle");
-        }
+        // Show celebration dialog instead of navigating directly
+        setPendingConnectForCelebration(pendingConnect || null);
+        setShowCelebration(true);
       }
     } catch (error) {
       console.error("Onboarding error:", error);
@@ -585,6 +585,14 @@ export default function Onboarding() {
         <ImageCropDialog imageUrl={tempImageUrl} open={showCropDialog} onClose={() => { setShowCropDialog(false); setTempImageUrl(""); }} onCropComplete={uploadAvatar} loading={uploadingAvatar} />
         <ImportFromWebsiteDialog open={showImportDialog} onOpenChange={setShowImportDialog} onImport={handleImportData} />
       </Card>
+
+      <OnboardingCelebration
+        open={showCelebration}
+        onOpenChange={setShowCelebration}
+        userName={profile.full_name}
+        userRole={profile.role}
+        pendingConnect={pendingConnectForCelebration}
+      />
     </div>
     </>
   );

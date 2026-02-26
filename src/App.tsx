@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
-import { ThirdwebProvider } from "thirdweb/react";
+
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
@@ -57,7 +57,7 @@ const Install = lazy(() => import("./pages/Install"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
-const Spark = lazy(() => import("./pages/Spark"));
+
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const ListingDetail = lazy(() => import("./pages/ListingDetail"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
@@ -68,8 +68,6 @@ const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
-const Cre8 = lazy(() => import("./pages/Cre8"));
-const Cre8Leaderboard = lazy(() => import("./pages/Cre8Leaderboard"));
 const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -217,25 +215,11 @@ const AppContent = () => {
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
             
-            {/* Redirect old routes to Circle */}
+            {/* Legacy redirects */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
             <Route path="/spark" element={<Navigate to="/circle" replace />} />
-            <Route path="/market" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-            <Route path="/opportunity/:id" element={<OpportunityDetail />} />
-            <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
-            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
-            <Route path="/market/:listingId" element={<ProtectedRoute><ListingDetail /></ProtectedRoute>} />
             <Route path="/discover" element={<Navigate to="/circle" replace />} />
-            <Route path="/community" element={<Navigate to="/circle" replace />} />
-            <Route path="/cre8" element={<Navigate to="/circle" replace />} />
-            <Route path="/cre8/leaderboard" element={<Navigate to="/circle" replace />} />
-            <Route path="/connect" element={<Navigate to="/circle" replace />} />
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
-            <Route path="/projects" element={<Navigate to="/circle" replace />} />
-            <Route path="/leaderboard" element={<Navigate to="/circle" replace />} />
-            <Route path="/rewards" element={<ProtectedRoute><RewardsShop /></ProtectedRoute>} />
-            <Route path="/membership" element={<Navigate to="/circle" replace />} />
-            <Route path="/earn-credits" element={<Navigate to="/circle" replace />} />
             
             {/* 404 - Catch all */}
             <Route path="*" element={<NotFound />} />
@@ -251,7 +235,6 @@ const App = () => {
     <GlobalErrorBoundary>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
-          <ThirdwebProvider>
             <AuthProvider>
               <TooltipProvider>
                 <Toaster />
@@ -264,7 +247,6 @@ const App = () => {
                 </BrowserRouter>
               </TooltipProvider>
             </AuthProvider>
-          </ThirdwebProvider>
         </QueryClientProvider>
       </HelmetProvider>
     </GlobalErrorBoundary>

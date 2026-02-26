@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Wallet,
   Unlink,
@@ -10,13 +11,10 @@ import {
   ExternalLink,
   Copy,
   Check,
-  Loader2,
   ChevronDown,
   ChevronUp,
+  Plus,
 } from "lucide-react";
-import { ConnectButton, useActiveAccount, useActiveWalletChain } from "thirdweb/react";
-import { inAppWallet, createWallet } from "thirdweb/wallets";
-import { thirdwebClient, defaultChain } from "@/lib/thirdweb";
 import { useWalletConnection, WalletConnection } from "@/hooks/useWalletConnection";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,19 +25,6 @@ interface WalletSectionProps {
 
 const formatAddress = (addr: string) =>
   `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-
-// Thirdweb wallet config: embedded + external
-const wallets = [
-  inAppWallet({
-    auth: {
-      options: ["email", "google", "apple", "passkey"],
-    },
-  }),
-  createWallet("io.metamask"),
-  createWallet("com.coinbase.wallet"),
-  createWallet("io.rabby"),
-  createWallet("me.rainbow"),
-];
 
 const WalletItem = ({
   wallet,
@@ -144,25 +129,23 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
     wallets: savedWallets,
     isLoading,
     isConnecting,
-    connectExternalWallet,
+    saveWalletAddress,
     disconnectWallet,
     setPrimary,
     getChainName,
-    saveThirdwebWallet,
   } = useWalletConnection();
 
-  const activeAccount = useActiveAccount();
-  const activeChain = useActiveWalletChain();
-
-  // Auto-save thirdweb wallet when connected
-  useEffect(() => {
-    if (activeAccount?.address) {
-      saveThirdwebWallet(activeAccount.address, activeChain?.id || 8453);
-    }
-  }, [activeAccount?.address, activeChain?.id, saveThirdwebWallet]);
-
   const [expanded, setExpanded] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [walletAddress, setWalletAddress] = useState("");
   const hasWallets = savedWallets.length > 0;
+
+  const handleAddWallet = async () => {
+    if (!walletAddress.trim() || walletAddress.length < 10) return;
+    await saveWalletAddress(walletAddress.trim());
+    setWalletAddress("");
+    setShowAddForm(false);
+  };
 
   if (!isOwnProfile && !hasWallets) return null;
 
@@ -201,25 +184,23 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
             </div>
             <h3 className="font-semibold mb-1">Add On-Chain Verification</h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-              Connect your wallet to unlock secure on-chain agreements,
+              Link your wallet address to unlock secure on-chain agreements,
               escrow payments, and verified credentials.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
-              {/* Thirdweb ConnectButton — supports embedded + external wallets */}
-              <ConnectButton
-                client={thirdwebClient}
-                wallets={wallets}
-                chain={defaultChain}
-                connectButton={{
-                  label: "Connect Wallet",
-                  className: "!rounded-md !font-medium",
-                }}
-                connectModal={{
-                  title: "Connect to ThriveIN",
-                  size: "compact",
-                  showThirdwebBranding: false,
-                }}
+            <div className="flex flex-col gap-2 max-w-sm mx-auto">
+              <Input
+                placeholder="Paste your wallet address (0x...)"
+                value={walletAddress}
+                onChange={(e) => setWalletAddress(e.target.value)}
               />
+              <Button
+                onClick={handleAddWallet}
+                disabled={!walletAddress.trim() || isConnecting}
+                className="w-full"
+              >
+                <Wallet className="mr-2 h-4 w-4" />
+                {isConnecting ? "Connecting..." : "Connect Wallet"}
+              </Button>
             </div>
             <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">✔ Funds locked securely</span>
@@ -247,21 +228,31 @@ export const WalletSection = ({ isOwnProfile }: WalletSectionProps) => {
 
           {isOwnProfile && (
             <div className="mt-2">
-              <ConnectButton
-                client={thirdwebClient}
-                wallets={wallets}
-                chain={defaultChain}
-                connectButton={{
-                  label: "Connect Another Wallet",
-                  className: "!w-full !rounded-md !font-medium !text-sm",
-                  style: { width: "100%" },
-                }}
-                connectModal={{
-                  title: "Connect to ThriveIN",
-                  size: "compact",
-                  showThirdwebBranding: false,
-                }}
-              />
+              {showAddForm ? (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Paste wallet address (0x...)"
+                    value={walletAddress}
+                    onChange={(e) => setWalletAddress(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleAddWallet} disabled={!walletAddress.trim() || isConnecting} size="sm">
+                    {isConnecting ? "..." : "Add"}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowAddForm(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Connect Another Wallet
+                </Button>
+              )}
             </div>
           )}
         </div>

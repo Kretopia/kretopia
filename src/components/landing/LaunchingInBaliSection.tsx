@@ -1,8 +1,36 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Globe } from "lucide-react";
+import { Sparkles, ArrowRight, Globe, MapPin } from "lucide-react";
+
+const TRINIDAD_CONTENT = {
+  badge: "🇹🇹 Built for Trinidad Creatives",
+  heading: "Trinidad's Creative Network",
+  subheading:
+    "Whether you're in Carnival, Soca, Film, Fashion, or Design — find verified local collaborators, manage projects, and grow your creative business from right here in T&T.",
+  tagline: "Free to start • Pro when you're ready • No credit card required",
+};
+
+const DEFAULT_CONTENT = {
+  badge: "Free to Join",
+  heading: "Ready to Work Smarter?",
+  subheading:
+    "Build your verified profile, get AI-matched with collaborators, manage projects, and grow your creative business — all in one place.",
+  tagline: "Free to start • Pro when you're ready • No credit card required",
+};
 
 export const LaunchingInBaliSection = () => {
+  // Detect TT users via Intl timezone as a lightweight, no-permission check
+  const isTrinidad = (() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return tz?.includes("Port_of_Spain") || tz?.includes("Trinidad");
+    } catch {
+      return false;
+    }
+  })();
+
+  const content = isTrinidad ? TRINIDAD_CONTENT : DEFAULT_CONTENT;
+
   const handleCtaClick = async () => {
     const { analytics } = await import("@/lib/analytics");
     analytics.ctaClick("bottom_get_started", "landing_bottom_cta");
@@ -16,16 +44,16 @@ export const LaunchingInBaliSection = () => {
           
           <div className="relative text-primary-foreground">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm">
-              <Globe className="h-4 w-4" />
-              <span>Free to Join</span>
+              {isTrinidad ? <MapPin className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
+              <span>{content.badge}</span>
             </div>
             
             <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold">
-              Ready to Work Smarter?
+              {content.heading}
             </h2>
             
             <p className="mb-8 text-base sm:text-lg opacity-90 max-w-2xl mx-auto">
-              Build your verified profile, get AI-matched with collaborators, manage projects, and grow your creative business — all in one place.
+              {content.subheading}
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -43,7 +71,7 @@ export const LaunchingInBaliSection = () => {
             </div>
 
             <p className="mt-6 text-sm opacity-80">
-              Free to start • Pro when you're ready • No credit card required
+              {content.tagline}
             </p>
           </div>
         </div>

@@ -52,32 +52,40 @@ export function useWalletConnection() {
     fetchWallets();
   }, [fetchWallets]);
 
-  // Auto-save wallet when provided externally (e.g. from Thirdweb ConnectButton)
-  const saveThirdwebWallet = useCallback(async (address: string, chainId: number = 8453) => {
+  // Save a wallet address manually
+  const saveWalletAddress = useCallback(async (address: string, chainId: number = 8453) => {
     if (!user) return;
-    const normalizedAddress = address.toLowerCase();
+    setIsConnecting(true);
+    try {
+      const normalizedAddress = address.toLowerCase();
 
-    // Check if already saved
-    const alreadySaved = wallets.find(
-      (w) => w.wallet_address.toLowerCase() === normalizedAddress
-    );
-    if (alreadySaved) return;
+      // Check if already saved
+      const alreadySaved = wallets.find(
+        (w) => w.wallet_address.toLowerCase() === normalizedAddress
+      );
+      if (alreadySaved) {
+        toast({ title: "Wallet already linked" });
+        return;
+      }
 
-    const isPrimary = wallets.length === 0;
-    const { error } = await supabase.from("wallet_connections").insert({
-      user_id: user.id,
-      wallet_address: normalizedAddress,
-      wallet_type: "external",
-      chain_id: chainId,
-      is_primary: isPrimary,
-      label: "Thirdweb",
-    });
-    if (!error) {
-      toast({
-        title: "Wallet connected! 🎉",
-        description: `${normalizedAddress.slice(0, 6)}...${normalizedAddress.slice(-4)} linked to your profile.`,
+      const isPrimary = wallets.length === 0;
+      const { error } = await supabase.from("wallet_connections").insert({
+        user_id: user.id,
+        wallet_address: normalizedAddress,
+        wallet_type: "external",
+        chain_id: chainId,
+        is_primary: isPrimary,
+        label: "Manual",
       });
-      fetchWallets();
+      if (!error) {
+        toast({
+          title: "Wallet connected! 🎉",
+          description: `${normalizedAddress.slice(0, 6)}...${normalizedAddress.slice(-4)} linked to your profile.`,
+        });
+        fetchWallets();
+      }
+    } finally {
+      setIsConnecting(false);
     }
   }, [user, wallets, toast, fetchWallets]);
 
@@ -223,7 +231,7 @@ export function useWalletConnection() {
     disconnectWallet,
     setPrimary,
     fetchWallets,
-    saveThirdwebWallet,
+    saveWalletAddress,
     getChainName: (chainId: number) => CHAIN_NAMES[chainId] || `Chain ${chainId}`,
   };
 }

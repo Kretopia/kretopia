@@ -175,6 +175,8 @@ const AppContent = () => {
             {/* AI Agent */}
             <Route path="/agent" element={<ProtectedRoute><AIAgent /></ProtectedRoute>} />
             <Route path="/thrive-ai" element={<ProtectedRoute><ThriveAI /></ProtectedRoute>} />
+            <Route path="/leads" element={<ProtectedRoute><ThriveAI /></ProtectedRoute>} />
+            <Route path="/outreach" element={<ProtectedRoute><ThriveAI /></ProtectedRoute>} />
             
             {/* Nearby Creators */}
             <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />

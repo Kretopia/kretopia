@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Bot, Users, Briefcase, DollarSign, FolderKanban } from "lucide-react";
+import { Users, Briefcase, DollarSign, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,14 +35,12 @@ const BottomNav = memo(() => {
         { path: "/opportunities", icon: Briefcase, label: "Jobs", tourId: "opportunities-tab" },
         { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
         { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
-        { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
       ]
     : [
         { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab" },
         { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab" },
         { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
         { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
-        { path: "/thrive-ai", icon: Bot, label: "ThriveAI", tourId: "thrive-ai-tab" },
       ];
 
   return (

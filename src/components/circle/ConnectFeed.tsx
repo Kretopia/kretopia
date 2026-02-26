@@ -257,6 +257,7 @@ export const ConnectFeed = ({ onMatch }: ConnectFeedProps) => {
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
         cardRef={cardRef}
+        isPro={subscriptionTier === 'pro' || subscriptionTier === 'founder'}
       />
     </div>
   );

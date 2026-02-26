@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Filter, X, Lock, Sparkles, Crown, Zap, CheckCircle, Star, Users, MapPin, Briefcase, Target } from "lucide-react";
+import { Filter, X, Lock, Sparkles, Crown, Zap, CheckCircle, Star, Users, MapPin, Briefcase, Target, Wrench, Clock } from "lucide-react";
 import { ROLE_OPTIONS, LOCATION_OPTIONS } from "@/components/profile/ProfileEditDialog";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,8 @@ export interface SwipeFiltersState {
   minFollowers: string;
   experienceLevel: string;
   aiMatchOnly: boolean;
+  skills: string[];
+  availability: string;
 }
 
 interface SwipeFiltersProps {
@@ -53,6 +55,21 @@ const FOLLOWER_OPTIONS = [
   { value: '100000', label: '100K+' },
 ];
 
+const SKILL_OPTIONS = [
+  'Photography', 'Videography', 'Music Production', 'Graphic Design',
+  'Web Design', 'UI/UX', 'Animation', 'Writing', 'Editing',
+  'Social Media', 'Marketing', 'Branding', 'Illustration',
+  '3D Modeling', 'Sound Design', 'Voice Over', 'Acting', 'Directing',
+];
+
+const AVAILABILITY_OPTIONS = [
+  { value: 'all', label: 'Any Availability' },
+  { value: 'available_now', label: '🟢 Available Now' },
+  { value: 'available_soon', label: '🟡 Available Soon' },
+  { value: 'open_to_offers', label: '💬 Open to Offers' },
+  { value: 'booked', label: '🔴 Currently Booked' },
+];
+
 export const DEFAULT_SWIPE_FILTERS: SwipeFiltersState = {
   role: 'all',
   location: 'all',
@@ -61,6 +78,8 @@ export const DEFAULT_SWIPE_FILTERS: SwipeFiltersState = {
   minFollowers: 'all',
   experienceLevel: 'all',
   aiMatchOnly: false,
+  skills: [],
+  availability: 'all',
 };
 
 export function SwipeFilters({ filters, onFiltersChange, isPro = false, profilesCount = 0 }: SwipeFiltersProps) {
@@ -90,6 +109,8 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
     if (filters.minFollowers !== 'all') count++;
     if (filters.experienceLevel !== 'all') count++;
     if (filters.aiMatchOnly) count++;
+    if (filters.skills.length > 0) count++;
+    if (filters.availability !== 'all') count++;
     return count;
   };
 
@@ -326,6 +347,52 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                     </SelectContent>
                   </Select>
                 </FilterSection>
+
+                {/* Skills Filter */}
+                <FilterSection title="Skills" icon={Wrench} isPremium>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SKILL_OPTIONS.map(skill => (
+                      <Button
+                        key={skill}
+                        variant={filters.skills.includes(skill) ? "default" : "outline"}
+                        size="sm"
+                        className="text-xs h-7 px-2"
+                        onClick={() => {
+                          const newSkills = filters.skills.includes(skill)
+                            ? filters.skills.filter(s => s !== skill)
+                            : [...filters.skills, skill];
+                          onFiltersChange({ ...filters, skills: newSkills });
+                        }}
+                      >
+                        {skill}
+                      </Button>
+                    ))}
+                  </div>
+                  {filters.skills.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {filters.skills.length} skill{filters.skills.length !== 1 ? 's' : ''} selected
+                    </p>
+                  )}
+                </FilterSection>
+
+                {/* Availability Filter */}
+                <FilterSection title="Availability" icon={Clock} isPremium>
+                  <Select
+                    value={filters.availability}
+                    onValueChange={(value) => onFiltersChange({ ...filters, availability: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any Availability" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABILITY_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FilterSection>
               </>
             ) : (
               <ProLockedOverlay>
@@ -344,6 +411,14 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                   </div>
                   <div className="h-10 rounded-md border bg-muted/30 flex items-center px-3 text-sm text-muted-foreground">
                     ⭐ Experience Level
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Photography</Button>
+                    <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Design</Button>
+                    <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Music</Button>
+                  </div>
+                  <div className="h-10 rounded-md border bg-muted/30 flex items-center px-3 text-sm text-muted-foreground">
+                    🕐 Availability
                   </div>
                 </div>
               </ProLockedOverlay>

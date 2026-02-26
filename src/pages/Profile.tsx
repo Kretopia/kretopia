@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag, Lock, Crown } from "lucide-react";
+import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag, Lock, Crown, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,6 +56,7 @@ import { CredentialVerificationCard } from "@/components/profile/CredentialVerif
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { AIPortfolioInsights, AIProfileOptimizer } from "@/components/ai";
 import { TrustSignals } from "@/components/profile/TrustSignals";
+import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { ProGate } from "@/components/project/ProGate";
 import { WalletSection } from "@/components/profile/WalletSection";
 
@@ -728,6 +729,20 @@ const ProfileContent = () => {
                 </div>
               )}
             </div>
+          </section>
+
+          <hr className="border-border" />
+
+          {/* Collaboration History */}
+          <section>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Handshake className="h-5 w-5 text-primary" />
+              Collaboration History
+            </h2>
+            <CollaborationHistory 
+              userId={profile.user_id}
+              isOwnProfile={true}
+            />
           </section>
 
           <hr className="border-border" />

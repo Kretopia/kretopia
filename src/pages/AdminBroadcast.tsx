@@ -67,7 +67,7 @@ The ThriveIN Team`);
             userName: 'Test User',
             notificationTitle: title,
             notificationMessage: message,
-            actionUrl: link.startsWith('/') ? `https://thrivein.app${link}` : (link || 'https://thrivein.app')
+            actionUrl: link.startsWith('/') ? `https://thrivein.io${link}` : (link || 'https://thrivein.io')
           }
         }
       });
@@ -141,7 +141,7 @@ The ThriveIN Team`);
                   userName: profile.full_name || 'Creator',
                   notificationTitle: title,
                   notificationMessage: message,
-                  actionUrl: link.startsWith('/') ? `https://thrivein.app${link}` : (link || 'https://thrivein.app')
+                  actionUrl: link.startsWith('/') ? `https://thrivein.io${link}` : (link || 'https://thrivein.io')
                 }
               }
             });

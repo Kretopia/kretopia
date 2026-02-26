@@ -9,13 +9,17 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, IdCard, Share2 } from "lucide-react";
+import { ShareableCreatorCard } from "./ShareableCreatorCard";
+import { useProfileContext } from "@/contexts/ProfileContext";
 
 export const SettingsTab = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { profile, userBadge } = useProfileContext();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showCreatorCard, setShowCreatorCard] = useState(false);
   
   // Password change
   const [currentPassword, setCurrentPassword] = useState("");
@@ -198,6 +202,47 @@ export const SettingsTab = () => {
 
   return (
     <div className="space-y-6 py-4">
+      {/* Share Profile / Creator Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <IdCard className="h-5 w-5" />
+            Share Your Profile
+          </CardTitle>
+          <CardDescription>
+            Download or share your Creator Card on social media
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setShowCreatorCard(true)}
+          >
+            <Share2 className="h-4 w-4 mr-2" />
+            Open Creator Card
+          </Button>
+        </CardContent>
+      </Card>
+
+      {profile && (
+        <ShareableCreatorCard
+          open={showCreatorCard}
+          onOpenChange={setShowCreatorCard}
+          profile={{
+            full_name: profile.full_name || "Creator",
+            role: profile.role || "Creative",
+            avatar_url: profile.avatar_url,
+            bio: profile.bio,
+            badge: userBadge,
+            level: profile.level,
+            xp: profile.xp,
+            location: profile.location,
+            professional_skills: profile.professional_skills as any,
+          }}
+        />
+      )}
+
       {/* Account Security */}
       <Card>
         <CardHeader>

@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowDownLeft, ArrowUpRight, DollarSign, Receipt, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useCurrencyConversion } from "@/hooks/useCurrencyConversion";
+import { CurrencySelector } from "@/components/CurrencySelector";
 
 interface PaymentHistoryItem {
   id: string;
@@ -24,6 +26,7 @@ interface PaymentHistoryItem {
 
 export default function PaymentHistory() {
   const { user } = useAuth();
+  const { preferredCurrency, updatePreferredCurrency, convert, formatAmount, getCurrencySymbol } = useCurrencyConversion();
   const [payments, setPayments] = useState<PaymentHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -32,6 +35,7 @@ export default function PaymentHistory() {
     pendingAmount: 0,
     transactionCount: 0
   });
+  const sym = getCurrencySymbol();
 
   useEffect(() => {
     if (user) {
@@ -62,15 +66,15 @@ export default function PaymentHistory() {
   const calculateStats = (data: PaymentHistoryItem[]) => {
     const received = data
       .filter(p => p.type === "payment_received" && p.status === "completed")
-      .reduce((sum, p) => sum + Number(p.amount), 0);
+      .reduce((sum, p) => sum + convert(Number(p.amount), p.currency || "USD"), 0);
     
     const sent = data
       .filter(p => p.type === "payment_sent" && p.status === "completed")
-      .reduce((sum, p) => sum + Number(p.amount), 0);
+      .reduce((sum, p) => sum + convert(Number(p.amount), p.currency || "USD"), 0);
     
     const pending = data
       .filter(p => p.status === "pending")
-      .reduce((sum, p) => sum + Number(p.amount), 0);
+      .reduce((sum, p) => sum + convert(Number(p.amount), p.currency || "USD"), 0);
 
     setStats({
       totalReceived: received,
@@ -122,9 +126,12 @@ export default function PaymentHistory() {
       />
       
       <div className="container mx-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Payment History</h1>
-          <p className="text-muted-foreground">Track all your payments and transactions</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Payment History</h1>
+            <p className="text-muted-foreground">Track all your payments and transactions</p>
+          </div>
+          <CurrencySelector value={preferredCurrency} onChange={updatePreferredCurrency} />
         </div>
 
         {/* Stats Cards */}
@@ -136,7 +143,7 @@ export default function PaymentHistory() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                ${stats.totalReceived.toFixed(2)}
+                {sym}{stats.totalReceived.toFixed(2)}
               </div>
             </CardContent>
           </Card>
@@ -148,7 +155,7 @@ export default function PaymentHistory() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                ${stats.totalSent.toFixed(2)}
+                {sym}{stats.totalSent.toFixed(2)}
               </div>
             </CardContent>
           </Card>
@@ -160,7 +167,7 @@ export default function PaymentHistory() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-600">
-                ${stats.pendingAmount.toFixed(2)}
+                {sym}{stats.pendingAmount.toFixed(2)}
               </div>
             </CardContent>
           </Card>
@@ -221,7 +228,7 @@ export default function PaymentHistory() {
                         <div className="text-right">
                           <p className="font-semibold text-lg">
                             {payment.type === "payment_received" ? "+" : "-"}
-                            ${Number(payment.amount).toFixed(2)}
+                            {formatAmount(Number(payment.amount), payment.currency || "USD")}
                           </p>
                           <Badge variant={getStatusColor(payment.status)}>
                             {payment.status}

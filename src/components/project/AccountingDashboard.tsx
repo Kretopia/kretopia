@@ -19,6 +19,8 @@ import { ExpenseList } from "./expense/ExpenseList";
 import { SpendingAnalytics } from "./expense/SpendingAnalytics";
 import { AIFinanceInsights } from "./expense/AIFinanceInsights";
 import { InvoiceGenerator } from "./InvoiceGenerator";
+import { useCurrencyConversion } from "@/hooks/useCurrencyConversion";
+import { CurrencySelector } from "@/components/CurrencySelector";
 
 interface AccountingDashboardProps {
   projectId?: string;
@@ -26,6 +28,7 @@ interface AccountingDashboardProps {
 
 export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
   const { user } = useAuth();
+  const { preferredCurrency, updatePreferredCurrency, convert, formatAmount, getCurrencySymbol } = useCurrencyConversion();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -33,6 +36,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
   const [marketPurchases, setMarketPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"this_month" | "last_month" | "last_3" | "last_6" | "year" | "all">("this_month");
+  const sym = getCurrencySymbol();
 
   useEffect(() => {
     if (user) fetchAccountingData();
@@ -123,21 +127,21 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
   }, [marketPurchases, period]);
 
   const stats = useMemo(() => {
-    const totalInvoiced = filteredInvoices.reduce((s, i) => s + Number(i.total_amount || i.amount || 0), 0);
+    const totalInvoiced = filteredInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
     const paidInvoices = filteredInvoices.filter(i => i.status === "paid");
-    const totalCollected = paidInvoices.reduce((s, i) => s + Number(i.total_amount || i.amount || 0), 0);
+    const totalCollected = paidInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
     const overdueInvoices = filteredInvoices.filter(i => i.status === "overdue" || (i.status !== "paid" && i.due_date && new Date(i.due_date) < new Date()));
-    const overdueAmount = overdueInvoices.reduce((s, i) => s + Number(i.total_amount || i.amount || 0), 0);
+    const overdueAmount = overdueInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
     const pendingInvoices = filteredInvoices.filter(i => ["draft", "sent", "viewed"].includes(i.status));
-    const pendingAmount = pendingInvoices.reduce((s, i) => s + Number(i.total_amount || i.amount || 0), 0);
-    const received = filteredPayments.filter(p => p.type === "payment_received" && p.status === "completed").reduce((s, p) => s + Number(p.amount), 0);
-    const sent = filteredPayments.filter(p => p.type === "payment_sent" && p.status === "completed").reduce((s, p) => s + Number(p.amount), 0);
-    const totalExpenses = filteredExpenses.reduce((s, e) => s + Number(e.amount), 0);
+    const pendingAmount = pendingInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
+    const received = filteredPayments.filter(p => p.type === "payment_received" && p.status === "completed").reduce((s, p) => s + convert(Number(p.amount), p.currency || "USD"), 0);
+    const sent = filteredPayments.filter(p => p.type === "payment_sent" && p.status === "completed").reduce((s, p) => s + convert(Number(p.amount), p.currency || "USD"), 0);
+    const totalExpenses = filteredExpenses.reduce((s, e) => s + convert(Number(e.amount), e.currency || "USD"), 0);
 
     // Marketplace income (seller earnings after platform fee)
-    const marketplaceIncome = filteredMarketSales.reduce((s, o) => s + (Number(o.amount) - Number(o.platform_fee || 0)), 0);
+    const marketplaceIncome = filteredMarketSales.reduce((s, o) => s + convert(Number(o.amount) - Number(o.platform_fee || 0), "USD"), 0);
     // Marketplace spend (buyer purchases)
-    const marketplaceSpend = filteredMarketPurchases.reduce((s, o) => s + Number(o.amount), 0);
+    const marketplaceSpend = filteredMarketPurchases.reduce((s, o) => s + convert(Number(o.amount), "USD"), 0);
 
     const totalIncome = totalCollected + marketplaceIncome;
     const totalSpend = totalExpenses + marketplaceSpend;
@@ -150,7 +154,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       marketplaceIncome, marketplaceSpend, totalIncome, totalSpend,
       marketSalesCount: filteredMarketSales.length, marketPurchaseCount: filteredMarketPurchases.length,
     };
-  }, [filteredInvoices, filteredPayments, filteredExpenses, filteredMarketSales, filteredMarketPurchases]);
+  }, [filteredInvoices, filteredPayments, filteredExpenses, filteredMarketSales, filteredMarketPurchases, convert]);
 
   const monthlyRevenue = useMemo(() => {
     const months: Record<string, { invoiced: number; collected: number; payments: number; marketSales: number }> = {};
@@ -236,6 +240,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
           </p>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
+          <CurrencySelector value={preferredCurrency} onChange={updatePreferredCurrency} compact />
           <Select value={period} onValueChange={(v: any) => setPeriod(v)}>
             <SelectTrigger className="w-32 sm:w-40 h-8 text-xs">
               <Calendar className="h-3 w-3 mr-1" />
@@ -267,8 +272,8 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold truncate">${stats.totalIncome.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">Invoices + Market Sales</p>
+            <p className="text-lg sm:text-xl font-bold truncate">{sym}{stats.totalIncome.toFixed(2)}</p>
+            <p className="text-[10px] text-muted-foreground">Invoices + Market Sales ({preferredCurrency})</p>
           </CardContent>
         </Card>
         <Card className="min-w-0">
@@ -278,7 +283,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold truncate">${stats.marketplaceIncome.toFixed(2)}</p>
+            <p className="text-lg sm:text-xl font-bold truncate">{sym}{stats.marketplaceIncome.toFixed(2)}</p>
             <p className="text-[10px] text-muted-foreground">{stats.marketSalesCount} sales</p>
           </CardContent>
         </Card>
@@ -289,7 +294,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold text-destructive truncate">${stats.totalSpend.toFixed(2)}</p>
+            <p className="text-lg sm:text-xl font-bold text-destructive truncate">{sym}{stats.totalSpend.toFixed(2)}</p>
             <p className="text-[10px] text-muted-foreground">Expenses + Purchases</p>
           </CardContent>
         </Card>
@@ -301,7 +306,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
             <p className={`text-lg sm:text-xl font-bold truncate ${(stats.totalIncome - stats.totalSpend) >= 0 ? "text-green-600" : "text-destructive"}`}>
-              ${(stats.totalIncome - stats.totalSpend).toFixed(2)}
+              {sym}{(stats.totalIncome - stats.totalSpend).toFixed(2)}
             </p>
             <p className="text-[10px] text-muted-foreground">Income − Spend</p>
           </CardContent>
@@ -313,7 +318,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold truncate">${stats.totalInvoiced.toFixed(2)}</p>
+            <p className="text-lg sm:text-xl font-bold truncate">{sym}{stats.totalInvoiced.toFixed(2)}</p>
             <p className="text-[10px] text-muted-foreground">{stats.totalInvoiceCount} invoices</p>
           </CardContent>
         </Card>
@@ -324,7 +329,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold text-amber-600 truncate">${stats.pendingAmount.toFixed(2)}</p>
+            <p className="text-lg sm:text-xl font-bold text-amber-600 truncate">{sym}{stats.pendingAmount.toFixed(2)}</p>
             <p className="text-[10px] text-muted-foreground">{stats.pendingCount} pending • {stats.overdueCount} overdue</p>
           </CardContent>
         </Card>
@@ -365,8 +370,8 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
                           </div>
                         </div>
                         <div className="text-right w-24 shrink-0">
-                          <p className="text-xs font-medium">${data.collected.toFixed(0)}</p>
-                          <p className="text-[10px] text-muted-foreground">of ${data.invoiced.toFixed(0)}</p>
+                          <p className="text-xs font-medium">{sym}{data.collected.toFixed(0)}</p>
+                          <p className="text-[10px] text-muted-foreground">of {sym}{data.invoiced.toFixed(0)}</p>
                         </div>
                       </div>
                     );
@@ -474,7 +479,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
                             </Badge>
                           </TableCell>
                           <TableCell className={`text-xs text-right font-medium ${tx.isIncome ? "text-green-600" : "text-red-600"}`}>
-                            {tx.isIncome ? "+" : "-"}${tx.amount.toFixed(2)}
+                            {tx.isIncome ? "+" : "-"}{formatAmount(tx.amount, tx.currency)}
                           </TableCell>
                         </TableRow>
                       ))}

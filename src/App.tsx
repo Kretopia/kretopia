@@ -15,6 +15,8 @@ import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboar
 import { SkipLink } from "./components/ui/skip-link";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { analytics } from "@/lib/analytics";
+import { NetworkStatus } from "./components/NetworkStatus";
+import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 
 // Lazy load active page components
 const Landing = lazy(() => import("./pages/Landing"));
@@ -122,6 +124,7 @@ const PageViewTracker = () => {
 const AppContent = () => {
   const location = useLocation();
   const { user } = useAuth();
+  useNativeCapacitor();
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
   const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
@@ -132,6 +135,7 @@ const AppContent = () => {
   
   return (
     <div className="h-full overflow-auto">
+      <NetworkStatus />
       <SkipLink />
       <PageViewTracker />
       {!isPublicEPK && !isAuthPage && <Navbar user={user} />}

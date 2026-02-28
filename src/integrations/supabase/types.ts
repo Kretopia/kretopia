@@ -4151,6 +4151,7 @@ export type Database = {
           phone_number: string | null
           phone_verified: boolean
           portfolio_verified: boolean | null
+          preferred_currency: string
           press_links: Json | null
           professional_skills: Json | null
           profile_frame: string | null
@@ -4276,6 +4277,7 @@ export type Database = {
           phone_number?: string | null
           phone_verified?: boolean
           portfolio_verified?: boolean | null
+          preferred_currency?: string
           press_links?: Json | null
           professional_skills?: Json | null
           profile_frame?: string | null
@@ -4401,6 +4403,7 @@ export type Database = {
           phone_number?: string | null
           phone_verified?: boolean
           portfolio_verified?: boolean | null
+          preferred_currency?: string
           press_links?: Json | null
           professional_skills?: Json | null
           profile_frame?: string | null

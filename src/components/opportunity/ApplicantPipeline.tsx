@@ -168,7 +168,7 @@ function SortableApplicantCard({ applicant }: { applicant: Applicant }) {
             size="sm"
             variant="ghost"
             className="h-6 px-2 text-xs"
-            onClick={() => navigate(`/spark?user=${applicant.applicant_id}`)}
+            onClick={() => navigate(`/messages?user=${applicant.applicant_id}`)}
           >
             <Mail className="w-3 h-3" />
           </Button>

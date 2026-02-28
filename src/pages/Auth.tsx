@@ -348,7 +348,9 @@ const Auth = () => {
           return;
         }
       } else {
-        const result = await lovable.auth.signInWithOAuth(provider);
+        const result = await lovable.auth.signInWithOAuth(provider, {
+          redirect_uri: window.location.origin,
+        });
         
         if ('redirected' in result && result.redirected) {
           return;

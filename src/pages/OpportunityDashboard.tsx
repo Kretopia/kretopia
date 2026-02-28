@@ -439,7 +439,7 @@ Return ONLY valid JSON array:
               size="sm"
               variant="outline"
               className="text-xs"
-              onClick={() => navigate(`/spark?user=${applicant.applicant_id}`)}
+              onClick={() => navigate(`/messages?user=${applicant.applicant_id}`)}
             >
               <Mail className="w-3 h-3 mr-1" />
               Message

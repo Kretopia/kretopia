@@ -137,7 +137,7 @@ export default function PurchaseSuccess() {
             <p className="text-sm text-muted-foreground text-center">
               If you were charged, please contact support with your session ID: {sessionId}
             </p>
-            <Button onClick={() => navigate('/spark')} className="w-full">
+            <Button onClick={() => navigate('/circle')} className="w-full">
               Return to Dashboard
             </Button>
           </CardContent>

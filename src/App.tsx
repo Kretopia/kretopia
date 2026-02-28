@@ -27,7 +27,7 @@ const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ViewProfile = lazy(() => import("./pages/ViewProfile"));
-const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+
 const Circle = lazy(() => import("./pages/Circle"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
@@ -71,6 +71,7 @@ const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
+const CheckIn = lazy(() => import("./pages/CheckIn"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -211,6 +212,20 @@ const AppContent = () => {
             <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
             <Route path="/partner-submit" element={<ProtectedRoute><PartnerSubmit /></ProtectedRoute>} />
             
+            {/* Marketplace */}
+            <Route path="/market" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+            <Route path="/market/:listingId" element={<ProtectedRoute><ListingDetail /></ProtectedRoute>} />
+            
+            {/* Opportunity Management */}
+            <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
+            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+            
+            {/* Rewards */}
+            <Route path="/rewards" element={<ProtectedRoute><RewardsShop /></ProtectedRoute>} />
+            
+            {/* Check-in */}
+            <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+
             {/* Public Access Pages (No Auth Required) */}
             <Route path="/endorse" element={<EndorseSkill />} />
             <Route path="/submit-review" element={<SubmitReview />} />
@@ -222,6 +237,7 @@ const AppContent = () => {
             {/* Legacy redirects */}
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
             <Route path="/spark" element={<Navigate to="/circle" replace />} />
+            <Route path="/cre8" element={<Navigate to="/circle" replace />} />
             <Route path="/discover" element={<Navigate to="/circle" replace />} />
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             

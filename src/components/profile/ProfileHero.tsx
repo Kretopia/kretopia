@@ -311,20 +311,26 @@ export const ProfileHero = ({
         </div>
 
         {/* Stats Row + Trust Signals */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex gap-6 text-sm">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold">{stats.circle}</span>
-              <span className="text-muted-foreground">In Circle</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex gap-4 sm:gap-6 text-sm">
+            <div className="text-center sm:text-left">
+              <span className="text-lg font-bold block">{stats.circle}</span>
+              <span className="text-xs text-muted-foreground">In Circle</span>
             </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold">{stats.projects}</span>
-              <span className="text-muted-foreground">Projects</span>
+            <div className="text-center sm:text-left">
+              <span className="text-lg font-bold block">{stats.projects}</span>
+              <span className="text-xs text-muted-foreground">Projects</span>
             </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold">{stats.responseRate}%</span>
-              <span className="text-muted-foreground">Response</span>
+            <div className="text-center sm:text-left">
+              <span className="text-lg font-bold block">{stats.responseRate}%</span>
+              <span className="text-xs text-muted-foreground">Response</span>
             </div>
+            {creditsCount > 0 && (
+              <div className="text-center sm:text-left">
+                <span className="text-lg font-bold block">{creditsCount}</span>
+                <span className="text-xs text-muted-foreground">Credits</span>
+              </div>
+            )}
           </div>
           <TrustSignals
             emailVerified={(profile as any).email_verified}

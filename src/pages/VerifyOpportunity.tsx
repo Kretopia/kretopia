@@ -66,7 +66,7 @@ const VerifyOpportunity = () => {
               </div>
               <CardTitle className="text-2xl">You're live! 🎉</CardTitle>
               <CardDescription className="text-base">
-                Your opportunity is now published on ThriveIN's Discover page. Creatives can start applying immediately.
+                Your opportunity is now live. Creatives can start applying immediately.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">

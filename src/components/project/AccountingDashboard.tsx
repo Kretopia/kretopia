@@ -235,10 +235,10 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" /> Earnings
+            <BarChart3 className="h-5 w-5 text-primary" /> Creative Earnings
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            {projectId ? "Project earnings overview" : "Your Creative Earnings Overview"}
+            {projectId ? "Project financial overview" : "Your complete financial overview"}
           </p>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -265,76 +265,79 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
-        <Card className="min-w-0">
+      {/* Primary KPI Row — 4 key metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="border-l-4 border-l-primary">
           <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" /> Total Income
+              <TrendingUp className="h-3 w-3 text-primary" /> Total Earned
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold truncate">{sym}{stats.totalIncome.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">Invoices + Market Sales ({preferredCurrency})</p>
+            <p className="text-xl sm:text-2xl font-bold truncate">{sym}{stats.totalIncome.toFixed(2)}</p>
+            <p className="text-[10px] text-muted-foreground">Invoices + marketplace ({preferredCurrency})</p>
           </CardContent>
         </Card>
-        <Card className="min-w-0">
+        <Card className="border-l-4 border-l-amber-500">
           <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
-              <Store className="h-3 w-3 text-primary" /> Market Sales
+              <Clock className="h-3 w-3 text-amber-500" /> Pending
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold truncate">{sym}{stats.marketplaceIncome.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">{stats.marketSalesCount} sales</p>
+            <p className="text-xl sm:text-2xl font-bold text-amber-600 truncate">{sym}{stats.pendingAmount.toFixed(2)}</p>
+            <p className="text-[10px] text-muted-foreground">{stats.pendingCount} awaiting payment</p>
           </CardContent>
         </Card>
-        <Card className="min-w-0">
+        <Card className="border-l-4 border-l-destructive">
           <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
-              <TrendingDown className="h-3 w-3 text-destructive" /> Total Spend
+              <AlertCircle className="h-3 w-3 text-destructive" /> Outstanding
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold text-destructive truncate">{sym}{stats.totalSpend.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">Expenses + Purchases</p>
+            <p className="text-xl sm:text-2xl font-bold text-destructive truncate">{sym}{stats.overdueAmount.toFixed(2)}</p>
+            <p className="text-[10px] text-muted-foreground">{stats.overdueCount} overdue</p>
           </CardContent>
         </Card>
-        <Card className="min-w-0">
+        <Card className={`border-l-4 ${(stats.totalIncome - stats.totalSpend) >= 0 ? 'border-l-green-500' : 'border-l-destructive'}`}>
           <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
             <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
-              <DollarSign className="h-3 w-3 text-primary" /> Net Profit
+              <DollarSign className="h-3 w-3" /> Net Profit
             </CardDescription>
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
-            <p className={`text-lg sm:text-xl font-bold truncate ${(stats.totalIncome - stats.totalSpend) >= 0 ? "text-green-600" : "text-destructive"}`}>
+            <p className={`text-xl sm:text-2xl font-bold truncate ${(stats.totalIncome - stats.totalSpend) >= 0 ? "text-green-600" : "text-destructive"}`}>
               {sym}{(stats.totalIncome - stats.totalSpend).toFixed(2)}
             </p>
-            <p className="text-[10px] text-muted-foreground">Income − Spend</p>
+            <p className="text-[10px] text-muted-foreground">Income − expenses</p>
           </CardContent>
         </Card>
-        <Card className="min-w-0">
-          <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
-            <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
-              <FileText className="h-3 w-3" /> Invoiced
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold truncate">{sym}{stats.totalInvoiced.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">{stats.totalInvoiceCount} invoices</p>
-          </CardContent>
-        </Card>
-        <Card className="min-w-0">
-          <CardHeader className="pb-1 pt-3 px-3 sm:px-4">
-            <CardDescription className="text-[10px] uppercase tracking-wider flex items-center gap-1">
-              <AlertCircle className="h-3 w-3 text-amber-500" /> Outstanding
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-3 sm:px-4 pb-3">
-            <p className="text-lg sm:text-xl font-bold text-amber-600 truncate">{sym}{stats.pendingAmount.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">{stats.pendingCount} pending • {stats.overdueCount} overdue</p>
-          </CardContent>
-        </Card>
+      </div>
+
+      {/* Secondary stats — compact row */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">
+          <Store className="h-4 w-4 text-primary shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold truncate">{sym}{stats.marketplaceIncome.toFixed(0)}</p>
+            <p className="text-[10px] text-muted-foreground">{stats.marketSalesCount} market sales</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">
+          <FileText className="h-4 w-4 text-primary shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold truncate">{sym}{stats.totalInvoiced.toFixed(0)}</p>
+            <p className="text-[10px] text-muted-foreground">{stats.totalInvoiceCount} invoiced</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">
+          <TrendingDown className="h-4 w-4 text-destructive shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold truncate">{sym}{stats.totalSpend.toFixed(0)}</p>
+            <p className="text-[10px] text-muted-foreground">Total spend</p>
+          </div>
+        </div>
       </div>
 
       {/* Tabs: Overview / Expenses / Analytics */}

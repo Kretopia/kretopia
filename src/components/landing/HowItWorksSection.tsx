@@ -65,9 +65,9 @@ export const HowItWorksSection = () => {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-2xl font-bold text-accent">
                 <Briefcase className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-bold">Work & Collaborate</h3>
+              <h3 className="mb-2 text-xl font-bold">Work & Get Paid</h3>
               <p className="text-muted-foreground">
-                Browse jobs, collabs & barter opportunities — or post your own. Manage everything with ThriveDesk workspaces, milestone payments & the Marketplace.
+                Browse jobs, collabs & barter opportunities — or post your own. Manage projects with milestones, escrow payments & secure collaboration workspaces.
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-accent" />

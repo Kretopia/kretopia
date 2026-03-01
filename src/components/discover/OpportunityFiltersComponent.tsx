@@ -60,7 +60,10 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
 
   const availableSkills = [
     'Photography', 'Videography', 'Music Production', 'Writing', 
-    'Design', 'Animation', 'Social Media', 'Marketing'
+    'Design', 'Animation', 'Social Media', 'Marketing',
+    'Film Directing', 'Cinematography', 'Audio Engineering', 'Singing',
+    'DJing', 'Fashion Design', 'Makeup Artistry', 'Styling',
+    'Acting', 'Dance', 'Illustration', 'Content Creation'
   ];
 
   const handleSkillToggle = (skill: string) => {

@@ -30,44 +30,66 @@ interface SkillsSectionProps {
 const SKILL_OPTIONS: Record<string, string[]> = {
   "Photography & Visual": [
     "Portrait Photography", "Fashion Photography", "Product Photography", "Event Photography",
-    "Landscape Photography", "Food Photography", "Architectural Photography", "Street Photography"
+    "Landscape Photography", "Food Photography", "Architectural Photography", "Street Photography",
+    "Concert Photography", "Documentary Photography", "Photo Retouching", "Studio Lighting"
   ],
   "Video & Film": [
     "Videography", "Film Production", "Cinematography", "Video Editing",
-    "Color Grading", "Documentary Filmmaking", "Commercial Production", "Music Videos"
+    "Color Grading", "Documentary Filmmaking", "Commercial Production", "Music Videos",
+    "Screenwriting", "Film Directing", "Producing", "Stunt Coordination",
+    "Drone Videography", "Live Streaming", "Short Films"
   ],
   "Audio & Music": [
     "Music Production", "Audio Engineering", "Sound Design", "Mixing & Mastering",
     "Composition", "Beat Making", "Podcast Production", "Voiceover",
-    "Singing", "Rapping", "Songwriting", "DJing"
+    "Singing", "Rapping", "Songwriting", "DJing",
+    "Session Recording", "Foley", "Audio Post-Production", "Music Supervision",
+    "Soca Production", "Calypso", "Steelpan Arrangement"
   ],
   "Performance & Movement": [
     "Dance", "Choreography", "Acting", "Voice Acting",
-    "Instrument Performance", "Live Performance", "Stage Direction", "Improvisation"
+    "Instrument Performance", "Live Performance", "Stage Direction", "Improvisation",
+    "Modeling", "Stunt Performance", "Stand-up Comedy", "Theatre"
   ],
   "Design": [
     "Graphic Design", "UI/UX Design", "Brand Design", "Logo Design",
-    "Illustration", "Typography", "Print Design", "Packaging Design"
+    "Illustration", "Typography", "Print Design", "Packaging Design",
+    "Environmental Design", "Signage Design", "Infographics", "Tattoo Design"
+  ],
+  "Fashion & Beauty": [
+    "Fashion Design", "Styling", "Makeup Artistry", "Hair Styling",
+    "Costume Design", "Wardrobe Design", "Jewelry Design", "Textile Design",
+    "Pattern Making", "Fashion Illustration", "Accessory Design",
+    "Carnival / Mas Design", "Nail Art", "Special FX Makeup"
   ],
   "Motion & Animation": [
     "Motion Graphics", "2D Animation", "3D Animation", "VFX",
-    "After Effects", "Character Animation", "Stop Motion"
+    "After Effects", "Character Animation", "Stop Motion", "CGI",
+    "Title Design", "Explainer Videos"
   ],
   "Content & Social": [
     "Content Creation", "Social Media Management", "Copywriting", "Influencer Marketing",
-    "YouTube Content", "TikTok Content", "Instagram Strategy", "Community Management"
+    "YouTube Content", "TikTok Content", "Instagram Strategy", "Community Management",
+    "Blogging", "Newsletter Writing", "SEO Content", "Podcast Hosting"
   ],
   "Styling & Production": [
-    "Styling", "Makeup Artistry", "Hair Styling", "Set Design",
-    "Wardrobe Design", "Prop Design", "Event Production"
+    "Set Design", "Prop Design", "Event Production",
+    "Stage Management", "Lighting Design", "Sound Engineering (Live)",
+    "Festival Production", "Carnival Production"
   ],
   "Creative Direction": [
     "Creative Direction", "Art Direction", "Brand Strategy", "Campaign Development",
-    "Project Management", "Team Leadership"
+    "Project Management", "Team Leadership", "A&R", "Music Supervision",
+    "Talent Management"
+  ],
+  "Writing & Journalism": [
+    "Scriptwriting", "Ghostwriting", "Journalism", "Technical Writing",
+    "Grant Writing", "Press Releases", "Book Writing", "Editing"
   ],
   "Technical": [
     "Web Development", "Mobile Development", "3D Modeling", "Game Design",
-    "Virtual Reality", "Augmented Reality", "Technical Direction", "Drones"
+    "Virtual Reality", "Augmented Reality", "Technical Direction", "Drones",
+    "AI Tools", "No-Code Development"
   ]
 };
 

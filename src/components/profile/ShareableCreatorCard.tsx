@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Download, Share2, Shield, Sparkles, Copy, Check } from "lucide-react";
+import { Download, Share2, Shield, Sparkles, Copy, Check, MessageCircle, Twitter, Link2, Instagram } from "lucide-react";
 import html2canvas from "html2canvas";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,6 +19,7 @@ interface CreatorCardProps {
     xp?: number;
     location?: string | null;
     professional_skills?: Array<{ skill: string }> | null;
+    user_id?: string;
   };
 }
 
@@ -35,9 +36,39 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
   const { toast } = useToast();
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
 
   const skills = profile.professional_skills?.slice(0, 4) || [];
   const badgeInfo = profile.badge ? BADGE_LABELS[profile.badge] : null;
+
+  const getProfileUrl = () => {
+    if (profile.user_id) {
+      return `${window.location.origin}/profile/${profile.user_id}`;
+    }
+    return `${window.location.origin}/u/${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}`;
+  };
+
+  const getShareText = () => {
+    return `Check out ${profile.full_name}'s creative profile on ThriveIN! 🚀`;
+  };
+
+  const generateCardBlob = async (): Promise<Blob | null> => {
+    if (!cardRef.current) return null;
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 3,
+        backgroundColor: null,
+        useCORS: true,
+        logging: false,
+      });
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), "image/png");
+      });
+    } catch (err) {
+      console.error("Card generation error:", err);
+      return null;
+    }
+  };
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -63,7 +94,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
   };
 
   const handleCopyLink = async () => {
-    const profileUrl = `${window.location.origin}/u/${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}`;
+    const profileUrl = getProfileUrl();
     try {
       await navigator.clipboard.writeText(profileUrl);
       setCopied(true);
@@ -75,34 +106,70 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
   };
 
   const handleShare = async () => {
-    if (!cardRef.current) return;
-    try {
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 3,
-        backgroundColor: null,
-        useCORS: true,
-        logging: false,
-      });
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const file = new File([blob], "creator-card.png", { type: "image/png" });
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: `${profile.full_name} on ThriveIN`,
-            text: `Check out ${profile.full_name}'s creative profile on ThriveIN! 🚀`,
-            files: [file],
-          });
-        } else {
-          handleDownload();
+    // First try native share with file (works on mobile)
+    if (navigator.share) {
+      try {
+        const blob = await generateCardBlob();
+        if (blob) {
+          const file = new File([blob], "creator-card.png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: `${profile.full_name} on ThriveIN`,
+              text: getShareText(),
+              files: [file],
+            });
+            return;
+          }
         }
-      });
-    } catch (err) {
-      console.error("Share error:", err);
+        // Try share without file
+        await navigator.share({
+          title: `${profile.full_name} on ThriveIN`,
+          text: getShareText(),
+          url: getProfileUrl(),
+        });
+        return;
+      } catch (err: any) {
+        // User cancelled or share failed — fall through to manual options
+        if (err?.name === "AbortError") return;
+        console.log("Native share unavailable, showing manual options");
+      }
     }
+    
+    // Fallback: show manual share options
+    setShowShareOptions(true);
+  };
+
+  const shareToWhatsApp = () => {
+    const url = getProfileUrl();
+    const text = encodeURIComponent(`${getShareText()}\n${url}`);
+    window.open(`https://wa.me/?text=${text}`, "_blank");
+  };
+
+  const shareToTwitter = () => {
+    const url = getProfileUrl();
+    const text = encodeURIComponent(getShareText());
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, "_blank");
+  };
+
+  const shareToInstagramStory = async () => {
+    // Instagram doesn't have a web share URL for stories, so download the card
+    // and prompt the user
+    await handleDownload();
+    toast({
+      title: "Card downloaded!",
+      description: "Open Instagram → Stories → Add from gallery to share your card",
+    });
+  };
+
+  const shareViaEmail = () => {
+    const url = getProfileUrl();
+    const subject = encodeURIComponent(`${profile.full_name} on ThriveIN`);
+    const body = encodeURIComponent(`${getShareText()}\n\n${url}`);
+    window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setShowShareOptions(false); }}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -135,7 +202,6 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
                   />
                 ))}
               </div>
-              {/* ThriveIN branding */}
               <div className="absolute top-3 right-4 flex items-center gap-1">
                 <span className="text-white/60 text-[10px] font-medium tracking-wider">THRIVEIN</span>
               </div>
@@ -143,7 +209,6 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
 
             {/* Profile section */}
             <div className="px-6 -mt-8 pb-6 text-center">
-              {/* Avatar */}
               <div className="relative inline-block mb-3">
                 <div className="w-20 h-20 rounded-full border-[3px] border-purple-500/50 overflow-hidden bg-gray-800">
                   {profile.avatar_url ? (
@@ -162,21 +227,18 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
                 )}
               </div>
 
-              {/* Name & Role */}
               <h3 className="text-white font-bold text-lg leading-tight">{profile.full_name || "Creator"}</h3>
               <p className="text-purple-300 text-sm mt-0.5">{profile.role || "Creative"}</p>
               {profile.location && (
                 <p className="text-white/40 text-xs mt-1">📍 {profile.location}</p>
               )}
 
-              {/* Bio */}
               {profile.bio && (
                 <p className="text-white/60 text-xs mt-3 leading-relaxed line-clamp-2">
                   {profile.bio}
                 </p>
               )}
 
-              {/* Skills */}
               {skills.length > 0 && (
                 <div className="flex flex-wrap justify-center gap-1.5 mt-4">
                   {skills.map((s, i) => (
@@ -190,7 +252,6 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
                 </div>
               )}
 
-              {/* Stats bar */}
               <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-white/10">
                 <div className="text-center">
                   <p className="text-white font-bold text-sm">{profile.level || 1}</p>
@@ -208,7 +269,6 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
                 </div>
               </div>
 
-              {/* Join CTA */}
               <div className="mt-4 pt-3 border-t border-white/5">
                 <p className="text-white/30 text-[9px] tracking-widest">JOIN THE CREATIVE NETWORK</p>
                 <p className="text-purple-400 text-[10px] font-medium mt-0.5">thrivein.io</p>
@@ -216,6 +276,36 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
             </div>
           </div>
         </div>
+
+        {/* Share options panel */}
+        {showShareOptions && (
+          <div className="grid grid-cols-4 gap-3 py-3 px-2 border rounded-xl border-border bg-muted/30">
+            <button onClick={shareToWhatsApp} className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-accent transition-colors">
+              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                <MessageCircle className="h-5 w-5 text-green-500" />
+              </div>
+              <span className="text-[10px] text-muted-foreground font-medium">WhatsApp</span>
+            </button>
+            <button onClick={shareToInstagramStory} className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-accent transition-colors">
+              <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center">
+                <Instagram className="h-5 w-5 text-pink-500" />
+              </div>
+              <span className="text-[10px] text-muted-foreground font-medium">Instagram</span>
+            </button>
+            <button onClick={shareToTwitter} className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-accent transition-colors">
+              <div className="w-10 h-10 rounded-full bg-sky-500/10 flex items-center justify-center">
+                <Twitter className="h-5 w-5 text-sky-500" />
+              </div>
+              <span className="text-[10px] text-muted-foreground font-medium">X / Twitter</span>
+            </button>
+            <button onClick={shareViaEmail} className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-accent transition-colors">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Link2 className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-[10px] text-muted-foreground font-medium">Email</span>
+            </button>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-2">

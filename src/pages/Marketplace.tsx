@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingBag, Search, Download, Package, Wrench, ShieldAlert } from "lucide-react";
+import { ShoppingBag, Search, Download, Wrench, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
@@ -14,8 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const LISTING_TYPE_TABS = [
   { value: "all", label: "All", icon: ShoppingBag },
-  { value: "digital", label: "Digital", icon: Download },
-  { value: "physical", label: "Physical", icon: Package },
+  { value: "digital", label: "Digital Products", icon: Download },
   { value: "service", label: "Services", icon: Wrench },
 ];
 
@@ -102,7 +101,7 @@ const Marketplace = () => {
               Market
             </h1>
             <p className="text-sm text-muted-foreground">
-              Digital products, gear, and creative services from the community
+              Digital products and creative services from the community
             </p>
           </div>
           {user && <CreateListingDialog onCreated={fetchProducts} />}
@@ -112,8 +111,8 @@ const Marketplace = () => {
         <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/30 border border-border">
           <ShieldAlert className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            <span className="font-medium">Peer-to-peer marketplace.</span> ThriveIN connects buyers and sellers but does not verify listings, 
-            process payments for physical items, or guarantee transactions. Please do your own due diligence before purchasing.
+           <span className="font-medium">Secure marketplace.</span> All transactions are protected through escrow. 
+            Funds are held securely until you confirm delivery. Do your own due diligence before purchasing.
           </p>
         </div>
 

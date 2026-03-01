@@ -132,21 +132,21 @@ const ListingCard = ({ listing }: ListingCardProps) => {
         )}
 
         <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-lg text-primary">
-              ${listing.price}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-bold text-lg text-primary truncate">
+              {listing.currency === "USD" ? "$" : listing.currency}{listing.price}
               {listing.listing_type === "service" && <span className="text-xs font-normal text-muted-foreground">/session</span>}
             </span>
             {listing.listing_type === "physical" && listing.shipping_price && listing.shipping_price > 0 && (
-              <span className="text-xs text-muted-foreground">+${listing.shipping_price} shipping</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">+${listing.shipping_price} ship</span>
             )}
             {listing.listing_type === "digital" && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <span className="text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap">
                 <Download className="h-3 w-3" /> {listing.download_count}
               </span>
             )}
           </div>
-          <Button size="sm">View</Button>
+          <Button size="sm" className="shrink-0">View</Button>
         </div>
 
         {listing.tags && listing.tags.length > 0 && (

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OnboardingTooltipProps {
   id: string;
@@ -47,16 +48,45 @@ export const OnboardingTooltip = ({
 
   useEffect(() => {
     const dismissed = getDismissed();
-    if (!dismissed.includes(id)) {
+    if (dismissed.includes(id)) return;
+
+    let timerId: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+
+    // Check if tour is already completed — don't show tooltips to returning users
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("tour_completed")
+          .eq("user_id", user.id)
+          .single();
+
+        if (cancelled) return;
+
+        // If tour already completed, auto-dismiss all tooltips permanently
+        if (profile?.tour_completed) {
+          dismiss(id);
+          return;
+        }
+      } catch {
+        return;
+      }
+
+      if (cancelled) return;
       const delay = 800 + (step ? (step - 1) * 5000 : 0);
-      const timer = setTimeout(() => {
+      timerId = setTimeout(() => {
         const existing = document.querySelector('[data-onboarding-tooltip="true"]');
         if (!existing) {
           setVisible(true);
         }
       }, delay);
-      return () => clearTimeout(timer);
-    }
+    })();
+
+    return () => { cancelled = true; if (timerId) clearTimeout(timerId); };
   }, [id, step]);
 
   // Position the tooltip so it stays on screen

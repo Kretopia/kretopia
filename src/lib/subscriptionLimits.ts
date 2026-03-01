@@ -38,14 +38,14 @@ export const FREE_TIER_MONTHLY_CAPS = {
   aiOutreachDrafts: 5,     // 5 outreach drafts/month
   aiChatMessages: 20,      // 20 AI chat messages/month (was unlimited, now soft cap)
   
-  // ThriveDesk workspace
+  // Project workspace
   approvalRequests: 2,     // 2 approval workflows/month
   milestones: 3,           // 3 milestones/month
   invoices: 2,             // 2 invoices/month
   templateUses: 1,         // 1 template/month
   aiBriefs: 3,             // 3 AI briefs/month
   
-  // ThriveMoney (Accounting)
+  // Earnings (Accounting)
   expenses: 5,             // 5 expenses/month
   
   // Opportunities

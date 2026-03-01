@@ -154,15 +154,18 @@ const Marketplace = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="music">Music</SelectItem>
-              <SelectItem value="design">Design</SelectItem>
-              <SelectItem value="video">Video</SelectItem>
-              <SelectItem value="photography">Photography</SelectItem>
-              <SelectItem value="fashion">Fashion</SelectItem>
-              <SelectItem value="art">Art</SelectItem>
-              <SelectItem value="writing">Writing</SelectItem>
-              <SelectItem value="development">Development</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="music">🎵 Music & Audio</SelectItem>
+              <SelectItem value="design">🎨 Design & Graphics</SelectItem>
+              <SelectItem value="video">🎬 Video & Film</SelectItem>
+              <SelectItem value="photography">📸 Photography</SelectItem>
+              <SelectItem value="fashion">👗 Fashion & Beauty</SelectItem>
+              <SelectItem value="art">🖼️ Fine Art & Illustration</SelectItem>
+              <SelectItem value="writing">✍️ Writing & Copy</SelectItem>
+              <SelectItem value="development">💻 Web & App Dev</SelectItem>
+              <SelectItem value="marketing">📢 Marketing & Social</SelectItem>
+              <SelectItem value="3d">🧊 3D & Animation</SelectItem>
+              <SelectItem value="education">📚 Courses & Tutorials</SelectItem>
+              <SelectItem value="other">📦 Other</SelectItem>
             </SelectContent>
           </Select>
         </div>

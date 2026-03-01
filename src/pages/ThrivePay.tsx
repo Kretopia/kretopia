@@ -256,15 +256,15 @@ export default function ThrivePay() {
   return (
     <>
       <SEO
-        title="ThrivePay - Wallet & Payments"
-        description="Manage your wallet, credits, earnings and payment account with ThrivePay"
+        title="Wallet & Payments"
+        description="Manage your wallet, credits, earnings and payment account"
       />
 
       <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">ThrivePay</h1>
+            <h1 className="text-3xl font-bold">Wallet</h1>
             {getStatusBadge()}
           </div>
           <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export default function ThrivePay() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add Funds to Wallet</DialogTitle>
-                  <DialogDescription>Top up your ThrivePay wallet with credits or balance</DialogDescription>
+                  <DialogDescription>Top up your wallet with credits or balance</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
@@ -568,12 +568,12 @@ export default function ThrivePay() {
                   </CardContent>
                 </Card>
 
-                {/* How ThrivePay Works */}
+                {/* How Payments Work */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Shield className="h-5 w-5 text-primary" />
-                      How ThrivePay Works
+                      How Payments Work
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">

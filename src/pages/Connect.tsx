@@ -12,6 +12,7 @@ import { Search, MapPin, Sparkles, Check, Clock, UserPlus, Users } from "lucide-
 import { toast } from "sonner";
 import { SEO } from "@/components/SEO";
 import { CreatorFilters, CreatorFilterState } from "@/components/discover/CreatorFilters";
+import { CreatorGridSkeleton } from "@/components/skeletons/MessagesSkeletons";
 
 interface Profile {
   user_id: string;
@@ -555,9 +556,7 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
 
             {/* Results */}
             {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-              </div>
+              <CreatorGridSkeleton />
             ) : profiles.length === 0 && !featuredProfile ? (
               <EmptyState
                 icon={Users}

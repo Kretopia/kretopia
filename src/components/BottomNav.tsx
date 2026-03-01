@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { OnboardingTooltip } from "@/components/onboarding/OnboardingTooltip";
 
 const BottomNav = memo(() => {
   const location = useLocation();
@@ -32,18 +33,18 @@ const BottomNav = memo(() => {
   
   const navItems = isCompany
     ? [
-        { path: "/opportunities", icon: Briefcase, label: "Jobs", tourId: "opportunities-tab" },
-        { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
+        { path: "/opportunities", icon: Briefcase, label: "Jobs", tourId: "opportunities-tab", tooltip: { id: "nav-jobs", title: "Post & Find Jobs", desc: "Browse creative opportunities or post your own gigs" } },
+        { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Workspace", desc: "Manage projects, tasks, and collaborate with your team" } },
         { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
         { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
       ]
     : [
-        { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab" },
-        { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab" },
-        { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab" },
+        { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Your Circle", desc: "See your connections, matched creators, and start collaborating" } },
+        { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab", tooltip: { id: "nav-opps", title: "Opportunities", desc: "Browse gigs, jobs, and creative opportunities posted by creators & companies" } },
+        { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "ThriveDesk", desc: "Your creative workspace — manage projects, tasks, files, and more" } },
         { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
         { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
-      ];
+      ] as const;
 
   return (
     <nav 
@@ -53,9 +54,12 @@ const BottomNav = memo(() => {
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
     >
       <div className="flex items-center justify-around px-2 py-2">
-        {navItems.map(({ path, icon: Icon, label, tourId }) => {
+        {navItems.map((item) => {
+          const { path, icon: Icon, label, tourId } = item;
+          const tooltip = 'tooltip' in item ? item.tooltip : undefined;
           const isActive = location.pathname === path;
-          return (
+          
+          const linkContent = (
             <Link
               key={path}
               to={path}
@@ -79,6 +83,22 @@ const BottomNav = memo(() => {
               )}>{label}</span>
             </Link>
           );
+
+          if (tooltip) {
+            return (
+              <OnboardingTooltip
+                key={path}
+                id={tooltip.id}
+                title={tooltip.title}
+                description={tooltip.desc}
+                position="top"
+              >
+                {linkContent}
+              </OnboardingTooltip>
+            );
+          }
+
+          return linkContent;
         })}
       </div>
     </nav>

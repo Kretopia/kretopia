@@ -45,10 +45,18 @@ export const OnboardingTooltip = ({
   useEffect(() => {
     const dismissed = getDismissed();
     if (!dismissed.includes(id)) {
-      const timer = setTimeout(() => setVisible(true), 800);
+      // Stagger tooltips so only one shows at a time
+      const delay = 800 + (step ? (step - 1) * 5000 : 0);
+      const timer = setTimeout(() => {
+        // Only show if no other tooltip is currently visible
+        const existing = document.querySelector('[data-onboarding-tooltip="true"]');
+        if (!existing) {
+          setVisible(true);
+        }
+      }, delay);
       return () => clearTimeout(timer);
     }
-  }, [id]);
+  }, [id, step]);
 
   const handleDismiss = () => {
     setVisible(false);
@@ -56,10 +64,10 @@ export const OnboardingTooltip = ({
   };
 
   const positionClasses: Record<string, string> = {
-    top: "bottom-full mb-2 left-1/2 -translate-x-1/2",
-    bottom: "top-full mt-2 left-1/2 -translate-x-1/2",
-    left: "right-full mr-2 top-1/2 -translate-y-1/2",
-    right: "left-full ml-2 top-1/2 -translate-y-1/2",
+    top: "bottom-full mb-2 left-1/2 -translate-x-1/2 max-w-[calc(100vw-2rem)]",
+    bottom: "top-full mt-2 left-1/2 -translate-x-1/2 max-w-[calc(100vw-2rem)]",
+    left: "right-full mr-2 top-1/2 -translate-y-1/2 max-w-[calc(100vw-2rem)]",
+    right: "left-full ml-2 top-1/2 -translate-y-1/2 max-w-[calc(100vw-2rem)]",
   };
 
   const arrowClasses: Record<string, string> = {
@@ -74,8 +82,9 @@ export const OnboardingTooltip = ({
       {children}
       {visible && (
         <div
+          data-onboarding-tooltip="true"
           className={cn(
-            "absolute z-50 w-64 rounded-lg bg-primary text-primary-foreground p-3 shadow-xl animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
+            "absolute z-50 w-56 sm:w-64 rounded-lg bg-primary text-primary-foreground p-3 shadow-xl animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
             positionClasses[position]
           )}
         >

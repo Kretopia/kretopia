@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase, Paperclip, Image as ImageIcon, FileText } from "lucide-react";
+import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase, Reply } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +22,9 @@ import { TypingIndicator, useTypingStatus } from "@/components/messages/TypingIn
 import { MessageAttachments, AttachmentPreview } from "@/components/messages/MessageAttachments";
 import { MessageRequests } from "@/components/messages/MessageRequests";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useOnlinePresence, OnlineDot } from "@/components/messages/OnlinePresence";
+import { MessageReplyBanner, InlineReply } from "@/components/messages/MessageReply";
+import { FileText } from "lucide-react";
 
 interface Conversation {
   conversation_id: string;
@@ -49,12 +52,21 @@ interface Message {
   attachment_url?: string;
   attachment_type?: 'image' | 'file';
   attachment_name?: string;
+  reply_to_id?: string | null;
+  reply_to_content?: string | null;
+  reply_to_sender_name?: string | null;
 }
 
 interface Attachment {
   url: string;
   type: 'image' | 'file';
   fileName?: string;
+}
+
+interface ReplyTo {
+  id: string;
+  content: string;
+  senderName: string;
 }
 
 interface Connection {
@@ -72,7 +84,6 @@ const Messages = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
   
-  // Check for receiverId from navigation state first, then search params
   const navigationState = location.state as { receiverId?: string; receiverName?: string } | null;
   const [selectedConversation, setSelectedConversation] = useState<string | null>(
     navigationState?.receiverId || searchParams.get("user") || searchParams.get("userId")
@@ -92,12 +103,19 @@ const Messages = () => {
   const [showProjectDialog, setShowProjectDialog] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
+  const [currentUserName, setCurrentUserName] = useState<string>('');
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const [attachment, setAttachment] = useState<Attachment | null>(null);
+  const [replyTo, setReplyTo] = useState<ReplyTo | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Online presence
+  const onlineUsers = useOnlinePresence(currentUserId);
   
   // Typing status hook
   const { setTyping } = useTypingStatus(selectedConversation || '', currentUserId);
+
   // Sync URL params with selected conversation when they change
   useEffect(() => {
     const userIdFromUrl = navigationState?.receiverId || searchParams.get("user") || searchParams.get("userId");
@@ -119,14 +137,16 @@ const Messages = () => {
     if (user?.id) {
       setCurrentUserId(user.id);
       
-      // Fetch current user's role
       supabase
         .from('profiles')
-        .select('role')
+        .select('role, full_name')
         .eq('user_id', user.id)
         .single()
         .then(({ data }) => {
-          if (data) setCurrentUserRole(data.role);
+          if (data) {
+            setCurrentUserRole(data.role);
+            setCurrentUserName(data.full_name || 'You');
+          }
         });
     }
   }, [user]);
@@ -136,7 +156,6 @@ const Messages = () => {
     
     const loadData = async () => {
       if (currentUserId && isMounted) {
-        // Run all initial fetches in parallel
         await Promise.all([
           fetchConnections(),
           fetchConversations(),
@@ -156,8 +175,8 @@ const Messages = () => {
     if (selectedConversation && currentUserId) {
       fetchMessages(selectedConversation);
       markMessagesAsRead(selectedConversation);
+      setReplyTo(null);
       
-      // Track conversation opened
       const trackConversation = async () => {
         const { analytics } = await import("@/lib/analytics");
         analytics.featureUsed("conversation_opened", { partner_id: selectedConversation });
@@ -166,10 +185,13 @@ const Messages = () => {
     }
   }, [selectedConversation, currentUserId]);
 
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const fetchConnections = async () => {
     try {
-      // Batch all connection queries in parallel (no artificial timeout)
       const [outgoingResult, incomingResult, matchesResult] = await Promise.all([
         supabase
           .from("connections")
@@ -203,14 +225,12 @@ const Messages = () => {
 
   const fetchConversations = async () => {
     try {
-      // Fetch conversations and unread counts in parallel
       const [conversationsResult, unreadResult] = await Promise.all([
         supabase
           .from("conversation_list")
           .select("*")
           .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
           .order("created_at", { ascending: false }),
-        // Get actual unread message counts per sender
         supabase
           .from("messages")
           .select("sender_id")
@@ -225,7 +245,6 @@ const Messages = () => {
 
       setConversations(conversationsResult.data || []);
 
-      // Calculate unread counts per sender
       if (unreadResult.data) {
         const counts = new Map<string, number>();
         unreadResult.data.forEach((msg) => {
@@ -242,7 +261,6 @@ const Messages = () => {
 
   const fetchMessages = async (userId: string) => {
     try {
-      // Batch messages and profile fetch in parallel (no artificial timeout)
       const [messagesResult, profileResult] = await Promise.all([
         supabase
           .from("messages")
@@ -327,7 +345,6 @@ const Messages = () => {
       .eq("sender_id", userId)
       .eq("read", false);
     
-    // Update local unread counts immediately for responsive UI
     if (!error) {
       setUnreadCounts(prev => {
         const newCounts = new Map(prev);
@@ -344,13 +361,22 @@ const Messages = () => {
       ? (newMessage.trim() ? `${newMessage.trim()}\n[${attachment.type === 'image' ? '📷 Image' : '📎 ' + (attachment.fileName || 'File')}](${attachment.url})`
         : `[${attachment.type === 'image' ? '📷 Image' : '📎 ' + (attachment.fileName || 'File')}](${attachment.url})`)
       : newMessage.trim();
-      
-    const { error } = await supabase.from("messages").insert({
+
+    const insertData: any = {
       sender_id: currentUserId,
       receiver_id: selectedConversation,
       content: messageContent,
       read: false,
-    });
+    };
+
+    // Add reply metadata if replying
+    if (replyTo) {
+      insertData.reply_to_id = replyTo.id;
+      insertData.reply_to_content = replyTo.content.substring(0, 200);
+      insertData.reply_to_sender_name = replyTo.senderName;
+    }
+
+    const { error } = await supabase.from("messages").insert(insertData);
 
     if (error) {
       toast({
@@ -377,7 +403,6 @@ const Messages = () => {
         preview
       );
 
-      // Send email notification (fire-and-forget)
       supabase.functions.invoke('send-user-email', {
         body: {
           type: 'message',
@@ -387,12 +412,12 @@ const Messages = () => {
       }).catch(err => console.error('[Messages] Email notification failed:', err));
     }
 
-    // Track message sent
     const { analytics } = await import("@/lib/analytics");
     analytics.messageSent(selectedConversation, 'direct');
 
     setNewMessage("");
     setAttachment(null);
+    setReplyTo(null);
   };
 
   const getConversationPartner = (conv: Conversation) => {
@@ -410,13 +435,11 @@ const Messages = () => {
   };
 
   const getUnreadCount = (userId: string) => {
-    // Use the actual unread message counts from the messages table
     return unreadCounts.get(userId) || 0;
   };
 
   const isConnectionAccepted = (userId: string) => connections.has(userId);
 
-  // Only show conversations with connected users (no requests tab - messaging requires match)
   const filteredConversations = conversations.filter((conv) => {
     const partner = getConversationPartner(conv);
     const partnerName = partner.name || '';
@@ -427,23 +450,28 @@ const Messages = () => {
 
   const conversationCount = filteredConversations.length;
   
-  // Handle typing indicator
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
-    
-    // Set typing status
     setTyping(true);
     
-    // Clear previous timeout
     if (typingTimeout) {
       clearTimeout(typingTimeout);
     }
     
-    // Set new timeout to stop typing after 2 seconds of inactivity
     const timeout = setTimeout(() => {
       setTyping(false);
     }, 2000);
     setTypingTimeout(timeout);
+  };
+
+  const handleReply = (msg: Message) => {
+    const senderName = msg.sender_id === currentUserId ? currentUserName : (otherUser?.name || 'Unknown');
+    setReplyTo({
+      id: msg.id,
+      content: msg.content,
+      senderName,
+    });
+    inputRef.current?.focus();
   };
 
   return (
@@ -521,7 +549,7 @@ const Messages = () => {
               {filteredConversations.map((conv) => {
                 const partner = getConversationPartner(conv);
                 const unreadCount = getUnreadCount(partner.id);
-                
+                const isOnline = onlineUsers.has(partner.id);
                 
                 return (
                   <div
@@ -541,6 +569,7 @@ const Messages = () => {
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
+                      <OnlineDot isOnline={isOnline} />
                       {unreadCount > 0 && (
                         <div className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary flex items-center justify-center">
                           <span className="text-[10px] sm:text-xs font-bold text-primary-foreground">
@@ -552,7 +581,12 @@ const Messages = () => {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <p className="font-semibold text-sm sm:text-base truncate">{partner.name || 'Unknown'}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-semibold text-sm sm:text-base truncate">{partner.name || 'Unknown'}</p>
+                          {isOnline && (
+                            <span className="text-[10px] text-green-500 font-medium">online</span>
+                          )}
+                        </div>
                         <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0 ml-2">
                           {formatDistanceToNow(new Date(conv.created_at), {
                             addSuffix: true,
@@ -600,28 +634,34 @@ const Messages = () => {
             </Button>
             {otherUser && (
               <>
-                <Avatar
-                  className="h-9 w-9 sm:h-11 sm:w-11 cursor-pointer border-2 border-background"
-                  onClick={() => navigate(`/profile/${otherUser.id}`)}
-                >
-                  <AvatarImage src={otherUser.avatar} />
-                  <AvatarFallback className="text-sm sm:text-lg">
-                    {(otherUser.name || 'U')
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar
+                    className="h-9 w-9 sm:h-11 sm:w-11 cursor-pointer border-2 border-background"
+                    onClick={() => navigate(`/profile/${otherUser.id}`)}
+                  >
+                    <AvatarImage src={otherUser.avatar} />
+                    <AvatarFallback className="text-sm sm:text-lg">
+                      {(otherUser.name || 'U')
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <OnlineDot isOnline={onlineUsers.has(otherUser.id)} />
+                </div>
                 <div className="flex-1 cursor-pointer" onClick={() => navigate(`/profile/${otherUser.id}`)}>
                   <h3 className="font-semibold hover:underline">
                     {otherUser.name || 'Unknown'}
                   </h3>
-                  {otherUser.role && (
-                    <p className="text-sm text-muted-foreground">{otherUser.role}</p>
-                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {onlineUsers.has(otherUser.id) ? (
+                      <span className="text-green-500">Online</span>
+                    ) : (
+                      otherUser.role || ''
+                    )}
+                  </p>
                 </div>
                 
-                {/* Start Project Button - visible in header */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -702,7 +742,7 @@ const Messages = () => {
                   return (
                     <div
                       key={msg.id}
-                      className={`flex gap-2 ${isOwn ? "justify-end" : "justify-start"}`}
+                      className={`flex gap-2 group ${isOwn ? "justify-end" : "justify-start"}`}
                     >
                       {!isOwn && showAvatar && (
                         <Avatar className="h-8 w-8 flex-shrink-0">
@@ -714,11 +754,19 @@ const Messages = () => {
                       )}
                       {!isOwn && !showAvatar && <div className="w-8" />}
                       
-                      <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
+                      <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"} max-w-[75%]`}>
+                        {/* Inline reply reference */}
+                        {msg.reply_to_content && (
+                          <InlineReply
+                            content={msg.reply_to_content}
+                            senderName={msg.reply_to_sender_name || 'Unknown'}
+                            isOwn={isOwn}
+                          />
+                        )}
+                        
                         {/* Check if message contains an attachment link */}
                         {msg.content.includes('](http') ? (
                           <div className="space-y-2">
-                            {/* Extract and render attachment */}
                             {msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/) && (
                               <a 
                                 href={msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/)?.[1]} 
@@ -748,10 +796,9 @@ const Messages = () => {
                                 </span>
                               </a>
                             )}
-                            {/* Render text part if exists */}
                             {msg.content.replace(/\[📷 Image\]\([^\)]+\)/, '').replace(/\[📎 [^\]]+\]\([^\)]+\)/, '').trim() && (
                               <div
-                                className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                                className={`rounded-2xl px-4 py-2.5 ${
                                   isOwn
                                     ? "bg-primary text-primary-foreground rounded-br-sm"
                                     : "bg-muted rounded-bl-sm"
@@ -765,7 +812,7 @@ const Messages = () => {
                           </div>
                         ) : (
                           <div
-                            className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                            className={`rounded-2xl px-4 py-2.5 ${
                               isOwn
                                 ? "bg-primary text-primary-foreground rounded-br-sm"
                                 : "bg-muted rounded-bl-sm"
@@ -787,12 +834,21 @@ const Messages = () => {
                               <Check className="h-3 w-3 text-muted-foreground" />
                             )
                           )}
+                          {/* Reply button */}
+                          <button
+                            onClick={() => handleReply(msg)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 p-0.5 rounded hover:bg-muted"
+                            title="Reply"
+                          >
+                            <Reply className="h-3 w-3 text-muted-foreground" />
+                          </button>
                         </div>
                       </div>
                     </div>
                   );
                 })
               )}
+              <div ref={messagesEndRef} />
             </div>
             
             {/* Typing Indicator */}
@@ -806,6 +862,11 @@ const Messages = () => {
 
           {/* Message Input */}
           <div className="p-4 border-t border-border bg-card space-y-2">
+            {/* Reply Banner */}
+            {replyTo && (
+              <MessageReplyBanner replyTo={replyTo} onCancel={() => setReplyTo(null)} />
+            )}
+            
             {/* Attachment Preview */}
             {attachment && (
               <AttachmentPreview
@@ -829,9 +890,10 @@ const Messages = () => {
                 disabled={!!attachment}
               />
               <Input
+                ref={inputRef}
                 value={newMessage}
                 onChange={handleInputChange}
-                placeholder="Message..."
+                placeholder={replyTo ? "Reply..." : "Message..."}
                 className="flex-1 rounded-full"
               />
               <Button 

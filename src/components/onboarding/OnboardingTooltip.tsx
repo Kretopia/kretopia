@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -41,14 +41,15 @@ export const OnboardingTooltip = ({
   totalSteps,
 }: OnboardingTooltipProps) => {
   const [visible, setVisible] = useState(false);
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const dismissed = getDismissed();
     if (!dismissed.includes(id)) {
-      // Stagger tooltips so only one shows at a time
       const delay = 800 + (step ? (step - 1) * 5000 : 0);
       const timer = setTimeout(() => {
-        // Only show if no other tooltip is currently visible
         const existing = document.querySelector('[data-onboarding-tooltip="true"]');
         if (!existing) {
           setVisible(true);
@@ -58,39 +59,61 @@ export const OnboardingTooltip = ({
     }
   }, [id, step]);
 
+  // Position the tooltip so it stays on screen
+  const positionTooltip = useCallback(() => {
+    if (!wrapperRef.current || !tooltipRef.current) return;
+
+    const wrapperRect = wrapperRef.current.getBoundingClientRect();
+    const tooltipRect = tooltipRef.current.getBoundingClientRect();
+    const padding = 12;
+    const viewportWidth = window.innerWidth;
+
+    // Center horizontally relative to wrapper
+    let left = wrapperRect.left + wrapperRect.width / 2 - tooltipRect.width / 2;
+
+    // Clamp to viewport
+    if (left < padding) left = padding;
+    if (left + tooltipRect.width > viewportWidth - padding) {
+      left = viewportWidth - padding - tooltipRect.width;
+    }
+
+    const style: React.CSSProperties = {
+      position: "fixed",
+      left: `${left}px`,
+      zIndex: 9999,
+    };
+
+    if (position === "top") {
+      style.bottom = `${window.innerHeight - wrapperRect.top + 8}px`;
+    } else {
+      style.top = `${wrapperRect.bottom + 8}px`;
+    }
+
+    setTooltipStyle(style);
+  }, [position]);
+
+  useEffect(() => {
+    if (visible) {
+      // Small delay to let the tooltip render before measuring
+      requestAnimationFrame(positionTooltip);
+    }
+  }, [visible, positionTooltip]);
+
   const handleDismiss = () => {
     setVisible(false);
     dismiss(id);
   };
 
-  const positionClasses: Record<string, string> = {
-    top: "bottom-full mb-2 left-1/2 -translate-x-1/2 max-w-[calc(100vw-2rem)]",
-    bottom: "top-full mt-2 left-1/2 -translate-x-1/2 max-w-[calc(100vw-2rem)]",
-    left: "right-full mr-2 top-1/2 -translate-y-1/2 max-w-[calc(100vw-2rem)]",
-    right: "left-full ml-2 top-1/2 -translate-y-1/2 max-w-[calc(100vw-2rem)]",
-  };
-
-  const arrowClasses: Record<string, string> = {
-    top: "top-full left-1/2 -translate-x-1/2 border-t-primary border-x-transparent border-b-transparent",
-    bottom: "bottom-full left-1/2 -translate-x-1/2 border-b-primary border-x-transparent border-t-transparent",
-    left: "left-full top-1/2 -translate-y-1/2 border-l-primary border-y-transparent border-r-transparent",
-    right: "right-full top-1/2 -translate-y-1/2 border-r-primary border-y-transparent border-l-transparent",
-  };
-
   return (
-    <div className="relative inline-block">
+    <div ref={wrapperRef} className="relative inline-block">
       {children}
       {visible && (
         <div
+          ref={tooltipRef}
           data-onboarding-tooltip="true"
-          className={cn(
-            "absolute z-50 w-56 sm:w-64 rounded-lg bg-primary text-primary-foreground p-3 shadow-xl animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
-            positionClasses[position]
-          )}
+          className="w-56 sm:w-64 rounded-lg bg-primary text-primary-foreground p-3 shadow-xl animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
+          style={tooltipStyle}
         >
-          {/* Arrow */}
-          <div className={cn("absolute w-0 h-0 border-[6px]", arrowClasses[position])} />
-
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-1.5 mb-1">
               <Sparkles className="h-3.5 w-3.5" />

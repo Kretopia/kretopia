@@ -765,11 +765,7 @@ const ProfileContent = () => {
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
         profile={profile}
-        portfolioCount={portfolioItems.length}
-        editForm={editForm}
-        onFormChange={setEditForm}
-        onSave={handleEditSave}
-        onQuickFill={() => setIsImportDialogOpen(true)}
+        onProfileUpdate={() => { window.location.reload(); }}
       />
 
       <ShareProfileDialog

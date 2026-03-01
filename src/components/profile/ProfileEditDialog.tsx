@@ -1,42 +1,108 @@
-import { useState, useEffect, useMemo, memo } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect, memo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
-import { checkProfileCompletion, ProfileCompletionStatus } from "@/lib/profileCompletion";
-import { Database } from "@/integrations/supabase/types";
-import { CollabIntentSelector } from "./CollabIntentSelector";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle2, AlertCircle, Save, Sparkles, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { checkProfileCompletion } from "@/lib/profileCompletion";
+import type { Database } from "@/integrations/supabase/types";
 
-// Standardized options - must match filter options in BrowseCreators.tsx
+// Comprehensive roles covering Music, Film, Design, Fashion, Content Creation, Tech, and more
 export const ROLE_OPTIONS = [
-  { value: 'Photographer', label: 'Photographer' },
-  { value: 'Videographer', label: 'Videographer' },
+  // Music & Audio
   { value: 'Musician', label: 'Musician / Producer' },
-  { value: 'Content Creator', label: 'Content Creator' },
-  { value: 'Designer', label: 'Designer' },
-  { value: 'Writer', label: 'Writer / Copywriter' },
-  { value: 'Developer', label: 'Developer' },
-  { value: 'Marketing', label: 'Marketing / Brand' },
-  { value: 'Model', label: 'Model / Talent' },
-  { value: 'Filmmaker', label: 'Filmmaker / Director' },
-  { value: 'Animator', label: 'Animator / Motion' },
-  { value: 'Podcaster', label: 'Podcaster' },
-  { value: 'Influencer', label: 'Influencer' },
-  { value: 'Soca Artist', label: 'Soca / Calypso Artist' },
-  { value: 'Carnival Designer', label: 'Carnival / Mas Designer' },
+  { value: 'Singer', label: 'Singer / Vocalist' },
+  { value: 'Rapper', label: 'Rapper / MC' },
+  { value: 'Songwriter', label: 'Songwriter' },
+  { value: 'Music Producer', label: 'Music Producer' },
+  { value: 'Audio Engineer', label: 'Audio Engineer' },
   { value: 'DJ', label: 'DJ / Selector' },
+  { value: 'Composer', label: 'Composer / Scorer' },
+  { value: 'Session Musician', label: 'Session Musician' },
+  { value: 'Sound Designer', label: 'Sound Designer' },
+  { value: 'Podcaster', label: 'Podcaster' },
+  { value: 'Voiceover Artist', label: 'Voiceover Artist' },
+  // Caribbean-specific Music
+  { value: 'Soca Artist', label: 'Soca / Calypso Artist' },
   { value: 'Steelpan', label: 'Steelpan Player' },
+  // Film & Video
+  { value: 'Filmmaker', label: 'Filmmaker / Director' },
+  { value: 'Videographer', label: 'Videographer' },
+  { value: 'Cinematographer', label: 'Cinematographer / DP' },
+  { value: 'Video Editor', label: 'Video Editor' },
+  { value: 'Colorist', label: 'Colorist' },
+  { value: 'VFX Artist', label: 'VFX Artist' },
+  { value: 'Screenwriter', label: 'Screenwriter' },
+  { value: 'Producer', label: 'Producer (Film/TV)' },
+  { value: 'Actor', label: 'Actor / Actress' },
+  { value: 'Stunt Performer', label: 'Stunt Performer' },
+  // Photography
+  { value: 'Photographer', label: 'Photographer' },
+  // Design & Visual Arts
+  { value: 'Designer', label: 'Graphic Designer' },
+  { value: 'UI/UX Designer', label: 'UI/UX Designer' },
+  { value: 'Brand Designer', label: 'Brand / Identity Designer' },
+  { value: 'Illustrator', label: 'Illustrator' },
+  { value: '3D Artist', label: '3D Artist / Modeler' },
+  { value: 'Animator', label: 'Animator / Motion Designer' },
+  { value: 'Fine Artist', label: 'Fine Artist / Painter' },
+  { value: 'Muralist', label: 'Muralist / Street Artist' },
+  { value: 'Tattoo Artist', label: 'Tattoo Artist' },
+  // Fashion & Beauty
+  { value: 'Fashion Designer', label: 'Fashion Designer' },
+  { value: 'Stylist', label: 'Stylist' },
+  { value: 'Makeup Artist', label: 'Makeup Artist (MUA)' },
+  { value: 'Hair Stylist', label: 'Hair Stylist' },
+  { value: 'Model', label: 'Model / Talent' },
+  { value: 'Costume Designer', label: 'Costume Designer' },
+  { value: 'Jewelry Designer', label: 'Jewelry / Accessory Designer' },
+  { value: 'Carnival Designer', label: 'Carnival / Mas Designer' },
+  // Content & Digital
+  { value: 'Content Creator', label: 'Content Creator' },
+  { value: 'Influencer', label: 'Influencer' },
+  { value: 'YouTuber', label: 'YouTuber' },
+  { value: 'Streamer', label: 'Streamer / Live Creator' },
+  { value: 'Social Media Manager', label: 'Social Media Manager' },
+  { value: 'Blogger', label: 'Blogger / Vlogger' },
+  // Writing & Journalism
+  { value: 'Writer', label: 'Writer / Author' },
+  { value: 'Copywriter', label: 'Copywriter' },
+  { value: 'Journalist', label: 'Journalist / Reporter' },
+  { value: 'Editor', label: 'Editor (Written)' },
+  { value: 'Ghostwriter', label: 'Ghostwriter' },
+  // Marketing & Business
+  { value: 'Marketing', label: 'Marketing Strategist' },
+  { value: 'PR Specialist', label: 'PR / Communications' },
+  { value: 'Brand Strategist', label: 'Brand Strategist' },
+  { value: 'Creative Director', label: 'Creative Director' },
+  { value: 'Art Director', label: 'Art Director' },
+  // Events & Production
   { value: 'Event Producer', label: 'Event Producer' },
-  { value: 'Stylist', label: 'Stylist / MUA' },
+  { value: 'Stage Manager', label: 'Stage Manager' },
+  { value: 'Lighting Designer', label: 'Lighting Designer' },
+  { value: 'Set Designer', label: 'Set / Production Designer' },
+  // Dance & Performance
+  { value: 'Dancer', label: 'Dancer' },
+  { value: 'Choreographer', label: 'Choreographer' },
+  // Tech & Development
+  { value: 'Developer', label: 'Developer / Engineer' },
+  { value: 'Game Designer', label: 'Game Designer' },
+  { value: 'AR/VR Creator', label: 'AR / VR Creator' },
+  // Management & Representation
+  { value: 'Talent Manager', label: 'Talent Manager / Agent' },
+  { value: 'A&R', label: 'A&R' },
+  { value: 'Music Supervisor', label: 'Music Supervisor' },
+  // Other
   { value: 'Other', label: 'Other' },
 ];
 
 export const LOCATION_OPTIONS = [
+  // Caribbean
   { value: 'Port of Spain, Trinidad', label: '🇹🇹 Port of Spain, Trinidad' },
   { value: 'San Fernando, Trinidad', label: '🇹🇹 San Fernando, Trinidad' },
   { value: 'Chaguanas, Trinidad', label: '🇹🇹 Chaguanas, Trinidad' },
@@ -45,12 +111,47 @@ export const LOCATION_OPTIONS = [
   { value: 'Jamaica', label: '🇯🇲 Jamaica' },
   { value: 'Barbados', label: '🇧🇧 Barbados' },
   { value: 'Caribbean', label: '🌴 Caribbean' },
-  { value: 'United States', label: 'United States' },
-  { value: 'United Kingdom', label: 'United Kingdom' },
-  { value: 'Canada', label: 'Canada' },
-  { value: 'Bali, Indonesia', label: 'Bali, Indonesia' },
-  { value: 'Europe', label: 'Europe' },
-  { value: 'Remote', label: 'Remote / Worldwide' },
+  // United States
+  { value: 'Los Angeles, CA', label: '🇺🇸 Los Angeles, CA' },
+  { value: 'New York, NY', label: '🇺🇸 New York, NY' },
+  { value: 'Atlanta, GA', label: '🇺🇸 Atlanta, GA' },
+  { value: 'Miami, FL', label: '🇺🇸 Miami, FL' },
+  { value: 'Nashville, TN', label: '🇺🇸 Nashville, TN' },
+  { value: 'Chicago, IL', label: '🇺🇸 Chicago, IL' },
+  { value: 'Austin, TX', label: '🇺🇸 Austin, TX' },
+  { value: 'San Francisco, CA', label: '🇺🇸 San Francisco, CA' },
+  { value: 'United States', label: '🇺🇸 United States' },
+  // United Kingdom
+  { value: 'London, UK', label: '🇬🇧 London, UK' },
+  { value: 'Manchester, UK', label: '🇬🇧 Manchester, UK' },
+  { value: 'Birmingham, UK', label: '🇬🇧 Birmingham, UK' },
+  { value: 'United Kingdom', label: '🇬🇧 United Kingdom' },
+  // Canada
+  { value: 'Toronto, Canada', label: '🇨🇦 Toronto, Canada' },
+  { value: 'Vancouver, Canada', label: '🇨🇦 Vancouver, Canada' },
+  { value: 'Montreal, Canada', label: '🇨🇦 Montreal, Canada' },
+  { value: 'Canada', label: '🇨🇦 Canada' },
+  // Europe
+  { value: 'Berlin, Germany', label: '🇩🇪 Berlin, Germany' },
+  { value: 'Paris, France', label: '🇫🇷 Paris, France' },
+  { value: 'Amsterdam, Netherlands', label: '🇳🇱 Amsterdam, Netherlands' },
+  { value: 'Barcelona, Spain', label: '🇪🇸 Barcelona, Spain' },
+  { value: 'Stockholm, Sweden', label: '🇸🇪 Stockholm, Sweden' },
+  { value: 'Europe', label: '🇪🇺 Europe' },
+  // Asia-Pacific
+  { value: 'Bali, Indonesia', label: '🇮🇩 Bali, Indonesia' },
+  { value: 'Lagos, Nigeria', label: '🇳🇬 Lagos, Nigeria' },
+  { value: 'Mumbai, India', label: '🇮🇳 Mumbai, India' },
+  { value: 'Tokyo, Japan', label: '🇯🇵 Tokyo, Japan' },
+  { value: 'Seoul, South Korea', label: '🇰🇷 Seoul, South Korea' },
+  { value: 'Sydney, Australia', label: '🇦🇺 Sydney, Australia' },
+  // LATAM
+  { value: 'São Paulo, Brazil', label: '🇧🇷 São Paulo, Brazil' },
+  { value: 'Mexico City, Mexico', label: '🇲🇽 Mexico City, Mexico' },
+  { value: 'Medellín, Colombia', label: '🇨🇴 Medellín, Colombia' },
+  { value: 'Buenos Aires, Argentina', label: '🇦🇷 Buenos Aires, Argentina' },
+  // Global
+  { value: 'Remote', label: '🌍 Remote / Worldwide' },
   { value: 'Other', label: 'Other' },
 ];
 
@@ -97,337 +198,263 @@ FieldWrapper.displayName = 'FieldWrapper';
 interface ProfileEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  profile: Profile;
-  portfolioCount: number;
-  editForm: {
-    full_name: string;
-    role: string;
-    bio: string;
-    location: string;
-    avatar_url: string;
-    company_size: string;
-    collab_intent: string;
-  };
-  onFormChange: (updater: any | ((prev: any) => any)) => void;
-  onSave: (data?: Record<string, any>) => void;
-  onQuickFill: () => void;
+  profile: Profile | null;
+  onProfileUpdate: () => void;
 }
 
-// Inner form component that manages its own state
-const ProfileEditForm = memo(({
+export function ProfileEditDialog({ 
+  open, 
+  onOpenChange, 
   profile,
-  portfolioCount,
-  initialData,
-  avatarUrl,
-  onSave,
-  onQuickFill,
-}: {
-  profile: Profile;
-  portfolioCount: number;
-  initialData: {
-    full_name: string;
-    role: string;
-    bio: string;
-    location: string;
-    collab_intent: string;
-  };
-  avatarUrl: string;
-  onSave: (data: typeof initialData) => void;
-  onQuickFill: () => void;
-}) => {
-  const [fullName, setFullName] = useState(initialData.full_name);
-  const [role, setRole] = useState(initialData.role);
-  const [bio, setBio] = useState(initialData.bio);
-  const [location, setLocation] = useState(initialData.location);
-  const [collabIntent, setCollabIntent] = useState(initialData.collab_intent || 'seeking_collaborators');
-  const [showCustomRole, setShowCustomRole] = useState(false);
-  const [showCustomLocation, setShowCustomLocation] = useState(false);
+  onProfileUpdate 
+}: ProfileEditDialogProps) {
+  const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: "",
+    role: "",
+    location: "",
+    bio: "",
+    website: "",
+    instagram_url: "",
+    twitter_url: "",
+    linkedin_url: "",
+  });
 
-  // Initialize custom input visibility
+  const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
+  const hasShownToastRef = useRef(false);
+
   useEffect(() => {
-    setShowCustomRole(!ROLE_OPTIONS.some(opt => opt.value === initialData.role) && !!initialData.role);
-    setShowCustomLocation(!LOCATION_OPTIONS.some(opt => opt.value === initialData.location) && !!initialData.location);
+    if (profile && open) {
+      setFormData({
+        full_name: profile.full_name || "",
+        role: profile.role || "",
+        location: profile.location || "",
+        bio: profile.bio || "",
+        website: profile.website || "",
+        instagram_url: profile.instagram_url || "",
+        twitter_url: profile.twitter_url || "",
+        linkedin_url: profile.linkedin_url || "",
+      });
+
+      const completion = checkProfileCompletion(profile);
+      setIncompleteFields(completion.missingFields);
+
+      if (completion.missingFields.length > 0 && !hasShownToastRef.current) {
+        hasShownToastRef.current = true;
+        toast({
+          title: "Complete your profile",
+          description: `${completion.missingFields.length} field${completion.missingFields.length > 1 ? 's' : ''} need${completion.missingFields.length === 1 ? 's' : ''} attention`,
+          variant: "default",
+        });
+      }
+    }
+  }, [profile, open, toast]);
+
+  const handleSave = async () => {
+    if (!profile) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: formData.full_name || null,
+          role: formData.role || null,
+          location: formData.location || null,
+          bio: formData.bio || null,
+          website: formData.website || null,
+          instagram_url: formData.instagram_url || null,
+          twitter_url: formData.twitter_url || null,
+          linkedin_url: formData.linkedin_url || null,
+        })
+        .eq("id", profile.id);
+
+      if (error) throw error;
+
+      const newCompletion = checkProfileCompletion({
+        ...profile,
+        ...formData,
+      });
+
+      toast({
+        title: "Profile updated",
+        description: newCompletion.percentage === 100 
+          ? "🎉 Your profile is now complete!" 
+          : `Profile ${newCompletion.percentage}% complete`,
+      });
+
+      onProfileUpdate();
+      onOpenChange(false);
+      hasShownToastRef.current = false;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleInputChange = useCallback((field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  // Calculate completion
-  const completion = useMemo((): ProfileCompletionStatus => {
-    const tempProfile = {
-      ...profile,
-      full_name: fullName,
-      role: role,
-      bio: bio,
-      location: location,
-      avatar_url: avatarUrl,
-    };
-    return checkProfileCompletion(tempProfile, portfolioCount);
-  }, [profile, fullName, role, bio, location, avatarUrl, portfolioCount]);
-
-  const isFieldComplete = (fieldLabel: string) => completion.completedFields.includes(fieldLabel);
-  const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === role);
-  const isLocationInOptions = LOCATION_OPTIONS.some(opt => opt.value === location);
-
-  const handleSave = () => {
-    onSave({
-      full_name: fullName,
-      role,
-      bio,
-      location,
-      collab_intent: collabIntent,
-    });
-  };
+  const isFieldIncomplete = useCallback((field: string) => {
+    return incompleteFields.includes(field);
+  }, [incompleteFields]);
 
   return (
-    <>
-      {/* Completion Progress Bar */}
-      <div className="space-y-3 pb-4 border-b">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">Profile Completion</span>
-          <span className="text-2xl font-bold text-primary">{completion.percentage}%</span>
-        </div>
-        <Progress value={completion.percentage} className="h-3" />
-        <p className="text-xs text-muted-foreground">
-          {completion.missingFields.length === 0 ? (
-            <span className="text-primary font-medium">🎉 Your profile is complete!</span>
-          ) : (
-            <>Complete {completion.missingFields.length} more {completion.missingFields.length === 1 ? 'field' : 'fields'} to reach 100%</>
-          )}
-        </p>
-      </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Edit Profile
+          </DialogTitle>
+          <DialogDescription>
+            Complete your profile to unlock all features and get discovered by collaborators
+          </DialogDescription>
+        </DialogHeader>
 
-      {/* Quick Fill Button */}
-      <div className="border-b pb-4">
-        <Button type="button" variant="outline" className="w-full gap-2" onClick={onQuickFill}>
-          <Globe className="h-4 w-4" />
-          Quick Fill from Website
-        </Button>
-      </div>
+        <div className="space-y-6 py-4">
+          <FieldWrapper 
+            label="Full Name" 
+            isIncomplete={isFieldIncomplete('full_name')}
+            hint="Your name helps others recognize you"
+          >
+            <Input
+              value={formData.full_name}
+              onChange={(e) => handleInputChange('full_name', e.target.value)}
+              placeholder="Enter your full name"
+            />
+          </FieldWrapper>
 
-      {/* Form Fields */}
-      <div className="space-y-4 py-4">
-        <FieldWrapper 
-          label="Full Name" 
-          isIncomplete={!isFieldComplete("Full Name")}
-          hint="Add your full name to help others recognize you"
-        >
-          <Input
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Your full name"
-            autoComplete="off"
-          />
-        </FieldWrapper>
-
-        <FieldWrapper 
-          label="Role/Title" 
-          isIncomplete={!isFieldComplete("Role/Title")}
-          hint="Your role helps others understand what you do"
-        >
-          {showCustomRole || (!isRoleInOptions && role) ? (
-            <div className="space-y-2">
-              <Input
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="Enter your role"
-                autoComplete="off"
-              />
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                  setShowCustomRole(false);
-                  setRole('');
-                }}
-              >
-                Choose from list instead
-              </Button>
-            </div>
-          ) : (
-            <Select 
-              value={role || undefined}
-              onValueChange={(value) => {
-                if (value === 'Other') {
-                  setShowCustomRole(true);
-                  setRole('');
-                } else {
-                  setRole(value);
-                }
-              }}
+          <FieldWrapper 
+            label="Role" 
+            isIncomplete={isFieldIncomplete('role')}
+            hint="What do you do? This helps you get discovered"
+          >
+            <Select
+              value={formData.role}
+              onValueChange={(value) => handleInputChange('role', value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select your role" />
+                <SelectValue placeholder="Select your primary role" />
               </SelectTrigger>
               <SelectContent>
-                {ROLE_OPTIONS.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                {ROLE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          )}
-        </FieldWrapper>
+          </FieldWrapper>
 
-        <FieldWrapper 
-          label="Location" 
-          isIncomplete={!isFieldComplete("Location")}
-          hint="Location helps with local collaboration opportunities"
-        >
-          {showCustomLocation || (!isLocationInOptions && location) ? (
-            <div className="space-y-2">
-              <Input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Enter your location"
-                autoComplete="off"
-              />
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                  setShowCustomLocation(false);
-                  setLocation('');
-                }}
-              >
-                Choose from list instead
-              </Button>
-            </div>
-          ) : (
-            <Select 
-              value={location || undefined}
-              onValueChange={(value) => {
-                if (value === 'Other') {
-                  setShowCustomLocation(true);
-                  setLocation('');
-                } else {
-                  setLocation(value);
-                }
-              }}
+          <FieldWrapper 
+            label="Location" 
+            isIncomplete={isFieldIncomplete('location')}
+            hint="Where are you based? Helps with local opportunities"
+          >
+            <Select
+              value={formData.location}
+              onValueChange={(value) => handleInputChange('location', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select your location" />
               </SelectTrigger>
               <SelectContent>
-                {LOCATION_OPTIONS.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                {LOCATION_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          )}
-        </FieldWrapper>
+          </FieldWrapper>
 
-        <FieldWrapper 
-          label="Bio" 
-          isIncomplete={!isFieldComplete("Bio (20+ chars)")}
-        >
-          <Textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={4}
-            placeholder="Tell others about yourself, your experience, and what you're looking for... (minimum 20 characters)"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            {bio?.length || 0}/20 characters minimum
-            {!isFieldComplete("Bio (20+ chars)") && " - A detailed bio increases profile views by 60%"}
-          </p>
-        </FieldWrapper>
+          <FieldWrapper 
+            label="Bio" 
+            isIncomplete={isFieldIncomplete('bio')}
+            hint="Tell your story - what makes you unique?"
+          >
+            <Textarea
+              value={formData.bio}
+              onChange={(e) => handleInputChange('bio', e.target.value)}
+              placeholder="Tell us about yourself, your work, and what you're looking for..."
+              rows={4}
+            />
+          </FieldWrapper>
 
-        {/* Collab Intent Selector */}
-        <div className="border-t pt-4">
-          <CollabIntentSelector 
-            value={collabIntent}
-            onChange={setCollabIntent}
-          />
+          <FieldWrapper 
+            label="Website" 
+            isIncomplete={isFieldIncomplete('Website or Social Link')}
+            hint="Link to your website or portfolio"
+          >
+            <Input
+              value={formData.website}
+              onChange={(e) => handleInputChange('website', e.target.value)}
+              placeholder="https://yourportfolio.com"
+              type="url"
+            />
+          </FieldWrapper>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium">Social Media (Optional)</h3>
+            
+            <FieldWrapper label="Instagram" isIncomplete={false}>
+              <Input
+                value={formData.instagram_url}
+                onChange={(e) => handleInputChange('instagram_url', e.target.value)}
+                placeholder="https://instagram.com/username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="Twitter/X" isIncomplete={false}>
+              <Input
+                value={formData.twitter_url}
+                onChange={(e) => handleInputChange('twitter_url', e.target.value)}
+                placeholder="https://x.com/username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="LinkedIn" isIncomplete={false}>
+              <Input
+                value={formData.linkedin_url}
+                onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                placeholder="https://linkedin.com/in/username"
+              />
+            </FieldWrapper>
+          </div>
         </div>
 
-        {/* Missing Fields Reminder */}
-        {completion.missingFields.length > 0 && (
-          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-2">
-            <h4 className="text-sm font-semibold flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-primary" />
-              Still Missing
-            </h4>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              {completion.missingFields.map((field) => (
-                <li key={field} className="flex items-center gap-2">
-                  <span className="h-1 w-1 rounded-full bg-primary" />
-                  {field}
-                  {field === "Profile Picture" && " - Upload via camera icon on your avatar"}
-                  {field === "Skills (3+)" && " - Add at least 3 skills in the Skills section below"}
-                  {field === "Portfolio Items" && " - Add your work in the Portfolio section"}
-                  {field === "Website or Social Link" && " - Add links in the Social Links section"}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <Button onClick={handleSave} className="w-full" size="lg">
-          <CheckCircle2 className="mr-2 h-4 w-4" />
-          Save Changes {completion.percentage === 100 ? '🎉' : ''}
-        </Button>
-      </div>
-    </>
-  );
-});
-
-ProfileEditForm.displayName = 'ProfileEditForm';
-
-export const ProfileEditDialog = ({
-  open,
-  onOpenChange,
-  profile,
-  portfolioCount,
-  editForm,
-  onFormChange,
-  onSave,
-  onQuickFill,
-}: ProfileEditDialogProps) => {
-  const handleSave = (data: {
-    full_name: string;
-    role: string;
-    bio: string;
-    location: string;
-    collab_intent: string;
-  }) => {
-    const updated = {
-      ...editForm,
-      ...data,
-    };
-    onFormChange(updated);
-    onSave(updated);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Complete Your Profile
-          </DialogTitle>
-          <DialogDescription>
-            Fill in the missing fields to boost your visibility and unlock features
-          </DialogDescription>
-        </DialogHeader>
-
-        {open && (
-          <ProfileEditForm
-            key={`form-${open}`}
-            profile={profile}
-            portfolioCount={portfolioCount}
-            initialData={{
-              full_name: editForm.full_name,
-              role: editForm.role,
-              bio: editForm.bio,
-              location: editForm.location,
-              collab_intent: editForm.collab_intent,
-            }}
-            avatarUrl={editForm.avatar_url}
-            onSave={handleSave}
-            onQuickFill={onQuickFill}
-          />
-        )}
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSaving}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
-};
+}

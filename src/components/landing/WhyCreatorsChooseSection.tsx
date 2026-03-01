@@ -24,7 +24,7 @@ export const WhyCreatorsChooseSection = () => {
     },
     {
       icon: <MessageSquare className="h-5 w-5" />,
-      title: "ThriveDesk",
+      title: "Project Workspaces",
       text: "Chat, tasks, files & milestones in one workspace"
     },
     {

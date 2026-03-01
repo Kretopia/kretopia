@@ -40,16 +40,16 @@ export const AccountingSuiteSection = () => {
         <div className="text-center mb-12">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
             <Wallet className="h-4 w-4" />
-            <span>ThriveMoney</span>
+            <span>Creative Earnings</span>
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            Your Money,{" "}
+            Get Paid.{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Sorted
+              Stay Paid.
             </span>
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Stop juggling spreadsheets. Invoicing, expenses, P&L and AI-powered insights — all in one suite designed for creatives.
+            Invoicing, milestone payments, and escrow — built for how creatives actually work. No more chasing payments.
           </p>
         </div>
 

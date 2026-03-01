@@ -237,30 +237,30 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 h-auto p-1">
-          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+        <TabsList className="flex w-full overflow-x-auto h-auto p-1 gap-1">
+          <TabsTrigger value="users" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Users</span>
+            <span>Users</span>
           </TabsTrigger>
-          <TabsTrigger value="feedback" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+          <TabsTrigger value="feedback" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <MessageSquare className="h-4 w-4" />
-            <span className="hidden sm:inline">Feedback</span>
+            <span>Feedback</span>
           </TabsTrigger>
-          <TabsTrigger value="unclaimed" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+          <TabsTrigger value="unclaimed" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <UserPlus className="h-4 w-4" />
-            <span className="hidden sm:inline">Unclaimed</span>
+            <span>Unclaimed</span>
           </TabsTrigger>
-          <TabsTrigger value="outreach" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+          <TabsTrigger value="outreach" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Megaphone className="h-4 w-4" />
-            <span className="hidden sm:inline">Outreach</span>
+            <span>Outreach</span>
           </TabsTrigger>
-          <TabsTrigger value="verifications" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+          <TabsTrigger value="verifications" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <ShieldCheck className="h-4 w-4" />
-            <span className="hidden sm:inline">Verify</span>
+            <span>Verify</span>
           </TabsTrigger>
-          <TabsTrigger value="system" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+          <TabsTrigger value="system" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">System</span>
+            <span>System</span>
           </TabsTrigger>
         </TabsList>
 

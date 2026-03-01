@@ -17,7 +17,7 @@ const AdminBroadcast = () => {
 We've been working hard on ThriveIN and just shipped some exciting updates:
 
 ✨ AI-powered matching - Find your perfect collaborator faster
-📁 ThriveDesk workspace - Manage projects with your matches  
+📁 Project Workspaces - Manage projects with your matches  
 🎯 Improved matching experience - Better profiles, smoother swiping
 
 Your next creative collaboration is waiting. Come back and:

@@ -35,12 +35,21 @@ interface Skill {
 }
 
 const QUICK_SKILLS = [
-  "Photography", "Videography", "Music Production", "Graphic Design", "UI/UX Design",
-  "Video Editing", "Audio Engineering", "Content Creation", "Social Media", "Copywriting",
-  "Illustration", "3D Modeling", "Motion Graphics", "Animation", "Web Development",
-  "Film Production", "Sound Design", "Brand Design", "Art Direction", "Creative Direction",
-  "Dance", "Choreography", "Singing", "Rapping", "Instrument Performance", "DJing",
-  "Songwriting", "Acting", "Voice Acting", "Styling", "Makeup Artistry", "Set Design"
+  // Music & Audio
+  "Music Production", "Songwriting", "Audio Engineering", "Sound Design", "DJing",
+  "Singing", "Rapping", "Instrument Performance", "Mixing & Mastering", "Composing",
+  // Film & Video
+  "Videography", "Video Editing", "Directing", "Cinematography", "Screenwriting",
+  "VFX", "Color Grading", "Animation", "Motion Graphics", "Acting", "Voice Acting",
+  // Design & Visual Arts
+  "Photography", "Graphic Design", "Illustration", "UI/UX Design", "Brand Design",
+  "3D Modeling", "Art Direction", "Web Design", "Typography", "Set Design",
+  // Fashion & Content
+  "Styling", "Makeup Artistry", "Fashion Design", "Costume Design", "Choreography",
+  "Content Creation", "Social Media", "Copywriting", "Blogging", "Podcasting",
+  // Business & Tech
+  "Marketing", "PR & Communications", "Web Development", "Creative Direction",
+  "Event Production", "Project Management", "Film Production", "Dance",
 ];
 
 export default function Onboarding() {
@@ -502,17 +511,28 @@ export default function Onboarding() {
                 )}
               </div>
 
-              {/* Quick Skills */}
+              {/* Quick Skills - Categorized */}
               <div>
                 <Label>Skills <span className="text-xs text-muted-foreground ml-1">(select a few)</span></Label>
-                <div className="flex flex-wrap gap-1.5 mt-2 max-h-32 overflow-y-auto">
-                  {QUICK_SKILLS.map((skill) => (
-                    <Button key={skill} variant={selectedSkills.includes(skill) ? "default" : "outline"} size="sm" onClick={() => toggleSkill(skill)} className="rounded-full text-xs h-7 px-2.5">
-                      {skill}
-                      {selectedSkills.includes(skill) && <X className="ml-1 h-2.5 w-2.5" />}
-                    </Button>
-                  ))}
-                </div>
+                {[
+                  { label: '🎵 Music & Audio', skills: QUICK_SKILLS.slice(0, 10) },
+                  { label: '🎬 Film & Video', skills: QUICK_SKILLS.slice(10, 21) },
+                  { label: '🎨 Design & Visual', skills: QUICK_SKILLS.slice(21, 31) },
+                  { label: '👗 Fashion & Content', skills: QUICK_SKILLS.slice(31, 41) },
+                  { label: '💼 Business & Tech', skills: QUICK_SKILLS.slice(41) },
+                ].map(category => (
+                  <div key={category.label} className="mt-3">
+                    <p className="text-xs font-medium text-muted-foreground mb-1.5">{category.label}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {category.skills.map((skill) => (
+                        <Button key={skill} variant={selectedSkills.includes(skill) ? "default" : "outline"} size="sm" onClick={() => toggleSkill(skill)} className="rounded-full text-xs h-7 px-2.5">
+                          {skill}
+                          {selectedSkills.includes(skill) && <X className="ml-1 h-2.5 w-2.5" />}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

@@ -416,8 +416,8 @@ Examples: #vocalist, #producer, #videographer, music producer, beat maker`
         type: 'connection_accepted',
         category: 'collaboration',
         priority: 'high',
-        link: '/spark',
-        action_url: '/spark',
+        link: '/messages',
+        action_url: '/messages',
         action_text: 'View Connection',
         image_url: accepterProfile?.avatar_url,
       });

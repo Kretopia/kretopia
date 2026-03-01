@@ -566,311 +566,6 @@ export type Database = {
           },
         ]
       }
-      challenge_achievements: {
-        Row: {
-          achievement_tier: string
-          awarded_at: string
-          challenge_id: string
-          entry_id: string
-          id: string
-          user_id: string
-          xp_awarded: number
-        }
-        Insert: {
-          achievement_tier: string
-          awarded_at?: string
-          challenge_id: string
-          entry_id: string
-          id?: string
-          user_id: string
-          xp_awarded?: number
-        }
-        Update: {
-          achievement_tier?: string
-          awarded_at?: string
-          challenge_id?: string
-          entry_id?: string
-          id?: string
-          user_id?: string
-          xp_awarded?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "challenge_achievements_challenge_id_fkey"
-            columns: ["challenge_id"]
-            isOneToOne: false
-            referencedRelation: "challenges"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "challenge_achievements_entry_id_fkey"
-            columns: ["entry_id"]
-            isOneToOne: false
-            referencedRelation: "challenge_entries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      challenge_entries: {
-        Row: {
-          challenge_id: string
-          created_at: string
-          description: string | null
-          id: string
-          media_type: string
-          media_url: string
-          status: string
-          thumbnail_url: string | null
-          title: string
-          updated_at: string
-          user_id: string
-          vote_count: number | null
-        }
-        Insert: {
-          challenge_id: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          media_type: string
-          media_url: string
-          status?: string
-          thumbnail_url?: string | null
-          title: string
-          updated_at?: string
-          user_id: string
-          vote_count?: number | null
-        }
-        Update: {
-          challenge_id?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          media_type?: string
-          media_url?: string
-          status?: string
-          thumbnail_url?: string | null
-          title?: string
-          updated_at?: string
-          user_id?: string
-          vote_count?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "challenge_entries_challenge_id_fkey"
-            columns: ["challenge_id"]
-            isOneToOne: false
-            referencedRelation: "challenges"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      challenge_entry_swaps: {
-        Row: {
-          challenge_id: string
-          id: string
-          new_entry_id: string | null
-          old_entry_id: string
-          swapped_at: string
-          user_id: string
-        }
-        Insert: {
-          challenge_id: string
-          id?: string
-          new_entry_id?: string | null
-          old_entry_id: string
-          swapped_at?: string
-          user_id: string
-        }
-        Update: {
-          challenge_id?: string
-          id?: string
-          new_entry_id?: string | null
-          old_entry_id?: string
-          swapped_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "challenge_entry_swaps_challenge_id_fkey"
-            columns: ["challenge_id"]
-            isOneToOne: false
-            referencedRelation: "challenges"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "challenge_entry_swaps_new_entry_id_fkey"
-            columns: ["new_entry_id"]
-            isOneToOne: false
-            referencedRelation: "challenge_entries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "challenge_entry_swaps_old_entry_id_fkey"
-            columns: ["old_entry_id"]
-            isOneToOne: false
-            referencedRelation: "challenge_entries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      challenge_leaderboard: {
-        Row: {
-          all_star_finishes: number
-          arena_rank: string
-          current_streak: number
-          gurus_pick_count: number
-          id: string
-          top_10_finishes: number
-          total_challenge_xp: number
-          total_entries: number
-          total_votes_received: number
-          total_wins: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          all_star_finishes?: number
-          arena_rank?: string
-          current_streak?: number
-          gurus_pick_count?: number
-          id?: string
-          top_10_finishes?: number
-          total_challenge_xp?: number
-          total_entries?: number
-          total_votes_received?: number
-          total_wins?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          all_star_finishes?: number
-          arena_rank?: string
-          current_streak?: number
-          gurus_pick_count?: number
-          id?: string
-          top_10_finishes?: number
-          total_challenge_xp?: number
-          total_entries?: number
-          total_votes_received?: number
-          total_wins?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      challenge_votes: {
-        Row: {
-          created_at: string
-          entry_id: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          entry_id: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          entry_id?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "challenge_votes_entry_id_fkey"
-            columns: ["entry_id"]
-            isOneToOne: false
-            referencedRelation: "challenge_entries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      challenges: {
-        Row: {
-          allow_swap: boolean
-          brand_logo_url: string | null
-          brand_name: string | null
-          budget: string | null
-          cadence: string
-          category: string
-          created_at: string
-          created_by: string
-          deadline: string
-          description: string
-          id: string
-          is_flash: boolean
-          max_entries: number | null
-          max_swaps: number
-          prize_amount: number | null
-          prize_description: string | null
-          requirements: string | null
-          status: string
-          tags: string[] | null
-          thumbnail_url: string | null
-          title: string
-          type: string
-          updated_at: string
-          voting_ends_at: string | null
-          xp_reward: number
-        }
-        Insert: {
-          allow_swap?: boolean
-          brand_logo_url?: string | null
-          brand_name?: string | null
-          budget?: string | null
-          cadence?: string
-          category: string
-          created_at?: string
-          created_by: string
-          deadline: string
-          description: string
-          id?: string
-          is_flash?: boolean
-          max_entries?: number | null
-          max_swaps?: number
-          prize_amount?: number | null
-          prize_description?: string | null
-          requirements?: string | null
-          status?: string
-          tags?: string[] | null
-          thumbnail_url?: string | null
-          title: string
-          type: string
-          updated_at?: string
-          voting_ends_at?: string | null
-          xp_reward?: number
-        }
-        Update: {
-          allow_swap?: boolean
-          brand_logo_url?: string | null
-          brand_name?: string | null
-          budget?: string | null
-          cadence?: string
-          category?: string
-          created_at?: string
-          created_by?: string
-          deadline?: string
-          description?: string
-          id?: string
-          is_flash?: boolean
-          max_entries?: number | null
-          max_swaps?: number
-          prize_amount?: number | null
-          prize_description?: string | null
-          requirements?: string | null
-          status?: string
-          tags?: string[] | null
-          thumbnail_url?: string | null
-          title?: string
-          type?: string
-          updated_at?: string
-          voting_ends_at?: string | null
-          xp_reward?: number
-        }
-        Relationships: []
-      }
       communities: {
         Row: {
           category: string | null
@@ -2023,13 +1718,6 @@ export type Database = {
             referencedRelation: "portfolio_items"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "feed_posts_prompt_id_fkey"
-            columns: ["prompt_id"]
-            isOneToOne: false
-            referencedRelation: "spark_prompts"
-            referencedColumns: ["id"]
-          },
         ]
       }
       feed_reactions: {
@@ -2671,6 +2359,9 @@ export type Database = {
           match_id: string | null
           read: boolean | null
           receiver_id: string
+          reply_to_content: string | null
+          reply_to_id: string | null
+          reply_to_sender_name: string | null
           sender_id: string
           typing_at: string | null
           updated_at: string | null
@@ -2683,6 +2374,9 @@ export type Database = {
           match_id?: string | null
           read?: boolean | null
           receiver_id: string
+          reply_to_content?: string | null
+          reply_to_id?: string | null
+          reply_to_sender_name?: string | null
           sender_id: string
           typing_at?: string | null
           updated_at?: string | null
@@ -2695,6 +2389,9 @@ export type Database = {
           match_id?: string | null
           read?: boolean | null
           receiver_id?: string
+          reply_to_content?: string | null
+          reply_to_id?: string | null
+          reply_to_sender_name?: string | null
           sender_id?: string
           typing_at?: string | null
           updated_at?: string | null
@@ -2705,6 +2402,20 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_list"
+            referencedColumns: ["message_id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
@@ -5607,299 +5318,6 @@ export type Database = {
           },
         ]
       }
-      spark_likes: {
-        Row: {
-          created_at: string
-          id: string
-          response_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          response_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          response_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "spark_likes_response_id_fkey"
-            columns: ["response_id"]
-            isOneToOne: false
-            referencedRelation: "spark_responses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      spark_prompts: {
-        Row: {
-          active_date: string
-          category: string
-          created_at: string
-          description: string | null
-          expires_at: string | null
-          id: string
-          is_active: boolean
-          prompt_type: string
-          response_count: number
-          tags: string[] | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          active_date?: string
-          category?: string
-          created_at?: string
-          description?: string | null
-          expires_at?: string | null
-          id?: string
-          is_active?: boolean
-          prompt_type?: string
-          response_count?: number
-          tags?: string[] | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          active_date?: string
-          category?: string
-          created_at?: string
-          description?: string | null
-          expires_at?: string | null
-          id?: string
-          is_active?: boolean
-          prompt_type?: string
-          response_count?: number
-          tags?: string[] | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      spark_responses: {
-        Row: {
-          content: string | null
-          created_at: string
-          id: string
-          like_count: number
-          link_title: string | null
-          link_url: string | null
-          media_url: string | null
-          prompt_id: string
-          response_type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          content?: string | null
-          created_at?: string
-          id?: string
-          like_count?: number
-          link_title?: string | null
-          link_url?: string | null
-          media_url?: string | null
-          prompt_id: string
-          response_type?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          content?: string | null
-          created_at?: string
-          id?: string
-          like_count?: number
-          link_title?: string | null
-          link_url?: string | null
-          media_url?: string | null
-          prompt_id?: string
-          response_type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "spark_responses_prompt_id_fkey"
-            columns: ["prompt_id"]
-            isOneToOne: false
-            referencedRelation: "spark_prompts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      spark_room_members: {
-        Row: {
-          id: string
-          is_muted: boolean
-          joined_at: string
-          role: string
-          room_id: string
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          is_muted?: boolean
-          joined_at?: string
-          role?: string
-          room_id: string
-          user_id: string
-        }
-        Update: {
-          id?: string
-          is_muted?: boolean
-          joined_at?: string
-          role?: string
-          room_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "spark_room_members_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "spark_rooms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      spark_room_messages: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          media_url: string | null
-          pinned_at: string | null
-          pinned_by: string | null
-          reply_to_id: string | null
-          room_id: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          media_url?: string | null
-          pinned_at?: string | null
-          pinned_by?: string | null
-          reply_to_id?: string | null
-          room_id: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          media_url?: string | null
-          pinned_at?: string | null
-          pinned_by?: string | null
-          reply_to_id?: string | null
-          room_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "spark_room_messages_reply_to_id_fkey"
-            columns: ["reply_to_id"]
-            isOneToOne: false
-            referencedRelation: "spark_room_messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "spark_room_messages_room_id_fkey"
-            columns: ["room_id"]
-            isOneToOne: false
-            referencedRelation: "spark_rooms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      spark_room_reactions: {
-        Row: {
-          created_at: string
-          emoji: string
-          id: string
-          message_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          emoji?: string
-          id?: string
-          message_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          emoji?: string
-          id?: string
-          message_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "spark_room_reactions_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "spark_room_messages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      spark_rooms: {
-        Row: {
-          category: string
-          cover_image_url: string | null
-          created_at: string
-          created_by: string
-          description: string | null
-          id: string
-          is_active: boolean
-          is_trending: boolean | null
-          last_message_at: string | null
-          member_count: number
-          message_count: number
-          rules: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          category?: string
-          cover_image_url?: string | null
-          created_at?: string
-          created_by: string
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          is_trending?: boolean | null
-          last_message_at?: string | null
-          member_count?: number
-          message_count?: number
-          rules?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          category?: string
-          cover_image_url?: string | null
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          is_trending?: boolean | null
-          last_message_at?: string | null
-          member_count?: number
-          message_count?: number
-          rules?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       support_messages: {
         Row: {
           content: string
@@ -7602,15 +7020,6 @@ export type Database = {
       }
     }
     Functions: {
-      calculate_arena_rank: {
-        Args: {
-          p_all_star_finishes: number
-          p_top_10_finishes: number
-          p_total_entries: number
-          p_total_wins: number
-        }
-        Returns: string
-      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number

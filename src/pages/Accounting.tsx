@@ -12,7 +12,7 @@ const Accounting = () => {
     <div className="container mx-auto px-4 py-6 max-w-6xl pb-24 md:pb-6">
       <FreeTierGate 
         feature="expenses"
-        featureLabel="Earnings" 
+        featureLabel="Creative Earnings" 
         description="Upgrade to Pro for unlimited expense tracking, invoicing, and earnings insights."
       >
         <AccountingDashboard />

@@ -202,9 +202,16 @@ export default function Circle() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              <h1 className="text-xl sm:text-2xl font-bold">My Circle</h1>
+            <div>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                <h1 className="text-xl sm:text-2xl font-bold">My Circle</h1>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {activeTab === 'foryou' ? 'Swipe to discover & connect' : 
+                 activeTab === 'nearby' ? 'Find creators in your area' : 
+                 `${connections.length} connection${connections.length !== 1 ? 's' : ''} in your network`}
+              </p>
             </div>
             
             {/* Filters button - only show on Connect tab */}
@@ -227,7 +234,6 @@ export default function Circle() {
           missingFields={profileVisibility.missingFields} 
         />
 
-
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
@@ -242,6 +248,11 @@ export default function Circle() {
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Network
+              {connections.length > 0 && (
+                <span className="ml-1 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
+                  {connections.length}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -256,11 +267,18 @@ export default function Circle() {
 
           {/* Nearby Tab */}
           <TabsContent value="nearby" className="space-y-4">
-            <div className="text-center py-8">
-              <MapPin className="h-10 w-10 text-primary mx-auto mb-3" />
+            <div className="text-center py-10">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <MapPin className="h-8 w-8 text-primary" />
+              </div>
               <h3 className="font-semibold text-lg mb-2">Discover Nearby Creators</h3>
-              <p className="text-sm text-muted-foreground mb-4">Find creators and sessions near you</p>
-              <Button onClick={() => navigate('/nearby')} className="gap-2">
+              <p className="text-sm text-muted-foreground mb-1">
+                Find creators, sessions & events in your area
+              </p>
+              <p className="text-xs text-muted-foreground mb-6">
+                Your location is protected — others only see an approximate area
+              </p>
+              <Button onClick={() => navigate('/nearby')} size="lg" className="gap-2">
                 <MapPin className="h-4 w-4" />
                 Open Map View
               </Button>

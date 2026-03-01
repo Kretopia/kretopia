@@ -5,10 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { 
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock, 
-  DollarSign, Plus, ChevronRight, Sparkles, User, ShieldCheck, AlertTriangle
+  DollarSign, Plus, ChevronRight, Sparkles, User, ShieldCheck, AlertTriangle,
+  Search, Zap, Target, GraduationCap, X
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
@@ -38,17 +41,35 @@ interface CreatorProfile {
 
 const TYPE_FILTERS = [
   { value: "all", label: "All", icon: Sparkles },
-  { value: "job", label: "Jobs", icon: Briefcase },
-  { value: "collab", label: "Collabs", icon: Handshake },
-  { value: "barter", label: "Barter", icon: ArrowRightLeft },
+  { value: "job", label: "💼 Jobs", icon: Briefcase },
+  { value: "collab", label: "🤝 Collabs", icon: Handshake },
+  { value: "gig", label: "⚡ Gigs", icon: Zap },
+  { value: "project", label: "🎯 Projects", icon: Target },
+  { value: "internship", label: "🎓 Internships", icon: GraduationCap },
+  { value: "barter", label: "🔄 Barter", icon: ArrowRightLeft },
 ] as const;
+
+const SKILLS_OPTIONS = [
+  'Photography', 'Videography', 'Music Production', 'Writing',
+  'Design', 'Animation', 'Social Media', 'Marketing',
+  'Film Directing', 'Cinematography', 'Audio Engineering', 'Singing',
+  'DJing', 'Fashion Design', 'Makeup Artistry', 'Styling',
+  'Acting', 'Dance', 'Illustration', 'Content Creation',
+  'Beat Making', 'Mixing & Mastering', 'Sound Design', 'Voice Over',
+  'Video Editing', 'Motion Graphics', 'VFX', 'Color Grading',
+  'Graphic Design', 'UI/UX Design', 'Brand Identity', '3D Modeling',
+  'Web Development', 'App Development', 'Copywriting', 'SEO',
+  'Podcast Production', 'Live Streaming', 'Event Production',
+];
 
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: typeof Briefcase }> = {
   job: { label: "Paid Job", color: "bg-green-500/10 text-green-600 border-green-500/20", icon: Briefcase },
   collab: { label: "Collaboration", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Handshake },
   collaboration: { label: "Collaboration", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Handshake },
+  gig: { label: "Gig / One-Off", color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20", icon: Zap },
+  project: { label: "Project-Based", color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20", icon: Target },
+  internship: { label: "Internship", color: "bg-orange-500/10 text-orange-600 border-orange-500/20", icon: GraduationCap },
   barter: { label: "Barter/Trade", color: "bg-purple-500/10 text-purple-600 border-purple-500/20", icon: ArrowRightLeft },
-  internship: { label: "Internship", color: "bg-orange-500/10 text-orange-600 border-orange-500/20", icon: Briefcase },
 };
 
 export const OpportunitiesFeed = () => {
@@ -58,6 +79,8 @@ export const OpportunitiesFeed = () => {
   const [creators, setCreators] = useState<Record<string, CreatorProfile>>({});
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("all");
   const [postDialogOpen, setPostDialogOpen] = useState(false);
 
   const fetchOpportunities = useCallback(async () => {
@@ -71,12 +94,19 @@ export const OpportunitiesFeed = () => {
         .limit(30);
 
       if (activeFilter !== "all") {
-        // Handle both "collab" and "collaboration" type values
         if (activeFilter === "collab") {
           query = query.in("type", ["collab", "collaboration"]);
         } else {
           query = query.eq("type", activeFilter);
         }
+      }
+
+      if (searchQuery.trim()) {
+        query = query.ilike("title", `%${searchQuery.trim()}%`);
+      }
+
+      if (selectedSkill !== "all") {
+        query = query.contains("skills", [selectedSkill]);
       }
 
       const { data, error } = await query;
@@ -104,7 +134,7 @@ export const OpportunitiesFeed = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter]);
+  }, [activeFilter, searchQuery, selectedSkill]);
 
   useEffect(() => {
     fetchOpportunities();
@@ -120,7 +150,7 @@ export const OpportunitiesFeed = () => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-semibold text-lg">Opportunities</h3>
-          <p className="text-sm text-muted-foreground">Jobs, collabs & barter from the community</p>
+          <p className="text-sm text-muted-foreground">Jobs, collabs, gigs & more from the community</p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
@@ -144,10 +174,61 @@ export const OpportunitiesFeed = () => {
         </div>
       </div>
 
+      {/* Search & Skills Filter */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search opportunities..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-8"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+              onClick={() => setSearchQuery("")}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+        <Select value={selectedSkill} onValueChange={setSelectedSkill}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Skill" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Skills</SelectItem>
+            {SKILLS_OPTIONS.map(skill => (
+              <SelectItem key={skill} value={skill}>{skill}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Active filter badges */}
+      {(searchQuery || selectedSkill !== "all") && (
+        <div className="flex gap-2 flex-wrap">
+          {searchQuery && (
+            <Badge variant="secondary" className="gap-1">
+              Search: {searchQuery}
+              <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchQuery("")} />
+            </Badge>
+          )}
+          {selectedSkill !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              Skill: {selectedSkill}
+              <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedSkill("all")} />
+            </Badge>
+          )}
+        </div>
+      )}
+
       {/* Type Filters */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         {TYPE_FILTERS.map(filter => {
-          const Icon = filter.icon;
           const isActive = activeFilter === filter.value;
           return (
             <button
@@ -159,7 +240,6 @@ export const OpportunitiesFeed = () => {
                   : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
               }`}
             >
-              <Icon className="h-3.5 w-3.5" />
               {filter.label}
             </button>
           );

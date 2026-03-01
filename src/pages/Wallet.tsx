@@ -96,7 +96,7 @@ export default function Wallet() {
   return (
     <>
       <SEO
-        title="Wallet - ThriveIN"
+        title="Wallet"
         description="Manage your credits and balance on ThriveIN"
       />
       <div className="min-h-screen p-4 sm:p-6">
@@ -115,7 +115,7 @@ export default function Wallet() {
                 className="hidden sm:flex"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                ThrivePay
+                Payments
               </Button>
             </div>
             <Dialog open={topUpDialogOpen} onOpenChange={setTopUpDialogOpen}>
@@ -129,7 +129,7 @@ export default function Wallet() {
                 <DialogHeader>
                   <DialogTitle>Add Funds to Wallet</DialogTitle>
                   <DialogDescription>
-                    Top up your ThrivePay wallet with credits or balance
+                    Top up your wallet with credits or balance
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -264,15 +264,15 @@ export default function Wallet() {
             </div>
           </div>
 
-          {/* ThrivePay CTA */}
+          {/* Payment Account CTA */}
           <Card className="bg-muted/50 border-primary/20">
             <CardContent className="p-6 text-center">
               <p className="text-sm text-muted-foreground mb-3">
-                Connect your payment account in ThrivePay to start receiving payments
+                Connect your payment account to start receiving payments for your work
               </p>
               <Button variant="outline" onClick={() => navigate('/thrivepay')}>
                 <ExternalLink className="h-4 w-4 mr-2" />
-                Open ThrivePay
+                Setup Payments
               </Button>
             </CardContent>
           </Card>

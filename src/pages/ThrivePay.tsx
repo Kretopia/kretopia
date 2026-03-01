@@ -91,7 +91,7 @@ export default function ThrivePay() {
     }
   }, [user, searchParams]);
 
-  // --- ThrivePay / Connect logic ---
+  // --- Payment account / Connect logic ---
   const fetchAccountStatus = async () => {
     try {
       setLoading(true);

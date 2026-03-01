@@ -47,7 +47,7 @@ serve(async (req) => {
             currency: 'usd',
             product_data: {
               name: type === 'credits' ? `${amount} Credits` : `$${amount} Balance`,
-              description: type === 'credits' ? 'ThrivePay Credits Top-up' : 'ThrivePay Balance Top-up',
+              description: type === 'credits' ? 'ThriveIN Credits Top-up' : 'ThriveIN Balance Top-up',
             },
             unit_amount: type === 'credits' ? amount * 10 : amount * 100, // $0.10 per credit or actual dollar amount
           },

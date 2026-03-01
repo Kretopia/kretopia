@@ -339,9 +339,12 @@ export const PostOpportunityDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="job">Paid Job</SelectItem>
-                <SelectItem value="collab">Collaboration</SelectItem>
-                <SelectItem value="barter">Barter/Trade</SelectItem>
+                <SelectItem value="job">💼 Paid Job</SelectItem>
+                <SelectItem value="collab">🤝 Collaboration</SelectItem>
+                <SelectItem value="gig">⚡ Gig / One-Off</SelectItem>
+                <SelectItem value="project">🎯 Project-Based</SelectItem>
+                <SelectItem value="internship">🎓 Internship / Apprenticeship</SelectItem>
+                <SelectItem value="barter">🔄 Barter / Trade</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -130,10 +130,12 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
     const totalInvoiced = filteredInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
     const paidInvoices = filteredInvoices.filter(i => i.status === "paid");
     const totalCollected = paidInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
-    const overdueInvoices = filteredInvoices.filter(i => i.status === "overdue" || (i.status !== "paid" && i.due_date && new Date(i.due_date) < new Date()));
+    // Outstanding: ALL unpaid invoices regardless of period filter
+    const allUnpaidInvoices = invoices.filter(i => i.status !== "paid" && i.status !== "cancelled");
+    const overdueInvoices = allUnpaidInvoices.filter(i => i.status === "overdue" || (i.due_date && new Date(i.due_date) < new Date()));
     const overdueAmount = overdueInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
-    const pendingInvoices = filteredInvoices.filter(i => ["draft", "sent", "viewed"].includes(i.status));
-    const pendingAmount = pendingInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
+    const pendingInvoices = allUnpaidInvoices.filter(i => !overdueInvoices.includes(i));
+    const pendingAmount = allUnpaidInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
     const received = filteredPayments.filter(p => p.type === "payment_received" && p.status === "completed").reduce((s, p) => s + convert(Number(p.amount), p.currency || "USD"), 0);
     const sent = filteredPayments.filter(p => p.type === "payment_sent" && p.status === "completed").reduce((s, p) => s + convert(Number(p.amount), p.currency || "USD"), 0);
     const totalExpenses = filteredExpenses.reduce((s, e) => s + convert(Number(e.amount), e.currency || "USD"), 0);

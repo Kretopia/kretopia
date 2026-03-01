@@ -16,7 +16,6 @@ import ProductFileUpload from "./ProductFileUpload";
 
 const LISTING_TYPES = [
   { value: "digital", label: "Digital Product", icon: Download, description: "Beats, presets, templates, courses" },
-  { value: "physical", label: "Physical Item", icon: Package, description: "Gear, merch, art, vinyl" },
   { value: "service", label: "Service", icon: Wrench, description: "Lessons, mixing, coaching" },
 ];
 

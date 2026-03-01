@@ -56,12 +56,12 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "projects",
     title: "Collaborate on Projects",
-    description: "ThriveDesk helps you manage projects, tasks, and payments with your collaborators.",
+    description: "Manage projects, milestones, and deliverables with your collaborators.",
     icon: <Briefcase className="h-6 w-6" />,
     route: "/desk",
     targetSelector: "[data-tour='projects-tab']",
     position: "top",
-    action: "View Desk",
+    action: "View Projects",
     tip: "Start a project after matching to keep everything organized.",
   },
   {

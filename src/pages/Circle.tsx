@@ -13,7 +13,7 @@ import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/compon
 import { Users, Sparkles, UserPlus, MapPin } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
-import { FeatureDiscoveryCards } from "@/components/circle/FeatureDiscoveryCards";
+
 
 export default function Circle() {
   const { user, subscriptionInfo } = useAuth();
@@ -227,8 +227,6 @@ export default function Circle() {
           missingFields={profileVisibility.missingFields} 
         />
 
-        {/* Feature Discovery Cards */}
-        <FeatureDiscoveryCards />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">

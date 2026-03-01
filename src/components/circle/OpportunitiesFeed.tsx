@@ -8,10 +8,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { 
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock, 
-  DollarSign, Plus, ChevronRight, Sparkles, User
+  DollarSign, Plus, ChevronRight, Sparkles, User, ShieldCheck, AlertTriangle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
 
 interface Opportunity {
   id: string;
@@ -217,17 +217,24 @@ export const OpportunitiesFeed = () => {
                 )}
 
                 <div className="flex-1 min-w-0">
-                  {/* Type Badge */}
-                  <div className="flex items-center gap-2 mb-1">
+                  {/* Type Badge + Trust Badges */}
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <Badge variant="outline" className={`text-xs ${config.color}`}>
                       <TypeIcon className="h-3 w-3 mr-1" />
                       {config.label}
                     </Badge>
                     {opp.compensation && (
-                      <span className="text-xs text-green-600 font-medium flex items-center gap-0.5">
+                      <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
+                        <ShieldCheck className="h-3 w-3 mr-1" />
                         <DollarSign className="h-3 w-3" />
                         {opp.compensation}
-                      </span>
+                      </Badge>
+                    )}
+                    {opp.created_at && differenceInDays(new Date(), parseISO(opp.created_at)) >= 14 && (
+                      <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Closing Soon
+                      </Badge>
                     )}
                   </div>
 

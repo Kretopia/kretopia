@@ -12,8 +12,8 @@ const Accounting = () => {
     <div className="container mx-auto px-4 py-6 max-w-6xl pb-24 md:pb-6">
       <FreeTierGate 
         feature="expenses"
-        featureLabel="ThriveMoney" 
-        description="Upgrade to Pro for unlimited expense tracking, invoicing, P&L analytics, and AI-powered insights."
+        featureLabel="Earnings" 
+        description="Upgrade to Pro for unlimited expense tracking, invoicing, and earnings insights."
       >
         <AccountingDashboard />
       </FreeTierGate>

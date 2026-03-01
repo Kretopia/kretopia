@@ -34,15 +34,15 @@ const BottomNav = memo(() => {
   const navItems = isCompany
     ? [
         { path: "/opportunities", icon: Briefcase, label: "Jobs", tourId: "opportunities-tab", tooltip: { id: "nav-jobs", title: "Post & Find Jobs", desc: "Browse creative opportunities or post your own gigs" } },
-        { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Workspace", desc: "Manage projects, tasks, and collaborate with your team" } },
-        { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
+        { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, tasks, and collaborate with your team" } },
+        { path: "/thrivemoney", icon: DollarSign, label: "Earnings", tourId: "thrivemoney-tab", tooltip: { id: "nav-earnings", title: "Your Earnings", desc: "Track income, invoices, and payments in one place" } },
         { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
       ]
     : [
-        { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Your Circle", desc: "See your connections, matched creators, and start collaborating" } },
-        { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab", tooltip: { id: "nav-opps", title: "Opportunities", desc: "Browse gigs, jobs, and creative opportunities posted by creators & companies" } },
-        { path: "/desk", icon: FolderKanban, label: "Desk", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "ThriveDesk", desc: "Your creative workspace — manage projects, tasks, files, and more" } },
-        { path: "/thrivemoney", icon: DollarSign, label: "Money", tourId: "thrivemoney-tab" },
+        { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Your Circle", desc: "Find creators to collaborate with" } },
+        { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab", tooltip: { id: "nav-opps", title: "Opportunities", desc: "Browse gigs, jobs, and creative opportunities" } },
+        { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, milestones, and deliverables" } },
+        { path: "/thrivemoney", icon: DollarSign, label: "Earnings", tourId: "thrivemoney-tab", tooltip: { id: "nav-earnings", title: "Your Earnings", desc: "Track income, invoices, and payments in one place" } },
         { path: "/profile", icon: User, label: "Profile", tourId: "profile-tab" },
       ] as const;
 

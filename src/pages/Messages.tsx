@@ -480,12 +480,12 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 sm:pb-0">
+    <div className="flex h-[calc(100dvh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 lg:pb-0">
       {/* Conversations List */}
       <div
         className={`${
           selectedConversation ? "hidden md:flex" : "flex"
-        } w-full md:w-96 flex-col border-r border-border bg-card`}
+        } w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card`}
       >
         <div className="p-3 sm:p-4 border-b border-border space-y-2.5 sm:space-y-4">
           <div className="flex items-center justify-between">
@@ -628,7 +628,7 @@ const Messages = () => {
 
       {/* Chat Area */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col bg-background pb-20 sm:pb-0">
+        <div className="flex-1 flex flex-col bg-background pb-20 lg:pb-0">
           {/* Chat Header */}
           <div className="p-3 sm:p-4 border-b border-border flex items-center gap-2.5 sm:gap-3 bg-card">
             <Button

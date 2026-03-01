@@ -183,6 +183,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
+                    {/* My Profile */}
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation(`/profile/${user?.id}`)}
+                    >
+                      <User className="h-5 w-5" />
+                      My Profile
+                    </Button>
+
                     {/* My Dashboard */}
                     <Button 
                       variant="ghost" 

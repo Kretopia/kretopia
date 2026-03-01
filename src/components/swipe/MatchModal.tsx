@@ -161,7 +161,7 @@ export function MatchModal({
               onClick={handleStartProject}
             >
               <FolderPlus className="h-5 w-5" />
-              Start a Project on ThriveDesk
+              Start a Project Workspace
             </Button>
             
             <Button

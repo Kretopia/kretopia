@@ -56,10 +56,21 @@ const FOLLOWER_OPTIONS = [
 ];
 
 const SKILL_OPTIONS = [
-  'Photography', 'Videography', 'Music Production', 'Graphic Design',
-  'Web Design', 'UI/UX', 'Animation', 'Writing', 'Editing',
-  'Social Media', 'Marketing', 'Branding', 'Illustration',
-  '3D Modeling', 'Sound Design', 'Voice Over', 'Acting', 'Directing',
+  // Music & Audio
+  'Music Production', 'Songwriting', 'Audio Engineering', 'Sound Design', 'DJing',
+  'Singing', 'Rapping', 'Instrument Performance', 'Mixing & Mastering', 'Composing',
+  // Film & Video
+  'Videography', 'Video Editing', 'Directing', 'Cinematography', 'Screenwriting',
+  'VFX', 'Color Grading', 'Animation', 'Motion Graphics', 'Acting', 'Voice Over',
+  // Design & Visual Arts
+  'Graphic Design', 'Illustration', 'Photography', 'UI/UX', 'Branding',
+  '3D Modeling', 'Web Design', 'Art Direction', 'Set Design', 'Typography',
+  // Fashion & Content
+  'Styling', 'Makeup Artistry', 'Fashion Design', 'Costume Design',
+  'Content Creation', 'Social Media', 'Copywriting', 'Blogging',
+  // Business & Tech
+  'Marketing', 'PR & Communications', 'Web Development', 'App Development',
+  'Event Production', 'Project Management', 'Creative Direction',
 ];
 
 const AVAILABILITY_OPTIONS = [

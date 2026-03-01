@@ -285,7 +285,7 @@ Return ONLY valid JSON array:
     ));
 
     if (newStatus === 'accepted') {
-      // Create a ThriveDesk project for the accepted applicant
+      // Create a project workspace for the accepted applicant
       const applicant = applicants.find(a => a.id === applicationId);
       const opp = opportunities.find(o => o.id === selectedOppId);
       
@@ -341,7 +341,7 @@ Return ONLY valid JSON array:
             }
           });
 
-          toast.success(`Application accepted! ThriveDesk project "${opp.title}" created.`, {
+          toast.success(`Application accepted! Project workspace "${opp.title}" created.`, {
             action: {
               label: 'Open Project',
               onClick: () => navigate(`/desk/${project.id}`),

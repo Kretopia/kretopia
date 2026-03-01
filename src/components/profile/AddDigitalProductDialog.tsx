@@ -412,7 +412,7 @@ export const AddDigitalProductDialog = ({ open, onOpenChange, onSuccess }: AddDi
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Important:</strong> Make sure you have ThrivePay connected to receive payments. 
+              <strong>Important:</strong> Make sure you have your payment account connected to receive payments. 
               Platform fee: 15% (Free tier) or 7% (Creator Pro).
             </AlertDescription>
           </Alert>

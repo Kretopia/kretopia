@@ -270,7 +270,7 @@ export const CompanyProfileView = ({
                   <Edit className="h-4 w-4" /> Edit Profile
                 </Button>
                  <Button variant="outline" size="sm" onClick={() => navigate('/thrivepay')} className="gap-1.5 h-9 text-sm">
-                   <CreditCard className="h-4 w-4" /> ThrivePay
+                   <CreditCard className="h-4 w-4" /> Payments
                  </Button>
                  <Button variant="ghost" size="sm" className="p-2 h-9 w-9" onClick={onShare}>
                    <Share2 className="h-4 w-4" />

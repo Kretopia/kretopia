@@ -63,7 +63,13 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
     'Design', 'Animation', 'Social Media', 'Marketing',
     'Film Directing', 'Cinematography', 'Audio Engineering', 'Singing',
     'DJing', 'Fashion Design', 'Makeup Artistry', 'Styling',
-    'Acting', 'Dance', 'Illustration', 'Content Creation'
+    'Acting', 'Dance', 'Illustration', 'Content Creation',
+    'Beat Making', 'Mixing & Mastering', 'Sound Design', 'Voice Over',
+    'Video Editing', 'Motion Graphics', 'VFX', 'Color Grading',
+    'Graphic Design', 'UI/UX Design', 'Brand Identity', '3D Modeling',
+    'Web Development', 'App Development', 'Copywriting', 'SEO',
+    'Podcast Production', 'Live Streaming', 'Event Production',
+    'Wardrobe Styling', 'Hair Styling', 'Nail Art', 'Set Design'
   ];
 
   const handleSkillToggle = (skill: string) => {
@@ -116,10 +122,12 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="collaboration">Collaboration</SelectItem>
-              <SelectItem value="job">Job</SelectItem>
-              <SelectItem value="gig">Gig</SelectItem>
-              <SelectItem value="project">Project</SelectItem>
+              <SelectItem value="job">💼 Paid Job</SelectItem>
+              <SelectItem value="collab">🤝 Collaboration</SelectItem>
+              <SelectItem value="gig">⚡ Gig / One-Off</SelectItem>
+              <SelectItem value="project">🎯 Project-Based</SelectItem>
+              <SelectItem value="internship">🎓 Internship</SelectItem>
+              <SelectItem value="barter">🔄 Barter / Trade</SelectItem>
             </SelectContent>
           </Select>
         </div>

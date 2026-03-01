@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 export const WalletCard = () => {
   const [wallet, setWallet] = useState<any>(null);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
-  const [thrivePayStatus, setThrivePayStatus] = useState<string>('not_connected');
+  const [paymentStatus, setPaymentStatus] = useState<string>('not_connected');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export const WalletCard = () => {
       setWallet(newWallet);
     }
 
-    // Check ThrivePay status
+    // Check payment account status
     const { data: profile } = await supabase
       .from('profiles')
       .select('stripe_account_status')
@@ -46,7 +46,7 @@ export const WalletCard = () => {
       .single();
     
     if (profile?.stripe_account_status) {
-      setThrivePayStatus(profile.stripe_account_status);
+      setPaymentStatus(profile.stripe_account_status);
     }
 
     // Fetch transactions
@@ -66,10 +66,10 @@ export const WalletCard = () => {
         <CardTitle className="flex items-center gap-2 text-base">
           <Wallet className="h-5 w-5" />
           Wallet
-          <TooltipHint content="Credits are used for premium features. ThrivePay lets you receive payments for your work." />
+          <TooltipHint content="Credits are used for premium features. Connect your payment account to receive payments for your work." />
         </CardTitle>
         <div className="flex items-center gap-2">
-          {thrivePayStatus === 'active' ? (
+          {paymentStatus === 'active' ? (
             <span className="text-xs text-green-500 font-medium flex items-center gap-1">
               <CreditCard className="h-3 w-3" />
               Active
@@ -84,7 +84,7 @@ export const WalletCard = () => {
                 navigate('/thrivepay?tab=payments');
               }}
             >
-              Setup ThrivePay
+              Setup Payments
             </Button>
           )}
         </div>

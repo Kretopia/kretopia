@@ -100,7 +100,7 @@ const VerifyOpportunity = () => {
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                      Accept payments with ThrivePay
+                      Accept secure payments through the platform
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-3.5 w-3.5 text-primary flex-shrink-0" />

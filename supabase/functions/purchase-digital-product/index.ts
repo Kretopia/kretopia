@@ -76,7 +76,7 @@ serve(async (req) => {
     logStep("Product found", { productId, title: product.title, price: product.price, listing_type: product.listing_type });
 
     if (!sellerProfile?.stripe_account_id) {
-      throw new Error("Seller has not set up payment receiving. They need to connect ThrivePay first.");
+      throw new Error("Seller has not set up payment receiving. They need to connect their payment account first.");
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {

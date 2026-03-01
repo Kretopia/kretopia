@@ -52,7 +52,7 @@ const TestEmails = lazy(() => import("./pages/TestEmails"));
 const PurchaseSuccess = lazy(() => import("./pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("./pages/MyPurchases"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
-const AIAgent = lazy(() => import("./pages/AIAgent"));
+
 const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
@@ -175,8 +175,8 @@ const AppContent = () => {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             
-            {/* AI Agent */}
-            <Route path="/agent" element={<ProtectedRoute><AIAgent /></ProtectedRoute>} />
+            {/* Legacy redirects for removed features */}
+            <Route path="/agent" element={<Navigate to="/circle" replace />} />
             <Route path="/sales" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
             <Route path="/leads" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
             <Route path="/outreach" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />

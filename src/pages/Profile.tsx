@@ -54,7 +54,7 @@ import { ProfileActions } from "@/components/profile/ProfileActions";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
-import { AIPortfolioInsights, AIProfileOptimizer } from "@/components/ai";
+
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
@@ -552,44 +552,6 @@ const ProfileContent = () => {
         </div>
 
         {/* Pro Tools - Collapsible */}
-        <details className="group mb-6 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 overflow-hidden">
-          <summary className="flex items-center gap-3 cursor-pointer px-4 py-3 select-none hover:bg-primary/5 transition-colors">
-            <div className="p-1.5 rounded-lg bg-primary/10">
-              <Crown className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1">
-              <span className="font-semibold text-sm">Pro Tools</span>
-              <p className="text-xs text-muted-foreground">AI portfolio insights & profile optimizer</p>
-            </div>
-            {userTier !== 'pro' && (
-              <Badge variant="outline" className="border-primary/30 text-primary text-[10px] gap-1">
-                <Lock className="h-3 w-3" /> PRO
-              </Badge>
-            )}
-            <span className="text-xs text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
-          </summary>
-          <div className="px-4 pb-4 pt-3 space-y-3 border-t border-primary/10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <AIPortfolioInsights 
-                portfolioItems={portfolioItems}
-                userRole={profile.role || 'Creator'}
-                isPro={userTier === 'pro'}
-              />
-              <AIProfileOptimizer 
-                profile={{
-                  full_name: profile.full_name,
-                  role: profile.role,
-                  bio: profile.bio,
-                  professional_skills: Array.isArray(profile.professional_skills) ? profile.professional_skills as string[] : [],
-                  avatar_url: profile.avatar_url,
-                  location: profile.location
-                }}
-                portfolioCount={portfolioItems.length}
-                isPro={userTier === 'pro'}
-              />
-            </div>
-          </div>
-        </details>
 
         {/* === Content Sections — flat, no card wrappers === */}
         <div className="space-y-8">

@@ -230,7 +230,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       onClick={() => handleNavigation("/thrivepay")}
                     >
                       <Wallet className="h-5 w-5" />
-                      ThrivePay
+                      Wallet
                     </Button>
                     <Button 
                       variant="ghost" 

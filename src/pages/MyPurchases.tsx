@@ -208,7 +208,7 @@ export default function MyPurchases() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <ExternalLink className="h-4 w-4" />
-                ThrivePay
+                Wallet
               </CardTitle>
             </CardHeader>
             <CardContent>

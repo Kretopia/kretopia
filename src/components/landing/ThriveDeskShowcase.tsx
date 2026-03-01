@@ -20,7 +20,7 @@ export const ThriveDeskShowcase = () => {
             </span>
           </h2>
           <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
-            Stop juggling Slack, Trello, Google Drive, and PayPal. ThriveDesk is your complete collaboration workspace with built-in payment protection.
+            Stop juggling Slack, Trello, Google Drive, and PayPal. Your complete collaboration workspace with built-in payment protection.
           </p>
         </div>
 
@@ -68,10 +68,10 @@ export const ThriveDeskShowcase = () => {
             </div>
           </Card>
 
-          {/* After - ThriveDesk */}
+          {/* After - Project Workspace */}
           <Card className="p-8 border-2 border-primary bg-gradient-to-br from-primary/5 to-secondary/5 shadow-glow">
             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <span>ThriveDesk</span>
+              <span>Project Workspace</span>
               <span className="text-primary">✨</span>
             </h3>
             <div className="space-y-4">

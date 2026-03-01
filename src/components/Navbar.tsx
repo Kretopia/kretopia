@@ -124,14 +124,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
             {(accountType === "company"
               ? [
                   { path: "/opportunities", icon: Briefcase, label: "Jobs" },
-                  { path: "/desk", icon: Briefcase, label: "Desk" },
-                  { path: "/thrivemoney", icon: DollarSign, label: "ThriveMoney" },
+                  { path: "/desk", icon: Briefcase, label: "Projects" },
+                  { path: "/thrivemoney", icon: DollarSign, label: "Earnings" },
                 ]
               : [
                   { path: "/circle", icon: Users, label: "Circle" },
                   { path: "/opportunities", icon: Briefcase, label: "Opportunities" },
-                  { path: "/desk", icon: Briefcase, label: "Desk" },
-                  { path: "/thrivemoney", icon: DollarSign, label: "ThriveMoney" },
+                  { path: "/desk", icon: Briefcase, label: "Projects" },
+                  { path: "/thrivemoney", icon: DollarSign, label: "Earnings" },
                 ]
             ).map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path;
@@ -206,6 +206,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <ShoppingBag className="h-5 w-5" />
                       Marketplace
                     </Button>
+
+                    <Separator className="my-3" />
+                    
+                    {/* Pro Tools */}
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Pro Tools</p>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
@@ -234,14 +239,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     >
                       <ShoppingBag className="h-5 w-5" />
                       Purchases & Sales
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/thrivemoney")}
-                    >
-                      <DollarSign className="h-5 w-5" />
-                      ThriveMoney
                     </Button>
 
                     {/* Subscription / Account */}

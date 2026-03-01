@@ -233,10 +233,10 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" /> ThriveMoney
+            <BarChart3 className="h-5 w-5 text-primary" /> Earnings
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            {projectId ? "Project financial overview" : "Your complete financial overview"}
+            {projectId ? "Project earnings overview" : "Your Creative Earnings Overview"}
           </p>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">

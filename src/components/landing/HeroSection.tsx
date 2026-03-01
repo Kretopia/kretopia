@@ -21,20 +21,20 @@ export const HeroSection = () => {
           {/* Social Proof Badge */}
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm backdrop-blur-sm transition-smooth hover:scale-105">
             <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-            <span className="font-medium text-primary">The All-in-One Creative Platform</span>
+            <span className="font-medium text-primary">Where Creators Find Work — and Get Paid</span>
           </div>
           
-          {/* Headline — more urgency & benefit */}
+          {/* Headline */}
           <h1 className="mb-4 sm:mb-6 md:mb-8 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight sm:leading-[1.1] tracking-tight px-4">
-            Stop Juggling 5 Apps.{" "}
+            Find Collaborators.{" "}
             <br className="hidden sm:block" />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Run Your Creative Business Here.
+              Get Hired. Get Paid.
             </span>
           </h1>
           
           <p className="mx-auto mb-6 sm:mb-8 md:mb-10 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-muted-foreground px-6 sm:px-4">
-            Match with verified collaborators, manage projects, send invoices, and sell your work — 
+            Match with verified creators, manage projects with milestones, send invoices, and get paid securely — 
             <span className="font-semibold text-foreground"> all in 60 seconds to set up.</span>
           </p>
           
@@ -42,15 +42,15 @@ export const HeroSection = () => {
           <div className="mx-auto mb-8 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4 text-xs sm:text-sm text-muted-foreground px-4">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-              AI Matching & Jobs
+              Creator Matching
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-secondary" />
-              Workspaces & Invoicing
+              Secure Projects & Milestones
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-              Creative Marketplace
+              Invoicing & Payments
             </span>
           </div>
           

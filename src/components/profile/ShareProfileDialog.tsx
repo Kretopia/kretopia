@@ -134,7 +134,7 @@ ${profileUrl}
         <DialogHeader>
           <DialogTitle>Share Your Profile</DialogTitle>
           <DialogDescription>
-            Your all-in-one link to showcase your creative work
+            Share your profile link with collaborators and clients
           </DialogDescription>
         </DialogHeader>
         

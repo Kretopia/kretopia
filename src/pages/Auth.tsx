@@ -708,7 +708,7 @@ const Auth = () => {
           <p className="text-sm text-muted-foreground">
             {isPasswordReset 
               ? "Enter your new password below" 
-              : "The all-in-one platform for creatives"}
+              : "Where creators find work — and get paid"}
           </p>
         </div>
 

@@ -25,6 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOnlinePresence, OnlineDot } from "@/components/messages/OnlinePresence";
 import { MessageReplyBanner, InlineReply } from "@/components/messages/MessageReply";
 import { FileText } from "lucide-react";
+import { ConversationListSkeleton } from "@/components/skeletons/MessagesSkeletons";
 
 interface Conversation {
   conversation_id: string;
@@ -82,6 +83,7 @@ const Messages = () => {
   const { user } = useAuth();
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
   
   const navigationState = location.state as { receiverId?: string; receiverName?: string } | null;
@@ -224,6 +226,7 @@ const Messages = () => {
   };
 
   const fetchConversations = async () => {
+    setConversationsLoading(true);
     try {
       const [conversationsResult, unreadResult] = await Promise.all([
         supabase
@@ -256,6 +259,8 @@ const Messages = () => {
     } catch (error) {
       console.error('[Messages] Error fetching conversations:', error);
       setConversations([]);
+    } finally {
+      setConversationsLoading(false);
     }
   };
 
@@ -524,6 +529,8 @@ const Messages = () => {
                 setSelectedConversation(userId);
               }}
             />
+          ) : conversationsLoading ? (
+            <ConversationListSkeleton />
           ) : filteredConversations.length === 0 ? (
             <div className="p-8 text-center">
               <div className="mb-4 mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Upload, ExternalLink, Trash2, Eye, Play, Lock, Crown, Music, Video, Image as ImageIcon, Mic2, Sparkles } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AIPortfolioReview } from "./AIPortfolioReview";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaPlayerModal } from "./MediaPlayerModal";
@@ -661,9 +661,6 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                       {item.view_count}
                     </span>
                   </div>
-                  {isOwnProfile && (
-                    <AIPortfolioReview item={item} />
-                  )}
                 </div>
               </div>
             );

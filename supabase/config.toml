@@ -170,3 +170,9 @@ verify_jwt = false
 
 [functions.ai-finance]
 verify_jwt = false
+
+[functions.batch-milestone-payout]
+verify_jwt = true
+
+[functions.send-get-paid-link]
+verify_jwt = true

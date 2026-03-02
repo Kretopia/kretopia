@@ -343,14 +343,14 @@ const Dashboard = () => {
             </div>
           </Card>
           
-          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/messages')}>
+          <Card className="p-6 cursor-pointer transition-smooth hover:shadow-glow" onClick={() => navigate('/opportunities')}>
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-accent/10">
-                <MessageCircle className="h-6 w-6 text-accent" />
+              <div className="p-3 rounded-full bg-primary/10">
+                <Briefcase className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold">Messages</h3>
-                <p className="text-sm text-muted-foreground">Stay connected</p>
+                <h3 className="font-semibold">Opportunities</h3>
+                <p className="text-sm text-muted-foreground">Jobs & collabs</p>
               </div>
             </div>
           </Card>

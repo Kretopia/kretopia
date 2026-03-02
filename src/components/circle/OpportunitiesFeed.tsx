@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportunitiesDialog";
 import { 
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock, 
   DollarSign, Plus, ChevronRight, Sparkles, User, ShieldCheck, AlertTriangle,
@@ -153,6 +154,7 @@ export const OpportunitiesFeed = () => {
           <p className="text-sm text-muted-foreground">Jobs, collabs, gigs & more from the community</p>
         </div>
         <div className="flex gap-2">
+          <SavedOpportunitiesDialog />
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">My Listings</span>

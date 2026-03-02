@@ -34,23 +34,78 @@ interface Skill {
   category: string;
 }
 
-const QUICK_SKILLS = [
-  // Music & Audio
-  "Music Production", "Songwriting", "Audio Engineering", "Sound Design", "DJing",
-  "Singing", "Rapping", "Instrument Performance", "Mixing & Mastering", "Composing",
-  // Film & Video
-  "Videography", "Video Editing", "Directing", "Cinematography", "Screenwriting",
-  "VFX", "Color Grading", "Animation", "Motion Graphics", "Acting", "Voice Acting",
-  // Design & Visual Arts
-  "Photography", "Graphic Design", "Illustration", "UI/UX Design", "Brand Design",
-  "3D Modeling", "Art Direction", "Web Design", "Typography", "Set Design",
-  // Fashion & Content
-  "Styling", "Makeup Artistry", "Fashion Design", "Costume Design", "Choreography",
-  "Content Creation", "Social Media", "Copywriting", "Blogging", "Podcasting",
-  // Business & Tech
-  "Marketing", "PR & Communications", "Web Development", "Creative Direction",
-  "Event Production", "Project Management", "Film Production", "Dance",
+const SKILL_CATEGORIES = [
+  {
+    label: '🎵 Music & Audio',
+    skills: [
+      "Music Production", "Songwriting", "Audio Engineering", "Sound Design", "DJing",
+      "Singing", "Rapping", "Instrument Performance", "Mixing & Mastering", "Composing",
+      "Beat Making", "Podcast Production", "Foley Art", "Jingle Writing", "Music Supervision",
+      "Live Sound", "Studio Engineering", "Vocal Coaching",
+    ],
+  },
+  {
+    label: '🎬 Film & Video',
+    skills: [
+      "Videography", "Video Editing", "Directing", "Cinematography", "Screenwriting",
+      "VFX", "Color Grading", "Animation", "Motion Graphics", "Acting", "Voice Acting",
+      "Film Production", "Documentary", "Stunt Coordination", "Script Supervision",
+      "Camera Operation", "Drone Operation", "Live Streaming", "Short Film", "Music Video",
+    ],
+  },
+  {
+    label: '🎨 Design & Visual Arts',
+    skills: [
+      "Photography", "Graphic Design", "Illustration", "UI/UX Design", "Brand Design",
+      "3D Modeling", "Art Direction", "Web Design", "Typography", "Set Design",
+      "Product Design", "Packaging Design", "NFT Art", "Murals & Street Art",
+      "Character Design", "Concept Art", "Print Design", "Interior Design",
+    ],
+  },
+  {
+    label: '👗 Fashion & Beauty',
+    skills: [
+      "Styling", "Makeup Artistry", "Fashion Design", "Costume Design", "Hair Styling",
+      "Wardrobe Management", "Fashion Photography", "Nail Art", "Body Painting",
+      "Textile Design", "Accessory Design", "Fashion Illustration", "Personal Shopping",
+    ],
+  },
+  {
+    label: '📱 Content & Social',
+    skills: [
+      "Content Creation", "Social Media Management", "Copywriting", "Blogging", "Podcasting",
+      "Influencer Marketing", "Community Management", "TikTok Content", "YouTube Content",
+      "Newsletter Writing", "Ghostwriting", "Brand Storytelling", "Meme Creation",
+    ],
+  },
+  {
+    label: '💃 Performance & Events',
+    skills: [
+      "Choreography", "Dance", "Stand-up Comedy", "Public Speaking", "Hosting & MC",
+      "Event Production", "Festival Curation", "Stage Management", "Tour Management",
+      "Concert Promotion", "DJ Performance", "Theater",
+    ],
+  },
+  {
+    label: '💻 Tech & Development',
+    skills: [
+      "Web Development", "App Development", "Game Development", "AR/VR Development",
+      "Creative Coding", "Data Visualization", "SEO", "Analytics", "AI & Machine Learning",
+      "Blockchain & Web3", "E-commerce Setup",
+    ],
+  },
+  {
+    label: '💼 Business & Strategy',
+    skills: [
+      "Marketing", "PR & Communications", "Creative Direction", "Project Management",
+      "Talent Management", "A&R", "Music Business", "Licensing & Rights",
+      "Brand Strategy", "Campaign Management", "Fundraising", "Grant Writing",
+    ],
+  },
 ];
+
+// Flat list for backward compatibility
+const QUICK_SKILLS = SKILL_CATEGORIES.flatMap(cat => cat.skills);
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -514,13 +569,7 @@ export default function Onboarding() {
               {/* Quick Skills - Categorized */}
               <div>
                 <Label>Skills <span className="text-xs text-muted-foreground ml-1">(select a few)</span></Label>
-                {[
-                  { label: '🎵 Music & Audio', skills: QUICK_SKILLS.slice(0, 10) },
-                  { label: '🎬 Film & Video', skills: QUICK_SKILLS.slice(10, 21) },
-                  { label: '🎨 Design & Visual', skills: QUICK_SKILLS.slice(21, 31) },
-                  { label: '👗 Fashion & Content', skills: QUICK_SKILLS.slice(31, 41) },
-                  { label: '💼 Business & Tech', skills: QUICK_SKILLS.slice(41) },
-                ].map(category => (
+                {SKILL_CATEGORIES.map(category => (
                   <div key={category.label} className="mt-3">
                     <p className="text-xs font-medium text-muted-foreground mb-1.5">{category.label}</p>
                     <div className="flex flex-wrap gap-1.5">

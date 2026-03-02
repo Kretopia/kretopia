@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard } from "lucide-react";
+import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard, Send, Users, Loader2 } from "lucide-react";
 import { awardXP } from "@/lib/xpSystem";
 import { analytics } from "@/lib/analytics";
 
@@ -43,6 +43,12 @@ const STATUS_CONFIG = {
 
 export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: MilestoneBoardProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [getPaidDialogOpen, setGetPaidDialogOpen] = useState(false);
+  const [batchLoading, setBatchLoading] = useState(false);
+  const [getPaidLoading, setGetPaidLoading] = useState(false);
+  const [getPaidEmail, setGetPaidEmail] = useState('');
+  const [getPaidName, setGetPaidName] = useState('');
+  const [getPaidMessage, setGetPaidMessage] = useState('');
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
@@ -222,6 +228,82 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     }
   };
 
+  // Batch payout handler
+  const batchPayableMilestones = milestones.filter(m => 
+    (m.status === 'completed' && m.escrow_status === 'none' && !m.paid_at) ||
+    (m.escrow_status === 'authorized' && m.payment_intent_id && m.status === 'review')
+  );
+
+  const handleBatchPayout = async () => {
+    if (batchPayableMilestones.length === 0) return;
+    try {
+      setBatchLoading(true);
+      const { data, error } = await supabase.functions.invoke('batch-milestone-payout', {
+        body: {
+          projectId,
+          milestoneIds: batchPayableMilestones.map(m => m.id),
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast({ title: "Batch checkout opened! 💳", description: `${data.summary?.checkoutItems || 0} milestone(s) ready for payment` });
+      }
+
+      if (data?.summary?.captured > 0) {
+        toast({ title: `${data.summary.captured} escrow payment(s) released! 💰` });
+        onUpdate();
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Batch payout failed", variant: "destructive" });
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  // Send "Get Paid" link handler
+  const handleSendGetPaidLink = async () => {
+    if (!getPaidEmail.trim()) {
+      toast({ title: "Error", description: "Please enter an email address", variant: "destructive" });
+      return;
+    }
+    try {
+      setGetPaidLoading(true);
+      const { data: project } = await supabase.from('projects').select('title').eq('id', projectId).single();
+      
+      const { data, error } = await supabase.functions.invoke('send-get-paid-link', {
+        body: {
+          recipientEmail: getPaidEmail,
+          recipientName: getPaidName,
+          projectId,
+          projectTitle: project?.title || 'Project',
+          message: getPaidMessage,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({ 
+        title: "Get Paid link sent! 📧", 
+        description: data?.emailSent 
+          ? `Sent to ${getPaidEmail}` 
+          : data?.notificationSent 
+            ? 'In-app notification sent' 
+            : 'Link sent' 
+      });
+      setGetPaidDialogOpen(false);
+      setGetPaidEmail('');
+      setGetPaidName('');
+      setGetPaidMessage('');
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to send link", variant: "destructive" });
+    } finally {
+      setGetPaidLoading(false);
+    }
+  };
+
   const totalAmount = milestones.reduce((sum, m) => sum + Number(m.amount), 0);
   const paidAmount = milestones.filter(m => m.status === 'paid').reduce((sum, m) => sum + Number(m.amount), 0);
   const pendingAmount = totalAmount - paidAmount;
@@ -244,59 +326,136 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
           </div>
         </div>
         {userRole === 'client' && (
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
-                New Milestone
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Batch Pay All */}
+            {batchPayableMilestones.length > 1 && (
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handleBatchPayout}
+                disabled={batchLoading}
+                className="gap-2"
+              >
+                {batchLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Users className="h-4 w-4" />
+                )}
+                Pay All ({batchPayableMilestones.length}) — ${batchPayableMilestones.reduce((s, m) => s + Number(m.amount), 0).toFixed(2)}
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Milestone</DialogTitle>
-                <DialogDescription>Set up project milestones with payment amounts</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Title *</Label>
-                  <Input
-                    value={newMilestone.title}
-                    onChange={(e) => setNewMilestone({ ...newMilestone, title: e.target.value })}
-                    placeholder="Milestone title"
-                  />
+            )}
+
+            {/* Invite to Get Paid */}
+            <Dialog open={getPaidDialogOpen} onOpenChange={setGetPaidDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <Send className="h-4 w-4" />
+                  Invite to Get Paid
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Send "Get Paid" Link</DialogTitle>
+                  <DialogDescription>
+                    Invite a creator to set up their payment account so you can pay them — takes less than 2 minutes for them.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Creator's Email *</Label>
+                    <Input
+                      type="email"
+                      value={getPaidEmail}
+                      onChange={(e) => setGetPaidEmail(e.target.value)}
+                      placeholder="creator@example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Their Name (optional)</Label>
+                    <Input
+                      value={getPaidName}
+                      onChange={(e) => setGetPaidName(e.target.value)}
+                      placeholder="Jane Doe"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Personal Message (optional)</Label>
+                    <Textarea
+                      value={getPaidMessage}
+                      onChange={(e) => setGetPaidMessage(e.target.value)}
+                      placeholder="Hey! Set up your account so I can pay you for our project work."
+                      rows={2}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea
-                    value={newMilestone.description}
-                    onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
-                    placeholder="Milestone details and deliverables"
-                    rows={3}
-                  />
+                <DialogFooter>
+                  <Button onClick={handleSendGetPaidLink} disabled={getPaidLoading} className="gap-2">
+                    {getPaidLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                    Send Link
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* New Milestone */}
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  New Milestone
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Milestone</DialogTitle>
+                  <DialogDescription>Set up project milestones with payment amounts</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Title *</Label>
+                    <Input
+                      value={newMilestone.title}
+                      onChange={(e) => setNewMilestone({ ...newMilestone, title: e.target.value })}
+                      placeholder="Milestone title"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={newMilestone.description}
+                      onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
+                      placeholder="Milestone details and deliverables"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Amount (USD) *</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={newMilestone.amount}
+                      onChange={(e) => setNewMilestone({ ...newMilestone, amount: e.target.value })}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Due Date</Label>
+                    <Input
+                      type="date"
+                      value={newMilestone.due_date}
+                      onChange={(e) => setNewMilestone({ ...newMilestone, due_date: e.target.value })}
+                    />
+                  </div>
+                  <Button onClick={handleCreateMilestone} className="w-full">Create Milestone</Button>
                 </div>
-                <div className="space-y-2">
-                  <Label>Amount (USD) *</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={newMilestone.amount}
-                    onChange={(e) => setNewMilestone({ ...newMilestone, amount: e.target.value })}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Due Date</Label>
-                  <Input
-                    type="date"
-                    value={newMilestone.due_date}
-                    onChange={(e) => setNewMilestone({ ...newMilestone, due_date: e.target.value })}
-                  />
-                </div>
-                <Button onClick={handleCreateMilestone} className="w-full">Create Milestone</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </div>
 

@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Shield, Crown, Sparkles, Building2, DollarSign, Flame, Trophy, Target } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, BarChart3, Wallet, ShoppingBag, Shield, Crown, Sparkles, Building2, DollarSign, Flame, Trophy, Target, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,6 +158,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
         <div className="flex items-center gap-2 sm:gap-4">
           {user && !isLandingPage && (
             <div className="flex items-center gap-1">
+              <Link to="/search" aria-label="Search">
+                <Button variant="ghost" size="icon" className="h-10 w-10 hidden sm:inline-flex">
+                  <Search className="h-5 w-5" />
+                </Button>
+              </Link>
               <Link to="/messages" aria-label="Messages">
                 <Button variant="ghost" size="icon" className="h-10 w-10 relative hidden sm:inline-flex">
                   <MessageCircle className="h-5 w-5" />

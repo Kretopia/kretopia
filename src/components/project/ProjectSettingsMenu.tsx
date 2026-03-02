@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ReviewPromptDialog } from "./ReviewPromptDialog";
 
 interface ProjectSettingsMenuProps {
   project: {
@@ -50,6 +51,7 @@ interface ProjectSettingsMenuProps {
     status: string | null;
     created_by: string;
   };
+  collaborators?: Array<{ id: string; full_name: string; avatar_url: string | null }>;
   currentUserId: string;
   isPro: boolean;
   onProjectUpdated: () => void;
@@ -58,6 +60,7 @@ interface ProjectSettingsMenuProps {
 
 export function ProjectSettingsMenu({
   project,
+  collaborators = [],
   currentUserId,
   isPro,
   onProjectUpdated,
@@ -65,6 +68,7 @@ export function ProjectSettingsMenu({
 }: ProjectSettingsMenuProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [reviewPromptOpen, setReviewPromptOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -87,6 +91,11 @@ export function ProjectSettingsMenu({
       toast({ title: "Project updated" });
       setSettingsOpen(false);
       onProjectUpdated();
+      
+      // Trigger review prompt when project is marked as completed
+      if (status === "completed" && project.status !== "completed" && collaborators.length > 1) {
+        setTimeout(() => setReviewPromptOpen(true), 500);
+      }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -256,6 +265,15 @@ export function ProjectSettingsMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Review Prompt on Completion */}
+      <ReviewPromptDialog
+        open={reviewPromptOpen}
+        onOpenChange={setReviewPromptOpen}
+        projectId={project.id}
+        projectTitle={project.title}
+        collaborators={collaborators}
+      />
     </>
   );
 }

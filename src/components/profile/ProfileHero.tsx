@@ -203,8 +203,8 @@ export const ProfileHero = ({
               <p className="text-sm sm:text-base text-muted-foreground mb-1">{displayRole}</p>
             )}
             
-            {/* Location + Rating */}
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            {/* Location + Rating + Availability */}
+            <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
               {displayLocation && (
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
@@ -216,6 +216,29 @@ export const ProfileHero = ({
                   <Star className="h-3.5 w-3.5 fill-accent text-accent" />
                   <span className="font-medium text-foreground">{profile.average_rating.toFixed(1)}</span>
                 </div>
+              )}
+              {/* Availability Badge */}
+              {profile.availability && (
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "h-5 text-[10px] font-semibold gap-1",
+                    profile.availability === 'available' && "border-green-500/50 text-green-600 bg-green-500/10",
+                    profile.availability === 'busy' && "border-amber-500/50 text-amber-600 bg-amber-500/10",
+                    profile.availability === 'unavailable' && "border-red-500/50 text-red-600 bg-red-500/10",
+                    profile.availability === 'open_to_work' && "border-green-500/50 text-green-600 bg-green-500/10"
+                  )}
+                >
+                  <span className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    (profile.availability === 'available' || profile.availability === 'open_to_work') && "bg-green-500",
+                    profile.availability === 'busy' && "bg-amber-500",
+                    profile.availability === 'unavailable' && "bg-red-500"
+                  )} />
+                  {profile.availability === 'open_to_work' ? '#OpenToWork' : 
+                   profile.availability === 'available' ? 'Available' : 
+                   profile.availability === 'busy' ? 'Busy' : 'Unavailable'}
+                </Badge>
               )}
             </div>
             
@@ -300,6 +323,16 @@ export const ProfileHero = ({
             </>
           ) : (
             <>
+              {(profile.availability === 'available' || profile.availability === 'open_to_work') && (
+                <Button 
+                  size="sm" 
+                  className="gap-1.5 bg-gradient-to-r from-primary to-accent text-primary-foreground border-0"
+                  onClick={onConnect}
+                >
+                  <Briefcase className="h-4 w-4" />
+                  Hire Me
+                </Button>
+              )}
               <Badge variant="secondary" className="py-2 px-4 text-sm">
                 Match to connect & message
               </Badge>

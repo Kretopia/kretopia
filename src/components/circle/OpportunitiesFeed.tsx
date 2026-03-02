@@ -149,18 +149,18 @@ export const OpportunitiesFeed = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header with Post CTA */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-lg">Opportunities</h3>
-          <p className="text-sm text-muted-foreground">Jobs, collabs, gigs & more from the community</p>
-        </div>
-        <div className="flex gap-2">
-          <SavedOpportunitiesDialog />
-          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
-            <Briefcase className="h-4 w-4" />
-            <span className="hidden sm:inline">My Listings</span>
-          </Button>
+      {/* Header */}
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold flex items-center gap-2.5">
+              <Briefcase className="h-6 w-6" />
+              Opportunities
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Find gigs, jobs, and creative collaborations
+            </p>
+          </div>
           <PostOpportunityDialog
             open={postDialogOpen}
             onOpenChange={setPostDialogOpen}
@@ -169,12 +169,19 @@ export const OpportunitiesFeed = () => {
               fetchOpportunities();
             }}
             trigger={
-              <Button size="sm" className="gap-1.5">
+              <Button size="sm" className="gap-1.5 shrink-0">
                 <Plus className="h-4 w-4" />
                 Post
               </Button>
             }
           />
+        </div>
+        <div className="flex gap-2">
+          <SavedOpportunitiesDialog />
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
+            <Briefcase className="h-4 w-4" />
+            <span className="hidden sm:inline">My Listings</span>
+          </Button>
         </div>
       </div>
 

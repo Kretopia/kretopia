@@ -11,7 +11,7 @@ import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportunitiesDialog";
 import { 
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock, 
-  DollarSign, Plus, ChevronRight, Sparkles, User, ShieldCheck, AlertTriangle,
+  DollarSign, Plus, ChevronRight, Sparkles, User, AlertTriangle,
   Search, Zap, Target, GraduationCap, X
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -291,99 +291,108 @@ export const OpportunitiesFeed = () => {
         const config = getTypeConfig(opp.type);
         const TypeIcon = config.icon;
         const creator = opp.created_by ? creators[opp.created_by] : null;
+        const isClosingSoon = opp.created_at && differenceInDays(new Date(), parseISO(opp.created_at)) >= 14;
 
         return (
           <Card key={opp.id} className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer group" onClick={() => navigate(`/opportunity/${opp.id}`)}>
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
+              {/* Top row: badges */}
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                  <Badge variant="outline" className={`text-[11px] shrink-0 ${config.color}`}>
+                    <TypeIcon className="h-3 w-3 mr-1" />
+                    {config.label}
+                  </Badge>
+                  {isClosingSoon && (
+                    <Badge variant="outline" className="text-[11px] shrink-0 bg-amber-500/10 text-amber-600 border-amber-500/20">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Closing Soon
+                    </Badge>
+                  )}
+                </div>
+                <BookmarkButton opportunityId={opp.id} size="sm" />
+              </div>
+
+              {/* Main content row */}
               <div className="flex gap-3">
-                {/* Image or Icon */}
+                {/* Thumbnail */}
                 {opp.image_url ? (
-                  <div className="shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-muted">
+                  <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-muted">
                     <img src={opp.image_url} alt="" className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="shrink-0 w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-                    <TypeIcon className="h-6 w-6 text-muted-foreground" />
+                  <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted flex items-center justify-center">
+                    <TypeIcon className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
 
                 <div className="flex-1 min-w-0">
-                  {/* Type Badge + Trust Badges */}
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <Badge variant="outline" className={`text-xs ${config.color}`}>
-                      <TypeIcon className="h-3 w-3 mr-1" />
-                      {config.label}
-                    </Badge>
-                    {opp.compensation && (
-                      <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
-                        <ShieldCheck className="h-3 w-3 mr-1" />
-                        <DollarSign className="h-3 w-3" />
-                        {opp.compensation}
-                      </Badge>
-                    )}
-                    {opp.created_at && differenceInDays(new Date(), parseISO(opp.created_at)) >= 14 && (
-                      <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        Closing Soon
-                      </Badge>
-                    )}
-                  </div>
-
                   {/* Title */}
-                  <h4 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                  <h4 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                     {opp.title}
                   </h4>
 
                   {/* Description */}
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                  <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                     {opp.description}
                   </p>
+                </div>
+              </div>
 
-                  {/* Meta Row */}
-                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                    {creator && (
-                      <span className="flex items-center gap-1">
-                        {creator.avatar_url ? (
-                          <img src={creator.avatar_url} alt="" className="h-4 w-4 rounded-full object-cover" />
-                        ) : (
-                          <User className="h-3 w-3" />
-                        )}
-                        {creator.full_name || "Anonymous"}
-                      </span>
+              {/* Compensation */}
+              {opp.compensation && (
+                <div className="mt-2">
+                  <Badge variant="outline" className="text-[11px] bg-green-500/10 text-green-600 border-green-500/20">
+                    <DollarSign className="h-3 w-3 mr-0.5" />
+                    {opp.compensation}
+                  </Badge>
+                </div>
+              )}
+
+              {/* Meta Row */}
+              <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground overflow-x-auto">
+                {creator && (
+                  <span className="flex items-center gap-1 shrink-0">
+                    {creator.avatar_url ? (
+                      <img src={creator.avatar_url} alt="" className="h-4 w-4 rounded-full object-cover" />
+                    ) : (
+                      <User className="h-3 w-3" />
                     )}
-                    {opp.location && (
-                      <span className="flex items-center gap-0.5">
-                        <MapPin className="h-3 w-3" />
-                        {opp.location}
-                      </span>
-                    )}
-                    {opp.created_at && (
-                      <span className="flex items-center gap-0.5">
-                        <Clock className="h-3 w-3" />
-                        {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
-                      </span>
+                    <span className="truncate max-w-[100px]">{creator.full_name || "Anonymous"}</span>
+                  </span>
+                )}
+                {opp.location && (
+                  <span className="flex items-center gap-0.5 shrink-0">
+                    <MapPin className="h-3 w-3" />
+                    <span className="truncate max-w-[80px]">{opp.location}</span>
+                  </span>
+                )}
+                {opp.created_at && (
+                  <span className="flex items-center gap-0.5 shrink-0">
+                    <Clock className="h-3 w-3" />
+                    {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
+                  </span>
+                )}
+              </div>
+
+              {/* Skills + Apply row */}
+              <div className="flex items-end justify-between gap-2 mt-2">
+                {opp.skills && opp.skills.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 min-w-0 flex-1">
+                    {opp.skills.slice(0, 3).map(skill => (
+                      <Badge key={skill} variant="secondary" className="text-[10px] px-1.5 py-0 truncate max-w-[100px]">
+                        {skill}
+                      </Badge>
+                    ))}
+                    {opp.skills.length > 3 && (
+                      <span className="text-[10px] text-muted-foreground self-center">+{opp.skills.length - 3}</span>
                     )}
                   </div>
-
-                  {/* Skills */}
-                  {opp.skills && opp.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2 max-h-8 overflow-hidden">
-                      {opp.skills.slice(0, 3).map(skill => (
-                        <Badge key={skill} variant="secondary" className="text-[10px] px-1.5 py-0 truncate max-w-[120px]">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {opp.skills.length > 3 && (
-                        <span className="text-[10px] text-muted-foreground">+{opp.skills.length - 3}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Easy Apply + Bookmark */}
-                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                ) : (
+                  <div />
+                )}
+                <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
                   <EasyApplyButton opportunityId={opp.id} opportunityTitle={opp.title} />
-                  <BookmarkButton opportunityId={opp.id} size="sm" />
                 </div>
               </div>
             </CardContent>

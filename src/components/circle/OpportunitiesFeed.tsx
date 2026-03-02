@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
+import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
+import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 
 interface Opportunity {
   id: string;
@@ -371,8 +373,11 @@ export const OpportunitiesFeed = () => {
                   )}
                 </div>
 
-                {/* Arrow */}
-                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Easy Apply + Bookmark */}
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  <EasyApplyButton opportunityId={opp.id} opportunityTitle={opp.title} />
+                  <BookmarkButton opportunityId={opp.id} size="sm" />
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -49,6 +49,8 @@ const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 const Discover = lazy(() => import("./pages/Discover"));
+const Search = lazy(() => import("./pages/Search"));
+const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const TestEmails = lazy(() => import("./pages/TestEmails"));
 const PurchaseSuccess = lazy(() => import("./pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("./pages/MyPurchases"));
@@ -235,8 +237,12 @@ const AppContent = () => {
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
             
+            {/* Search & Notifications */}
+            <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+            
             {/* Legacy redirects */}
-            <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/my-analytics" replace />} />
             <Route path="/spark" element={<Navigate to="/circle" replace />} />
             <Route path="/cre8" element={<Navigate to="/circle" replace />} />
             <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />

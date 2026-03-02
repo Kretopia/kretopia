@@ -93,6 +93,9 @@ export const NotificationCenter = () => {
           <SheetDescription>
             {unreadCount > 0 ? `You have ${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
           </SheetDescription>
+          <Button variant="link" size="sm" className="w-fit p-0 h-auto text-xs" onClick={() => { setIsOpen(false); navigate("/notifications"); }}>
+            View all notifications →
+          </Button>
         </SheetHeader>
 
         <ScrollArea className="h-[calc(100vh-140px)] mt-6">

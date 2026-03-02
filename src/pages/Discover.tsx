@@ -346,7 +346,9 @@ const Discover = () => {
 };
 
 function ProfileCard({ profile, onClick }: { profile: DiscoverProfile; onClick: () => void }) {
-  const skills = Array.isArray(profile.professional_skills) ? profile.professional_skills.slice(0, 3) : [];
+  const skills = Array.isArray(profile.professional_skills) 
+    ? profile.professional_skills.slice(0, 3).map((s: any) => typeof s === 'string' ? s : s?.skill || '').filter(Boolean)
+    : [];
   const isVerified = (profile.verification_score || 0) >= 50;
 
   return (
@@ -402,7 +404,9 @@ function ProfileCard({ profile, onClick }: { profile: DiscoverProfile; onClick: 
 }
 
 function ProfileListItem({ profile, onClick }: { profile: DiscoverProfile; onClick: () => void }) {
-  const skills = Array.isArray(profile.professional_skills) ? profile.professional_skills.slice(0, 5) : [];
+  const skills = Array.isArray(profile.professional_skills) 
+    ? profile.professional_skills.slice(0, 5).map((s: any) => typeof s === 'string' ? s : s?.skill || '').filter(Boolean)
+    : [];
   const isVerified = (profile.verification_score || 0) >= 50;
 
   return (

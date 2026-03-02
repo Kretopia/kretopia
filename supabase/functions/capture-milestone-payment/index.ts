@@ -22,6 +22,12 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
+  // Admin client for bypassing RLS (invoice creation)
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
+
   try {
     logStep("Function started");
 
@@ -67,14 +73,27 @@ serve(async (req) => {
       logStep("Payment cancelled successfully", { paymentIntentId });
     }
 
+    // Fetch milestone details before updating
+    const { data: milestone, error: fetchError } = await supabaseAdmin
+      .from('milestones')
+      .select('*, projects(id, title, created_by)')
+      .eq('id', milestoneId)
+      .eq('payment_intent_id', paymentIntentId)
+      .single();
+
+    if (fetchError) {
+      logStep("ERROR fetching milestone", { error: fetchError.message });
+      throw new Error(`Failed to fetch milestone: ${fetchError.message}`);
+    }
+
     // Update milestone in database
-    const { error: updateError } = await supabaseClient
+    const { error: updateError } = await supabaseAdmin
       .from('milestones')
       .update({
         status: newStatus,
         escrow_status: newEscrowStatus,
         paid_at: action === 'capture' ? new Date().toISOString() : null,
-        paid_to: action === 'capture' ? user.id : null,
+        paid_to: action === 'capture' ? milestone.created_by : null,
       })
       .eq('id', milestoneId)
       .eq('payment_intent_id', paymentIntentId);
@@ -85,6 +104,81 @@ serve(async (req) => {
     }
 
     logStep("Milestone updated successfully", { milestoneId, newStatus, newEscrowStatus });
+
+    // Auto-generate invoice when payment is captured
+    if (action === 'capture') {
+      try {
+        logStep("Generating auto-invoice for captured milestone");
+
+        // Get the payer's (brand/company) profile for invoice branding
+        const { data: payerProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('full_name, avatar_url, role')
+          .eq('user_id', user.id)
+          .single();
+
+        // Get the creator's profile (milestone creator)
+        const { data: creatorProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', milestone.created_by)
+          .single();
+
+        // Get creator's email
+        const { data: creatorAuth } = await supabaseAdmin.auth.admin.getUserById(milestone.created_by);
+
+        const amountInDollars = milestone.amount;
+        const now = new Date();
+        const invoiceNumber = `INV-${now.getFullYear()}-${now.getTime()}`;
+
+        const invoiceData = {
+          invoice_number: invoiceNumber,
+          issued_by: user.id, // Brand/company who paid
+          issued_to: milestone.created_by, // Creator who received payment
+          project_id: milestone.project_id,
+          milestone_id: milestoneId,
+          amount: amountInDollars,
+          total_amount: amountInDollars,
+          currency: 'USD',
+          status: 'paid',
+          paid_at: now.toISOString(),
+          brand_name: payerProfile?.full_name || 'Client',
+          recipient_name: creatorProfile?.full_name || 'Creator',
+          recipient_email: creatorAuth?.user?.email || null,
+          payment_method: 'stripe_escrow',
+          payment_details: {
+            payment_intent_id: paymentIntentId,
+            escrow: true,
+            auto_generated: true,
+          },
+          line_items: [
+            {
+              description: `Milestone: ${milestone.title}`,
+              quantity: 1,
+              rate: amountInDollars,
+              amount: amountInDollars,
+            }
+          ],
+          notes: `Auto-generated invoice for milestone "${milestone.title}" on project "${milestone.projects?.title || 'Project'}". Payment captured via ThrivePay escrow.`,
+        };
+
+        const { data: invoice, error: invoiceError } = await supabaseAdmin
+          .from('invoices')
+          .insert(invoiceData)
+          .select('id, invoice_number')
+          .single();
+
+        if (invoiceError) {
+          logStep("WARNING: Failed to create auto-invoice", { error: invoiceError.message });
+          // Don't throw — payment was already captured successfully
+        } else {
+          logStep("Auto-invoice created", { invoiceId: invoice.id, invoiceNumber: invoice.invoice_number });
+        }
+      } catch (invoiceErr) {
+        logStep("WARNING: Auto-invoice generation failed", { error: String(invoiceErr) });
+        // Non-blocking — the payment capture itself succeeded
+      }
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 

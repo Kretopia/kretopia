@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, MapPin, Verified, Sparkles, Users } from "lucide-react";
+import { Search, MapPin, Verified, Sparkles, Users, Crown, Lock } from "lucide-react";
 import { SwipeFiltersState } from "./SwipeFilters";
+
+const FREE_BROWSE_LIMIT = 6; // Free users see 6 profiles, rest blurred
 
 interface BrowseProfile {
   user_id: string;
@@ -27,7 +29,8 @@ interface BrowseProfile {
 
 export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
+  const isPro = subscriptionInfo.tier === "pro" || subscriptionInfo.tier === "founder";
   const [profiles, setProfiles] = useState<BrowseProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -101,65 +104,107 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
           <p className="text-sm text-muted-foreground">Try different search terms or filters</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {profiles.map((profile) => {
-            const skills = Array.isArray(profile.professional_skills)
-              ? profile.professional_skills.slice(0, 2).map((s: any) => typeof s === 'string' ? s : s?.skill || '').filter(Boolean)
-              : [];
-            const isVerified = (profile.verification_score || 0) >= 50;
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {profiles.slice(0, isPro ? profiles.length : FREE_BROWSE_LIMIT).map((profile) => {
+              const skills = Array.isArray(profile.professional_skills)
+                ? profile.professional_skills.slice(0, 2).map((s: any) => typeof s === 'string' ? s : s?.skill || '').filter(Boolean)
+                : [];
+              const isVerified = (profile.verification_score || 0) >= 50;
 
-            return (
-              <Card
-                key={profile.user_id}
-                className="cursor-pointer hover:shadow-lg transition-all hover:-translate-y-0.5 group overflow-hidden"
-                onClick={() => navigate(`/profile/${profile.user_id}`)}
-              >
-                <CardContent className="p-3 sm:p-4 text-center">
-                  <div className="relative mx-auto w-14 h-14 mb-2">
-                    <FramedAvatar src={profile.avatar_url} fallback={(profile.full_name || "?")[0]} className="h-14 w-14" />
-                    {isVerified && (
-                      <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-                        <Verified className="h-2.5 w-2.5 text-primary-foreground" />
+              return (
+                <Card
+                  key={profile.user_id}
+                  className="cursor-pointer hover:shadow-lg transition-all hover:-translate-y-0.5 group overflow-hidden"
+                  onClick={() => navigate(`/profile/${profile.user_id}`)}
+                >
+                  <CardContent className="p-3 sm:p-4 text-center">
+                    <div className="relative mx-auto w-14 h-14 mb-2">
+                      <FramedAvatar src={profile.avatar_url} fallback={(profile.full_name || "?")[0]} className="h-14 w-14" />
+                      {isVerified && (
+                        <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                          <Verified className="h-2.5 w-2.5 text-primary-foreground" />
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="font-semibold text-xs sm:text-sm truncate group-hover:text-primary transition-colors">
+                      {profile.full_name}
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                      {profile.role || "Creator"}
+                    </p>
+
+                    {profile.location && (
+                      <div className="flex items-center justify-center gap-1 mt-1">
+                        <MapPin className="h-2.5 w-2.5 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground truncate">{profile.location}</span>
                       </div>
                     )}
+
+                    {skills.length > 0 && (
+                      <div className="flex flex-wrap gap-1 justify-center mt-1.5">
+                        {skills.map((skill: string) => (
+                          <Badge key={skill} variant="secondary" className="text-[9px] px-1 py-0">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Blurred upgrade gate for free users */}
+          {!isPro && profiles.length > FREE_BROWSE_LIMIT && (
+            <div className="relative mt-1">
+              <div className="pointer-events-none select-none filter blur-[6px] opacity-40 saturate-50">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {profiles.slice(FREE_BROWSE_LIMIT, FREE_BROWSE_LIMIT + 6).map((profile) => (
+                    <Card key={profile.user_id} className="overflow-hidden">
+                      <CardContent className="p-3 sm:p-4 text-center">
+                        <div className="mx-auto w-14 h-14 mb-2">
+                          <FramedAvatar src={profile.avatar_url} fallback={(profile.full_name || "?")[0]} className="h-14 w-14" />
+                        </div>
+                        <h3 className="font-semibold text-xs sm:text-sm truncate">{profile.full_name}</h3>
+                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">{profile.role || "Creator"}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="bg-card/95 backdrop-blur-md border border-primary/20 rounded-2xl p-6 max-w-xs mx-4 text-center shadow-2xl shadow-primary/10">
+                  <div className="mx-auto w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-3">
+                    <Crown className="h-6 w-6 text-primary" />
                   </div>
-
-                  <h3 className="font-semibold text-xs sm:text-sm truncate group-hover:text-primary transition-colors">
-                    {profile.full_name}
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                    {profile.role || "Creator"}
+                  <h3 className="text-base font-bold mb-1">See More Creators</h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Upgrade to Pro to browse unlimited creator profiles and find your perfect collaborator.
                   </p>
+                  <Button
+                    onClick={() => navigate("/subscription")}
+                    className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Unlock All Profiles
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground mt-2">$12/month · Cancel anytime</p>
+                </div>
+              </div>
+            </div>
+          )}
 
-                  {profile.location && (
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <MapPin className="h-2.5 w-2.5 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground truncate">{profile.location}</span>
-                    </div>
-                  )}
-
-                  {skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1 justify-center mt-1.5">
-                      {skills.map((skill: string) => (
-                        <Badge key={skill} variant="secondary" className="text-[9px] px-1 py-0">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {profiles.length > 0 && (
-        <div className="text-center pt-2">
-          <Button variant="link" onClick={() => navigate("/discover")} className="text-sm gap-1">
-            View all creators on Discover →
-          </Button>
-        </div>
+          {isPro && profiles.length > 0 && (
+            <div className="text-center pt-2">
+              <Button variant="link" onClick={() => navigate("/discover")} className="text-sm gap-1">
+                View all creators on Discover →
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

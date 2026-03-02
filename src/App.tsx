@@ -48,6 +48,7 @@ const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
 const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
+const Discover = lazy(() => import("./pages/Discover"));
 const TestEmails = lazy(() => import("./pages/TestEmails"));
 const PurchaseSuccess = lazy(() => import("./pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("./pages/MyPurchases"));
@@ -238,7 +239,7 @@ const AppContent = () => {
             <Route path="/dashboard" element={<Navigate to="/circle" replace />} />
             <Route path="/spark" element={<Navigate to="/circle" replace />} />
             <Route path="/cre8" element={<Navigate to="/circle" replace />} />
-            <Route path="/discover" element={<Navigate to="/circle" replace />} />
+            <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             
             {/* 404 - Catch all */}

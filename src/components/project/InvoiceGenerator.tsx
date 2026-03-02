@@ -360,18 +360,44 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       doc.setFillColor(rgb[0], rgb[1], rgb[2]);
       doc.rect(0, 0, 210, 6, "F");
 
+      // Logo
+      let logoXOffset = 20;
+      if (invoice.brand_logo_url) {
+        try {
+          const logoImg = new Image();
+          logoImg.crossOrigin = "anonymous";
+          await new Promise<void>((resolve, reject) => {
+            logoImg.onload = () => resolve();
+            logoImg.onerror = () => reject(new Error("Logo failed to load"));
+            logoImg.src = invoice.brand_logo_url;
+          });
+          const canvas = document.createElement("canvas");
+          canvas.width = logoImg.naturalWidth;
+          canvas.height = logoImg.naturalHeight;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(logoImg, 0, 0);
+          const logoDataUrl = canvas.toDataURL("image/png");
+          const logoH = 12;
+          const logoW = (logoImg.naturalWidth / logoImg.naturalHeight) * logoH;
+          doc.addImage(logoDataUrl, "PNG", 20, 11, logoW, logoH);
+          logoXOffset = 20 + logoW + 4;
+        } catch {
+          // If logo fails to load, just skip it
+        }
+      }
+
       // Business name
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(16);
       doc.setFont(undefined!, "bold");
-      doc.text(invoice.brand_name || "Invoice", 20, 20);
+      doc.text(invoice.brand_name || "Invoice", logoXOffset, 20);
       doc.setTextColor(80, 80, 80);
       doc.setFontSize(9);
       doc.setFont(undefined!, "normal");
       let yPos = 26;
-      if (invoice.brand_email) { doc.text(invoice.brand_email, 20, yPos); yPos += 4; }
-      if (invoice.brand_address) { doc.text(invoice.brand_address, 20, yPos); yPos += 4; }
-      if (invoice.brand_website) { doc.text(invoice.brand_website, 20, yPos); }
+      if (invoice.brand_email) { doc.text(invoice.brand_email, logoXOffset, yPos); yPos += 4; }
+      if (invoice.brand_address) { doc.text(invoice.brand_address, logoXOffset, yPos); yPos += 4; }
+      if (invoice.brand_website) { doc.text(invoice.brand_website, logoXOffset, yPos); }
 
       // Invoice title
       doc.setFontSize(28);

@@ -126,15 +126,17 @@ export function InteractiveOnboarding() {
 
       setUserId(user.id);
 
+      // Check localStorage first as a fast fallback
+      const localKey = `tour_completed_${user.id}`;
+      if (localStorage.getItem(localKey) === "true") return;
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_completed, onboarding_step, tour_completed")
         .eq("user_id", user.id)
         .single();
 
-      // Only show interactive tour AFTER onboarding is completed
-      // The onboarding_step field is used by Onboarding.tsx for profile setup (steps 1-7)
-      // The interactive tour uses localStorage to avoid conflicting with profile setup
+      // Only show interactive tour AFTER onboarding is completed and tour not yet done
       if (profile?.onboarding_completed && !profile?.tour_completed) {
         setCurrentStep(0);
         setIsVisible(true);
@@ -188,6 +190,8 @@ export function InteractiveOnboarding() {
   const completeTour = async () => {
     setIsVisible(false);
     if (userId) {
+      // Save to localStorage immediately to prevent re-showing on next page load
+      localStorage.setItem(`tour_completed_${userId}`, "true");
       try {
         await supabase
           .from("profiles")

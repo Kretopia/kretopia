@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     }
 
     const userId = claimsData.claims.sub;
-    const { action, phone, code } = await req.json();
+    const { action, phone, code, channel } = await req.json();
 
     const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID")!;
     const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN")!;
@@ -46,15 +46,17 @@ Deno.serve(async (req) => {
     if (action === "send") {
       if (!phone || typeof phone !== "string" || phone.trim().length < 8) {
         return new Response(
-          JSON.stringify({ error: "Invalid phone number" }),
+          JSON.stringify({ error: "Invalid phone number. Use international format e.g. +1234567890" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
+      const deliveryChannel = channel === "whatsapp" ? "whatsapp" : "sms";
+
       // Generate 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Store OTP in profiles table (hashed would be better in production)
+      // Store OTP server-side
       const adminClient = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -64,16 +66,25 @@ Deno.serve(async (req) => {
         .from("profiles")
         .update({
           phone_otp: otp,
-          phone_otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 min
+          phone_otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
           phone_number: phone.trim(),
         })
         .eq("user_id", userId);
 
-      // Send SMS via Twilio
+      // Send via Twilio
       const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`;
+
+      // For WhatsApp, prefix both From and To with "whatsapp:"
+      const toNumber = deliveryChannel === "whatsapp" 
+        ? `whatsapp:${phone.trim()}` 
+        : phone.trim();
+      const fromNumber = deliveryChannel === "whatsapp" 
+        ? `whatsapp:${TWILIO_PHONE}` 
+        : TWILIO_PHONE;
+
       const body = new URLSearchParams({
-        To: phone.trim(),
-        From: TWILIO_PHONE,
+        To: toNumber,
+        From: fromNumber,
         Body: `Your ThriveIN verification code is: ${otp}. It expires in 10 minutes.`,
       });
 
@@ -89,16 +100,17 @@ Deno.serve(async (req) => {
       if (!twilioRes.ok) {
         const errBody = await twilioRes.text();
         console.error("Twilio error:", errBody);
+        const channelLabel = deliveryChannel === "whatsapp" ? "WhatsApp message" : "SMS";
         return new Response(
-          JSON.stringify({ error: "Failed to send SMS. Please check the phone number format (e.g. +1234567890)." }),
+          JSON.stringify({ error: `Failed to send ${channelLabel}. Please check the phone number format (e.g. +1234567890).` }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      await twilioRes.text(); // consume body
+      await twilioRes.text();
 
       return new Response(
-        JSON.stringify({ success: true, message: "OTP sent" }),
+        JSON.stringify({ success: true, message: "OTP sent", channel: deliveryChannel }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -116,7 +128,6 @@ Deno.serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
       );
 
-      // Get stored OTP
       const { data: profile, error: fetchErr } = await adminClient
         .from("profiles")
         .select("phone_otp, phone_otp_expires_at, phone_number")
@@ -130,7 +141,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Check expiry
       if (!profile.phone_otp_expires_at || new Date(profile.phone_otp_expires_at) < new Date()) {
         return new Response(
           JSON.stringify({ error: "Code expired. Please request a new one." }),
@@ -138,7 +148,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Check code
       if (profile.phone_otp !== code.trim()) {
         return new Response(
           JSON.stringify({ error: "Invalid code. Please try again." }),
@@ -146,7 +155,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Mark phone as verified, clear OTP
       await adminClient
         .from("profiles")
         .update({

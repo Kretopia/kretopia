@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, ShieldCheck, CreditCard, CheckCircle2, Circle, Loader2, Upload, X } from "lucide-react";
+import { Mail, Phone, ShieldCheck, CreditCard, CheckCircle2, Circle, Loader2, Upload, X, MessageCircle, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -34,7 +34,7 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
   const [phoneLoading, setPhoneLoading] = useState(false);
   const [phoneStep, setPhoneStep] = useState<"input" | "otp">("input");
   const [otpCode, setOtpCode] = useState("");
-  // OTP is now stored server-side via Twilio edge function
+  const [otpChannel, setOtpChannel] = useState<"sms" | "whatsapp">("sms");
   const [idFile, setIdFile] = useState<File | null>(null);
   const [idLoading, setIdLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
@@ -78,12 +78,13 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
     setPhoneLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-phone-otp", {
-        body: { action: "send", phone: phoneNumber.trim() },
+        body: { action: "send", phone: phoneNumber.trim(), channel: otpChannel },
       });
       if (error) throw new Error(error.message || "Failed to send code");
       if (data?.error) throw new Error(data.error);
       setPhoneStep("otp");
-      toast({ title: "Code sent!", description: `A verification code has been sent via SMS to ${phoneNumber.trim()}.` });
+      const channelLabel = otpChannel === "whatsapp" ? "WhatsApp" : "SMS";
+      toast({ title: "Code sent!", description: `A verification code has been sent via ${channelLabel} to ${phoneNumber.trim()}.` });
     } catch (err: any) {
       toast({ title: "Failed to send code", description: err?.message || "Please try again.", variant: "destructive" });
     } finally {
@@ -315,6 +316,38 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                   />
+                  <p className="text-xs text-muted-foreground">Use international format (e.g. +44, +1)</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Send code via</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setOtpChannel("sms")}
+                      className={cn(
+                        "flex items-center justify-center gap-2 p-3 rounded-lg border transition-all text-sm font-medium",
+                        otpChannel === "sms"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/30 text-muted-foreground hover:border-primary/50"
+                      )}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      SMS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setOtpChannel("whatsapp")}
+                      className={cn(
+                        "flex items-center justify-center gap-2 p-3 rounded-lg border transition-all text-sm font-medium",
+                        otpChannel === "whatsapp"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/30 text-muted-foreground hover:border-primary/50"
+                      )}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      WhatsApp
+                    </button>
+                  </div>
                 </div>
                 <Button onClick={handlePhoneSendOtp} disabled={phoneLoading || !phoneNumber.trim()} className="w-full gap-2">
                   {phoneLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}

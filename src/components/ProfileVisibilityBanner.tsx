@@ -2,6 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Camera, FileText, Image } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface ProfileVisibilityBannerProps {
   isVisible: boolean;
@@ -17,6 +18,7 @@ const fieldIcons: Record<string, React.ReactNode> = {
 export const ProfileVisibilityBanner = ({ isVisible, missingFields }: ProfileVisibilityBannerProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isComplete: onboardingDone } = useOnboarding();
   const isOnProfilePage = location.pathname === '/profile';
 
   if (isVisible) {
@@ -50,7 +52,7 @@ export const ProfileVisibilityBanner = ({ isVisible, missingFields }: ProfileVis
           <Button
             size="sm"
             className="gap-2 w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white"
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate(onboardingDone ? '/profile' : '/onboarding')}
           >
             <Eye className="h-4 w-4" />
             Complete Profile

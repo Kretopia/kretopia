@@ -4017,6 +4017,8 @@ export type Database = {
           passion_skills: Json | null
           payment_verified: boolean
           phone_number: string | null
+          phone_otp: string | null
+          phone_otp_expires_at: string | null
           phone_verified: boolean
           portfolio_verified: boolean | null
           preferred_currency: string
@@ -4143,6 +4145,8 @@ export type Database = {
           passion_skills?: Json | null
           payment_verified?: boolean
           phone_number?: string | null
+          phone_otp?: string | null
+          phone_otp_expires_at?: string | null
           phone_verified?: boolean
           portfolio_verified?: boolean | null
           preferred_currency?: string
@@ -4269,6 +4273,8 @@ export type Database = {
           passion_skills?: Json | null
           payment_verified?: boolean
           phone_number?: string | null
+          phone_otp?: string | null
+          phone_otp_expires_at?: string | null
           phone_verified?: boolean
           portfolio_verified?: boolean | null
           preferred_currency?: string

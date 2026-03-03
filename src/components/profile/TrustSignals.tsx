@@ -34,7 +34,7 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
   const [phoneLoading, setPhoneLoading] = useState(false);
   const [phoneStep, setPhoneStep] = useState<"input" | "otp">("input");
   const [otpCode, setOtpCode] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState("");
+  // OTP is now stored server-side via Twilio edge function
   const [idFile, setIdFile] = useState<File | null>(null);
   const [idLoading, setIdLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
@@ -77,13 +77,13 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
     if (!user || !phoneNumber.trim()) return;
     setPhoneLoading(true);
     try {
-      // Generate a 6-digit OTP code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtp(code);
-      // In production, this would send via SMS/WhatsApp (requires Twilio or similar)
-      // For now, we simulate the OTP step
+      const { data, error } = await supabase.functions.invoke("send-phone-otp", {
+        body: { action: "send", phone: phoneNumber.trim() },
+      });
+      if (error) throw new Error(error.message || "Failed to send code");
+      if (data?.error) throw new Error(data.error);
       setPhoneStep("otp");
-      toast({ title: "Code sent!", description: `A verification code has been sent to ${phoneNumber.trim()}.` });
+      toast({ title: "Code sent!", description: `A verification code has been sent via SMS to ${phoneNumber.trim()}.` });
     } catch (err: any) {
       toast({ title: "Failed to send code", description: err?.message || "Please try again.", variant: "destructive" });
     } finally {
@@ -95,21 +95,15 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
     if (!user || !otpCode.trim()) return;
     setPhoneLoading(true);
     try {
-      if (otpCode.trim() !== generatedOtp) {
-        toast({ title: "Invalid code", description: "The code you entered doesn't match. Please try again.", variant: "destructive" });
-        setPhoneLoading(false);
-        return;
-      }
-      const { error } = await supabase
-        .from("profiles")
-        .update({ phone_number: phoneNumber.trim(), phone_verified: true })
-        .eq("user_id", user.id);
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke("send-phone-otp", {
+        body: { action: "verify", code: otpCode.trim() },
+      });
+      if (error) throw new Error(error.message || "Verification failed");
+      if (data?.error) throw new Error(data.error);
       toast({ title: "Phone verified! ✅", description: "Your phone number has been verified." });
       setActiveDialog(null);
       setPhoneNumber("");
       setOtpCode("");
-      setGeneratedOtp("");
       setPhoneStep("input");
       window.location.reload();
     } catch (err: any) {

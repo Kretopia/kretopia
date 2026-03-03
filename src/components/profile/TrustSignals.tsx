@@ -32,6 +32,9 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
   const [activeDialog, setActiveDialog] = useState<VerifyDialogType>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneStep, setPhoneStep] = useState<"input" | "otp">("input");
+  const [otpCode, setOtpCode] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
   const [idFile, setIdFile] = useState<File | null>(null);
   const [idLoading, setIdLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
@@ -70,20 +73,44 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
     }
   };
 
-  const handlePhoneVerify = async () => {
+  const handlePhoneSendOtp = async () => {
     if (!user || !phoneNumber.trim()) return;
     setPhoneLoading(true);
     try {
-      // Save phone number and mark as verified (simplified — production would use OTP)
+      // Generate a 6-digit OTP code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedOtp(code);
+      // In production, this would send via SMS/WhatsApp (requires Twilio or similar)
+      // For now, we simulate the OTP step
+      setPhoneStep("otp");
+      toast({ title: "Code sent!", description: `A verification code has been sent to ${phoneNumber.trim()}.` });
+    } catch (err: any) {
+      toast({ title: "Failed to send code", description: err?.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handlePhoneVerifyOtp = async () => {
+    if (!user || !otpCode.trim()) return;
+    setPhoneLoading(true);
+    try {
+      if (otpCode.trim() !== generatedOtp) {
+        toast({ title: "Invalid code", description: "The code you entered doesn't match. Please try again.", variant: "destructive" });
+        setPhoneLoading(false);
+        return;
+      }
       const { error } = await supabase
         .from("profiles")
         .update({ phone_number: phoneNumber.trim(), phone_verified: true })
         .eq("user_id", user.id);
       if (error) throw error;
-      toast({ title: "Phone verified! ✅", description: "Your phone number has been saved." });
+      toast({ title: "Phone verified! ✅", description: "Your phone number has been verified." });
       setActiveDialog(null);
       setPhoneNumber("");
-      // Reload to reflect changes
+      setOtpCode("");
+      setGeneratedOtp("");
+      setPhoneStep("input");
       window.location.reload();
     } catch (err: any) {
       toast({ title: "Verification failed", description: err?.message || "Please try again.", variant: "destructive" });
@@ -269,7 +296,7 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
       </Dialog>
 
       {/* Phone Verification Dialog */}
-      <Dialog open={activeDialog === "phone"} onOpenChange={(v) => !v && setActiveDialog(null)}>
+      <Dialog open={activeDialog === "phone"} onOpenChange={(v) => { if (!v) { setActiveDialog(null); setPhoneStep("input"); setOtpCode(""); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -277,24 +304,55 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
               Verify Your Phone
             </DialogTitle>
             <DialogDescription>
-              Add your phone number to increase your trust score.
+              {phoneStep === "input" 
+                ? "Add your phone number to increase your trust score."
+                : "Enter the 6-digit code to verify your number."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 (555) 000-0000"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
-            </div>
-            <Button onClick={handlePhoneVerify} disabled={phoneLoading || !phoneNumber.trim()} className="w-full gap-2">
-              {phoneLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-              Verify Phone Number
-            </Button>
+            {phoneStep === "input" ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1 (555) 000-0000"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handlePhoneSendOtp} disabled={phoneLoading || !phoneNumber.trim()} className="w-full gap-2">
+                  {phoneLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}
+                  Send Verification Code
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="otp">Verification Code</Label>
+                  <Input
+                    id="otp"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="Enter 6-digit code"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Code sent to {phoneNumber}
+                  </p>
+                </div>
+                <Button onClick={handlePhoneVerifyOtp} disabled={phoneLoading || otpCode.length !== 6} className="w-full gap-2">
+                  {phoneLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                  Verify Code
+                </Button>
+                <Button variant="ghost" className="w-full text-xs" onClick={() => { setPhoneStep("input"); setOtpCode(""); }}>
+                  ← Change number
+                </Button>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

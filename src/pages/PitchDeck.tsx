@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Maximize, Minimize, Download } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Download, Loader2 } from "lucide-react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const TOTAL_SLIDES = 12;
 
@@ -512,6 +514,56 @@ export default function PitchDeck() {
   const [current, setCurrent] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
+  const offscreenRef = useRef<HTMLDivElement>(null);
+
+  const exportToPDF = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [1920, 1080] });
+
+      // Create offscreen container
+      const container = document.createElement("div");
+      container.style.cssText = "position:fixed;left:-9999px;top:0;width:1920px;height:1080px;overflow:hidden;";
+      document.body.appendChild(container);
+
+      for (let i = 0; i < SLIDES.length; i++) {
+        if (i > 0) pdf.addPage([1920, 1080], "landscape");
+
+        // Render slide into offscreen container
+        const { createRoot } = await import("react-dom/client");
+        const SlideComp = SLIDES[i];
+        const wrapper = document.createElement("div");
+        wrapper.style.cssText = "width:1920px;height:1080px;position:relative;";
+        container.innerHTML = "";
+        container.appendChild(wrapper);
+
+        const root = createRoot(wrapper);
+        await new Promise<void>((resolve) => {
+          root.render(<SlideComp />);
+          setTimeout(resolve, 200);
+        });
+
+        const canvas = await html2canvas(wrapper, {
+          width: 1920,
+          height: 1080,
+          scale: 2,
+          backgroundColor: "#0d0d1a",
+          useCORS: true,
+        });
+
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, 1920, 1080);
+        root.unmount();
+      }
+
+      document.body.removeChild(container);
+      pdf.save("ThriveIN-Pitch-Deck.pdf");
+    } catch (err) {
+      console.error("PDF export failed:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  }, []);
 
   const goNext = useCallback(() => setCurrent(c => Math.min(c + 1, TOTAL_SLIDES - 1)), []);
   const goPrev = useCallback(() => setCurrent(c => Math.max(c - 1, 0)), []);
@@ -568,6 +620,14 @@ export default function PitchDeck() {
             <span className="text-white/40 text-sm">{current + 1} / {TOTAL_SLIDES}</span>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={exportToPDF}
+              disabled={isExporting}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              {isExporting ? "Exporting..." : "PDF"}
+            </button>
             <button
               onClick={enterFullscreen}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"

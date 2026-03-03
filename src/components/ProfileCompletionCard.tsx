@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ProfileCompletionStatus } from "@/lib/profileCompletion";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface ProfileCompletionCardProps {
   completion: ProfileCompletionStatus;
@@ -36,6 +37,7 @@ const fieldActions: Record<string, { section?: string; tab?: string }> = {
 export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(true);
+  const { isComplete: onboardingDone } = useOnboarding();
 
   if (completion.percentage === 100) {
     return (
@@ -136,7 +138,7 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
         )}
 
         <Button 
-          onClick={() => navigate('/profile')} 
+          onClick={() => navigate(onboardingDone ? '/profile' : '/onboarding')} 
           className="w-full"
           variant="default"
         >

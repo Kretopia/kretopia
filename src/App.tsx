@@ -8,6 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
@@ -107,10 +108,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Redirect to Circle (Match) after login
+// Redirect to Circle (Match) after login, or onboarding if not completed
 const DefaultRoute = () => {
   const { user } = useAuth();
-  return user ? <Navigate to="/circle" replace /> : <Landing />;
+  const { isComplete, loading: onboardingLoading } = useOnboarding();
+  
+  if (!user) return <Landing />;
+  if (onboardingLoading) return <LoadingFallback />;
+  if (!isComplete) return <Navigate to="/onboarding" replace />;
+  return <Navigate to="/circle" replace />;
 };
 
 // Track page views

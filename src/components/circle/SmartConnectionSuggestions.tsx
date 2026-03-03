@@ -219,7 +219,7 @@ Return top 3 reasons why this user would benefit from expanding their network in
         description="Complete your profile to get personalized connection recommendations"
         action={{
           label: "Complete Profile",
-          onClick: () => window.location.href = '/profile'
+          onClick: () => window.location.href = '/onboarding'
         }}
       />
     );

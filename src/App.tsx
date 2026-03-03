@@ -76,6 +76,7 @@ const Accounting = lazy(() => import("./pages/Accounting"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
+const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -139,17 +140,18 @@ const AppContent = () => {
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
   const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';
+  const isDeckPage = location.pathname === '/deck';
   
   // Don't add bottom padding when on individual project pages or desk list
-  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK;
+  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK && !isDeckPage;
   
   return (
     <div className="h-full overflow-auto">
       <NetworkStatus />
       <SkipLink />
       <PageViewTracker />
-      {!isPublicEPK && !isAuthPage && <Navbar user={user} />}
-      {user && !isPublicEPK && !isAuthPage && <BottomNav />}
+      {!isPublicEPK && !isAuthPage && !isDeckPage && <Navbar user={user} />}
+      {user && !isPublicEPK && !isAuthPage && !isDeckPage && <BottomNav />}
       <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
@@ -210,6 +212,9 @@ const AppContent = () => {
             <Route path="/waitlist-admin" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
             <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
             <Route path="/feedback-admin" element={<ProtectedRoute><FeedbackAdmin /></ProtectedRoute>} />
+
+            {/* Pitch Deck */}
+            <Route path="/deck" element={<PitchDeck />} />
 
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />

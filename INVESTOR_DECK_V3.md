@@ -120,13 +120,15 @@ Show 4 key screens:
 - **ThriveIN Magazine** — 400+ physical distribution points in Bali
 - **Discover A Thriver Podcast** — active, top creative industry guests
 - **ThriveXchange** — industry networking event series
-- **$50K grant** from NEAR Protocol (2023) — used to fund V2 development
-- **3 platform iterations** — V1 (community response), V2 (grant-funded), V3 (full-stack, live today)
-- Personal investment: **$XX,XXX+** in development and operations
+- **2020: ThriveIN V1** — 1,000+ downloads. First proof of demand. Built from community need.
+- **2022: ThriveIN V2** — Blockchain-powered. Secured **$50K grant from NEAR Protocol** to fund development.
+- **2026: ThriveIN V3** — AI-powered. Full-stack rebuild. 15+ features live. Built for **$5K** using AI-augmented development.
+- **Beta timeline:** Trinidad closed beta (March 2026) → Bali expansion (April 2026)
+- Personal investment: **$5K+** in V3 development (leveraging AI tools to ship at 10x efficiency)
 
 > "Not a tech founder trying to build community. A community builder who learned to ship product. 13 years of trust is an unfair distribution advantage."
 
-**Solo founder building with AI-augmented development** — shipping at the velocity of a 3-person team. Will use funds to hire engineering + growth leads.
+**Solo founder building with AI-augmented development** — shipped a $50K+ equivalent product for $5K. Three iterations over 6 years proves persistence, learning, and market obsession. Will use funds to hire engineering + growth leads.
 
 > Designer note: Photo of Ethan at a ThriveXchange event. Show the community, not just the founder.
 
@@ -157,7 +159,7 @@ Show 4 key screens:
 - Week 4-8: 5-10 real paid projects through escrow
 - Week 8-12: 40%+ weekly retention rate
 
-**Ecosystem revenue:** Events, magazine, and media channels generate revenue today — proving market access and creator trust.
+**Ecosystem revenue:** Events and ThriveIN Magazine generate **~$20K USD/year** independently — proving market access, creator trust, and the founder's ability to monetize creative communities. (This revenue is separate from the platform and not included in projections.)
 
 > Designer note: Use a "build vs. validate" framework visual. Left: everything built. Right: what the beta will prove.
 
@@ -237,14 +239,14 @@ Events → Signups → Projects → Payments → Referrals → More Events
 
 **Headline:** Density first. Not spray-and-pray.
 
-**Phase 1: Trinidad & Tobago (Now — Month 6)**
-- Android closed beta with curated creator cohort
+**Phase 1: Trinidad & Bali (March–April 2026)**
+- Android closed beta: Trinidad (March), Bali (April)
 - WhatsApp-driven onboarding
 - Carnival season + event partnerships
 - **Target:** 500 active users, 25+ paid projects
 
-**Phase 2: Caribbean + Bali (Month 6-12)**
-- Expand to Jamaica, Barbados, and Bali creator communities
+**Phase 2: Caribbean Expansion (Month 6-12)**
+- Expand to Jamaica, Barbados, and wider Bali creator communities
 - Ambassador network activation
 - Magazine + podcast as acquisition channels
 - **Target:** 2,500 active users, 100+ paid projects

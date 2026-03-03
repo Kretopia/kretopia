@@ -325,81 +325,58 @@ const Auth = () => {
     analytics.featureUsed(`${provider}_signin_attempt`);
     
     try {
-      const isCustomDomain =
-        !window.location.hostname.includes("lovable.app") &&
-        !window.location.hostname.includes("lovableproject.com") &&
-        !window.location.hostname.includes("localhost");
-
-      if (isCustomDomain) {
-        console.log(`[${provider} Auth] Custom domain detected:`, window.location.origin);
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider,
-          options: {
-            redirectTo: `${window.location.origin}`,
-            skipBrowserRedirect: true,
-          },
-        });
-        console.log(`[${provider} Auth] OAuth response:`, { url: data?.url, error });
-
-        if (error) throw error;
-
-        if (data?.url) {
-          window.location.href = data.url;
-          return;
-        }
-      } else {
-        const result = await lovable.auth.signInWithOAuth(provider, {
-          redirect_uri: window.location.origin,
-        });
+      // Always use Lovable Cloud managed OAuth (works on all domains including custom)
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
+      });
+      
+      if ('redirected' in result && result.redirected) {
+        return;
+      }
+      
+      if (result.error) {
+        const errorMsg = result.error.message;
         
-        if ('redirected' in result && result.redirected) {
+        if (errorMsg.includes("cancelled")) {
+          setLoadingFn(false);
           return;
         }
         
-        if (result.error) {
-          const errorMsg = result.error.message;
-          
-          if (errorMsg.includes("cancelled")) {
-            setLoadingFn(false);
-            return;
-          }
-          
-          if (errorMsg.includes("Popup was blocked") || errorMsg.includes("blocked")) {
-            analytics.errorOccurred(`${provider}_signin`, "popup_blocked", "auth");
-            toast({
-              title: "Pop-up Blocked",
-              description: "Please allow pop-ups for this site or try opening the app in a new tab.",
-              variant: "destructive",
-            });
-            setLoadingFn(false);
-            return;
-          }
-
-          if (errorMsg.includes("Preview mode") || errorMsg.includes("not supported")) {
-            toast({
-              title: "Open in New Tab",
-              description: `${provider === "google" ? "Google" : "Apple"} sign-in works best when the app is opened directly. Click the arrow icon to open in a new tab.`,
-              variant: "destructive",
-            });
-            setLoadingFn(false);
-            return;
-          }
-          
-          analytics.errorOccurred(`${provider}_signin`, errorMsg, "auth");
+        if (errorMsg.includes("Popup was blocked") || errorMsg.includes("blocked")) {
+          analytics.errorOccurred(`${provider}_signin`, "popup_blocked", "auth");
           toast({
-            title: `${provider === "google" ? "Google" : "Apple"} Sign-In Failed`,
-            description: errorMsg,
+            title: "Pop-up Blocked",
+            description: "Please allow pop-ups for this site or try opening the app in a new tab.",
             variant: "destructive",
           });
           setLoadingFn(false);
           return;
-        } else {
-          analytics.signIn(provider);
-          toast({
-            title: "Welcome!",
-            description: `Signed in with ${provider === "google" ? "Google" : "Apple"} successfully.`,
-          });
         }
+
+        if (errorMsg.includes("Preview mode") || errorMsg.includes("not supported")) {
+          toast({
+            title: "Open in New Tab",
+            description: `${provider === "google" ? "Google" : "Apple"} sign-in works best when the app is opened directly. Click the arrow icon to open in a new tab.`,
+            variant: "destructive",
+          });
+          setLoadingFn(false);
+          return;
+        }
+        
+        analytics.errorOccurred(`${provider}_signin`, errorMsg, "auth");
+        toast({
+          title: `${provider === "google" ? "Google" : "Apple"} Sign-In Failed`,
+          description: errorMsg,
+          variant: "destructive",
+        });
+        setLoadingFn(false);
+        return;
+      } else {
+        analytics.signIn(provider);
+        toast({
+          title: "Welcome!",
+          description: `Signed in with ${provider === "google" ? "Google" : "Apple"} successfully.`,
+        });
       }
     } catch (err: any) {
       console.error(`${provider} sign-in error:`, err);

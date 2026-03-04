@@ -76,6 +76,26 @@ export function WalletXPSection() {
     });
   };
 
+  const getMonthKey = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${now.getMonth()}`;
+  };
+
+  /** Add bonus uses to a feature's localStorage cap for the current month */
+  const addBonusUses = (feature: string, bonusCount: number) => {
+    if (!user) return;
+    const key = `thrivein_bonus_${user.id}_${feature}`;
+    try {
+      const stored = localStorage.getItem(key);
+      let current = 0;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.month === getMonthKey()) current = parsed.count || 0;
+      }
+      localStorage.setItem(key, JSON.stringify({ month: getMonthKey(), count: current + bonusCount }));
+    } catch { /* ignore */ }
+  };
+
   // Actions
   const buyStreakFreeze = async () => {
     if (!user) return;
@@ -108,12 +128,40 @@ export function WalletXPSection() {
     await recordActivity("pro_trial_purchased", 2500, "Purchased 3-Day Pro Trial");
   };
 
-  const buyCustomFrame = async () => {
-    if (!user) return;
-    await supabase.from("profiles")
-      .update({ xp: userXP - 1500, profile_frame: "gradient_gold" })
-      .eq("user_id", user.id);
-    await recordActivity("custom_frame_purchased", 1500, "Purchased Custom Profile Frame (Gold)");
+  const buyExtraPortfolio = async () => {
+    await deductXP(400);
+    addBonusUses("portfolio_slots", 3);
+    await recordActivity("extra_portfolio_purchased", 400, "Purchased +3 Portfolio Slots");
+  };
+
+  const buyExtraLeads = async () => {
+    await deductXP(800);
+    addBonusUses("aiLeadSearches", 5);
+    await recordActivity("extra_leads_purchased", 800, "Purchased +5 Lead Searches");
+  };
+
+  const buyExtraOutreach = async () => {
+    await deductXP(600);
+    addBonusUses("aiOutreachDrafts", 10);
+    await recordActivity("extra_outreach_purchased", 600, "Purchased +10 Outreach Drafts");
+  };
+
+  const buyExtraInvoices = async () => {
+    await deductXP(300);
+    addBonusUses("invoices", 3);
+    await recordActivity("extra_invoices_purchased", 300, "Purchased +3 Invoices");
+  };
+
+  const buyPriorityGig = async () => {
+    await deductXP(1500);
+    addBonusUses("priority_gig", 1);
+    await recordActivity("priority_gig_purchased", 1500, "Purchased Priority Gig Listing (24h)");
+  };
+
+  const buyAnalyticsReport = async () => {
+    await deductXP(2000);
+    addBonusUses("analytics_report", 1);
+    await recordActivity("analytics_report_purchased", 2000, "Purchased Full Analytics Report");
   };
 
   // Gift XP
@@ -179,12 +227,12 @@ export function WalletXPSection() {
     { id: "streak_freeze", name: "Streak Freeze", description: `Protect your streak. You have ${freezeCount}.`, cost: 500, icon: <Snowflake className="h-5 w-5 text-blue-400" />, action: buyStreakFreeze, available: true },
     { id: "profile_boost", name: "24h Profile Boost", description: "Top of Discover for 24 hours.", cost: 1000, icon: <Eye className="h-5 w-5 text-amber-400" />, action: buyProfileBoost, available: true },
     { id: "double_xp", name: "2x XP (24 hours)", description: "Double XP on all activities.", cost: 750, icon: <Zap className="h-5 w-5 text-yellow-400" />, action: buyDoubleXP, available: true },
-    { id: "extra_portfolio", name: "+3 Portfolio Slots", description: "Add 3 more portfolio items this month.", cost: 400, icon: <Image className="h-5 w-5 text-emerald-400" />, action: async () => {}, available: true, badge: "Popular" },
-    { id: "extra_leads", name: "+5 Lead Searches", description: "5 extra AI lead searches this month.", cost: 800, icon: <Search className="h-5 w-5 text-sky-400" />, action: async () => {}, available: true },
-    { id: "extra_outreach", name: "+10 Outreach Drafts", description: "10 extra AI outreach drafts.", cost: 600, icon: <MessageSquare className="h-5 w-5 text-indigo-400" />, action: async () => {}, available: true },
-    { id: "extra_invoices", name: "+3 Invoices", description: "3 extra invoices this month.", cost: 300, icon: <FileText className="h-5 w-5 text-teal-400" />, action: async () => {}, available: true },
-    { id: "priority_gig", name: "Priority Gig Listing", description: "Pin your opportunity for 24h.", cost: 1500, icon: <Briefcase className="h-5 w-5 text-orange-400" />, action: async () => {}, available: true },
-    { id: "analytics_unlock", name: "Analytics Report", description: "Full profile analytics export (1x).", cost: 2000, icon: <BarChart3 className="h-5 w-5 text-violet-400" />, action: async () => {}, available: true },
+    { id: "extra_portfolio", name: "+3 Portfolio Slots", description: "Add 3 more portfolio items this month.", cost: 400, icon: <Image className="h-5 w-5 text-emerald-400" />, action: buyExtraPortfolio, available: true, badge: "Popular" },
+    { id: "extra_leads", name: "+5 Lead Searches", description: "5 extra AI lead searches this month.", cost: 800, icon: <Search className="h-5 w-5 text-sky-400" />, action: buyExtraLeads, available: true },
+    { id: "extra_outreach", name: "+10 Outreach Drafts", description: "10 extra AI outreach drafts.", cost: 600, icon: <MessageSquare className="h-5 w-5 text-indigo-400" />, action: buyExtraOutreach, available: true },
+    { id: "extra_invoices", name: "+3 Invoices", description: "3 extra invoices this month.", cost: 300, icon: <FileText className="h-5 w-5 text-teal-400" />, action: buyExtraInvoices, available: true },
+    { id: "priority_gig", name: "Priority Gig Listing", description: "Pin your opportunity for 24h.", cost: 1500, icon: <Briefcase className="h-5 w-5 text-orange-400" />, action: buyPriorityGig, available: true },
+    { id: "analytics_unlock", name: "Analytics Report", description: "Full profile analytics export (1x).", cost: 2000, icon: <BarChart3 className="h-5 w-5 text-violet-400" />, action: buyAnalyticsReport, available: true },
     { id: "pro_trial", name: "Pro Trial (3 Days)", description: "Unlock all Pro features.", cost: 2500, icon: <Crown className="h-5 w-5 text-purple-400" />, action: buyProTrial, available: true, badge: "Best Value" },
     { id: "gift_xp", name: "Gift 100 XP", description: "Send 100 XP to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
   ];

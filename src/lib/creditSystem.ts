@@ -1,47 +1,40 @@
 import { supabase } from "@/integrations/supabase/client";
 
-// Updated to align with tier point system
-export const CREDIT_REWARDS = {
+// XP rewards for platform activities (formerly credits, now unified into XP)
+export const XP_REWARDS = {
   PROFILE_COMPLETE: 100,
   CONNECTION_MADE: 25,
   PROJECT_COMPLETED: 500,
   REVIEW_RECEIVED: 150,
-  DAILY_LOGIN: 5,
+  DAILY_LOGIN: 10,
   OPPORTUNITY_POSTED: 50,
   PARTNER_VISIT: 20,
   MILESTONE_COMPLETED: 200,
 } as const;
 
-export const awardCredits = async (
+// Legacy alias
+export const CREDIT_REWARDS = XP_REWARDS;
+
+export const awardXP = async (
   userId: string,
   amount: number,
   type: string,
   description: string
 ) => {
   try {
-    // Update wallet credits
-    const { data: wallet } = await supabase
-      .from('wallets')
-      .select('credits')
+    // Update XP on profile directly
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('xp')
       .eq('user_id', userId)
       .single();
 
-    if (wallet) {
+    if (profile) {
       await supabase
-        .from('wallets')
-        .update({ credits: (wallet.credits || 0) + amount })
+        .from('profiles')
+        .update({ xp: (profile.xp || 0) + amount })
         .eq('user_id', userId);
     }
-
-    // Record transaction
-    await supabase
-      .from('transactions')
-      .insert({
-        user_id: userId,
-        amount,
-        type: 'credits_earned',
-        description,
-      });
 
     // Record XP activity
     await supabase
@@ -49,22 +42,24 @@ export const awardCredits = async (
       .insert({
         user_id: userId,
         activity_type: type,
-        xp_earned: amount * 10, // 10 XP per credit
+        xp_earned: amount,
         description,
       });
 
     return { success: true };
   } catch (error) {
-    console.error('Error awarding credits:', error);
+    console.error('Error awarding XP:', error);
     return { success: false, error };
   }
 };
+
+// Legacy alias
+export const awardCredits = awardXP;
 
 export const checkAndAwardDailyLogin = async (userId: string) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     
-    // Check if user already got daily login credits today
     const { data: existingActivity, error: checkError } = await supabase
       .from('xp_activities')
       .select('*')
@@ -81,9 +76,9 @@ export const checkAndAwardDailyLogin = async (userId: string) => {
     }
 
     if (!existingActivity) {
-      await awardCredits(
+      await awardXP(
         userId,
-        CREDIT_REWARDS.DAILY_LOGIN,
+        XP_REWARDS.DAILY_LOGIN,
         'daily_login',
         'Daily login bonus'
       );

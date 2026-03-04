@@ -15,6 +15,8 @@ export interface SwipeFiltersState {
   locationCountry: string;
   locationCity: string;
   nearMe: boolean;
+  userLat?: number | null;
+  userLon?: number | null;
   collabIntent: string;
   // Pro filters
   verifiedOnly: boolean;
@@ -119,6 +121,8 @@ export const DEFAULT_SWIPE_FILTERS: SwipeFiltersState = {
   locationCountry: 'all',
   locationCity: 'all',
   nearMe: false,
+  userLat: null,
+  userLon: null,
   collabIntent: 'all',
   verifiedOnly: false,
   minFollowers: 'all',
@@ -143,18 +147,29 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
   const selectedCountry = LOCATION_HIERARCHY.find(c => c.value === filters.locationCountry);
 
   const handleNearMe = () => {
+    if (filters.nearMe) {
+      // Toggle off
+      onFiltersChange({ ...filters, nearMe: false, userLat: null, userLon: null });
+      return;
+    }
     if (!navigator.geolocation) return;
     setDetectingLocation(true);
     navigator.geolocation.getCurrentPosition(
-      () => {
-        // We store the "nearMe" flag; the hook will handle geolocation-based sorting
-        onFiltersChange({ ...filters, nearMe: true, locationCountry: 'all', locationCity: 'all' });
+      (position) => {
+        onFiltersChange({
+          ...filters,
+          nearMe: true,
+          userLat: position.coords.latitude,
+          userLon: position.coords.longitude,
+          locationCountry: 'all',
+          locationCity: 'all',
+        });
         setDetectingLocation(false);
       },
       () => {
         setDetectingLocation(false);
       },
-      { enableHighAccuracy: false, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 

@@ -194,12 +194,21 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       filtered = filtered.filter(p => locationMatchesFilter(p.location, filters.location));
     }
 
-    // Near Me — sort by distance if user has geolocation
-    if (filters.nearMe && navigator.geolocation) {
-      // We can't async inside useEffect easily, so we just prioritize profiles with lat/lon
+    // Near Me — sort by distance using user's coordinates
+    if (filters.nearMe && filters.userLat != null && filters.userLon != null) {
+      const userLat = filters.userLat;
+      const userLon = filters.userLon;
+      const toRad = (deg: number) => deg * Math.PI / 180;
+      const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+        return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // km
+      };
       filtered = filtered
         .filter(p => p.latitude != null && p.longitude != null)
-        .sort(() => Math.random() - 0.5); // TODO: sort by actual distance when user coords available
+        .map(p => ({ ...p, _distance: haversine(userLat, userLon, p.latitude!, p.longitude!) }))
+        .sort((a, b) => (a as any)._distance - (b as any)._distance);
     }
 
     // Collab intent

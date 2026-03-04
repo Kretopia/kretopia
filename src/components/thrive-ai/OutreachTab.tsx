@@ -11,9 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2, Users, Upload } from "lucide-react";
+import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2, Users, Upload, Save, CalendarClock, BarChart3, AlertCircle } from "lucide-react";
 import { GmailSettings } from "@/components/sales/GmailSettings";
+import { format } from "date-fns";
 
 type Lead = {
   id: string;
@@ -55,7 +57,8 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const OutreachTab = () => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
+  const isPro = subscriptionInfo.subscribed;
   const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [addEmailTo, setAddEmailTo] = useState<string | null>(null);
@@ -78,6 +81,13 @@ const OutreachTab = () => {
   const [bulkBody, setBulkBody] = useState("");
   const [bulkSending, setBulkSending] = useState(false);
   const [bulkProgress, setBulkProgress] = useState(0);
+  const [bulkScheduledFor, setBulkScheduledFor] = useState("");
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+
+  const BULK_LIMIT = isPro ? 500 : 10;
+  const currentMonth = new Date().toISOString().slice(0, 7);
 
   // Fetch sequences
   const { data: sequences = [], isLoading } = useQuery({
@@ -120,6 +130,66 @@ const OutreachTab = () => {
         .order("name");
       if (error) throw error;
       return data as Lead[];
+    },
+    enabled: !!user,
+  });
+
+  // Fetch bulk email usage this month
+  const { data: bulkUsage } = useQuery({
+    queryKey: ["bulk_email_usage", user?.id, currentMonth],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("bulk_email_usage")
+        .select("send_count")
+        .eq("user_id", user!.id)
+        .eq("month", currentMonth)
+        .maybeSingle();
+      return data?.send_count || 0;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch saved email templates
+  const { data: templates = [] } = useQuery({
+    queryKey: ["email_templates", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_templates")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch unsubscribe list
+  const { data: unsubscribes = [] } = useQuery({
+    queryKey: ["email_unsubscribes", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_unsubscribes")
+        .select("email")
+        .eq("sender_id", user!.id);
+      if (error) throw error;
+      return data.map(u => u.email);
+    },
+    enabled: !!user,
+  });
+
+  // Fetch campaigns for analytics
+  const { data: campaigns = [] } = useQuery({
+    queryKey: ["email_campaigns", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_campaigns")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data;
     },
     enabled: !!user,
   });
@@ -345,23 +415,79 @@ const OutreachTab = () => {
     reader.readAsText(file);
   };
 
-  // --- Bulk send ---
+  // --- Bulk send with limits, unsubscribe filtering, campaign tracking ---
   const handleBulkSend = async () => {
-    const recipients = bulkMode === "csv"
+    let recipients = bulkMode === "csv"
       ? csvEmails
       : leads.filter(l => bulkSelected.includes(l.id) && l.email).map(l => ({ name: l.name, email: l.email! }));
     
     if (recipients.length === 0) { toast.error("No recipients selected"); return; }
     if (!bulkSubject.trim() || !bulkBody.trim()) { toast.error("Subject and body required"); return; }
 
+    // Filter out unsubscribed emails
+    const unsubSet = new Set(unsubscribes);
+    const filtered = recipients.filter(r => !unsubSet.has(r.email));
+    const skipped = recipients.length - filtered.length;
+    recipients = filtered;
+    if (skipped > 0) toast.info(`${skipped} unsubscribed email(s) excluded`);
+    if (recipients.length === 0) { toast.error("All recipients are unsubscribed"); return; }
+
+    // Enforce monthly limit
+    const used = bulkUsage || 0;
+    const remaining = BULK_LIMIT - used;
+    if (remaining <= 0) {
+      toast.error(`Monthly bulk email limit reached (${BULK_LIMIT}). ${!isPro ? "Upgrade to Pro for 500/mo." : "Limit resets next month."}`);
+      return;
+    }
+    if (recipients.length > remaining) {
+      recipients = recipients.slice(0, remaining);
+      toast.info(`Capped to ${remaining} remaining sends this month`);
+    }
+
+    // Create campaign record
+    const { data: campaign, error: campErr } = await supabase
+      .from("email_campaigns")
+      .insert({
+        user_id: user!.id,
+        name: bulkSubject,
+        subject: bulkSubject,
+        body: bulkBody,
+        status: bulkScheduledFor ? "scheduled" : "sending",
+        total_recipients: recipients.length,
+        scheduled_for: bulkScheduledFor || null,
+      })
+      .select("id")
+      .single();
+
+    if (campErr) { toast.error("Failed to create campaign"); return; }
+
+    // If scheduled, save recipients and exit
+    if (bulkScheduledFor) {
+      const recipientRows = recipients.map(r => ({
+        campaign_id: campaign.id,
+        user_id: user!.id,
+        email: r.email,
+        name: r.name,
+        status: "pending",
+      }));
+      await supabase.from("campaign_recipients").insert(recipientRows);
+      toast.success(`Campaign scheduled for ${format(new Date(bulkScheduledFor), "PPP p")}`);
+      setBulkOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["email_campaigns"] });
+      return;
+    }
+
     setBulkSending(true);
     setBulkProgress(0);
     let sent = 0;
     let failed = 0;
 
+    // Add unsubscribe footer
+    const unsubFooter = `\n\n---\nDon't want these emails? Reply "unsubscribe" to opt out.`;
+
     for (const r of recipients) {
       try {
-        const personalBody = bulkBody.replace(/\{name\}/gi, r.name).replace(/\{email\}/gi, r.email);
+        const personalBody = (bulkBody + unsubFooter).replace(/\{name\}/gi, r.name).replace(/\{email\}/gi, r.email);
         const personalSubject = bulkSubject.replace(/\{name\}/gi, r.name);
         const { data, error } = await supabase.functions.invoke("send-outreach-email", {
           body: { action: "send", to: r.email, subject: personalSubject, body: personalBody },
@@ -371,17 +497,70 @@ const OutreachTab = () => {
       setBulkProgress(Math.round(((sent + failed) / recipients.length) * 100));
     }
 
+    // Update campaign stats
+    await supabase.from("email_campaigns").update({
+      status: "sent",
+      sent_count: sent,
+      failed_count: failed,
+      sent_at: new Date().toISOString(),
+    }).eq("id", campaign.id);
+
+    // Update monthly usage
+    await supabase.from("bulk_email_usage").upsert({
+      user_id: user!.id,
+      month: currentMonth,
+      send_count: used + sent,
+    }, { onConflict: "user_id,month" });
+
     setBulkSending(false);
-    toast.success(`Bulk send complete: ${sent} sent, ${failed} failed`);
-    if (sent > 0) {
-      queryClient.invalidateQueries({ queryKey: ["emails-sent-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["leads"] });
-    }
+    toast.success(`Campaign complete: ${sent} sent, ${failed} failed`);
+    queryClient.invalidateQueries({ queryKey: ["emails-sent-stats"] });
+    queryClient.invalidateQueries({ queryKey: ["bulk_email_usage"] });
+    queryClient.invalidateQueries({ queryKey: ["email_campaigns"] });
+    queryClient.invalidateQueries({ queryKey: ["leads"] });
     setBulkOpen(false);
     setBulkSelected([]);
     setCsvEmails([]);
     setBulkSubject("");
     setBulkBody("");
+    setBulkScheduledFor("");
+  };
+
+  // --- Save template ---
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim() || !bulkSubject.trim() || !bulkBody.trim()) {
+      toast.error("Name, subject, and body required");
+      return;
+    }
+    const { error } = await supabase.from("email_templates").insert({
+      user_id: user!.id,
+      name: templateName,
+      subject: bulkSubject,
+      body: bulkBody,
+    });
+    if (error) { toast.error("Failed to save template"); return; }
+    toast.success("Template saved!");
+    setSaveTemplateOpen(false);
+    setTemplateName("");
+    queryClient.invalidateQueries({ queryKey: ["email_templates"] });
+  };
+
+  // --- Load template ---
+  const handleLoadTemplate = (templateId: string) => {
+    const t = templates.find(t => t.id === templateId);
+    if (t) {
+      setBulkSubject(t.subject);
+      setBulkBody(t.body);
+      setSelectedTemplate(templateId);
+      toast.success(`Loaded template: ${t.name}`);
+    }
+  };
+
+  // --- Delete template ---
+  const handleDeleteTemplate = async (id: string) => {
+    await supabase.from("email_templates").delete().eq("id", id);
+    queryClient.invalidateQueries({ queryKey: ["email_templates"] });
+    toast.success("Template deleted");
   };
 
   const toggleBulkSelect = (id: string) => {
@@ -716,10 +895,24 @@ const OutreachTab = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" /> Bulk Send Email
+              <Users className="h-5 w-5" /> Bulk Campaign
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Usage meter */}
+            <div className="flex items-center justify-between p-2 rounded-md bg-muted/50 border border-border">
+              <div className="text-xs">
+                <span className="font-medium">{bulkUsage || 0}</span>
+                <span className="text-muted-foreground"> / {BULK_LIMIT} sends used this month</span>
+              </div>
+              <div className="w-24 bg-muted rounded-full h-1.5">
+                <div
+                  className={`h-1.5 rounded-full transition-all ${((bulkUsage || 0) / BULK_LIMIT) > 0.8 ? "bg-destructive" : "bg-primary"}`}
+                  style={{ width: `${Math.min(100, ((bulkUsage || 0) / BULK_LIMIT) * 100)}%` }}
+                />
+              </div>
+            </div>
+
             {/* Mode toggle */}
             <div className="flex gap-2">
               <Button size="sm" variant={bulkMode === "select" ? "default" : "outline"} className="flex-1 gap-1 text-xs" onClick={() => setBulkMode("select")}>
@@ -733,7 +926,7 @@ const OutreachTab = () => {
             {bulkMode === "select" ? (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-xs">Select leads to email ({bulkSelected.length} selected)</Label>
+                  <Label className="text-xs">Select leads ({bulkSelected.length} selected)</Label>
                   <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2" onClick={selectAllLeads}>
                     {bulkSelected.length === leads.filter(l => l.email).length ? "Deselect All" : "Select All"}
                   </Button>
@@ -768,9 +961,30 @@ const OutreachTab = () => {
               </div>
             )}
 
-            <p className="text-[10px] text-muted-foreground">Use <code className="bg-muted px-1 rounded">{"{name}"}</code> and <code className="bg-muted px-1 rounded">{"{email}"}</code> for personalization.</p>
+            {/* Template selector */}
+            {templates.length > 0 && (
+              <div>
+                <Label className="text-xs mb-1 flex items-center gap-1"><Save className="h-3 w-3" /> Load Template</Label>
+                <div className="flex gap-1.5 flex-wrap">
+                  {templates.map(t => (
+                    <div key={t.id} className="flex items-center gap-1">
+                      <Button size="sm" variant={selectedTemplate === t.id ? "default" : "outline"} className="text-[10px] h-6 px-2" onClick={() => handleLoadTemplate(t.id)}>
+                        {t.name}
+                      </Button>
+                      <button onClick={() => handleDeleteTemplate(t.id)} className="text-muted-foreground hover:text-destructive text-xs">×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            <div className="flex justify-end">
+            <p className="text-[10px] text-muted-foreground">Use <code className="bg-muted px-1 rounded">{"{name}"}</code> and <code className="bg-muted px-1 rounded">{"{email}"}</code> for personalization. Unsubscribed contacts are auto-excluded.</p>
+
+            <div className="flex justify-between gap-2">
+              <Button size="sm" variant="ghost" className="gap-1 text-[10px]" onClick={() => setSaveTemplateOpen(true)}
+                disabled={!bulkSubject.trim() || !bulkBody.trim()}>
+                <Save className="h-3 w-3" /> Save as Template
+              </Button>
               <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={async () => {
                 setGenerating(true);
                 try {
@@ -798,18 +1012,68 @@ const OutreachTab = () => {
               <Textarea value={bulkBody} onChange={e => setBulkBody(e.target.value)} placeholder="Write your message... Use {name} for personalization" rows={6} />
             </div>
 
+            {/* Schedule option */}
+            <div>
+              <Label className="flex items-center gap-1 text-xs"><CalendarClock className="h-3.5 w-3.5" /> Schedule (optional)</Label>
+              <Input type="datetime-local" value={bulkScheduledFor} onChange={e => setBulkScheduledFor(e.target.value)} className="text-xs mt-1" />
+              {bulkScheduledFor && <p className="text-[10px] text-muted-foreground mt-1">Will be sent at the scheduled time</p>}
+            </div>
+
             {bulkSending && (
               <div className="w-full bg-muted rounded-full h-2">
                 <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${bulkProgress}%` }} />
               </div>
             )}
 
-            <Button className="w-full gap-1.5" onClick={handleBulkSend} disabled={bulkSending}>
+            <Button className="w-full gap-1.5" onClick={handleBulkSend} disabled={bulkSending || (bulkUsage || 0) >= BULK_LIMIT}>
               {bulkSending ? (
                 <><Loader2 className="h-4 w-4 animate-spin" /> Sending... {bulkProgress}%</>
+              ) : bulkScheduledFor ? (
+                <><CalendarClock className="h-4 w-4" /> Schedule Campaign</>
               ) : (
                 <><Send className="h-4 w-4" /> Send to {bulkMode === "csv" ? csvEmails.length : bulkSelected.length} recipients</>
               )}
+            </Button>
+
+            {/* Past campaigns mini-analytics */}
+            {campaigns.length > 0 && (
+              <div className="border-t border-border pt-3 mt-2">
+                <p className="text-xs font-medium mb-2 flex items-center gap-1"><BarChart3 className="h-3.5 w-3.5" /> Recent Campaigns</p>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {campaigns.slice(0, 5).map(c => (
+                    <div key={c.id} className="flex items-center justify-between text-[11px] p-1.5 rounded bg-muted/30">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">{c.name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {c.sent_at ? format(new Date(c.sent_at), "MMM d") : c.status}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] shrink-0">
+                        <span className="text-green-500">{c.sent_count} sent</span>
+                        {c.failed_count > 0 && <span className="text-destructive">{c.failed_count} failed</span>}
+                        <Badge variant="outline" className="text-[9px] px-1">{c.status}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Save Template Dialog */}
+      <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Save Email Template</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Template Name</Label>
+              <Input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder="e.g. Brand Collab Intro" />
+            </div>
+            <p className="text-[10px] text-muted-foreground">Subject: {bulkSubject || "—"}</p>
+            <Button className="w-full" onClick={handleSaveTemplate} disabled={!templateName.trim()}>
+              <Save className="h-4 w-4 mr-1.5" /> Save Template
             </Button>
           </div>
         </DialogContent>

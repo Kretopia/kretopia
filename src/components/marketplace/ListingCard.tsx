@@ -1,11 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Package, Wrench, MapPin, Clock } from "lucide-react";
+import { Download, Package, Wrench, MapPin, Clock, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ListingCardProps {
   listing: {
+    [key: string]: any;
     id: string;
     user_id: string;
     title: string;
@@ -39,7 +40,7 @@ const TYPE_CONFIG = {
   service: { icon: Wrench, color: "bg-emerald-500/10 text-emerald-500", label: "Service" },
 };
 
-const ListingCard = ({ listing }: ListingCardProps) => {
+const ListingCard = ({ listing, isSaved, onToggleSave }: ListingCardProps & { isSaved?: boolean; onToggleSave?: (id: string) => void }) => {
   const navigate = useNavigate();
   const typeConfig = TYPE_CONFIG[listing.listing_type as keyof typeof TYPE_CONFIG] || TYPE_CONFIG.digital;
   const TypeIcon = typeConfig.icon;
@@ -61,6 +62,14 @@ const ListingCard = ({ listing }: ListingCardProps) => {
             <TypeIcon className="h-3 w-3 mr-1" />
             {typeConfig.label}
           </Badge>
+          {onToggleSave && (
+            <button
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+              onClick={(e) => { e.stopPropagation(); onToggleSave(listing.id); }}
+            >
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+            </button>
+          )}
         </div>
       ) : (
         <div className="aspect-video bg-muted/50 flex items-center justify-center relative">
@@ -69,6 +78,14 @@ const ListingCard = ({ listing }: ListingCardProps) => {
             <TypeIcon className="h-3 w-3 mr-1" />
             {typeConfig.label}
           </Badge>
+          {onToggleSave && (
+            <button
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+              onClick={(e) => { e.stopPropagation(); onToggleSave(listing.id); }}
+            >
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+            </button>
+          )}
         </div>
       )}
 

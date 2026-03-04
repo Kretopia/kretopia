@@ -21,6 +21,8 @@ import { AIFinanceInsights } from "./expense/AIFinanceInsights";
 import { InvoiceGenerator } from "./InvoiceGenerator";
 import { useCurrencyConversion } from "@/hooks/useCurrencyConversion";
 import { CurrencySelector } from "@/components/CurrencySelector";
+import { EarningsBreakdownChart } from "@/components/earnings/EarningsBreakdownChart";
+import { IncomeGoalTracker } from "@/components/earnings/IncomeGoalTracker";
 
 interface AccountingDashboardProps {
   projectId?: string;
@@ -350,6 +352,17 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">
+          {/* Earnings Breakdown + Goal Tracker */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <EarningsBreakdownChart
+              invoiceIncome={stats.totalCollected}
+              marketplaceIncome={stats.marketplaceIncome}
+              paymentIncome={stats.received}
+              currency={sym}
+            />
+            <IncomeGoalTracker currentIncome={stats.totalIncome} currencySymbol={sym} />
+          </div>
+
           {/* Monthly Revenue */}
           {monthlyRevenue.length > 0 && (
             <Card>

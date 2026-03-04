@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2 } from "lucide-react";
+import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2, Users, Upload } from "lucide-react";
 import { GmailSettings } from "@/components/sales/GmailSettings";
 
 type Lead = {
@@ -70,6 +70,14 @@ const OutreachTab = () => {
   const [generating, setGenerating] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkMode, setBulkMode] = useState<"select" | "csv">("select");
+  const [bulkSelected, setBulkSelected] = useState<string[]>([]);
+  const [csvEmails, setCsvEmails] = useState<{ name: string; email: string }[]>([]);
+  const [bulkSubject, setBulkSubject] = useState("");
+  const [bulkBody, setBulkBody] = useState("");
+  const [bulkSending, setBulkSending] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState(0);
 
   // Fetch sequences
   const { data: sequences = [], isLoading } = useQuery({
@@ -315,7 +323,76 @@ const OutreachTab = () => {
     }
   };
 
-  // Open compose with a lead pre-filled
+  // --- CSV parsing ---
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const lines = text.split("\n").filter(l => l.trim());
+      const parsed: { name: string; email: string }[] = [];
+      for (let i = 0; i < lines.length; i++) {
+        const cols = lines[i].split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+        if (i === 0 && (cols[0]?.toLowerCase() === "name" || cols[0]?.toLowerCase() === "email")) continue;
+        const email = cols.find(c => c.includes("@"));
+        const name = cols.find(c => !c.includes("@")) || email || "";
+        if (email) parsed.push({ name: name!, email });
+      }
+      setCsvEmails(parsed);
+      toast.success(`Parsed ${parsed.length} emails from CSV`);
+    };
+    reader.readAsText(file);
+  };
+
+  // --- Bulk send ---
+  const handleBulkSend = async () => {
+    const recipients = bulkMode === "csv"
+      ? csvEmails
+      : leads.filter(l => bulkSelected.includes(l.id) && l.email).map(l => ({ name: l.name, email: l.email! }));
+    
+    if (recipients.length === 0) { toast.error("No recipients selected"); return; }
+    if (!bulkSubject.trim() || !bulkBody.trim()) { toast.error("Subject and body required"); return; }
+
+    setBulkSending(true);
+    setBulkProgress(0);
+    let sent = 0;
+    let failed = 0;
+
+    for (const r of recipients) {
+      try {
+        const personalBody = bulkBody.replace(/\{name\}/gi, r.name).replace(/\{email\}/gi, r.email);
+        const personalSubject = bulkSubject.replace(/\{name\}/gi, r.name);
+        const { data, error } = await supabase.functions.invoke("send-outreach-email", {
+          body: { action: "send", to: r.email, subject: personalSubject, body: personalBody },
+        });
+        if (error || data?.error) { failed++; } else { sent++; }
+      } catch { failed++; }
+      setBulkProgress(Math.round(((sent + failed) / recipients.length) * 100));
+    }
+
+    setBulkSending(false);
+    toast.success(`Bulk send complete: ${sent} sent, ${failed} failed`);
+    if (sent > 0) {
+      queryClient.invalidateQueries({ queryKey: ["emails-sent-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+    }
+    setBulkOpen(false);
+    setBulkSelected([]);
+    setCsvEmails([]);
+    setBulkSubject("");
+    setBulkBody("");
+  };
+
+  const toggleBulkSelect = (id: string) => {
+    setBulkSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const selectAllLeads = () => {
+    const withEmail = leads.filter(l => l.email).map(l => l.id);
+    setBulkSelected(prev => prev.length === withEmail.length ? [] : withEmail);
+  };
+
   const openComposeForLead = (lead: Lead) => {
     setComposeLead(lead);
     setComposeForm({ to: lead.email || "", subject: "", body: "" });
@@ -327,19 +404,22 @@ const OutreachTab = () => {
   return (
     <div className="space-y-4">
       {/* Top bar */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">{sequences.length} sequence{sequences.length !== 1 ? "s" : ""}</p>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => setShowSettings(!showSettings)}>
-            <Settings2 className="h-3.5 w-3.5" /> {showSettings ? "Hide" : "Email"} Settings
+        <div className="flex items-center gap-1.5 flex-wrap w-full sm:w-auto">
+          <Button size="sm" variant="ghost" className="gap-1 text-[11px] px-2" onClick={() => setShowSettings(!showSettings)}>
+            <Settings2 className="h-3.5 w-3.5" /> <span className="hidden xs:inline">{showSettings ? "Hide" : "Email"}</span> Settings
           </Button>
-          <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => { setComposeOpen(true); setComposeLead(null); setComposeForm({ to: "", subject: "", body: "" }); }}>
+          <Button size="sm" variant="outline" className="gap-1 text-[11px] px-2" onClick={() => { setComposeOpen(true); setComposeLead(null); setComposeForm({ to: "", subject: "", body: "" }); }}>
             <Mail className="h-3.5 w-3.5" /> Quick Send
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1 text-[11px] px-2" onClick={() => setBulkOpen(true)}>
+            <Users className="h-3.5 w-3.5" /> Bulk Send
           </Button>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5">
-                <Plus className="h-4 w-4" /> New Sequence
+              <Button size="sm" className="gap-1 text-[11px] px-2">
+                <Plus className="h-3.5 w-3.5" /> New Sequence
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
@@ -627,6 +707,109 @@ const OutreachTab = () => {
             <Button className="w-full gap-1.5" onClick={handleSendCompose}
               disabled={!composeForm.to.trim() || !composeForm.subject.trim() || !composeForm.body.trim() || sending === "compose"}>
               {sending === "compose" ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</> : <><Send className="h-4 w-4" /> Send Email</>}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Bulk Send Dialog */}
+      <Dialog open={bulkOpen} onOpenChange={(o) => { if (!o) setBulkOpen(false); }}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" /> Bulk Send Email
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Mode toggle */}
+            <div className="flex gap-2">
+              <Button size="sm" variant={bulkMode === "select" ? "default" : "outline"} className="flex-1 gap-1 text-xs" onClick={() => setBulkMode("select")}>
+                <Users className="h-3.5 w-3.5" /> Select Leads
+              </Button>
+              <Button size="sm" variant={bulkMode === "csv" ? "default" : "outline"} className="flex-1 gap-1 text-xs" onClick={() => setBulkMode("csv")}>
+                <Upload className="h-3.5 w-3.5" /> Upload CSV
+              </Button>
+            </div>
+
+            {bulkMode === "select" ? (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-xs">Select leads to email ({bulkSelected.length} selected)</Label>
+                  <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2" onClick={selectAllLeads}>
+                    {bulkSelected.length === leads.filter(l => l.email).length ? "Deselect All" : "Select All"}
+                  </Button>
+                </div>
+                <div className="space-y-1 max-h-40 overflow-y-auto border border-border rounded-md p-2">
+                  {leads.filter(l => l.email).length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-3">No leads with emails</p>
+                  ) : (
+                    leads.filter(l => l.email).map(lead => (
+                      <label key={lead.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer text-xs">
+                        <input type="checkbox" checked={bulkSelected.includes(lead.id)} onChange={() => toggleBulkSelect(lead.id)} className="rounded" />
+                        <span className="font-medium">{lead.name}</span>
+                        <span className="text-muted-foreground truncate">{lead.email}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <Label className="text-xs">Upload CSV (columns: name, email)</Label>
+                <input type="file" accept=".csv,.txt" className="text-xs mt-1 w-full" onChange={handleCsvUpload} />
+                {csvEmails.length > 0 && (
+                  <div className="mt-2 border border-border rounded-md p-2 max-h-32 overflow-y-auto">
+                    <p className="text-[10px] text-muted-foreground mb-1">{csvEmails.length} recipients parsed:</p>
+                    {csvEmails.slice(0, 20).map((r, i) => (
+                      <p key={i} className="text-[11px] truncate">{r.name} — {r.email}</p>
+                    ))}
+                    {csvEmails.length > 20 && <p className="text-[10px] text-muted-foreground">...and {csvEmails.length - 20} more</p>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <p className="text-[10px] text-muted-foreground">Use <code className="bg-muted px-1 rounded">{"{name}"}</code> and <code className="bg-muted px-1 rounded">{"{email}"}</code> for personalization.</p>
+
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={async () => {
+                setGenerating(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke("send-outreach-email", {
+                    body: { action: "generate", leadName: "{name}", purpose: "bulk outreach to multiple leads" },
+                  });
+                  if (error) throw error;
+                  if (data.error) { toast.error(data.error); return; }
+                  setBulkSubject(data.subject);
+                  setBulkBody(data.body);
+                  toast.success("AI draft generated");
+                } catch { toast.error("Failed to generate"); } finally { setGenerating(false); }
+              }} disabled={generating}>
+                {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                AI Generate
+              </Button>
+            </div>
+
+            <div>
+              <Label>Subject *</Label>
+              <Input value={bulkSubject} onChange={e => setBulkSubject(e.target.value)} placeholder="e.g. Hey {name}, let's collaborate!" />
+            </div>
+            <div>
+              <Label>Body *</Label>
+              <Textarea value={bulkBody} onChange={e => setBulkBody(e.target.value)} placeholder="Write your message... Use {name} for personalization" rows={6} />
+            </div>
+
+            {bulkSending && (
+              <div className="w-full bg-muted rounded-full h-2">
+                <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${bulkProgress}%` }} />
+              </div>
+            )}
+
+            <Button className="w-full gap-1.5" onClick={handleBulkSend} disabled={bulkSending}>
+              {bulkSending ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Sending... {bulkProgress}%</>
+              ) : (
+                <><Send className="h-4 w-4" /> Send to {bulkMode === "csv" ? csvEmails.length : bulkSelected.length} recipients</>
+              )}
             </Button>
           </div>
         </DialogContent>

@@ -230,7 +230,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       onClick={() => handleNavigation("/sales")}
                     >
                       <Target className="h-5 w-5" />
-                      ThriveScout
+                      ThriveFunnel
                     </Button>
 
                     <Separator className="my-3" />

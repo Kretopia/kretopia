@@ -179,7 +179,6 @@ export function WalletXPSection() {
     { id: "profile_boost", name: "24h Profile Boost", description: "Top of Discover for 24 hours.", cost: 1000, icon: <Eye className="h-5 w-5 text-amber-400" />, action: buyProfileBoost, available: true },
     { id: "double_xp", name: "2x XP (24 hours)", description: "Double XP on all activities.", cost: 750, icon: <Zap className="h-5 w-5 text-yellow-400" />, action: buyDoubleXP, available: true },
     { id: "pro_trial", name: "Pro Trial (3 Days)", description: "Unlock all Pro features.", cost: 2500, icon: <Crown className="h-5 w-5 text-purple-400" />, action: buyProTrial, available: true, badge: "Best Value" },
-    { id: "custom_badge", name: "Custom Profile Frame", description: "Gold animated ring on your avatar.", cost: 1500, icon: <Palette className="h-5 w-5 text-pink-400" />, action: buyCustomFrame, available: userLevel >= 5, badge: "Level 5+" },
     { id: "gift_xp", name: "Gift 100 XP", description: "Send 100 XP to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
   ];
 

@@ -155,10 +155,10 @@ export const OpportunitiesFeed = () => {
           <div className="space-y-1">
             <h1 className="text-2xl font-bold flex items-center gap-2.5">
               <Briefcase className="h-6 w-6" />
-              Opportunities
+              Gigs
             </h1>
             <p className="text-sm text-muted-foreground">
-              Find gigs, jobs, and creative collaborations
+              Find jobs, collabs, and creative work
             </p>
           </div>
           <PostOpportunityDialog
@@ -190,7 +190,7 @@ export const OpportunitiesFeed = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search opportunities..."
+            placeholder="Search gigs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 pr-8"
@@ -276,13 +276,13 @@ export const OpportunitiesFeed = () => {
       {!loading && opportunities.length === 0 && (
         <div className="text-center py-10">
           <Briefcase className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <h4 className="font-semibold mb-1">No opportunities yet</h4>
+          <h4 className="font-semibold mb-1">No gigs posted yet</h4>
           <p className="text-sm text-muted-foreground mb-4">
             Be the first to post a {activeFilter === "all" ? "job or collaboration" : activeFilter}!
           </p>
           <Button onClick={() => setPostDialogOpen(true)} variant="outline" className="gap-2">
             <Plus className="h-4 w-4" />
-            Post an Opportunity
+            Post a Gig
           </Button>
         </div>
       )}

@@ -5,8 +5,8 @@ const Opportunities = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <SEO
-        title="Opportunities - Find Creative Work"
-        description="Browse and apply for creative opportunities, gigs, and collaborations"
+        title="Gigs - Find Creative Work"
+        description="Browse and apply for creative gigs, jobs, and collaborations on ThriveIN"
       />
       <div className="container mx-auto max-w-4xl px-4 py-6">
         <OpportunitiesFeed />

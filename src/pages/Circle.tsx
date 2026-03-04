@@ -42,7 +42,7 @@ export default function Circle() {
       .then(({ data }) => {
         if (data?.account_type) setAccountType(data.account_type);
         if (data?.account_type === "company") {
-          navigate("/opportunities", { replace: true });
+          navigate("/opportunities", { replace: true }); // Company accounts go to Gigs
         }
       });
   }, [user?.id, navigate]);

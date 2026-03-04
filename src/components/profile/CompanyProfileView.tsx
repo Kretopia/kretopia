@@ -300,7 +300,7 @@ export const CompanyProfileView = ({
               About
             </TabsTrigger>
             <TabsTrigger value="opportunities" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-3 pt-1 text-sm">
-              Opportunities{opportunities.length > 0 && ` (${opportunities.length})`}
+              Gigs{opportunities.length > 0 && ` (${opportunities.length})`}
             </TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-3 pt-1 text-sm">
               Reviews{reviews.length > 0 && ` (${reviews.length})`}

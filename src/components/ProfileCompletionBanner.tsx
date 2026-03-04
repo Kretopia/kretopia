@@ -14,12 +14,12 @@ const pageMessages = {
   discover: {
     title: "Unlock Better Matches! 👀",
     description: "Complete profiles get 10x more visibility and AI-powered match suggestions.",
-    stat: "Users with complete profiles receive 5x more opportunities",
+    stat: "Users with complete profiles receive 5x more gigs",
   },
   opportunities: {
     title: "Stand Out to Clients! 💼",
-    description: "A complete profile increases your chances of landing opportunities by 300%.",
-    stat: "92% of opportunities go to profiles with portfolio items",
+    description: "A complete profile increases your chances of landing gigs by 300%.",
+    stat: "92% of gigs go to profiles with portfolio items",
   },
   circle: {
     title: "Maximize Connections! 🤝",

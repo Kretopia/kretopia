@@ -96,8 +96,8 @@ const Marketplace = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <SEO
-        title="Creator Marketplace"
-        description="Buy and sell digital products, physical items, and creative services"
+        title="Thrive Marketplace"
+        description="Buy and sell digital products and creative services on ThriveIN"
       />
 
       <div className="container mx-auto max-w-7xl px-4 py-6 space-y-6">
@@ -106,7 +106,7 @@ const Marketplace = () => {
           <div className="space-y-1">
             <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
               <ShoppingBag className="h-7 w-7 sm:h-8 sm:w-8" />
-              Market
+              Thrive Marketplace
             </h1>
             <p className="text-sm text-muted-foreground">
               Digital products and creative services from the community

@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { FeeStructure } from "@/components/FeeStructure";
@@ -63,12 +62,11 @@ export default function ThrivePay() {
   const [checkingStatus, setCheckingStatus] = useState(false);
 
   // Wallet state
-  const [walletData, setWalletData] = useState<any>(null);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [topUpDialogOpen, setTopUpDialogOpen] = useState(false);
-  const [topUpType, setTopUpType] = useState<"credits" | "balance">("credits");
   const [topUpAmount, setTopUpAmount] = useState("");
   const [topUpLoading, setTopUpLoading] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
 
   const [activeTab, setActiveTab] = useState("wallet");
 
@@ -179,19 +177,12 @@ export default function ThrivePay() {
     if (!user) return;
     const { data: wallet } = await supabase
       .from("wallets")
-      .select("user_id, credits, balance")
+      .select("user_id, balance")
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (wallet) {
-      setWalletData(wallet);
-    } else {
-      const { data: newWallet } = await supabase
-        .from("wallets")
-        .insert({ user_id: user.id, credits: 10 })
-        .select()
-        .maybeSingle();
-      setWalletData(newWallet);
+      setWalletBalance(wallet.balance || 0);
     }
 
     const { data: transactions } = await supabase
@@ -212,7 +203,7 @@ export default function ThrivePay() {
     try {
       setTopUpLoading(true);
       const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: { amount: Number(topUpAmount), type: topUpType },
+        body: { amount: Number(topUpAmount), type: "balance" },
       });
       if (error) throw error;
       if (data?.url) {
@@ -257,7 +248,7 @@ export default function ThrivePay() {
     <>
       <SEO
         title="Wallet & Payments"
-        description="Manage your wallet, credits, earnings and payment account"
+        description="Manage your wallet, earnings and payment account"
       />
 
       <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
@@ -278,36 +269,20 @@ export default function ThrivePay() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add Funds to Wallet</DialogTitle>
-                  <DialogDescription>Top up your wallet with credits or balance</DialogDescription>
+                  <DialogDescription>Top up your wallet balance</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label>Top-up Type</Label>
-                    <RadioGroup value={topUpType} onValueChange={(v: any) => setTopUpType(v)}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="credits" id="credits" />
-                        <Label htmlFor="credits" className="cursor-pointer">Credits ($0.10 per credit)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="balance" id="balance" />
-                        <Label htmlFor="balance" className="cursor-pointer">USD Balance</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="amount">Amount ({topUpType === "credits" ? "credits" : "USD"})</Label>
+                    <Label htmlFor="amount">Amount (USD)</Label>
                     <Input
                       id="amount"
                       type="number"
-                      placeholder={topUpType === "credits" ? "100" : "10.00"}
+                      placeholder="10.00"
                       value={topUpAmount}
                       onChange={(e) => setTopUpAmount(e.target.value)}
                       min="1"
-                      step={topUpType === "credits" ? "1" : "0.01"}
+                      step="0.01"
                     />
-                    {topUpType === "credits" && topUpAmount && (
-                      <p className="text-sm text-muted-foreground">Total: ${(Number(topUpAmount) * 0.10).toFixed(2)}</p>
-                    )}
                   </div>
                 </div>
                 <DialogFooter>
@@ -325,17 +300,11 @@ export default function ThrivePay() {
         </div>
 
         {/* Balance Overview */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4 mb-6">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 mb-6">
           <Card className="bg-gradient-to-br from-primary via-primary/90 to-accent border-0">
             <CardContent className="p-4">
-              <p className="text-xs text-primary-foreground/80 mb-1">Credits</p>
-              <p className="text-3xl font-bold text-primary-foreground">{walletData?.credits || 0}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground mb-1">Wallet Balance</p>
-              <p className="text-3xl font-bold">${(walletData?.balance || 0).toFixed(2)}</p>
+              <p className="text-xs text-primary-foreground/80 mb-1">Wallet Balance</p>
+              <p className="text-3xl font-bold text-primary-foreground">${walletBalance.toFixed(2)}</p>
             </CardContent>
           </Card>
           {connectStatus === "active" && (
@@ -424,7 +393,7 @@ export default function ThrivePay() {
                             : "text-red-500"
                         }`}>
                           {tx.type.includes("earned") || tx.type.includes("received") ? "+" : "-"}
-                          {tx.type.includes("credit") ? `${tx.amount} credits` : `$${tx.amount}`}
+                          ${tx.amount}
                         </span>
                       </div>
                     </CardContent>

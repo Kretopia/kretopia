@@ -75,7 +75,7 @@ export function CompanyHiringDashboard() {
         <Button variant="outline" onClick={() => navigate('/manage-opportunities')} className="gap-2">
           <Briefcase className="h-4 w-4" /> Manage Jobs
         </Button>
-        <Button variant="outline" onClick={() => navigate('/thrivemoney')} className="gap-2">
+        <Button variant="outline" onClick={() => navigate('/thrivepay?tab=earnings')} className="gap-2">
           <DollarSign className="h-4 w-4" /> Payments
         </Button>
       </div>

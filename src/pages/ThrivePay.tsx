@@ -18,6 +18,8 @@ import { FeeStructure } from "@/components/FeeStructure";
 import { FeeCalculator } from "@/components/FeeCalculator";
 import { getFeeDisplayText } from "@/lib/platformFees";
 import { WalletXPSection } from "@/components/wallet/WalletXPSection";
+import { AccountingDashboard } from "@/components/project/AccountingDashboard";
+import { FreeTierGate } from "@/components/FreeTierGate";
 import {
   DollarSign,
   TrendingUp,
@@ -70,7 +72,10 @@ export default function ThrivePay() {
   const [topUpLoading, setTopUpLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
 
-  const [activeTab, setActiveTab] = useState("wallet");
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("tab") || "wallet";
+  });
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -81,8 +86,9 @@ export default function ThrivePay() {
       navigate("/thrivepay", { replace: true });
     }
 
-    if (searchParams.get("tab") === "payments") {
-      setActiveTab("payments");
+    const tabParam = searchParams.get("tab");
+    if (tabParam) {
+      setActiveTab(tabParam);
     }
 
     if (user) {
@@ -335,22 +341,26 @@ export default function ThrivePay() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full grid grid-cols-4">
-            <TabsTrigger value="wallet" className="gap-2">
+          <TabsList className="w-full grid grid-cols-5">
+            <TabsTrigger value="wallet" className="gap-1.5 text-xs">
               <Wallet className="h-4 w-4" />
-              Wallet
+              <span className="hidden sm:inline">Wallet</span>
             </TabsTrigger>
-            <TabsTrigger value="xp" className="gap-2">
+            <TabsTrigger value="earnings" className="gap-1.5 text-xs">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Earnings</span>
+            </TabsTrigger>
+            <TabsTrigger value="xp" className="gap-1.5 text-xs">
               <Sparkles className="h-4 w-4" />
-              Thrive Points
+              <span className="hidden sm:inline">Points</span>
             </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2">
+            <TabsTrigger value="payments" className="gap-1.5 text-xs">
               <CreditCard className="h-4 w-4" />
-              Payments
+              <span className="hidden sm:inline">Payments</span>
             </TabsTrigger>
-            <TabsTrigger value="fees" className="gap-2">
+            <TabsTrigger value="fees" className="gap-1.5 text-xs">
               <Percent className="h-4 w-4" />
-              Fees
+              <span className="hidden sm:inline">Fees</span>
             </TabsTrigger>
           </TabsList>
 
@@ -407,6 +417,17 @@ export default function ThrivePay() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          {/* Earnings Tab */}
+          <TabsContent value="earnings" className="space-y-6">
+            <FreeTierGate
+              feature="expenses"
+              featureLabel="Creative Earnings"
+              description="Upgrade to Pro for unlimited expense tracking, invoicing, and earnings insights."
+            >
+              <AccountingDashboard />
+            </FreeTierGate>
           </TabsContent>
 
           {/* Thrive Points Tab */}

@@ -125,16 +125,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
               ? [
                   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
                   { path: "/desk", icon: Briefcase, label: "Projects" },
-                  { path: "/thrivemoney", icon: DollarSign, label: "Earnings" },
+                  { path: "/thrivepay?tab=earnings", icon: DollarSign, label: "Earnings" },
                 ]
               : [
                   { path: "/circle", icon: Users, label: "Circle" },
                   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
                   { path: "/desk", icon: Briefcase, label: "Projects" },
-                  { path: "/thrivemoney", icon: DollarSign, label: "Earnings" },
+                  { path: "/thrivepay?tab=earnings", icon: DollarSign, label: "Earnings" },
                 ]
             ).map(({ path, icon: Icon, label }) => {
-              const isActive = location.pathname === path;
+              const isActive = path.includes("?") ? location.pathname === path.split("?")[0] && location.search.includes(path.split("?")[1]) : location.pathname === path;
               return (
                 <Link
                   key={path}
@@ -214,7 +214,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/thrivemoney")}
+                      onClick={() => handleNavigation("/thrivepay?tab=earnings")}
                     >
                       <DollarSign className="h-5 w-5" />
                       Earnings

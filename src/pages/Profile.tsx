@@ -1,8 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { MapPin, Star, Briefcase, Camera, Loader2, Building2, FileText, Download, LayoutGrid, User as UserIcon, Award, Briefcase as BriefcaseIcon, TrendingUp, ShoppingBag, Lock, Crown, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,55 +13,19 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 
 // Components
-import { DirectMessageDialog } from "@/components/DirectMessageDialog";
-import { ImageCropDialog } from "@/components/ImageCropDialog";
-import { PortfolioSection } from "@/components/profile/PortfolioSection";
-import { ReviewsSection } from "@/components/profile/ReviewsSection";
-import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
-import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
-import { InviteCodesCard } from "@/components/profile/InviteCodesCard";
-import { SkillsSection } from "@/components/profile/SkillsSection";
-import { PressLinksSection } from "@/components/profile/PressLinksSection";
-import { CreditsSection } from "@/components/profile/CreditsSection";
-import { AwardsSection } from "@/components/profile/AwardsSection";
-import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
-import { ProfileStrengthScore } from "@/components/profile/ProfileStrengthScore";
-import { ProfileQRDialog } from "@/components/profile/ProfileQRDialog";
-import { TierProgressCard } from "@/components/membership/TierProgressCard";
-import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
-import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
-import { ProfileOptimizationHub } from "@/components/profile/ProfileOptimizationHub";
-import { PortfolioAnalytics } from "@/components/profile/PortfolioAnalytics";
-import { DiscoverReadyBanner } from "@/components/DiscoverReadyBanner";
-import { ProfileVisibilityDashboard } from "@/components/profile/ProfileVisibilityDashboard";
-import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
-import { ImportFromWebsiteDialog } from "@/components/profile/ImportFromWebsiteDialog";
-import { ProfileEditDialog } from "@/components/profile/ProfileEditDialog";
-import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ProfileHero } from "@/components/profile/ProfileHero";
-
-import { ProfileQuickNav } from "@/components/profile/ProfileQuickNav";
-import { ExperienceTimeline } from "@/components/profile/ExperienceTimeline";
-import { VerificationProgress } from "@/components/profile/VerificationProgress";
-import { ConnectPlatformsCard } from "@/components/profile/ConnectPlatformsCard";
-import { PlatformConnectionCard } from "@/components/profile/PlatformConnectionCard";
-import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
-import { VerificationAppealDialog } from "@/components/profile/VerificationAppealDialog";
-import { ProfileActions } from "@/components/profile/ProfileActions";
-import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
-import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
-import { AchievementBadges } from "@/components/profile/AchievementBadges";
-
-import { TrustSignals } from "@/components/profile/TrustSignals";
-import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
-import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
-import { ProGate } from "@/components/project/ProGate";
-import { WalletSection } from "@/components/profile/WalletSection";
-
-import { SubscriptionPromptCard } from "@/components/profile/SubscriptionPromptCard";
-import { ShareableCreatorCard } from "@/components/profile/ShareableCreatorCard";
+import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
+import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
+import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProTrialBanner } from "@/components/profile/ProTrialBanner";
-import { checkProfileCompletion, getDiscoveryMissingFields, meetsDiscoveryRequirements } from "@/lib/profileCompletion";
+
+// Refactored sections
+import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
+import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
+import { ProfileVerificationSection } from "@/pages/profile/ProfileVerificationSection";
+
+import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 
 const ProfileContent = () => {
@@ -114,16 +75,6 @@ const ProfileContent = () => {
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState("");
 
-  // Open creator card if ?share=true in URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("share") === "true" && profile) {
-      setIsCreatorCardOpen(true);
-      // Clean URL
-      window.history.replaceState({}, "", "/profile");
-    }
-  }, [profile]);
-  
   const [editForm, setEditForm] = useState({
     full_name: "",
     role: "",
@@ -138,6 +89,15 @@ const ProfileContent = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Open creator card if ?share=true in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("share") === "true" && profile) {
+      setIsCreatorCardOpen(true);
+      window.history.replaceState({}, "", "/profile");
+    }
+  }, [profile]);
+
   const handleShare = async () => {
     const { analytics } = await import("@/lib/analytics");
     analytics.featureUsed("profile_shared");
@@ -150,7 +110,6 @@ const ProfileContent = () => {
     const imageUrl = URL.createObjectURL(file);
     setTempImageUrl(imageUrl);
     setShowCropDialog(true);
-    // Reset input so same file can be re-selected
     event.target.value = "";
   };
 
@@ -164,7 +123,6 @@ const ProfileContent = () => {
   const handleImportData = async (data: any) => {
     if (!user) return;
     
-    // Update profile fields
     const updates: any = {};
     if (data.full_name) updates.full_name = data.full_name;
     if (data.role) updates.role = data.role;
@@ -173,7 +131,6 @@ const ProfileContent = () => {
     
     setEditForm(prev => ({ ...prev, ...updates }));
 
-    // Import portfolio items directly to database
     let importedCount = 0;
     if (data.portfolio_items && data.portfolio_items.length > 0) {
       const portfolioInserts = data.portfolio_items
@@ -203,7 +160,6 @@ const ProfileContent = () => {
       }
     }
 
-    // Import skills to profile if available
     if (data.skills && data.skills.length > 0) {
       const skillNames = data.skills.map((s: any) => typeof s === 'string' ? s : s.skill || s);
       const existingSkills = (profile?.professional_skills as any[]) || [];
@@ -223,7 +179,6 @@ const ProfileContent = () => {
       }
     }
 
-    // Refresh data to show new items
     await fetchData();
     
     const parts = [];
@@ -240,10 +195,7 @@ const ProfileContent = () => {
   const handleEditSave = async (directData?: Record<string, any>) => {
     if (!user) return;
 
-    // Use directly passed data if available (from inner form), fallback to editForm state
     const formData = directData || editForm;
-    console.log('[Profile] handleEditSave called with:', formData);
-
     const isCompany = profile?.account_type === 'company';
     
     let updateData = isCompany ? {
@@ -265,7 +217,6 @@ const ProfileContent = () => {
       collab_intent: formData.collab_intent,
     };
 
-    // Upload gallery images for company accounts
     if (isCompany && galleryFiles.length > 0) {
       const existingImages = (profile?.company_images as string[]) || [];
       const newImageUrls: string[] = [];
@@ -274,40 +225,22 @@ const ProfileContent = () => {
         try {
           const fileExt = file.name.split('.').pop();
           const fileName = `${user.id}-gallery-${Date.now()}-${Math.random()}.${fileExt}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(fileName, file);
-
+          const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file);
           if (uploadError) continue;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(fileName);
-
+          const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
           newImageUrls.push(publicUrl);
         } catch (err) {
           console.error('Error uploading gallery image:', err);
         }
       }
 
-      updateData = {
-        ...updateData,
-        company_images: [...existingImages, ...newImageUrls] as any,
-      } as any;
+      updateData = { ...updateData, company_images: [...existingImages, ...newImageUrls] as any } as any;
     }
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(updateData)
-      .eq('user_id', user.id);
+    const { error } = await supabase.from('profiles').update(updateData).eq('user_id', user.id);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update profile", variant: "destructive" });
       return;
     }
 
@@ -316,43 +249,10 @@ const ProfileContent = () => {
     setGalleryFiles([]);
     setGalleryPreviews([]);
     
-    // Track profile update
     const { analytics } = await import("@/lib/analytics");
     analytics.profileUpdate("profile_fields");
     
-    toast({
-      title: "Success",
-      description: "Profile updated successfully",
-    });
-  };
-
-  const handleDownloadEPK = async () => {
-    if (!profile) return;
-
-    // Track EPK download
-    const { analytics } = await import("@/lib/analytics");
-    analytics.featureUsed("epk_downloaded");
-
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.text(profile.full_name || 'Electronic Press Kit', 20, 20);
-    doc.setFontSize(12);
-    doc.text(profile.role || '', 20, 30);
-    
-    if (profile.bio) {
-      doc.setFontSize(10);
-      const splitBio = doc.splitTextToSize(profile.bio, 170);
-      doc.text(splitBio, 20, 50);
-    }
-
-    doc.save(`${profile.full_name}_EPK.pdf`);
-  };
-
-  const handleDownloadPhotos = async () => {
-    toast({
-      title: "Download Started",
-      description: "Your photos are being prepared for download",
-    });
+    toast({ title: "Success", description: "Profile updated successfully" });
   };
 
   if (isLoading) {
@@ -454,7 +354,7 @@ const ProfileContent = () => {
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
-        {/* Profile Hero - Clean, no sticky */}
+        {/* Profile Hero */}
         <ProfileHero
           profile={profile}
           stats={stats}
@@ -482,7 +382,7 @@ const ProfileContent = () => {
           onCreatorCard={() => setIsCreatorCardOpen(true)}
         />
 
-        {/* Banners - compact */}
+        {/* Banners */}
         <div className="space-y-2 mb-2">
           <ProTrialBanner 
             subscriptionStatus={profile.subscription_status}
@@ -491,335 +391,58 @@ const ProfileContent = () => {
           />
           {(() => {
             const missingFields = getDiscoveryMissingFields(profile as any, portfolioItems.length);
-            const isVisible = missingFields.length === 0;
             return (
               <ProfileVisibilityBanner 
-                isVisible={isVisible} 
+                isVisible={missingFields.length === 0} 
                 missingFields={missingFields} 
               />
             );
           })()}
         </div>
 
-        {/* Trust Signals */}
-        <Card className="p-4 mb-4">
-          <TrustSignals
-            emailVerified={(profile as any).email_verified}
-            phoneVerified={(profile as any).phone_verified}
-            idVerified={(profile as any).id_verified}
-            paymentVerified={(profile as any).payment_verified}
-            isOwnProfile={true}
-          />
-        </Card>
+        {/* Verification & Trust */}
+        <ProfileVerificationSection
+          profile={profile}
+          userTier={userTier}
+          onRefresh={fetchData}
+        />
 
-        {/* Who Viewed Your Profile - Pro Feature */}
-        <div className="mb-4">
-          <WhoViewedProfile 
-            userId={profile.user_id} 
-            isPro={userTier === 'pro' || userTier === 'founder'} 
-          />
-        </div>
-
-        {/* Verification & Platform Connections */}
-        <div className="space-y-3 mb-6">
-          {(profile.achievement_badges?.length > 0) && (
-            <AchievementBadges 
-              achievements={profile.achievement_badges || []}
-              showAll={false}
-            />
-          )}
-          <CredentialVerificationCard 
-            userId={profile.user_id}
-            fullName={profile.full_name}
-            role={profile.role || ''}
-            bio={profile.bio || ''}
-            socialLinks={{
-              spotify: profile.spotify_url || '',
-              youtube: profile.youtube_url || '',
-              imdb: profile.imdb_url || '',
-              instagram: profile.instagram_url || '',
-              linkedin: profile.linkedin_url || '',
-            }}
-            currentTier={profile.verification_tier || undefined}
-            currentAchievements={profile.achievement_badges || []}
-            verifiedCredentials={(profile as any).verified_credentials || []}
-            verificationScore={profile.verification_score || undefined}
-            verifiedAt={profile.verified_at || undefined}
-            breakdown={(profile as any).verification_breakdown || undefined}
-            onVerificationComplete={() => fetchData()}
-          />
-          <PlatformConnectionCard onCreditsImported={() => fetchData()} />
-        </div>
-
-        {/* Pro Tools - Collapsible */}
-
-        {/* === Content Sections — flat, no card wrappers === */}
-        <div className="space-y-8">
-          
-          {/* Portfolio / EPK */}
-          <section>
-            <h2 className="text-xl font-bold mb-4">My Work</h2>
-            <PortfolioSection 
-              items={portfolioItems} 
-              isOwnProfile={true}
-              onRefresh={fetchData}
-              subscriptionTier={userTier}
-            />
-          </section>
-
-          <hr className="border-border" />
-
-          {/* Skills */}
-          <section>
-            <SkillsSection
-              professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
-              passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
-              jobTitle={profile.job_title}
-              industry={profile.industry}
-              isOwnProfile={true}
-              userId={profile.user_id}
-              onRefresh={fetchData}
-            />
-          </section>
-
-          <hr className="border-border" />
-
-          {/* Social Stats */}
-          <section>
-            <SocialStatsSection 
-              youtubeSubscribers={profile.youtube_subscribers}
-              instagramFollowers={profile.instagram_followers}
-              tiktokFollowers={profile.tiktok_followers}
-              spotifyListeners={profile.spotify_listeners}
-              twitterFollowers={profile.twitter_followers}
-              linkedinConnections={profile.linkedin_connections}
-              verifiedMetrics={profile.social_verified}
-            />
-          </section>
-
-          {industryStats.length > 0 && (
-            <>
-              <hr className="border-border" />
-              <section>
-                <h2 className="text-xl font-bold mb-4">Industry Stats</h2>
-                <IndustryStatsSection 
-                  stats={industryStats}
-                  isOwnProfile={true}
-                  onRefresh={fetchData}
-                />
-              </section>
-            </>
-          )}
-
-          <hr className="border-border" />
-
-          {/* Experience & Credits */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Experience & Credits</h2>
-              {!hasAdvancedProfile && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
-                  <Crown className="h-3 w-3" />
-                  Pro
-                </Badge>
-              )}
-            </div>
-            {hasAdvancedProfile ? (
-              <UnifiedWorkHistory 
-                userId={profile.user_id}
-                isOwnProfile={true}
-                onRefresh={fetchData}
-              />
-            ) : (
-              <div className="text-center py-8">
-                <Lock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground mb-4">Upgrade to Pro to add your professional credits</p>
-                <Button onClick={() => navigate("/subscription")} className="gap-2">
-                  <Crown className="h-4 w-4" />
-                  Upgrade to Pro
-                </Button>
-              </div>
-            )}
-          </section>
-
-          <hr className="border-border" />
-
-          {/* Press & Awards - side by side */}
-          <section className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                Press Coverage
-                {!hasAdvancedProfile && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                    <Crown className="h-3 w-3" />
-                    Pro
-                  </Badge>
-                )}
-              </h3>
-              {hasAdvancedProfile ? (
-                <PressLinksSection 
-                  userId={profile.user_id}
-                  isOwnProfile={true}
-                  onRefresh={fetchData}
-                />
-              ) : (
-                <div className="text-center py-6">
-                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                    <Crown className="h-3 w-3" />
-                    Unlock
-                  </Button>
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                Awards
-                {!hasAdvancedProfile && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                    <Crown className="h-3 w-3" />
-                    Pro
-                  </Badge>
-                )}
-              </h3>
-              {hasAdvancedProfile ? (
-                <AwardsSection 
-                  userId={profile.user_id}
-                  isOwnProfile={true}
-                  onRefresh={fetchData}
-                />
-              ) : (
-                <div className="text-center py-6">
-                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                    <Crown className="h-3 w-3" />
-                    Unlock
-                  </Button>
-                </div>
-              )}
-            </div>
-          </section>
-
-          <hr className="border-border" />
-
-          {/* Collaboration History */}
-          <section>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Handshake className="h-5 w-5 text-primary" />
-              Collaboration History
-            </h2>
-            <CollaborationHistory 
-              userId={profile.user_id}
-              isOwnProfile={true}
-            />
-          </section>
-
-          <hr className="border-border" />
-
-          {/* Reviews */}
-          <section>
-            <ReviewsSection 
-              reviews={reviews}
-              isOwnProfile={true}
-              profileUserId={profile.user_id}
-              onRefresh={fetchData}
-            />
-          </section>
-
-          <hr className="border-border" />
-
-          {/* On-Chain Identity / Wallet — hidden until ready */}
-          {/* <section>
-            <WalletSection isOwnProfile={true} userId={profile.user_id} />
-          </section>
-
-          <hr className="border-border" /> */}
-
-          {/* Products & Services */}
-          <section>
-            <DigitalProductsSection 
-              userId={profile.user_id}
-              isOwner={true}
-            />
-          </section>
-        </div>
+        {/* Content Sections */}
+        <ProfileContentSections
+          profile={profile}
+          portfolioItems={portfolioItems}
+          reviews={reviews}
+          industryStats={industryStats}
+          credits={credits}
+          userTier={userTier}
+          hasAdvancedProfile={hasAdvancedProfile}
+          onRefresh={fetchData}
+        />
       </div>
 
-      {/* Dialogs */}
-      <DirectMessageDialog
-        open={isMessageDialogOpen}
-        onOpenChange={setIsMessageDialogOpen}
-        recipientId={profile.user_id}
-        recipientName={profile.full_name || ''}
-      />
-
-      <ImportFromWebsiteDialog
-        open={isImportDialogOpen}
-        onOpenChange={setIsImportDialogOpen}
-        onImport={handleImportData}
-      />
-
-      <ProfileEditDialog
-        open={isEditOpen}
-        onOpenChange={setIsEditOpen}
+      {/* All Dialogs */}
+      <ProfileDialogs
         profile={profile}
-        onProfileUpdate={() => { window.location.reload(); }}
-      />
-
-      <ShareProfileDialog
-        profile={{
-          full_name: profile.full_name || '',
-          role: profile.role || '',
-          bio: profile.bio || '',
-          user_id: profile.user_id,
-          avatar_url: profile.avatar_url || '',
-          verification_tier: profile.verification_tier || undefined,
-          professional_skills: Array.isArray(profile.professional_skills) ? profile.professional_skills as string[] : [],
-          location: profile.location || '',
-        }}
-        portfolioItems={portfolioItems.map(item => ({
-          id: item.id,
-          thumbnail_url: item.thumbnail_url || undefined,
-          media_url: item.media_url || undefined,
-          title: item.title || undefined,
-        }))}
-        open={isShareDialogOpen}
-        onOpenChange={setIsShareDialogOpen}
-      />
-
-      <ProfileQRDialog
-        open={isQRDialogOpen}
-        onOpenChange={setIsQRDialogOpen}
-        userId={profile.user_id}
-        userName={profile.full_name || ''}
-        userAvatar={profile.avatar_url || undefined}
-      />
-      <ImageCropDialog
-        imageUrl={tempImageUrl}
-        open={showCropDialog}
-        onClose={() => {
-          setShowCropDialog(false);
-          setTempImageUrl("");
-        }}
+        portfolioItems={portfolioItems}
+        isMessageDialogOpen={isMessageDialogOpen}
+        setIsMessageDialogOpen={setIsMessageDialogOpen}
+        isImportDialogOpen={isImportDialogOpen}
+        setIsImportDialogOpen={setIsImportDialogOpen}
+        isEditOpen={isEditOpen}
+        setIsEditOpen={setIsEditOpen}
+        isShareDialogOpen={isShareDialogOpen}
+        setIsShareDialogOpen={setIsShareDialogOpen}
+        isQRDialogOpen={isQRDialogOpen}
+        setIsQRDialogOpen={setIsQRDialogOpen}
+        isCreatorCardOpen={isCreatorCardOpen}
+        setIsCreatorCardOpen={setIsCreatorCardOpen}
+        showCropDialog={showCropDialog}
+        setShowCropDialog={setShowCropDialog}
+        tempImageUrl={tempImageUrl}
+        setTempImageUrl={setTempImageUrl}
+        onImportData={handleImportData}
         onCropComplete={handleCropComplete}
-        loading={isUploadingAvatar}
-      />
-      <ShareableCreatorCard
-        open={isCreatorCardOpen}
-        onOpenChange={setIsCreatorCardOpen}
-        profile={{
-          full_name: profile.full_name || "",
-          role: profile.role || "",
-          avatar_url: profile.avatar_url,
-          bio: profile.bio,
-          badge: profile.badge,
-          level: profile.level,
-          xp: profile.xp,
-          location: profile.location,
-          professional_skills: profile.professional_skills as Array<{ skill: string }> | null,
-        }}
+        isUploadingAvatar={isUploadingAvatar}
       />
     </div>
   );

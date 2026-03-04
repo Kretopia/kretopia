@@ -101,8 +101,8 @@ const SalesDashboard = () => {
           <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
             <Target className="h-6 w-6 text-primary" />
           </div>
-          <div>
-            <h1 className="text-xl font-bold">Sales Dashboard</h1>
+           <div>
+            <h1 className="text-xl font-bold">ThriveScout</h1>
             <p className="text-xs text-muted-foreground">Find leads, automate outreach, close deals</p>
           </div>
         </div>

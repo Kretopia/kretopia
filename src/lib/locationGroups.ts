@@ -1,97 +1,306 @@
 /**
- * Location grouping for intelligent filter matching.
- * When a user selects a country/region, all cities in that group should match.
+ * Hierarchical location data: Country/Region → Cities
+ * Used for cascading filter dropdowns and intelligent matching.
  */
 
-const LOCATION_GROUPS: Record<string, string[]> = {
-  'Trinidad & Tobago': [
-    'Port of Spain, Trinidad',
-    'San Fernando, Trinidad',
-    'Chaguanas, Trinidad',
-    'Tobago',
-    'Trinidad & Tobago',
-    'Trinidad',
-  ],
-  'United States': [
-    'Los Angeles, CA',
-    'New York, NY',
-    'Atlanta, GA',
-    'Miami, FL',
-    'Nashville, TN',
-    'Chicago, IL',
-    'Austin, TX',
-    'San Francisco, CA',
-    'United States',
-  ],
-  'United Kingdom': [
-    'London, UK',
-    'Manchester, UK',
-    'Birmingham, UK',
-    'United Kingdom',
-  ],
-  'Canada': [
-    'Toronto, Canada',
-    'Vancouver, Canada',
-    'Montreal, Canada',
-    'Canada',
-  ],
-  'Europe': [
-    'Berlin, Germany',
-    'Paris, France',
-    'Amsterdam, Netherlands',
-    'Barcelona, Spain',
-    'Stockholm, Sweden',
-    'Europe',
-  ],
-  'Caribbean': [
-    'Port of Spain, Trinidad',
-    'San Fernando, Trinidad',
-    'Chaguanas, Trinidad',
-    'Tobago',
-    'Trinidad & Tobago',
-    'Jamaica',
-    'Barbados',
-    'Caribbean',
-  ],
-};
+export interface LocationCountry {
+  value: string;
+  label: string;
+  flag: string;
+  cities: { value: string; label: string }[];
+}
+
+export const LOCATION_HIERARCHY: LocationCountry[] = [
+  {
+    value: 'Trinidad & Tobago',
+    label: 'Trinidad & Tobago',
+    flag: '🇹🇹',
+    cities: [
+      { value: 'Port of Spain, Trinidad', label: 'Port of Spain' },
+      { value: 'San Fernando, Trinidad', label: 'San Fernando' },
+      { value: 'Chaguanas, Trinidad', label: 'Chaguanas' },
+      { value: 'Tobago', label: 'Tobago' },
+    ],
+  },
+  {
+    value: 'Jamaica',
+    label: 'Jamaica',
+    flag: '🇯🇲',
+    cities: [
+      { value: 'Kingston, Jamaica', label: 'Kingston' },
+      { value: 'Montego Bay, Jamaica', label: 'Montego Bay' },
+    ],
+  },
+  {
+    value: 'Barbados',
+    label: 'Barbados',
+    flag: '🇧🇧',
+    cities: [
+      { value: 'Bridgetown, Barbados', label: 'Bridgetown' },
+    ],
+  },
+  {
+    value: 'United States',
+    label: 'United States',
+    flag: '🇺🇸',
+    cities: [
+      { value: 'Los Angeles, CA', label: 'Los Angeles, CA' },
+      { value: 'New York, NY', label: 'New York, NY' },
+      { value: 'Atlanta, GA', label: 'Atlanta, GA' },
+      { value: 'Miami, FL', label: 'Miami, FL' },
+      { value: 'Nashville, TN', label: 'Nashville, TN' },
+      { value: 'Chicago, IL', label: 'Chicago, IL' },
+      { value: 'Austin, TX', label: 'Austin, TX' },
+      { value: 'San Francisco, CA', label: 'San Francisco, CA' },
+      { value: 'Houston, TX', label: 'Houston, TX' },
+      { value: 'Dallas, TX', label: 'Dallas, TX' },
+      { value: 'Denver, CO', label: 'Denver, CO' },
+      { value: 'Seattle, WA', label: 'Seattle, WA' },
+      { value: 'Portland, OR', label: 'Portland, OR' },
+      { value: 'Detroit, MI', label: 'Detroit, MI' },
+      { value: 'Philadelphia, PA', label: 'Philadelphia, PA' },
+      { value: 'Washington, DC', label: 'Washington, DC' },
+    ],
+  },
+  {
+    value: 'United Kingdom',
+    label: 'United Kingdom',
+    flag: '🇬🇧',
+    cities: [
+      { value: 'London, UK', label: 'London' },
+      { value: 'Manchester, UK', label: 'Manchester' },
+      { value: 'Birmingham, UK', label: 'Birmingham' },
+      { value: 'Bristol, UK', label: 'Bristol' },
+      { value: 'Glasgow, UK', label: 'Glasgow' },
+      { value: 'Leeds, UK', label: 'Leeds' },
+    ],
+  },
+  {
+    value: 'Canada',
+    label: 'Canada',
+    flag: '🇨🇦',
+    cities: [
+      { value: 'Toronto, Canada', label: 'Toronto' },
+      { value: 'Vancouver, Canada', label: 'Vancouver' },
+      { value: 'Montreal, Canada', label: 'Montreal' },
+      { value: 'Calgary, Canada', label: 'Calgary' },
+    ],
+  },
+  {
+    value: 'Nigeria',
+    label: 'Nigeria',
+    flag: '🇳🇬',
+    cities: [
+      { value: 'Lagos, Nigeria', label: 'Lagos' },
+      { value: 'Abuja, Nigeria', label: 'Abuja' },
+    ],
+  },
+  {
+    value: 'Germany',
+    label: 'Germany',
+    flag: '🇩🇪',
+    cities: [
+      { value: 'Berlin, Germany', label: 'Berlin' },
+      { value: 'Munich, Germany', label: 'Munich' },
+      { value: 'Hamburg, Germany', label: 'Hamburg' },
+    ],
+  },
+  {
+    value: 'France',
+    label: 'France',
+    flag: '🇫🇷',
+    cities: [
+      { value: 'Paris, France', label: 'Paris' },
+      { value: 'Lyon, France', label: 'Lyon' },
+      { value: 'Marseille, France', label: 'Marseille' },
+    ],
+  },
+  {
+    value: 'Netherlands',
+    label: 'Netherlands',
+    flag: '🇳🇱',
+    cities: [
+      { value: 'Amsterdam, Netherlands', label: 'Amsterdam' },
+      { value: 'Rotterdam, Netherlands', label: 'Rotterdam' },
+    ],
+  },
+  {
+    value: 'Spain',
+    label: 'Spain',
+    flag: '🇪🇸',
+    cities: [
+      { value: 'Barcelona, Spain', label: 'Barcelona' },
+      { value: 'Madrid, Spain', label: 'Madrid' },
+    ],
+  },
+  {
+    value: 'Sweden',
+    label: 'Sweden',
+    flag: '🇸🇪',
+    cities: [
+      { value: 'Stockholm, Sweden', label: 'Stockholm' },
+    ],
+  },
+  {
+    value: 'Indonesia',
+    label: 'Indonesia',
+    flag: '🇮🇩',
+    cities: [
+      { value: 'Bali, Indonesia', label: 'Bali' },
+      { value: 'Jakarta, Indonesia', label: 'Jakarta' },
+    ],
+  },
+  {
+    value: 'India',
+    label: 'India',
+    flag: '🇮🇳',
+    cities: [
+      { value: 'Mumbai, India', label: 'Mumbai' },
+      { value: 'Delhi, India', label: 'Delhi' },
+      { value: 'Bangalore, India', label: 'Bangalore' },
+    ],
+  },
+  {
+    value: 'Japan',
+    label: 'Japan',
+    flag: '🇯🇵',
+    cities: [
+      { value: 'Tokyo, Japan', label: 'Tokyo' },
+      { value: 'Osaka, Japan', label: 'Osaka' },
+    ],
+  },
+  {
+    value: 'South Korea',
+    label: 'South Korea',
+    flag: '🇰🇷',
+    cities: [
+      { value: 'Seoul, South Korea', label: 'Seoul' },
+    ],
+  },
+  {
+    value: 'Australia',
+    label: 'Australia',
+    flag: '🇦🇺',
+    cities: [
+      { value: 'Sydney, Australia', label: 'Sydney' },
+      { value: 'Melbourne, Australia', label: 'Melbourne' },
+    ],
+  },
+  {
+    value: 'Brazil',
+    label: 'Brazil',
+    flag: '🇧🇷',
+    cities: [
+      { value: 'São Paulo, Brazil', label: 'São Paulo' },
+      { value: 'Rio de Janeiro, Brazil', label: 'Rio de Janeiro' },
+    ],
+  },
+  {
+    value: 'Mexico',
+    label: 'Mexico',
+    flag: '🇲🇽',
+    cities: [
+      { value: 'Mexico City, Mexico', label: 'Mexico City' },
+    ],
+  },
+  {
+    value: 'Colombia',
+    label: 'Colombia',
+    flag: '🇨🇴',
+    cities: [
+      { value: 'Medellín, Colombia', label: 'Medellín' },
+      { value: 'Bogotá, Colombia', label: 'Bogotá' },
+    ],
+  },
+  {
+    value: 'Argentina',
+    label: 'Argentina',
+    flag: '🇦🇷',
+    cities: [
+      { value: 'Buenos Aires, Argentina', label: 'Buenos Aires' },
+    ],
+  },
+  {
+    value: 'South Africa',
+    label: 'South Africa',
+    flag: '🇿🇦',
+    cities: [
+      { value: 'Cape Town, South Africa', label: 'Cape Town' },
+      { value: 'Johannesburg, South Africa', label: 'Johannesburg' },
+    ],
+  },
+  {
+    value: 'Ghana',
+    label: 'Ghana',
+    flag: '🇬🇭',
+    cities: [
+      { value: 'Accra, Ghana', label: 'Accra' },
+    ],
+  },
+  {
+    value: 'Kenya',
+    label: 'Kenya',
+    flag: '🇰🇪',
+    cities: [
+      { value: 'Nairobi, Kenya', label: 'Nairobi' },
+    ],
+  },
+];
 
 /**
- * Given a filter location value, returns all location strings that should match.
- * E.g. "Trinidad & Tobago" → ["Port of Spain, Trinidad", "San Fernando, Trinidad", ...]
- * For a specific city like "Port of Spain, Trinidad", returns just that city.
+ * Given a country value, returns all city values that belong to it.
+ */
+export function getCitiesForCountry(countryValue: string): string[] {
+  const country = LOCATION_HIERARCHY.find(c => c.value === countryValue);
+  if (!country) return [];
+  return country.cities.map(c => c.value);
+}
+
+/**
+ * Given a country value, returns all location strings that should match
+ * (the country name itself + all cities).
  */
 export function getMatchingLocations(filterValue: string): string[] {
-  // Check if this value is a group key
-  if (LOCATION_GROUPS[filterValue]) {
-    return LOCATION_GROUPS[filterValue];
+  const country = LOCATION_HIERARCHY.find(c => c.value === filterValue);
+  if (country) {
+    return [country.value, ...country.cities.map(c => c.value)];
   }
-
-  // Check if this value belongs to any group — if so, just match the specific value
-  // but also do a fuzzy includes for free-text locations
   return [filterValue];
 }
 
 /**
- * Check if a profile's location matches the selected filter location.
+ * Check if a profile's location matches the selected filter.
  * Handles country-level grouping and substring matching.
  */
-export function locationMatchesFilter(profileLocation: string | null, filterValue: string): boolean {
+export function locationMatchesFilter(
+  profileLocation: string | null,
+  filterCountry: string,
+  filterCity?: string
+): boolean {
   if (!profileLocation) return false;
-  if (filterValue === 'all') return true;
+  if (filterCountry === 'all') return true;
 
   const normalizedProfile = profileLocation.toLowerCase().trim();
-  const normalizedFilter = filterValue.toLowerCase().trim();
 
-  // Direct match
-  if (normalizedProfile === normalizedFilter) return true;
+  // If a specific city is selected, match against that city
+  if (filterCity && filterCity !== 'all') {
+    const normalizedCity = filterCity.toLowerCase().trim();
+    if (normalizedProfile === normalizedCity) return true;
+    if (normalizedProfile.includes(normalizedCity) || normalizedCity.includes(normalizedProfile)) return true;
+    return false;
+  }
 
-  // Check group membership
-  const matchingLocations = getMatchingLocations(filterValue);
+  // Country-level: match against country name and all its cities
+  const matchingLocations = getMatchingLocations(filterCountry);
   if (matchingLocations.some(loc => normalizedProfile === loc.toLowerCase())) return true;
 
-  // Fuzzy: check if filter term appears in profile location or vice versa
-  // e.g. "Trinidad" in "Port of Spain, Trinidad"
+  // Fuzzy: country name substring
+  const normalizedFilter = filterCountry.toLowerCase().trim();
   if (normalizedProfile.includes(normalizedFilter) || normalizedFilter.includes(normalizedProfile)) return true;
+
+  // Also check if profile mentions any word from country (e.g. "Trinidad" in "Port of Spain, Trinidad")
+  const countryWords = normalizedFilter.split(/[\s&,]+/).filter(w => w.length > 2);
+  if (countryWords.some(word => normalizedProfile.includes(word))) return true;
 
   return false;
 }

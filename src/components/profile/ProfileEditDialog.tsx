@@ -219,6 +219,9 @@ export function ProfileEditDialog({
     instagram_url: "",
     twitter_url: "",
     linkedin_url: "",
+    hourly_rate: "",
+    project_rate: "",
+    rate_currency: "USD",
   });
 
   const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
@@ -235,6 +238,9 @@ export function ProfileEditDialog({
         instagram_url: profile.instagram_url || "",
         twitter_url: profile.twitter_url || "",
         linkedin_url: profile.linkedin_url || "",
+        hourly_rate: (profile as any).hourly_rate?.toString() || "",
+        project_rate: (profile as any).project_rate?.toString() || "",
+        rate_currency: (profile as any).rate_currency || "USD",
       });
 
       const completion = checkProfileCompletion(profile);
@@ -267,7 +273,10 @@ export function ProfileEditDialog({
           instagram_url: formData.instagram_url || null,
           twitter_url: formData.twitter_url || null,
           linkedin_url: formData.linkedin_url || null,
-        })
+          hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+          project_rate: formData.project_rate ? parseFloat(formData.project_rate) : null,
+          rate_currency: formData.rate_currency || 'USD',
+        } as any)
         .eq("id", profile.id);
 
       if (error) throw error;
@@ -275,7 +284,9 @@ export function ProfileEditDialog({
       const newCompletion = checkProfileCompletion({
         ...profile,
         ...formData,
-      });
+        hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+        project_rate: formData.project_rate ? parseFloat(formData.project_rate) : null,
+      } as any);
 
       toast({
         title: "Profile updated",
@@ -402,6 +413,55 @@ export function ProfileEditDialog({
               type="url"
             />
           </FieldWrapper>
+
+          {/* Rate Card */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              💰 Rate Card
+              <Badge variant="secondary" className="text-[10px]">Visible on profile</Badge>
+            </h3>
+            <p className="text-xs text-muted-foreground -mt-2">Help brands & clients quickly assess budget fit</p>
+            
+            <div className="grid grid-cols-3 gap-3">
+              <FieldWrapper label="Currency" isIncomplete={false}>
+                <Select
+                  value={formData.rate_currency}
+                  onValueChange={(value) => handleInputChange('rate_currency', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">$ USD</SelectItem>
+                    <SelectItem value="EUR">€ EUR</SelectItem>
+                    <SelectItem value="GBP">£ GBP</SelectItem>
+                    <SelectItem value="CAD">$ CAD</SelectItem>
+                    <SelectItem value="AUD">$ AUD</SelectItem>
+                    <SelectItem value="TTD">$ TTD</SelectItem>
+                    <SelectItem value="JMD">$ JMD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldWrapper>
+              <FieldWrapper label="Hourly Rate" isIncomplete={false}>
+                <Input
+                  value={formData.hourly_rate}
+                  onChange={(e) => handleInputChange('hourly_rate', e.target.value)}
+                  placeholder="e.g. 75"
+                  type="number"
+                  min="0"
+                />
+              </FieldWrapper>
+              <FieldWrapper label="Project Rate" isIncomplete={false}>
+                <Input
+                  value={formData.project_rate}
+                  onChange={(e) => handleInputChange('project_rate', e.target.value)}
+                  placeholder="e.g. 2000"
+                  type="number"
+                  min="0"
+                />
+              </FieldWrapper>
+            </div>
+          </div>
 
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Social Media (Optional)</h3>

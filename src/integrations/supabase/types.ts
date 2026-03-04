@@ -3965,6 +3965,7 @@ export type Database = {
           available_invites: number | null
           avatar_url: string | null
           average_rating: number | null
+          avg_response_hours: number | null
           avg_views: number | null
           awards: Json | null
           badge: Database["public"]["Enums"]["user_badge"] | null
@@ -3992,6 +3993,7 @@ export type Database = {
           email_verified: boolean
           full_name: string
           google_maps_place_id: string | null
+          hourly_rate: number | null
           id: string
           id_verified: boolean
           id_verified_at: string | null
@@ -4042,6 +4044,8 @@ export type Database = {
           profile_frame: string | null
           profile_source: string | null
           project_credits: number | null
+          project_rate: number | null
+          rate_currency: string | null
           rate_range: string | null
           review_share_token: string | null
           role: string
@@ -4093,6 +4097,7 @@ export type Database = {
           available_invites?: number | null
           avatar_url?: string | null
           average_rating?: number | null
+          avg_response_hours?: number | null
           avg_views?: number | null
           awards?: Json | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
@@ -4120,6 +4125,7 @@ export type Database = {
           email_verified?: boolean
           full_name: string
           google_maps_place_id?: string | null
+          hourly_rate?: number | null
           id?: string
           id_verified?: boolean
           id_verified_at?: string | null
@@ -4170,6 +4176,8 @@ export type Database = {
           profile_frame?: string | null
           profile_source?: string | null
           project_credits?: number | null
+          project_rate?: number | null
+          rate_currency?: string | null
           rate_range?: string | null
           review_share_token?: string | null
           role: string
@@ -4221,6 +4229,7 @@ export type Database = {
           available_invites?: number | null
           avatar_url?: string | null
           average_rating?: number | null
+          avg_response_hours?: number | null
           avg_views?: number | null
           awards?: Json | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
@@ -4248,6 +4257,7 @@ export type Database = {
           email_verified?: boolean
           full_name?: string
           google_maps_place_id?: string | null
+          hourly_rate?: number | null
           id?: string
           id_verified?: boolean
           id_verified_at?: string | null
@@ -4298,6 +4308,8 @@ export type Database = {
           profile_frame?: string | null
           profile_source?: string | null
           project_credits?: number | null
+          project_rate?: number | null
+          rate_currency?: string | null
           rate_range?: string | null
           review_share_token?: string | null
           role?: string

@@ -217,6 +217,16 @@ export const ProfileHero = ({
                   <span className="font-medium text-foreground">{profile.average_rating.toFixed(1)}</span>
                 </div>
               )}
+              {/* Response Time */}
+              {profile.avg_response_hours != null && profile.avg_response_hours > 0 && (
+                <Badge variant="outline" className="h-5 text-[10px] font-semibold gap-1 border-blue-500/50 text-blue-600 bg-blue-500/10">
+                  ⚡ Responds in {profile.avg_response_hours < 1 
+                    ? '< 1hr' 
+                    : profile.avg_response_hours < 24 
+                      ? `~${Math.round(profile.avg_response_hours)}hr` 
+                      : `~${Math.round(profile.avg_response_hours / 24)}d`}
+                </Badge>
+              )}
               {/* Availability Badge */}
               {profile.availability && (
                 <Badge 
@@ -241,6 +251,22 @@ export const ProfileHero = ({
                 </Badge>
               )}
             </div>
+            
+            {/* Rate Card */}
+            {(profile.hourly_rate || profile.project_rate) && (
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                {profile.hourly_rate && (
+                  <Badge variant="outline" className="text-[11px] font-medium bg-green-500/5 border-green-500/30 text-green-700 dark:text-green-400">
+                    💰 {profile.rate_currency === 'EUR' ? '€' : profile.rate_currency === 'GBP' ? '£' : '$'}{profile.hourly_rate}/hr
+                  </Badge>
+                )}
+                {profile.project_rate && (
+                  <Badge variant="outline" className="text-[11px] font-medium bg-green-500/5 border-green-500/30 text-green-700 dark:text-green-400">
+                    📋 From {profile.rate_currency === 'EUR' ? '€' : profile.rate_currency === 'GBP' ? '£' : '$'}{profile.project_rate}/project
+                  </Badge>
+                )}
+              </div>
+            )}
             
             {/* Connection Path */}
             {!isOwnProfile && !degreeLoading && degree === 2 && path.length > 0 && (

@@ -17,6 +17,7 @@ import { SEO } from "@/components/SEO";
 import { FeeStructure } from "@/components/FeeStructure";
 import { FeeCalculator } from "@/components/FeeCalculator";
 import { getFeeDisplayText } from "@/lib/platformFees";
+import { WalletXPSection } from "@/components/wallet/WalletXPSection";
 import {
   DollarSign,
   TrendingUp,
@@ -33,6 +34,7 @@ import {
   Plus,
   Loader2,
   Wallet,
+  Sparkles,
 } from "lucide-react";
 
 interface ConnectRequirements {
@@ -333,10 +335,14 @@ export default function ThrivePay() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full grid grid-cols-3">
+          <TabsList className="w-full grid grid-cols-4">
             <TabsTrigger value="wallet" className="gap-2">
               <Wallet className="h-4 w-4" />
               Wallet
+            </TabsTrigger>
+            <TabsTrigger value="xp" className="gap-2">
+              <Sparkles className="h-4 w-4" />
+              XP Points
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-2">
               <CreditCard className="h-4 w-4" />
@@ -401,6 +407,11 @@ export default function ThrivePay() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          {/* XP Points Tab */}
+          <TabsContent value="xp" className="space-y-6">
+            <WalletXPSection />
           </TabsContent>
 
           {/* Payments Tab - Stripe Connect */}

@@ -123,13 +123,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <div className="hidden lg:flex items-center gap-1">
             {(accountType === "company"
               ? [
-                  { path: "/opportunities", icon: Briefcase, label: "Jobs" },
+                  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
                   { path: "/desk", icon: Briefcase, label: "Projects" },
                   { path: "/thrivemoney", icon: DollarSign, label: "Earnings" },
                 ]
               : [
                   { path: "/circle", icon: Users, label: "Circle" },
-                  { path: "/opportunities", icon: Briefcase, label: "Opportunities" },
+                  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
                   { path: "/desk", icon: Briefcase, label: "Projects" },
                   { path: "/thrivemoney", icon: DollarSign, label: "Earnings" },
                 ]

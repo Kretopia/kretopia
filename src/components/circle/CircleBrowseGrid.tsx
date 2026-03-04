@@ -198,11 +198,9 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
           )}
 
           {isPro && profiles.length > 0 && (
-            <div className="text-center pt-2">
-              <Button variant="link" onClick={() => navigate("/discover")} className="text-sm gap-1">
-                View all creators on Discover →
-              </Button>
-            </div>
+            <p className="text-center text-xs text-muted-foreground pt-3">
+              Showing {profiles.length} creators · Swipe left for more discovery
+            </p>
           )}
         </>
       )}

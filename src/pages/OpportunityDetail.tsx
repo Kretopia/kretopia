@@ -162,7 +162,7 @@ const OpportunityDetail = () => {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <Briefcase className="mx-auto mb-4 h-16 w-16 animate-pulse text-primary" />
-          <p className="text-muted-foreground">Loading opportunity...</p>
+          <p className="text-muted-foreground">Loading gig details...</p>
         </div>
       </div>
     );
@@ -173,8 +173,8 @@ const OpportunityDetail = () => {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <XCircle className="mx-auto mb-4 h-16 w-16 text-destructive" />
-          <h2 className="text-2xl font-bold mb-2">Opportunity Not Found</h2>
-          <p className="text-muted-foreground mb-4">This opportunity may have been removed or doesn't exist.</p>
+          <h2 className="text-2xl font-bold mb-2">Gig Not Found</h2>
+          <p className="text-muted-foreground mb-4">This gig may have been removed or doesn't exist.</p>
           <Link to="/">
             <Button>Go to Home</Button>
           </Link>
@@ -306,7 +306,7 @@ const OpportunityDetail = () => {
           {isActive ? (
             <Button size="lg" className="w-full" onClick={handleApply}>
               {!user && <UserPlus className="mr-2 h-5 w-5" />}
-              {user ? "Apply for this Opportunity" : "Sign Up to Apply"}
+              {user ? "Apply Now" : "Sign Up to Apply"}
             </Button>
           ) : (
             <Button size="lg" className="w-full" disabled>
@@ -316,7 +316,7 @@ const OpportunityDetail = () => {
           
           {!user && (
             <p className="mt-4 text-center text-sm text-muted-foreground">
-              Create a free account to apply for this opportunity
+              Create a free account to apply for this gig
             </p>
           )}
         </div>

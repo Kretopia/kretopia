@@ -42,7 +42,7 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
         <div className="text-center mb-10 sm:mb-12">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
             <Sparkles className="h-4 w-4" />
-            <span>{opportunitiesCount} Active Opportunities</span>
+            <span>{opportunitiesCount} Active Gigs</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight tracking-tight">
             Jobs, Collabs &{" "}
@@ -86,7 +86,7 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
           <Link to="/auth">
             <Button variant="gradient" size="lg" className="gap-2">
               <Sparkles className="h-4 w-4" />
-              Browse Opportunities
+              Browse Gigs
             </Button>
           </Link>
         </div>

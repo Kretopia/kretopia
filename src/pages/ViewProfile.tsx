@@ -46,6 +46,10 @@ import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
+import { ProfileRatingSummary } from "@/components/profile/ProfileRatingSummary";
+import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
+import { ServicePackagesSection } from "@/components/profile/ServicePackagesSection";
+import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
 
 interface Profile {
   user_id: string;
@@ -75,6 +79,10 @@ interface Profile {
   is_claimed?: boolean;
   badge?: string;
   profile_frame?: string | null;
+  hourly_rate?: number;
+  project_rate?: number;
+  rate_currency?: string;
+  avg_response_hours?: number;
 }
 
 const ViewProfile = () => {
@@ -450,13 +458,21 @@ const ViewProfile = () => {
                   <p className="text-muted-foreground mb-2">{profile.role}</p>
                   
                   {profile.location && (
-                    <div className="flex items-center justify-center sm:justify-start gap-1 text-sm text-muted-foreground mb-3">
+                    <div className="flex items-center justify-center sm:justify-start gap-1 text-sm text-muted-foreground mb-2">
                       <MapPin className="h-4 w-4" />
                       {profile.location}
                     </div>
                   )}
 
-                  {/* Badges */}
+                  {/* Availability Status */}
+                  <div className="flex justify-center sm:justify-start mb-3">
+                    <AvailabilityIndicator
+                      status={(profile as any).availability_status}
+                      note={(profile as any).availability_note}
+                      isOwnProfile={false}
+                    />
+                  </div>
+
                   <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
                     {profile.collab_intent && (
                       <Badge variant="secondary" className="gap-1">
@@ -464,13 +480,23 @@ const ViewProfile = () => {
                         {profile.collab_intent}
                       </Badge>
                     )}
-                    {profile.rate_range && (
+                    {profile.hourly_rate && (
+                      <Badge variant="outline" className="gap-1">
+                        💰 ${profile.hourly_rate}/{profile.rate_currency || 'USD'}/hr
+                      </Badge>
+                    )}
+                    {profile.project_rate && (
+                      <Badge variant="outline" className="gap-1">
+                        📦 ${profile.project_rate}/{profile.rate_currency || 'USD'}/project
+                      </Badge>
+                    )}
+                    {!profile.hourly_rate && !profile.project_rate && profile.rate_range && (
                       <Badge variant="outline">{profile.rate_range}</Badge>
                     )}
-                    {profile.average_rating && profile.average_rating > 0 && (
+                    {profile.avg_response_hours && profile.avg_response_hours > 0 && (
                       <Badge variant="outline" className="gap-1">
-                        <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                        {profile.average_rating.toFixed(1)}
+                        <Clock className="h-3 w-3" />
+                        ⚡ ~{profile.avg_response_hours < 1 ? '<1' : Math.round(profile.avg_response_hours)}hr response
                       </Badge>
                     )}
                   </div>
@@ -491,6 +517,27 @@ const ViewProfile = () => {
                   {profile.bio && (
                     <p className="text-sm text-muted-foreground line-clamp-3">{profile.bio}</p>
                   )}
+
+                  {/* Rating Summary */}
+                  {((profile.average_rating && profile.average_rating > 0) || (profile.total_reviews && profile.total_reviews > 0)) && (
+                    <ProfileRatingSummary
+                      averageRating={profile.average_rating || 0}
+                      totalReviews={profile.total_reviews || 0}
+                      className="mt-3"
+                    />
+                  )}
+
+                  {/* Compact Trust Signals */}
+                  <div className="mt-3">
+                    <TrustSignals
+                      emailVerified={(profile as any).email_verified}
+                      phoneVerified={(profile as any).phone_verified}
+                      idVerified={(profile as any).id_verified}
+                      paymentVerified={(profile as any).payment_verified}
+                      isOwnProfile={false}
+                      compact
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -585,6 +632,16 @@ const ViewProfile = () => {
               profileUrl={`https://www.thrivein.io/profile/${profile.user_id}`}
             />
           )}
+
+          {/* Video Intro */}
+          <VideoIntroSection
+            videoUrl={(profile as any).video_intro_url}
+            isOwnProfile={false}
+            onRefresh={fetchData}
+          />
+
+          {/* Service Packages */}
+          <ServicePackagesSection userId={profile.user_id} isOwnProfile={false} />
 
           {/* Trust Signals */}
           <Card className="p-4 mb-6">

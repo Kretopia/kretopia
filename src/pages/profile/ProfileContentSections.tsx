@@ -14,6 +14,9 @@ import { AwardsSection } from "@/components/profile/AwardsSection";
 import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
+import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
+import { ServicePackagesSection } from "@/components/profile/ServicePackagesSection";
+import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
 interface ProfileContentSectionsProps {
@@ -41,6 +44,16 @@ export const ProfileContentSections = ({
 
   return (
     <div className="space-y-8">
+      {/* Video Intro */}
+      <VideoIntroSection
+        videoUrl={profile.video_intro_url}
+        isOwnProfile={true}
+        onRefresh={onRefresh}
+      />
+
+      {/* Service Packages */}
+      <ServicePackagesSection userId={profile.user_id} isOwnProfile={true} />
+
       {/* Portfolio / EPK */}
       <section>
         <h2 className="text-xl font-bold mb-4">My Work</h2>

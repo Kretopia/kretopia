@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Loader2, Upload, X } from "lucide-react";
+import { Briefcase, Loader2, Upload, X, ArrowRightLeft, Handshake, Zap, Target, GraduationCap, UtensilsCrossed, Hotel, Gift, Instagram, Youtube, Music } from "lucide-react";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -22,9 +23,36 @@ interface PostOpportunityDialogProps {
   onSuccess?: () => void;
 }
 
-export const PostOpportunityDialog = ({ 
-  variant = "default", 
-  size = "default", 
+const GIG_TYPES = [
+  { value: "barter", label: "🔄 Barter / Trade", description: "Offer something in exchange for content", icon: ArrowRightLeft },
+  { value: "job", label: "💼 Paid Gig", description: "Pay a creator for their work", icon: Briefcase },
+  { value: "collab", label: "🤝 Collaboration", description: "Work together on a creative project", icon: Handshake },
+  { value: "gig", label: "⚡ Quick Gig", description: "One-off task or performance", icon: Zap },
+  { value: "project", label: "🎯 Project-Based", description: "Longer-term creative project", icon: Target },
+  { value: "internship", label: "🎓 Internship", description: "Learning opportunity for emerging creatives", icon: GraduationCap },
+];
+
+const BARTER_OFFERING_EXAMPLES = [
+  { icon: UtensilsCrossed, label: "Free Meal / Dining Experience" },
+  { icon: Hotel, label: "Complimentary Stay / Room Night" },
+  { icon: Gift, label: "Free Products / Services" },
+];
+
+const PLATFORM_OPTIONS = [
+  { value: "instagram", label: "Instagram", icon: Instagram },
+  { value: "tiktok", label: "TikTok", icon: Music },
+  { value: "youtube", label: "YouTube", icon: Youtube },
+];
+
+const CONTENT_TYPE_OPTIONS = [
+  "Instagram Story", "Instagram Reel", "Instagram Post", "Instagram Carousel",
+  "TikTok Video", "YouTube Video", "YouTube Short",
+  "Blog Post", "Review", "Photo Set", "Live Stream",
+];
+
+export const PostOpportunityDialog = ({
+  variant = "default",
+  size = "default",
   className,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
@@ -32,7 +60,6 @@ export const PostOpportunityDialog = ({
   onSuccess
 }: PostOpportunityDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
-  
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
   const [loading, setLoading] = useState(false);
@@ -41,36 +68,11 @@ export const PostOpportunityDialog = ({
   const { subscriptionInfo } = useAuth();
   const isPro = subscriptionInfo.tier === "pro";
 
-  // Check for pending opportunity data on mount
-  useEffect(() => {
-    const checkPendingOpportunity = async () => {
-      const pendingData = localStorage.getItem('pendingOpportunity');
-      if (pendingData) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // User is now authenticated, restore the form data
-          const savedData = JSON.parse(pendingData);
-          setFormData(savedData.formData);
-          if (savedData.imagePreview) {
-            setImagePreview(savedData.imagePreview);
-          }
-          localStorage.removeItem('pendingOpportunity');
-          setOpen(true);
-          toast({
-            title: "Welcome back!",
-            description: "Your opportunity is ready to post. Please review and submit.",
-          });
-        }
-      }
-    };
-    checkPendingOpportunity();
-  }, []);
-
   const [formData, setFormData] = useState({
     email: "",
     company: "",
     title: "",
-    type: "job",
+    type: "",
     description: "",
     compensation: "",
     location: "",
@@ -78,416 +80,526 @@ export const PostOpportunityDialog = ({
     skills: "",
     deliverables: "",
     duration: "",
+    // Barter-specific
+    barter_offering: "",
+    barter_requesting: "",
+    platform_requirements: [] as string[],
+    min_followers: "",
+    content_deliverables: [] as string[],
   });
-  
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+
+  useEffect(() => {
+    const checkPendingOpportunity = async () => {
+      const pendingData = localStorage.getItem('pendingOpportunity');
+      if (pendingData) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const savedData = JSON.parse(pendingData);
+          setFormData(prev => ({ ...prev, ...savedData.formData }));
+          if (savedData.imagePreview) setImagePreview(savedData.imagePreview);
+          localStorage.removeItem('pendingOpportunity');
+          setOpen(true);
+          toast({ title: "Welcome back!", description: "Your gig is ready to post." });
+        }
+      }
+    };
+    checkPendingOpportunity();
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
+  const togglePlatform = (platform: string) => {
+    setFormData(prev => ({
+      ...prev,
+      platform_requirements: prev.platform_requirements.includes(platform)
+        ? prev.platform_requirements.filter(p => p !== platform)
+        : [...prev.platform_requirements, platform],
+    }));
+  };
+
+  const toggleContentDeliverable = (item: string) => {
+    setFormData(prev => ({
+      ...prev,
+      content_deliverables: prev.content_deliverables.includes(item)
+        ? prev.content_deliverables.filter(d => d !== item)
+        : [...prev.content_deliverables, item],
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[PostOpportunity] Form submitted');
     setLoading(true);
 
     try {
-      console.log('[PostOpportunity] Getting user...');
-      // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('[PostOpportunity] User:', user?.id);
-      
       if (!user) {
-        console.log('[PostOpportunity] No user found, saving data and redirecting to auth');
-        // Save form data to localStorage
-        localStorage.setItem('pendingOpportunity', JSON.stringify({
-          formData,
-          imagePreview
-        }));
-        
-        toast({
-          title: "Almost there!",
-          description: "Please sign up or log in to post your opportunity.",
-        });
-        
+        localStorage.setItem('pendingOpportunity', JSON.stringify({ formData, imagePreview }));
+        toast({ title: "Almost there!", description: "Please sign up or log in to post your gig." });
         setLoading(false);
         setOpen(false);
-        
-        // Redirect to auth page
         navigate('/auth?return=post-opportunity');
         return;
       }
-      // Call AI moderation function
+
+      // Moderation
       const { data: moderationData, error: moderationError } = await supabase.functions.invoke('moderate-opportunity', {
-        body: {
-          title: formData.title,
-          description: formData.description,
-          compensation: formData.compensation,
-        }
+        body: { title: formData.title, description: formData.description, compensation: formData.compensation }
       });
-
       if (moderationError) throw moderationError;
-
       if (moderationData?.flagged) {
-        toast({
-          title: "Content Flagged",
-          description: moderationData.reason || "Your post contains content that violates our guidelines.",
-          variant: "destructive",
-        });
+        toast({ title: "Content Flagged", description: moderationData.reason || "Your post contains content that violates our guidelines.", variant: "destructive" });
         setLoading(false);
         return;
       }
 
-      // Upload image if provided, otherwise generate one with AI
+      // Image upload or AI generation
       let imageUrl = null;
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
-        
-        console.log('[PostOpportunity] Uploading to:', filePath, 'User ID:', user.id);
-
-        const { error: uploadError } = await supabase.storage
-          .from('portfolio')
-          .upload(filePath, imageFile);
-
-        if (uploadError) {
-          console.error('[PostOpportunity] Upload error:', uploadError);
-          throw uploadError;
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('portfolio')
-          .getPublicUrl(filePath);
-
+        const { error: uploadError } = await supabase.storage.from('portfolio').upload(filePath, imageFile);
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(filePath);
         imageUrl = publicUrl;
       } else {
-        // Generate AI image
-        console.log('[PostOpportunity] Generating AI image...');
         const { data: aiImageData, error: aiError } = await supabase.functions.invoke('generate-opportunity-image', {
-          body: {
-            title: formData.title,
-            description: formData.description,
-            type: formData.type
-          }
+          body: { title: formData.title, description: formData.description, type: formData.type }
         });
-
-        if (aiError) {
-          console.error('[PostOpportunity] AI generation error:', aiError);
-          // Continue without image rather than failing
-        } else if (aiImageData?.image) {
-          // Convert base64 to blob and upload
+        if (!aiError && aiImageData?.image) {
           const base64Data = aiImageData.image.split(',')[1];
           const byteCharacters = atob(base64Data);
           const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'image/png' });
-          
-          const fileName = `${Math.random()}.png`;
-          const filePath = `${user.id}/${fileName}`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('portfolio')
-            .upload(filePath, blob);
-
+          for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+          const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'image/png' });
+          const filePath = `${user.id}/${Math.random()}.png`;
+          const { error: uploadError } = await supabase.storage.from('portfolio').upload(filePath, blob);
           if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('portfolio')
-              .getPublicUrl(filePath);
-
+            const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(filePath);
             imageUrl = publicUrl;
-            console.log('[PostOpportunity] AI image uploaded successfully');
           }
         }
       }
 
-      // Create opportunity with authenticated user
+      // Build compensation string for barter
+      let compensation = formData.compensation;
+      if (formData.type === "barter" && formData.barter_offering && !compensation) {
+        compensation = `🔄 ${formData.barter_offering}`;
+      }
+
+      // Build deliverables string
+      let deliverables = formData.deliverables;
+      if (formData.content_deliverables.length > 0 && !deliverables) {
+        deliverables = formData.content_deliverables.join(", ");
+      }
+
       const { data: newOpportunity, error: opportunityError } = await supabase
         .from('opportunities')
         .insert({
           title: formData.title,
           type: formData.type,
           description: formData.description,
-          compensation: formData.compensation,
+          compensation,
           location: formData.location,
           requirements: formData.requirements,
           skills: formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
-          deliverables: formData.deliverables,
+          deliverables,
           duration: formData.duration,
-          tags: [formData.company],
+          tags: formData.company ? [formData.company] : [],
           status: 'active',
           image_url: imageUrl,
           created_by: user.id,
-        })
+          barter_offering: formData.barter_offering || null,
+          barter_requesting: formData.barter_requesting || null,
+          platform_requirements: formData.platform_requirements.length > 0 ? formData.platform_requirements : null,
+          min_followers: formData.min_followers ? parseInt(formData.min_followers) : null,
+          content_deliverables: formData.content_deliverables.length > 0 ? JSON.stringify(formData.content_deliverables) : null,
+        } as any)
         .select()
         .single();
 
       if (opportunityError) throw opportunityError;
 
-      // Track opportunity creation
       if (newOpportunity) {
         const { analytics } = await import("@/lib/analytics");
         analytics.opportunityCreate(newOpportunity.id);
       }
 
-      toast({
-        title: "Opportunity Posted! 🎉",
-        description: "Your opportunity is now live on ThriveIN Discover.",
-      });
+      toast({ title: "Gig Posted! 🎉", description: "Your gig is now live on ThriveIN." });
 
+      // Reset
       setFormData({
-        email: "",
-        company: "",
-        title: "",
-        type: "job",
-        description: "",
-        compensation: "",
-        location: "",
-        requirements: "",
-        skills: "",
-        deliverables: "",
-        duration: "",
+        email: "", company: "", title: "", type: "", description: "", compensation: "",
+        location: "", requirements: "", skills: "", deliverables: "", duration: "",
+        barter_offering: "", barter_requesting: "", platform_requirements: [],
+        min_followers: "", content_deliverables: [],
       });
       setImageFile(null);
       setImagePreview("");
       setOpen(false);
-      
-      // Call success callback to refresh the list
-      if (onSuccess) {
-        onSuccess();
-      }
+      if (onSuccess) onSuccess();
     } catch (error) {
-      console.error('Error posting opportunity:', error);
-      toast({
-        title: "Failed to Post",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error posting gig:', error);
+      toast({ title: "Failed to Post", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
+  const isBarter = formData.type === "barter";
+  const isPaid = formData.type === "job" || formData.type === "gig";
+  const isCollab = formData.type === "collab";
+  const hasType = formData.type !== "";
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {trigger && (
-        <DialogTrigger asChild>
-          {trigger}
-        </DialogTrigger>
-      )}
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Post a Job or Collaboration</DialogTitle>
-          <DialogDescription>Share your opportunity with the ThriveIN community</DialogDescription>
+          <DialogTitle>Post a Gig</DialogTitle>
+          <DialogDescription>What kind of opportunity are you posting?</DialogDescription>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <AIJobDescriptionGenerator
-            isPro={isPro}
-            onGenerated={(data) => {
-              setFormData((prev) => ({
-                ...prev,
-                title: data.title || prev.title,
-                description: data.description || prev.description,
-                requirements: data.requirements || prev.requirements,
-                deliverables: data.deliverables || prev.deliverables,
-                skills: data.skills?.join(", ") || prev.skills,
-                compensation: data.compensation || prev.compensation,
-              }));
-            }}
-          />
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Your Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@company.com"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="company">Company/Brand Name *</Label>
-            <Input
-              id="company"
-              placeholder="Your Company"
-              value={formData.company}
-              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="type">Opportunity Type *</Label>
-            <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="job">💼 Paid Job</SelectItem>
-                <SelectItem value="collab">🤝 Collaboration</SelectItem>
-                <SelectItem value="gig">⚡ Gig / One-Off</SelectItem>
-                <SelectItem value="project">🎯 Project-Based</SelectItem>
-                <SelectItem value="internship">🎓 Internship / Apprenticeship</SelectItem>
-                <SelectItem value="barter">🔄 Barter / Trade</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              placeholder="e.g., Looking for Videographer for Event"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              required
-              maxLength={100}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
-            <Textarea
-              id="description"
-              placeholder="Describe the opportunity, requirements, and what you're looking for..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              required
-              rows={5}
-              maxLength={1000}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="compensation">Budget/Compensation</Label>
-            <Input
-              id="compensation"
-              placeholder="e.g., $500, Revenue share, Trade services"
-              value={formData.compensation}
-              onChange={(e) => setFormData({ ...formData, compensation: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              placeholder="e.g., Los Angeles, CA or Remote"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="requirements">Requirements</Label>
-            <Textarea
-              id="requirements"
-              placeholder="e.g., 5k+ Instagram followers, 2+ years experience, portfolio required"
-              value={formData.requirements}
-              onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="skills">Skills Needed (comma-separated)</Label>
-            <Input
-              id="skills"
-              placeholder="e.g., Video Editing, Social Media Marketing, Photography"
-              value={formData.skills}
-              onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="deliverables">Deliverables</Label>
-            <Textarea
-              id="deliverables"
-              placeholder="e.g., 3 Instagram posts, 1 YouTube video, weekly content calendar"
-              value={formData.deliverables}
-              onChange={(e) => setFormData({ ...formData, deliverables: e.target.value })}
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="duration">Duration/Timeline</Label>
-            <Input
-              id="duration"
-              placeholder="e.g., 1 month, 3-6 months, Ongoing"
-              value={formData.duration}
-              onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="image">Opportunity Image</Label>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById('image')?.click()}
-                  className="w-full"
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {imageFile ? "Change Image" : "Upload Image"}
-                </Button>
-                {imageFile && (
-                  <Button
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Step 1: Type Selection (visual cards) */}
+          {!hasType ? (
+            <div className="grid grid-cols-1 gap-2">
+              {GIG_TYPES.map(type => {
+                const Icon = type.icon;
+                return (
+                  <button
+                    key={type.value}
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview("");
-                    }}
+                    onClick={() => setFormData(prev => ({ ...prev, type: type.value }))}
+                    className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary hover:bg-primary/5 transition-all text-left"
                   >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                      <Icon className="h-5 w-5 text-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{type.label}</p>
+                      <p className="text-xs text-muted-foreground">{type.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              {/* Type indicator + change */}
+              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    {GIG_TYPES.find(t => t.value === formData.type)?.label}
+                  </Badge>
+                </div>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setFormData(prev => ({ ...prev, type: "" }))}>
+                  Change
+                </Button>
               </div>
-              {imagePreview && (
-                <div className="relative w-full h-48 rounded-lg overflow-hidden border">
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+
+              {/* AI Generator */}
+              <AIJobDescriptionGenerator
+                isPro={isPro}
+                onGenerated={(data) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    title: data.title || prev.title,
+                    description: data.description || prev.description,
+                    requirements: data.requirements || prev.requirements,
+                    deliverables: data.deliverables || prev.deliverables,
+                    skills: data.skills?.join(", ") || prev.skills,
+                    compensation: data.compensation || prev.compensation,
+                  }));
+                }}
+              />
+
+              {/* Common fields */}
+              <div className="space-y-2">
+                <Label htmlFor="post-title">
+                  {isBarter ? "Campaign Title *" : isPaid ? "Job Title *" : isCollab ? "Project Title *" : "Title *"}
+                </Label>
+                <Input
+                  id="post-title"
+                  placeholder={
+                    isBarter ? "e.g., Free Dinner for 2 in exchange for Reel + Stories"
+                    : isPaid ? "e.g., DJ needed for Saturday night event"
+                    : isCollab ? "e.g., Music video — need videographer + editor"
+                    : "e.g., Looking for Videographer"
+                  }
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  required
+                  maxLength={100}
+                />
+              </div>
+
+              {/* Barter-specific: What You're Offering */}
+              {isBarter && (
+                <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-purple-500/5">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-purple-700 dark:text-purple-300">
+                    <Gift className="h-4 w-4" />
+                    The Exchange
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="barter-offering">What You're Offering *</Label>
+                    <Input
+                      id="barter-offering"
+                      placeholder="e.g., Complimentary 2-night stay at our villa, Free dinner for 2"
+                      value={formData.barter_offering}
+                      onChange={(e) => setFormData(prev => ({ ...prev, barter_offering: e.target.value }))}
+                      required={isBarter}
+                    />
+                    <div className="flex gap-1.5 flex-wrap">
+                      {BARTER_OFFERING_EXAMPLES.map(ex => (
+                        <button
+                          key={ex.label}
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, barter_offering: ex.label }))}
+                          className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground transition-colors"
+                        >
+                          <ex.icon className="h-3 w-3" />
+                          {ex.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="barter-requesting">What You Need in Return *</Label>
+                    <Input
+                      id="barter-requesting"
+                      placeholder="e.g., 1 Instagram Reel + 3 Stories tagging our venue"
+                      value={formData.barter_requesting}
+                      onChange={(e) => setFormData(prev => ({ ...prev, barter_requesting: e.target.value }))}
+                      required={isBarter}
+                    />
+                  </div>
+
+                  {/* Content type chips */}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Content Types Needed</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {CONTENT_TYPE_OPTIONS.map(item => {
+                        const isSelected = formData.content_deliverables.includes(item);
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => toggleContentDeliverable(item)}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all border ${
+                              isSelected
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50"
+                            }`}
+                          >
+                            {item}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Platform requirements */}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Required Platforms</Label>
+                    <div className="flex gap-2">
+                      {PLATFORM_OPTIONS.map(p => {
+                        const isSelected = formData.platform_requirements.includes(p.value);
+                        const Icon = p.icon;
+                        return (
+                          <button
+                            key={p.value}
+                            type="button"
+                            onClick={() => togglePlatform(p.value)}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
+                              isSelected
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50"
+                            }`}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {p.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Min followers */}
+                  <div className="space-y-2">
+                    <Label htmlFor="min-followers" className="text-xs">Minimum Followers (optional)</Label>
+                    <Input
+                      id="min-followers"
+                      type="number"
+                      placeholder="e.g., 5000"
+                      value={formData.min_followers}
+                      onChange={(e) => setFormData(prev => ({ ...prev, min_followers: e.target.value }))}
+                    />
+                  </div>
                 </div>
               )}
-            </div>
-          </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Posting...
-              </>
-            ) : (
-              "Post Opportunity"
-            )}
-          </Button>
+              {/* Paid-specific: Budget */}
+              {isPaid && (
+                <div className="space-y-2 p-3 rounded-xl border-2 border-dashed border-green-300 bg-green-500/5">
+                  <Label htmlFor="compensation" className="flex items-center gap-1.5 text-sm font-semibold text-green-700 dark:text-green-300">
+                    💰 Budget / Compensation *
+                  </Label>
+                  <Input
+                    id="compensation"
+                    placeholder="e.g., $500, $200-500/night, Revenue share"
+                    value={formData.compensation}
+                    onChange={(e) => setFormData(prev => ({ ...prev, compensation: e.target.value }))}
+                    required={isPaid}
+                  />
+                </div>
+              )}
+
+              {/* Collab-specific */}
+              {isCollab && (
+                <div className="space-y-2 p-3 rounded-xl border-2 border-dashed border-blue-300 bg-blue-500/5">
+                  <Label className="flex items-center gap-1.5 text-sm font-semibold text-blue-700 dark:text-blue-300">
+                    🤝 Collaboration Details
+                  </Label>
+                  <Input
+                    placeholder="What do you bring to the table? e.g., Studio time, beats, location"
+                    value={formData.compensation}
+                    onChange={(e) => setFormData(prev => ({ ...prev, compensation: e.target.value }))}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="post-description">Description *</Label>
+                <Textarea
+                  id="post-description"
+                  placeholder={
+                    isBarter ? "Describe the experience you're offering and what kind of creator you're looking for..."
+                    : isPaid ? "Describe the gig, what's expected, and any important details..."
+                    : "Describe the project and what you're looking for..."
+                  }
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  required
+                  rows={4}
+                  maxLength={1000}
+                />
+              </div>
+
+              {/* Non-barter compensation */}
+              {!isPaid && !isCollab && !isBarter && (
+                <div className="space-y-2">
+                  <Label htmlFor="compensation-other">Budget / Compensation</Label>
+                  <Input
+                    id="compensation-other"
+                    placeholder="e.g., $500, Revenue share, Credit"
+                    value={formData.compensation}
+                    onChange={(e) => setFormData(prev => ({ ...prev, compensation: e.target.value }))}
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="post-location">Location</Label>
+                  <Input
+                    id="post-location"
+                    placeholder="e.g., Bali, Remote"
+                    value={formData.location}
+                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="post-duration">Duration</Label>
+                  <Input
+                    id="post-duration"
+                    placeholder="e.g., 1 day, 1 week"
+                    value={formData.duration}
+                    onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="post-skills">Skills Needed (comma-separated)</Label>
+                <Input
+                  id="post-skills"
+                  placeholder="e.g., Photography, Content Creation, Video Editing"
+                  value={formData.skills}
+                  onChange={(e) => setFormData(prev => ({ ...prev, skills: e.target.value }))}
+                />
+              </div>
+
+              {!isBarter && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="post-requirements">Requirements</Label>
+                    <Textarea
+                      id="post-requirements"
+                      placeholder="e.g., 5k+ followers, 2+ years experience"
+                      value={formData.requirements}
+                      onChange={(e) => setFormData(prev => ({ ...prev, requirements: e.target.value }))}
+                      rows={2}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="post-deliverables">Deliverables</Label>
+                    <Textarea
+                      id="post-deliverables"
+                      placeholder="e.g., 3 Instagram posts, 1 YouTube video"
+                      value={formData.deliverables}
+                      onChange={(e) => setFormData(prev => ({ ...prev, deliverables: e.target.value }))}
+                      rows={2}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Image upload */}
+              <div className="space-y-2">
+                <Label>Cover Image</Label>
+                <div className="flex flex-col gap-2">
+                  <Input id="post-image" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                  <Button type="button" variant="outline" onClick={() => document.getElementById('post-image')?.click()} className="w-full">
+                    <Upload className="mr-2 h-4 w-4" />
+                    {imageFile ? "Change Image" : "Upload Image"}
+                  </Button>
+                  {imageFile && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => { setImageFile(null); setImagePreview(""); }}>
+                      <X className="mr-1 h-3 w-3" /> Remove
+                    </Button>
+                  )}
+                  {imagePreview && (
+                    <div className="relative w-full h-36 rounded-lg overflow-hidden border">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  {!imageFile && (
+                    <p className="text-[10px] text-muted-foreground text-center">No image? We'll generate one with AI ✨</p>
+                  )}
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Posting...</>
+                ) : (
+                  isBarter ? "Post Barter Gig 🔄" : isPaid ? "Post Paid Gig 💼" : isCollab ? "Post Collaboration 🤝" : "Post Gig"
+                )}
+              </Button>
+            </>
+          )}
         </form>
       </DialogContent>
     </Dialog>

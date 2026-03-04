@@ -37,6 +37,10 @@ export const EditOpportunityDialog = ({
     deliverables: "",
     duration: "",
     status: "active",
+    barter_offering: "",
+    barter_requesting: "",
+    platform_requirements: [] as string[],
+    min_followers: "",
   });
   
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -71,6 +75,10 @@ export const EditOpportunityDialog = ({
         deliverables: data.deliverables || "",
         duration: data.duration || "",
         status: data.status || "active",
+        barter_offering: (data as any).barter_offering || "",
+        barter_requesting: (data as any).barter_requesting || "",
+        platform_requirements: (data as any).platform_requirements || [],
+        min_followers: (data as any).min_followers?.toString() || "",
       });
       
       if (data.image_url) {
@@ -144,7 +152,11 @@ export const EditOpportunityDialog = ({
           duration: formData.duration,
           status: formData.status,
           image_url: imageUrl,
-        })
+          barter_offering: formData.barter_offering || null,
+          barter_requesting: formData.barter_requesting || null,
+          platform_requirements: formData.platform_requirements.length > 0 ? formData.platform_requirements : null,
+          min_followers: formData.min_followers ? parseInt(formData.min_followers) : null,
+        } as any)
         .eq('id', opportunityId);
 
       if (error) throw error;
@@ -200,13 +212,50 @@ export const EditOpportunityDialog = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="job">Paid Job</SelectItem>
-                  <SelectItem value="collab">Collaboration</SelectItem>
-                  <SelectItem value="barter">Barter/Trade</SelectItem>
+                  <SelectItem value="job">💼 Paid Job</SelectItem>
+                  <SelectItem value="collab">🤝 Collaboration</SelectItem>
+                  <SelectItem value="gig">⚡ Quick Gig</SelectItem>
+                  <SelectItem value="project">🎯 Project-Based</SelectItem>
+                  <SelectItem value="internship">🎓 Internship</SelectItem>
+                  <SelectItem value="barter">🔄 Barter/Trade</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
+            {/* Barter-specific fields */}
+            {formData.type === 'barter' && (
+              <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-purple-500/5">
+                <p className="text-xs font-semibold text-purple-600 dark:text-purple-300">🔄 Barter Details</p>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-barter-offering">What You're Offering</Label>
+                  <Input
+                    id="edit-barter-offering"
+                    value={formData.barter_offering}
+                    onChange={(e) => setFormData({ ...formData, barter_offering: e.target.value })}
+                    placeholder="e.g., Free dinner for 2, complimentary room night"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-barter-requesting">What You Need in Return</Label>
+                  <Input
+                    id="edit-barter-requesting"
+                    value={formData.barter_requesting}
+                    onChange={(e) => setFormData({ ...formData, barter_requesting: e.target.value })}
+                    placeholder="e.g., 1 Reel + 3 Stories tagging our venue"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-min-followers">Min. Followers (optional)</Label>
+                  <Input
+                    id="edit-min-followers"
+                    type="number"
+                    value={formData.min_followers}
+                    onChange={(e) => setFormData({ ...formData, min_followers: e.target.value })}
+                    placeholder="e.g., 5000"
+                  />
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="description">Description *</Label>
               <Textarea

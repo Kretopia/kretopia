@@ -10,6 +10,7 @@ import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, MapPin, Verified, Sparkles, Users, Crown, Lock } from "lucide-react";
 import { SwipeFiltersState } from "./SwipeFilters";
+import { locationMatchesFilter } from "@/lib/locationGroups";
 
 const FREE_BROWSE_LIMIT = 6; // Free users see 6 profiles, rest blurred
 
@@ -57,11 +58,34 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
         query = query.gte("verification_score", 50);
       }
 
-      query = query.order("level", { ascending: false }).limit(48);
+      if (filters.collabIntent && filters.collabIntent !== "all") {
+        // collab_intent may not be on the view, so we filter client-side below
+      }
+
+      query = query.order("level", { ascending: false }).limit(100);
 
       const { data, error } = await query;
       if (error) throw error;
-      setProfiles((data as any[]) || []);
+
+      // Apply client-side filters that the DB view may not support
+      let results = (data as any[]) || [];
+
+      // Location filter with smart grouping
+      if (filters.location && filters.location !== "all") {
+        results = results.filter(p => locationMatchesFilter(p.location, filters.location));
+      }
+
+      // Skills filter
+      if (filters.skills && filters.skills.length > 0) {
+        results = results.filter(p => {
+          const profileSkills = Array.isArray(p.professional_skills)
+            ? p.professional_skills.map((s: any) => (typeof s === 'string' ? s : s?.skill || '').toLowerCase())
+            : [];
+          return filters.skills.some(skill => profileSkills.includes(skill.toLowerCase()));
+        });
+      }
+
+      setProfiles(results);
     } catch (err) {
       console.error("[CircleBrowseGrid] Error:", err);
     } finally {

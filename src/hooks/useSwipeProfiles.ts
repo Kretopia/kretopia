@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from '@/components/circle/SwipeFilters';
+import { locationMatchesFilter } from '@/lib/locationGroups';
 
 export interface SwipeProfile {
   id: string;
@@ -233,9 +234,9 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       filtered = filtered.filter(p => p.role?.toLowerCase() === filters.role.toLowerCase());
     }
 
-    // Apply location filter
+    // Apply location filter with smart grouping
     if (filters.location !== 'all') {
-      filtered = filtered.filter(p => p.location?.toLowerCase().includes(filters.location.toLowerCase()));
+      filtered = filtered.filter(p => locationMatchesFilter(p.location, filters.location));
     }
 
     // Apply collab intent filter
@@ -250,6 +251,16 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         p.verification_tier === 'industry' || 
         p.verification_tier === 'profile'
       );
+    }
+
+    // Apply skills filter
+    if (filters.skills.length > 0) {
+      filtered = filtered.filter(p => {
+        const profileSkills = Array.isArray(p.professional_skills)
+          ? p.professional_skills.map((s: any) => (typeof s === 'string' ? s : s?.skill || '').toLowerCase())
+          : [];
+        return filters.skills.some(skill => profileSkills.includes(skill.toLowerCase()));
+      });
     }
 
     // Apply min followers filter (Pro) - sum all social followers

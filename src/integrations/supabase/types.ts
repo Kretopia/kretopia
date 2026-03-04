@@ -5272,6 +5272,7 @@ export type Database = {
           id: string
           opened_at: string | null
           replied_at: string | null
+          scheduled_for: string | null
           sent_at: string | null
           sequence_id: string
           status: string
@@ -5287,6 +5288,7 @@ export type Database = {
           id?: string
           opened_at?: string | null
           replied_at?: string | null
+          scheduled_for?: string | null
           sent_at?: string | null
           sequence_id: string
           status?: string
@@ -5302,6 +5304,7 @@ export type Database = {
           id?: string
           opened_at?: string | null
           replied_at?: string | null
+          scheduled_for?: string | null
           sent_at?: string | null
           sequence_id?: string
           status?: string
@@ -6025,6 +6028,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_email_settings: {
+        Row: {
+          created_at: string
+          gmail_app_password: string | null
+          gmail_email: string | null
+          id: string
+          is_configured: boolean
+          last_tested_at: string | null
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          gmail_app_password?: string | null
+          gmail_email?: string | null
+          id?: string
+          is_configured?: boolean
+          last_tested_at?: string | null
+          provider?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          gmail_app_password?: string | null
+          gmail_email?: string | null
+          id?: string
+          is_configured?: boolean
+          last_tested_at?: string | null
+          provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_reports: {
         Row: {

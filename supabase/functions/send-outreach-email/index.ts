@@ -1,11 +1,76 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+interface EmailSettings {
+  provider: string;
+  gmail_email: string | null;
+  gmail_app_password: string | null;
+  is_configured: boolean;
+}
+
+async function sendViaGmail(settings: EmailSettings, to: string, subject: string, htmlBody: string, replyTo?: string): Promise<{ success: boolean; error?: string }> {
+  if (!settings.gmail_email || !settings.gmail_app_password) {
+    return { success: false, error: "Gmail not configured" };
+  }
+
+  try {
+    const client = new SMTPClient({
+      connection: {
+        hostname: "smtp.gmail.com",
+        port: 465,
+        tls: true,
+        auth: {
+          username: settings.gmail_email,
+          password: settings.gmail_app_password,
+        },
+      },
+    });
+
+    await client.send({
+      from: settings.gmail_email,
+      to: to,
+      subject: subject,
+      content: htmlBody,
+      html: htmlBody,
+    });
+
+    await client.close();
+    return { success: true };
+  } catch (e) {
+    console.error("Gmail SMTP error:", e);
+    return { success: false, error: e instanceof Error ? e.message : "SMTP send failed" };
+  }
+}
+
+async function sendViaResend(resendApiKey: string, from: string, to: string, subject: string, htmlBody: string, replyTo: string): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const resend = new Resend(resendApiKey);
+  const { data: emailResult, error: emailError } = await resend.emails.send({
+    from,
+    to: [to],
+    subject,
+    html: htmlBody,
+    replyTo,
+  });
+
+  if (emailError) {
+    return { success: false, error: emailError.message };
+  }
+  return { success: true, emailId: emailResult?.id };
+}
+
+function wrapHtml(body: string): string {
+  return body
+    .split("\n\n")
+    .map((p: string) => `<p style="margin: 0 0 12px 0; color: #333; font-size: 14px; line-height: 1.6;">${p.replace(/\n/g, "<br>")}</p>`)
+    .join("");
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -15,8 +80,6 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-
-    if (!resendApiKey) throw new Error("RESEND_API_KEY not configured");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) throw new Error("Missing authorization header");
@@ -43,7 +106,110 @@ serve(async (req) => {
       .eq("user_id", user.id)
       .single();
 
-    const resend = new Resend(resendApiKey);
+    // Get user's email settings
+    const { data: emailSettings } = await supabaseAdmin
+      .from("user_email_settings")
+      .select("provider, gmail_email, gmail_app_password, is_configured")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const useGmail = emailSettings?.is_configured && emailSettings?.provider === "gmail" && emailSettings?.gmail_email && emailSettings?.gmail_app_password;
+
+    // Helper to send an email using the user's preferred method
+    async function sendEmail(to: string, subject: string, rawBody: string): Promise<{ success: boolean; emailId?: string; error?: string }> {
+      const htmlBody = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px;">
+          ${wrapHtml(rawBody)}
+          <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee;">
+            <p style="color: #999; font-size: 11px; margin: 0;">Sent via ThriveIN</p>
+          </div>
+        </div>
+      `;
+
+      if (useGmail) {
+        return sendViaGmail(emailSettings as EmailSettings, to, subject, htmlBody);
+      }
+
+      if (!resendApiKey) throw new Error("No email provider configured. Please connect your Gmail in Outreach settings.");
+
+      return sendViaResend(
+        resendApiKey,
+        `${senderProfile?.full_name || "ThriveIN User"} via ThriveIN <noreply@thrivein.io>`,
+        to,
+        subject,
+        htmlBody,
+        user.email!
+      );
+    }
+
+    // ===== ACTION: Test Gmail connection =====
+    if (action === "test_gmail") {
+      const { gmail_email, gmail_app_password } = body;
+      if (!gmail_email || !gmail_app_password) throw new Error("Missing Gmail credentials");
+
+      try {
+        const client = new SMTPClient({
+          connection: {
+            hostname: "smtp.gmail.com",
+            port: 465,
+            tls: true,
+            auth: {
+              username: gmail_email,
+              password: gmail_app_password,
+            },
+          },
+        });
+
+        // Send a test email to themselves
+        await client.send({
+          from: gmail_email,
+          to: gmail_email,
+          subject: "ThriveIN Outreach - Connection Test ✓",
+          html: `<div style="font-family: Arial, sans-serif; padding: 20px;"><h2>Gmail Connected!</h2><p>Your Gmail is now connected to ThriveIN Outreach. Emails will be sent from <strong>${gmail_email}</strong>.</p></div>`,
+        });
+
+        await client.close();
+
+        // Save settings
+        await supabaseAdmin
+          .from("user_email_settings")
+          .upsert({
+            user_id: user.id,
+            provider: "gmail",
+            gmail_email,
+            gmail_app_password,
+            is_configured: true,
+            last_tested_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+
+        return new Response(JSON.stringify({ success: true, message: "Gmail connected! Test email sent to your inbox." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        console.error("Gmail test failed:", e);
+        return new Response(JSON.stringify({
+          success: false,
+          error: e instanceof Error ? e.message : "Failed to connect to Gmail. Check your email and app password.",
+        }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // ===== ACTION: Disconnect email =====
+    if (action === "disconnect_email") {
+      await supabaseAdmin
+        .from("user_email_settings")
+        .upsert({
+          user_id: user.id,
+          provider: "gmail",
+          gmail_email: null,
+          gmail_app_password: null,
+          is_configured: false,
+        }, { onConflict: "user_id" });
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // ===== ACTION: Generate AI email draft =====
     if (action === "generate") {
@@ -98,7 +264,6 @@ BODY: [email body with paragraphs]`,
       const aiData = await aiRes.json();
       const content = aiData.choices?.[0]?.message?.content || "";
 
-      // Parse subject and body
       const subjectMatch = content.match(/SUBJECT:\s*(.+)/i);
       const bodyMatch = content.match(/BODY:\s*([\s\S]+)/i);
 
@@ -111,36 +276,12 @@ BODY: [email body with paragraphs]`,
     // ===== ACTION: Send a single email =====
     if (action === "send") {
       const { to, subject, body: emailBody, sequenceEmailId, leadId } = body;
-
       if (!to || !subject || !emailBody) throw new Error("Missing to, subject, or body");
 
-      // Send via Resend
-      const htmlBody = emailBody
-        .split("\n\n")
-        .map((p: string) => `<p style="margin: 0 0 12px 0; color: #333; font-size: 14px; line-height: 1.6;">${p.replace(/\n/g, "<br>")}</p>`)
-        .join("");
+      const result = await sendEmail(to, subject, emailBody);
+      if (!result.success) throw new Error(result.error || "Email send failed");
 
-      const { data: emailResult, error: emailError } = await resend.emails.send({
-        from: `${senderProfile?.full_name || "ThriveIN User"} via ThriveIN <noreply@thrivein.io>`,
-        to: [to],
-        subject,
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px;">
-            ${htmlBody}
-            <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee;">
-              <p style="color: #999; font-size: 11px; margin: 0;">Sent via ThriveIN Outreach</p>
-            </div>
-          </div>
-        `,
-        replyTo: user.email!,
-      });
-
-      if (emailError) {
-        console.error("Resend error:", emailError);
-        throw new Error(`Email send failed: ${emailError.message}`);
-      }
-
-      console.log(`Outreach email sent to ${to}:`, emailResult);
+      console.log(`Outreach email sent to ${to} via ${useGmail ? "Gmail" : "Resend"}`);
 
       // Update sequence_email status if linked
       if (sequenceEmailId) {
@@ -160,17 +301,16 @@ BODY: [email body with paragraphs]`,
           .eq("user_id", user.id);
       }
 
-      return new Response(JSON.stringify({ success: true, emailId: emailResult?.id }), {
+      return new Response(JSON.stringify({ success: true, emailId: result.emailId, sentVia: useGmail ? "gmail" : "resend" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // ===== ACTION: Send entire sequence (all pending emails) =====
+    // ===== ACTION: Send entire sequence (next pending email) =====
     if (action === "send_sequence") {
       const { sequenceId } = body;
       if (!sequenceId) throw new Error("Missing sequenceId");
 
-      // Get sequence with lead info
       const { data: sequence, error: seqError } = await supabaseAdmin
         .from("outreach_sequences")
         .select("*")
@@ -180,7 +320,6 @@ BODY: [email body with paragraphs]`,
 
       if (seqError || !sequence) throw new Error("Sequence not found");
 
-      // Get recipient email — from sequence.recipient_email or linked lead
       let recipientEmail: string | null = sequence.recipient_email || null;
       if (!recipientEmail && sequence.lead_id) {
         const { data: lead } = await supabaseAdmin
@@ -193,7 +332,6 @@ BODY: [email body with paragraphs]`,
 
       if (!recipientEmail) throw new Error("No recipient email — link a lead with an email to this sequence");
 
-      // Get pending emails in order
       const { data: emails } = await supabaseAdmin
         .from("sequence_emails")
         .select("*")
@@ -208,30 +346,15 @@ BODY: [email body with paragraphs]`,
         });
       }
 
-      // Send the first pending email (for immediate send)
       const emailToSend = emails[0];
-      const htmlBody = emailToSend.body
-        .split("\n\n")
-        .map((p: string) => `<p style="margin: 0 0 12px 0; color: #333; font-size: 14px; line-height: 1.6;">${p.replace(/\n/g, "<br>")}</p>`)
-        .join("");
+      const result = await sendEmail(recipientEmail, emailToSend.subject, emailToSend.body);
+      if (!result.success) throw new Error(result.error || "Failed to send");
 
-      const { error: sendError } = await resend.emails.send({
-        from: `${senderProfile?.full_name || "ThriveIN User"} via ThriveIN <noreply@thrivein.io>`,
-        to: [recipientEmail],
-        subject: emailToSend.subject,
-        html: `<div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px;">${htmlBody}<div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee;"><p style="color: #999; font-size: 11px;">Sent via ThriveIN Outreach</p></div></div>`,
-        replyTo: user.email!,
-      });
-
-      if (sendError) throw new Error(`Failed to send: ${sendError.message}`);
-
-      // Update email status
       await supabaseAdmin
         .from("sequence_emails")
         .update({ status: "sent", sent_at: new Date().toISOString() })
         .eq("id", emailToSend.id);
 
-      // Update sequence completed_steps
       await supabaseAdmin
         .from("outreach_sequences")
         .update({
@@ -240,7 +363,6 @@ BODY: [email body with paragraphs]`,
         })
         .eq("id", sequenceId);
 
-      // Update lead
       if (sequence.lead_id) {
         await supabaseAdmin
           .from("leads")
@@ -253,6 +375,7 @@ BODY: [email body with paragraphs]`,
         sent: 1,
         remaining: emails.length - 1,
         emailId: emailToSend.id,
+        sentVia: useGmail ? "gmail" : "resend",
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

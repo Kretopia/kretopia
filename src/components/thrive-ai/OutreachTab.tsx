@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip } from "lucide-react";
+import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2 } from "lucide-react";
+import { GmailSettings } from "@/components/sales/GmailSettings";
 
 type Lead = {
   id: string;
@@ -68,6 +69,7 @@ const OutreachTab = () => {
   const [seqAttachments, setSeqAttachments] = useState<File[]>([]);
   const [generating, setGenerating] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Fetch sequences
   const { data: sequences = [], isLoading } = useQuery({
@@ -320,12 +322,17 @@ const OutreachTab = () => {
     setComposeOpen(true);
   };
 
+
+
   return (
     <div className="space-y-4">
       {/* Top bar */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <p className="text-sm text-muted-foreground">{sequences.length} sequence{sequences.length !== 1 ? "s" : ""}</p>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => setShowSettings(!showSettings)}>
+            <Settings2 className="h-3.5 w-3.5" /> {showSettings ? "Hide" : "Email"} Settings
+          </Button>
           <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => { setComposeOpen(true); setComposeLead(null); setComposeForm({ to: "", subject: "", body: "" }); }}>
             <Mail className="h-3.5 w-3.5" /> Quick Send
           </Button>
@@ -359,6 +366,9 @@ const OutreachTab = () => {
           </Dialog>
         </div>
       </div>
+
+      {/* Gmail Settings Panel */}
+      {showSettings && <GmailSettings />}
 
       {/* Quick-send leads strip */}
       {leads.filter((l) => l.email).length > 0 && (

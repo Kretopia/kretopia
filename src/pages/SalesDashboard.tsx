@@ -102,7 +102,7 @@ const SalesDashboard = () => {
             <Target className="h-6 w-6 text-primary" />
           </div>
            <div>
-            <h1 className="text-xl font-bold">ThriveScout</h1>
+            <h1 className="text-xl font-bold">ThriveFunnel</h1>
             <p className="text-xs text-muted-foreground">Find leads, automate outreach, close deals</p>
           </div>
         </div>

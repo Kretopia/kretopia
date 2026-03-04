@@ -2962,7 +2962,10 @@ export type Database = {
       }
       opportunities: {
         Row: {
+          barter_offering: string | null
+          barter_requesting: string | null
           compensation: string | null
+          content_deliverables: Json | null
           created_at: string | null
           created_by: string | null
           deliverables: string | null
@@ -2978,6 +2981,8 @@ export type Database = {
           location: string | null
           location_city: string | null
           location_country: string | null
+          min_followers: number | null
+          platform_requirements: string[] | null
           requirements: string | null
           skills: string[] | null
           status: string | null
@@ -2990,7 +2995,10 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          barter_offering?: string | null
+          barter_requesting?: string | null
           compensation?: string | null
+          content_deliverables?: Json | null
           created_at?: string | null
           created_by?: string | null
           deliverables?: string | null
@@ -3006,6 +3014,8 @@ export type Database = {
           location?: string | null
           location_city?: string | null
           location_country?: string | null
+          min_followers?: number | null
+          platform_requirements?: string[] | null
           requirements?: string | null
           skills?: string[] | null
           status?: string | null
@@ -3018,7 +3028,10 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          barter_offering?: string | null
+          barter_requesting?: string | null
           compensation?: string | null
+          content_deliverables?: Json | null
           created_at?: string | null
           created_by?: string | null
           deliverables?: string | null
@@ -3034,6 +3047,8 @@ export type Database = {
           location?: string | null
           location_city?: string | null
           location_country?: string | null
+          min_followers?: number | null
+          platform_requirements?: string[] | null
           requirements?: string | null
           skills?: string[] | null
           status?: string | null

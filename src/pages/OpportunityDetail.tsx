@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck } from "lucide-react";
+import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube } from "lucide-react";
 import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
 import { SEO } from "@/components/SEO";
 
@@ -24,6 +24,11 @@ interface Opportunity {
   status: string;
   image_url: string;
   created_at: string;
+  barter_offering?: string | null;
+  barter_requesting?: string | null;
+  platform_requirements?: string[] | null;
+  min_followers?: number | null;
+  content_deliverables?: any;
 }
 
 const OpportunityDetail = () => {
@@ -270,6 +275,59 @@ const OpportunityDetail = () => {
                   {tag}
                 </Badge>
               ))}
+            </div>
+          )}
+
+          {/* Barter Exchange Section */}
+          {opportunity.type === 'barter' && (opportunity.barter_offering || opportunity.barter_requesting) && (
+            <div className="mb-6 rounded-xl border-2 border-dashed border-purple-300 bg-purple-500/5 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <ArrowRightLeft className="h-5 w-5 text-purple-500" />
+                <h2 className="text-lg font-semibold text-purple-700 dark:text-purple-300">The Exchange</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {opportunity.barter_offering && (
+                  <div className="rounded-lg bg-background p-3 border">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Gift className="h-4 w-4 text-purple-500" />
+                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-300 uppercase tracking-wide">What You Get</span>
+                    </div>
+                    <p className="text-sm font-medium">{opportunity.barter_offering}</p>
+                  </div>
+                )}
+                {opportunity.barter_requesting && (
+                  <div className="rounded-lg bg-background p-3 border">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <ArrowRight className="h-4 w-4 text-purple-500" />
+                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-300 uppercase tracking-wide">What They Need</span>
+                    </div>
+                    <p className="text-sm font-medium">{opportunity.barter_requesting}</p>
+                  </div>
+                )}
+              </div>
+              {/* Platform requirements */}
+              {opportunity.platform_requirements && opportunity.platform_requirements.length > 0 && (
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Platforms:</span>
+                  <div className="flex gap-1.5">
+                    {opportunity.platform_requirements.map(p => (
+                      <Badge key={p} variant="outline" className="text-[11px] capitalize gap-1">
+                        {p === 'instagram' && <Instagram className="h-3 w-3" />}
+                        {p === 'tiktok' && <Music className="h-3 w-3" />}
+                        {p === 'youtube' && <Youtube className="h-3 w-3" />}
+                        {p}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {opportunity.min_followers && (
+                <div className="mt-2">
+                  <Badge variant="secondary" className="text-xs">
+                    Min. {opportunity.min_followers >= 1000 ? `${(opportunity.min_followers / 1000).toFixed(0)}k` : opportunity.min_followers}+ followers required
+                  </Badge>
+                </div>
+              )}
             </div>
           )}
 

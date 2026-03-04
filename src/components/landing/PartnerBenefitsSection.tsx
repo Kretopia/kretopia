@@ -117,7 +117,7 @@ export const PartnerBenefitsSection = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-2xl font-bold mb-2">Featured Locations</h3>
-              <p className="text-muted-foreground">Check in and earn XP at partner venues</p>
+              <p className="text-muted-foreground">Check in and earn Thrive Points at partner venues</p>
             </div>
             <Link to="/partner-directory">
               <Button variant="outline">

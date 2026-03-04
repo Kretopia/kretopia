@@ -291,8 +291,8 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
             <Gift className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-sm">Invite & Earn XP</p>
-            <p className="text-xs text-muted-foreground">+200 XP per friend who joins</p>
+            <p className="font-semibold text-sm">Invite & Earn Points</p>
+            <p className="text-xs text-muted-foreground">+200 TP per friend who joins</p>
           </div>
           <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold">
             <Star className="h-3 w-3" />

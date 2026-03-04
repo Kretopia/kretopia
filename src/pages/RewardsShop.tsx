@@ -97,7 +97,7 @@ const RewardsShop = () => {
 
   const purchaseItem = async (item: ShopItem) => {
     if (userXP < item.cost) {
-      toast({ title: "Not enough XP", description: `You need ${item.cost - userXP} more XP.`, variant: "destructive" });
+      toast({ title: "Not enough Thrive Points", description: `You need ${item.cost - userXP} more TP.`, variant: "destructive" });
       return;
     }
     // Gift XP opens a dialog instead of purchasing directly
@@ -201,7 +201,7 @@ const RewardsShop = () => {
     const giftAmount = 100;
 
     if (userXP < giftCost) {
-      toast({ title: "Not enough XP", description: `You need ${giftCost} XP to gift.`, variant: "destructive" });
+      toast({ title: "Not enough Thrive Points", description: `You need ${giftCost} TP to gift.`, variant: "destructive" });
       return;
     }
 
@@ -233,13 +233,13 @@ const RewardsShop = () => {
           user_id: user.id,
           activity_type: "gift_xp_sent",
           xp_earned: -giftCost,
-          description: `Gifted 100 XP to ${recipient.full_name}`,
+          description: `Gifted 100 TP to ${recipient.full_name}`,
         },
         {
           user_id: recipient.user_id,
           activity_type: "gift_xp_received",
           xp_earned: giftAmount,
-          description: `Received 100 XP gift`,
+          description: `Received 100 TP gift`,
         },
       ]);
 
@@ -247,7 +247,7 @@ const RewardsShop = () => {
       await supabase.from("notifications").insert({
         user_id: recipient.user_id,
         title: "You received a gift! 🎁",
-        message: `Someone gifted you 100 XP! Keep creating.`,
+        message: `Someone gifted you 100 Thrive Points! Keep creating.`,
         type: "reward",
         link: "/rewards",
         category: "reward",
@@ -256,7 +256,7 @@ const RewardsShop = () => {
 
       toast({
         title: "Gift Sent! 🎁",
-        description: `You sent 100 XP to ${recipient.full_name}`,
+        description: `You sent 100 Thrive Points to ${recipient.full_name}`,
       });
       setGiftDialogOpen(false);
       setSearchQuery("");
@@ -294,8 +294,8 @@ const RewardsShop = () => {
     },
     {
       id: "double_xp",
-      name: "2x XP (24 hours)",
-      description: "Earn double XP on all activities for the next 24 hours.",
+      name: "2x Points (24 hours)",
+      description: "Earn double Thrive Points on all activities for the next 24 hours.",
       cost: 750,
       icon: <Zap className="h-6 w-6 text-yellow-400" />,
       category: "power-ups",
@@ -326,8 +326,8 @@ const RewardsShop = () => {
     },
     {
       id: "gift_xp",
-      name: "Gift 100 XP",
-      description: "Send 100 XP to another creator as a gift. Costs 150 XP.",
+      name: "Gift 100 TP",
+      description: "Send 100 Thrive Points to another creator as a gift. Costs 150 TP.",
       cost: 150,
       icon: <Gift className="h-6 w-6 text-green-400" />,
       category: "power-ups",
@@ -347,13 +347,13 @@ const RewardsShop = () => {
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 pb-24 sm:pb-6">
-      <SEO title="XP Rewards Shop | ThriveIN" description="Spend your hard-earned XP on power-ups, boosts, and upgrades." />
+      <SEO title="Thrive Points Shop | ThriveIN" description="Spend your hard-earned Thrive Points on power-ups, boosts, and upgrades." />
 
       <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
         <ArrowLeft className="h-4 w-4 mr-2" /> Back
       </Button>
 
-      {/* Header with XP Balance */}
+      {/* Header with Points Balance */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-3 rounded-full bg-gradient-to-br from-amber-500 to-orange-500">
@@ -361,7 +361,7 @@ const RewardsShop = () => {
           </div>
           <div>
             <h1 className="text-3xl font-bold">Rewards Shop</h1>
-            <p className="text-muted-foreground">Spend XP on power-ups & rewards</p>
+            <p className="text-muted-foreground">Spend Thrive Points on power-ups & rewards</p>
           </div>
         </div>
 
@@ -371,7 +371,7 @@ const RewardsShop = () => {
               <Sparkles className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">Your Balance</p>
-                <p className="text-2xl font-bold">{userXP.toLocaleString()} XP</p>
+                <p className="text-2xl font-bold">{userXP.toLocaleString()} TP</p>
               </div>
             </div>
             <div className="text-right">
@@ -384,10 +384,10 @@ const RewardsShop = () => {
         </Card>
       </div>
 
-      {/* How to Earn XP */}
+      {/* How to Earn Points */}
       <Card className="mb-6 p-4 border-dashed">
         <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-          <Zap className="h-4 w-4 text-yellow-500" /> Ways to Earn XP
+          <Zap className="h-4 w-4 text-yellow-500" /> Ways to Earn Points
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
           {[
@@ -435,7 +435,7 @@ const RewardsShop = () => {
                       <div className="flex items-center justify-between mt-3">
                         <span className="text-sm font-bold flex items-center gap-1">
                           <Sparkles className="h-3 w-3 text-primary" />
-                          {item.cost.toLocaleString()} XP
+                          {item.cost.toLocaleString()} TP
                         </span>
                         <Button
                           size="sm"
@@ -443,7 +443,7 @@ const RewardsShop = () => {
                           onClick={() => purchaseItem(item)}
                           className="text-xs"
                         >
-                          {purchasing === item.id ? "..." : userXP < item.cost ? "Need more XP" : item.id === "gift_xp" ? "Send Gift" : "Buy"}
+                          {purchasing === item.id ? "..." : userXP < item.cost ? "Need more TP" : item.id === "gift_xp" ? "Send Gift" : "Buy"}
                         </Button>
                       </div>
                     </div>
@@ -455,16 +455,16 @@ const RewardsShop = () => {
         );
       })}
 
-      {/* Gift XP Dialog */}
+      {/* Gift Thrive Points Dialog */}
       <Dialog open={giftDialogOpen} onOpenChange={setGiftDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Gift className="h-5 w-5 text-green-500" />
-              Gift 100 XP
+              Gift 100 Thrive Points
             </DialogTitle>
             <DialogDescription>
-              Search for a creator to send 100 XP to (costs you 150 XP)
+              Search for a creator to send 100 TP to (costs you 150 TP)
             </DialogDescription>
           </DialogHeader>
 

@@ -75,7 +75,7 @@ const ProjectsList = () => {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Projects</h1>
+              <h1 className="text-2xl font-bold">ThriveDesk</h1>
               <p className="text-sm text-muted-foreground">Your collaboration workspaces</p>
             </div>
           </div>

@@ -188,7 +188,7 @@ export function WalletXPSection() {
   const sendGiftXP = async (recipient: SearchedUser) => {
     if (!user) return;
     if (userXP < 150) {
-      toast({ title: "Not enough XP", description: "You need 150 XP to gift.", variant: "destructive" });
+      toast({ title: "Not enough Thrive Points", description: "You need 150 TP to gift.", variant: "destructive" });
       return;
     }
     setSendingGift(true);
@@ -197,10 +197,10 @@ export function WalletXPSection() {
       const { data: rp } = await supabase.from("profiles").select("xp").eq("user_id", recipient.user_id).single();
       if (rp) await supabase.from("profiles").update({ xp: (rp.xp || 0) + 100 }).eq("user_id", recipient.user_id);
       await supabase.from("xp_activities").insert([
-        { user_id: user.id, activity_type: "gift_xp_sent", xp_earned: -150, description: `Gifted 100 XP to ${recipient.full_name}` },
-        { user_id: recipient.user_id, activity_type: "gift_xp_received", xp_earned: 100, description: `Received 100 XP gift` },
+        { user_id: user.id, activity_type: "gift_xp_sent", xp_earned: -150, description: `Gifted 100 TP to ${recipient.full_name}` },
+        { user_id: recipient.user_id, activity_type: "gift_xp_received", xp_earned: 100, description: `Received 100 TP gift` },
       ]);
-      toast({ title: "Gift Sent! 🎁", description: `You sent 100 XP to ${recipient.full_name}` });
+      toast({ title: "Gift Sent! 🎁", description: `You sent 100 Thrive Points to ${recipient.full_name}` });
       setGiftDialogOpen(false);
       setSearchQuery("");
       await fetchUserData();
@@ -210,7 +210,7 @@ export function WalletXPSection() {
 
   const purchaseItem = async (item: typeof shopItems[0]) => {
     if (userXP < item.cost) {
-      toast({ title: "Not enough XP", description: `You need ${item.cost - userXP} more XP.`, variant: "destructive" });
+      toast({ title: "Not enough Thrive Points", description: `You need ${item.cost - userXP} more TP.`, variant: "destructive" });
       return;
     }
     if (item.id === "gift_xp") { setGiftDialogOpen(true); return; }
@@ -226,7 +226,7 @@ export function WalletXPSection() {
   const shopItems = [
     { id: "streak_freeze", name: "Streak Freeze", description: `Protect your streak. You have ${freezeCount}.`, cost: 500, icon: <Snowflake className="h-5 w-5 text-blue-400" />, action: buyStreakFreeze, available: true },
     { id: "profile_boost", name: "24h Profile Boost", description: "Top of Discover for 24 hours.", cost: 1000, icon: <Eye className="h-5 w-5 text-amber-400" />, action: buyProfileBoost, available: true },
-    { id: "double_xp", name: "2x XP (24 hours)", description: "Double XP on all activities.", cost: 750, icon: <Zap className="h-5 w-5 text-yellow-400" />, action: buyDoubleXP, available: true },
+    { id: "double_xp", name: "2x Points (24 hours)", description: "Double points on all activities.", cost: 750, icon: <Zap className="h-5 w-5 text-yellow-400" />, action: buyDoubleXP, available: true },
     { id: "extra_portfolio", name: "+3 Portfolio Slots", description: "Add 3 more portfolio items this month.", cost: 400, icon: <Image className="h-5 w-5 text-emerald-400" />, action: buyExtraPortfolio, available: true, badge: "Popular" },
     { id: "extra_leads", name: "+5 Lead Searches", description: "5 extra AI lead searches this month.", cost: 800, icon: <Search className="h-5 w-5 text-sky-400" />, action: buyExtraLeads, available: true },
     { id: "extra_outreach", name: "+10 Outreach Drafts", description: "10 extra AI outreach drafts.", cost: 600, icon: <MessageSquare className="h-5 w-5 text-indigo-400" />, action: buyExtraOutreach, available: true },
@@ -234,7 +234,7 @@ export function WalletXPSection() {
     { id: "priority_gig", name: "Priority Gig Listing", description: "Pin your opportunity for 24h.", cost: 1500, icon: <Briefcase className="h-5 w-5 text-orange-400" />, action: buyPriorityGig, available: true },
     { id: "analytics_unlock", name: "Analytics Report", description: "Full profile analytics export (1x).", cost: 2000, icon: <BarChart3 className="h-5 w-5 text-violet-400" />, action: buyAnalyticsReport, available: true },
     { id: "pro_trial", name: "Pro Trial (3 Days)", description: "Unlock all Pro features.", cost: 2500, icon: <Crown className="h-5 w-5 text-purple-400" />, action: buyProTrial, available: true, badge: "Best Value" },
-    { id: "gift_xp", name: "Gift 100 XP", description: "Send 100 XP to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
+    { id: "gift_xp", name: "Gift 100 TP", description: "Send 100 Thrive Points to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
   ];
 
   const tier = getTierByPoints(userXP);
@@ -243,7 +243,7 @@ export function WalletXPSection() {
 
   return (
     <div className="space-y-6">
-      {/* XP Balance Card */}
+      {/* Thrive Points Balance Card */}
       <Card className="p-5 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border-primary/20">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -251,8 +251,8 @@ export function WalletXPSection() {
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Your XP Balance</p>
-              <p className="text-3xl font-bold">{userXP.toLocaleString()} XP</p>
+              <p className="text-sm text-muted-foreground">Your Thrive Points</p>
+              <p className="text-3xl font-bold">{userXP.toLocaleString()} TP</p>
             </div>
           </div>
           <div className="text-right">
@@ -265,7 +265,7 @@ export function WalletXPSection() {
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Progress to Level {userLevel + 1}</span>
-            <span>{userXP} / {nextLevelXP} XP</span>
+            <span>{userXP} / {nextLevelXP} TP</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
@@ -274,7 +274,7 @@ export function WalletXPSection() {
       {/* How to Earn */}
       <Card className="p-4 border-dashed">
         <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-          <Zap className="h-4 w-4 text-yellow-500" /> Ways to Earn XP
+          <Zap className="h-4 w-4 text-yellow-500" /> Ways to Earn Points
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
           {[
@@ -298,7 +298,7 @@ export function WalletXPSection() {
       {/* Rewards Shop Items */}
       <div>
         <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <Star className="h-5 w-5 text-amber-500" /> Spend Your XP
+          <Star className="h-5 w-5 text-amber-500" /> Spend Your Points
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {shopItems.map(item => (
@@ -318,7 +318,7 @@ export function WalletXPSection() {
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-sm font-bold flex items-center gap-1">
                       <Sparkles className="h-3 w-3 text-primary" />
-                      {item.cost.toLocaleString()} XP
+                      {item.cost.toLocaleString()} TP
                     </span>
                     <Button
                       size="sm"
@@ -326,7 +326,7 @@ export function WalletXPSection() {
                       onClick={() => purchaseItem(item)}
                       className="text-xs"
                     >
-                      {purchasing === item.id ? "..." : userXP < item.cost ? "Need more XP" : item.id === "gift_xp" ? "Send Gift" : "Buy"}
+                      {purchasing === item.id ? "..." : userXP < item.cost ? "Need more TP" : item.id === "gift_xp" ? "Send Gift" : "Buy"}
                     </Button>
                   </div>
                 </div>
@@ -342,10 +342,10 @@ export function WalletXPSection() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Gift className="h-5 w-5 text-green-500" />
-              Gift 100 XP
+              Gift 100 Thrive Points
             </DialogTitle>
             <DialogDescription>
-              Search for a creator to send 100 XP to (costs you 150 XP)
+              Search for a creator to send 100 TP to (costs you 150 TP)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-2">

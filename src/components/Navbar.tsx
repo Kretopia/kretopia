@@ -227,14 +227,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Wallet className="h-5 w-5" />
                       Wallet
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/purchases")}
-                    >
-                      <ShoppingBag className="h-5 w-5" />
-                      Purchases & Sales
-                    </Button>
 
                     <Separator className="my-3" />
 

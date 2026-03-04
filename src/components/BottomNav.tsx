@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, Briefcase, DollarSign, FolderKanban, MessageCircle } from "lucide-react";
+import { Users, Briefcase, DollarSign, FolderKanban, User, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,19 +31,23 @@ const BottomNav = memo(() => {
 
   const isCompany = accountType === "company";
   
+  const profilePath = user?.id ? `/profile/${user.id}` : "/profile";
+  
   const navItems = isCompany
     ? [
         { path: "/opportunities", icon: Briefcase, label: "Jobs", tourId: "opportunities-tab", tooltip: { id: "nav-jobs", title: "Post & Find Jobs", desc: "Browse creative opportunities or post your own gigs" } },
         { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, tasks, and collaborate with your team" } },
-        { path: "/messages", icon: MessageCircle, label: "Messages", tourId: "messages-tab", tooltip: { id: "nav-messages", title: "Messages", desc: "Chat with creators and collaborators" } },
+        { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your creator profile" } },
+        { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab", tooltip: { id: "nav-market", title: "Marketplace", desc: "Buy and sell digital products & services" } },
         { path: "/thrivemoney", icon: DollarSign, label: "Earnings", tourId: "thrivemoney-tab", tooltip: { id: "nav-earnings", title: "Your Earnings", desc: "Track income, invoices, and payments in one place" } },
       ]
     : [
         { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Your Circle", desc: "Find creators to collaborate with" } },
         { path: "/opportunities", icon: Briefcase, label: "Opps", tourId: "opportunities-tab", tooltip: { id: "nav-opps", title: "Opportunities", desc: "Browse gigs, jobs, and creative opportunities" } },
-        { path: "/messages", icon: MessageCircle, label: "Messages", tourId: "messages-tab", tooltip: { id: "nav-messages", title: "Messages", desc: "Chat with your connections" } },
-        { path: "/thrivemoney", icon: DollarSign, label: "Earnings", tourId: "thrivemoney-tab", tooltip: { id: "nav-earnings", title: "Your Earnings", desc: "Track income, invoices, and payments in one place" } },
         { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, milestones, and deliverables" } },
+        { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your creator profile" } },
+        { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab", tooltip: { id: "nav-market", title: "Marketplace", desc: "Buy and sell digital products & services" } },
+        { path: "/thrivemoney", icon: DollarSign, label: "Earnings", tourId: "thrivemoney-tab", tooltip: { id: "nav-earnings", title: "Your Earnings", desc: "Track income, invoices, and payments in one place" } },
       ] as const;
 
   return (

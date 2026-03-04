@@ -164,7 +164,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 </Button>
               </Link>
               <Link to="/messages" aria-label="Messages">
-                <Button variant="ghost" size="icon" className="h-10 w-10 relative hidden sm:inline-flex">
+                <Button variant="ghost" size="icon" className="h-10 w-10 relative">
                   <MessageCircle className="h-5 w-5" />
                 </Button>
               </Link>

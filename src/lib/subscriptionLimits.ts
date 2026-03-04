@@ -3,12 +3,12 @@
  * Supports both individual and company account types
  * 
  * Strategy: Free users get limited monthly uses of all features.
- * Pro users get unlimited access.
+ * Pro users get generous limits. Enterprise users get maximum limits.
  */
 
 import type { AccountType } from "./subscriptionConfig";
 
-export type SubscriptionTier = "free" | "pro" | "founder";
+export type SubscriptionTier = "free" | "pro" | "enterprise" | "founder";
 
 export interface TierLimits {
   swipesPerDay: number; // -1 = unlimited
@@ -26,31 +26,37 @@ export interface TierLimits {
   hasOpportunityAnalytics: boolean;
   hasPriorityListing: boolean;
   hasAITalentScout: boolean;
+  // Enterprise-specific
+  hasCampaignAnalytics: boolean;
+  hasScheduledSends: boolean;
 }
 
 /**
  * Free-tier monthly usage caps for previously hard-gated features.
- * -1 = unlimited (Pro). These are per-calendar-month limits.
+ * -1 = unlimited. These are per-calendar-month limits.
  */
 export const FREE_TIER_MONTHLY_CAPS = {
   // ThriveAI
-  aiLeadSearches: 3,       // 3 lead searches/month
-  aiOutreachDrafts: 5,     // 5 outreach drafts/month
-  aiChatMessages: 20,      // 20 AI chat messages/month (was unlimited, now soft cap)
+  aiLeadSearches: 3,
+  aiOutreachDrafts: 5,
+  aiChatMessages: 20,
   
   // Project workspace
-  approvalRequests: 2,     // 2 approval workflows/month
-  milestones: 3,           // 3 milestones/month
-  invoices: 2,             // 2 invoices/month
-  templateUses: 1,         // 1 template/month
-  aiBriefs: 3,             // 3 AI briefs/month
+  approvalRequests: 2,
+  milestones: 3,
+  invoices: 2,
+  templateUses: 1,
+  aiBriefs: 3,
   
   // Earnings (Accounting)
-  expenses: 5,             // 5 expenses/month
+  expenses: 5,
   
   // Opportunities
-  aiApplicantRankings: 2,  // 2 AI rankings/month
-  aiJobDescriptions: 2,    // 2 AI job descriptions/month
+  aiApplicantRankings: 2,
+  aiJobDescriptions: 2,
+
+  // Bulk email
+  bulkEmails: 5,
 } as const;
 
 export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
@@ -65,6 +71,22 @@ export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, 
   expenses: -1,
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
+  bulkEmails: 500,
+};
+
+export const ENTERPRISE_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
+  aiLeadSearches: -1,
+  aiOutreachDrafts: -1,
+  aiChatMessages: -1,
+  approvalRequests: -1,
+  milestones: -1,
+  invoices: -1,
+  templateUses: -1,
+  aiBriefs: -1,
+  expenses: -1,
+  aiApplicantRankings: -1,
+  aiJobDescriptions: -1,
+  bulkEmails: 5000,
 };
 
 export type FreeTierFeature = keyof typeof FREE_TIER_MONTHLY_CAPS;
@@ -73,7 +95,8 @@ export function getMonthlyCapForFeature(
   feature: FreeTierFeature,
   tier: SubscriptionTier
 ): number {
-  if (tier === "pro" || tier === "founder") return -1;
+  if (tier === "enterprise" || tier === "founder") return ENTERPRISE_TIER_MONTHLY_CAPS[feature];
+  if (tier === "pro") return PRO_TIER_MONTHLY_CAPS[feature];
   return FREE_TIER_MONTHLY_CAPS[feature];
 }
 
@@ -90,6 +113,7 @@ export function getFeatureDisplayName(feature: FreeTierFeature): string {
     expenses: "expenses",
     aiApplicantRankings: "AI applicant rankings",
     aiJobDescriptions: "AI job descriptions",
+    bulkEmails: "bulk emails",
   };
   return names[feature];
 }
@@ -110,6 +134,8 @@ const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasOpportunityAnalytics: false,
     hasPriorityListing: false,
     hasAITalentScout: false,
+    hasCampaignAnalytics: false,
+    hasScheduledSends: false,
   },
   pro: {
     swipesPerDay: -1,
@@ -126,22 +152,44 @@ const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasOpportunityAnalytics: false,
     hasPriorityListing: false,
     hasAITalentScout: false,
+    hasCampaignAnalytics: false,
+    hasScheduledSends: false,
   },
-  founder: {
+  enterprise: {
     swipesPerDay: -1,
     maxPortfolioItems: -1,
     canUndoSwipe: true,
-    undoSwipesPerDay: 3,
+    undoSwipesPerDay: -1,
     canVerifyProfile: true,
     hasAIMatchExplanations: true,
     hasAdvancedFilters: true,
     hasAdvancedProfile: true,
     maxOpportunityPostings: -1,
-    hasApplicantTracking: false,
-    hasBrandedPage: false,
-    hasOpportunityAnalytics: false,
-    hasPriorityListing: false,
-    hasAITalentScout: false,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+    hasCampaignAnalytics: true,
+    hasScheduledSends: true,
+  },
+  founder: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: -1,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+    hasCampaignAnalytics: true,
+    hasScheduledSends: true,
   },
 };
 
@@ -161,6 +209,8 @@ const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasOpportunityAnalytics: false,
     hasPriorityListing: false,
     hasAITalentScout: false,
+    hasCampaignAnalytics: false,
+    hasScheduledSends: false,
   },
   pro: {
     swipesPerDay: -1,
@@ -177,12 +227,14 @@ const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasOpportunityAnalytics: true,
     hasPriorityListing: true,
     hasAITalentScout: true,
+    hasCampaignAnalytics: false,
+    hasScheduledSends: false,
   },
-  founder: {
+  enterprise: {
     swipesPerDay: -1,
     maxPortfolioItems: -1,
     canUndoSwipe: true,
-    undoSwipesPerDay: 3,
+    undoSwipesPerDay: -1,
     canVerifyProfile: true,
     hasAIMatchExplanations: true,
     hasAdvancedFilters: true,
@@ -193,24 +245,44 @@ const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasOpportunityAnalytics: true,
     hasPriorityListing: true,
     hasAITalentScout: true,
+    hasCampaignAnalytics: true,
+    hasScheduledSends: true,
+  },
+  founder: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: -1,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+    hasCampaignAnalytics: true,
+    hasScheduledSends: true,
   },
 };
 
 /** Legacy flat export for backward compatibility (defaults to individual) */
 export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   ...INDIVIDUAL_LIMITS,
-  founder: INDIVIDUAL_LIMITS.pro, // Founder gets all Pro perks
+  founder: INDIVIDUAL_LIMITS.enterprise, // Founder gets all Enterprise perks
 };
 
 /**
  * Get tier limits based on account type
- * Founder tier maps to Pro limits
+ * Founder tier maps to Enterprise limits
  */
 export const getTierLimits = (
   tier: SubscriptionTier,
   accountType: AccountType = "individual"
 ): TierLimits => {
-  const effectiveTier = tier === "founder" ? "pro" : tier;
+  const effectiveTier = tier === "founder" ? "enterprise" : tier;
   const limitsMap = accountType === "company" ? COMPANY_LIMITS : INDIVIDUAL_LIMITS;
   return limitsMap[effectiveTier];
 };
@@ -260,6 +332,7 @@ export const getTierDisplayName = (tier: SubscriptionTier): string => {
   const names: Record<SubscriptionTier, string> = {
     free: "Spark",
     pro: "Pro",
+    enterprise: "Enterprise",
     founder: "Founder Circle ⭕",
   };
   return names[tier];
@@ -288,8 +361,17 @@ export const getUpgradeMessage = (
       hasOpportunityAnalytics: "Upgrade to Pro for opportunity analytics",
       hasPriorityListing: "Upgrade to Pro for priority listing in search",
       hasAITalentScout: "Upgrade to Pro for AI Talent Scout",
+      hasCampaignAnalytics: "Upgrade to Enterprise for campaign analytics",
+      hasScheduledSends: "Upgrade to Enterprise for scheduled sends",
     };
     return messages[feature] || "Upgrade to Pro to unlock this feature";
+  }
+  if (currentTier === "pro") {
+    const messages: Partial<Record<keyof TierLimits, string>> = {
+      hasCampaignAnalytics: "Upgrade to Enterprise for campaign analytics",
+      hasScheduledSends: "Upgrade to Enterprise for scheduled sends",
+    };
+    return messages[feature] || "Feature unlocked on your current tier";
   }
   return "Feature unlocked on your current tier";
 };

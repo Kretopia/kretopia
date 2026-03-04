@@ -15,7 +15,7 @@ import { hasProAccess } from "@/lib/subscriptionConfig";
  */
 export function useFeatureUsage(feature: FreeTierFeature) {
   const { user, subscriptionInfo } = useAuth();
-  const tier = (subscriptionInfo.tier || 'free') as 'free' | 'pro' | 'founder';
+  const tier = (subscriptionInfo.tier || 'free') as 'free' | 'pro' | 'enterprise' | 'founder';
   const isPro = hasProAccess(tier);
   const [usage, setUsage] = useState(0);
   const [bonusUses, setBonusUses] = useState(0);
@@ -66,19 +66,19 @@ export function useFeatureUsage(feature: FreeTierFeature) {
   }, [storageKey, bonusKey]);
 
   const baseCap = getMonthlyCapForFeature(feature, tier);
-  const cap = isPro ? -1 : baseCap + bonusUses;
-  const remaining = isPro ? -1 : Math.max(0, cap - usage);
-  const canUse = isPro || usage < cap;
+  const cap = baseCap === -1 ? -1 : baseCap + bonusUses;
+  const remaining = cap === -1 ? -1 : Math.max(0, cap - usage);
+  const canUse = cap === -1 || usage < cap;
 
   const increment = useCallback(() => {
-    if (!storageKey || isPro) return;
+    if (!storageKey || cap === -1) return;
     const newCount = usage + 1;
     setUsage(newCount);
     localStorage.setItem(storageKey, JSON.stringify({
       month: getMonthKey(),
       count: newCount,
     }));
-  }, [storageKey, usage, isPro]);
+  }, [storageKey, usage, cap]);
 
   return {
     usage,

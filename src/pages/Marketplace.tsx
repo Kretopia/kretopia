@@ -3,14 +3,17 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingBag, Search, Download, Wrench, ShieldAlert } from "lucide-react";
+import { ShoppingBag, Search, Download, Wrench, ShieldAlert, Heart, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import CreateListingDialog from "@/components/marketplace/CreateListingDialog";
 import ListingCard from "@/components/marketplace/ListingCard";
+import { SellerDashboard } from "@/components/marketplace/SellerDashboard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const LISTING_TYPE_TABS = [
   { value: "all", label: "All", icon: ShoppingBag },
@@ -25,7 +28,9 @@ const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [listingTypeFilter, setListingTypeFilter] = useState("all");
+  const [activeView, setActiveView] = useState("browse");
   const { toast } = useToast();
+  const { wishlistIds, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     fetchProducts();
@@ -85,6 +90,9 @@ const Marketplace = () => {
       product.tags?.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  // Saved/wishlist products
+  const savedProducts = products.filter(p => wishlistIds.has(p.id));
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <SEO
@@ -106,6 +114,26 @@ const Marketplace = () => {
           </div>
           {user && <CreateListingDialog onCreated={fetchProducts} />}
         </div>
+
+        {/* View Tabs */}
+        {user && (
+          <Tabs value={activeView} onValueChange={setActiveView}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="browse" className="gap-1.5 text-xs">
+                <ShoppingBag className="h-4 w-4" /> Browse
+              </TabsTrigger>
+              <TabsTrigger value="saved" className="gap-1.5 text-xs">
+                <Heart className="h-4 w-4" /> Saved
+                {savedProducts.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-[10px]">{savedProducts.length}</Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="selling" className="gap-1.5 text-xs">
+                <BarChart3 className="h-4 w-4" /> My Sales
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
 
         {/* Marketplace Disclaimer Banner */}
         <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/30 border border-border">
@@ -169,28 +197,49 @@ const Marketplace = () => {
           </Select>
         </div>
 
-        {/* Listings Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <Card className="p-12 text-center">
-            <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-semibold mb-2">No listings found</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {listingTypeFilter !== "all"
-                ? `No ${listingTypeFilter} listings yet. Be the first!`
-                : "Try adjusting your filters or search query"}
-            </p>
-            {user && <CreateListingDialog onCreated={fetchProducts} />}
-          </Card>
+        {/* Content based on active view */}
+        {activeView === "selling" && user ? (
+          <SellerDashboard />
+        ) : activeView === "saved" && user ? (
+          savedProducts.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">No saved listings</h3>
+              <p className="text-sm text-muted-foreground">Tap the heart icon on any listing to save it here</p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {savedProducts.map((listing) => (
+                <ListingCard key={listing.id} listing={listing} isSaved={true} onToggleSave={toggleWishlist} />
+              ))}
+            </div>
+          )
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
+          <>
+            {/* Listings Grid */}
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <Card className="p-12 text-center">
+                <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-semibold mb-2">No listings found</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {listingTypeFilter !== "all"
+                    ? `No ${listingTypeFilter} listings yet. Be the first!`
+                    : "Try adjusting your filters or search query"}
+                </p>
+                {user && <CreateListingDialog onCreated={fetchProducts} />}
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProducts.map((listing) => (
+                  <ListingCard key={listing.id} listing={listing} isSaved={wishlistIds.has(listing.id)} onToggleSave={toggleWishlist} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

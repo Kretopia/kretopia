@@ -6,10 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Send, Target, Users, TrendingUp, Mail, Crown, Lock } from "lucide-react";
+import { Search, Send, Target, Users, TrendingUp, Mail, Crown, Lock, Kanban, BarChart3 } from "lucide-react";
 import LeadsTab from "@/components/thrive-ai/LeadsTab";
 import OutreachTab from "@/components/thrive-ai/OutreachTab";
 import { FreeTierGate } from "@/components/FreeTierGate";
+import { LeadPipelineKanban } from "@/components/sales/LeadPipelineKanban";
+import { ConversionFunnel } from "@/components/sales/ConversionFunnel";
 
 const SalesDashboard = () => {
   const { user, loading, subscriptionInfo } = useAuth();
@@ -139,14 +141,23 @@ const SalesDashboard = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="leads" className="gap-1.5 text-xs sm:text-sm">
             <Search className="h-4 w-4" />
-            <span>Lead Scout & CRM</span>
+            <span className="hidden sm:inline">Lead Scout</span>
+            <span className="sm:hidden">Leads</span>
+          </TabsTrigger>
+          <TabsTrigger value="pipeline" className="gap-1.5 text-xs sm:text-sm">
+            <Kanban className="h-4 w-4" />
+            <span>Pipeline</span>
           </TabsTrigger>
           <TabsTrigger value="outreach" className="gap-1.5 text-xs sm:text-sm">
             <Send className="h-4 w-4" />
             <span>Outreach</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm">
+            <BarChart3 className="h-4 w-4" />
+            <span>Funnel</span>
           </TabsTrigger>
         </TabsList>
 
@@ -156,9 +167,21 @@ const SalesDashboard = () => {
           </FreeTierGate>
         </TabsContent>
 
+        <TabsContent value="pipeline">
+          <FreeTierGate feature="aiLeadSearches" featureLabel="Pipeline View" description="Upgrade to Pro for the visual pipeline kanban and lead management.">
+            <LeadPipelineKanban />
+          </FreeTierGate>
+        </TabsContent>
+
         <TabsContent value="outreach">
           <FreeTierGate feature="aiOutreachDrafts" featureLabel="AI Outreach" description="Upgrade to Pro for unlimited outreach sequences and AI-powered email drafts.">
             <OutreachTab />
+          </FreeTierGate>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <FreeTierGate feature="aiLeadSearches" featureLabel="Conversion Analytics" description="Upgrade to Pro for conversion funnel analytics and lead scoring.">
+            <ConversionFunnel leads={leads} />
           </FreeTierGate>
         </TabsContent>
       </Tabs>

@@ -566,6 +566,74 @@ export type Database = {
           },
         ]
       }
+      bulk_email_usage: {
+        Row: {
+          id: string
+          month: string
+          send_count: number
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          month: string
+          send_count?: number
+          user_id: string
+        }
+        Update: {
+          id?: string
+          month?: string
+          send_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      campaign_recipients: {
+        Row: {
+          campaign_id: string
+          clicked_at: string | null
+          email: string
+          error_message: string | null
+          id: string
+          name: string | null
+          opened_at: string | null
+          sent_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          clicked_at?: string | null
+          email: string
+          error_message?: string | null
+          id?: string
+          name?: string | null
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          clicked_at?: string | null
+          email?: string
+          error_message?: string | null
+          id?: string
+          name?: string | null
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_entries: {
         Row: {
           challenge_id: string
@@ -1662,6 +1730,117 @@ export type Database = {
           title?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      email_campaigns: {
+        Row: {
+          body: string
+          click_count: number
+          created_at: string
+          failed_count: number
+          id: string
+          name: string
+          open_count: number
+          scheduled_for: string | null
+          sent_at: string | null
+          sent_count: number
+          status: string
+          subject: string
+          total_recipients: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          click_count?: number
+          created_at?: string
+          failed_count?: number
+          id?: string
+          name: string
+          open_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          total_recipients?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          click_count?: number
+          created_at?: string
+          failed_count?: number
+          id?: string
+          name?: string
+          open_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          total_recipients?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_unsubscribes: {
+        Row: {
+          email: string
+          id: string
+          reason: string | null
+          sender_id: string
+          unsubscribed_at: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          reason?: string | null
+          sender_id: string
+          unsubscribed_at?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          reason?: string | null
+          sender_id?: string
+          unsubscribed_at?: string
         }
         Relationships: []
       }

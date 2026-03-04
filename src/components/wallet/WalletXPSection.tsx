@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Snowflake, Crown, Eye, Sparkles, Zap, Star, Palette, Gift, Search,
+  Snowflake, Crown, Eye, Sparkles, Zap, Star, Gift, Search,
+  Image, Briefcase, BarChart3, MessageSquare, FileText,
 } from "lucide-react";
 import { getTierByPoints } from "@/lib/tierSystem";
 
@@ -178,6 +179,12 @@ export function WalletXPSection() {
     { id: "streak_freeze", name: "Streak Freeze", description: `Protect your streak. You have ${freezeCount}.`, cost: 500, icon: <Snowflake className="h-5 w-5 text-blue-400" />, action: buyStreakFreeze, available: true },
     { id: "profile_boost", name: "24h Profile Boost", description: "Top of Discover for 24 hours.", cost: 1000, icon: <Eye className="h-5 w-5 text-amber-400" />, action: buyProfileBoost, available: true },
     { id: "double_xp", name: "2x XP (24 hours)", description: "Double XP on all activities.", cost: 750, icon: <Zap className="h-5 w-5 text-yellow-400" />, action: buyDoubleXP, available: true },
+    { id: "extra_portfolio", name: "+3 Portfolio Slots", description: "Add 3 more portfolio items this month.", cost: 400, icon: <Image className="h-5 w-5 text-emerald-400" />, action: async () => {}, available: true, badge: "Popular" },
+    { id: "extra_leads", name: "+5 Lead Searches", description: "5 extra AI lead searches this month.", cost: 800, icon: <Search className="h-5 w-5 text-sky-400" />, action: async () => {}, available: true },
+    { id: "extra_outreach", name: "+10 Outreach Drafts", description: "10 extra AI outreach drafts.", cost: 600, icon: <MessageSquare className="h-5 w-5 text-indigo-400" />, action: async () => {}, available: true },
+    { id: "extra_invoices", name: "+3 Invoices", description: "3 extra invoices this month.", cost: 300, icon: <FileText className="h-5 w-5 text-teal-400" />, action: async () => {}, available: true },
+    { id: "priority_gig", name: "Priority Gig Listing", description: "Pin your opportunity for 24h.", cost: 1500, icon: <Briefcase className="h-5 w-5 text-orange-400" />, action: async () => {}, available: true },
+    { id: "analytics_unlock", name: "Analytics Report", description: "Full profile analytics export (1x).", cost: 2000, icon: <BarChart3 className="h-5 w-5 text-violet-400" />, action: async () => {}, available: true },
     { id: "pro_trial", name: "Pro Trial (3 Days)", description: "Unlock all Pro features.", cost: 2500, icon: <Crown className="h-5 w-5 text-purple-400" />, action: buyProTrial, available: true, badge: "Best Value" },
     { id: "gift_xp", name: "Gift 100 XP", description: "Send 100 XP to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
   ];

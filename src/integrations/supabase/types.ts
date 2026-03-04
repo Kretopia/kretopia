@@ -3962,6 +3962,9 @@ export type Database = {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
           achievement_badges: string[] | null
+          availability_note: string | null
+          availability_status: string | null
+          available_from: string | null
           available_invites: number | null
           avatar_url: string | null
           average_rating: number | null
@@ -4085,6 +4088,7 @@ export type Database = {
           verified_at: string | null
           verified_credentials: Json | null
           verified_metrics: boolean | null
+          video_intro_url: string | null
           website: string | null
           xp: number | null
           youtube_subscribers: number | null
@@ -4094,6 +4098,9 @@ export type Database = {
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
+          availability_note?: string | null
+          availability_status?: string | null
+          available_from?: string | null
           available_invites?: number | null
           avatar_url?: string | null
           average_rating?: number | null
@@ -4217,6 +4224,7 @@ export type Database = {
           verified_at?: string | null
           verified_credentials?: Json | null
           verified_metrics?: boolean | null
+          video_intro_url?: string | null
           website?: string | null
           xp?: number | null
           youtube_subscribers?: number | null
@@ -4226,6 +4234,9 @@ export type Database = {
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
+          availability_note?: string | null
+          availability_status?: string | null
+          available_from?: string | null
           available_invites?: number | null
           avatar_url?: string | null
           average_rating?: number | null
@@ -4349,6 +4360,7 @@ export type Database = {
           verified_at?: string | null
           verified_credentials?: Json | null
           verified_metrics?: boolean | null
+          video_intro_url?: string | null
           website?: string | null
           xp?: number | null
           youtube_subscribers?: number | null
@@ -5275,6 +5287,100 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "outreach_sequences"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_packages: {
+        Row: {
+          created_at: string | null
+          currency: string
+          delivery_days: number | null
+          description: string | null
+          display_order: number | null
+          features: string[] | null
+          id: string
+          is_active: boolean | null
+          price: number
+          revisions: number | null
+          tier: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string
+          delivery_days?: number | null
+          description?: string | null
+          display_order?: number | null
+          features?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          price?: number
+          revisions?: number | null
+          tier?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string
+          delivery_days?: number | null
+          description?: string | null
+          display_order?: number | null
+          features?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          price?: number
+          revisions?: number | null
+          tier?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_packages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_packages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_packages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_packages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_packages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "service_packages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
           },
         ]
       }

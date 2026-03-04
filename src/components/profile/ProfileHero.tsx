@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { ClaimProfileDialog } from "./ClaimProfileDialog";
 import { TrustSignals } from "./TrustSignals";
+import { AvailabilityIndicator } from "./AvailabilityIndicator";
 
 interface ProfileHeroProps {
   profile: any;
@@ -227,28 +228,20 @@ export const ProfileHero = ({
                       : `~${Math.round(profile.avg_response_hours / 24)}d`}
                 </Badge>
               )}
-              {/* Availability Badge */}
-              {profile.availability && (
-                <Badge 
-                  variant="outline" 
-                  className={cn(
-                    "h-5 text-[10px] font-semibold gap-1",
-                    profile.availability === 'available' && "border-green-500/50 text-green-600 bg-green-500/10",
-                    profile.availability === 'busy' && "border-amber-500/50 text-amber-600 bg-amber-500/10",
-                    profile.availability === 'unavailable' && "border-red-500/50 text-red-600 bg-red-500/10",
-                    profile.availability === 'open_to_work' && "border-green-500/50 text-green-600 bg-green-500/10"
-                  )}
-                >
-                  <span className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    (profile.availability === 'available' || profile.availability === 'open_to_work') && "bg-green-500",
-                    profile.availability === 'busy' && "bg-amber-500",
-                    profile.availability === 'unavailable' && "bg-red-500"
-                  )} />
-                  {profile.availability === 'open_to_work' ? '#OpenToWork' : 
-                   profile.availability === 'available' ? 'Available' : 
-                   profile.availability === 'busy' ? 'Busy' : 'Unavailable'}
-                </Badge>
+              {/* Availability - editable on own profile */}
+              {isOwnProfile ? (
+                <AvailabilityIndicator
+                  status={profile.availability_status || profile.availability}
+                  note={profile.availability_note}
+                  isOwnProfile={true}
+                  onRefresh={onRefresh}
+                />
+              ) : (profile.availability_status || profile.availability) && (
+                <AvailabilityIndicator
+                  status={profile.availability_status || profile.availability}
+                  note={profile.availability_note}
+                  isOwnProfile={false}
+                />
               )}
             </div>
             

@@ -12,7 +12,7 @@ import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportun
 import { 
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock, 
   DollarSign, Plus, Sparkles, User, AlertTriangle,
-  Search, Zap, Target, GraduationCap, X, Gift, ArrowRight
+  Search, Zap, Target, GraduationCap, X, Gift, ArrowRight, Shield
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
@@ -348,11 +348,17 @@ export const OpportunitiesFeed = () => {
 
                 {/* Compensation / Barter value */}
                 {opp.compensation && !isBarter && (
-                  <div className="mt-2">
+                  <div className="mt-2 flex items-center gap-1.5">
                     <Badge variant="outline" className="text-[11px] bg-green-500/10 text-green-600 border-green-500/20">
                       <DollarSign className="h-3 w-3 mr-0.5" />
                       {opp.compensation}
                     </Badge>
+                    {(opp.type === "job" || opp.type === "gig" || opp.type === "project") && (
+                      <Badge variant="outline" className="text-[11px] bg-primary/5 text-primary border-primary/20 gap-0.5">
+                        <Shield className="h-3 w-3" />
+                        Escrow Protected
+                      </Badge>
+                    )}
                   </div>
                 )}
 

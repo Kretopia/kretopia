@@ -150,7 +150,7 @@ export function LeaderboardWidget() {
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-sm font-bold text-primary">{user.xp}</p>
-                <p className="text-xs text-muted-foreground">XP</p>
+                <p className="text-xs text-muted-foreground">TP</p>
               </div>
             </div>
           );

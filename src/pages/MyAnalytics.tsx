@@ -261,7 +261,7 @@ const MyAnalytics = () => {
                   {stats.invitesSent === 0 && (
                     <div className="flex items-start gap-2 text-sm">
                       <Users className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <span>Invite fellow creators to earn XP rewards and grow your network!</span>
+                      <span>Invite fellow creators to earn Thrive Points and grow your network!</span>
                     </div>
                   )}
                   {stats.totalMatches >= 5 && stats.portfolioItems >= 3 && stats.invitesSent > 0 && (

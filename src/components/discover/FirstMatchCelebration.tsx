@@ -122,12 +122,12 @@ export function FirstMatchCelebration({
             </p>
           </div>
 
-          {/* XP Reward */}
+          {/* Points Reward */}
           {isFirstMatch && (
             <div className="flex items-center justify-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-red-500/10 border border-yellow-500/20">
               <div className="flex items-center gap-2">
                 <Zap className="h-6 w-6 text-yellow-500" />
-                <span className="font-bold text-xl text-yellow-600">+{xpAwarded} XP</span>
+                <span className="font-bold text-xl text-yellow-600">+{xpAwarded} TP</span>
               </div>
               <Star className="h-5 w-5 text-yellow-500 animate-spin" style={{ animationDuration: '3s' }} />
             </div>

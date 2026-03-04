@@ -249,15 +249,15 @@ export default function ThrivePay() {
   return (
     <>
       <SEO
-        title="Wallet & Payments"
-        description="Manage your wallet, earnings and payment account"
+        title="ThrivePay — Wallet & Payments"
+        description="Manage your wallet, Thrive Points, earnings and payment account"
       />
 
       <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">Wallet</h1>
+            <h1 className="text-3xl font-bold">ThrivePay</h1>
             {getStatusBadge()}
           </div>
           <div className="flex items-center gap-2">
@@ -342,7 +342,7 @@ export default function ThrivePay() {
             </TabsTrigger>
             <TabsTrigger value="xp" className="gap-2">
               <Sparkles className="h-4 w-4" />
-              XP Points
+              Thrive Points
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-2">
               <CreditCard className="h-4 w-4" />
@@ -409,7 +409,7 @@ export default function ThrivePay() {
             </div>
           </TabsContent>
 
-          {/* XP Points Tab */}
+          {/* Thrive Points Tab */}
           <TabsContent value="xp" className="space-y-6">
             <WalletXPSection />
           </TabsContent>

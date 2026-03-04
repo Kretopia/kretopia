@@ -187,7 +187,7 @@ export function DailyGoals() {
           <h3 className="text-lg font-bold flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" />
             Daily Goals
-            <TooltipHint content="Complete daily goals to earn XP and maintain your streak. Goals reset every day at midnight!" />
+            <TooltipHint content="Complete daily goals to earn Thrive Points and maintain your streak. Goals reset every day at midnight!" />
           </h3>
           <p className="text-sm text-muted-foreground">
             {completedGoals}/{goals.length} completed • {totalXP} XP earned

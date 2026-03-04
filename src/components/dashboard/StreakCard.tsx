@@ -32,8 +32,8 @@ export function StreakCard({ streakCount, longestStreak, freezeCount, onUpdate }
 
       if (!profile || profile.xp < 500) {
         toast({
-          title: "Insufficient XP",
-          description: "You need 500 XP to purchase a streak freeze.",
+          title: "Insufficient Thrive Points",
+          description: "You need 500 TP to purchase a streak freeze.",
           variant: "destructive"
         });
         return;

@@ -224,7 +224,7 @@ const AppContent = () => {
             
             {/* Partner Pages */}
             <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
-            <Route path="/partner-submit" element={<ProtectedRoute><PartnerSubmit /></ProtectedRoute>} />
+            <Route path="/partner-submit" element={<PartnerSubmit />} />
             
             {/* Marketplace */}
             <Route path="/market" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />

@@ -313,9 +313,9 @@ export default function PartnerSubmit() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="free">All Members (Free)</SelectItem>
-                      <SelectItem value="creator_pro">Pro & Thriver Members</SelectItem>
-                      <SelectItem value="thriver">Thriver Members Only</SelectItem>
+                      <SelectItem value="free">All Members (Spark)</SelectItem>
+                      <SelectItem value="pro">Pro Members & Above</SelectItem>
+                      <SelectItem value="enterprise">Enterprise Members Only</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

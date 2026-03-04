@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck } from "lucide-react";
 import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
+import { SEO } from "@/components/SEO";
 
 interface Opportunity {
   id: string;
@@ -187,6 +188,13 @@ const OpportunityDetail = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-6">
+      <SEO
+        title={`${opportunity.title} — Gig on ThriveIN`}
+        description={opportunity.description?.slice(0, 155) || `${opportunity.type} gig: ${opportunity.title}`}
+        type="article"
+        image={opportunity.image_url || undefined}
+        url={`https://www.thrivein.io/opportunity/${opportunity.id}`}
+      />
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">

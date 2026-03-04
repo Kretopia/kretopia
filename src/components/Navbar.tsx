@@ -232,14 +232,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Target className="h-5 w-5" />
                       Sales Dashboard
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/nearby")}
-                    >
-                      <Users className="h-5 w-5" />
-                      Nearby Creators
-                    </Button>
 
                     <Separator className="my-3" />
 

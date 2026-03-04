@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useFeatureUsage } from "@/hooks/useFeatureUsage";
 import { type FreeTierFeature, getFeatureDisplayName } from "@/lib/subscriptionLimits";
+import { useAuth } from "@/hooks/useAuth";
+import { hasEnterpriseAccess } from "@/lib/subscriptionConfig";
 
 interface FreeTierGateProps {
   feature: FreeTierFeature;
@@ -19,9 +21,11 @@ interface FreeTierGateProps {
 export function FreeTierGate({ feature, featureLabel, description, children }: FreeTierGateProps) {
   const navigate = useNavigate();
   const { usage, cap, remaining, canUse, isPro } = useFeatureUsage(feature);
+  const { subscriptionInfo } = useAuth();
+  const isEnterprise = hasEnterpriseAccess(subscriptionInfo.tier as any);
 
-  // Pro/Founder users see content directly
-  if (isPro) return <>{children}</>;
+  // Enterprise/Founder users with unlimited (-1) see content directly
+  if (cap === -1) return <>{children}</>;
 
   // Free user exhausted their cap
   if (!canUse) {
@@ -37,19 +41,24 @@ export function FreeTierGate({ feature, featureLabel, description, children }: F
             </div>
             <h3 className="text-lg font-bold mb-1">Monthly Limit Reached</h3>
             <p className="text-sm text-muted-foreground mb-2">
-              You've used all <strong>{cap} free {getFeatureDisplayName(feature)}</strong> this month.
+              You've used all <strong>{cap} {getFeatureDisplayName(feature)}</strong> this month.
             </p>
             <p className="text-xs text-muted-foreground mb-5">
-              {description || `Upgrade to Pro for unlimited ${getFeatureDisplayName(feature)}.`}
+              {description || (isPro 
+                ? `Upgrade to Enterprise for higher limits on ${getFeatureDisplayName(feature)}.`
+                : `Upgrade to Pro for more ${getFeatureDisplayName(feature)}.`
+              )}
             </p>
             <Button
               onClick={() => navigate("/subscription")}
               className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2"
             >
               <Sparkles className="h-4 w-4" />
-              Upgrade to Pro — Unlimited
+              {isPro ? "Upgrade to Enterprise" : "Upgrade to Pro"}
             </Button>
-            <p className="text-[11px] text-muted-foreground mt-3">$12/month · Cancel anytime</p>
+            <p className="text-[11px] text-muted-foreground mt-3">
+              {isPro ? "$49/month · Enterprise" : "$12/month · Cancel anytime"}
+            </p>
           </div>
         </div>
       </div>

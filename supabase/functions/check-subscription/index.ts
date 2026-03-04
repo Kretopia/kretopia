@@ -12,6 +12,18 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Product ID to tier mapping
+const PRODUCT_TIER_MAP: Record<string, string> = {
+  // Enterprise
+  'prod_U5VmCaKx7g2lbw': 'enterprise',
+  // Pro (current + legacy)
+  'prod_TWc5tpvPKjy8hG': 'pro',
+  'prod_TA5c8GtL6ioS2h': 'pro',
+  'prod_TA5ihoppNqeijE': 'pro',
+  'prod_TAoY7TiQaFLU00': 'pro',
+  'prod_TAoZwx40t99jYc': 'pro',
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,22 +40,18 @@ serve(async (req) => {
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
-    logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
-    logStep("Authenticating user with token");
-    
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Fetch existing profile to support complimentary/internal/founder tiers
+    // Fetch existing profile
     const { data: profileData } = await supabaseClient
       .from('profiles')
       .select('subscription_tier, subscription_status')
@@ -69,15 +77,17 @@ serve(async (req) => {
     
     if (customers.data.length === 0) {
       logStep("No customer found");
-
-      // If this is an internal/complimentary Pro account or active trial with future end date, keep Pro tier
-      const isComplimentary = profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active';
-      const isManualTrial = profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'trialing';
+      // Preserve complimentary/manual trial Pro/Enterprise
+      const isComplimentary = profileData?.subscription_status === 'active' && 
+        (profileData.subscription_tier === 'pro' || profileData.subscription_tier === 'enterprise');
+      const isManualTrial = profileData?.subscription_status === 'trialing' && 
+        (profileData.subscription_tier === 'pro' || profileData.subscription_tier === 'enterprise');
+      
       if (isComplimentary || isManualTrial) {
-        logStep("Complimentary/trial Pro profile detected, skipping downgrade", { status: profileData.subscription_status });
+        logStep("Complimentary/trial profile detected, skipping downgrade");
         return new Response(JSON.stringify({
           subscribed: false,
-          tier: 'pro',
+          tier: profileData.subscription_tier,
           product_id: null,
           subscription_end: null,
         }), {
@@ -86,8 +96,6 @@ serve(async (req) => {
         });
       }
       
-      logStep("No Stripe customer and no complimentary tier, updating to free");
-      // Update profile with free tier
       await supabaseClient
         .from('profiles')
         .update({
@@ -99,10 +107,7 @@ serve(async (req) => {
         .eq('user_id', user.id);
       
       return new Response(JSON.stringify({ 
-        subscribed: false, 
-        tier: 'free',
-        product_id: null,
-        subscription_end: null,
+        subscribed: false, tier: 'free', product_id: null, subscription_end: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -113,18 +118,13 @@ serve(async (req) => {
     logStep("Found Stripe customer", { customerId });
 
     const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
+      customer: customerId, status: "active", limit: 1,
     });
 
-    // Also check for trialing subscriptions
     let trialingSubs: any = { data: [] };
     if (subscriptions.data.length === 0) {
       trialingSubs = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "trialing",
-        limit: 1,
+        customer: customerId, status: "trialing", limit: 1,
       });
     }
     const hasActiveSub = subscriptions.data.length > 0 || trialingSubs.data.length > 0;
@@ -135,9 +135,8 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0] || trialingSubs.data[0];
-      subscriptionStatus = subscription.status; // 'active' or 'trialing'
+      subscriptionStatus = subscription.status;
       
-      // Handle current_period_end safely - may be number (unix), string, or object
       try {
         const periodEnd = subscription.current_period_end;
         if (typeof periodEnd === 'number') {
@@ -146,32 +145,13 @@ serve(async (req) => {
           subscriptionEnd = new Date(periodEnd).toISOString();
         } else if (periodEnd && typeof periodEnd === 'object' && 'toISOString' in periodEnd) {
           subscriptionEnd = (periodEnd as Date).toISOString();
-        } else {
-          logStep("Could not parse current_period_end", { periodEnd, type: typeof periodEnd });
-          subscriptionEnd = null;
         }
       } catch (dateErr) {
         logStep("Error parsing subscription end date", { error: String(dateErr) });
-        subscriptionEnd = null;
       }
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
       productId = subscription.items.data[0].price.product as string;
-      
-      // Map product ID to tier (all current and legacy map to 'pro')
-      const proProductIds = [
-        'prod_TWc5tpvPKjy8hG', // current Pro product
-        'prod_TA5c8GtL6ioS2h',
-        'prod_TA5ihoppNqeijE',
-        'prod_TAoY7TiQaFLU00',
-        'prod_TAoZwx40t99jYc',
-      ];
-
-      if (proProductIds.includes(productId)) {
-        tier = 'pro';
-      } else {
-        tier = 'free';
-      }
+      tier = PRODUCT_TIER_MAP[productId] || 'free';
       
       logStep("Determined subscription tier", { productId, tier });
       
@@ -188,17 +168,14 @@ serve(async (req) => {
         .eq('user_id', user.id);
     } else {
       logStep("No active subscription found");
-
-      // If this is an internal/complimentary Pro account or manual trial, keep Pro tier
-      const isComplimentaryNoSub = profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'active';
-      const isManualTrialNoSub = profileData?.subscription_tier === 'pro' && profileData.subscription_status === 'trialing';
+      const isComplimentaryNoSub = profileData?.subscription_status === 'active' && 
+        (profileData.subscription_tier === 'pro' || profileData.subscription_tier === 'enterprise');
+      const isManualTrialNoSub = profileData?.subscription_status === 'trialing' && 
+        (profileData.subscription_tier === 'pro' || profileData.subscription_tier === 'enterprise');
+      
       if (isComplimentaryNoSub || isManualTrialNoSub) {
-        logStep("Complimentary/trial Pro profile detected, skipping downgrade (no active Stripe sub)");
-        // Keep the tier as 'pro' for the response
-        tier = 'pro';
+        tier = profileData.subscription_tier;
       } else {
-        logStep("No active Stripe sub and no complimentary tier, updating to free");
-        // Update profile to free tier
         await supabaseClient
           .from('profiles')
           .update({
@@ -212,10 +189,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      tier,
-      product_id: productId,
-      subscription_end: subscriptionEnd
+      subscribed: hasActiveSub, tier, product_id: productId, subscription_end: subscriptionEnd
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

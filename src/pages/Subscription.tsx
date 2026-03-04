@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Loader2, Sparkles, Zap, Crown, CircleDot } from "lucide-react";
-import { SUBSCRIPTION_PRODUCTS, PRO_FEATURES, FREE_FEATURES, type AccountType } from "@/lib/subscriptionConfig";
+import { Check, Loader2, Sparkles, Zap, Crown, CircleDot, Building2 } from "lucide-react";
+import { SUBSCRIPTION_PRODUCTS, PRO_FEATURES, FREE_FEATURES, ENTERPRISE_FEATURES, type AccountType } from "@/lib/subscriptionConfig";
 
 const FOUNDER_FEATURES = [
   "Exclusive Founder Circle badge",
@@ -15,7 +15,7 @@ const FOUNDER_FEATURES = [
   "Only 5% platform fees (vs 15% free / 8% Pro)",
   "Free & discounted event access",
   "Premium Partner Membership (when launched)",
-  "All Pro features included forever",
+  "All Enterprise features included forever",
   "Priority support & early feature access",
   "All AI tools & analytics unlocked",
   "Founding member recognition",
@@ -43,6 +43,16 @@ function getSubscriptionTiers(accountType: AccountType) {
       popular: true,
       description: accountType === "company" ? "For serious brands & studios" : "For serious creators",
       features: PRO_FEATURES[accountType],
+    },
+    {
+      name: SUBSCRIPTION_PRODUCTS.enterprise.name,
+      tier: SUBSCRIPTION_PRODUCTS.enterprise.tier,
+      price: `$${SUBSCRIPTION_PRODUCTS.enterprise.price}`,
+      priceId: SUBSCRIPTION_PRODUCTS.enterprise.priceId,
+      productId: SUBSCRIPTION_PRODUCTS.enterprise.productId,
+      icon: Building2,
+      description: accountType === "company" ? "For agencies & large teams" : "For power users & agencies",
+      features: ENTERPRISE_FEATURES[accountType],
     },
   ];
 }
@@ -246,7 +256,7 @@ export default function Subscription() {
             </div>
             <CardTitle className="text-2xl">Founder Circle <span className="text-amber-500">⭕</span></CardTitle>
             <CardDescription>
-              Join the founding members. Lifetime Pro access with exclusive perks.
+              Join the founding members. Lifetime Enterprise access with exclusive perks.
             </CardDescription>
             <div className="mt-3">
               <span className="text-4xl font-bold">$199</span>
@@ -264,7 +274,6 @@ export default function Subscription() {
               ))}
             </div>
 
-            {/* Progress bar for spots */}
             {!isFounder && founderSpotsRemaining > 0 && (
               <div className="mt-6">
                 <div className="flex justify-between text-xs text-muted-foreground mb-1">
@@ -314,7 +323,7 @@ export default function Subscription() {
         <p className="text-sm text-muted-foreground">— or choose a monthly plan —</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {tiers.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;
@@ -326,6 +335,8 @@ export default function Subscription() {
               className={`relative ${
                 tier.popular
                   ? "border-primary shadow-lg scale-105"
+                  : tier.tier === "enterprise"
+                  ? "border-purple-500/50 shadow-md"
                   : isCurrentTier
                   ? "border-green-500"
                   : ""
@@ -336,6 +347,11 @@ export default function Subscription() {
                   Most Popular
                 </Badge>
               )}
+              {tier.tier === "enterprise" && !isCurrentTier && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white">
+                  Power User
+                </Badge>
+              )}
               {isCurrentTier && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500">
                   Your Plan
@@ -344,7 +360,11 @@ export default function Subscription() {
 
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
-                  <Icon className={`h-8 w-8 ${tier.tier === 'pro' ? 'text-blue-600' : 'text-muted-foreground'}`} />
+                  <Icon className={`h-8 w-8 ${
+                    tier.tier === 'pro' ? 'text-blue-600' : 
+                    tier.tier === 'enterprise' ? 'text-purple-600' : 
+                    'text-muted-foreground'
+                  }`} />
                   <div className="text-right">
                     <div className="text-3xl font-bold">{tier.price}</div>
                     {tier.tier !== "free" && (
@@ -363,7 +383,9 @@ export default function Subscription() {
                 <ul className="space-y-3">
                   {tier.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                      <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
+                        tier.tier === 'enterprise' ? 'text-purple-500' : 'text-primary'
+                      }`} />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
@@ -377,10 +399,14 @@ export default function Subscription() {
                   </Button>
                 ) : (
                   <Button
-                    className="w-full"
+                    className={`w-full ${
+                      tier.tier === 'enterprise' 
+                        ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                        : ''
+                    }`}
                     onClick={() => handleSubscribe(tier.priceId, tier.tier)}
                     disabled={isLoading || tier.tier === "free"}
-                    variant={tier.popular ? "default" : "outline"}
+                    variant={tier.popular ? "default" : tier.tier === "enterprise" ? "default" : "outline"}
                   >
                     {isLoading ? (
                       <>

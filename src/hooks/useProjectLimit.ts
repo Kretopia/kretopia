@@ -6,7 +6,7 @@ const FREE_MONTHLY_PROJECT_LIMIT = 1;
 
 export function useProjectLimit() {
   const { user, subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === 'pro';
+  const isPro = subscriptionInfo.tier === 'pro' || subscriptionInfo.tier === 'enterprise' || subscriptionInfo.tier === 'founder';
   const [monthlyCount, setMonthlyCount] = useState(0);
   const [loading, setLoading] = useState(true);
 

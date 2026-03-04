@@ -188,7 +188,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
-                    {/* My Profile */}
+                    {/* Identity */}
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">You</p>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
@@ -197,8 +198,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <User className="h-5 w-5" />
                       My Profile
                     </Button>
-
-                    {/* My Dashboard */}
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
@@ -207,38 +206,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <BarChart3 className="h-5 w-5" />
                       My Dashboard
                     </Button>
-                    
 
                     <Separator className="my-3" />
 
-                    {/* Explore */}
-                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Explore</p>
+                    {/* Money */}
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Money</p>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/market")}
+                      onClick={() => handleNavigation("/thrivemoney")}
                     >
-                      <ShoppingBag className="h-5 w-5" />
-                      Marketplace
+                      <DollarSign className="h-5 w-5" />
+                      Earnings
                     </Button>
-
-                    <Separator className="my-3" />
-                    
-                    {/* Pro Tools */}
-                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Pro Tools</p>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/sales")}
-                    >
-                      <Target className="h-5 w-5" />
-                      Sales Dashboard
-                    </Button>
-
-                    <Separator className="my-3" />
-                    
-                    {/* Wallet & Payments */}
-                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Wallet & Payments</p>
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
@@ -256,8 +236,30 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       Purchases & Sales
                     </Button>
 
-                    {/* Subscription / Account */}
                     <Separator className="my-3" />
+
+                    {/* Pro Tools */}
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Pro Tools</p>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/sales")}
+                    >
+                      <Target className="h-5 w-5" />
+                      Sales Dashboard
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/nearby")}
+                    >
+                      <Users className="h-5 w-5" />
+                      Nearby Creators
+                    </Button>
+
+                    <Separator className="my-3" />
+
+                    {/* Account */}
                     <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Account</p>
                     <Button 
                       variant="ghost" 
@@ -267,7 +269,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       {isPro ? (
                         <Crown className="h-5 w-5 text-amber-500" />
                       ) : (
-                        <Sparkles className="h-5 w-5 text-blue-500" />
+                        <Sparkles className="h-5 w-5 text-primary" />
                       )}
                       <div className="flex flex-col items-start gap-0.5">
                         <div className="flex items-center gap-2">
@@ -285,22 +287,18 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           </Badge>
                         </div>
                         {!isPro && (
-                          <span className="text-xs text-blue-500 font-medium">
+                          <span className="text-xs text-primary font-medium">
                             Upgrade to Pro →
                           </span>
                         )}
                       </div>
                     </Button>
 
-                    {/* Account Switcher */}
                     <AccountSwitcher 
                       currentAccountType={accountType} 
                       onSwitch={() => setIsOpen(false)}
                     />
 
-                    <Separator className="my-3" />
-
-                    {/* Settings */}
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
@@ -310,7 +308,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       Settings
                     </Button>
                     
-                    {/* Admin Section - Only visible to admin */}
+                    {/* Admin Section */}
                     {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (
                       <>
                         <Separator className="my-3" />

@@ -12,7 +12,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SwipeCard } from "@/components/ui/swipe-card";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 import { InviteDialog } from "@/components/InviteDialog";
-import { ConnectFiltersComponent, ConnectFilters } from "./ConnectFilters";
+import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "./SwipeFilters";
+import { locationMatchesFilter } from "@/lib/locationGroups";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { TIER_LIMITS, getRemainingSwipes, SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -97,14 +98,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
   const [dailySwipesLeft, setDailySwipesLeft] = useState<number>(30);
   
   // Filters
-  const [filters, setFilters] = useState<ConnectFilters>({
-    role: 'all',
-    location: 'all',
-    collabIntent: 'all',
-    verifiedOnly: false,
-    minFollowers: 'all',
-    experienceLevel: 'all',
-  });
+  const [filters, setFilters] = useState<SwipeFiltersState>(DEFAULT_SWIPE_FILTERS);
 
   const maxSwipes = TIER_LIMITS[userTier].swipesPerDay;
   const isSwipeLimitReached = maxSwipes !== -1 && dailySwipesLeft <= 0;
@@ -397,14 +391,25 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       // Step 4: Apply user filters
       let filteredCandidates = [...candidates];
       
-      if (filters.role !== 'all') {
+      // Multi-role filter
+      const roles = filters.roles || [];
+      if (roles.length > 0) {
+        filteredCandidates = filteredCandidates.filter(p => 
+          roles.some(r => p.role?.toLowerCase() === r.toLowerCase())
+        );
+      } else if (filters.role !== 'all') {
         filteredCandidates = filteredCandidates.filter(p => 
           p.role?.toLowerCase().includes(filters.role.toLowerCase())
         );
       }
-      if (filters.location !== 'all') {
+      // Location filter — cascading country/city
+      if (filters.locationCountry && filters.locationCountry !== 'all') {
         filteredCandidates = filteredCandidates.filter(p => 
-          p.location?.toLowerCase().includes(filters.location.toLowerCase())
+          locationMatchesFilter(p.location, filters.locationCountry, filters.locationCity)
+        );
+      } else if (filters.location !== 'all') {
+        filteredCandidates = filteredCandidates.filter(p => 
+          locationMatchesFilter(p.location, filters.location)
         );
       }
       if (filters.collabIntent !== 'all') {
@@ -685,11 +690,11 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         {/* Filters - hide in demo mode */}
         {!demoMode && (
           <div className="mb-4">
-            <ConnectFiltersComponent 
+            <SwipeFilters 
               filters={filters}
               onFiltersChange={setFilters}
-              activeFilterCount={Object.values(filters).filter(v => v !== 'all' && v !== false).length}
               isPro={userTier !== 'free'}
+              profilesCount={picks.length}
             />
           </div>
         )}

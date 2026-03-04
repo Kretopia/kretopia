@@ -28,6 +28,8 @@ export interface SwipeProfile {
   xp?: number;
   is_claimed?: boolean;
   imported_from_url?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export function useSwipeProfiles(currentUserId: string | undefined, filters: SwipeFiltersState = DEFAULT_SWIPE_FILTERS) {
@@ -37,13 +39,8 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
 
-  console.log('[useSwipeProfiles] Hook called with userId:', currentUserId, 'hasFetched:', hasFetched, 'loading:', loading);
-
   const fetchProfiles = useCallback(async () => {
-    console.log('[useSwipeProfiles] fetchProfiles called, userId:', currentUserId);
-    
     if (!currentUserId) {
-      console.log('[useSwipeProfiles] No current user ID, returning early');
       setLoading(false);
       return;
     }
@@ -52,23 +49,16 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
     setError(null);
 
     try {
-      console.log('[useSwipeProfiles] Starting fetch for user:', currentUserId);
-
       // Step 1: Get users already swiped on
-      const { data: swipedData, error: swipeError } = await supabase
+      const { data: swipedData } = await supabase
         .from('swipes')
         .select('target_id')
         .eq('user_id', currentUserId)
         .eq('target_type', 'profile');
 
-      if (swipeError) {
-        console.error('[useSwipeProfiles] Swipe query error:', swipeError);
-      }
-
       const swipedIds = new Set(swipedData?.map(s => s.target_id) || []);
-      console.log('[useSwipeProfiles] Already swiped:', swipedIds.size);
 
-      // Step 1b: Get blocked users (exclude from feed)
+      // Step 1b: Get blocked users
       const { data: blockedData } = await supabase
         .from('user_blocks')
         .select('blocked_user_id')
@@ -83,9 +73,8 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         ...(blockedData?.map(b => b.blocked_user_id) || []),
         ...(blockedByData?.map(b => b.blocker_id) || [])
       ]);
-      console.log('[useSwipeProfiles] Blocked users:', blockedIds.size);
 
-      // Step 2: Get accepted connections (exclude from feed)
+      // Step 2: Get accepted connections
       const { data: connectionsOut } = await supabase
         .from('connections')
         .select('connected_user_id')
@@ -102,35 +91,17 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         ...(connectionsOut?.map(c => c.connected_user_id) || []),
         ...(connectionsIn?.map(c => c.user_id) || [])
       ]);
-      console.log('[useSwipeProfiles] Already connected:', connectedIds.size);
 
-      // Step 3: Fetch all profiles except current user with valid avatar and bio
-      // Include unclaimed profiles (is_claimed = false) which have onboarding_completed = true
+      // Step 3: Fetch profiles
       const { data: fetchedProfiles, error: profileError } = await supabase
         .from('profiles')
         .select(`
-          id,
-          user_id,
-          full_name,
-          role,
-          bio,
-          avatar_url,
-          location,
-          level,
-          professional_skills,
-          passion_skills,
-          badge,
-          collab_intent,
-          onboarding_completed,
-          verification_tier,
-          instagram_followers,
-          youtube_subscribers,
-          tiktok_followers,
-          twitter_followers,
-          spotify_listeners,
-          xp,
-          is_claimed,
-          imported_from_url
+          id, user_id, full_name, role, bio, avatar_url, location, level,
+          professional_skills, passion_skills, badge, collab_intent,
+          onboarding_completed, verification_tier,
+          instagram_followers, youtube_subscribers, tiktok_followers,
+          twitter_followers, spotify_listeners, xp, is_claimed, imported_from_url,
+          latitude, longitude
         `)
         .neq('user_id', currentUserId)
         .not('avatar_url', 'is', null)
@@ -138,35 +109,20 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         .eq('onboarding_completed', true)
         .limit(200);
 
-      if (profileError) {
-        console.error('[useSwipeProfiles] Profile fetch error:', profileError);
-        throw profileError;
-      }
+      if (profileError) throw profileError;
 
-      console.log('[useSwipeProfiles] Total profiles fetched:', fetchedProfiles?.length);
-
-      // Step 4: Filter out swiped, connected users, and profiles not meeting minimum requirements
-      // ALL profiles (claimed and unclaimed) must have avatar and bio
+      // Step 4: Filter out swiped, connected, blocked
       let filtered = (fetchedProfiles || []).filter(p => {
-        // Not already swiped
         if (swipedIds.has(p.user_id)) return false;
-        // Not already connected
         if (connectedIds.has(p.user_id)) return false;
-        // Not blocked (either direction)
         if (blockedIds.has(p.user_id)) return false;
-        // ALL profiles must have bio with minimum 20 characters
         if (!p.bio || p.bio.length < 20) return false;
         return true;
       });
 
-      console.log('[useSwipeProfiles] After filtering:', filtered.length);
-
-      // Step 5: Get portfolio, credits, and awards counts
-      // Credits/awards/portfolio are stored with profile.user_id (returned by create_unclaimed_profile)
+      // Step 5: Portfolio/credits/awards counts
       if (filtered.length > 0) {
         const userIds = filtered.map(p => p.user_id);
-        
-        // Fetch portfolio, credits, and awards counts in parallel using user_id
         const [portfolioResult, creditsResult, awardsResult] = await Promise.all([
           supabase.from('portfolio_items').select('user_id').in('user_id', userIds),
           supabase.from('credits').select('user_id').in('user_id', userIds),
@@ -177,18 +133,15 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         portfolioResult.data?.forEach(item => {
           portfolioCounts.set(item.user_id, (portfolioCounts.get(item.user_id) || 0) + 1);
         });
-
         const creditsCounts = new Map<string, number>();
         creditsResult.data?.forEach(item => {
           creditsCounts.set(item.user_id, (creditsCounts.get(item.user_id) || 0) + 1);
         });
-
         const awardsCounts = new Map<string, number>();
         awardsResult.data?.forEach(item => {
           awardsCounts.set(item.user_id, (awardsCounts.get(item.user_id) || 0) + 1);
         });
 
-        // Add counts using user_id for lookups
         filtered = filtered
           .map(p => ({
             ...p,
@@ -196,22 +149,13 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
             credits_count: creditsCounts.get(p.user_id) || 0,
             awards_count: awardsCounts.get(p.user_id) || 0
           }))
-          .filter(p => {
-            // ALL profiles need at least 1 portfolio item OR 1 credit OR 1 award
-            const hasWork = (p.portfolio_count >= 1) || (p.credits_count >= 1) || (p.awards_count >= 1);
-            return hasWork;
-          });
-        
-        console.log('[useSwipeProfiles] After portfolio filter:', filtered.length);
+          .filter(p => (p.portfolio_count >= 1) || (p.credits_count >= 1) || (p.awards_count >= 1));
       }
 
-      // Step 6: Shuffle for variety
+      // Shuffle
       const shuffled = filtered.sort(() => Math.random() - 0.5);
-
       setAllProfiles(shuffled);
       setHasFetched(true);
-      console.log('[useSwipeProfiles] Final profiles:', shuffled.length);
-
     } catch (err: any) {
       console.error('[useSwipeProfiles] Error:', err);
       setError(err.message || 'Failed to load profiles');
@@ -220,7 +164,7 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
     }
   }, [currentUserId]);
 
-  // Apply filters to profiles
+  // Apply filters
   useEffect(() => {
     if (allProfiles.length === 0) {
       setProfiles([]);
@@ -229,31 +173,48 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
 
     let filtered = [...allProfiles];
 
-    // Apply role filter
-    if (filters.role !== 'all') {
+    // Multi-role filter
+    const roles = filters.roles || [];
+    if (roles.length > 0) {
+      filtered = filtered.filter(p =>
+        roles.some(r => p.role?.toLowerCase() === r.toLowerCase())
+      );
+    } else if (filters.role && filters.role !== 'all') {
+      // Legacy single role
       filtered = filtered.filter(p => p.role?.toLowerCase() === filters.role.toLowerCase());
     }
 
-    // Apply location filter with smart grouping
-    if (filters.location !== 'all') {
+    // Location filter — cascading country/city
+    if (filters.locationCountry && filters.locationCountry !== 'all') {
+      filtered = filtered.filter(p =>
+        locationMatchesFilter(p.location, filters.locationCountry, filters.locationCity)
+      );
+    } else if (filters.location && filters.location !== 'all') {
+      // Legacy
       filtered = filtered.filter(p => locationMatchesFilter(p.location, filters.location));
     }
 
-    // Apply collab intent filter
+    // Near Me — sort by distance if user has geolocation
+    if (filters.nearMe && navigator.geolocation) {
+      // We can't async inside useEffect easily, so we just prioritize profiles with lat/lon
+      filtered = filtered
+        .filter(p => p.latitude != null && p.longitude != null)
+        .sort(() => Math.random() - 0.5); // TODO: sort by actual distance when user coords available
+    }
+
+    // Collab intent
     if (filters.collabIntent !== 'all') {
       filtered = filtered.filter(p => p.collab_intent === filters.collabIntent);
     }
 
-    // Apply verified only filter (Pro)
+    // Verified only (Pro)
     if (filters.verifiedOnly) {
-      filtered = filtered.filter(p => 
-        p.verification_tier === 'elite' || 
-        p.verification_tier === 'industry' || 
-        p.verification_tier === 'profile'
+      filtered = filtered.filter(p =>
+        p.verification_tier === 'elite' || p.verification_tier === 'industry' || p.verification_tier === 'profile'
       );
     }
 
-    // Apply skills filter
+    // Skills
     if (filters.skills.length > 0) {
       filtered = filtered.filter(p => {
         const profileSkills = Array.isArray(p.professional_skills)
@@ -263,21 +224,17 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       });
     }
 
-    // Apply min followers filter (Pro) - sum all social followers
+    // Min followers (Pro)
     if (filters.minFollowers !== 'all') {
       const minCount = parseInt(filters.minFollowers);
       filtered = filtered.filter(p => {
-        const totalFollowers = 
-          (p.instagram_followers || 0) + 
-          (p.youtube_subscribers || 0) + 
-          (p.tiktok_followers || 0) + 
-          (p.twitter_followers || 0) + 
-          (p.spotify_listeners || 0);
-        return totalFollowers >= minCount;
+        const total = (p.instagram_followers || 0) + (p.youtube_subscribers || 0) +
+          (p.tiktok_followers || 0) + (p.twitter_followers || 0) + (p.spotify_listeners || 0);
+        return total >= minCount;
       });
     }
 
-    // Apply experience level filter (Pro) - based on XP/level
+    // Experience level (Pro)
     if (filters.experienceLevel !== 'all') {
       filtered = filtered.filter(p => {
         const level = p.level || 1;
@@ -291,29 +248,22 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       });
     }
 
-    // Apply AI match filter (Pro) - sort by XP/level as proxy for quality
+    // AI match (Pro)
     if (filters.aiMatchOnly) {
       filtered = filtered
         .filter(p => (p.xp || 0) > 100 || (p.level || 1) > 3)
         .sort((a, b) => ((b.xp || 0) + (b.level || 1) * 100) - ((a.xp || 0) + (a.level || 1) * 100));
     }
 
-    console.log('[useSwipeProfiles] After applying filters:', filtered.length);
     setProfiles(filtered);
   }, [allProfiles, filters]);
 
-  // Auto-fetch when currentUserId becomes available
+  // Auto-fetch
   useEffect(() => {
-    console.log('[useSwipeProfiles] useEffect triggered - userId:', currentUserId, 'hasFetched:', hasFetched);
-    
     if (currentUserId && !hasFetched) {
-      console.log('[useSwipeProfiles] Triggering auto-fetch for user:', currentUserId);
       fetchProfiles();
     } else if (!currentUserId) {
-      console.log('[useSwipeProfiles] No userId, stopping loading');
       setLoading(false);
-    } else {
-      console.log('[useSwipeProfiles] Already fetched, not re-fetching');
     }
   }, [currentUserId, hasFetched, fetchProfiles]);
 

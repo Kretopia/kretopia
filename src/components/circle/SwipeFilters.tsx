@@ -4,14 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Filter, X, Lock, Sparkles, Crown, Zap, CheckCircle, Star, Users, MapPin, Briefcase, Target, Wrench, Clock } from "lucide-react";
-import { ROLE_OPTIONS, LOCATION_OPTIONS } from "@/components/profile/ProfileEditDialog";
+import { Filter, X, Lock, Sparkles, Crown, Zap, CheckCircle, Star, Users, MapPin, Briefcase, Target, Wrench, Clock, Navigation } from "lucide-react";
+import { ROLE_OPTIONS } from "@/components/profile/ProfileEditDialog";
+import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 export interface SwipeFiltersState {
-  role: string;
-  location: string;
+  roles: string[];
+  locationCountry: string;
+  locationCity: string;
+  nearMe: boolean;
   collabIntent: string;
   // Pro filters
   verifiedOnly: boolean;
@@ -20,6 +23,9 @@ export interface SwipeFiltersState {
   aiMatchOnly: boolean;
   skills: string[];
   availability: string;
+  // Legacy compat
+  role: string;
+  location: string;
 }
 
 interface SwipeFiltersProps {
@@ -56,19 +62,14 @@ const FOLLOWER_OPTIONS = [
 ];
 
 const SKILL_OPTIONS = [
-  // Music & Audio
   'Music Production', 'Songwriting', 'Audio Engineering', 'Sound Design', 'DJing',
   'Singing', 'Rapping', 'Instrument Performance', 'Mixing & Mastering', 'Composing',
-  // Film & Video
   'Videography', 'Video Editing', 'Directing', 'Cinematography', 'Screenwriting',
   'VFX', 'Color Grading', 'Animation', 'Motion Graphics', 'Acting', 'Voice Over',
-  // Design & Visual Arts
   'Graphic Design', 'Illustration', 'Photography', 'UI/UX', 'Branding',
   '3D Modeling', 'Web Design', 'Art Direction', 'Set Design', 'Typography',
-  // Fashion & Content
   'Styling', 'Makeup Artistry', 'Fashion Design', 'Costume Design',
   'Content Creation', 'Social Media', 'Copywriting', 'Blogging',
-  // Business & Tech
   'Marketing', 'PR & Communications', 'Web Development', 'App Development',
   'Event Production', 'Project Management', 'Creative Direction',
 ];
@@ -81,9 +82,43 @@ const AVAILABILITY_OPTIONS = [
   { value: 'booked', label: '🔴 Currently Booked' },
 ];
 
+// Role categories for grouped display
+const ROLE_CATEGORIES: { label: string; roles: string[] }[] = [
+  {
+    label: '🎵 Music & Audio',
+    roles: ['Musician', 'DJ', 'Soca Artist', 'Rapper', 'Singer', 'Songwriter', 'Music Producer', 'Audio Engineer', 'Sound Designer', 'Composer', 'Mixing Engineer', 'Mastering Engineer', 'Music Manager', 'A&R'],
+  },
+  {
+    label: '🎬 Film & Video',
+    roles: ['Filmmaker', 'Videographer', 'Director', 'Cinematographer', 'Screenwriter', 'Video Editor', 'VFX Artist', 'Colorist', 'Camera Operator', 'Gaffer', 'Grip', 'Production Assistant', 'Casting Director', 'Stunt Coordinator'],
+  },
+  {
+    label: '🎨 Design & Visual Arts',
+    roles: ['Graphic Designer', 'Illustrator', 'Photographer', 'Animator', 'Motion Designer', '3D Artist', 'UI/UX Designer', 'Art Director', 'Creative Director', 'Set Designer', 'Muralist', 'Fine Artist', 'Concept Artist', 'Tattoo Artist'],
+  },
+  {
+    label: '📱 Digital & Content',
+    roles: ['Content Creator', 'Influencer', 'Streamer', 'Podcaster', 'Blogger', 'YouTuber', 'TikToker', 'Social Media Manager', 'Community Manager', 'Copywriter', 'Technical Writer', 'Journalist'],
+  },
+  {
+    label: '👗 Fashion & Beauty',
+    roles: ['Fashion Designer', 'Stylist', 'Makeup Artist', 'Hair Stylist', 'Costume Designer', 'Wardrobe Stylist', 'Carnival/Mas Designer', 'Model', 'Fashion Photographer'],
+  },
+  {
+    label: '💼 Business & Tech',
+    roles: ['Brand Strategist', 'Marketing Manager', 'PR Specialist', 'Talent Manager', 'Event Producer', 'Project Manager', 'Web Developer', 'App Developer', 'Product Designer', 'Data Analyst'],
+  },
+  {
+    label: '🎭 Performing Arts',
+    roles: ['Actor', 'Voice Actor', 'Dancer', 'Choreographer', 'Stand-up Comedian', 'MC/Host', 'Stage Manager'],
+  },
+];
+
 export const DEFAULT_SWIPE_FILTERS: SwipeFiltersState = {
-  role: 'all',
-  location: 'all',
+  roles: [],
+  locationCountry: 'all',
+  locationCity: 'all',
+  nearMe: false,
   collabIntent: 'all',
   verifiedOnly: false,
   minFollowers: 'all',
@@ -91,30 +126,44 @@ export const DEFAULT_SWIPE_FILTERS: SwipeFiltersState = {
   aiMatchOnly: false,
   skills: [],
   availability: 'all',
+  // Legacy compat
+  role: 'all',
+  location: 'all',
 };
 
 export function SwipeFilters({ filters, onFiltersChange, isPro = false, profilesCount = 0 }: SwipeFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
   const navigate = useNavigate();
-
-  const roleOptions = [
-    { value: 'all', label: 'All Roles' },
-    ...ROLE_OPTIONS.filter(r => r.value !== 'Other'),
-  ];
-
-  const locationOptions = [
-    { value: 'all', label: 'All Locations' },
-    ...LOCATION_OPTIONS.filter(l => l.value !== 'Other'),
-  ];
 
   const clearFilters = () => {
     onFiltersChange(DEFAULT_SWIPE_FILTERS);
   };
 
+  const selectedCountry = LOCATION_HIERARCHY.find(c => c.value === filters.locationCountry);
+
+  const handleNearMe = () => {
+    if (!navigator.geolocation) return;
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        // We store the "nearMe" flag; the hook will handle geolocation-based sorting
+        onFiltersChange({ ...filters, nearMe: true, locationCountry: 'all', locationCity: 'all' });
+        setDetectingLocation(false);
+      },
+      () => {
+        setDetectingLocation(false);
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  };
+
   const getActiveFilterCount = () => {
     let count = 0;
-    if (filters.role !== 'all') count++;
-    if (filters.location !== 'all') count++;
+    if (filters.roles.length > 0) count++;
+    if (filters.locationCountry !== 'all') count++;
+    if (filters.locationCity !== 'all') count++;
+    if (filters.nearMe) count++;
     if (filters.collabIntent !== 'all') count++;
     if (filters.verifiedOnly) count++;
     if (filters.minFollowers !== 'all') count++;
@@ -165,6 +214,14 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
       </div>
     </div>
   );
+
+  const toggleRole = (roleValue: string) => {
+    const currentRoles = filters.roles || [];
+    const newRoles = currentRoles.includes(roleValue)
+      ? currentRoles.filter(r => r !== roleValue)
+      : [...currentRoles, roleValue];
+    onFiltersChange({ ...filters, roles: newRoles, role: newRoles.length === 1 ? newRoles[0] : 'all' });
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -246,38 +303,117 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
               Basic Filters
             </div>
             
-            {/* Role */}
-            <FilterSection title="Role" icon={Briefcase}>
-              <Select 
-                value={filters.role} 
-                onValueChange={(value) => onFiltersChange({ ...filters, role: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roleOptions.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Location — Two-tier: Near Me / Country / City */}
+            <FilterSection title="Location" icon={MapPin}>
+              <div className="space-y-3">
+                {/* Near Me button */}
+                <Button
+                  variant={filters.nearMe ? "default" : "outline"}
+                  size="sm"
+                  className="gap-2 w-full justify-start"
+                  onClick={handleNearMe}
+                  disabled={detectingLocation}
+                >
+                  <Navigation className="h-4 w-4" />
+                  {detectingLocation ? 'Detecting...' : filters.nearMe ? '📍 Showing Near Me' : 'Near Me — Use my location'}
+                </Button>
+
+                {!filters.nearMe && (
+                  <div className="grid grid-cols-1 gap-2">
+                    {/* Country */}
+                    <Select 
+                      value={filters.locationCountry} 
+                      onValueChange={(value) => onFiltersChange({ ...filters, locationCountry: value, locationCity: 'all', nearMe: false })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">🌍 All Countries</SelectItem>
+                        {LOCATION_HIERARCHY.map(country => (
+                          <SelectItem key={country.value} value={country.value}>
+                            {country.flag} {country.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* City — only shows when a country is selected */}
+                    {selectedCountry && selectedCountry.cities.length > 0 && (
+                      <Select 
+                        value={filters.locationCity} 
+                        onValueChange={(value) => onFiltersChange({ ...filters, locationCity: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Cities" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All {selectedCountry.label}</SelectItem>
+                          {selectedCountry.cities.map(city => (
+                            <SelectItem key={city.value} value={city.value}>
+                              {city.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                )}
+              </div>
             </FilterSection>
 
-            {/* Location */}
-            <FilterSection title="Location" icon={MapPin}>
-              <Select 
-                value={filters.location} 
-                onValueChange={(value) => onFiltersChange({ ...filters, location: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Locations" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locationOptions.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            {/* Roles — Multi-select chips grouped by category */}
+            <FilterSection title="Roles" icon={Briefcase}>
+              <div className="space-y-3">
+                {filters.roles.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {filters.roles.map(r => (
+                      <Badge
+                        key={r}
+                        variant="default"
+                        className="text-xs cursor-pointer gap-1 pr-1"
+                        onClick={() => toggleRole(r)}
+                      >
+                        {r}
+                        <X className="h-3 w-3" />
+                      </Badge>
+                    ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs text-muted-foreground px-2"
+                      onClick={() => onFiltersChange({ ...filters, roles: [], role: 'all' })}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
+                <div className="max-h-48 overflow-y-auto space-y-3 pr-1">
+                  {ROLE_CATEGORIES.map(category => (
+                    <div key={category.label} className="space-y-1.5">
+                      <p className="text-xs font-medium text-muted-foreground">{category.label}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {category.roles.map(role => (
+                          <Button
+                            key={role}
+                            variant={(filters.roles || []).includes(role) ? "default" : "outline"}
+                            size="sm"
+                            className="text-xs h-7 px-2"
+                            onClick={() => toggleRole(role)}
+                          >
+                            {role}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+                {filters.roles.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {filters.roles.length} role{filters.roles.length !== 1 ? 's' : ''} selected — showing any match
+                  </p>
+                )}
+              </div>
             </FilterSection>
 
             {/* Collaboration Intent */}
@@ -309,7 +445,6 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
 
             {isPro ? (
               <>
-                {/* Verified Only */}
                 <FilterSection title="Verification" icon={CheckCircle} isPremium>
                   <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
                     <div>
@@ -323,7 +458,6 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                   </div>
                 </FilterSection>
 
-                {/* Min Followers */}
                 <FilterSection title="Minimum Followers" icon={Users} isPremium>
                   <div className="flex flex-wrap gap-2">
                     {FOLLOWER_OPTIONS.map(opt => (
@@ -340,7 +474,6 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                   </div>
                 </FilterSection>
 
-                {/* Experience Level */}
                 <FilterSection title="Experience Level" icon={Star} isPremium>
                   <Select 
                     value={filters.experienceLevel}
@@ -359,9 +492,8 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                   </Select>
                 </FilterSection>
 
-                {/* Skills Filter */}
                 <FilterSection title="Skills" icon={Wrench} isPremium>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                     {SKILL_OPTIONS.map(skill => (
                       <Button
                         key={skill}
@@ -386,7 +518,6 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                   )}
                 </FilterSection>
 
-                {/* Availability Filter */}
                 <FilterSection title="Availability" icon={Clock} isPremium>
                   <Select
                     value={filters.availability}
@@ -428,23 +559,19 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                     <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Design</Button>
                     <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Music</Button>
                   </div>
-                  <div className="h-10 rounded-md border bg-muted/30 flex items-center px-3 text-sm text-muted-foreground">
-                    🕐 Availability
-                  </div>
                 </div>
               </ProLockedOverlay>
             )}
           </div>
         </div>
 
-        {/* Apply Button */}
-        <div className="sticky bottom-0 left-0 right-0 p-4 bg-background border-t shrink-0">
-          <Button 
-            className="w-full" 
-            size="lg"
+        {/* Bottom CTA */}
+        <div className="border-t pt-4 pb-2">
+          <Button
+            className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90"
             onClick={() => setIsOpen(false)}
           >
-            Show {profilesCount} Creators
+            Show {profilesCount} Creator{profilesCount !== 1 ? 's' : ''}
           </Button>
         </div>
       </SheetContent>

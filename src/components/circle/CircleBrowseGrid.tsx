@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, MapPin, Verified, Sparkles, Users, Crown, Lock } from "lucide-react";
+import { Search, MapPin, Verified, Sparkles, Users, Crown } from "lucide-react";
 import { SwipeFiltersState } from "./SwipeFilters";
 import { locationMatchesFilter } from "@/lib/locationGroups";
 
-const FREE_BROWSE_LIMIT = 6; // Free users see 6 profiles, rest blurred
+const FREE_BROWSE_LIMIT = 6;
 
 interface BrowseProfile {
   user_id: string;
@@ -50,16 +50,14 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
         query = query.or(`full_name.ilike.%${search}%,role.ilike.%${search}%,location.ilike.%${search}%`);
       }
 
-      if (filters.role && filters.role !== "all") {
-        query = query.ilike("role", `%${filters.role}%`);
+      // Multi-role DB filter (use first role for DB, rest client-side)
+      const roles = filters.roles || [];
+      if (roles.length === 1) {
+        query = query.ilike("role", `%${roles[0]}%`);
       }
 
       if (filters.verifiedOnly) {
         query = query.gte("verification_score", 50);
-      }
-
-      if (filters.collabIntent && filters.collabIntent !== "all") {
-        // collab_intent may not be on the view, so we filter client-side below
       }
 
       query = query.order("level", { ascending: false }).limit(100);
@@ -67,11 +65,21 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Apply client-side filters that the DB view may not support
       let results = (data as any[]) || [];
 
-      // Location filter with smart grouping
-      if (filters.location && filters.location !== "all") {
+      // Multi-role client-side filter
+      if (roles.length > 1) {
+        results = results.filter(p =>
+          roles.some(r => p.role?.toLowerCase() === r.toLowerCase())
+        );
+      }
+
+      // Location filter — cascading country/city
+      if (filters.locationCountry && filters.locationCountry !== 'all') {
+        results = results.filter(p =>
+          locationMatchesFilter(p.location, filters.locationCountry, filters.locationCity)
+        );
+      } else if (filters.location && filters.location !== 'all') {
         results = results.filter(p => locationMatchesFilter(p.location, filters.location));
       }
 

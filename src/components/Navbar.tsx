@@ -214,18 +214,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/thrivepay?tab=earnings")}
-                    >
-                      <DollarSign className="h-5 w-5" />
-                      Earnings
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
                       onClick={() => handleNavigation("/thrivepay")}
                     >
-                      <Wallet className="h-5 w-5" />
-                      Wallet
+                      <DollarSign className="h-5 w-5" />
+                      ThrivePay
                     </Button>
 
                     <Separator className="my-3" />

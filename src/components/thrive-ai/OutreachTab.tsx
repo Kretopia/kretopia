@@ -74,7 +74,8 @@ const OutreachTab = () => {
   const [sending, setSending] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const [bulkMode, setBulkMode] = useState<"select" | "csv">("select");
+  const [bulkMode, setBulkMode] = useState<"select" | "csv" | "manual">("select");
+  const [manualEmails, setManualEmails] = useState("");
   const [bulkSelected, setBulkSelected] = useState<string[]>([]);
   const [csvEmails, setCsvEmails] = useState<{ name: string; email: string }[]>([]);
   const [bulkSubject, setBulkSubject] = useState("");
@@ -419,6 +420,8 @@ const OutreachTab = () => {
   const handleBulkSend = async () => {
     let recipients = bulkMode === "csv"
       ? csvEmails
+      : bulkMode === "manual"
+      ? manualEmails.split(/[,;\n]+/).map(e => e.trim()).filter(e => e.includes("@")).map(e => ({ name: e.split("@")[0], email: e }))
       : leads.filter(l => bulkSelected.includes(l.id) && l.email).map(l => ({ name: l.name, email: l.email! }));
     
     if (recipients.length === 0) { toast.error("No recipients selected"); return; }
@@ -916,10 +919,13 @@ const OutreachTab = () => {
             {/* Mode toggle */}
             <div className="flex gap-2">
               <Button size="sm" variant={bulkMode === "select" ? "default" : "outline"} className="flex-1 gap-1 text-xs" onClick={() => setBulkMode("select")}>
-                <Users className="h-3.5 w-3.5" /> Select Leads
+                <Users className="h-3.5 w-3.5" /> Leads
+              </Button>
+              <Button size="sm" variant={bulkMode === "manual" ? "default" : "outline"} className="flex-1 gap-1 text-xs" onClick={() => setBulkMode("manual")}>
+                <Mail className="h-3.5 w-3.5" /> Manual
               </Button>
               <Button size="sm" variant={bulkMode === "csv" ? "default" : "outline"} className="flex-1 gap-1 text-xs" onClick={() => setBulkMode("csv")}>
-                <Upload className="h-3.5 w-3.5" /> Upload CSV
+                <Upload className="h-3.5 w-3.5" /> CSV
               </Button>
             </div>
 
@@ -944,6 +950,22 @@ const OutreachTab = () => {
                     ))
                   )}
                 </div>
+              </div>
+            ) : bulkMode === "manual" ? (
+              <div>
+                <Label className="text-xs">Enter email addresses (comma, semicolon, or newline separated)</Label>
+                <Textarea
+                  value={manualEmails}
+                  onChange={e => setManualEmails(e.target.value)}
+                  placeholder={"john@example.com, jane@company.com\nmark@studio.com; lisa@agency.co"}
+                  rows={4}
+                  className="mt-1 text-xs"
+                />
+                {manualEmails.trim() && (
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {manualEmails.split(/[,;\n]+/).map(e => e.trim()).filter(e => e.includes("@")).length} valid email(s) detected
+                  </p>
+                )}
               </div>
             ) : (
               <div>
@@ -1031,7 +1053,7 @@ const OutreachTab = () => {
               ) : bulkScheduledFor ? (
                 <><CalendarClock className="h-4 w-4" /> Schedule Campaign</>
               ) : (
-                <><Send className="h-4 w-4" /> Send to {bulkMode === "csv" ? csvEmails.length : bulkSelected.length} recipients</>
+                <><Send className="h-4 w-4" /> Send to {bulkMode === "csv" ? csvEmails.length : bulkMode === "manual" ? manualEmails.split(/[,;\n]+/).map(e => e.trim()).filter(e => e.includes("@")).length : bulkSelected.length} recipients</>
               )}
             </Button>
 

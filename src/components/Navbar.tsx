@@ -198,14 +198,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <User className="h-5 w-5" />
                       My Profile
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/my-analytics")}
-                    >
-                      <BarChart3 className="h-5 w-5" />
-                      My Dashboard
-                    </Button>
 
                     <Separator className="my-3" />
 
@@ -218,19 +210,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     >
                       <DollarSign className="h-5 w-5" />
                       ThrivePay
-                    </Button>
-
-                    <Separator className="my-3" />
-
-                    {/* Pro Tools */}
-                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Pro Tools</p>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start gap-3 h-12 w-full"
-                      onClick={() => handleNavigation("/sales")}
-                    >
-                      <Target className="h-5 w-5" />
-                      ThriveFunnel
                     </Button>
 
                     <Separator className="my-3" />

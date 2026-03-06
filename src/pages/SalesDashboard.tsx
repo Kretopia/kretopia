@@ -61,6 +61,20 @@ const SalesDashboard = () => {
     enabled: !!user,
   });
 
+  const { data: campaignsSentCount = 0 } = useQuery({
+    queryKey: ["campaigns-sent-stats", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_campaigns")
+        .select("sent_count")
+        .eq("user_id", user!.id)
+        .eq("status", "sent");
+      if (error) throw error;
+      return (data || []).reduce((sum, c) => sum + (c.sent_count || 0), 0);
+    },
+    enabled: !!user,
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

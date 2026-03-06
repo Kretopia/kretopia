@@ -537,10 +537,20 @@ const OutreachTab = () => {
       }
     }
 
-    // Add unsubscribe footer + attachment links
+    // Add unsubscribe footer + attachment links (embed images inline)
     let bodyAppend = "";
     if (bulkAttachmentUrls.length > 0) {
-      bodyAppend += "\n\n---\nAttachments:\n" + bulkAttachmentUrls.map(a => `• ${a.name}: ${a.url}`).join("\n");
+      const imageExts = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"];
+      const images = bulkAttachmentUrls.filter(a => imageExts.some(ext => a.name.toLowerCase().endsWith(ext)));
+      const others = bulkAttachmentUrls.filter(a => !imageExts.some(ext => a.name.toLowerCase().endsWith(ext)));
+      // Embed images inline using marker format
+      if (images.length > 0) {
+        bodyAppend += "\n\n" + images.map(a => `[image:${a.url}|${a.name}]`).join("\n\n");
+      }
+      // Non-image attachments as download links
+      if (others.length > 0) {
+        bodyAppend += "\n\n---\nAttachments:\n" + others.map(a => `• ${a.name}: ${a.url}`).join("\n");
+      }
     }
     bodyAppend += `\n\n---\nDon't want these emails? Reply "unsubscribe" to opt out.`;
 

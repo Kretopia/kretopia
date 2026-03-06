@@ -204,8 +204,9 @@ export function WalletTransferDialog({ open, onOpenChange, walletBalance, onTran
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="TTD">TTD</SelectItem>
+                  {["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "BRL", "ZAR", "INR", "NGN", "IDR", "TTD", "AED", "KES"].map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

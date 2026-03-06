@@ -90,6 +90,7 @@ const OutreachTab = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [bulkAttachments, setBulkAttachments] = useState<File[]>([]);
   const [mediaUploading, setMediaUploading] = useState(false);
+  const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
 
   const BULK_LIMIT = isPro ? 500 : 10;
   const currentMonth = new Date().toISOString().slice(0, 7);

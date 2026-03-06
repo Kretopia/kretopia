@@ -244,12 +244,12 @@ export default function ThrivePay() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
-        <Skeleton className="h-12 w-64 mb-8" />
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+      <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
+        <Skeleton className="h-8 sm:h-12 w-48 sm:w-64 mb-4 sm:mb-8" />
+        <div className="grid gap-3 grid-cols-2 mb-4">
+          <Skeleton className="h-20 sm:h-32 col-span-2 sm:col-span-1" />
+          <Skeleton className="h-20 sm:h-32" />
+          <Skeleton className="h-20 sm:h-32" />
         </div>
       </div>
     );
@@ -262,19 +262,19 @@ export default function ThrivePay() {
         description="Manage your wallet, Thrive Points, earnings and payment account"
       />
 
-      <div className="container mx-auto py-8 px-4 max-w-7xl min-h-screen">
+      <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">ThrivePay</h1>
+        <div className="mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold">ThrivePay</h1>
             {getStatusBadge()}
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setTransferDialogOpen(true)}>
+            <Button size="sm" variant="outline" className="gap-1.5 h-9 px-3" onClick={() => setTransferDialogOpen(true)}>
               <Send className="h-4 w-4" />
               Send
             </Button>
-            <Button size="sm" className="gap-1.5" onClick={() => setTopUpDialogOpen(true)}>
+            <Button size="sm" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
               <Plus className="h-4 w-4" />
               Top Up
             </Button>
@@ -290,31 +290,31 @@ export default function ThrivePay() {
         />
 
         {/* Balance Overview */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 mb-6">
-          <Card className="bg-gradient-to-br from-primary via-primary/90 to-accent border-0">
-            <CardContent className="p-4">
-              <p className="text-xs text-primary-foreground/80 mb-1">Wallet Balance</p>
-              <p className="text-3xl font-bold text-primary-foreground">${walletBalance.toFixed(2)}</p>
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 mb-4 sm:mb-6">
+          <Card className="bg-gradient-to-br from-primary via-primary/90 to-accent border-0 col-span-2 sm:col-span-1">
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-xs text-primary-foreground/80 mb-0.5">Wallet Balance</p>
+              <p className="text-2xl sm:text-3xl font-bold text-primary-foreground">${walletBalance.toFixed(2)}</p>
             </CardContent>
           </Card>
           {connectStatus === "active" && (
             <>
               <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-1">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center justify-between mb-0.5">
                     <p className="text-xs text-muted-foreground">Available</p>
                     <DollarSign className="h-3 w-3 text-muted-foreground" />
                   </div>
-                  <p className="text-3xl font-bold text-green-500">${balance.available.toFixed(2)}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-green-500">${balance.available.toFixed(2)}</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-1">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center justify-between mb-0.5">
                     <p className="text-xs text-muted-foreground">Pending</p>
                     <Clock className="h-3 w-3 text-muted-foreground" />
                   </div>
-                  <p className="text-3xl font-bold">${balance.pending.toFixed(2)}</p>
+                  <p className="text-2xl sm:text-3xl font-bold">${balance.pending.toFixed(2)}</p>
                 </CardContent>
               </Card>
             </>
@@ -322,70 +322,70 @@ export default function ThrivePay() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full grid grid-cols-5">
-            <TabsTrigger value="wallet" className="gap-1.5 text-xs">
-              <Wallet className="h-4 w-4" />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="w-full grid grid-cols-5 h-10 sm:h-11">
+            <TabsTrigger value="wallet" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
+              <Wallet className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Wallet</span>
             </TabsTrigger>
-            <TabsTrigger value="earnings" className="gap-1.5 text-xs">
-              <TrendingUp className="h-4 w-4" />
+            <TabsTrigger value="earnings" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
+              <TrendingUp className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Earnings</span>
             </TabsTrigger>
-            <TabsTrigger value="xp" className="gap-1.5 text-xs">
-              <Sparkles className="h-4 w-4" />
+            <TabsTrigger value="xp" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
+              <Sparkles className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Points</span>
             </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-1.5 text-xs">
-              <CreditCard className="h-4 w-4" />
+            <TabsTrigger value="payments" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
+              <CreditCard className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Payments</span>
             </TabsTrigger>
-            <TabsTrigger value="fees" className="gap-1.5 text-xs">
-              <Percent className="h-4 w-4" />
+            <TabsTrigger value="fees" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
+              <Percent className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Fees</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Wallet Tab - Transactions */}
-          <TabsContent value="wallet" className="space-y-6">
+          <TabsContent value="wallet" className="space-y-4 sm:space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Recent Activity</h2>
+              <h2 className="text-lg sm:text-xl font-semibold">Recent Activity</h2>
               <Button variant="link" size="sm" onClick={() => navigate("/payment-history")}>
                 View All
               </Button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {recentTransactions.length === 0 ? (
                 <Card>
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">No transactions yet</p>
+                  <CardContent className="p-6 sm:p-8 text-center">
+                    <p className="text-muted-foreground text-sm">No transactions yet</p>
                   </CardContent>
                 </Card>
               ) : (
                 recentTransactions.map((tx) => (
                   <Card key={tx.id} className="hover:bg-accent/5 transition-smooth">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`rounded-full p-2 ${
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                          <div className={`rounded-full p-1.5 sm:p-2 flex-shrink-0 ${
                             tx.type.includes("earned") || tx.type.includes("received")
                               ? "bg-green-500/10"
                               : "bg-red-500/10"
                           }`}>
                             {tx.type.includes("earned") || tx.type.includes("received") ? (
-                              <ArrowDownRight className="h-4 w-4 text-green-500" />
+                              <ArrowDownRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
                             ) : (
-                              <ArrowUpRight className="h-4 w-4 text-red-500" />
+                              <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />
                             )}
                           </div>
-                          <div>
-                            <p className="font-medium">{tx.description || tx.type}</p>
-                            <p className="text-sm text-muted-foreground">
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm sm:text-base truncate">{tx.description || tx.type}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">
                               {new Date(tx.created_at).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
-                        <span className={`text-lg font-semibold ${
+                        <span className={`text-sm sm:text-lg font-semibold flex-shrink-0 ${
                           tx.type.includes("earned") || tx.type.includes("received")
                             ? "text-green-500"
                             : "text-red-500"
@@ -430,7 +430,7 @@ export default function ThrivePay() {
                   <CardDescription>Start receiving payments securely through Stripe Connect</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
                     <div className="flex items-start gap-3">
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                         <CheckCircle className="h-5 w-5 text-primary" />
@@ -459,7 +459,7 @@ export default function ThrivePay() {
                       </div>
                     </div>
                   </div>
-                  <Button onClick={handleConnectAccount} className="w-full md:w-auto" size="lg">
+                  <Button onClick={handleConnectAccount} className="w-full" size="lg">
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Connect Stripe Account
                   </Button>

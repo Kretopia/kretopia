@@ -174,7 +174,7 @@ export function WalletTransferDialog({ open, onOpenChange, walletBalance, onTran
                         </Avatar>
                         <div>
                           <p className="text-sm font-medium">{person.full_name}</p>
-                          <p className="text-xs text-muted-foreground">{person.username ? `@${person.username}` : person.role}</p>
+                          <p className="text-xs text-muted-foreground">{person.role}</p>
                         </div>
                       </button>
                     ))}

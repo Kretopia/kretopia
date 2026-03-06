@@ -14,15 +14,19 @@
 
 const EMBEDDED_VERSION = __BUILD_VERSION__;
 
+const isCapacitor = typeof (window as any)?.Capacitor !== 'undefined';
+
 export async function checkForNewVersion() {
   // In dev the embedded version is "dev" and version.json also says "dev" — no-op
   if (EMBEDDED_VERSION === 'dev') return;
 
   // Guard against infinite reload: only attempt once per 30s window
+  // Capacitor: reduce to 15s since update detection is more critical
+  const cooldown = isCapacitor ? 15_000 : 30_000;
   const key = 'version_check_ts';
   const last = sessionStorage.getItem(key);
   const now = Date.now();
-  if (last && now - Number(last) < 30_000) return;
+  if (last && now - Number(last) < cooldown) return;
   sessionStorage.setItem(key, String(now));
 
   try {
@@ -50,6 +54,16 @@ export async function checkForNewVersion() {
     // Offline or first deploy without version.json — ignore
   }
 }
+
+// Re-check on Capacitor resume and visibility changes
+if (isCapacitor) {
+  document.addEventListener('resume', () => checkForNewVersion());
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    checkForNewVersion();
+  }
+});
 
 async function purgeAllCaches() {
   // 1. Delete every Cache Storage entry (Workbox precache, runtime, etc.)

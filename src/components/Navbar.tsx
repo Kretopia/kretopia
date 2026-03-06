@@ -125,13 +125,17 @@ const Navbar = memo(({ user }: NavbarProps) => {
               ? [
                   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
                   { path: "/desk", icon: Briefcase, label: "Projects" },
+                  { path: "/market", icon: ShoppingBag, label: "Market" },
                   { path: "/thrivepay?tab=earnings", icon: DollarSign, label: "Earnings" },
+                  { path: "/sales", icon: Target, label: "ThriveFunnel" },
                 ]
               : [
                   { path: "/circle", icon: Users, label: "Circle" },
                   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
                   { path: "/desk", icon: Briefcase, label: "Projects" },
+                  { path: "/market", icon: ShoppingBag, label: "Market" },
                   { path: "/thrivepay?tab=earnings", icon: DollarSign, label: "Earnings" },
+                  { path: "/sales", icon: Target, label: "ThriveFunnel" },
                 ]
             ).map(({ path, icon: Icon, label }) => {
               const isActive = path.includes("?") ? location.pathname === path.split("?")[0] && location.search.includes(path.split("?")[1]) : location.pathname === path;

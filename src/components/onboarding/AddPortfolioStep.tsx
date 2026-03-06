@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Link, Upload, Video, Image as ImageIcon, Music, ExternalLink, X } from "lucide-react";
+import { 
+  Loader2, Link, Upload, Video, Image as ImageIcon, Music, 
+  ExternalLink, X, Sparkles, Search, FileUp, Plus
+} from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -25,55 +28,134 @@ interface AddPortfolioStepProps {
   onSkip?: () => void;
 }
 
-const EXAMPLE_URLS = [
-  { platform: "YouTube", url: "https://youtube.com/watch?v=...", icon: Video },
-  { platform: "Vimeo", url: "https://vimeo.com/...", icon: Video },
-  { platform: "SoundCloud", url: "https://soundcloud.com/...", icon: Music },
-  { platform: "Behance", url: "https://behance.net/gallery/...", icon: ImageIcon },
+const CATEGORIES = [
+  "Music Video", "Short Film", "Commercial", "Animation", "Photography",
+  "Design", "Audio Production", "Dance & Choreography", "Singing & Vocals",
+  "Rap & Hip-Hop", "Instrument Performance", "DJing & Live Set",
+  "Acting & Theatre", "Fashion & Styling", "Podcast", "Other"
 ];
 
-const CATEGORIES = [
-  "Music Video",
-  "Short Film",
-  "Commercial",
-  "Animation",
-  "Photography",
-  "Design",
-  "Audio Production",
-  "Dance & Choreography",
-  "Singing & Vocals",
-  "Rap & Hip-Hop",
-  "Instrument Performance",
-  "DJing & Live Set",
-  "Acting & Theatre",
-  "Fashion & Styling",
-  "Podcast",
-  "Other"
-];
+const ACCEPTED_FILE_TYPES = "image/*,video/*,audio/*";
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 
 export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioStepProps) => {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  
+  // URL input
   const [urlInput, setUrlInput] = useState("");
-  const [manualMode, setManualMode] = useState(false);
-  const [manualData, setManualData] = useState({
-    title: "",
-    description: "",
-    category: "",
-    media_url: "",
-    media_type: "video"
+  
+  // Manual/edit form
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "", description: "", category: "", media_url: "", media_type: "video"
   });
+  
+  // AI Import
+  const [showAIImport, setShowAIImport] = useState(false);
+  const [aiSearchUrl, setAiSearchUrl] = useState("");
+  const [aiSearching, setAiSearching] = useState(false);
+  
+  // File upload ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Drag state
+  const [isDragging, setIsDragging] = useState(false);
 
   const MAX_FREE_PORTFOLIO = 5;
 
+  const detectMediaType = (file: File): string => {
+    if (file.type.startsWith("image/")) return "image";
+    if (file.type.startsWith("video/")) return "video";
+    if (file.type.startsWith("audio/")) return "audio";
+    return "document";
+  };
+
+  const handleFileUpload = async (files: FileList | File[]) => {
+    if (items.length >= MAX_FREE_PORTFOLIO) {
+      toast.error(`Free accounts can add up to ${MAX_FREE_PORTFOLIO} items.`);
+      return;
+    }
+
+    const fileArray = Array.from(files);
+    const remainingSlots = MAX_FREE_PORTFOLIO - items.length;
+    const filesToUpload = fileArray.slice(0, remainingSlots);
+
+    setUploading(true);
+    const newItems: PortfolioItem[] = [];
+
+    for (const file of filesToUpload) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`${file.name} exceeds 25MB limit`);
+        continue;
+      }
+
+      try {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${userId}-${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+        const filePath = `uploads/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("portfolio")
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("portfolio")
+          .getPublicUrl(filePath);
+
+        const mediaType = detectMediaType(file);
+        const title = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+
+        newItems.push({
+          id: crypto.randomUUID(),
+          title,
+          description: "",
+          media_url: publicUrl,
+          media_type: mediaType,
+          category: "Other"
+        });
+      } catch (error: any) {
+        console.error("Upload error:", error);
+        toast.error(`Failed to upload ${file.name}`);
+      }
+    }
+
+    if (newItems.length > 0) {
+      setItems(prev => [...prev, ...newItems]);
+      toast.success(`${newItems.length} file${newItems.length > 1 ? "s" : ""} uploaded!`);
+    }
+    setUploading(false);
+  };
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files);
+    }
+  }, [items.length]);
+
   const fetchFromUrl = async (url: string) => {
     if (items.length >= MAX_FREE_PORTFOLIO) {
-      toast.error(`Free accounts can add up to ${MAX_FREE_PORTFOLIO} portfolio items. Upgrade to Pro for unlimited.`);
+      toast.error(`Free accounts can add up to ${MAX_FREE_PORTFOLIO} portfolio items.`);
       return;
     }
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-portfolio-data', {
+      const { data, error } = await supabase.functions.invoke("fetch-portfolio-data", {
         body: { url }
       });
 
@@ -89,13 +171,15 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
         category: data.category || "Other"
       };
 
-      setItems([...items, newItem]);
+      setItems(prev => [...prev, newItem]);
       setUrlInput("");
       toast.success("Portfolio item added!");
     } catch (error: any) {
-      console.error('Error fetching portfolio data:', error);
-      toast.error("Couldn't fetch data. Try adding manually.");
-      setManualMode(true);
+      console.error("Error fetching portfolio data:", error);
+      // Fall back to manual add with URL pre-filled
+      setFormData(prev => ({ ...prev, media_url: url, title: "" }));
+      setShowForm(true);
+      toast.info("Couldn't auto-detect — fill in details manually.");
     } finally {
       setIsLoading(false);
     }
@@ -106,24 +190,89 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
       toast.error(`Free accounts can add up to ${MAX_FREE_PORTFOLIO} portfolio items.`);
       return;
     }
-    if (!manualData.title || !manualData.media_url) {
+    if (!formData.title || !formData.media_url) {
       toast.error("Title and URL are required");
       return;
     }
 
     const newItem: PortfolioItem = {
       id: crypto.randomUUID(),
-      title: manualData.title,
-      description: manualData.description,
-      media_url: manualData.media_url,
-      media_type: manualData.media_type,
-      category: manualData.category || "Other"
+      title: formData.title,
+      description: formData.description,
+      media_url: formData.media_url,
+      media_type: formData.media_type,
+      category: formData.category || "Other"
     };
 
-    setItems([...items, newItem]);
-    setManualData({ title: "", description: "", category: "", media_url: "", media_type: "video" });
-    setManualMode(false);
+    setItems(prev => [...prev, newItem]);
+    setFormData({ title: "", description: "", category: "", media_url: "", media_type: "video" });
+    setShowForm(false);
     toast.success("Portfolio item added!");
+  };
+
+  const handleAIImport = async () => {
+    if (!aiSearchUrl.trim()) {
+      toast.error("Enter a platform URL (YouTube, SoundCloud, Behance, etc.)");
+      return;
+    }
+    setAiSearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("onboarding-discover", {
+        body: { name: "", platformUrl: aiSearchUrl.trim() }
+      });
+
+      if (error) throw error;
+
+      if (data?.profiles?.[0]) {
+        const profile = data.profiles[0];
+        let imported = 0;
+
+        // Import credits as portfolio items
+        if (profile.credits && profile.credits.length > 0) {
+          const creditsToInsert = profile.credits.slice(0, MAX_FREE_PORTFOLIO - items.length).map((c: any) => ({
+            user_id: userId,
+            project_name: c.project,
+            role: c.role,
+            year: c.year || null,
+            verification_status: "ai_imported"
+          }));
+          
+          const { error: credErr } = await supabase.from("credits").insert(creditsToInsert);
+          if (!credErr) imported += creditsToInsert.length;
+        }
+
+        // Import press links as portfolio items too
+        if (profile.pressLinks && profile.pressLinks.length > 0) {
+          const pressItems: PortfolioItem[] = profile.pressLinks
+            .slice(0, MAX_FREE_PORTFOLIO - items.length)
+            .map((p: any) => ({
+              id: crypto.randomUUID(),
+              title: p.title || "Press Feature",
+              description: `Featured on ${p.source || "media"}`,
+              media_url: p.url,
+              media_type: "video",
+              category: "Other"
+            }));
+          setItems(prev => [...prev, ...pressItems]);
+          imported += pressItems.length;
+        }
+
+        if (imported > 0) {
+          toast.success(`Imported ${imported} items from your profile!`);
+        } else {
+          toast.info("No portfolio items found at that URL. Try uploading directly.");
+        }
+      } else {
+        toast.info("No results found. Try a different URL or upload directly.");
+      }
+    } catch (error) {
+      console.error("AI import error:", error);
+      toast.error("Import failed. Try uploading files directly.");
+    } finally {
+      setAiSearching(false);
+      setShowAIImport(false);
+      setAiSearchUrl("");
+    }
   };
 
   const removeItem = (id: string) => {
@@ -131,7 +280,6 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
   };
 
   const saveAndContinue = async () => {
-    // Portfolio is now optional - can continue with 0 items
     if (items.length === 0) {
       await onComplete([]);
       return;
@@ -139,8 +287,8 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
 
     setIsLoading(true);
     try {
-      const insertPromises = items.map(item => 
-        supabase.from('portfolio_items').insert({
+      const insertPromises = items.map(item =>
+        supabase.from("portfolio_items").insert({
           user_id: userId,
           title: item.title,
           description: item.description,
@@ -153,128 +301,190 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
       );
 
       const results = await Promise.all(insertPromises);
-      
-      // Check if any inserts failed
       const hasErrors = results.some(result => result.error);
-      if (hasErrors) {
-        throw new Error("Failed to save some portfolio items");
-      }
-      
+      if (hasErrors) throw new Error("Failed to save some portfolio items");
+
       toast.success("Portfolio saved!");
       await onComplete(items);
     } catch (error: any) {
-      console.error('Error saving portfolio:', error);
+      console.error("Error saving portfolio:", error);
       toast.error("Failed to save portfolio. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const getMediaIcon = (type: string) => {
+    switch (type) {
+      case "image": return <ImageIcon className="w-4 h-4" />;
+      case "video": return <Video className="w-4 h-4" />;
+      case "audio": return <Music className="w-4 h-4" />;
+      default: return <FileUp className="w-4 h-4" />;
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Showcase Your Work</h2>
-        <p className="text-muted-foreground">
-          Add portfolio items to help others discover your talent (optional if you imported credits)
-        </p>
+    <div className="space-y-4">
+      {/* Upload Zone */}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className={`
+          border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all
+          ${isDragging 
+            ? "border-primary bg-primary/5 scale-[1.01]" 
+            : "border-muted-foreground/20 hover:border-primary/50 hover:bg-muted/30"
+          }
+          ${uploading ? "pointer-events-none opacity-60" : ""}
+        `}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ACCEPTED_FILE_TYPES}
+          multiple
+          onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+          className="hidden"
+        />
+        {uploading ? (
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Uploading...</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Upload className="w-6 h-6 text-primary" />
+            </div>
+            <p className="font-medium text-sm">Drop files or tap to upload</p>
+            <p className="text-xs text-muted-foreground">Images, videos, audio — up to 25MB each</p>
+          </div>
+        )}
       </div>
 
-      {items.length === 0 && !manualMode && (
-        <Card className="p-6 space-y-4">
-          <div>
-            <Label htmlFor="portfolio-url">Quick Add from URL</Label>
-            <p className="text-sm text-muted-foreground mb-3">
-              Paste a link from YouTube, Vimeo, SoundCloud, Behance, or direct media file
-            </p>
-            <div className="flex gap-2">
-              <Input
-                id="portfolio-url"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                placeholder="https://youtube.com/watch?v=..."
-                disabled={isLoading}
-              />
-              <Button 
-                onClick={() => fetchFromUrl(urlInput)} 
-                disabled={isLoading || !urlInput}
-              >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link className="w-4 h-4" />}
-              </Button>
-            </div>
-          </div>
+      {/* URL Input */}
+      <div className="flex gap-2">
+        <Input
+          value={urlInput}
+          onChange={(e) => setUrlInput(e.target.value)}
+          placeholder="Paste a YouTube, Vimeo, SoundCloud link..."
+          disabled={isLoading}
+          onKeyDown={(e) => e.key === "Enter" && urlInput && fetchFromUrl(urlInput)}
+          className="text-sm"
+        />
+        <Button
+          size="sm"
+          onClick={() => fetchFromUrl(urlInput)}
+          disabled={isLoading || !urlInput}
+        >
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link className="w-4 h-4" />}
+        </Button>
+      </div>
 
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Supported platforms:</p>
-            <div className="grid grid-cols-2 gap-2">
-              {EXAMPLE_URLS.map(({ platform, icon: Icon }) => (
-                <div key={platform} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Icon className="w-4 h-4" />
-                  {platform}
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Action Row: AI Import + Manual Add */}
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowAIImport(!showAIImport)}
+          className="flex-1 text-xs"
+        >
+          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+          Import from Platform
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowForm(!showForm)}
+          className="flex-1 text-xs"
+        >
+          <Plus className="w-3.5 h-3.5 mr-1.5" />
+          Add Manually
+        </Button>
+      </div>
 
-          <div className="pt-4 border-t">
-            <Button 
-              variant="outline" 
-              onClick={() => setManualMode(true)}
-              className="w-full"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Add Manually
+      {/* AI Import Panel */}
+      {showAIImport && (
+        <Card className="p-4 space-y-3 border-primary/20 bg-primary/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="font-medium text-sm">AI Platform Import</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setShowAIImport(false)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Paste your YouTube channel, SoundCloud, Behance, or portfolio site URL
+          </p>
+          <div className="flex gap-2">
+            <Input
+              value={aiSearchUrl}
+              onChange={(e) => setAiSearchUrl(e.target.value)}
+              placeholder="https://youtube.com/@yourchannel"
+              className="text-sm"
+              disabled={aiSearching}
+              onKeyDown={(e) => e.key === "Enter" && handleAIImport()}
+            />
+            <Button size="sm" onClick={handleAIImport} disabled={aiSearching || !aiSearchUrl.trim()}>
+              {aiSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             </Button>
           </div>
         </Card>
       )}
 
-      {manualMode && (
-        <Card className="p-6 space-y-4">
+      {/* Manual Form */}
+      {showForm && (
+        <Card className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Add Portfolio Item</h3>
-            <Button variant="ghost" size="sm" onClick={() => setManualMode(false)}>
+            <h3 className="font-medium text-sm">Add Manually</h3>
+            <Button variant="ghost" size="sm" onClick={() => setShowForm(false)}>
               <X className="w-4 h-4" />
             </Button>
           </div>
 
           <div>
-            <Label htmlFor="manual-title">Title *</Label>
+            <Label htmlFor="manual-title" className="text-xs">Title *</Label>
             <Input
               id="manual-title"
-              value={manualData.title}
-              onChange={(e) => setManualData({ ...manualData, title: e.target.value })}
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="My Awesome Project"
+              className="text-sm"
             />
           </div>
 
           <div>
-            <Label htmlFor="manual-url">Media URL *</Label>
+            <Label htmlFor="manual-url" className="text-xs">Media URL *</Label>
             <Input
               id="manual-url"
-              value={manualData.media_url}
-              onChange={(e) => setManualData({ ...manualData, media_url: e.target.value })}
+              value={formData.media_url}
+              onChange={(e) => setFormData({ ...formData, media_url: e.target.value })}
               placeholder="https://..."
+              className="text-sm"
             />
           </div>
 
           <div>
-            <Label htmlFor="manual-description">Description</Label>
+            <Label htmlFor="manual-description" className="text-xs">Description</Label>
             <Textarea
               id="manual-description"
-              value={manualData.description}
-              onChange={(e) => setManualData({ ...manualData, description: e.target.value })}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe your work..."
-              rows={3}
+              rows={2}
+              className="text-sm"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="manual-type">Type</Label>
-              <Select value={manualData.media_type} onValueChange={(value) => setManualData({ ...manualData, media_type: value })}>
-                <SelectTrigger id="manual-type">
-                  <SelectValue />
-                </SelectTrigger>
+              <Label className="text-xs">Type</Label>
+              <Select value={formData.media_type} onValueChange={(v) => setFormData({ ...formData, media_type: v })}>
+                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="video">Video</SelectItem>
                   <SelectItem value="audio">Audio</SelectItem>
@@ -283,13 +493,10 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
                 </SelectContent>
               </Select>
             </div>
-
             <div>
-              <Label htmlFor="manual-category">Category</Label>
-              <Select value={manualData.category} onValueChange={(value) => setManualData({ ...manualData, category: value })}>
-                <SelectTrigger id="manual-category">
-                  <SelectValue placeholder="Select..." />
-                </SelectTrigger>
+              <Label className="text-xs">Category</Label>
+              <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
+                <SelectTrigger className="text-sm"><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map(cat => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -299,82 +506,65 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
             </div>
           </div>
 
-          <Button onClick={addManualItem} className="w-full">
-            Add Item
-          </Button>
+          <Button onClick={addManualItem} size="sm" className="w-full">Add Item</Button>
         </Card>
       )}
 
+      {/* Portfolio Items List */}
       {items.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="font-semibold">Your Portfolio ({items.length})</h3>
-          <div className="grid gap-4">
+        <div className="space-y-2">
+          <h3 className="font-medium text-sm">Your Portfolio ({items.length}/{MAX_FREE_PORTFOLIO})</h3>
+          <div className="grid gap-2">
             {items.map((item) => (
-              <Card key={item.id} className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{item.title}</h4>
-                      {item.category && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
-                          {item.category}
-                        </span>
+              <Card key={item.id} className="p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded bg-muted flex items-center justify-center shrink-0">
+                      {item.media_type === "image" && item.media_url ? (
+                        <img src={item.media_url} alt="" className="w-8 h-8 rounded object-cover" />
+                      ) : (
+                        getMediaIcon(item.media_type)
                       )}
                     </div>
-                    {item.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {item.description}
-                      </p>
-                    )}
-                    <a 
-                      href={item.media_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-xs text-primary hover:underline flex items-center gap-1"
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                      View original
-                    </a>
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{item.title}</p>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        {item.category && <span>{item.category}</span>}
+                        {item.media_url && !item.media_url.startsWith("blob:") && (
+                          <a 
+                            href={item.media_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline flex items-center gap-0.5"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeItem(item.id)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => removeItem(item.id)} className="shrink-0">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               </Card>
             ))}
           </div>
-
-          {!manualMode && (
-            <Button 
-              variant="outline" 
-              onClick={() => setManualMode(true)}
-              className="w-full"
-            >
-              Add Another Item
-            </Button>
-          )}
         </div>
       )}
 
-      <div className="flex justify-between pt-6 border-t">
-        <div className="text-sm text-muted-foreground">
-          {items.length === 0 ? "Portfolio is optional if you imported credits" : `${items.length} item${items.length > 1 ? 's' : ''} added`}
-        </div>
+      {/* Footer */}
+      <div className="flex justify-between items-center pt-2 border-t">
+        <span className="text-xs text-muted-foreground">
+          {items.length === 0 ? "Optional — add later from your profile" : `${items.length} item${items.length > 1 ? "s" : ""}`}
+        </span>
         <div className="flex gap-2">
           {items.length === 0 && onSkip && (
-            <Button variant="ghost" onClick={onSkip}>
-              Skip for now
-            </Button>
+            <Button variant="ghost" size="sm" onClick={onSkip}>Skip</Button>
           )}
-          <Button 
-            onClick={saveAndContinue} 
-            disabled={isLoading}
-          >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+          <Button size="sm" onClick={saveAndContinue} disabled={isLoading}>
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
             {items.length === 0 ? "Continue" : "Save & Continue"}
           </Button>
         </div>

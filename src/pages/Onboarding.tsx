@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Users, Briefcase, Award, Camera, Upload, Star, X, Plus, Loader2, Globe, Flame, Trophy, Image, AlertCircle, CheckCircle2, Eye, EyeOff, SkipForward, Mail, ArrowRight } from "lucide-react";
 import { SEO } from "@/components/SEO";
@@ -19,6 +19,7 @@ import { AIProfileDiscoveryStep } from "@/components/onboarding/AIProfileDiscove
 import { OnboardingCelebration } from "@/components/onboarding/OnboardingCelebration";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS, LOCATION_OPTIONS } from "@/components/profile/ProfileEditDialog";
+import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
 
 // Streamlined: 4 steps instead of 6
 const STEPS = [
@@ -561,7 +562,27 @@ export default function Onboarding() {
                 ) : (
                   <Select value={profile.location || undefined} onValueChange={(value) => { if (value === 'Other') { setShowCustomLocation(true); setProfile(prev => ({ ...prev, location: '' })); } else { setProfile(prev => ({ ...prev, location: value })); }}}>
                     <SelectTrigger><SelectValue placeholder="Select your location" /></SelectTrigger>
-                    <SelectContent>{LOCATION_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
+                    <SelectContent className="max-h-[280px]">
+                      {LOCATION_HIERARCHY.map(country => (
+                        <SelectGroup key={country.value}>
+                          <SelectLabel className="text-xs font-semibold text-muted-foreground">{country.flag} {country.label}</SelectLabel>
+                          <SelectItem value={country.value}>{country.flag} {country.label} (All)</SelectItem>
+                          {country.cities.map(city => (
+                            <SelectItem key={city.value} value={city.value} className="pl-6">{city.label}</SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                      <SelectGroup>
+                        <SelectLabel className="text-xs font-semibold text-muted-foreground">🌴 Regional</SelectLabel>
+                        <SelectItem value="Caribbean">🌴 Caribbean</SelectItem>
+                        <SelectItem value="Europe">🇪🇺 Europe</SelectItem>
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel className="text-xs font-semibold text-muted-foreground">🌍 Other</SelectLabel>
+                        <SelectItem value="Remote">🌍 Remote / Worldwide</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
                   </Select>
                 )}
               </div>

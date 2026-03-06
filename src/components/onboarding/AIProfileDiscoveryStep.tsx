@@ -511,17 +511,10 @@ export const AIProfileDiscoveryStep = ({
 
       {/* Action Buttons */}
       {(selectedProfile || searchComplete) && (
-        <div className="flex gap-3 pt-4">
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={onSkip}
-          >
-            Skip & Add Manually Later
-          </Button>
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           {selectedProfile && (
             <Button 
-              className="flex-1"
+              className="flex-1 order-1 sm:order-2"
               onClick={handleImportSelected}
               disabled={isImporting}
             >
@@ -538,6 +531,13 @@ export const AIProfileDiscoveryStep = ({
               )}
             </Button>
           )}
+          <Button 
+            variant="outline" 
+            className="flex-1 order-2 sm:order-1"
+            onClick={onSkip}
+          >
+            Skip & Add Manually Later
+          </Button>
         </div>
       )}
 

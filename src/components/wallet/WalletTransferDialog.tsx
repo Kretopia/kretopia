@@ -58,9 +58,9 @@ export function WalletTransferDialog({ open, onOpenChange, walletBalance, onTran
     try {
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, username, role")
+        .select("user_id, full_name, avatar_url, role")
         .neq("user_id", user.id)
-        .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
+        .ilike("full_name", `%${query}%`)
         .limit(5);
       setSearchResults(data || []);
     } catch {

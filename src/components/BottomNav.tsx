@@ -37,14 +37,12 @@ const BottomNav = memo(() => {
     ? [
         { path: "/opportunities", icon: Briefcase, label: "Gigs", tourId: "opportunities-tab", tooltip: { id: "nav-jobs", title: "Post & Find Gigs", desc: "Browse and post creative gigs, jobs, and collaborations" } },
         { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, tasks, and collaborate with your team" } },
-        { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab", tooltip: { id: "nav-market", title: "Marketplace", desc: "Buy and sell digital products & services" } },
         { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your creator profile" } },
       ]
     : [
         { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Your Circle", desc: "Find creators to collaborate with" } },
         { path: "/opportunities", icon: Briefcase, label: "Gigs", tourId: "opportunities-tab", tooltip: { id: "nav-gigs", title: "Gigs", desc: "Find and post creative gigs, jobs, and collaborations" } },
         { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, milestones, and deliverables" } },
-        { path: "/market", icon: ShoppingBag, label: "Market", tourId: "market-tab", tooltip: { id: "nav-market", title: "Marketplace", desc: "Buy and sell digital products & services" } },
         { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your creator profile" } },
       ] as const;
 

@@ -686,8 +686,9 @@ const OutreachTab = () => {
         </div>
       </div>
 
-      {/* Gmail Settings Panel */}
-      {showSettings && <GmailSettings />}
+      {/* Email Setup Wizard or Gmail Settings */}
+      {!isEmailConfigured && <EmailSetupWizard onComplete={() => queryClient.invalidateQueries({ queryKey: ["user_email_settings"] })} />}
+      {showSettings && isEmailConfigured && <GmailSettings />}
 
       {/* Quick-send leads strip */}
       {leads.filter((l) => l.email).length > 0 && (

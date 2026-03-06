@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2, Users, Upload, Save, CalendarClock, BarChart3, AlertCircle, Image, Video } from "lucide-react";
 import { GmailSettings } from "@/components/sales/GmailSettings";
+import { EmailSetupWizard } from "@/components/sales/EmailSetupWizard";
 import { format } from "date-fns";
 
 type Lead = {

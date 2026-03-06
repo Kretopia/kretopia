@@ -4,7 +4,12 @@
  * Listens for VitePWA's "controlling" event — when a new SW takes over,
  * it reloads the page so users always get the latest code.
  * Also periodically checks for updates every 5 minutes.
+ * 
+ * Capacitor-aware: checks more aggressively inside native shells
+ * where visibilitychange doesn't always fire reliably.
  */
+
+const isCapacitor = typeof (window as any)?.Capacitor !== 'undefined';
 
 export function initSWUpdateListener() {
   if (!('serviceWorker' in navigator)) return;
@@ -28,8 +33,10 @@ export function initSWUpdateListener() {
   // Check for updates IMMEDIATELY on load
   checkForUpdate();
 
-  // Periodically check for SW updates (every 2 min)
-  setInterval(checkForUpdate, 2 * 60 * 1000);
+  // Capacitor: check every 60s (WebView doesn't reliably fire visibilitychange)
+  // Browser: check every 2 min
+  const intervalMs = isCapacitor ? 60 * 1000 : 2 * 60 * 1000;
+  setInterval(checkForUpdate, intervalMs);
 
   // Also check on page visibility change (user returns to tab/app)
   document.addEventListener('visibilitychange', () => {
@@ -37,6 +44,14 @@ export function initSWUpdateListener() {
       checkForUpdate();
     }
   });
+
+  // Capacitor: also check on resume (more reliable than visibilitychange in native)
+  if (isCapacitor) {
+    document.addEventListener('resume', () => {
+      console.log('[SW Update] Capacitor resume — checking for updates');
+      checkForUpdate();
+    });
+  }
 }
 
 async function checkForUpdate() {

@@ -1126,11 +1126,24 @@ const OutreachTab = () => {
               <p className="text-[10px] text-muted-foreground mt-1">Files will be uploaded and linked in the email</p>
             </div>
 
-            {/* Schedule option */}
-            <div>
-              <Label className="flex items-center gap-1 text-xs"><CalendarClock className="h-3.5 w-3.5" /> Schedule (optional)</Label>
-              <Input type="datetime-local" value={bulkScheduledFor} onChange={e => setBulkScheduledFor(e.target.value)} className="text-xs mt-1" />
-              {bulkScheduledFor && <p className="text-[10px] text-muted-foreground mt-1">Will be sent at the scheduled time</p>}
+            {/* Send Now vs Schedule */}
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Button size="sm" variant={!bulkScheduledFor ? "default" : "outline"} className="flex-1 gap-1 text-xs"
+                  onClick={() => setBulkScheduledFor("")}>
+                  <Send className="h-3.5 w-3.5" /> Send Now
+                </Button>
+                <Button size="sm" variant={bulkScheduledFor ? "default" : "outline"} className="flex-1 gap-1 text-xs"
+                  onClick={() => { if (!bulkScheduledFor) setBulkScheduledFor(new Date(Date.now() + 3600000).toISOString().slice(0, 16)); }}>
+                  <CalendarClock className="h-3.5 w-3.5" /> Schedule
+                </Button>
+              </div>
+              {bulkScheduledFor && (
+                <div>
+                  <Input type="datetime-local" value={bulkScheduledFor} onChange={e => setBulkScheduledFor(e.target.value)} className="text-xs" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Campaign will be sent at the scheduled time</p>
+                </div>
+              )}
             </div>
 
             {bulkSending && (

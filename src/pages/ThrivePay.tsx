@@ -9,15 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { FeeStructure } from "@/components/FeeStructure";
 import { FeeCalculator } from "@/components/FeeCalculator";
 import { getFeeDisplayText } from "@/lib/platformFees";
 import { WalletXPSection } from "@/components/wallet/WalletXPSection";
+import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
+import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import {
@@ -37,6 +36,7 @@ import {
   Loader2,
   Wallet,
   Sparkles,
+  Send,
 } from "lucide-react";
 
 interface ConnectRequirements {
@@ -68,8 +68,7 @@ export default function ThrivePay() {
   // Wallet state
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
   const [topUpDialogOpen, setTopUpDialogOpen] = useState(false);
-  const [topUpAmount, setTopUpAmount] = useState("");
-  const [topUpLoading, setTopUpLoading] = useState(false);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
 
   const [activeTab, setActiveTab] = useState(() => {
@@ -83,6 +82,24 @@ export default function ThrivePay() {
         title: "Account Connected! 🎉",
         description: "Your Stripe account has been successfully connected.",
       });
+      navigate("/thrivepay", { replace: true });
+    }
+
+    // Handle top-up success
+    if (searchParams.get("topup") === "success") {
+      const topupId = searchParams.get("topup_id");
+      if (topupId) {
+        supabase.functions.invoke("wallet-topup-confirm", {
+          body: { topupId },
+        }).then(({ data }) => {
+          if (data?.success) {
+            toast({
+              title: "Wallet Topped Up! 💰",
+              description: `$${data.amount?.toFixed(2)} has been added to your wallet.`,
+            });
+          }
+        });
+      }
       navigate("/thrivepay", { replace: true });
     }
 
@@ -203,27 +220,13 @@ export default function ThrivePay() {
     if (transactions) setRecentTransactions(transactions);
   };
 
-  const handleTopUp = async () => {
-    if (!topUpAmount || Number(topUpAmount) <= 0) {
-      toast({ title: "Invalid amount", description: "Please enter a valid amount", variant: "destructive" });
-      return;
-    }
-    try {
-      setTopUpLoading(true);
-      const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: { amount: Number(topUpAmount), type: "balance" },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-        setTopUpDialogOpen(false);
-        setTopUpAmount("");
-      }
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message || "Failed to create payment", variant: "destructive" });
-    } finally {
-      setTopUpLoading(false);
-    }
+  const handleTopUpSuccess = () => {
+    fetchWallet();
+    fetchAccountStatus();
+  };
+
+  const handleTransferComplete = () => {
+    fetchWallet();
   };
 
   const getStatusBadge = () => {
@@ -267,45 +270,24 @@ export default function ThrivePay() {
             {getStatusBadge()}
           </div>
           <div className="flex items-center gap-2">
-            <Dialog open={topUpDialogOpen} onOpenChange={setTopUpDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-1.5">
-                  <Plus className="h-4 w-4" />
-                  Top Up
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Funds to Wallet</DialogTitle>
-                  <DialogDescription>Top up your wallet balance</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="amount">Amount (USD)</Label>
-                    <Input
-                      id="amount"
-                      type="number"
-                      placeholder="10.00"
-                      value={topUpAmount}
-                      onChange={(e) => setTopUpAmount(e.target.value)}
-                      min="1"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleTopUp} disabled={topUpLoading}>
-                    {topUpLoading ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</>
-                    ) : (
-                      <><Plus className="mr-2 h-4 w-4" />Add Funds</>
-                    )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setTransferDialogOpen(true)}>
+              <Send className="h-4 w-4" />
+              Send
+            </Button>
+            <Button size="sm" className="gap-1.5" onClick={() => setTopUpDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Top Up
+            </Button>
           </div>
         </div>
+
+        <WalletTopUpDialog open={topUpDialogOpen} onOpenChange={setTopUpDialogOpen} />
+        <WalletTransferDialog
+          open={transferDialogOpen}
+          onOpenChange={setTransferDialogOpen}
+          walletBalance={walletBalance}
+          onTransferComplete={handleTransferComplete}
+        />
 
         {/* Balance Overview */}
         <div className="grid gap-4 grid-cols-2 md:grid-cols-3 mb-6">

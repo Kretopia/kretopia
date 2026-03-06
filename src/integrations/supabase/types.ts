@@ -6560,11 +6560,245 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_topups: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          gateway_payment_id: string | null
+          gateway_session_id: string | null
+          id: string
+          payment_gateway: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          gateway_payment_id?: string | null
+          gateway_session_id?: string | null
+          id?: string
+          payment_gateway?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          gateway_payment_id?: string | null
+          gateway_session_id?: string | null
+          id?: string
+          payment_gateway?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_topups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_topups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_topups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_topups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_topups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_topups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      wallet_transfer_limits: {
+        Row: {
+          daily_limit_ttd: number
+          daily_limit_usd: number
+          id: string
+          monthly_limit_ttd: number
+          monthly_limit_usd: number
+          per_transaction_limit_ttd: number
+          per_transaction_limit_usd: number
+          tier: string
+        }
+        Insert: {
+          daily_limit_ttd?: number
+          daily_limit_usd?: number
+          id?: string
+          monthly_limit_ttd?: number
+          monthly_limit_usd?: number
+          per_transaction_limit_ttd?: number
+          per_transaction_limit_usd?: number
+          tier: string
+        }
+        Update: {
+          daily_limit_ttd?: number
+          daily_limit_usd?: number
+          id?: string
+          monthly_limit_ttd?: number
+          monthly_limit_usd?: number
+          per_transaction_limit_ttd?: number
+          per_transaction_limit_usd?: number
+          tier?: string
+        }
+        Relationships: []
+      }
+      wallet_transfers: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          recipient_id: string
+          sender_id: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          recipient_id: string
+          sender_id: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          recipient_id?: string
+          sender_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       wallets: {
         Row: {
           balance: number | null
           created_at: string | null
           credits: number | null
+          currency: string
           id: string
           updated_at: string | null
           user_id: string
@@ -6573,6 +6807,7 @@ export type Database = {
           balance?: number | null
           created_at?: string | null
           credits?: number | null
+          currency?: string
           id?: string
           updated_at?: string | null
           user_id: string
@@ -6581,6 +6816,7 @@ export type Database = {
           balance?: number | null
           created_at?: string | null
           credits?: number | null
+          currency?: string
           id?: string
           updated_at?: string | null
           user_id?: string
@@ -7707,6 +7943,10 @@ export type Database = {
       check_storage_available: {
         Args: { file_size_param: number; user_id_param: string }
         Returns: boolean
+      }
+      check_transfer_limit: {
+        Args: { p_amount: number; p_currency?: string; p_user_id: string }
+        Returns: Json
       }
       claim_profile: {
         Args: { p_claim_token: string; p_user_id: string }

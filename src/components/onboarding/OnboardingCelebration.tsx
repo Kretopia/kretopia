@@ -61,7 +61,7 @@ export function OnboardingCelebration({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-none bg-gradient-to-b from-primary/20 via-background to-background">
+      <DialogContent className="sm:max-w-md p-0 border-none bg-gradient-to-b from-primary/20 via-background to-background max-h-[90dvh] overflow-y-auto">
         {/* Multiple confetti sources */}
         <div className="absolute top-0 left-1/4 z-50">
           <Confetti active={showConfetti} config={confettiConfig} />

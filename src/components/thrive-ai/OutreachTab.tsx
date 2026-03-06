@@ -862,6 +862,36 @@ const OutreachTab = () => {
         </div>
       )}
 
+      {/* Campaign History */}
+      {campaigns.length > 0 && (
+        <div className="space-y-2 mt-4">
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" /> Campaign History
+          </p>
+          {campaigns.map((c: any) => (
+            <Card key={c.id} className="p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{c.name || c.subject}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{c.subject}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge className={`text-[10px] px-1.5 py-0 ${c.status === "sent" ? "bg-green-500/10 text-green-600" : c.status === "scheduled" ? "bg-blue-500/10 text-blue-600" : "bg-muted text-muted-foreground"}`}>
+                    {c.status}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
+                {c.sent_count > 0 && <span className="flex items-center gap-0.5"><CheckCircle2 className="h-2.5 w-2.5 text-green-500" /> {c.sent_count} sent</span>}
+                {c.failed_count > 0 && <span className="flex items-center gap-0.5"><AlertCircle className="h-2.5 w-2.5 text-destructive" /> {c.failed_count} failed</span>}
+                {c.sent_at && <span>{format(new Date(c.sent_at), "MMM d, yyyy h:mm a")}</span>}
+                {!c.sent_at && c.scheduled_for && <span className="flex items-center gap-0.5"><CalendarClock className="h-2.5 w-2.5" /> {format(new Date(c.scheduled_for), "MMM d, yyyy h:mm a")}</span>}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {/* Add email step dialog */}
       <Dialog open={!!addEmailTo} onOpenChange={(o) => { if (!o) { setAddEmailTo(null); setEmailForm({ subject: "", body: "", delay_days: 0 }); } }}>
         <DialogContent className="max-w-md">

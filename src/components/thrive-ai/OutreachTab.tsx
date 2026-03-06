@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2, Users, Upload, Save, CalendarClock, BarChart3, AlertCircle, Image, Video } from "lucide-react";
 import { GmailSettings } from "@/components/sales/GmailSettings";
+import { EmailSetupWizard } from "@/components/sales/EmailSetupWizard";
 import { format } from "date-fns";
 
 type Lead = {
@@ -111,6 +112,23 @@ const OutreachTab = () => {
       toast.success(`${type === "image" ? "Image" : "Video"} embedded`);
     } catch { toast.error("Upload failed"); } finally { setMediaUploading(false); }
   };
+
+  // Check if email is configured
+  const { data: emailSettings } = useQuery({
+    queryKey: ["user_email_settings", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_email_settings" as any)
+        .select("*")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!user,
+  });
+
+  const isEmailConfigured = emailSettings?.is_configured;
 
   // Fetch sequences
   const { data: sequences = [], isLoading } = useQuery({
@@ -668,8 +686,9 @@ const OutreachTab = () => {
         </div>
       </div>
 
-      {/* Gmail Settings Panel */}
-      {showSettings && <GmailSettings />}
+      {/* Email Setup Wizard or Gmail Settings */}
+      {!isEmailConfigured && <EmailSetupWizard onComplete={() => queryClient.invalidateQueries({ queryKey: ["user_email_settings"] })} />}
+      {showSettings && isEmailConfigured && <GmailSettings />}
 
       {/* Quick-send leads strip */}
       {leads.filter((l) => l.email).length > 0 && (

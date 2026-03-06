@@ -219,6 +219,22 @@ const OutreachTab = () => {
     enabled: !!user,
   });
 
+  // Fetch sent campaigns
+  const { data: campaigns = [] } = useQuery({
+    queryKey: ["email_campaigns", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_campaigns")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   // Fetch campaigns for analytics
   const { data: campaigns = [] } = useQuery({
     queryKey: ["email_campaigns", user?.id],

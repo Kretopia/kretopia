@@ -61,6 +61,20 @@ const SalesDashboard = () => {
     enabled: !!user,
   });
 
+  const { data: campaignsSentCount = 0 } = useQuery({
+    queryKey: ["campaigns-sent-stats", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_campaigns")
+        .select("sent_count")
+        .eq("user_id", user!.id)
+        .eq("status", "sent");
+      if (error) throw error;
+      return (data || []).reduce((sum, c) => sum + (c.sent_count || 0), 0);
+    },
+    enabled: !!user,
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -79,7 +93,7 @@ const SalesDashboard = () => {
   const convertedLeads = leads.filter((l) => l.stage === "converted").length;
   const aiScoutedLeads = leads.filter((l) => l.source === "AI Scout").length;
   const activeSequences = sequences.filter((s) => s.status === "active").length;
-  const totalEmailsSent = emailsSent.length;
+  const totalEmailsSent = emailsSent.length + campaignsSentCount;
 
   const stats = [
     { label: "Total Leads", value: totalLeads, icon: Users, color: "text-primary" },

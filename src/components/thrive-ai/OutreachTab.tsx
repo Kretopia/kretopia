@@ -219,7 +219,7 @@ const OutreachTab = () => {
     enabled: !!user,
   });
 
-  // Fetch campaigns for analytics
+  // Fetch sent campaigns
   const { data: campaigns = [] } = useQuery({
     queryKey: ["email_campaigns", user?.id],
     queryFn: async () => {
@@ -234,6 +234,7 @@ const OutreachTab = () => {
     },
     enabled: !!user,
   });
+
 
   const getLeadForSequence = (leadId: string | null) => leads.find((l) => l.id === leadId) || null;
 
@@ -537,10 +538,20 @@ const OutreachTab = () => {
       }
     }
 
-    // Add unsubscribe footer + attachment links
+    // Add unsubscribe footer + attachment links (embed images inline)
     let bodyAppend = "";
     if (bulkAttachmentUrls.length > 0) {
-      bodyAppend += "\n\n---\nAttachments:\n" + bulkAttachmentUrls.map(a => `• ${a.name}: ${a.url}`).join("\n");
+      const imageExts = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"];
+      const images = bulkAttachmentUrls.filter(a => imageExts.some(ext => a.name.toLowerCase().endsWith(ext)));
+      const others = bulkAttachmentUrls.filter(a => !imageExts.some(ext => a.name.toLowerCase().endsWith(ext)));
+      // Embed images inline using marker format
+      if (images.length > 0) {
+        bodyAppend += "\n\n" + images.map(a => `[image:${a.url}|${a.name}]`).join("\n\n");
+      }
+      // Non-image attachments as download links
+      if (others.length > 0) {
+        bodyAppend += "\n\n---\nAttachments:\n" + others.map(a => `• ${a.name}: ${a.url}`).join("\n");
+      }
     }
     bodyAppend += `\n\n---\nDon't want these emails? Reply "unsubscribe" to opt out.`;
 
@@ -833,6 +844,36 @@ const OutreachTab = () => {
               </Collapsible>
             );
           })}
+        </div>
+      )}
+
+      {/* Campaign History */}
+      {campaigns.length > 0 && (
+        <div className="space-y-2 mt-4">
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" /> Campaign History
+          </p>
+          {campaigns.map((c: any) => (
+            <Card key={c.id} className="p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{c.name || c.subject}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{c.subject}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge className={`text-[10px] px-1.5 py-0 ${c.status === "sent" ? "bg-green-500/10 text-green-600" : c.status === "scheduled" ? "bg-blue-500/10 text-blue-600" : "bg-muted text-muted-foreground"}`}>
+                    {c.status}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
+                {c.sent_count > 0 && <span className="flex items-center gap-0.5"><CheckCircle2 className="h-2.5 w-2.5 text-green-500" /> {c.sent_count} sent</span>}
+                {c.failed_count > 0 && <span className="flex items-center gap-0.5"><AlertCircle className="h-2.5 w-2.5 text-destructive" /> {c.failed_count} failed</span>}
+                {c.sent_at && <span>{format(new Date(c.sent_at), "MMM d, yyyy h:mm a")}</span>}
+                {!c.sent_at && c.scheduled_for && <span className="flex items-center gap-0.5"><CalendarClock className="h-2.5 w-2.5" /> {format(new Date(c.scheduled_for), "MMM d, yyyy h:mm a")}</span>}
+              </div>
+            </Card>
+          ))}
         </div>
       )}
 

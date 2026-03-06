@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2, Users, Upload, Save, CalendarClock, BarChart3, AlertCircle } from "lucide-react";
+import { Plus, Send, ChevronDown, Trash2, Mail, Clock, Play, Pause, CheckCircle2, PlusCircle, Sparkles, Loader2, Link2, Unlink, Paperclip, Settings2, Users, Upload, Save, CalendarClock, BarChart3, AlertCircle, Image, Video } from "lucide-react";
 import { GmailSettings } from "@/components/sales/GmailSettings";
 import { format } from "date-fns";
 
@@ -86,9 +86,31 @@ const OutreachTab = () => {
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [bulkAttachments, setBulkAttachments] = useState<File[]>([]);
+  const [mediaUploading, setMediaUploading] = useState(false);
 
   const BULK_LIMIT = isPro ? 500 : 10;
   const currentMonth = new Date().toISOString().slice(0, 7);
+
+  // Upload media file and insert marker into body text
+  const handleMediaInsert = async (
+    file: File,
+    type: "image" | "video",
+    setBody: (fn: (prev: string) => string) => void
+  ) => {
+    setMediaUploading(true);
+    try {
+      const path = `outreach/${user!.id}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("project-files").upload(path, file);
+      if (uploadError) { toast.error(`Upload failed: ${uploadError.message}`); return; }
+      const { data: urlData } = supabase.storage.from("project-files").getPublicUrl(path);
+      const marker = type === "image"
+        ? `[image:${urlData.publicUrl}|${file.name}]`
+        : `[video:${urlData.publicUrl}|${file.name}]`;
+      setBody(prev => prev + (prev ? "\n\n" : "") + marker);
+      toast.success(`${type === "image" ? "Image" : "Video"} embedded`);
+    } catch { toast.error("Upload failed"); } finally { setMediaUploading(false); }
+  };
 
   // Fetch sequences
   const { data: sequences = [], isLoading } = useQuery({
@@ -485,12 +507,28 @@ const OutreachTab = () => {
     let sent = 0;
     let failed = 0;
 
-    // Add unsubscribe footer
-    const unsubFooter = `\n\n---\nDon't want these emails? Reply "unsubscribe" to opt out.`;
+    // Upload bulk attachments once
+    let bulkAttachmentUrls: { name: string; url: string }[] = [];
+    if (bulkAttachments.length > 0) {
+      for (const file of bulkAttachments) {
+        const path = `outreach/${user!.id}/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from("project-files").upload(path, file);
+        if (uploadError) { toast.error(`Failed to upload ${file.name}`); continue; }
+        const { data: urlData } = supabase.storage.from("project-files").getPublicUrl(path);
+        bulkAttachmentUrls.push({ name: file.name, url: urlData.publicUrl });
+      }
+    }
+
+    // Add unsubscribe footer + attachment links
+    let bodyAppend = "";
+    if (bulkAttachmentUrls.length > 0) {
+      bodyAppend += "\n\n---\nAttachments:\n" + bulkAttachmentUrls.map(a => `• ${a.name}: ${a.url}`).join("\n");
+    }
+    bodyAppend += `\n\n---\nDon't want these emails? Reply "unsubscribe" to opt out.`;
 
     for (const r of recipients) {
       try {
-        const personalBody = (bulkBody + unsubFooter).replace(/\{name\}/gi, r.name).replace(/\{email\}/gi, r.email);
+        const personalBody = (bulkBody + bodyAppend).replace(/\{name\}/gi, r.name).replace(/\{email\}/gi, r.email);
         const personalSubject = bulkSubject.replace(/\{name\}/gi, r.name);
         const { data, error } = await supabase.functions.invoke("send-outreach-email", {
           body: { action: "send", to: r.email, subject: personalSubject, body: personalBody },
@@ -516,6 +554,7 @@ const OutreachTab = () => {
     }, { onConflict: "user_id,month" });
 
     setBulkSending(false);
+    setBulkAttachments([]);
     toast.success(`Campaign complete: ${sent} sent, ${failed} failed`);
     queryClient.invalidateQueries({ queryKey: ["emails-sent-stats"] });
     queryClient.invalidateQueries({ queryKey: ["bulk_email_usage"] });
@@ -868,6 +907,23 @@ const OutreachTab = () => {
             <div>
               <Label>Body *</Label>
               <Textarea value={composeForm.body} onChange={(e) => setComposeForm({ ...composeForm, body: e.target.value })} placeholder="Write your message..." rows={8} />
+              <div className="flex gap-1.5 mt-1.5">
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" disabled={mediaUploading}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMediaInsert(f, "image", (fn) => setComposeForm(prev => ({ ...prev, body: typeof fn === 'function' ? fn(prev.body) : fn }))); e.target.value = ""; }} />
+                  <Badge variant="outline" className="gap-1 text-[10px] cursor-pointer hover:bg-muted">
+                    <Image className="h-3 w-3" /> Embed Image
+                  </Badge>
+                </label>
+                <label className="cursor-pointer">
+                  <input type="file" accept="video/*" className="hidden" disabled={mediaUploading}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMediaInsert(f, "video", (fn) => setComposeForm(prev => ({ ...prev, body: typeof fn === 'function' ? fn(prev.body) : fn }))); e.target.value = ""; }} />
+                  <Badge variant="outline" className="gap-1 text-[10px] cursor-pointer hover:bg-muted">
+                    <Video className="h-3 w-3" /> Add Video Link
+                  </Badge>
+                </label>
+                {mediaUploading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+              </div>
             </div>
             <div>
               <Label className="flex items-center gap-1.5"><Paperclip className="h-3.5 w-3.5" /> Attachments</Label>
@@ -1032,6 +1088,42 @@ const OutreachTab = () => {
             <div>
               <Label>Body *</Label>
               <Textarea value={bulkBody} onChange={e => setBulkBody(e.target.value)} placeholder="Write your message... Use {name} for personalization" rows={6} />
+              <div className="flex gap-1.5 mt-1.5">
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" disabled={mediaUploading}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMediaInsert(f, "image", (fn) => setBulkBody(prev => typeof fn === 'function' ? fn(prev) : fn)); e.target.value = ""; }} />
+                  <Badge variant="outline" className="gap-1 text-[10px] cursor-pointer hover:bg-muted">
+                    <Image className="h-3 w-3" /> Embed Image
+                  </Badge>
+                </label>
+                <label className="cursor-pointer">
+                  <input type="file" accept="video/*" className="hidden" disabled={mediaUploading}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMediaInsert(f, "video", (fn) => setBulkBody(prev => typeof fn === 'function' ? fn(prev) : fn)); e.target.value = ""; }} />
+                  <Badge variant="outline" className="gap-1 text-[10px] cursor-pointer hover:bg-muted">
+                    <Video className="h-3 w-3" /> Add Video Link
+                  </Badge>
+                </label>
+                {mediaUploading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+              </div>
+            </div>
+
+            {/* Attachments for bulk */}
+            <div>
+              <Label className="flex items-center gap-1.5 text-xs"><Paperclip className="h-3.5 w-3.5" /> Attachments</Label>
+              <input type="file" multiple className="text-xs mt-1" onChange={(e) => {
+                if (e.target.files) setBulkAttachments(prev => [...prev, ...Array.from(e.target.files!)]);
+              }} />
+              {bulkAttachments.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {bulkAttachments.map((f, i) => (
+                    <Badge key={i} variant="secondary" className="text-[10px] gap-1">
+                      {f.name}
+                      <button onClick={() => setBulkAttachments(prev => prev.filter((_, j) => j !== i))} className="hover:text-destructive">×</button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <p className="text-[10px] text-muted-foreground mt-1">Files will be uploaded and linked in the email</p>
             </div>
 
             {/* Schedule option */}

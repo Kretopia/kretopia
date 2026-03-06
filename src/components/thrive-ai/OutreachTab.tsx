@@ -113,6 +113,23 @@ const OutreachTab = () => {
     } catch { toast.error("Upload failed"); } finally { setMediaUploading(false); }
   };
 
+  // Check if email is configured
+  const { data: emailSettings } = useQuery({
+    queryKey: ["user_email_settings", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_email_settings" as any)
+        .select("*")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!user,
+  });
+
+  const isEmailConfigured = emailSettings?.is_configured;
+
   // Fetch sequences
   const { data: sequences = [], isLoading } = useQuery({
     queryKey: ["outreach_sequences", user?.id],

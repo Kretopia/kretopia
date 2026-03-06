@@ -124,18 +124,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
             {(accountType === "company"
               ? [
                   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-                  { path: "/desk", icon: Briefcase, label: "Projects" },
-                  { path: "/market", icon: ShoppingBag, label: "Market" },
-                  { path: "/thrivepay?tab=earnings", icon: DollarSign, label: "Earnings" },
-                  { path: "/sales", icon: Target, label: "ThriveFunnel" },
+                  { path: "/desk", icon: FolderKanban, label: "Projects" },
+                  { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
                 ]
               : [
                   { path: "/circle", icon: Users, label: "Circle" },
                   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-                  { path: "/desk", icon: Briefcase, label: "Projects" },
-                  { path: "/market", icon: ShoppingBag, label: "Market" },
-                  { path: "/thrivepay?tab=earnings", icon: DollarSign, label: "Earnings" },
-                  { path: "/sales", icon: Target, label: "ThriveFunnel" },
+                  { path: "/desk", icon: FolderKanban, label: "Projects" },
+                  { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
                 ]
             ).map(({ path, icon: Icon, label }) => {
               const isActive = path.includes("?") ? location.pathname === path.split("?")[0] && location.search.includes(path.split("?")[1]) : location.pathname === path;

@@ -15,12 +15,12 @@ https://thrivein.io/join/ThriveOGs
 ## 📱 Short DM Template (Instagram/WhatsApp)
 
 ```
-Hey! Saw your work — you'd be perfect for ThriveIN.
+Stop cold DMing strangers for collabs.
 
-It's basically Tinder for finding creative collaborators. Swipe through verified portfolios, AI tells you why you're compatible, and discover creators near you or join local creative sessions.
+ThriveIN matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
 
-I have an invite if you're interested:
-👉 thrivein.io/auth?invite=ThriveOGs
+I'm already on. Join me 👇
+thrivein.io/join/ThriveOGs
 
 2 mins to set up. Let me know what you think!
 ```

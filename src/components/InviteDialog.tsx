@@ -54,10 +54,11 @@ export const InviteDialog = ({ open, onOpenChange }: InviteDialogProps) => {
   const copyLink = async () => {
     if (!personalLink) return;
     try {
-      const inviteMessage = `🎨 Join my creative circle on ThriveIN!
+      const inviteMessage = `Stop cold DMing strangers for collabs.
 
-Find your perfect collaborator with AI-powered matching. Swipe, match, and create together.
+ThriveIN matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
 
+I'm already on. Join me 👇
 ${personalLink}`;
       
       await navigator.clipboard.writeText(inviteMessage);

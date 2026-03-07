@@ -58,7 +58,7 @@ export const InviteCard = () => {
   const copyLink = async () => {
     if (!personalLink) return;
     try {
-      const inviteMessage = `🎨 Join my creative network on ThriveIN!\n\nAI-powered matching for verified creators. Swipe, match, and collaborate.\n\n${personalLink}`;
+      const inviteMessage = `Stop cold DMing strangers for collabs.\n\nThriveIN matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.\n\nI'm already on. Join me 👇\n${personalLink}`;
       
       await navigator.clipboard.writeText(inviteMessage);
       setCopied(true);

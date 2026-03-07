@@ -1,4 +1,6 @@
-import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, Star, DollarSign, FileText, Share2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, DollarSign, Sparkles } from "lucide-react";
 
 export const WhyCreatorsChooseSection = () => {
   const features = [

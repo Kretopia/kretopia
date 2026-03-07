@@ -53,7 +53,7 @@ export const HowItWorksSection = () => {
               </p>
               <div className="flex items-center gap-2 text-xs bg-muted/50 rounded-lg px-3 py-2 border border-border/50">
                 <Heart className="h-4 w-4 text-secondary" />
-                <span className="font-mono">✨ 87% Match • 2km away</span>
+                <span className="font-mono">Skills • Location • Style</span>
               </div>
             </div>
           </div>

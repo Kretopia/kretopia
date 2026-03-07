@@ -139,7 +139,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
       // Fetch all potential profiles WITH portfolio count for quality filtering
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills, collab_intent, verification_tier, verification_status, achievement_badges, subscription_tier')
+        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills, collab_intent, verification_tier, verification_status, achievement_badges, subscription_tier, is_claimed')
         .neq('user_id', userId)
         .not('full_name', 'is', null)
         .order('created_at', { ascending: false })
@@ -152,8 +152,13 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
 
       console.log('[useCircleData] Raw profiles fetched:', profiles?.length || 0);
 
-      // Filter out already-swiped and already-connected users - use efficient Set lookup
-      let filtered = (profiles || []).filter(p => !excludedUserIds.has(p.user_id));
+      // Filter out already-swiped, already-connected, and non-ODOS unclaimed profiles
+      let filtered = (profiles || []).filter(p => {
+        if (excludedUserIds.has(p.user_id)) return false;
+        // Hide non-ODOS unclaimed profiles from discovery
+        if ((p as any).is_claimed === false && p.badge !== 'odos') return false;
+        return true;
+      });
       
       // Apply role filter
       if (filters.role && filters.role !== 'all') {

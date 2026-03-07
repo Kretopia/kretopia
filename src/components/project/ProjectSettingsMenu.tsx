@@ -94,9 +94,9 @@ export function ProjectSettingsMenu({
       setSettingsOpen(false);
       onProjectUpdated();
       
-      // Trigger review prompt when project is marked as completed
-      if (status === "completed" && project.status !== "completed" && collaborators.length > 1) {
-        setTimeout(() => setReviewPromptOpen(true), 500);
+      // Trigger credits + review prompt when project is marked as completed
+      if (status === "completed" && project.status !== "completed") {
+        setTimeout(() => setCreditsDialogOpen(true), 500);
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

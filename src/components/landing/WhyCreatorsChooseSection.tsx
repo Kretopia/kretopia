@@ -10,6 +10,16 @@ export const WhyCreatorsChooseSection = () => {
       text: "Swipe through portfolios, get matched by style & skills"
     },
     {
+      icon: <Palette className="h-5 w-5" />,
+      title: "Nearby Creators",
+      text: "Discover verified creatives in your area on a map"
+    },
+    {
+      icon: <Zap className="h-5 w-5" />,
+      title: "Creative Sessions",
+      text: "Join local meetups, co-working & creative jams"
+    },
+    {
       icon: <Shield className="h-5 w-5" />,
       title: "Verified Credentials",
       text: "AI checks IMDB, Spotify, Grammy & more"

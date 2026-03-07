@@ -17,7 +17,7 @@ export const HowItWorksSection = () => {
             Create.
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Find collaborators in minutes, not months — online or at local creative sessions near you.
+            Find collaborators in minutes, not months — match, collaborate, and get paid in one place.
           </p>
         </div>
 
@@ -49,7 +49,7 @@ export const HowItWorksSection = () => {
               </div>
               <h3 className="mb-2 text-xl font-bold">Smart Matching</h3>
               <p className="text-muted-foreground mb-3">
-                Swipe through verified portfolios or discover creators nearby. AI explains why you're compatible.
+                Swipe through verified portfolios. AI explains why you're compatible based on skills, style & goals.
               </p>
               <div className="flex items-center gap-2 text-xs bg-muted/50 rounded-lg px-3 py-2 border border-border/50">
                 <Heart className="h-4 w-4 text-secondary" />

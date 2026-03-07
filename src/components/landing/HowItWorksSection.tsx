@@ -17,7 +17,7 @@ export const HowItWorksSection = () => {
             Create.
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Find collaborators in minutes, not months — online or at local creative sessions near you.
+            Find collaborators in minutes, not months — match, collaborate, and get paid in one place.
           </p>
         </div>
 

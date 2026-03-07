@@ -54,10 +54,11 @@ export const InviteCodesCard = () => {
   const copyToClipboard = async (code: string) => {
     try {
       const inviteUrl = `https://www.thrivein.io/auth?invite=${code}`;
-      const inviteMessage = `🎨 Join my circle on ThriveIN!
+      const inviteMessage = `Stop cold DMing strangers for collabs.
 
-Connect with creatives and content creators, discover exciting opportunities, and collaborate on projects together.
+ThriveIN matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
 
+I'm already on. Join me 👇
 ${inviteUrl}`;
       
       await navigator.clipboard.writeText(inviteMessage);

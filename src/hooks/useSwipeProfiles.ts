@@ -117,6 +117,8 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         if (connectedIds.has(p.user_id)) return false;
         if (blockedIds.has(p.user_id)) return false;
         if (!p.bio || p.bio.length < 20) return false;
+        // Hide non-ODOS unclaimed profiles from discovery
+        if (p.is_claimed === false && p.badge !== 'odos') return false;
         return true;
       });
 

@@ -1,4 +1,6 @@
-import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, Star, DollarSign, FileText, Share2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, DollarSign, Sparkles } from "lucide-react";
 
 export const WhyCreatorsChooseSection = () => {
   const features = [
@@ -93,21 +95,14 @@ export const WhyCreatorsChooseSection = () => {
           </div>
         </div>
 
-        {/* Testimonial placeholder */}
+        {/* CTA */}
         <div className="mt-8 sm:mt-12 text-center">
-          <div className="inline-block p-6 sm:p-8 rounded-2xl bg-card border border-border/50">
-            <div className="flex justify-center gap-1 mb-3">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-              ))}
-            </div>
-            <blockquote className="max-w-2xl text-base sm:text-lg font-medium text-foreground mb-3">
-              "Finally, a platform where I can find real collaborators without the noise. Found my music video director in 3 days."
-            </blockquote>
-            <p className="text-sm text-muted-foreground">
-              — Verified Creator, Los Angeles
-            </p>
-          </div>
+          <Link to="/auth">
+            <Button variant="gradient" size="lg" className="gap-2">
+              <Sparkles className="h-4 w-4" />
+              Join Free — See It in Action
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

@@ -78,11 +78,11 @@ export const AccountingSuiteSection = () => {
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <TrendingUp className="h-4 w-4 text-primary" />
-            <span>Included free with Pro · $12/month</span>
+            <span>Included with Pro membership</span>
           </div>
           <Link to="/auth">
             <Button variant="gradient" size="sm" className="gap-2">
-              Start Free Trial
+              Get Started Free
             </Button>
           </Link>
         </div>

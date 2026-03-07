@@ -6,6 +6,7 @@ import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
 import { WorkspaceQuickPanel } from "@/components/project/WorkspaceQuickPanel";
 import { DeskTabBar } from "@/components/project/DeskTabBar";
+import { ConfirmCreditBanner } from "@/components/project/ConfirmCreditBanner";
 import { DeskTabContent } from "@/components/project/DeskTabContent";
 import { useProjectData } from "@/hooks/useProjectData";
 import { Button } from "@/components/ui/button";

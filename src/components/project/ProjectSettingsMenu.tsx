@@ -70,6 +70,7 @@ export function ProjectSettingsMenu({
   const navigate = useNavigate();
   const { toast } = useToast();
   const [reviewPromptOpen, setReviewPromptOpen] = useState(false);
+  const [creditsDialogOpen, setCreditsDialogOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [saving, setSaving] = useState(false);

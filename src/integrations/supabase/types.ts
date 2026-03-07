@@ -4678,6 +4678,60 @@ export type Database = {
           },
         ]
       }
+      project_credits: {
+        Row: {
+          assigned_by: string
+          confirmed_at: string | null
+          created_at: string
+          credit_id: string | null
+          id: string
+          project_id: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by: string
+          confirmed_at?: string | null
+          created_at?: string
+          credit_id?: string | null
+          id?: string
+          project_id: string
+          role: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string
+          confirmed_at?: string | null
+          created_at?: string
+          credit_id?: string | null
+          id?: string
+          project_id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_credits_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "credits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_credits_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_deliverables: {
         Row: {
           created_at: string

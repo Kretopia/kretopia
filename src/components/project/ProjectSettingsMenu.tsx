@@ -42,6 +42,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ReviewPromptDialog } from "./ReviewPromptDialog";
+import { ProjectCreditsDialog } from "./ProjectCreditsDialog";
 
 interface ProjectSettingsMenuProps {
   project: {
@@ -69,6 +70,7 @@ export function ProjectSettingsMenu({
   const navigate = useNavigate();
   const { toast } = useToast();
   const [reviewPromptOpen, setReviewPromptOpen] = useState(false);
+  const [creditsDialogOpen, setCreditsDialogOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -92,9 +94,9 @@ export function ProjectSettingsMenu({
       setSettingsOpen(false);
       onProjectUpdated();
       
-      // Trigger review prompt when project is marked as completed
-      if (status === "completed" && project.status !== "completed" && collaborators.length > 1) {
-        setTimeout(() => setReviewPromptOpen(true), 500);
+      // Trigger credits + review prompt when project is marked as completed
+      if (status === "completed" && project.status !== "completed") {
+        setTimeout(() => setCreditsDialogOpen(true), 500);
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -265,6 +267,22 @@ export function ProjectSettingsMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Project Credits on Completion */}
+      <ProjectCreditsDialog
+        open={creditsDialogOpen}
+        onOpenChange={setCreditsDialogOpen}
+        projectId={project.id}
+        projectTitle={project.title}
+        collaborators={collaborators}
+        onCreditsAssigned={() => {
+          // After credits assigned, show review prompt if there are collaborators
+          if (collaborators.length > 1) {
+            setTimeout(() => setReviewPromptOpen(true), 500);
+          }
+          onProjectUpdated();
+        }}
+      />
 
       {/* Review Prompt on Completion */}
       <ReviewPromptDialog

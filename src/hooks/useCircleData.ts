@@ -139,7 +139,7 @@ export const useCircleData = (userId: string | undefined, subscriptionTier: Subs
       // Fetch all potential profiles WITH portfolio count for quality filtering
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills, collab_intent, verification_tier, verification_status, achievement_badges, subscription_tier')
+        .select('user_id, full_name, role, bio, avatar_url, location, badge, level, professional_skills, collab_intent, verification_tier, verification_status, achievement_badges, subscription_tier, is_claimed')
         .neq('user_id', userId)
         .not('full_name', 'is', null)
         .order('created_at', { ascending: false })

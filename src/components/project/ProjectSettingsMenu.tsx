@@ -268,6 +268,22 @@ export function ProjectSettingsMenu({
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Project Credits on Completion */}
+      <ProjectCreditsDialog
+        open={creditsDialogOpen}
+        onOpenChange={setCreditsDialogOpen}
+        projectId={project.id}
+        projectTitle={project.title}
+        collaborators={collaborators}
+        onCreditsAssigned={() => {
+          // After credits assigned, show review prompt if there are collaborators
+          if (collaborators.length > 1) {
+            setTimeout(() => setReviewPromptOpen(true), 500);
+          }
+          onProjectUpdated();
+        }}
+      />
+
       {/* Review Prompt on Completion */}
       <ReviewPromptDialog
         open={reviewPromptOpen}

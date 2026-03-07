@@ -86,6 +86,13 @@ const ThriveDesk = () => {
         {/* Tab Bar */}
         <DeskTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
+        {/* Credit Confirmation Banner */}
+        <ConfirmCreditBanner
+          projectId={projectId!}
+          projectTitle={project.title}
+          onConfirmed={fetchProjectData}
+        />
+
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           <DeskTabContent

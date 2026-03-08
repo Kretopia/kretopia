@@ -50,6 +50,7 @@ export const PortfolioShowcase = () => {
           const thumb = d.thumbnail_url || d.media_url;
           // Only show items with visual thumbnails (not audio files or null)
           return thumb && !thumb.endsWith('.wav') && !thumb.endsWith('.mp3');
+        })
         .map((d) => {
           const p = profileMap.get(d.user_id)!;
           return {

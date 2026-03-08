@@ -487,6 +487,14 @@ const Auth = () => {
     setPasswordError("");
     setConfirmPasswordError("");
     setLoading(true);
+    
+    // Track signup attempt with timing
+    const { trackEvent, EventCategory } = await import("@/lib/analytics");
+    trackEvent({
+      eventName: 'signup_attempt',
+      eventCategory: EventCategory.AUTH,
+      properties: { time_on_page_ms: Date.now() - authLoadTime, account_type: accountType, has_invite_code: !!inviteCode },
+    });
 
     // Email confirmation link should go to Circle (after onboarding is done)
     const { data: signUpData, error } = await supabase.auth.signUp({

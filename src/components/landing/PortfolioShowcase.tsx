@@ -36,8 +36,8 @@ export const PortfolioShowcase = () => {
 
       const userIds = [...new Set(data.map((d) => d.user_id))];
       const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, role, avatar_url, is_claimed")
+        .from("public_profiles_safe")
+        .select("user_id, full_name, role, avatar_url")
         .in("user_id", userIds);
 
       const profileMap = new Map(

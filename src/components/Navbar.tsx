@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Wallet, Shield, Crown, Sparkles, DollarSign, FolderKanban, Search } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Wallet, Shield, Crown, Sparkles, DollarSign, FolderKanban, Search, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -197,6 +197,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     >
                       <User className="h-5 w-5" />
                       My Profile
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/guide")}
+                    >
+                      <BookOpen className="h-5 w-5" />
+                      How to Win
                     </Button>
 
                     <Separator className="my-3" />

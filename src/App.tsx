@@ -77,6 +77,7 @@ const Opportunities = lazy(() => import("./pages/Opportunities"));
 const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
+const Guide = lazy(() => import("./pages/Guide"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -170,6 +171,7 @@ const AppContent = () => {
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/my-analytics" element={<ProtectedRoute><MyAnalytics /></ProtectedRoute>} />
+            <Route path="/guide" element={<Guide />} />
             
             {/* ThriveDesk - Lightweight Project Workspace */}
             <Route path="/desk" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />

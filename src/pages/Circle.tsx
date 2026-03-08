@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { PageTip } from "@/components/PageTip";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -199,6 +200,14 @@ export default function Circle() {
         title="Circle - Your Creative Network"
         description="Connect with creators, build your network"
       />
+      
+      <div className="container mx-auto px-3 sm:px-4 pt-2">
+        <PageTip
+          id="circle"
+          title="👋 Welcome to Circle!"
+          message="This is where the magic happens. Swipe right on creators you'd like to work with. When both of you swipe right, it's a match — and you can start messaging!"
+        />
+      </div>
       
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b">

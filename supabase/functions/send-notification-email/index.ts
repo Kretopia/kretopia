@@ -74,24 +74,63 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
   switch (type) {
     case 'welcome':
       return {
-        subject: "Welcome to ThriveIN – Let's Create Together 🎉",
+        subject: "Welcome to ThriveIN – Your Step-by-Step Guide 🎉",
         html: `
           <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
             <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to ThriveIN</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${data.userName}, you're officially part of the creative revolution.</p>
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to ThriveIN 🎉</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${data.userName}, you're officially in.</p>
             </div>
             <div style="padding: 30px; background: #ffffff;">
-              <p style="color: #333; font-size: 16px; line-height: 1.6;">You've just joined an exclusive community of verified creatives – from Grammy winners to emerging talents – all looking for their next collaboration.</p>
-              <div style="background: #F5F3FF; border-left: 4px solid #8B5CF6; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
-                <p style="margin: 0 0 15px 0; color: #5B21B6; font-weight: 600;">Your next steps:</p>
-                <p style="margin: 8px 0; color: #374151;">✨ <strong>Complete your profile</strong> – Showcase your work and get discovered</p>
-                <p style="margin: 8px 0; color: #374151;">🎯 <strong>Start matching</strong> – Swipe to find your perfect collaborator</p>
-                <p style="margin: 8px 0; color: #374151;">🤝 <strong>Connect & create</strong> – Turn matches into real projects</p>
+              <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Here's exactly how to get the most out of ThriveIN — step by step.</p>
+              
+              <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
+                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #F5F3FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📸</div>
+                <div>
+                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 1: Complete Your Profile</p>
+                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Add a photo, bio, skills, and portfolio links. Complete profiles get <strong>5x more matches</strong>.</p>
+                </div>
               </div>
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Find Your First Match</a>
+
+              <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
+                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #EFF6FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">👆</div>
+                <div>
+                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 2: Start Matching in Circle</p>
+                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Swipe right on creators you'd want to work with. Mutual swipe = match!</p>
+                </div>
               </div>
+
+              <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
+                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #FFF7ED; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🔍</div>
+                <div>
+                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 3: Browse or Post Gigs</p>
+                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Find paid work or post your own gigs to attract talent.</p>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
+                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #F0FDF4; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">💬</div>
+                <div>
+                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 4: Message & Collaborate</p>
+                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Chat, share files, and create projects together with milestones.</p>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 16px; margin-bottom: 28px; align-items: flex-start;">
+                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #ECFDF5; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">💰</div>
+                <div>
+                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 5: Get Paid with ThrivePay</p>
+                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Secure escrow payments protect both sides. No more getting ghosted.</p>
+                </div>
+              </div>
+
+              <div style="text-align: center; margin: 25px 0 10px;">
+                <a href="${baseUrl}/guide" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Read the Full Guide</a>
+              </div>
+              <div style="text-align: center; margin: 15px 0 0;">
+                <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 28px; background: #ffffff; color: #8B5CF6; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 2px solid #8B5CF6;">Start Matching Now →</a>
+              </div>
+              
               <p style="color: #6B7280; font-size: 14px; text-align: center; margin-top: 30px;">Questions? Just reply to this email – we're here to help.</p>
             </div>
             <div style="padding: 20px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">

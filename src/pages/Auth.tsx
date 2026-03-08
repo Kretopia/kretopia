@@ -69,14 +69,32 @@ const Auth = () => {
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 
+  // Track auth funnel with granular events
+  const authLoadTime = useState(() => Date.now())[0];
+  const hasTrackedView = useState(false);
+  
   // Redirect if already authenticated & fetch opportunities count & pre-fill invite code
   useEffect(() => {
-    // Track page view
-    const trackPage = async () => {
-      const { analytics } = await import("@/lib/analytics");
-      analytics.pageView("auth");
-    };
-    trackPage();
+    // Track page view with referrer context
+    if (!hasTrackedView[0]) {
+      hasTrackedView[1](true);
+      const trackPage = async () => {
+        const { analytics, trackEvent, EventCategory } = await import("@/lib/analytics");
+        analytics.pageView("auth");
+        trackEvent({
+          eventName: 'auth_page_loaded',
+          eventCategory: EventCategory.AUTH,
+          properties: { 
+            referrer: document.referrer,
+            has_invite_code: !!(searchParams.get("invite") || searchParams.get("inviteCode") || sessionStorage.getItem("invite_code")),
+            has_claim: !!searchParams.get("claim"),
+            has_connect: !!searchParams.get("connect"),
+            entry_source: document.referrer.includes('thrivein') ? 'internal' : document.referrer ? 'external' : 'direct',
+          },
+        });
+      };
+      trackPage();
+    }
     
     if (user) {
       // Handle auto-connect if user just logged in with connect parameter

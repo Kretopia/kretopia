@@ -492,6 +492,11 @@ const Messages = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-lg sm:text-2xl font-bold">Messages</h2>
           </div>
+          <PageTip
+            id="messages"
+            title="💬 Your conversations live here"
+            message="Match with creators in Circle first, then come here to chat. Tip: mention something specific from their profile to break the ice!"
+          />
           
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'requests')}>
             <TabsList className="w-full">

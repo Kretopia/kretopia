@@ -355,6 +355,12 @@ const ProfileContent = () => {
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
+        <PageTip
+          id="profile"
+          title="🎨 Make your profile shine!"
+          message="Add a photo, bio, skills, and portfolio links. Complete profiles get 5x more matches. Tap any section to edit it."
+          className="mb-4 mt-2"
+        />
         {/* Profile Hero */}
         <ProfileHero
           profile={profile}

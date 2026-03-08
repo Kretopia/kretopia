@@ -26,10 +26,8 @@ export const PortfolioShowcase = () => {
         .from("portfolio_items")
         .select("id, title, media_url, thumbnail_url, media_type, user_id")
         .not("media_url", "is", null)
-        .not("thumbnail_url", "is", null)
-        .neq("thumbnail_url", "")
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (!data || data.length === 0) {
         setLoading(false);
@@ -73,10 +71,11 @@ export const PortfolioShowcase = () => {
     fetchPortfolio();
   }, []);
 
-  if (loading || items.length < 3) return null;
+  if (loading || items.length < 2) return null;
 
-  // Duplicate for infinite scroll illusion
-  const scrollItems = [...items, ...items];
+  // Duplicate enough for seamless infinite scroll
+  const repeatCount = Math.max(3, Math.ceil(12 / items.length));
+  const scrollItems = Array.from({ length: repeatCount }, () => items).flat();
 
   return (
     <section className="py-16 sm:py-20 overflow-hidden">

@@ -198,6 +198,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <User className="h-5 w-5" />
                       My Profile
                     </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/guide")}
+                    >
+                      <BookOpen className="h-5 w-5" />
+                      How to Win
+                    </Button>
 
                     <Separator className="my-3" />
 

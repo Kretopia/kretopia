@@ -22,6 +22,8 @@ export const PortfolioShowcase = () => {
         .from("portfolio_items")
         .select("id, title, media_url, thumbnail_url, media_type")
         .not("media_url", "is", null)
+        .not("thumbnail_url", "is", null)
+        .neq("thumbnail_url", "")
         .order("created_at", { ascending: false })
         .limit(30);
 
@@ -32,8 +34,8 @@ export const PortfolioShowcase = () => {
 
       const mapped: ShowcaseItem[] = data
         .filter((d) => {
-          const thumb = d.thumbnail_url || d.media_url;
-          return thumb && !thumb.endsWith('.wav') && !thumb.endsWith('.mp3');
+          const thumb = d.thumbnail_url!;
+          return !thumb.endsWith('.wav') && !thumb.endsWith('.mp3');
         })
         .map((d) => ({
           id: d.id,

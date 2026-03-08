@@ -186,6 +186,7 @@ export default {
         "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
         "slide-up": "slide-up 0.4s ease-out",
         "bounce-subtle": "bounce-subtle 0.3s ease-in-out",
+        "scroll-x": "scroll-x 30s linear infinite",
       },
       transitionTimingFunction: {
         "bounce-in": "cubic-bezier(0.68, -0.55, 0.265, 1.55)",

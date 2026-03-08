@@ -48,6 +48,7 @@ const Landing = () => {
         url="https://thrivein.io"
       />
       <HeroSection />
+      <PortfolioShowcase />
       <HowItWorksSection />
       <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
       <WhyCreatorsChooseSection />

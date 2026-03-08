@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -7,9 +7,24 @@ import { Button } from "@/components/ui/button";
 interface ShowcaseItem {
   id: string;
   title: string;
-  media_url: string;
-  thumbnail_url: string | null;
+  thumbnail_url: string;
   media_type: string;
+}
+
+const RELIABLE_HOSTS = [
+  "img.youtube.com",
+  "i.ytimg.com",
+  "i.scdn.co",
+  "kwmcocsitwssrtzkdojh.supabase.co",
+];
+
+function isReliableThumbnail(url: string): boolean {
+  try {
+    const host = new URL(url).hostname;
+    return RELIABLE_HOSTS.some((h) => host.includes(h));
+  } catch {
+    return false;
+  }
 }
 
 export const PortfolioShowcase = () => {
@@ -35,16 +50,18 @@ export const PortfolioShowcase = () => {
       const mapped: ShowcaseItem[] = data
         .filter((d) => {
           const thumb = d.thumbnail_url!;
-          return !thumb.endsWith('.wav') && !thumb.endsWith('.mp3');
+          if (thumb.endsWith(".wav") || thumb.endsWith(".mp3")) return false;
+          // Only include thumbnails from hosts that allow hotlinking
+          return isReliableThumbnail(thumb);
         })
         .map((d) => ({
           id: d.id,
           title: d.title || "Untitled",
-          media_url: d.media_url!,
-          thumbnail_url: d.thumbnail_url,
+          thumbnail_url: d.thumbnail_url!,
           media_type: d.media_type || "image",
         }));
 
+      // Shuffle so consecutive items aren't from the same creator
       const shuffled = [...mapped].sort(() => Math.random() - 0.5);
       setItems(shuffled);
       setLoading(false);
@@ -53,8 +70,14 @@ export const PortfolioShowcase = () => {
     fetchPortfolio();
   }, []);
 
+  // Remove items whose images fail to load
+  const handleImageError = useCallback((failedId: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== failedId));
+  }, []);
+
   if (loading || items.length < 2) return null;
 
+  // Duplicate enough for seamless infinite scroll
   const repeatCount = Math.max(3, Math.ceil(12 / items.length));
   const scrollItems = Array.from({ length: repeatCount }, () => items).flat();
 
@@ -71,7 +94,8 @@ export const PortfolioShowcase = () => {
           </span>
         </h2>
         <p className="mt-3 text-muted-foreground max-w-lg mx-auto text-sm sm:text-base">
-          From demo reels to brand designs — browse portfolios from creators already on the platform.
+          From demo reels to brand designs — browse portfolios from creators
+          already on the platform.
         </p>
       </div>
 
@@ -87,10 +111,11 @@ export const PortfolioShowcase = () => {
             >
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/50 bg-muted/30 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                 <img
-                  src={item.thumbnail_url!}
+                  src={item.thumbnail_url}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
+                  onError={() => handleImageError(item.id)}
                 />
                 {item.media_type === "video" && (
                   <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-full backdrop-blur-sm">

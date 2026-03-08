@@ -69,14 +69,32 @@ const Auth = () => {
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 
+  // Track auth funnel with granular events
+  const authLoadTime = useState(() => Date.now())[0];
+  const hasTrackedView = useState(false);
+  
   // Redirect if already authenticated & fetch opportunities count & pre-fill invite code
   useEffect(() => {
-    // Track page view
-    const trackPage = async () => {
-      const { analytics } = await import("@/lib/analytics");
-      analytics.pageView("auth");
-    };
-    trackPage();
+    // Track page view with referrer context
+    if (!hasTrackedView[0]) {
+      hasTrackedView[1](true);
+      const trackPage = async () => {
+        const { analytics, trackEvent, EventCategory } = await import("@/lib/analytics");
+        analytics.pageView("auth");
+        trackEvent({
+          eventName: 'auth_page_loaded',
+          eventCategory: EventCategory.AUTH,
+          properties: { 
+            referrer: document.referrer,
+            has_invite_code: !!(searchParams.get("invite") || searchParams.get("inviteCode") || sessionStorage.getItem("invite_code")),
+            has_claim: !!searchParams.get("claim"),
+            has_connect: !!searchParams.get("connect"),
+            entry_source: document.referrer.includes('thrivein') ? 'internal' : document.referrer ? 'external' : 'direct',
+          },
+        });
+      };
+      trackPage();
+    }
     
     if (user) {
       // Handle auto-connect if user just logged in with connect parameter
@@ -239,6 +257,14 @@ const Auth = () => {
     setEmailError("");
     setPasswordError("");
     setLoading(true);
+    
+    // Track sign-in attempt
+    const { trackEvent, EventCategory } = await import("@/lib/analytics");
+    trackEvent({
+      eventName: 'signin_attempt',
+      eventCategory: EventCategory.AUTH,
+      properties: { time_on_page_ms: Date.now() - authLoadTime },
+    });
 
     try {
       // Aggressively clear any corrupted session data before login
@@ -257,6 +283,12 @@ const Auth = () => {
       });
 
       if (error) {
+        // Track auth errors
+        const { analytics: errAnalytics } = await import("@/lib/analytics");
+        const errorType = error.message.includes("Invalid login") ? "invalid_credentials" 
+          : error.message.includes("Failed to fetch") ? "network_error" : "other";
+        errAnalytics.errorOccurred('signin_failed', errorType, 'auth');
+        
         // Handle network errors specifically
         if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
           toast({
@@ -461,6 +493,14 @@ const Auth = () => {
     setPasswordError("");
     setConfirmPasswordError("");
     setLoading(true);
+    
+    // Track signup attempt with timing
+    const { trackEvent, EventCategory } = await import("@/lib/analytics");
+    trackEvent({
+      eventName: 'signup_attempt',
+      eventCategory: EventCategory.AUTH,
+      properties: { time_on_page_ms: Date.now() - authLoadTime, account_type: accountType, has_invite_code: !!inviteCode },
+    });
 
     // Email confirmation link should go to Circle (after onboarding is done)
     const { data: signUpData, error } = await supabase.auth.signUp({
@@ -476,6 +516,11 @@ const Auth = () => {
     });
 
     if (error) {
+      // Track signup errors
+      const { analytics: errAnalytics } = await import("@/lib/analytics");
+      const errorType = error.message.includes("already registered") ? "already_registered" : "other";
+      errAnalytics.errorOccurred('signup_failed', errorType, 'auth');
+      
       if (error.message.includes("already registered")) {
         toast({
           title: "Account Exists",
@@ -660,9 +705,23 @@ const Auth = () => {
             ))}
           </div>
           
-          <p className="mt-10 text-xs text-muted-foreground">
-            ⚡ 60-second setup • No credit card required • 1-month Pro free
-          </p>
+          {/* Real social proof */}
+          <div className="mt-10 space-y-3">
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex -space-x-2">
+                {/* Stacked avatar placeholders */}
+                <div className="h-7 w-7 rounded-full bg-primary/30 border-2 border-background flex items-center justify-center text-[10px] font-bold text-primary">M</div>
+                <div className="h-7 w-7 rounded-full bg-secondary/30 border-2 border-background flex items-center justify-center text-[10px] font-bold text-secondary">G</div>
+                <div className="h-7 w-7 rounded-full bg-accent/30 border-2 border-background flex items-center justify-center text-[10px] font-bold text-accent">+</div>
+              </div>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">200+</span> creators already on the platform
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              ⚡ 60-second setup • No credit card • 1-month Pro free
+            </p>
+          </div>
         </div>
       </div>
 
@@ -756,7 +815,14 @@ const Auth = () => {
           </form>
         ) : (
           <>
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs defaultValue="signin" className="w-full" onValueChange={async (tab) => {
+              const { trackEvent, EventCategory } = await import("@/lib/analytics");
+              trackEvent({
+                eventName: 'auth_tab_switch',
+                eventCategory: EventCategory.AUTH,
+                properties: { tab, time_on_page_ms: Date.now() - authLoadTime },
+              });
+            }}>
           <TabsList className="mb-6 grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>

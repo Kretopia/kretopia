@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -51,7 +51,6 @@ export const PortfolioShowcase = () => {
         .filter((d) => {
           const thumb = d.thumbnail_url!;
           if (thumb.endsWith(".wav") || thumb.endsWith(".mp3")) return false;
-          // Only include thumbnails from hosts that allow hotlinking
           return isReliableThumbnail(thumb);
         })
         .map((d) => ({
@@ -61,7 +60,7 @@ export const PortfolioShowcase = () => {
           media_type: d.media_type || "image",
         }));
 
-      // Shuffle so consecutive items aren't from the same creator
+      // Shuffle so items are mixed
       const shuffled = [...mapped].sort(() => Math.random() - 0.5);
       setItems(shuffled);
       setLoading(false);
@@ -70,16 +69,10 @@ export const PortfolioShowcase = () => {
     fetchPortfolio();
   }, []);
 
-  // Remove items whose images fail to load
-  const handleImageError = useCallback((failedId: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== failedId));
-  }, []);
-
   if (loading || items.length < 2) return null;
 
-  // Duplicate enough for seamless infinite scroll
-  const repeatCount = Math.max(3, Math.ceil(12 / items.length));
-  const scrollItems = Array.from({ length: repeatCount }, () => items).flat();
+  // Duplicate for seamless infinite scroll (exactly 2x for -50% translateX)
+  const scrollItems = [...items, ...items];
 
   return (
     <section className="py-16 sm:py-20 overflow-hidden">
@@ -115,7 +108,11 @@ export const PortfolioShowcase = () => {
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
-                  onError={() => handleImageError(item.id)}
+                  onError={(e) => {
+                    // Hide the card without re-rendering (no state update)
+                    const card = (e.target as HTMLElement).closest('.group');
+                    if (card) (card as HTMLElement).style.display = 'none';
+                  }}
                 />
                 {item.media_type === "video" && (
                   <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-full backdrop-blur-sm">

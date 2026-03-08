@@ -167,6 +167,10 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-2px)" },
         },
+        "scroll-x": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -182,6 +186,7 @@ export default {
         "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
         "slide-up": "slide-up 0.4s ease-out",
         "bounce-subtle": "bounce-subtle 0.3s ease-in-out",
+        "scroll-x": "scroll-x 30s linear infinite",
       },
       transitionTimingFunction: {
         "bounce-in": "cubic-bezier(0.68, -0.55, 0.265, 1.55)",

@@ -774,7 +774,14 @@ const Auth = () => {
           </form>
         ) : (
           <>
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs defaultValue="signin" className="w-full" onValueChange={async (tab) => {
+              const { trackEvent, EventCategory } = await import("@/lib/analytics");
+              trackEvent({
+                eventName: 'auth_tab_switch',
+                eventCategory: EventCategory.AUTH,
+                properties: { tab, time_on_page_ms: Date.now() - authLoadTime },
+              });
+            }}>
           <TabsList className="mb-6 grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>

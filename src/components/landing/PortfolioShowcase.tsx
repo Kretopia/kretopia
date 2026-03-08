@@ -22,6 +22,8 @@ export const PortfolioShowcase = () => {
         .from("portfolio_items")
         .select("id, title, media_url, thumbnail_url, media_type")
         .not("media_url", "is", null)
+        .not("thumbnail_url", "is", null)
+        .neq("thumbnail_url", "")
         .order("created_at", { ascending: false })
         .limit(30);
 
@@ -32,8 +34,8 @@ export const PortfolioShowcase = () => {
 
       const mapped: ShowcaseItem[] = data
         .filter((d) => {
-          const thumb = d.thumbnail_url || d.media_url;
-          return thumb && !thumb.endsWith('.wav') && !thumb.endsWith('.mp3');
+          const thumb = d.thumbnail_url!;
+          return !thumb.endsWith('.wav') && !thumb.endsWith('.mp3');
         })
         .map((d) => ({
           id: d.id,
@@ -85,7 +87,7 @@ export const PortfolioShowcase = () => {
             >
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/50 bg-muted/30 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                 <img
-                  src={item.thumbnail_url || item.media_url}
+                  src={item.thumbnail_url!}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"

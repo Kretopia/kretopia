@@ -11,59 +11,52 @@ interface ShowcaseItem {
   media_type: string;
 }
 
-const RELIABLE_HOSTS = [
-  "img.youtube.com",
-  "i.ytimg.com",
-  "i.scdn.co",
-  "kwmcocsitwssrtzkdojh.supabase.co",
-];
-
-function isReliableThumbnail(url: string): boolean {
-  try {
-    const host = new URL(url).hostname;
-    return RELIABLE_HOSTS.some((h) => host.includes(h));
-  } catch {
-    return false;
-  }
-}
-
 export const PortfolioShowcase = () => {
   const [items, setItems] = useState<ShowcaseItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+
     const fetchPortfolio = async () => {
-      const { data } = await supabase
-        .from("portfolio_items")
-        .select("id, title, media_url, thumbnail_url, media_type")
-        .not("media_url", "is", null)
-        .not("thumbnail_url", "is", null)
-        .neq("thumbnail_url", "")
-        .order("created_at", { ascending: false })
-        .limit(30);
+      try {
+        const { data, error } = await supabase
+          .from("portfolio_items")
+          .select("id, title, media_url, thumbnail_url, media_type")
+          .not("media_url", "is", null)
+          .not("thumbnail_url", "is", null)
+          .neq("thumbnail_url", "")
+          .order("created_at", { ascending: false })
+          .limit(30);
 
-      if (!data || data.length === 0) {
+        if (error || !data || data.length === 0) {
+          console.log("Portfolio fetch:", error?.message || "no data");
+          setLoading(false);
+          return;
+        }
+
+        // Filter out audio files used as thumbnails
+        const valid = data.filter((d) => {
+          const t = d.thumbnail_url || "";
+          return !t.endsWith(".wav") && !t.endsWith(".mp3") && !t.endsWith(".ogg");
+        });
+
+        // Shuffle to mix creators
+        const shuffled = valid
+          .map((d) => ({
+            id: d.id,
+            title: d.title || "Untitled",
+            thumbnail_url: d.thumbnail_url!,
+            media_type: d.media_type || "image",
+          }))
+          .sort(() => Math.random() - 0.5);
+
+        console.log(`Portfolio showcase: ${shuffled.length} items loaded`);
+        setItems(shuffled);
+      } catch (err) {
+        console.error("Portfolio fetch error:", err);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const mapped: ShowcaseItem[] = data
-        .filter((d) => {
-          const thumb = d.thumbnail_url!;
-          if (thumb.endsWith(".wav") || thumb.endsWith(".mp3")) return false;
-          return isReliableThumbnail(thumb);
-        })
-        .map((d) => ({
-          id: d.id,
-          title: d.title || "Untitled",
-          thumbnail_url: d.thumbnail_url!,
-          media_type: d.media_type || "image",
-        }));
-
-      // Shuffle so items are mixed
-      const shuffled = [...mapped].sort(() => Math.random() - 0.5);
-      setItems(shuffled);
-      setLoading(false);
     };
 
     fetchPortfolio();
@@ -71,7 +64,7 @@ export const PortfolioShowcase = () => {
 
   if (loading || items.length < 2) return null;
 
-  // Duplicate for seamless infinite scroll (exactly 2x for -50% translateX)
+  // Exactly 2x for seamless -50% translateX loop
   const scrollItems = [...items, ...items];
 
   return (
@@ -102,26 +95,22 @@ export const PortfolioShowcase = () => {
               key={`${item.id}-${i}`}
               className="flex-shrink-0 w-64 sm:w-72 group"
             >
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/50 bg-muted/30 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/50 bg-muted shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                 <img
                   src={item.thumbnail_url}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
+                  referrerPolicy="no-referrer"
                   onError={(e) => {
-                    // Hide the card without re-rendering (no state update)
-                    const card = (e.target as HTMLElement).closest('.group');
+                    // Hide just this card via DOM, no state update
+                    const card = (e.target as HTMLElement).closest('[data-card]');
                     if (card) (card as HTMLElement).style.display = 'none';
                   }}
                 />
                 {item.media_type === "video" && (
                   <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-full backdrop-blur-sm">
                     Video
-                  </div>
-                )}
-                {item.media_type === "audio" && (
-                  <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-full backdrop-blur-sm">
-                    Audio
                   </div>
                 )}
               </div>

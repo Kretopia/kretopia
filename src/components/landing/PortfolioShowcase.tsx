@@ -64,7 +64,9 @@ export const PortfolioShowcase = () => {
           };
         });
 
-      setItems(mapped);
+      // Shuffle so consecutive items aren't from the same creator
+      const shuffled = [...mapped].sort(() => Math.random() - 0.5);
+      setItems(shuffled);
       setLoading(false);
     };
 

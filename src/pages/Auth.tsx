@@ -283,6 +283,12 @@ const Auth = () => {
       });
 
       if (error) {
+        // Track auth errors
+        const { analytics: errAnalytics } = await import("@/lib/analytics");
+        const errorType = error.message.includes("Invalid login") ? "invalid_credentials" 
+          : error.message.includes("Failed to fetch") ? "network_error" : "other";
+        errAnalytics.errorOccurred('signin_failed', errorType, 'auth');
+        
         // Handle network errors specifically
         if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
           toast({

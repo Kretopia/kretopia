@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,9 +10,6 @@ interface ShowcaseItem {
   media_url: string;
   thumbnail_url: string | null;
   media_type: string;
-  creator_name: string;
-  creator_role: string;
-  creator_avatar: string | null;
 }
 
 export const PortfolioShowcase = () => {
@@ -24,7 +20,7 @@ export const PortfolioShowcase = () => {
     const fetchPortfolio = async () => {
       const { data } = await supabase
         .from("portfolio_items")
-        .select("id, title, media_url, thumbnail_url, media_type, user_id")
+        .select("id, title, media_url, thumbnail_url, media_type")
         .not("media_url", "is", null)
         .order("created_at", { ascending: false })
         .limit(30);
@@ -34,38 +30,19 @@ export const PortfolioShowcase = () => {
         return;
       }
 
-      const userIds = [...new Set(data.map((d) => d.user_id))];
-      const { data: profiles } = await supabase
-        .from("public_profiles_safe")
-        .select("user_id, full_name, role, avatar_url")
-        .in("user_id", userIds);
-
-      const profileMap = new Map(
-        (profiles || []).map((p) => [p.user_id, p])
-      );
-
       const mapped: ShowcaseItem[] = data
-        .filter((d) => profileMap.has(d.user_id))
         .filter((d) => {
           const thumb = d.thumbnail_url || d.media_url;
-          // Only show items with visual thumbnails (not audio files or null)
           return thumb && !thumb.endsWith('.wav') && !thumb.endsWith('.mp3');
         })
-        .map((d) => {
-          const p = profileMap.get(d.user_id)!;
-          return {
-            id: d.id,
-            title: d.title || "Untitled",
-            media_url: d.media_url!,
-            thumbnail_url: d.thumbnail_url,
-            media_type: d.media_type || "image",
-            creator_name: p.full_name || "Creator",
-            creator_role: p.role || "",
-            creator_avatar: p.avatar_url,
-          };
-        });
+        .map((d) => ({
+          id: d.id,
+          title: d.title || "Untitled",
+          media_url: d.media_url!,
+          thumbnail_url: d.thumbnail_url,
+          media_type: d.media_type || "image",
+        }));
 
-      // Shuffle so consecutive items aren't from the same creator
       const shuffled = [...mapped].sort(() => Math.random() - 0.5);
       setItems(shuffled);
       setLoading(false);
@@ -76,7 +53,6 @@ export const PortfolioShowcase = () => {
 
   if (loading || items.length < 2) return null;
 
-  // Duplicate enough for seamless infinite scroll
   const repeatCount = Math.max(3, Math.ceil(12 / items.length));
   const scrollItems = Array.from({ length: repeatCount }, () => items).flat();
 
@@ -97,9 +73,7 @@ export const PortfolioShowcase = () => {
         </p>
       </div>
 
-      {/* Scrolling carousel — CSS-only infinite animation */}
       <div className="relative">
-        {/* Left/Right fade edges */}
         <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
@@ -116,7 +90,6 @@ export const PortfolioShowcase = () => {
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
-                {/* Media type badge */}
                 {item.media_type === "video" && (
                   <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-full backdrop-blur-sm">
                     Video
@@ -128,24 +101,9 @@ export const PortfolioShowcase = () => {
                   </div>
                 )}
               </div>
-              {/* Creator info */}
-              <div className="mt-3 flex items-center gap-2.5">
-                <Avatar className="h-7 w-7 border border-border">
-                  <AvatarImage src={item.creator_avatar || undefined} />
-                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
-                    {item.creator_name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate leading-tight">
-                    {item.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {item.creator_name}
-                    {item.creator_role ? ` · ${item.creator_role}` : ""}
-                  </p>
-                </div>
-              </div>
+              <p className="mt-2 text-sm font-medium truncate text-muted-foreground px-1">
+                {item.title}
+              </p>
             </div>
           ))}
         </div>

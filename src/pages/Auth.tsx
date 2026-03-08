@@ -705,9 +705,23 @@ const Auth = () => {
             ))}
           </div>
           
-          <p className="mt-10 text-xs text-muted-foreground">
-            ⚡ 60-second setup • No credit card required • 1-month Pro free
-          </p>
+          {/* Real social proof */}
+          <div className="mt-10 space-y-3">
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex -space-x-2">
+                {/* Stacked avatar placeholders */}
+                <div className="h-7 w-7 rounded-full bg-primary/30 border-2 border-background flex items-center justify-center text-[10px] font-bold text-primary">M</div>
+                <div className="h-7 w-7 rounded-full bg-secondary/30 border-2 border-background flex items-center justify-center text-[10px] font-bold text-secondary">G</div>
+                <div className="h-7 w-7 rounded-full bg-accent/30 border-2 border-background flex items-center justify-center text-[10px] font-bold text-accent">+</div>
+              </div>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">200+</span> creators already on the platform
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              ⚡ 60-second setup • No credit card • 1-month Pro free
+            </p>
+          </div>
         </div>
       </div>
 

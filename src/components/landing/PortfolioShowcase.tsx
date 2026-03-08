@@ -26,10 +26,8 @@ export const PortfolioShowcase = () => {
         .from("portfolio_items")
         .select("id, title, media_url, thumbnail_url, media_type, user_id")
         .not("media_url", "is", null)
-        .not("thumbnail_url", "is", null)
-        .neq("thumbnail_url", "")
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (!data || data.length === 0) {
         setLoading(false);

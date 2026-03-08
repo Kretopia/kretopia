@@ -71,7 +71,7 @@ export const PortfolioShowcase = () => {
     fetchPortfolio();
   }, []);
 
-  if (loading || items.length < 3) return null;
+  if (loading || items.length < 2) return null;
 
   // Duplicate for infinite scroll illusion
   const scrollItems = [...items, ...items];

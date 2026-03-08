@@ -257,6 +257,14 @@ const Auth = () => {
     setEmailError("");
     setPasswordError("");
     setLoading(true);
+    
+    // Track sign-in attempt
+    const { trackEvent, EventCategory } = await import("@/lib/analytics");
+    trackEvent({
+      eventName: 'signin_attempt',
+      eventCategory: EventCategory.AUTH,
+      properties: { time_on_page_ms: Date.now() - authLoadTime },
+    });
 
     try {
       // Aggressively clear any corrupted session data before login

@@ -41,9 +41,7 @@ export const PortfolioShowcase = () => {
         .in("user_id", userIds);
 
       const profileMap = new Map(
-        (profiles || [])
-          .filter((p) => p.is_claimed !== false)
-          .map((p) => [p.user_id, p])
+        (profiles || []).map((p) => [p.user_id, p])
       );
 
       const mapped: ShowcaseItem[] = data

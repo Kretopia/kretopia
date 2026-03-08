@@ -87,7 +87,7 @@ export const PortfolioShowcase = () => {
             >
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/50 bg-muted/30 shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                 <img
-                  src={item.thumbnail_url || item.media_url}
+                  src={item.thumbnail_url!}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { PageTip } from "@/components/PageTip";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

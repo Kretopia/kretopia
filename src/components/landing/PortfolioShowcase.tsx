@@ -73,8 +73,9 @@ export const PortfolioShowcase = () => {
 
   if (loading || items.length < 2) return null;
 
-  // Duplicate for infinite scroll illusion
-  const scrollItems = [...items, ...items];
+  // Duplicate enough for seamless infinite scroll
+  const repeatCount = Math.max(3, Math.ceil(12 / items.length));
+  const scrollItems = Array.from({ length: repeatCount }, () => items).flat();
 
   return (
     <section className="py-16 sm:py-20 overflow-hidden">

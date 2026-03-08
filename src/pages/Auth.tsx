@@ -516,6 +516,11 @@ const Auth = () => {
     });
 
     if (error) {
+      // Track signup errors
+      const { analytics: errAnalytics } = await import("@/lib/analytics");
+      const errorType = error.message.includes("already registered") ? "already_registered" : "other";
+      errAnalytics.errorOccurred('signup_failed', errorType, 'auth');
+      
       if (error.message.includes("already registered")) {
         toast({
           title: "Account Exists",

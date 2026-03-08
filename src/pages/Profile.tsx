@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { PageTip } from "@/components/PageTip";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

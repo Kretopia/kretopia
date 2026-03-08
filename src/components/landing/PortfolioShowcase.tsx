@@ -14,12 +14,8 @@ interface ShowcaseItem {
 export const PortfolioShowcase = () => {
   const [items, setItems] = useState<ShowcaseItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const loadedRef = useRef(false);
 
   useEffect(() => {
-    // Prevent double-fetch in StrictMode
-    if (loadedRef.current) return;
-    loadedRef.current = true;
 
     const fetchPortfolio = async () => {
       try {

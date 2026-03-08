@@ -41,13 +41,16 @@ export const PortfolioShowcase = () => {
         .in("user_id", userIds);
 
       const profileMap = new Map(
-        (profiles || [])
-          .filter((p) => p.is_claimed !== false)
-          .map((p) => [p.user_id, p])
+        (profiles || []).map((p) => [p.user_id, p])
       );
 
       const mapped: ShowcaseItem[] = data
         .filter((d) => profileMap.has(d.user_id))
+        .filter((d) => {
+          const thumb = d.thumbnail_url || d.media_url;
+          // Only show items with visual thumbnails (not audio files or null)
+          return thumb && !thumb.endsWith('.wav') && !thumb.endsWith('.mp3');
+        })
         .map((d) => {
           const p = profileMap.get(d.user_id)!;
           return {

@@ -44,7 +44,10 @@ Deno.serve(async (req) => {
     const TWILIO_PHONE = Deno.env.get("TWILIO_PHONE_NUMBER")!;
 
     if (action === "send") {
-      if (!phone || typeof phone !== "string" || phone.trim().length < 8) {
+      // Strip all non-digit chars except leading +
+      const cleanedPhone = phone ? phone.trim().replace(/(?!^\+)\D/g, '') : '';
+      
+      if (!cleanedPhone || cleanedPhone.length < 8) {
         return new Response(
           JSON.stringify({ error: "Invalid phone number. Use international format e.g. +1234567890" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

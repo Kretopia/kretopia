@@ -396,7 +396,8 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
               <CardContent>
                 <div className="space-y-2">
                   {monthlyRevenue.map(([month, data]) => {
-                    const maxVal = Math.max(...monthlyRevenue.map(([, d]) => d.invoiced), 1);
+                    const totalMonthIncome = data.collected + data.payments + data.marketSales;
+                    const maxVal = Math.max(...monthlyRevenue.map(([, d]) => Math.max(d.invoiced, d.collected + d.payments + d.marketSales)), 1);
                     return (
                       <div key={month} className="flex items-center gap-3">
                         <span className="text-xs text-muted-foreground w-16 shrink-0 font-mono">
@@ -404,14 +405,14 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
                         </span>
                         <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden">
                           <div className="h-full bg-primary/30 rounded-full relative"
-                            style={{ width: `${(data.invoiced / maxVal) * 100}%` }}>
+                            style={{ width: `${(Math.max(data.invoiced, totalMonthIncome) / maxVal) * 100}%` }}>
                             <div className="h-full bg-primary rounded-full"
-                              style={{ width: data.invoiced > 0 ? `${(data.collected / data.invoiced) * 100}%` : "0%" }} />
+                              style={{ width: Math.max(data.invoiced, totalMonthIncome) > 0 ? `${(totalMonthIncome / Math.max(data.invoiced, totalMonthIncome)) * 100}%` : "0%" }} />
                           </div>
                         </div>
                         <div className="text-right w-24 shrink-0">
-                          <p className="text-xs font-medium">{sym}{data.collected.toFixed(0)}</p>
-                          <p className="text-[10px] text-muted-foreground">of {sym}{data.invoiced.toFixed(0)}</p>
+                          <p className="text-xs font-medium">{sym}{totalMonthIncome.toFixed(0)}</p>
+                          <p className="text-[10px] text-muted-foreground">of {sym}{data.invoiced.toFixed(0)} inv.</p>
                         </div>
                       </div>
                     );

@@ -130,7 +130,6 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
 
   const stats = useMemo(() => {
     const totalInvoiced = filteredInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
-    const paidInvoices = filteredInvoices.filter(i => i.status === "paid");
 
     // For totalCollected, include ALL paid invoices whose paid_at falls within the period
     // This ensures invoices created in prior months but paid this month are counted
@@ -144,8 +143,9 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
     const allUnpaidInvoices = invoices.filter(i => i.status !== "paid" && i.status !== "cancelled");
     const overdueInvoices = allUnpaidInvoices.filter(i => i.status === "overdue" || (i.due_date && new Date(i.due_date) < new Date()));
     const overdueAmount = overdueInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
+    // Pending = unpaid minus overdue (avoid double-counting)
     const pendingInvoices = allUnpaidInvoices.filter(i => !overdueInvoices.includes(i));
-    const pendingAmount = allUnpaidInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
+    const pendingAmount = pendingInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
     const received = filteredPayments.filter(p => p.type === "payment_received" && p.status === "completed").reduce((s, p) => s + convert(Number(p.amount), p.currency || "USD"), 0);
     const sent = filteredPayments.filter(p => p.type === "payment_sent" && p.status === "completed").reduce((s, p) => s + convert(Number(p.amount), p.currency || "USD"), 0);
     const totalExpenses = filteredExpenses.reduce((s, e) => s + convert(Number(e.amount), e.currency || "USD"), 0);
@@ -157,7 +157,8 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
 
     const totalIncome = totalCollected + marketplaceIncome;
     const totalSpend = totalExpenses + marketplaceSpend;
-    const collectionRate = totalInvoiced > 0 ? (totalCollected / totalInvoiced) * 100 : 0;
+    // Collection rate: use period-filtered invoiced total vs period-filtered collected
+    const collectionRate = totalInvoiced > 0 ? Math.min((totalCollected / totalInvoiced) * 100, 100) : 0;
 
     return {
       totalInvoiced, totalCollected, overdueAmount, pendingAmount, received, sent, totalExpenses,

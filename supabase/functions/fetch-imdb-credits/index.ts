@@ -77,6 +77,31 @@ serve(async (req) => {
         personData = findData.person_results[0];
         console.log(`Found person via IMDB ID: ${personData.name} (TMDB ID: ${personData.id})`);
         
+        // If searchOnly, return this person as a selectable result
+        if (searchOnly) {
+          return new Response(JSON.stringify({
+            success: true,
+            personFound: true,
+            personData: {
+              id: personData.id,
+              name: personData.name,
+              profilePath: personData.profile_path 
+                ? `https://image.tmdb.org/t/p/w500${personData.profile_path}` 
+                : null,
+              knownFor: personData.known_for_department,
+            },
+            searchResults: [{
+              id: personData.id,
+              name: personData.name,
+              profile_path: personData.profile_path,
+              known_for_department: personData.known_for_department,
+              known_for: personData.known_for?.slice(0, 3).map((k: any) => k.title || k.name).join(', ') || '',
+            }],
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
         // Get combined credits
         const creditsRes = await fetch(
           `https://api.themoviedb.org/3/person/${personData.id}/combined_credits?api_key=${TMDB_API_KEY}`
@@ -87,23 +112,23 @@ serve(async (req) => {
         
         credits = processCredits(creditsData);
       } else {
-        // TMDB doesn't have this IMDB ID indexed - try extracting name from IMDB directly
+        // TMDB doesn't have this IMDB ID indexed - try name search as fallback
         console.log(`TMDB doesn't have ${imdbId} indexed, trying to fetch from IMDB directly`);
         
-        // Try to get name from IMDB page
         try {
           const imdbPageRes = await fetch(`https://www.imdb.com/name/${imdbId}/`, {
             headers: {
-              'User-Agent': 'Mozilla/5.0 (compatible; ThriveIN/1.0)',
-              'Accept': 'text/html',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml',
+              'Accept-Language': 'en-US,en;q=0.9',
             },
           });
           
           if (imdbPageRes.ok) {
             const html = await imdbPageRes.text();
-            // Try to extract name from title or JSON-LD
-            const titleMatch = html.match(/<title>([^-]+)/);
+            // Try to extract name from JSON-LD or title tag
             const jsonLdMatch = html.match(/"name"\s*:\s*"([^"]+)"/);
+            const titleMatch = html.match(/<title>([^-<]+)/);
             const extractedName = jsonLdMatch?.[1] || titleMatch?.[1]?.trim();
             
             if (extractedName) {
@@ -117,21 +142,32 @@ serve(async (req) => {
               console.log(`TMDB search for "${extractedName}" returned ${searchData.results?.length || 0} results`);
               allSearchResults = searchData.results || [];
               
+              if (searchOnly && allSearchResults.length > 0) {
+                return new Response(JSON.stringify({
+                  success: true,
+                  searchResults: allSearchResults.slice(0, 10).map((p: any) => ({
+                    id: p.id,
+                    name: p.name,
+                    profile_path: p.profile_path,
+                    known_for_department: p.known_for_department,
+                    known_for: p.known_for?.slice(0, 3).map((k: any) => k.title || k.name).join(', '),
+                  })),
+                }), {
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+              }
+              
               if (searchData.results && searchData.results.length > 0) {
-                // Try exact match first
                 personData = searchData.results.find(
                   (p: any) => p.name.toLowerCase() === extractedName.toLowerCase()
                 ) || searchData.results[0];
                 
                 console.log(`Selected person: ${personData.name} (ID: ${personData.id})`);
                 
-                // Get combined credits
                 const creditsRes = await fetch(
                   `https://api.themoviedb.org/3/person/${personData.id}/combined_credits?api_key=${TMDB_API_KEY}`
                 );
                 const creditsData = await creditsRes.json();
-                
-                console.log(`Found ${creditsData.cast?.length || 0} cast credits and ${creditsData.crew?.length || 0} crew credits`);
                 credits = processCredits(creditsData);
               }
             }

@@ -44,7 +44,10 @@ Deno.serve(async (req) => {
     const TWILIO_PHONE = Deno.env.get("TWILIO_PHONE_NUMBER")!;
 
     if (action === "send") {
-      if (!phone || typeof phone !== "string" || phone.trim().length < 8) {
+      // Strip all non-digit chars except leading +
+      const cleanedPhone = phone ? phone.trim().replace(/(?!^\+)\D/g, '') : '';
+      
+      if (!cleanedPhone || cleanedPhone.length < 8) {
         return new Response(
           JSON.stringify({ error: "Invalid phone number. Use international format e.g. +1234567890" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -67,7 +70,7 @@ Deno.serve(async (req) => {
         .update({
           phone_otp: otp,
           phone_otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-          phone_number: phone.trim(),
+          phone_number: cleanedPhone,
         })
         .eq("user_id", userId);
 
@@ -76,8 +79,8 @@ Deno.serve(async (req) => {
 
       // For WhatsApp, prefix both From and To with "whatsapp:"
       const toNumber = deliveryChannel === "whatsapp" 
-        ? `whatsapp:${phone.trim()}` 
-        : phone.trim();
+        ? `whatsapp:${cleanedPhone}` 
+        : cleanedPhone;
       const fromNumber = deliveryChannel === "whatsapp" 
         ? `whatsapp:${TWILIO_PHONE}` 
         : TWILIO_PHONE;

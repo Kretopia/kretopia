@@ -259,8 +259,8 @@ export function StartProjectFromMatchDialog({
         .single();
 
       // Auto-invite the matched user as collaborator
-      const { data: { user: matchedUserAuth } } = await supabase.auth.admin.getUserById(matchedUser.id);
-      const matchedUserEmail = matchedUserAuth?.email;
+      // Use get_user_email RPC (client-safe) instead of auth.admin which doesn't work client-side
+      const { data: matchedUserEmail } = await supabase.rpc('get_user_email', { _user_id: matchedUser.id });
 
       const { error: inviteError } = await supabase
         .from('project_collaborators')
@@ -273,19 +273,8 @@ export function StartProjectFromMatchDialog({
           status: 'pending',
         });
 
-      if (!inviteError && matchedUserEmail) {
-        // Send email notification
-        await supabase.functions.invoke('send-project-invitation', {
-          body: {
-            email: matchedUserEmail,
-            projectTitle: validationResult.data.title,
-            projectId: project.id,
-            inviterName: userProfile?.full_name || 'A ThriveIN user',
-            inviteeUserId: matchedUser.id,
-          }
-        });
-
-        // Create in-app notification
+      if (!inviteError) {
+        // Always send in-app notification regardless of email availability
         await supabase.from('notifications').insert({
           user_id: matchedUser.id,
           title: "🚀 New Project Invitation",
@@ -295,6 +284,19 @@ export function StartProjectFromMatchDialog({
           priority: 'high',
           link: `/desk/${project.id}`,
         });
+
+        // Send email notification if we have their email
+        if (matchedUserEmail) {
+          supabase.functions.invoke('send-project-invitation', {
+            body: {
+              email: matchedUserEmail,
+              projectTitle: validationResult.data.title,
+              projectId: project.id,
+              inviterName: userProfile?.full_name || 'A ThriveIN user',
+              inviteeUserId: matchedUser.id,
+            }
+          }).catch(err => console.error('[StartProject] Invitation email failed:', err));
+        }
 
         // Send email notification for project invite (fire-and-forget)
         supabase.functions.invoke('send-user-email', {

@@ -408,6 +408,28 @@ const ProfileContent = () => {
           })()}
         </div>
 
+        {/* Profile Strength Score - show if not 100% */}
+        {(() => {
+          const { score } = calculateProfileStrength(
+            profile as any,
+            portfolioItems.length,
+            credits?.length || 0,
+            awards?.length || 0,
+            pressLinks?.length || 0
+          );
+          return score < 100 ? (
+            <div className="mb-4">
+              <ProfileStrengthScore
+                profile={profile as any}
+                portfolioCount={portfolioItems.length}
+                creditsCount={credits?.length || 0}
+                awardsCount={awards?.length || 0}
+                pressCount={pressLinks?.length || 0}
+              />
+            </div>
+          ) : null;
+        })()}
+
         {/* Verification & Trust */}
         <ProfileVerificationSection
           profile={profile}

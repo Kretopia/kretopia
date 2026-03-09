@@ -131,7 +131,15 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
   const stats = useMemo(() => {
     const totalInvoiced = filteredInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
     const paidInvoices = filteredInvoices.filter(i => i.status === "paid");
-    const totalCollected = paidInvoices.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
+
+    // For totalCollected, include ALL paid invoices whose paid_at falls within the period
+    // This ensures invoices created in prior months but paid this month are counted
+    const range = getDateRange();
+    const paidInPeriod = range
+      ? invoices.filter(i => i.status === "paid" && i.paid_at && isWithinInterval(new Date(i.paid_at), { start: range.start, end: range.end }))
+      : invoices.filter(i => i.status === "paid");
+    const totalCollected = paidInPeriod.reduce((s, i) => s + convert(Number(i.total_amount || i.amount || 0), i.currency || "USD"), 0);
+
     // Outstanding: ALL unpaid invoices regardless of period filter
     const allUnpaidInvoices = invoices.filter(i => i.status !== "paid" && i.status !== "cancelled");
     const overdueInvoices = allUnpaidInvoices.filter(i => i.status === "overdue" || (i.due_date && new Date(i.due_date) < new Date()));
@@ -154,11 +162,11 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
     return {
       totalInvoiced, totalCollected, overdueAmount, pendingAmount, received, sent, totalExpenses,
       collectionRate, overdueCount: overdueInvoices.length, pendingCount: pendingInvoices.length,
-      paidCount: paidInvoices.length, totalInvoiceCount: filteredInvoices.length,
+      paidCount: paidInPeriod.length, totalInvoiceCount: filteredInvoices.length,
       marketplaceIncome, marketplaceSpend, totalIncome, totalSpend,
       marketSalesCount: filteredMarketSales.length, marketPurchaseCount: filteredMarketPurchases.length,
     };
-  }, [filteredInvoices, filteredPayments, filteredExpenses, filteredMarketSales, filteredMarketPurchases, convert]);
+  }, [filteredInvoices, filteredPayments, filteredExpenses, filteredMarketSales, filteredMarketPurchases, invoices, convert]);
 
   const monthlyRevenue = useMemo(() => {
     const months: Record<string, { invoiced: number; collected: number; payments: number; marketSales: number }> = {};

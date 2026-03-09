@@ -79,8 +79,8 @@ Deno.serve(async (req) => {
 
       // For WhatsApp, prefix both From and To with "whatsapp:"
       const toNumber = deliveryChannel === "whatsapp" 
-        ? `whatsapp:${phone.trim()}` 
-        : phone.trim();
+        ? `whatsapp:${cleanedPhone}` 
+        : cleanedPhone;
       const fromNumber = deliveryChannel === "whatsapp" 
         ? `whatsapp:${TWILIO_PHONE}` 
         : TWILIO_PHONE;

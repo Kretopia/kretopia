@@ -171,26 +171,39 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
 
   const monthlyRevenue = useMemo(() => {
     const months: Record<string, { invoiced: number; collected: number; payments: number; marketSales: number }> = {};
+    
+    // Invoiced amounts by created_at month
     filteredInvoices.forEach(inv => {
       const key = format(new Date(inv.created_at), "yyyy-MM");
       if (!months[key]) months[key] = { invoiced: 0, collected: 0, payments: 0, marketSales: 0 };
-      months[key].invoiced += Number(inv.total_amount || inv.amount || 0);
-      if (inv.status === "paid") months[key].collected += Number(inv.total_amount || inv.amount || 0);
+      months[key].invoiced += convert(Number(inv.total_amount || inv.amount || 0), inv.currency || "USD");
     });
+    
+    // Collected amounts by paid_at month (not created_at)
+    const range = getDateRange();
+    const paidInRange = range
+      ? invoices.filter(i => i.status === "paid" && i.paid_at && isWithinInterval(new Date(i.paid_at), { start: range.start, end: range.end }))
+      : invoices.filter(i => i.status === "paid" && i.paid_at);
+    paidInRange.forEach(inv => {
+      const key = format(new Date(inv.paid_at), "yyyy-MM");
+      if (!months[key]) months[key] = { invoiced: 0, collected: 0, payments: 0, marketSales: 0 };
+      months[key].collected += convert(Number(inv.total_amount || inv.amount || 0), inv.currency || "USD");
+    });
+    
     filteredPayments.forEach(p => {
       if (p.type === "payment_received" && p.status === "completed") {
         const key = format(new Date(p.created_at), "yyyy-MM");
         if (!months[key]) months[key] = { invoiced: 0, collected: 0, payments: 0, marketSales: 0 };
-        months[key].payments += Number(p.amount);
+        months[key].payments += convert(Number(p.amount), p.currency || "USD");
       }
     });
     filteredMarketSales.forEach(o => {
       const key = format(new Date(o.created_at), "yyyy-MM");
       if (!months[key]) months[key] = { invoiced: 0, collected: 0, payments: 0, marketSales: 0 };
-      months[key].marketSales += (Number(o.amount) - Number(o.platform_fee || 0));
+      months[key].marketSales += convert(Number(o.amount) - Number(o.platform_fee || 0), "USD");
     });
     return Object.entries(months).sort(([a], [b]) => a.localeCompare(b));
-  }, [filteredInvoices, filteredPayments, filteredMarketSales]);
+  }, [filteredInvoices, filteredPayments, filteredMarketSales, invoices, convert]);
 
   const exportCSV = () => {
     const rows = [

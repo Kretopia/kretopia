@@ -101,7 +101,12 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
   const filteredInvoices = useMemo(() => {
     const range = getDateRange();
     if (!range) return invoices;
-    return invoices.filter(inv => isWithinInterval(new Date(inv.created_at), { start: range.start, end: range.end }));
+    // Include invoices created in period OR paid in period (to catch cross-month payments)
+    return invoices.filter(inv => {
+      const createdInRange = isWithinInterval(new Date(inv.created_at), { start: range.start, end: range.end });
+      const paidInRange = inv.status === "paid" && inv.paid_at && isWithinInterval(new Date(inv.paid_at), { start: range.start, end: range.end });
+      return createdInRange || paidInRange;
+    });
   }, [invoices, period]);
 
   const filteredPayments = useMemo(() => {

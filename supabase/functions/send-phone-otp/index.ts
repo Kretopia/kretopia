@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
         .update({
           phone_otp: otp,
           phone_otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-          phone_number: phone.trim(),
+          phone_number: cleanedPhone,
         })
         .eq("user_id", userId);
 

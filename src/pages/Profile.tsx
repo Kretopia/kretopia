@@ -15,6 +15,7 @@ import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 
 // Components
 import { ProfileHero } from "@/components/profile/ProfileHero";
+import { ProfileStrengthScore, calculateProfileStrength } from "@/components/profile/ProfileStrengthScore";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";

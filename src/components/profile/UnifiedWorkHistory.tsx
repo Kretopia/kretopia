@@ -91,6 +91,7 @@ const SOURCE_COLORS: Record<string, string> = {
   imdb: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
   discogs: 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
   musicbrainz: 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
+  project: 'bg-primary/10 text-primary',
   manual: 'bg-muted text-muted-foreground',
 };
 
@@ -138,8 +139,8 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
         platform: c.platform,
         url: c.url,
         thumbnailUrl: c.thumbnail_url,
-        isVerified: false,
-        source: 'manual',
+        isVerified: c.verification_status === 'verified',
+        source: c.verification_status === 'verified' ? 'project' : 'manual',
         creditType: 'credit'
       }));
 
@@ -348,7 +349,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
               return acc;
             }, {} as Record<string, UnifiedCredit[]>);
 
-            const sourceOrder = ['tmdb', 'imdb', 'spotify', 'youtube', 'musicbrainz', 'discogs', 'manual'];
+            const sourceOrder = ['project', 'tmdb', 'imdb', 'spotify', 'youtube', 'musicbrainz', 'discogs', 'manual'];
             const sortedSources = Object.keys(groupedCredits).sort((a, b) => {
               const aIndex = sourceOrder.indexOf(a);
               const bIndex = sourceOrder.indexOf(b);
@@ -361,7 +362,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
               const displayCredits = isExpanded ? sourceCredits : sourceCredits.slice(0, INITIAL_ITEMS_PER_SOURCE);
               const hasMore = sourceCredits.length > INITIAL_ITEMS_PER_SOURCE;
               const sourceColor = SOURCE_COLORS[source] || SOURCE_COLORS.manual;
-              const sourceName = source === 'tmdb' ? 'IMDB/TMDB' : source.charAt(0).toUpperCase() + source.slice(1);
+              const sourceName = source === 'tmdb' ? 'IMDB/TMDB' : source === 'project' ? 'Project Credits' : source.charAt(0).toUpperCase() + source.slice(1);
 
               return (
                 <div key={source} className="space-y-2">

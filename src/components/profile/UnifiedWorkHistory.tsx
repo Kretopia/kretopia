@@ -140,7 +140,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
         url: c.url,
         thumbnailUrl: c.thumbnail_url,
         isVerified: c.verification_status === 'verified',
-        source: c.verification_status === 'verified' ? 'project' : 'manual',
+        source: c.verification_status === 'verified' ? 'project' : c.verification_status === 'pending' ? 'project_pending' : 'manual',
         creditType: 'credit'
       }));
 

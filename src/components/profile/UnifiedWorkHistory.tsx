@@ -388,6 +388,8 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                           "flex items-center gap-4 p-3 rounded-lg transition-colors group",
                           credit.isVerified 
                             ? "bg-green-500/5 border border-green-500/20 hover:bg-green-500/10" 
+                            : credit.source === 'project_pending'
+                            ? "bg-yellow-500/5 border border-yellow-500/20 hover:bg-yellow-500/10"
                             : "bg-muted/30 hover:bg-muted/50",
                           isPlayable && "cursor-pointer"
                         )}

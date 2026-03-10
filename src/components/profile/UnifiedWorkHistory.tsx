@@ -362,7 +362,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
               const displayCredits = isExpanded ? sourceCredits : sourceCredits.slice(0, INITIAL_ITEMS_PER_SOURCE);
               const hasMore = sourceCredits.length > INITIAL_ITEMS_PER_SOURCE;
               const sourceColor = SOURCE_COLORS[source] || SOURCE_COLORS.manual;
-              const sourceName = source === 'tmdb' ? 'IMDB/TMDB' : source.charAt(0).toUpperCase() + source.slice(1);
+              const sourceName = source === 'tmdb' ? 'IMDB/TMDB' : source === 'project' ? 'Project Credits' : source.charAt(0).toUpperCase() + source.slice(1);
 
               return (
                 <div key={source} className="space-y-2">

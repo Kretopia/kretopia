@@ -92,6 +92,7 @@ const SOURCE_COLORS: Record<string, string> = {
   discogs: 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
   musicbrainz: 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
   project: 'bg-primary/10 text-primary',
+  project_pending: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
   manual: 'bg-muted text-muted-foreground',
 };
 

@@ -350,7 +350,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
               return acc;
             }, {} as Record<string, UnifiedCredit[]>);
 
-            const sourceOrder = ['project', 'tmdb', 'imdb', 'spotify', 'youtube', 'musicbrainz', 'discogs', 'manual'];
+            const sourceOrder = ['project', 'project_pending', 'tmdb', 'imdb', 'spotify', 'youtube', 'musicbrainz', 'discogs', 'manual'];
             const sortedSources = Object.keys(groupedCredits).sort((a, b) => {
               const aIndex = sourceOrder.indexOf(a);
               const bIndex = sourceOrder.indexOf(b);

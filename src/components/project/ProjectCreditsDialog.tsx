@@ -124,13 +124,13 @@ export const ProjectCreditsDialog = ({
       // Send notifications to other collaborators
       const otherAssignments = validAssignments.filter((a) => a.userId !== user.id);
       for (const assignment of otherAssignments) {
-        await supabase.from("notifications").insert({
+          await supabase.from("notifications").insert({
           user_id: assignment.userId,
           title: "🎬 New Project Credit",
           message: `You've been credited as "${assignment.role}" on "${projectTitle}". Confirm to add it to your profile.`,
           type: "project_credit",
-          link: `/projects/${projectId}`,
-          action_url: `/projects/${projectId}`,
+          link: `/desk/${projectId}`,
+          action_url: `/desk/${projectId}`,
           action_text: "Confirm Credit",
           priority: "high",
           category: "project",

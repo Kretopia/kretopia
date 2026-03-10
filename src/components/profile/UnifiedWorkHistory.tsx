@@ -138,8 +138,8 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
         platform: c.platform,
         url: c.url,
         thumbnailUrl: c.thumbnail_url,
-        isVerified: false,
-        source: 'manual',
+        isVerified: c.verification_status === 'verified',
+        source: c.verification_status === 'verified' ? 'project' : 'manual',
         creditType: 'credit'
       }));
 

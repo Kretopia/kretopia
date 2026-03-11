@@ -106,6 +106,26 @@ const SalesDashboard = () => {
     return null;
   }
 
+  if (adminChecked && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center space-y-3">
+          <Lock className="h-12 w-12 text-muted-foreground mx-auto" />
+          <h2 className="text-xl font-bold">Admin Only</h2>
+          <p className="text-sm text-muted-foreground">This tool is restricted to platform administrators.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminChecked) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Checking access...</div>
+      </div>
+    );
+  }
+
   const totalLeads = leads.length;
   const hotLeads = leads.filter((l) => l.stage === "hot").length;
   const convertedLeads = leads.filter((l) => l.stage === "converted").length;

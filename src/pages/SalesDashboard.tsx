@@ -18,6 +18,24 @@ const SalesDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("leads");
   const isPro = subscriptionInfo.subscribed;
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
+
+  // Check if user is admin — only admins can access this page
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user?.id) return;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      setIsAdmin(!!data);
+      setAdminChecked(true);
+    };
+    checkAdmin();
+  }, [user?.id]);
 
   // Fetch lead stats
   const { data: leads = [] } = useQuery({

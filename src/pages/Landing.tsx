@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { LiveCreatorPreview } from "@/components/landing/LiveCreatorPreview";
 import { PortfolioShowcase } from "@/components/landing/PortfolioShowcase";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PostOpportunitySection } from "@/components/landing/PostOpportunitySection";
@@ -48,6 +49,7 @@ const Landing = () => {
         url="https://thrivein.io"
       />
       <HeroSection />
+      <LiveCreatorPreview />
       <PortfolioShowcase />
       <HowItWorksSection />
       <PostOpportunitySection opportunitiesCount={opportunitiesCount} />

@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X, Mail, RefreshCw, Chrome, Eye, EyeOff } from "lucide-react";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
+import { AuthCreatorTeaser } from "@/components/auth/AuthCreatorTeaser";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import {
@@ -705,8 +706,11 @@ const Auth = () => {
             ))}
           </div>
           
+          {/* Live creator teaser */}
+          <AuthCreatorTeaser />
+
           {/* Quick benefits reminder */}
-          <div className="mt-10">
+          <div className="mt-6">
             <p className="text-xs text-muted-foreground">
               ⚡ 60-second setup • No credit card • 1-month Pro free
             </p>

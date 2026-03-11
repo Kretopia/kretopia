@@ -124,13 +124,16 @@ export function OnboardingCelebration({
 
           {/* Actions */}
           <div className="space-y-3 pt-2">
+            <Button onClick={handleContinue} className="w-full gap-2">
+              Start Matching <ArrowRight className="h-4 w-4" />
+            </Button>
             <Button onClick={handleShareCard} variant="outline" className="w-full gap-2">
               <Share2 className="h-4 w-4" />
               Share Your Creator Card
             </Button>
-            <Button onClick={handleContinue} className="w-full gap-2">
-              Start Exploring <ArrowRight className="h-4 w-4" />
-            </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              We'll take you to Circle — swipe to find your first collaborator!
+            </p>
           </div>
         </div>
       </DialogContent>

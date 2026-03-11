@@ -705,8 +705,11 @@ const Auth = () => {
             ))}
           </div>
           
+          {/* Live creator teaser */}
+          <AuthCreatorTeaser />
+
           {/* Quick benefits reminder */}
-          <div className="mt-10">
+          <div className="mt-6">
             <p className="text-xs text-muted-foreground">
               ⚡ 60-second setup • No credit card • 1-month Pro free
             </p>

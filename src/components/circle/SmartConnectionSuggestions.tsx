@@ -40,14 +40,14 @@ export const SmartConnectionSuggestions = () => {
 
       const connectedIds = connections?.map(c => c.connected_user_id) || [];
 
-      // Get potential matches - users with similar skills/roles
+      // Get potential matches - users with profiles
       let query = supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, level, xp')
+        .select('user_id, full_name, role, bio, avatar_url, location, level, xp, professional_skills')
         .neq('user_id', user.id)
+        .eq('onboarding_completed', true)
         .not('avatar_url', 'is', null)
-        .not('bio', 'is', null)
-        .limit(10);
+        .limit(20);
       
       // Only filter by connected IDs if there are any
       if (connectedIds.length > 0) {
@@ -61,52 +61,94 @@ export const SmartConnectionSuggestions = () => {
         return;
       }
 
-      // Generate insights for each match
+      // Parse current user's skills
+      const currentSkills = new Set<string>();
+      if (Array.isArray(currentProfile.professional_skills)) {
+        currentProfile.professional_skills.forEach((s: any) => {
+          if (typeof s === 'string') currentSkills.add(s.toLowerCase());
+          else if (s?.skill) currentSkills.add(s.skill.toLowerCase());
+        });
+      }
+
+      // Generate insights for each match with real scoring
       const enrichedMatches = potentialMatches.map(match => {
         const reasons: string[] = [];
+        let score = 50; // base score
         
-        // Similar role
+        // Skills overlap (strongest signal)
+        const matchSkills: string[] = [];
+        if (Array.isArray(match.professional_skills)) {
+          match.professional_skills.forEach((s: any) => {
+            const skill = typeof s === 'string' ? s : s?.skill;
+            if (skill) matchSkills.push(skill);
+          });
+        }
+        const overlap = matchSkills.filter(s => currentSkills.has(s.toLowerCase()));
+        if (overlap.length > 0) {
+          score += overlap.length * 10;
+          reasons.push(`Shares ${overlap.length} skill${overlap.length > 1 ? 's' : ''}: ${overlap.slice(0, 2).join(', ')}`);
+        }
+
+        // Complementary roles (designer + developer, etc.)
+        const complementaryPairs: Record<string, string[]> = {
+          'designer': ['developer', 'photographer', 'content creator'],
+          'developer': ['designer', 'marketer'],
+          'photographer': ['videographer', 'designer', 'model'],
+          'videographer': ['photographer', 'music producer', 'editor'],
+          'music producer': ['singer', 'rapper', 'dj'],
+        };
+        const currentRoleLower = (currentProfile.role || '').toLowerCase();
+        const matchRoleLower = (match.role || '').toLowerCase();
+        if (complementaryPairs[currentRoleLower]?.some(r => matchRoleLower.includes(r))) {
+          score += 15;
+          reasons.push(`Complementary roles: ${currentProfile.role} + ${match.role}`);
+        }
+        
+        // Same role
         if (match.role === currentProfile.role) {
+          score += 8;
           reasons.push(`Both working as ${match.role}s`);
         }
         
-        // Similar location
-        if (match.location && currentProfile.location && 
-            match.location === currentProfile.location) {
+        // Same location
+        if (match.location && currentProfile.location && match.location === currentProfile.location) {
+          score += 12;
           reasons.push(`Based in ${match.location}`);
         }
         
         // Level similarity
-        if (match.level && currentProfile.level && 
-            Math.abs(match.level - currentProfile.level) <= 2) {
-          reasons.push(`Similar experience level (Level ${match.level})`);
+        if (match.level && currentProfile.level && Math.abs(match.level - currentProfile.level) <= 2) {
+          score += 5;
+          reasons.push(`Similar experience level`);
         }
 
-        // Add generic reasons if none found
+        // Active user bonus
+        if (match.xp && match.xp > 500) {
+          score += 5;
+        }
+
         if (reasons.length === 0) {
-          reasons.push(`Active ${match.role} in the community`);
-          if (match.xp && match.xp > 1000) {
-            reasons.push('Highly engaged community member');
-          }
+          reasons.push(`Active ${match.role || 'creator'} in the community`);
         }
 
-        // Generate conversation starters
         const conversationStarters = [
-          `I noticed you're a ${match.role}. What projects are you currently working on?`,
-          `Your profile caught my eye. Would love to learn more about your work!`,
+          `Hey ${match.full_name?.split(' ')[0]}, I'm a ${currentProfile.role} — would love to connect!`,
+          overlap.length > 0 ? `I see you're also into ${overlap[0]}. Let's chat!` : `Your profile caught my eye. Would love to collaborate!`,
           `I'd love to connect and explore potential collaborations.`
         ];
 
         return {
           ...match,
           insights: {
-            matchScore: Math.floor(Math.random() * 20) + 70, // 70-90% for now
+            matchScore: Math.min(score, 99),
             reasons,
             conversationStarters
           }
         };
       });
 
+      // Sort by score descending
+      enrichedMatches.sort((a, b) => b.insights.matchScore - a.insights.matchScore);
       setSuggestions(enrichedMatches.slice(0, 6));
     } catch (error) {
       console.error('Error fetching suggestions:', error);

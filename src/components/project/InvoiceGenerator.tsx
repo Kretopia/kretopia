@@ -676,16 +676,19 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
 
           <div className="flex-1 overflow-y-auto">
             {/* Create New Invoice */}
-            <Dialog>
+            <Dialog open={showCreateDialog} onOpenChange={(open) => {
+              setShowCreateDialog(open);
+              if (!open) { setEditingInvoiceId(null); resetForm(); }
+            }}>
               <DialogTrigger asChild>
-                <Button size="sm" className="w-full mb-4 gap-2">
+                <Button size="sm" className="w-full mb-4 gap-2" onClick={() => { setEditingInvoiceId(null); resetForm(); }}>
                   <Plus className="h-4 w-4" />
                   Create Professional Invoice
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
-                  <DialogTitle>Create Invoice</DialogTitle>
+                  <DialogTitle>{editingInvoiceId ? "Edit Invoice" : "Create Invoice"}</DialogTitle>
                 </DialogHeader>
 
                 {/* Step Navigation */}

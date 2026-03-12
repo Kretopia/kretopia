@@ -288,9 +288,100 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       payment_details: invoice.payment_details || {},
       terms_conditions: invoice.terms_conditions || "",
     });
+    setEditingInvoiceId(null);
     setCreateStep("details");
-    // Open the main dialog first, then the nested create dialog needs user click
-    toast.success("Invoice data loaded — click 'Create Professional Invoice' to continue");
+    setShowCreateDialog(true);
+    toast.success("Invoice data loaded for duplication");
+  };
+
+  const handleEditInvoice = (invoice: any) => {
+    setRecipientName(invoice.recipient_name || "");
+    setRecipientEmail(invoice.recipient_email || "");
+    setRecipientAddress(invoice.recipient_address || "");
+    setDueDate(invoice.due_date || "");
+    setTaxRate(String(invoice.tax_rate || 0));
+    setNotes(invoice.notes || "");
+    setCurrency(invoice.currency || "USD");
+    setDiscountType(invoice.discount_type || "");
+    setDiscountValue(String(invoice.discount_value || 0));
+    setLineItems(
+      (invoice.line_items || []).length > 0
+        ? (invoice.line_items as LineItem[])
+        : [{ description: "", quantity: 1, rate: 0, amount: 0 }]
+    );
+    setBranding({
+      brand_name: invoice.brand_name || "",
+      brand_logo_url: invoice.brand_logo_url || "",
+      brand_address: invoice.brand_address || "",
+      brand_email: invoice.brand_email || "",
+      brand_website: invoice.brand_website || "",
+      brand_color: invoice.brand_color || "#6366f1",
+    });
+    setPaymentConfig({
+      payment_method: invoice.payment_method || "bank_transfer",
+      payment_details: invoice.payment_details || {},
+      terms_conditions: invoice.terms_conditions || "",
+    });
+    setEditingInvoiceId(invoice.id);
+    setCreateStep("details");
+    setShowCreateDialog(true);
+  };
+
+  const handleUpdateInvoice = async () => {
+    if (!editingInvoiceId) return;
+    if (!recipientName || lineItems.some(item => !item.description)) {
+      toast.error("Please fill in client name and all line item descriptions");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const subtotal = calculateSubtotal();
+      const tax = calculateTax();
+      const total = calculateTotal();
+
+      const issuedTo = collaborators.find(c => c.full_name === recipientName)?.user_id || collaborators[0]?.user_id || null;
+
+      const updateData: any = {
+        amount: subtotal,
+        tax_rate: parseFloat(taxRate),
+        due_date: dueDate || null,
+        notes,
+        line_items: lineItems as any,
+        currency,
+        brand_name: branding.brand_name,
+        brand_logo_url: branding.brand_logo_url,
+        brand_address: branding.brand_address,
+        brand_email: branding.brand_email,
+        brand_website: branding.brand_website,
+        brand_color: branding.brand_color,
+        recipient_name: recipientName,
+        recipient_email: recipientEmail,
+        recipient_address: recipientAddress,
+        payment_method: paymentConfig.payment_method,
+        payment_details: paymentConfig.payment_details,
+        terms_conditions: paymentConfig.terms_conditions,
+        discount_type: discountType || null,
+        discount_value: parseFloat(discountValue) || 0,
+        discount_amount: calculateDiscount(),
+      };
+      if (issuedTo) updateData.issued_to = issuedTo;
+
+      const { error } = await supabase.from("invoices").update(updateData).eq("id", editingInvoiceId);
+      if (error) throw error;
+
+      toast.success("Invoice updated successfully!");
+      setShowCreateDialog(false);
+      setEditingInvoiceId(null);
+      setCreateStep("details");
+      fetchInvoices();
+      resetForm();
+    } catch (error) {
+      console.error("Error updating invoice:", error);
+      toast.error("Failed to update invoice");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleMarkAsPaid = async (invoice: any) => {

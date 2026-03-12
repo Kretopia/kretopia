@@ -928,6 +928,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                     </div>
 
                     <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
+                      {inv.status === "draft" && (
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleEditInvoice(inv)}>
+                          <Pencil className="h-3 w-3" /> Edit
+                        </Button>
+                      )}
                       <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handlePreview(inv)}>
                         <Eye className="h-3 w-3" /> Preview
                       </Button>

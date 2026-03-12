@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard } from "lucide-react";
+import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
@@ -39,6 +39,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const [previewInvoice, setPreviewInvoice] = useState<any>(null);
   const [createStep, setCreateStep] = useState<"details" | "branding" | "payment" | "preview">("details");
   const [loading, setLoading] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
 
   // Form state
   const [recipientName, setRecipientName] = useState("");
@@ -287,9 +288,100 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       payment_details: invoice.payment_details || {},
       terms_conditions: invoice.terms_conditions || "",
     });
+    setEditingInvoiceId(null);
     setCreateStep("details");
-    // Open the main dialog first, then the nested create dialog needs user click
-    toast.success("Invoice data loaded — click 'Create Professional Invoice' to continue");
+    setShowCreateDialog(true);
+    toast.success("Invoice data loaded for duplication");
+  };
+
+  const handleEditInvoice = (invoice: any) => {
+    setRecipientName(invoice.recipient_name || "");
+    setRecipientEmail(invoice.recipient_email || "");
+    setRecipientAddress(invoice.recipient_address || "");
+    setDueDate(invoice.due_date || "");
+    setTaxRate(String(invoice.tax_rate || 0));
+    setNotes(invoice.notes || "");
+    setCurrency(invoice.currency || "USD");
+    setDiscountType(invoice.discount_type || "");
+    setDiscountValue(String(invoice.discount_value || 0));
+    setLineItems(
+      (invoice.line_items || []).length > 0
+        ? (invoice.line_items as LineItem[])
+        : [{ description: "", quantity: 1, rate: 0, amount: 0 }]
+    );
+    setBranding({
+      brand_name: invoice.brand_name || "",
+      brand_logo_url: invoice.brand_logo_url || "",
+      brand_address: invoice.brand_address || "",
+      brand_email: invoice.brand_email || "",
+      brand_website: invoice.brand_website || "",
+      brand_color: invoice.brand_color || "#6366f1",
+    });
+    setPaymentConfig({
+      payment_method: invoice.payment_method || "bank_transfer",
+      payment_details: invoice.payment_details || {},
+      terms_conditions: invoice.terms_conditions || "",
+    });
+    setEditingInvoiceId(invoice.id);
+    setCreateStep("details");
+    setShowCreateDialog(true);
+  };
+
+  const handleUpdateInvoice = async () => {
+    if (!editingInvoiceId) return;
+    if (!recipientName || lineItems.some(item => !item.description)) {
+      toast.error("Please fill in client name and all line item descriptions");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const subtotal = calculateSubtotal();
+      const tax = calculateTax();
+      const total = calculateTotal();
+
+      const issuedTo = collaborators.find(c => c.full_name === recipientName)?.user_id || collaborators[0]?.user_id || null;
+
+      const updateData: any = {
+        amount: subtotal,
+        tax_rate: parseFloat(taxRate),
+        due_date: dueDate || null,
+        notes,
+        line_items: lineItems as any,
+        currency,
+        brand_name: branding.brand_name,
+        brand_logo_url: branding.brand_logo_url,
+        brand_address: branding.brand_address,
+        brand_email: branding.brand_email,
+        brand_website: branding.brand_website,
+        brand_color: branding.brand_color,
+        recipient_name: recipientName,
+        recipient_email: recipientEmail,
+        recipient_address: recipientAddress,
+        payment_method: paymentConfig.payment_method,
+        payment_details: paymentConfig.payment_details,
+        terms_conditions: paymentConfig.terms_conditions,
+        discount_type: discountType || null,
+        discount_value: parseFloat(discountValue) || 0,
+        discount_amount: calculateDiscount(),
+      };
+      if (issuedTo) updateData.issued_to = issuedTo;
+
+      const { error } = await supabase.from("invoices").update(updateData).eq("id", editingInvoiceId);
+      if (error) throw error;
+
+      toast.success("Invoice updated successfully!");
+      setShowCreateDialog(false);
+      setEditingInvoiceId(null);
+      setCreateStep("details");
+      fetchInvoices();
+      resetForm();
+    } catch (error) {
+      console.error("Error updating invoice:", error);
+      toast.error("Failed to update invoice");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleMarkAsPaid = async (invoice: any) => {
@@ -584,16 +676,19 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
 
           <div className="flex-1 overflow-y-auto">
             {/* Create New Invoice */}
-            <Dialog>
+            <Dialog open={showCreateDialog} onOpenChange={(open) => {
+              setShowCreateDialog(open);
+              if (!open) { setEditingInvoiceId(null); resetForm(); }
+            }}>
               <DialogTrigger asChild>
-                <Button size="sm" className="w-full mb-4 gap-2">
+                <Button size="sm" className="w-full mb-4 gap-2" onClick={() => { setEditingInvoiceId(null); resetForm(); }}>
                   <Plus className="h-4 w-4" />
                   Create Professional Invoice
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
-                  <DialogTitle>Create Invoice</DialogTitle>
+                  <DialogTitle>{editingInvoiceId ? "Edit Invoice" : "Create Invoice"}</DialogTitle>
                 </DialogHeader>
 
                 {/* Step Navigation */}
@@ -785,8 +880,8 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                       />
                       <div className="flex gap-2">
                         <Button variant="outline" className="flex-1" onClick={() => setCreateStep("payment")}>← Back</Button>
-                        <Button className="flex-1" onClick={handleCreateInvoice} disabled={loading}>
-                          {loading ? "Creating..." : "Create Invoice"}
+                        <Button className="flex-1" onClick={editingInvoiceId ? handleUpdateInvoice : handleCreateInvoice} disabled={loading}>
+                          {loading ? (editingInvoiceId ? "Saving..." : "Creating...") : (editingInvoiceId ? "Save Changes" : "Create Invoice")}
                         </Button>
                       </div>
                     </div>
@@ -833,6 +928,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                     </div>
 
                     <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
+                      {inv.status === "draft" && (
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleEditInvoice(inv)}>
+                          <Pencil className="h-3 w-3" /> Edit
+                        </Button>
+                      )}
                       <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handlePreview(inv)}>
                         <Eye className="h-3 w-3" /> Preview
                       </Button>

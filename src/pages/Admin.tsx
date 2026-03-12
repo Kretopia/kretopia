@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare } from "lucide-react";
+import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare, Mail } from "lucide-react";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
@@ -257,6 +257,10 @@ export default function Admin() {
           <TabsTrigger value="verifications" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <ShieldCheck className="h-4 w-4" />
             <span>Verify</span>
+          </TabsTrigger>
+          <TabsTrigger value="email" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5" onClick={() => navigate("/sales")}>
+            <Mail className="h-4 w-4" />
+            <span>Email</span>
           </TabsTrigger>
           <TabsTrigger value="system" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Settings className="h-4 w-4" />

@@ -34,6 +34,7 @@ type InvoiceInsert = Database['public']['Tables']['invoices']['Insert'];
 export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const { user } = useAuth();
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [showListDialog, setShowListDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [previewInvoice, setPreviewInvoice] = useState<any>(null);

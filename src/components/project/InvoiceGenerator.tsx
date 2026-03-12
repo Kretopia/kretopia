@@ -659,8 +659,8 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
 
   return (
     <>
-      {/* Main Invoice Manager Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={(o) => { setShowCreateDialog(o); if (!o) setCreateStep("details"); }}>
+      {/* Invoice List Dialog */}
+      <Dialog open={showListDialog} onOpenChange={setShowListDialog}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm">
             <FileText className="h-4 w-4 mr-2" />
@@ -676,220 +676,10 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto">
-            {/* Create New Invoice */}
-            <Dialog open={showCreateDialog} onOpenChange={(open) => {
-              setShowCreateDialog(open);
-              if (!open) { setEditingInvoiceId(null); resetForm(); }
-            }}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="w-full mb-4 gap-2" onClick={() => { setEditingInvoiceId(null); resetForm(); }}>
-                  <Plus className="h-4 w-4" />
-                  Create Professional Invoice
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
-                <DialogHeader>
-                  <DialogTitle>{editingInvoiceId ? "Edit Invoice" : "Create Invoice"}</DialogTitle>
-                </DialogHeader>
-
-                {/* Step Navigation */}
-                <div className="flex gap-1 mb-4">
-                  {(["details", "branding", "payment", "preview"] as const).map((step, i) => (
-                    <button
-                      key={step}
-                      onClick={() => setCreateStep(step)}
-                      className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all ${
-                        createStep === step
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      }`}
-                    >
-                      {i + 1}. {step.charAt(0).toUpperCase() + step.slice(1)}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex-1 overflow-y-auto">
-                  {/* Step 1: Invoice Details */}
-                  {createStep === "details" && (
-                    <div className="space-y-4">
-                      {/* Recipient */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <Label className="text-xs">Client Name *</Label>
-                          <Input className="h-8 text-sm" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Client or company name" />
-                          {collaborators.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {collaborators.map((c) => (
-                                <button key={c.user_id} type="button" className="text-[10px] px-1.5 py-0.5 rounded bg-muted hover:bg-accent text-muted-foreground" onClick={() => setRecipientName(c.full_name)}>
-                                  {c.full_name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <Label className="text-xs">Client Email</Label>
-                          <Input className="h-8 text-sm" value={recipientEmail} onChange={(e) => setRecipientEmail(e.target.value)} placeholder="client@email.com" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Client Address</Label>
-                          <Input className="h-8 text-sm" value={recipientAddress} onChange={(e) => setRecipientAddress(e.target.value)} placeholder="City, Country" />
-                        </div>
-                      </div>
-
-                      {/* Date & Currency */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <Label className="text-xs">Due Date</Label>
-                          <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Currency</Label>
-                          <Select value={currency} onValueChange={setCurrency}>
-                            <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              {["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "BRL", "ZAR", "INR", "NGN", "IDR", "TTD", "AED", "KES"].map(c => (
-                                <SelectItem key={c} value={c}>{c}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label className="text-xs">Tax Rate (%)</Label>
-                          <Input className="h-8 text-sm" type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} placeholder="0" />
-                        </div>
-                      </div>
-
-                      {/* Line Items */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label className="text-xs font-semibold">Line Items *</Label>
-                          <Button type="button" size="sm" variant="outline" onClick={addLineItem} className="h-7 text-xs">
-                            <Plus className="h-3 w-3 mr-1" /> Add Item
-                          </Button>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <div className="grid grid-cols-12 gap-1.5 text-[10px] text-muted-foreground font-medium px-1">
-                            <span className="col-span-5">Description</span>
-                            <span className="col-span-2 text-center">Qty</span>
-                            <span className="col-span-2 text-right">Rate</span>
-                            <span className="col-span-2 text-right">Amount</span>
-                          </div>
-
-                          {lineItems.map((item, index) => (
-                            <div key={index} className="grid grid-cols-12 gap-1.5 items-center">
-                              <Input className="col-span-5 h-8 text-sm" placeholder="Service description" value={item.description} onChange={(e) => updateLineItem(index, "description", e.target.value)} />
-                              <Input className="col-span-2 h-8 text-sm text-center" type="number" value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", parseFloat(e.target.value) || 0)} />
-                              <Input className="col-span-2 h-8 text-sm text-right" type="number" value={item.rate} onChange={(e) => updateLineItem(index, "rate", parseFloat(e.target.value) || 0)} />
-                              <span className="col-span-2 text-sm text-right font-medium">{currencySymbol}{item.amount.toFixed(2)}</span>
-                              <Button type="button" size="icon" variant="ghost" className="col-span-1 h-7 w-7" onClick={() => removeLineItem(index)} disabled={lineItems.length === 1}>
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Discount */}
-                      <div className="grid grid-cols-3 gap-3 items-end">
-                        <div>
-                          <Label className="text-xs">Discount</Label>
-                          <Select value={discountType} onValueChange={setDiscountType}>
-                            <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="No discount" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">No discount</SelectItem>
-                              <SelectItem value="percentage">Percentage</SelectItem>
-                              <SelectItem value="fixed">Fixed Amount</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        {discountType && discountType !== "none" && (
-                          <div className="relative">
-                            <Input className="h-8 text-sm pl-6" type="number" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} />
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                              {discountType === "percentage" ? "%" : currencySymbol}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Totals Summary */}
-                      <Card className="p-3 bg-muted/30">
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{currencySymbol}{calculateSubtotal().toFixed(2)}</span></div>
-                          {calculateDiscount() > 0 && (
-                            <div className="flex justify-between text-green-600"><span>Discount</span><span>-{currencySymbol}{calculateDiscount().toFixed(2)}</span></div>
-                          )}
-                          {parseFloat(taxRate) > 0 && (
-                            <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxRate}%)</span><span>{currencySymbol}{calculateTax().toFixed(2)}</span></div>
-                          )}
-                          <Separator />
-                          <div className="flex justify-between font-bold text-base"><span>Total</span><span>{currencySymbol}{calculateTotal().toFixed(2)}</span></div>
-                        </div>
-                      </Card>
-
-                      {/* Notes */}
-                      <div>
-                        <Label className="text-xs">Notes</Label>
-                        <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Additional notes for the client..." rows={2} className="text-sm" />
-                      </div>
-
-                      <Button className="w-full" onClick={() => setCreateStep("branding")}>
-                        Next: Your Branding →
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Step 2: Branding */}
-                  {createStep === "branding" && (
-                    <div className="space-y-4">
-                      <InvoiceBrandingForm branding={branding} onChange={setBranding} />
-                      <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1" onClick={() => setCreateStep("details")}>← Back</Button>
-                        <Button className="flex-1" onClick={() => setCreateStep("payment")}>Next: Payment →</Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 3: Payment */}
-                  {createStep === "payment" && (
-                    <div className="space-y-4">
-                      <InvoicePaymentForm config={paymentConfig} onChange={setPaymentConfig} />
-                      <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1" onClick={() => setCreateStep("branding")}>← Back</Button>
-                        <Button className="flex-1" onClick={() => setCreateStep("preview")}>Preview Invoice →</Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 4: Preview */}
-                  {createStep === "preview" && (
-                    <div className="space-y-4">
-                      <InvoicePreview
-                        branding={branding}
-                        recipient={{ name: recipientName, email: recipientEmail, address: recipientAddress }}
-                        invoiceNumber="INV-DRAFT"
-                        dueDate={dueDate}
-                        lineItems={lineItems}
-                        taxRate={parseFloat(taxRate)}
-                        discount={{ type: discountType, value: parseFloat(discountValue), amount: calculateDiscount() }}
-                        notes={notes}
-                        payment={paymentConfig}
-                        currency={currency}
-                      />
-                      <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1" onClick={() => setCreateStep("payment")}>← Back</Button>
-                        <Button className="flex-1" onClick={editingInvoiceId ? handleUpdateInvoice : handleCreateInvoice} disabled={loading}>
-                          {loading ? (editingInvoiceId ? "Saving..." : "Creating...") : (editingInvoiceId ? "Save Changes" : "Create Invoice")}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button size="sm" className="w-full mb-4 gap-2" onClick={() => { setEditingInvoiceId(null); resetForm(); setShowCreateDialog(true); }}>
+              <Plus className="h-4 w-4" />
+              Create Professional Invoice
+            </Button>
 
             {/* Invoice List */}
             {invoices.length === 0 ? (
@@ -903,9 +693,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 {invoices.map((inv) => (
                   <Card key={inv.id} className="p-3 hover:bg-accent/30 transition-colors">
                     <div className="flex items-center gap-3">
-                      {/* Brand color indicator */}
                       <div className="w-1 h-12 rounded-full" style={{ backgroundColor: inv.brand_color || "#6366f1" }} />
-
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-mono text-xs font-medium">{inv.invoice_number}</p>
@@ -921,13 +709,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                           </p>
                         )}
                       </div>
-
                       <div className="text-right">
                         <p className="font-bold text-lg">{currencySymbol}{Number(inv.total_amount).toFixed(2)}</p>
                         <p className="text-[10px] text-muted-foreground">{inv.currency || "USD"}</p>
                       </div>
                     </div>
-
                     <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
                       {inv.status === "draft" && (
                         <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleEditInvoice(inv)}>
@@ -954,6 +740,204 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                     </div>
                   </Card>
                 ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create/Edit Invoice Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={(open) => {
+        setShowCreateDialog(open);
+        if (!open) { setEditingInvoiceId(null); resetForm(); }
+      }}>
+        <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{editingInvoiceId ? "Edit Invoice" : "Create Invoice"}</DialogTitle>
+          </DialogHeader>
+
+          {/* Step Navigation */}
+          <div className="flex gap-1 mb-4">
+            {(["details", "branding", "payment", "preview"] as const).map((step, i) => (
+              <button
+                key={step}
+                onClick={() => setCreateStep(step)}
+                className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md transition-all ${
+                  createStep === step
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {i + 1}. {step.charAt(0).toUpperCase() + step.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {/* Step 1: Invoice Details */}
+            {createStep === "details" && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs">Client Name *</Label>
+                    <Input className="h-8 text-sm" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Client or company name" />
+                    {collaborators.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {collaborators.map((c) => (
+                          <button key={c.user_id} type="button" className="text-[10px] px-1.5 py-0.5 rounded bg-muted hover:bg-accent text-muted-foreground" onClick={() => setRecipientName(c.full_name)}>
+                            {c.full_name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs">Client Email</Label>
+                    <Input className="h-8 text-sm" value={recipientEmail} onChange={(e) => setRecipientEmail(e.target.value)} placeholder="client@email.com" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Client Address</Label>
+                    <Input className="h-8 text-sm" value={recipientAddress} onChange={(e) => setRecipientAddress(e.target.value)} placeholder="City, Country" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs">Due Date</Label>
+                    <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Currency</Label>
+                    <Select value={currency} onValueChange={setCurrency}>
+                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "BRL", "ZAR", "INR", "NGN", "IDR", "TTD", "AED", "KES"].map(c => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Tax Rate (%)</Label>
+                    <Input className="h-8 text-sm" type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} placeholder="0" />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-xs font-semibold">Line Items *</Label>
+                    <Button type="button" size="sm" variant="outline" onClick={addLineItem} className="h-7 text-xs">
+                      <Plus className="h-3 w-3 mr-1" /> Add Item
+                    </Button>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="grid grid-cols-12 gap-1.5 text-[10px] text-muted-foreground font-medium px-1">
+                      <span className="col-span-5">Description</span>
+                      <span className="col-span-2 text-center">Qty</span>
+                      <span className="col-span-2 text-right">Rate</span>
+                      <span className="col-span-2 text-right">Amount</span>
+                    </div>
+                    {lineItems.map((item, index) => (
+                      <div key={index} className="grid grid-cols-12 gap-1.5 items-center">
+                        <Input className="col-span-5 h-8 text-sm" placeholder="Service description" value={item.description} onChange={(e) => updateLineItem(index, "description", e.target.value)} />
+                        <Input className="col-span-2 h-8 text-sm text-center" type="number" value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", parseFloat(e.target.value) || 0)} />
+                        <Input className="col-span-2 h-8 text-sm text-right" type="number" value={item.rate} onChange={(e) => updateLineItem(index, "rate", parseFloat(e.target.value) || 0)} />
+                        <span className="col-span-2 text-sm text-right font-medium">{currencySymbol}{item.amount.toFixed(2)}</span>
+                        <Button type="button" size="icon" variant="ghost" className="col-span-1 h-7 w-7" onClick={() => removeLineItem(index)} disabled={lineItems.length === 1}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 items-end">
+                  <div>
+                    <Label className="text-xs">Discount</Label>
+                    <Select value={discountType} onValueChange={setDiscountType}>
+                      <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="No discount" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No discount</SelectItem>
+                        <SelectItem value="percentage">Percentage</SelectItem>
+                        <SelectItem value="fixed">Fixed Amount</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {discountType && discountType !== "none" && (
+                    <div className="relative">
+                      <Input className="h-8 text-sm pl-6" type="number" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} />
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                        {discountType === "percentage" ? "%" : currencySymbol}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <Card className="p-3 bg-muted/30">
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{currencySymbol}{calculateSubtotal().toFixed(2)}</span></div>
+                    {calculateDiscount() > 0 && (
+                      <div className="flex justify-between text-green-600"><span>Discount</span><span>-{currencySymbol}{calculateDiscount().toFixed(2)}</span></div>
+                    )}
+                    {parseFloat(taxRate) > 0 && (
+                      <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxRate}%)</span><span>{currencySymbol}{calculateTax().toFixed(2)}</span></div>
+                    )}
+                    <Separator />
+                    <div className="flex justify-between font-bold text-base"><span>Total</span><span>{currencySymbol}{calculateTotal().toFixed(2)}</span></div>
+                  </div>
+                </Card>
+
+                <div>
+                  <Label className="text-xs">Notes</Label>
+                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Additional notes for the client..." rows={2} className="text-sm" />
+                </div>
+
+                <Button className="w-full" onClick={() => setCreateStep("branding")}>
+                  Next: Your Branding →
+                </Button>
+              </div>
+            )}
+
+            {createStep === "branding" && (
+              <div className="space-y-4">
+                <InvoiceBrandingForm branding={branding} onChange={setBranding} />
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setCreateStep("details")}>← Back</Button>
+                  <Button className="flex-1" onClick={() => setCreateStep("payment")}>Next: Payment →</Button>
+                </div>
+              </div>
+            )}
+
+            {createStep === "payment" && (
+              <div className="space-y-4">
+                <InvoicePaymentForm config={paymentConfig} onChange={setPaymentConfig} />
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setCreateStep("branding")}>← Back</Button>
+                  <Button className="flex-1" onClick={() => setCreateStep("preview")}>Preview Invoice →</Button>
+                </div>
+              </div>
+            )}
+
+            {createStep === "preview" && (
+              <div className="space-y-4">
+                <InvoicePreview
+                  branding={branding}
+                  recipient={{ name: recipientName, email: recipientEmail, address: recipientAddress }}
+                  invoiceNumber="INV-DRAFT"
+                  dueDate={dueDate}
+                  lineItems={lineItems}
+                  taxRate={parseFloat(taxRate)}
+                  discount={{ type: discountType, value: parseFloat(discountValue), amount: calculateDiscount() }}
+                  notes={notes}
+                  payment={paymentConfig}
+                  currency={currency}
+                />
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setCreateStep("payment")}>← Back</Button>
+                  <Button className="flex-1" onClick={editingInvoiceId ? handleUpdateInvoice : handleCreateInvoice} disabled={loading}>
+                    {loading ? (editingInvoiceId ? "Saving..." : "Creating...") : (editingInvoiceId ? "Save Changes" : "Create Invoice")}
+                  </Button>
+                </div>
               </div>
             )}
           </div>

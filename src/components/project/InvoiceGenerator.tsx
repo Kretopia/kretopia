@@ -39,6 +39,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const [previewInvoice, setPreviewInvoice] = useState<any>(null);
   const [createStep, setCreateStep] = useState<"details" | "branding" | "payment" | "preview">("details");
   const [loading, setLoading] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
 
   // Form state
   const [recipientName, setRecipientName] = useState("");

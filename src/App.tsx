@@ -244,6 +244,9 @@ const AppContent = () => {
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
 
+            {/* Public Event Page */}
+            <Route path="/event/:eventId" element={<EventPage />} />
+
             {/* Public Access Pages (No Auth Required) */}
             <Route path="/endorse" element={<EndorseSkill />} />
             <Route path="/submit-review" element={<SubmitReview />} />

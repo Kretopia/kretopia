@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { SessionParticipants } from "./SessionParticipants";
 import { SessionChat } from "./SessionChat";
+import { EventShareKit } from "./EventShareKit";
 
 interface Session {
   id: string;

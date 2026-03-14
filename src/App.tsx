@@ -146,7 +146,7 @@ const AppContent = () => {
   const isDeckPage = location.pathname === '/deck';
   
   // Don't add bottom padding when on individual project pages or desk list
-  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK && !isDeckPage;
+  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK && !isPublicEvent && !isDeckPage;
   
   return (
     <div className="h-full overflow-auto">

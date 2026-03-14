@@ -189,6 +189,19 @@ export default function Onboarding() {
         } catch (e) { console.error("[Onboarding] Welcome match error:", e); }
       }
 
+      // Auto-join event if user signed up via event link
+      const pendingEventJoin = sessionStorage.getItem('pending_event_join');
+      if (pendingEventJoin && user) {
+        try {
+          await supabase.from('jam_participants').insert({
+            jam_id: pendingEventJoin,
+            user_id: user.id,
+            status: 'going'
+          });
+          console.log('[Onboarding] Auto-joined event:', pendingEventJoin);
+        } catch (e) { console.error('[Onboarding] Auto-join event error:', e); }
+      }
+
       try {
         await supabase.functions.invoke("verify-profile", {
           body: { fullName: profile.full_name, role: profile.role, bio: "", location: profile.location, portfolioItems: 0, socialLinks: {}, accountType: "individual" as const },

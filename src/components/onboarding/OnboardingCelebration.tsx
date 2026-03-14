@@ -47,7 +47,12 @@ export function OnboardingCelebration({
 
   const handleContinue = () => {
     onOpenChange(false);
-    if (pendingConnect) {
+    // Check for pending event join - redirect to event page
+    const pendingEventJoin = sessionStorage.getItem('pending_event_join');
+    if (pendingEventJoin) {
+      sessionStorage.removeItem('pending_event_join');
+      navigate(`/event/${pendingEventJoin}`);
+    } else if (pendingConnect) {
       navigate(`/profile/${pendingConnect}?from=match`);
     } else {
       navigate("/circle");

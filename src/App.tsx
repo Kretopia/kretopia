@@ -141,6 +141,7 @@ const AppContent = () => {
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
   const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
+  const isPublicEvent = /^\/event\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';
   const isDeckPage = location.pathname === '/deck';
   

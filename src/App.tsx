@@ -78,6 +78,7 @@ const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const Guide = lazy(() => import("./pages/Guide"));
+const EventPage = lazy(() => import("./pages/EventPage"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -140,11 +141,12 @@ const AppContent = () => {
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
   const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
+  const isPublicEvent = /^\/event\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';
   const isDeckPage = location.pathname === '/deck';
   
   // Don't add bottom padding when on individual project pages or desk list
-  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK && !isDeckPage;
+  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK && !isPublicEvent && !isDeckPage;
   
   return (
     <div className="h-full overflow-auto">
@@ -242,6 +244,9 @@ const AppContent = () => {
             
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+
+            {/* Public Event Page */}
+            <Route path="/event/:eventId" element={<EventPage />} />
 
             {/* Public Access Pages (No Auth Required) */}
             <Route path="/endorse" element={<EndorseSkill />} />

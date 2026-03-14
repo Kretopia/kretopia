@@ -4,13 +4,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Calendar, Clock, Users, Check, Loader2, MessageCircle, Settings } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, Check, Loader2, MessageCircle, Settings, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { SessionParticipants } from "./SessionParticipants";
 import { SessionChat } from "./SessionChat";
+import { EventShareKit } from "./EventShareKit";
 
 interface Session {
   id: string;
@@ -58,6 +59,7 @@ export const SessionDetailDialog = ({
   const [loading, setLoading] = useState(false);
   const [participation, setParticipation] = useState<'going' | 'interested' | 'maybe' | null>(null);
   const [activeTab, setActiveTab] = useState("details");
+  const [showShareKit, setShowShareKit] = useState(false);
 
   useEffect(() => {
     if (open && session && user) {
@@ -287,6 +289,14 @@ export const SessionDetailDialog = ({
             {isCreator && (
               <TabsContent value="manage" className="h-full overflow-y-auto px-6 py-4 m-0">
                 <div className="space-y-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setShowShareKit(true)}
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share Event Link
+                  </Button>
                   <div className="p-4 rounded-lg bg-muted/50">
                     <h4 className="font-medium mb-2">Moderation</h4>
                     <p className="text-sm text-muted-foreground mb-3">
@@ -303,6 +313,14 @@ export const SessionDetailDialog = ({
           </div>
         </Tabs>
       </DialogContent>
+
+      {session && (
+        <EventShareKit
+          event={session}
+          open={showShareKit}
+          onOpenChange={setShowShareKit}
+        />
+      )}
     </Dialog>
   );
 };

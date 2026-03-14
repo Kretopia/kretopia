@@ -78,6 +78,7 @@ const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const Guide = lazy(() => import("./pages/Guide"));
+const EventPage = lazy(() => import("./pages/EventPage"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

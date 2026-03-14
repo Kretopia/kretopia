@@ -133,7 +133,7 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
                 <span className="text-xs">Share</span>
               </Button>
               <Button variant="outline" className="flex-col h-auto py-3 gap-1" onClick={shareWhatsApp}>
-                <MessageCircle className="h-5 w-5 text-green-500" />
+                <MessageCircle className="h-5 w-5 text-primary" />
                 <span className="text-xs">WhatsApp</span>
               </Button>
               <Button variant="outline" className="flex-col h-auto py-3 gap-1" onClick={shareTwitter}>

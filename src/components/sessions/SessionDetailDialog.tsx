@@ -313,6 +313,14 @@ export const SessionDetailDialog = ({
           </div>
         </Tabs>
       </DialogContent>
+
+      {session && (
+        <EventShareKit
+          event={session}
+          open={showShareKit}
+          onOpenChange={setShowShareKit}
+        />
+      )}
     </Dialog>
   );
 };

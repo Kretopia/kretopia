@@ -58,7 +58,7 @@ const EventPage = () => {
 
       // Fetch creator profile
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles_safe')
         .select('full_name, avatar_url, role')
         .eq('user_id', eventData.created_by)
         .single();

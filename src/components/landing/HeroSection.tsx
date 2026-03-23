@@ -21,7 +21,7 @@ export const HeroSection = () => {
           {/* Tagline chip */}
           <div className="mb-8 sm:mb-10 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs sm:text-sm backdrop-blur-sm">
             <Zap className="h-3.5 w-3.5 text-primary" />
-            <span className="font-medium text-primary/90">Where Creators Find Work — and Get Paid</span>
+            <span className="font-medium text-primary/90">The platform built for creative professionals</span>
           </div>
           
           {/* Headline — tight, punchy */}

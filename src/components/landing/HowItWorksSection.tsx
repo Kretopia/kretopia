@@ -10,14 +10,14 @@ export const HowItWorksSection = () => {
             <span>How It Works</span>
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            Swipe.{" "}
+            Profile.{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               Match.
             </span>{" "}
-            Create.
+            Get Paid.
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Find collaborators in minutes, not months — online or at local creative sessions near you.
+            Three steps from "I need someone" to working together with milestone payments.
           </p>
         </div>
 

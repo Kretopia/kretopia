@@ -21,22 +21,22 @@ export const HeroSection = () => {
           {/* Tagline chip */}
           <div className="mb-8 sm:mb-10 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs sm:text-sm backdrop-blur-sm">
             <Zap className="h-3.5 w-3.5 text-primary" />
-            <span className="font-medium text-primary/90">Where Creators Find Work — and Get Paid</span>
+            <span className="font-medium text-primary/90">The platform built for creative professionals</span>
           </div>
           
           {/* Headline — tight, punchy */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
-            Find Collaborators.
+            Stop cold DMing
             <br />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Get Hired. Get Paid.
+              for collabs.
             </span>
           </h1>
           
           {/* Subhead — one clear sentence */}
           <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Match with verified creators, manage projects with milestones, and get paid securely
-            — <span className="font-semibold text-foreground">all in 60 seconds.</span>
+            Get matched with verified creatives, manage projects, send invoices
+            — and actually <span className="font-semibold text-foreground">get paid.</span>
           </p>
           
           {/* CTAs */}
@@ -57,7 +57,7 @@ export const HeroSection = () => {
           </div>
           
           <p className="mt-5 text-xs text-muted-foreground/70">
-            ⚡ No credit card • 1-month Pro free
+            ⚡ Free forever • No credit card needed
           </p>
         </div>
       </div>

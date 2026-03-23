@@ -43,7 +43,7 @@ export const LiveCreatorPreview = () => {
           Real creators, real profiles
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold mb-8">
-          Creators already on <span className="text-primary">thriveIN</span>
+          They're already <span className="text-primary">building</span> on ThriveIN
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto">
           {creators.map((creator, i) => (
@@ -71,7 +71,7 @@ export const LiveCreatorPreview = () => {
           ))}
         </div>
         <p className="mt-6 text-sm text-muted-foreground">
-          Join {creators.length > 0 ? "them" : "us"} — start matching in 60 seconds
+          Your next collaborator is already here — sign up in 60 seconds
         </p>
       </div>
     </section>

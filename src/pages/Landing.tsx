@@ -4,6 +4,7 @@ import { LiveCreatorPreview } from "@/components/landing/LiveCreatorPreview";
 import { PortfolioShowcase } from "@/components/landing/PortfolioShowcase";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PostOpportunitySection } from "@/components/landing/PostOpportunitySection";
+import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { LaunchingInBaliSection } from "@/components/landing/LaunchingInBaliSection";
 import { AccountingSuiteSection } from "@/components/landing/AccountingSuiteSection";
@@ -44,14 +45,15 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="ThriveIN - Where Creators Find Work and Get Paid"
-        description="Match with verified creators, manage projects with milestones, send invoices, and get paid securely. The trusted platform for creative collaboration."
+        title="ThriveIN - Stop Cold DMing for Collabs"
+        description="Get matched with verified creatives, manage projects, send invoices, and get paid. The all-in-one platform for creative professionals."
         url="https://thrivein.io"
       />
       <HeroSection />
       <LiveCreatorPreview />
       <PortfolioShowcase />
       <HowItWorksSection />
+      <ComparisonTableSection />
       <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
       <WhyCreatorsChooseSection />
       <AccountingSuiteSection />

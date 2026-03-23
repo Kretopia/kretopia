@@ -26,17 +26,17 @@ export const HeroSection = () => {
           
           {/* Headline — tight, punchy */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
-            Find Collaborators.
+            Stop cold DMing
             <br />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Get Hired. Get Paid.
+              for collabs.
             </span>
           </h1>
           
           {/* Subhead — one clear sentence */}
           <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Match with verified creators, manage projects with milestones, and get paid securely
-            — <span className="font-semibold text-foreground">all in 60 seconds.</span>
+            Get matched with verified creatives, manage projects, send invoices
+            — and actually <span className="font-semibold text-foreground">get paid.</span>
           </p>
           
           {/* CTAs */}

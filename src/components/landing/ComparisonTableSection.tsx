@@ -1,36 +1,31 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, X, Sparkles, ArrowRight } from "lucide-react";
+import { Check, Sparkles, ArrowRight } from "lucide-react";
 
 const TOOLS_REPLACED = [
-  { emoji: "💼", tool: "Find Work & Gigs", replaces: "Fiverr / Upwork", cost: "$20+", included: true },
-  { emoji: "🤝", tool: "AI Creator Matching", replaces: "Vampr / Bumble Bizz", cost: "$15+", included: true },
-  { emoji: "💬", tool: "Project Workspaces", replaces: "Slack + Trello", cost: "$25+", included: true },
-  { emoji: "📁", tool: "File Sharing & Assets", replaces: "Google Drive", cost: "$10+", included: true },
-  { emoji: "🧾", tool: "Invoicing & Payments", replaces: "Wave / PayPal", cost: "$15+", included: true },
-  { emoji: "📊", tool: "P&L + Expense Tracking", replaces: "QuickBooks", cost: "$30+", included: true },
-  { emoji: "🔗", tool: "Verified Creator Profile", replaces: "LinkedIn + Behance", cost: "Free", included: true },
-  { emoji: "📍", tool: "Nearby Creator Discovery", replaces: "Nothing exists", cost: "—", included: true },
+  { emoji: "💼", tool: "Find Work & Gigs", replaces: "Fiverr / Upwork" },
+  { emoji: "🤝", tool: "AI Creator Matching", replaces: "Vampr / Bumble Bizz" },
+  { emoji: "💬", tool: "Project Workspaces", replaces: "Slack + Trello" },
+  { emoji: "📁", tool: "File Sharing & Assets", replaces: "Google Drive" },
+  { emoji: "🧾", tool: "Invoicing & Payments", replaces: "Wave / PayPal" },
+  { emoji: "📊", tool: "P&L + Expense Tracking", replaces: "QuickBooks" },
+  { emoji: "🔗", tool: "Verified Creator Profile", replaces: "LinkedIn + Behance" },
+  { emoji: "📍", tool: "Nearby Creator Discovery", replaces: "Nothing like it" },
 ];
 
 export const ComparisonTableSection = () => {
-  const totalCost = TOOLS_REPLACED.reduce((sum, t) => {
-    const num = parseInt(t.cost.replace(/[^0-9]/g, ""));
-    return sum + (isNaN(num) ? 0 : num);
-  }, 0);
-
   return (
     <section className="px-4 sm:px-6 py-16 sm:py-20 md:py-24">
       <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-10 sm:mb-12">
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            Stop Paying for{" "}
+            You're Using{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              8 Different Tools
+              8 Different Apps
             </span>
           </h2>
           <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground">
-            Everything a creative professional needs — in one platform, one login.
+            ThriveIN replaces them all — one platform, one login, zero fragmentation.
           </p>
         </div>
 
@@ -39,8 +34,8 @@ export const ComparisonTableSection = () => {
           {/* Header */}
           <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 px-4 sm:px-6 py-3 bg-muted/50 border-b border-border/40 text-xs sm:text-sm font-semibold text-muted-foreground">
             <span>What you need</span>
-            <span className="w-16 sm:w-20 text-center">Replaces</span>
-            <span className="w-14 sm:w-16 text-center">Cost</span>
+            <span className="w-24 sm:w-32 text-center">Before</span>
+            <span className="w-16 text-center">ThriveIN</span>
           </div>
 
           {TOOLS_REPLACED.map((item, i) => (
@@ -57,29 +52,20 @@ export const ComparisonTableSection = () => {
                   <p className="text-[11px] text-muted-foreground truncate sm:hidden">{item.replaces}</p>
                 </div>
               </div>
-              <span className="w-16 sm:w-20 text-center text-xs text-muted-foreground hidden sm:block truncate">
+              <span className="w-24 sm:w-32 text-center text-xs text-muted-foreground truncate hidden sm:block">
                 {item.replaces}
               </span>
-              <span className="w-14 sm:w-16 text-center text-xs text-muted-foreground line-through">
-                {item.cost !== "—" && item.cost !== "Free" ? `${item.cost}/mo` : item.cost}
+              <span className="w-16 text-center">
+                <Check className="h-4 w-4 text-primary mx-auto" />
               </span>
             </div>
           ))}
 
-          {/* Total row */}
-          <div className="grid grid-cols-[1fr_auto] items-center gap-2 px-4 sm:px-6 py-4 bg-destructive/5 border-t-2 border-destructive/20">
+          {/* ThriveIN summary row */}
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 bg-primary/5 border-t-2 border-primary/30">
             <div className="flex items-center gap-2">
-              <X className="h-5 w-5 text-destructive flex-shrink-0" />
-              <span className="font-bold text-sm sm:text-base">What you'd spend elsewhere</span>
-            </div>
-            <span className="font-bold text-destructive text-base sm:text-lg">${totalCost}+/mo</span>
-          </div>
-
-          {/* ThriveIN row */}
-          <div className="grid grid-cols-[1fr_auto] items-center gap-2 px-4 sm:px-6 py-4 bg-primary/5 border-t-2 border-primary/30">
-            <div className="flex items-center gap-2">
-              <Check className="h-5 w-5 text-primary flex-shrink-0" />
-              <span className="font-bold text-sm sm:text-base">ThriveIN — all of it</span>
+              <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
+              <span className="font-bold text-sm sm:text-base">All included — one platform</span>
             </div>
             <span className="font-bold text-primary text-base sm:text-lg">Free</span>
           </div>

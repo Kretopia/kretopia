@@ -71,7 +71,7 @@ export const LiveCreatorPreview = () => {
           ))}
         </div>
         <p className="mt-6 text-sm text-muted-foreground">
-          Join {creators.length > 0 ? "them" : "us"} — start matching in 60 seconds
+          Your next collaborator is already here — sign up in 60 seconds
         </p>
       </div>
     </section>

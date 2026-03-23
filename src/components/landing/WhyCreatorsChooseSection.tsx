@@ -47,7 +47,7 @@ export const WhyCreatorsChooseSection = () => {
             </span>
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            No more Facebook groups. No more cold DMs. Just verified portfolios and smart matching.
+            No more scattered tools. No more unpaid invoices. Everything you need to find work, collaborate, and get paid — in one place.
           </p>
         </div>
 

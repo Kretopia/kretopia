@@ -25,14 +25,27 @@ const STEPS = [
 
 // Top skills — curated for speed, not exhaustive
 const POPULAR_SKILLS = [
-  "Music Production", "Videography", "Photography", "Graphic Design",
-  "Content Creation", "Video Editing", "Songwriting", "Singing",
-  "DJing", "Animation", "Social Media Management", "Copywriting",
-  "Web Development", "UI/UX Design", "Illustration", "Styling",
-  "Makeup Artistry", "Podcasting", "Acting", "Choreography",
-  "Brand Design", "Motion Graphics", "Sound Design", "Directing",
-  "Beat Making", "3D Modeling", "Event Production", "Marketing",
-  "Voice Acting", "Film Production", "Audio Engineering", "Rapping",
+  // Music & Audio
+  "Music Production", "Songwriting", "Singing", "DJing", "Beat Making",
+  "Audio Engineering", "Sound Design", "Rapping", "Voice Acting",
+  // Film & Video
+  "Videography", "Video Editing", "Film Production", "Directing",
+  "Cinematography", "Screenwriting", "Color Grading", "VFX",
+  // Design & Visual
+  "Graphic Design", "Illustration", "Photography", "Animation",
+  "Motion Graphics", "3D Modeling", "UI/UX Design", "Brand Design",
+  // Fashion & Beauty
+  "Styling", "Fashion Design", "Makeup Artistry", "Hair Styling",
+  "Wardrobe Styling", "Costume Design", "Pattern Making", "Textile Design",
+  "Nail Art", "Carnival/Mas Design",
+  // Content & Digital
+  "Content Creation", "Social Media Management", "Copywriting",
+  "Podcasting", "Blogging", "Influencer Marketing", "Livestreaming",
+  // Performing Arts
+  "Acting", "Choreography", "Dance", "Modeling",
+  // Business & Production
+  "Event Production", "Marketing", "Web Development", "Creative Direction",
+  "Project Management", "PR & Communications",
 ];
 
 export default function Onboarding() {

@@ -70,7 +70,9 @@ export const ROLE_OPTIONS = [
   { value: 'Carnival Designer', label: 'Carnival / Mas Designer' },
   // Content & Digital
   { value: 'Content Creator', label: 'Content Creator' },
+  { value: 'UGC Creator', label: 'UGC Creator' },
   { value: 'Influencer', label: 'Influencer' },
+  { value: 'Brand Ambassador', label: 'Brand Ambassador' },
   { value: 'YouTuber', label: 'YouTuber' },
   { value: 'Streamer', label: 'Streamer / Live Creator' },
   { value: 'Social Media Manager', label: 'Social Media Manager' },

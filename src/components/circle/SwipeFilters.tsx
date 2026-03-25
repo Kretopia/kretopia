@@ -116,7 +116,7 @@ const ROLE_CATEGORIES: { label: string; roles: string[] }[] = [
   },
   {
     label: '📱 Digital & Content',
-    roles: ['Content Creator', 'Influencer', 'Streamer', 'Podcaster', 'Blogger', 'YouTuber', 'TikToker', 'Social Media Manager', 'Community Manager', 'Copywriter', 'Technical Writer', 'Journalist'],
+    roles: ['Content Creator', 'Influencer', 'Streamer', 'Podcaster', 'Blogger', 'YouTuber', 'TikToker', 'Social Media Manager', 'Community Manager', 'Copywriter', 'Technical Writer', 'Journalist', 'UGC Creator', 'Brand Ambassador', 'Newsletter Creator'],
   },
   {
     label: '👗 Fashion & Beauty',

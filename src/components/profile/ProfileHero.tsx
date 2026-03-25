@@ -246,7 +246,7 @@ export const ProfileHero = ({
             </div>
             
             {/* Rate Card */}
-            {(profile.hourly_rate || profile.project_rate) && (
+            {(profile.hourly_rate || profile.project_rate) ? (
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 {profile.hourly_rate && (
                   <Badge variant="outline" className="text-[11px] font-medium bg-green-500/5 border-green-500/30 text-green-700 dark:text-green-400">
@@ -259,6 +259,14 @@ export const ProfileHero = ({
                   </Badge>
                 )}
               </div>
+            ) : isOwnProfile && (
+              <button
+                onClick={onEdit}
+                className="mt-1 inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+              >
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Set your rates to get hired →
+              </button>
             )}
             
             {/* Connection Path */}

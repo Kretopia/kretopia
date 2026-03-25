@@ -710,7 +710,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-lg">{currencySymbol}{Number(inv.total_amount).toFixed(2)}</p>
+                        <p className="font-bold text-lg">{getCurrencySymbol(inv.currency || "USD")}{Number(inv.total_amount).toFixed(2)}</p>
                         <p className="text-[10px] text-muted-foreground">{inv.currency || "USD"}</p>
                       </div>
                     </div>

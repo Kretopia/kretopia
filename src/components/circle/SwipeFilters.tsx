@@ -64,16 +64,32 @@ const FOLLOWER_OPTIONS = [
 ];
 
 const SKILL_OPTIONS = [
+  // Music & Audio
   'Music Production', 'Songwriting', 'Audio Engineering', 'Sound Design', 'DJing',
   'Singing', 'Rapping', 'Instrument Performance', 'Mixing & Mastering', 'Composing',
+  'Beat Making', 'Soca Production',
+  // Film & Video
   'Videography', 'Video Editing', 'Directing', 'Cinematography', 'Screenwriting',
   'VFX', 'Color Grading', 'Animation', 'Motion Graphics', 'Acting', 'Voice Over',
+  'Film Production', 'Drone Cinematography',
+  // Design & Visual
   'Graphic Design', 'Illustration', 'Photography', 'UI/UX', 'Branding',
   '3D Modeling', 'Web Design', 'Art Direction', 'Set Design', 'Typography',
+  'Concept Art', 'Product Photography',
+  // Fashion & Beauty
   'Styling', 'Makeup Artistry', 'Fashion Design', 'Costume Design',
+  'Hair Styling', 'Wardrobe Styling', 'Pattern Making', 'Textile Design',
+  'Nail Art', 'Fashion Photography', 'Carnival/Mas Design', 'Modeling',
+  'Fashion Illustration', 'Accessory Design', 'Wig Making',
+  // Content & Digital
   'Content Creation', 'Social Media', 'Copywriting', 'Blogging',
+  'Influencer Marketing', 'Livestreaming', 'Podcasting', 'UGC Creation',
+  'Short-Form Video', 'Community Management',
+  // Business & Production
   'Marketing', 'PR & Communications', 'Web Development', 'App Development',
   'Event Production', 'Project Management', 'Creative Direction',
+  // Performing Arts
+  'Dance', 'Choreography', 'Stand-up Comedy', 'Hosting/MCing',
 ];
 
 const AVAILABILITY_OPTIONS = [

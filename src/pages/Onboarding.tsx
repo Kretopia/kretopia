@@ -449,6 +449,27 @@ export default function Onboarding() {
                 </p>
               )}
 
+              {/* Rate Card - lightweight inline */}
+              <div className="border border-dashed border-primary/30 rounded-lg p-4 bg-primary/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">What's your hourly rate?</span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">Optional</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">$</span>
+                  <Input
+                    value={hourlyRate}
+                    onChange={(e) => setHourlyRate(e.target.value)}
+                    placeholder="e.g. 50"
+                    type="number"
+                    className="h-9 max-w-[120px]"
+                  />
+                  <span className="text-xs text-muted-foreground">/hr USD</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1.5">Profiles with rates get 3x more gig inquiries</p>
+              </div>
+
               {/* Navigation */}
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
@@ -457,9 +478,9 @@ export default function Onboarding() {
                 </Button>
               </div>
 
-              {selectedSkills.length === 0 && (
+              {selectedSkills.length === 0 && !hourlyRate && (
                 <p className="text-xs text-center text-muted-foreground">
-                  You can skip this — add skills from your profile anytime
+                  You can skip this — add skills & rates from your profile anytime
                 </p>
               )}
             </div>

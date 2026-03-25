@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DollarSign } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -67,6 +68,7 @@ export default function Onboarding() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [pendingConnectForCelebration, setPendingConnectForCelebration] = useState<string | null>(null);
+  const [hourlyRate, setHourlyRate] = useState("");
 
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");
@@ -181,7 +183,7 @@ export default function Onboarding() {
     setLoading(true);
     try {
       const skillObjects = selectedSkills.map(skill => ({ skill, level: 3, category: "General" }));
-      await supabase.from("profiles").update({
+      const updateData: any = {
         full_name: profile.full_name,
         role: profile.role,
         location: profile.location || null,
@@ -189,7 +191,12 @@ export default function Onboarding() {
         onboarding_completed: true,
         onboarding_step: 6,
         xp: 100,
-      }).eq("user_id", user.id);
+      };
+      if (hourlyRate) {
+        updateData.hourly_rate = parseFloat(hourlyRate);
+        updateData.rate_currency = 'USD';
+      }
+      await supabase.from("profiles").update(updateData).eq("user_id", user.id);
 
       const pendingConnect = localStorage.getItem('pendingConnect');
       if (pendingConnect) {
@@ -442,6 +449,27 @@ export default function Onboarding() {
                 </p>
               )}
 
+              {/* Rate Card - lightweight inline */}
+              <div className="border border-dashed border-primary/30 rounded-lg p-4 bg-primary/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">What's your hourly rate?</span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">Optional</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">$</span>
+                  <Input
+                    value={hourlyRate}
+                    onChange={(e) => setHourlyRate(e.target.value)}
+                    placeholder="e.g. 50"
+                    type="number"
+                    className="h-9 max-w-[120px]"
+                  />
+                  <span className="text-xs text-muted-foreground">/hr USD</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1.5">Profiles with rates get 3x more gig inquiries</p>
+              </div>
+
               {/* Navigation */}
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
@@ -450,9 +478,9 @@ export default function Onboarding() {
                 </Button>
               </div>
 
-              {selectedSkills.length === 0 && (
+              {selectedSkills.length === 0 && !hourlyRate && (
                 <p className="text-xs text-center text-muted-foreground">
-                  You can skip this — add skills from your profile anytime
+                  You can skip this — add skills & rates from your profile anytime
                 </p>
               )}
             </div>

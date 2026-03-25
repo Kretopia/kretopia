@@ -45,8 +45,8 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="ThriveIN - Stop Cold DMing for Collabs"
-        description="Get matched with verified creatives, manage projects, send invoices, and get paid. The all-in-one platform for creative professionals."
+        title="ThriveIN - Find Work. Get Paid. The Creative Economy Platform"
+        description="Set your rates, get matched with real gigs, manage projects & invoices — and get paid on time. The all-in-one platform for creative professionals."
         url="https://thrivein.io"
       />
       <HeroSection />

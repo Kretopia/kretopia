@@ -57,7 +57,7 @@ export const HeroSection = () => {
           </div>
           
           <p className="mt-5 text-xs text-muted-foreground/70">
-            ⚡ Free forever • No credit card needed
+            ⚡ Free forever • Set your rates in 60 seconds • No credit card needed
           </p>
         </div>
       </div>

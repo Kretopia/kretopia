@@ -518,10 +518,13 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       if (invoice.recipient_email) { doc.text(invoice.recipient_email, 20, billY); billY += 4; }
       if (invoice.recipient_address) { doc.text(invoice.recipient_address, 20, billY); }
 
+      // Currency symbol for this invoice
+      const pdfCurrSym = getCurrencySymbol(invoice.currency || "USD");
+
       // Line Items
       const items = (invoice.line_items || []).map((item: any) => [
         item.description, item.quantity.toString(),
-        `$${item.rate.toFixed(2)}`, `$${item.amount.toFixed(2)}`
+        `${pdfCurrSym}${item.rate.toFixed(2)}`, `${pdfCurrSym}${item.amount.toFixed(2)}`
       ]);
 
       autoTable(doc, {
@@ -539,20 +542,20 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
 
       doc.setFontSize(9);
       doc.text(`Subtotal:`, 140, totY);
-      doc.text(`$${Number(invoice.amount).toFixed(2)}`, 190, totY, { align: "right" });
+      doc.text(`${pdfCurrSym}${Number(invoice.amount).toFixed(2)}`, 190, totY, { align: "right" });
 
       if (invoice.discount_amount && invoice.discount_amount > 0) {
         totY += 6;
         doc.setTextColor(22, 163, 74);
         doc.text(`Discount:`, 140, totY);
-        doc.text(`-$${Number(invoice.discount_amount).toFixed(2)}`, 190, totY, { align: "right" });
+        doc.text(`-${pdfCurrSym}${Number(invoice.discount_amount).toFixed(2)}`, 190, totY, { align: "right" });
         doc.setTextColor(0, 0, 0);
       }
 
       if (invoice.tax_rate) {
         totY += 6;
         doc.text(`Tax (${invoice.tax_rate}%):`, 140, totY);
-        doc.text(`$${Number(invoice.tax_amount).toFixed(2)}`, 190, totY, { align: "right" });
+        doc.text(`${pdfCurrSym}${Number(invoice.tax_amount).toFixed(2)}`, 190, totY, { align: "right" });
       }
 
       totY += 8;
@@ -562,7 +565,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       doc.setFont(undefined!, "bold");
       doc.setTextColor(rgb[0], rgb[1], rgb[2]);
       doc.text("Total:", 140, totY + 4);
-      doc.text(`$${Number(invoice.total_amount).toFixed(2)}`, 190, totY + 4, { align: "right" });
+      doc.text(`${pdfCurrSym}${Number(invoice.total_amount).toFixed(2)}`, 190, totY + 4, { align: "right" });
 
       // Payment details
       doc.setTextColor(0, 0, 0);

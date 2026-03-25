@@ -183,7 +183,7 @@ export default function Onboarding() {
     setLoading(true);
     try {
       const skillObjects = selectedSkills.map(skill => ({ skill, level: 3, category: "General" }));
-      await supabase.from("profiles").update({
+      const updateData: any = {
         full_name: profile.full_name,
         role: profile.role,
         location: profile.location || null,
@@ -191,7 +191,12 @@ export default function Onboarding() {
         onboarding_completed: true,
         onboarding_step: 6,
         xp: 100,
-      }).eq("user_id", user.id);
+      };
+      if (hourlyRate) {
+        updateData.hourly_rate = parseFloat(hourlyRate);
+        updateData.rate_currency = 'USD';
+      }
+      await supabase.from("profiles").update(updateData).eq("user_id", user.id);
 
       const pendingConnect = localStorage.getItem('pendingConnect');
       if (pendingConnect) {

@@ -120,7 +120,7 @@ const ROLE_CATEGORIES: { label: string; roles: string[] }[] = [
   },
   {
     label: '👗 Fashion & Beauty',
-    roles: ['Fashion Designer', 'Stylist', 'Makeup Artist', 'Hair Stylist', 'Costume Designer', 'Wardrobe Stylist', 'Carnival/Mas Designer', 'Model', 'Fashion Photographer'],
+    roles: ['Fashion Designer', 'Stylist', 'Makeup Artist', 'Hair Stylist', 'Costume Designer', 'Wardrobe Stylist', 'Carnival/Mas Designer', 'Model', 'Fashion Photographer', 'Nail Technician', 'Jewelry Designer', 'Textile Designer', 'Fashion Illustrator', 'Wig Maker', 'Personal Shopper'],
   },
   {
     label: '💼 Business & Tech',

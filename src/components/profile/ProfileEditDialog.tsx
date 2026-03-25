@@ -56,10 +56,16 @@ export const ROLE_OPTIONS = [
   // Fashion & Beauty
   { value: 'Fashion Designer', label: 'Fashion Designer' },
   { value: 'Stylist', label: 'Stylist' },
+  { value: 'Wardrobe Stylist', label: 'Wardrobe Stylist' },
+  { value: 'Personal Shopper', label: 'Personal Shopper / Image Consultant' },
   { value: 'Makeup Artist', label: 'Makeup Artist (MUA)' },
   { value: 'Hair Stylist', label: 'Hair Stylist' },
+  { value: 'Nail Technician', label: 'Nail Technician / Nail Artist' },
+  { value: 'Wig Maker', label: 'Wig Maker / Wig Stylist' },
   { value: 'Model', label: 'Model / Talent' },
   { value: 'Costume Designer', label: 'Costume Designer' },
+  { value: 'Textile Designer', label: 'Textile / Fabric Designer' },
+  { value: 'Fashion Illustrator', label: 'Fashion Illustrator' },
   { value: 'Jewelry Designer', label: 'Jewelry / Accessory Designer' },
   { value: 'Carnival Designer', label: 'Carnival / Mas Designer' },
   // Content & Digital

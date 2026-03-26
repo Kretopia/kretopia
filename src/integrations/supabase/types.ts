@@ -6394,6 +6394,53 @@ export type Database = {
           },
         ]
       }
+      talent_shortlist: {
+        Row: {
+          company_user_id: string
+          created_at: string
+          id: string
+          match_reasons: Json | null
+          match_score: number | null
+          notes: string | null
+          opportunity_id: string | null
+          status: string
+          talent_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_user_id: string
+          created_at?: string
+          id?: string
+          match_reasons?: Json | null
+          match_score?: number | null
+          notes?: string | null
+          opportunity_id?: string | null
+          status?: string
+          talent_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_user_id?: string
+          created_at?: string
+          id?: string
+          match_reasons?: Json | null
+          match_score?: number | null
+          notes?: string | null
+          opportunity_id?: string | null
+          status?: string
+          talent_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_shortlist_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_entries: {
         Row: {
           created_at: string | null

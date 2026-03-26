@@ -168,7 +168,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
                         {user.avatar_url ? (
                           <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xs font-medium">{user.display_name?.[0]}</span>
+                          <span className="text-xs font-medium">{user.full_name?.[0]}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

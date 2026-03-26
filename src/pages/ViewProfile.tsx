@@ -39,7 +39,7 @@ import { useConnectionDegree } from "@/hooks/useNetworkStats";
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { SkillsSection } from "@/components/profile/SkillsSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
-import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
+import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";

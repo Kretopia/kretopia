@@ -29,11 +29,13 @@ import {
   Shirt,
   Megaphone,
   Briefcase,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MediaPlayerModal } from "./MediaPlayerModal";
 import { parseMediaUrl } from "@/lib/mediaUtils";
+import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
 
 interface ManualCredit {
   id: string;

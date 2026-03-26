@@ -277,7 +277,7 @@ const AppContent = () => {
             <Route path="/dashboard" element={<Navigate to="/my-analytics" replace />} />
             <Route path="/spark" element={<Navigate to="/circle" replace />} />
             <Route path="/cre8" element={<Navigate to="/circle" replace />} />
-            <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+            
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             
             {/* 404 - Catch all */}

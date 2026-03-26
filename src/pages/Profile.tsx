@@ -439,6 +439,16 @@ const ProfileContent = () => {
           onRefresh={fetchData}
         />
 
+        {/* Credit Score */}
+        {(credits?.length > 0 || awards?.length > 0) && (
+          <CreditScore
+            totalCredits={credits?.length || 0}
+            verifiedCredits={credits?.filter((c: any) => c.verification_status === 'verified').length || 0}
+            awardsCount={awards?.length || 0}
+            portfolioCount={portfolioItems?.length || 0}
+          />
+        )}
+
         {/* Content Sections */}
         <ProfileContentSections
           profile={profile}

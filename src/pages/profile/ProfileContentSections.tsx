@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, BarChart3, Zap, ShoppingBag, Package } from "lucide-react";
+import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
@@ -54,11 +54,10 @@ export const ProfileContentSections = ({
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>("work");
   const tabsRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const [isTabBarSticky, setIsTabBarSticky] = useState(false);
   const tabBarSentinelRef = useRef<HTMLDivElement>(null);
 
-  // Sticky detection via IntersectionObserver
+  // Sticky detection
   useEffect(() => {
     const sentinel = tabBarSentinelRef.current;
     if (!sentinel) return;
@@ -70,37 +69,155 @@ export const ProfileContentSections = ({
     return () => observer.disconnect();
   }, []);
 
-  // Scroll-spy: update active tab based on scroll position
+  // Auto-scroll active tab pill into view
   useEffect(() => {
-    const handleScroll = () => {
-      const tabIds = PROFILE_TABS.map(t => t.id);
-      for (let i = tabIds.length - 1; i >= 0; i--) {
-        const el = sectionRefs.current[tabIds[i]];
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= 140) {
-            setActiveTab(tabIds[i]);
-            break;
-          }
-        }
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scrollToTab = (tabId: TabId) => {
-    setActiveTab(tabId);
-    const el = sectionRefs.current[tabId];
-    if (el) {
-      const offset = 120;
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: "smooth" });
+    const container = tabsRef.current;
+    if (!container) return;
+    const activeBtn = container.querySelector(`[data-tab="${activeTab}"]`) as HTMLElement;
+    if (activeBtn) {
+      activeBtn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     }
-  };
+  }, [activeTab]);
 
-  const setSectionRef = (id: string) => (el: HTMLElement | null) => {
-    sectionRefs.current[id] = el;
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "work":
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-bold">Work</h2>
+                <p className="text-xs text-muted-foreground">Your creative portfolio & verified credits</p>
+              </div>
+              {!hasAdvancedProfile && (
+                <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
+                  <Crown className="h-3 w-3" /> Pro
+                </Badge>
+              )}
+            </div>
+            {hasAdvancedProfile ? (
+              <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
+            ) : (
+              <div className="text-center py-8">
+                <Lock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                <p className="text-muted-foreground mb-4">Upgrade to Pro to build your professional credit history</p>
+                <Button onClick={() => navigate("/subscription")} className="gap-2">
+                  <Crown className="h-4 w-4" /> Upgrade to Pro
+                </Button>
+              </div>
+            )}
+          </div>
+        );
+
+      case "reviews":
+        return (
+          <div className="space-y-6">
+            <ReviewsSection
+              reviews={reviews}
+              isOwnProfile={true}
+              profileUserId={profile.user_id}
+              onRefresh={onRefresh}
+            />
+            <SocialStatsSection
+              youtubeSubscribers={profile.youtube_subscribers}
+              instagramFollowers={profile.instagram_followers}
+              tiktokFollowers={profile.tiktok_followers}
+              spotifyListeners={profile.spotify_listeners}
+              twitterFollowers={profile.twitter_followers}
+              linkedinConnections={profile.linkedin_connections}
+              verifiedMetrics={profile.social_verified}
+            />
+          </div>
+        );
+
+      case "press":
+        return (
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Newspaper className="h-4 w-4 text-primary" />
+                Press Coverage
+                {!hasAdvancedProfile && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                    <Crown className="h-3 w-3" /> Pro
+                  </Badge>
+                )}
+              </h3>
+              {hasAdvancedProfile ? (
+                <PressLinksSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
+              ) : (
+                <div className="text-center py-6">
+                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                    <Crown className="h-3 w-3" /> Unlock
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Award className="h-4 w-4 text-primary" />
+                Awards
+                {!hasAdvancedProfile && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                    <Crown className="h-3 w-3" /> Pro
+                  </Badge>
+                )}
+              </h3>
+              {hasAdvancedProfile ? (
+                <AwardsSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
+              ) : (
+                <div className="text-center py-6">
+                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                    <Crown className="h-3 w-3" /> Unlock
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case "skills":
+        return (
+          <div className="space-y-6">
+            <SkillsSection
+              professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+              passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
+              jobTitle={profile.job_title}
+              industry={profile.industry}
+              isOwnProfile={true}
+              userId={profile.user_id}
+              onRefresh={onRefresh}
+            />
+            {industryStats.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Industry Stats</h3>
+                <IndustryStatsSection stats={industryStats} isOwnProfile={true} onRefresh={onRefresh} />
+              </div>
+            )}
+          </div>
+        );
+
+      case "collabs":
+        return (
+          <div>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Handshake className="h-5 w-5 text-primary" />
+              Collaboration History
+            </h2>
+            <CollaborationHistory userId={profile.user_id} isOwnProfile={true} />
+          </div>
+        );
+
+      case "shop":
+        return <DigitalProductsSection userId={profile.user_id} isOwner={true} />;
+
+      default:
+        return null;
+    }
   };
 
   return (
@@ -108,12 +225,8 @@ export const ProfileContentSections = ({
       {/* Pending verification requests */}
       <CreditVerificationPanel userId={profile.user_id} />
 
-      {/* Video Intro - above tabs, part of hero area */}
-      <VideoIntroSection
-        videoUrl={profile.video_intro_url}
-        isOwnProfile={true}
-        onRefresh={onRefresh}
-      />
+      {/* Video Intro */}
+      <VideoIntroSection videoUrl={profile.video_intro_url} isOwnProfile={true} onRefresh={onRefresh} />
 
       {/* Service Packages */}
       <ServicePackagesSection userId={profile.user_id} isOwnProfile={true} />
@@ -121,7 +234,7 @@ export const ProfileContentSections = ({
       {/* Sentinel for sticky detection */}
       <div ref={tabBarSentinelRef} className="h-0" />
 
-      {/* Sticky Tab Bar */}
+      {/* Tab Bar — mobile */}
       <div
         className={cn(
           "md:hidden z-40 -mx-3 px-3 transition-all duration-200",
@@ -132,7 +245,7 @@ export const ProfileContentSections = ({
       >
         <div
           ref={tabsRef}
-          className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1"
+          className="flex gap-1.5 overflow-x-auto pb-1"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {PROFILE_TABS.map((tab) => {
@@ -141,7 +254,8 @@ export const ProfileContentSections = ({
             return (
               <button
                 key={tab.id}
-                onClick={() => scrollToTab(tab.id)}
+                data-tab={tab.id}
+                onClick={() => setActiveTab(tab.id)}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0",
                   isActive
@@ -157,7 +271,7 @@ export const ProfileContentSections = ({
         </div>
       </div>
 
-      {/* Desktop: also show a subtle tab nav */}
+      {/* Tab Bar — desktop */}
       <div className="hidden md:flex gap-2 mb-6 flex-wrap">
         {PROFILE_TABS.map((tab) => {
           const Icon = tab.icon;
@@ -165,7 +279,7 @@ export const ProfileContentSections = ({
           return (
             <button
               key={tab.id}
-              onClick={() => scrollToTab(tab.id)}
+              onClick={() => setActiveTab(tab.id)}
               className={cn(
                 "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all",
                 isActive
@@ -180,179 +294,9 @@ export const ProfileContentSections = ({
         })}
       </div>
 
-      {/* === SECTIONS === */}
-      <div className="space-y-8">
-
-        {/* WORK */}
-        <section ref={setSectionRef("work")} id="profile-work">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-bold">Work</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Your creative portfolio & verified credits</p>
-            </div>
-            {!hasAdvancedProfile && (
-              <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
-                <Crown className="h-3 w-3" />
-                Pro
-              </Badge>
-            )}
-          </div>
-          {hasAdvancedProfile ? (
-            <ICDBTimeline
-              userId={profile.user_id}
-              isOwnProfile={true}
-              onRefresh={onRefresh}
-            />
-          ) : (
-            <div className="text-center py-8">
-              <Lock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-              <p className="text-muted-foreground mb-4">Upgrade to Pro to build your professional credit history</p>
-              <Button onClick={() => navigate("/subscription")} className="gap-2">
-                <Crown className="h-4 w-4" />
-                Upgrade to Pro
-              </Button>
-            </div>
-          )}
-        </section>
-
-        <hr className="border-border" />
-
-        {/* REVIEWS */}
-        <section ref={setSectionRef("reviews")} id="profile-reviews">
-          <ReviewsSection
-            reviews={reviews}
-            isOwnProfile={true}
-            profileUserId={profile.user_id}
-            onRefresh={onRefresh}
-          />
-
-          {/* Social Stats inline */}
-          <div className="mt-6">
-            <SocialStatsSection
-              youtubeSubscribers={profile.youtube_subscribers}
-              instagramFollowers={profile.instagram_followers}
-              tiktokFollowers={profile.tiktok_followers}
-              spotifyListeners={profile.spotify_listeners}
-              twitterFollowers={profile.twitter_followers}
-              linkedinConnections={profile.linkedin_connections}
-              verifiedMetrics={profile.social_verified}
-            />
-          </div>
-        </section>
-
-        <hr className="border-border" />
-
-        {/* PRESS & AWARDS */}
-        <section ref={setSectionRef("press")} id="profile-press">
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Newspaper className="h-4 w-4 text-primary" />
-                Press Coverage
-                {!hasAdvancedProfile && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                    <Crown className="h-3 w-3" />
-                    Pro
-                  </Badge>
-                )}
-              </h3>
-              {hasAdvancedProfile ? (
-                <PressLinksSection
-                  userId={profile.user_id}
-                  isOwnProfile={true}
-                  onRefresh={onRefresh}
-                />
-              ) : (
-                <div className="text-center py-6">
-                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                    <Crown className="h-3 w-3" />
-                    Unlock
-                  </Button>
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Award className="h-4 w-4 text-primary" />
-                Awards
-                {!hasAdvancedProfile && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                    <Crown className="h-3 w-3" />
-                    Pro
-                  </Badge>
-                )}
-              </h3>
-              {hasAdvancedProfile ? (
-                <AwardsSection
-                  userId={profile.user_id}
-                  isOwnProfile={true}
-                  onRefresh={onRefresh}
-                />
-              ) : (
-                <div className="text-center py-6">
-                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                    <Crown className="h-3 w-3" />
-                    Unlock
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <hr className="border-border" />
-
-        {/* SKILLS */}
-        <section ref={setSectionRef("skills")} id="profile-skills">
-          <SkillsSection
-            professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
-            passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
-            jobTitle={profile.job_title}
-            industry={profile.industry}
-            isOwnProfile={true}
-            userId={profile.user_id}
-            onRefresh={onRefresh}
-          />
-
-          {industryStats.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-3">Industry Stats</h3>
-              <IndustryStatsSection
-                stats={industryStats}
-                isOwnProfile={true}
-                onRefresh={onRefresh}
-              />
-            </div>
-          )}
-        </section>
-
-        <hr className="border-border" />
-
-        {/* COLLABS */}
-        <section ref={setSectionRef("collabs")} id="profile-collabs">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Handshake className="h-5 w-5 text-primary" />
-            Collaboration History
-          </h2>
-          <CollaborationHistory
-            userId={profile.user_id}
-            isOwnProfile={true}
-          />
-        </section>
-
-        <hr className="border-border" />
-
-        {/* SHOP */}
-        <section ref={setSectionRef("shop")} id="profile-shop">
-          <DigitalProductsSection
-            userId={profile.user_id}
-            isOwner={true}
-          />
-        </section>
+      {/* Active tab content — renders in-place, no scrolling needed */}
+      <div className="min-h-[200px]">
+        {renderTabContent()}
       </div>
     </div>
   );

@@ -27,6 +27,7 @@ import { CreditScore } from "@/components/profile/CreditScore";
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
 import { ProfileVerificationSection } from "@/pages/profile/ProfileVerificationSection";
+import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";

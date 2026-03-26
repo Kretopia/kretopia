@@ -8,7 +8,7 @@ import { CreditVerificationPanel } from "@/components/profile/CreditVerification
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
-import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { SkillsSection } from "@/components/profile/SkillsSection";
 import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";

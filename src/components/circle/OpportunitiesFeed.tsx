@@ -277,6 +277,7 @@ export const OpportunitiesFeed = () => {
         const isBarter = opp.type === "barter";
 
         return (
+          <DiscoveryGate key={opp.id} totalItems={opportunities.length} freePreviewCount={4} index={index} itemLabel="gigs">
           <Card
             key={opp.id}
             className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer group ${

@@ -400,7 +400,7 @@ const DiscoverPage = () => {
                                 <p className="text-xs font-medium truncate">{credit.profile?.full_name || 'Unknown'}</p>
                                 <p className="text-[10px] text-muted-foreground truncate">{credit.role}</p>
                               </div>
-                              {credit.verification_status === 'verified' && <ShieldCheck className="h-3 w-3 text-green-600 shrink-0" />}
+                              {credit.verification_status === 'verified' && <ShieldCheck className="h-3 w-3 text-primary shrink-0" />}
                             </div>
                           ))}
                         </div>

@@ -46,17 +46,17 @@ serve(async (req) => {
             content: `You are a creative industry database search engine. Given a search query, return structured results of real creative projects, songs, films, events, albums, shows, etc. that match.
 
 Return a JSON object with a "results" array. Each result should have:
-- "title": project/work name
+- "title": project/work name (be specific — include subtitle or distinguishing info if needed)
 - "type": one of: film, tv, short_film, documentary, music_video, album, single, ep, concert, festival, live_event, fashion_show, exhibition, podcast, youtube_series, brand_campaign, theatre, dance, photography, animation, art_exhibition, commercial, runway, editorial_shoot, workshop, conference
 - "role_suggestion": likely role if creator_name provided, otherwise null
 - "year": year (number or null)
-- "platform": where it was published/shown (e.g., Netflix, Spotify, YouTube, Broadway, etc.)
-- "description": one-line description
+- "platform": specific platform where published (e.g., "YouTube", "Spotify", "Netflix", "Vimeo", "SoundCloud", "Behance", "IMDb", "Apple Music", "Amazon Prime", "HBO", "BBC")
+- "description": one-line description explaining WHAT the project is (e.g., "Reggae single featuring Artist X, released on VP Records", "45-episode comedy podcast about Caribbean culture")
 - "url": known URL if any, otherwise null
-- "location": location if known
-- "client_brand": associated brand/label/studio if known
+- "location": location if known (city/country)
+- "client_brand": associated brand/label/studio if known (e.g., "VP Records", "BBC Films", "Nike")
 
-Return up to 8 most relevant real results. Only return real, verifiable projects — never fabricate. If uncertain, return fewer results.`
+IMPORTANT: Be specific in descriptions so users can distinguish between results. Include genre, episode count, featured artists, or other identifying details. Return up to 8 most relevant real results. Only return real, verifiable projects — never fabricate. If uncertain, return fewer results.`
           },
           {
             role: 'user',

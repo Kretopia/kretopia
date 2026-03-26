@@ -181,23 +181,15 @@ export const ProfileContentSections = ({
 
       case "skills":
         return (
-          <div className="space-y-6">
-            <SkillsSection
-              professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
-              passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
-              jobTitle={profile.job_title}
-              industry={profile.industry}
-              isOwnProfile={true}
-              userId={profile.user_id}
-              onRefresh={onRefresh}
-            />
-            {industryStats.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Industry Stats</h3>
-                <IndustryStatsSection stats={industryStats} isOwnProfile={true} onRefresh={onRefresh} />
-              </div>
-            )}
-          </div>
+          <SkillsSection
+            professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills as any : []}
+            passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills as any : []}
+            jobTitle={profile.job_title}
+            industry={profile.industry}
+            isOwnProfile={true}
+            userId={profile.user_id}
+            onRefresh={onRefresh}
+          />
         );
 
       case "collabs":

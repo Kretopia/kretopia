@@ -105,40 +105,98 @@ serve(async (req) => {
 
     logStep("Milestone updated successfully", { milestoneId, newStatus, newEscrowStatus });
 
-    // Auto-generate invoice when payment is captured
+    // Auto-generate invoice + record commission when payment is captured
     if (action === 'capture') {
       try {
-        logStep("Generating auto-invoice for captured milestone");
+        logStep("Processing captured payment — invoice + commission");
 
-        // Get the payer's (brand/company) profile for invoice branding
+        // Retrieve payment intent metadata for fee breakdown
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        const metadata = paymentIntent.metadata || {};
+        const talentRate = parseFloat(metadata.talentRate || String(milestone.amount));
+        const platformFee = parseFloat(metadata.platformFee || '0');
+        const managerCommission = parseFloat(metadata.managerCommission || '0');
+        const managerUserId = metadata.managerUserId || null;
+
+        logStep("Fee breakdown from metadata", { talentRate, platformFee, managerCommission, managerUserId });
+
+        // Record manager commission if applicable
+        if (managerUserId && managerCommission > 0) {
+          const { error: commissionError } = await supabaseAdmin
+            .from('referral_commissions')
+            .insert({
+              manager_id: managerUserId,
+              talent_id: milestone.created_by,
+              milestone_id: milestoneId,
+              project_id: milestone.project_id,
+              commission_amount: managerCommission,
+              commission_rate: 0.10,
+              status: 'earned',
+              paid_by: user.id,
+            });
+
+          if (commissionError) {
+            logStep("WARNING: Failed to record commission", { error: commissionError.message });
+          } else {
+            logStep("Manager commission recorded", { managerUserId, amount: managerCommission });
+          }
+        }
+
+        // Get profiles for invoice
         const { data: payerProfile } = await supabaseAdmin
           .from('profiles')
           .select('full_name, avatar_url, role')
           .eq('user_id', user.id)
           .single();
 
-        // Get the creator's profile (milestone creator)
         const { data: creatorProfile } = await supabaseAdmin
           .from('profiles')
           .select('full_name')
           .eq('user_id', milestone.created_by)
           .single();
 
-        // Get creator's email
         const { data: creatorAuth } = await supabaseAdmin.auth.admin.getUserById(milestone.created_by);
 
-        const amountInDollars = milestone.amount;
         const now = new Date();
         const invoiceNumber = `INV-${now.getFullYear()}-${now.getTime()}`;
 
+        const lineItems = [
+          {
+            description: `Milestone: ${milestone.title}`,
+            quantity: 1,
+            rate: talentRate,
+            amount: talentRate,
+          }
+        ];
+
+        if (platformFee > 0) {
+          lineItems.push({
+            description: `ThriveIN Service Fee`,
+            quantity: 1,
+            rate: platformFee,
+            amount: platformFee,
+          });
+        }
+
+        if (managerCommission > 0) {
+          lineItems.push({
+            description: `Talent Manager Commission`,
+            quantity: 1,
+            rate: managerCommission,
+            amount: managerCommission,
+          });
+        }
+
+        const totalAmount = talentRate + platformFee + managerCommission;
+
         const invoiceData = {
           invoice_number: invoiceNumber,
-          issued_by: user.id, // Brand/company who paid
-          issued_to: milestone.created_by, // Creator who received payment
+          issued_by: user.id,
+          issued_to: milestone.created_by,
           project_id: milestone.project_id,
           milestone_id: milestoneId,
-          amount: amountInDollars,
-          total_amount: amountInDollars,
+          amount: talentRate,
+          total_amount: totalAmount,
           currency: 'USD',
           status: 'paid',
           paid_at: now.toISOString(),
@@ -150,16 +208,13 @@ serve(async (req) => {
             payment_intent_id: paymentIntentId,
             escrow: true,
             auto_generated: true,
+            talent_rate: talentRate,
+            platform_fee: platformFee,
+            manager_commission: managerCommission,
+            manager_user_id: managerUserId,
           },
-          line_items: [
-            {
-              description: `Milestone: ${milestone.title}`,
-              quantity: 1,
-              rate: amountInDollars,
-              amount: amountInDollars,
-            }
-          ],
-          notes: `Auto-generated invoice for milestone "${milestone.title}" on project "${milestone.projects?.title || 'Project'}". Payment captured via ThrivePay escrow.`,
+          line_items: lineItems,
+          notes: `Auto-generated invoice for milestone "${milestone.title}" on project "${milestone.projects?.title || 'Project'}". Talent received $${talentRate.toFixed(2)} (100% of rate). Service fee and commissions charged to brand.`,
         };
 
         const { data: invoice, error: invoiceError } = await supabaseAdmin
@@ -170,13 +225,11 @@ serve(async (req) => {
 
         if (invoiceError) {
           logStep("WARNING: Failed to create auto-invoice", { error: invoiceError.message });
-          // Don't throw — payment was already captured successfully
         } else {
           logStep("Auto-invoice created", { invoiceId: invoice.id, invoiceNumber: invoice.invoice_number });
         }
       } catch (invoiceErr) {
         logStep("WARNING: Auto-invoice generation failed", { error: String(invoiceErr) });
-        // Non-blocking — the payment capture itself succeeded
       }
     }
 

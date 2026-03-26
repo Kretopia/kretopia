@@ -16,7 +16,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
       icon: CheckCircle,
       fee: PLATFORM_FEES.free,
       color: "bg-gray-500",
-      features: ["30 swipes/day", "Basic payment processing", "15% platform fee", "Standard support"],
+      features: ["20% service fee (charged to brand)", "Talent keeps 100%", "30 swipes/day", "Standard support"],
     },
     {
       name: "Pro",
@@ -25,16 +25,16 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
       fee: PLATFORM_FEES.pro,
       color: "bg-gradient-to-r from-blue-500 to-cyan-500",
       price: "$12/mo",
-      features: ["8% platform fee", "Unlimited swipes", "Priority support", "All features unlocked"],
+      features: ["15% service fee (charged to brand)", "Talent keeps 100%", "Unlimited swipes", "All features unlocked"],
     },
   ];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Platform Fee Structure</CardTitle>
+        <CardTitle>Service Fee Structure</CardTitle>
         <CardDescription>
-          Lower your transaction fees by upgrading your membership
+          Brands pay the service fee — creators always keep 100% of their rate
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -70,7 +70,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
                   <div className="text-3xl font-bold text-primary">
                     {getFeeDisplayText(tier.tier)}
                   </div>
-                  <p className="text-sm text-muted-foreground">platform fee</p>
+                  <p className="text-sm text-muted-foreground">service fee to brand</p>
                 </div>
 
                 <Separator className="my-3" />
@@ -89,12 +89,13 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
         </div>
 
         <div className="mt-6 p-4 bg-muted rounded-lg">
-          <h4 className="font-semibold mb-2">How Platform Fees Work</h4>
+          <h4 className="font-semibold mb-2">How Service Fees Work</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Platform fees are automatically deducted from each transaction</li>
-            <li>• The recipient receives the full amount minus platform fee and Stripe processing fee</li>
-            <li>• Stripe's processing fee (~2.9% + 30¢) is separate and standard for all tiers</li>
-            <li>• Example: On a $100 payment with Free tier (15% fee), you pay $100, recipient gets ~$82 after all fees</li>
+            <li>• <strong>Talent keeps 100%</strong> of their quoted rate — always</li>
+            <li>• Service fees are charged to the brand/company on top of the talent's rate</li>
+            <li>• If a Talent Manager is involved, a 10% commission is also added to the brand's total</li>
+            <li>• Stripe processing (~2.9% + 30¢) applies to the total charged amount</li>
+            <li>• Example: $1,000 talent rate + 20% fee = brand pays ~$1,235 total, talent gets $1,000</li>
           </ul>
         </div>
       </CardContent>

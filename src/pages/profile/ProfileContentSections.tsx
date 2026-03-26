@@ -111,23 +111,12 @@ export const ProfileContentSections = ({
 
       case "reviews":
         return (
-          <div className="space-y-6">
-            <ReviewsSection
-              reviews={reviews}
-              isOwnProfile={true}
-              profileUserId={profile.user_id}
-              onRefresh={onRefresh}
-            />
-            <SocialStatsSection
-              youtubeSubscribers={profile.youtube_subscribers}
-              instagramFollowers={profile.instagram_followers}
-              tiktokFollowers={profile.tiktok_followers}
-              spotifyListeners={profile.spotify_listeners}
-              twitterFollowers={profile.twitter_followers}
-              linkedinConnections={profile.linkedin_connections}
-              verifiedMetrics={profile.social_verified}
-            />
-          </div>
+          <ReviewsSection
+            reviews={reviews}
+            isOwnProfile={true}
+            profileUserId={profile.user_id}
+            onRefresh={onRefresh}
+          />
         );
 
       case "press":

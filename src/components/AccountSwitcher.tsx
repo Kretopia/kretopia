@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, User, ArrowRightLeft, Loader2 } from "lucide-react";
+import { Building2, User, ArrowRightLeft, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,11 +30,49 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu"
   const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [isManagerMode, setIsManagerMode] = useState(false);
+  const [managerToggling, setManagerToggling] = useState(false);
 
   const isCompany = currentAccountType === "company";
   const targetType = isCompany ? "individual" : "company";
   const targetLabel = isCompany ? "Personal Creator" : "Company / Brand";
   const TargetIcon = isCompany ? User : Building2;
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("is_manager_mode")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.is_manager_mode) setIsManagerMode(true);
+      });
+  }, [user?.id]);
+
+  const toggleManagerMode = async (enabled: boolean) => {
+    if (!user) return;
+    setManagerToggling(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_manager_mode: enabled })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      setIsManagerMode(enabled);
+      toast({
+        title: enabled ? "Manager Mode Activated" : "Manager Mode Deactivated",
+        description: enabled
+          ? "You now have access to the Talent Manager dashboard."
+          : "Manager dashboard hidden. You can re-enable anytime.",
+      });
+      if (enabled) navigate("/talent-manager");
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setManagerToggling(false);
+    }
+  };
 
   const handleSwitch = async () => {
     if (!user) return;
@@ -97,6 +136,26 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu"
             <ArrowRightLeft className="h-4 w-4" />
             Switch
           </Button>
+        </div>
+
+        {/* Talent Manager Mode Toggle */}
+        <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
+          <div className="flex items-center gap-3">
+            <Users className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-medium text-sm">
+                {isManagerMode ? "Manager Mode Active" : "Activate Manager Mode"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Manage talent, earn commissions on referred jobs
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={isManagerMode}
+            onCheckedChange={toggleManagerMode}
+            disabled={managerToggling}
+          />
         </div>
 
         <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>

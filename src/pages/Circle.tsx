@@ -48,7 +48,7 @@ export default function Circle() {
   }, [user?.id, navigate]);
 
   // Check if user is Pro
-  const isPro = subscriptionInfo.tier === 'pro';
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   // Sync tab with URL param when it changes
   useEffect(() => {

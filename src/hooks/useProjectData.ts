@@ -27,7 +27,7 @@ export function useProjectData(projectId: string | undefined) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === "pro";
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState<any>(null);

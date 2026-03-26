@@ -41,7 +41,7 @@ const PostOpportunity = () => {
   });
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === "pro";
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   const handleAddSkill = () => {
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {

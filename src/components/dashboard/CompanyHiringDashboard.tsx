@@ -28,7 +28,7 @@ export function CompanyHiringDashboard() {
   });
   const [recentApps, setRecentApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const isPro = subscriptionInfo.tier === 'pro' || subscriptionInfo.tier === 'founder';
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   useEffect(() => {
     if (!user) return;

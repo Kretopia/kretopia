@@ -60,7 +60,7 @@ const OpportunityDashboard = () => {
   const autoAnalyzedRef = useRef<Set<string>>(new Set());
   const { user, loading: authLoading, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
-  const isPro = subscriptionInfo.tier === 'pro';
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   useEffect(() => {
     console.log('[OpportunityDashboard] Auth state - loading:', authLoading, 'user:', user?.id);

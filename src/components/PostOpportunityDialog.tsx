@@ -66,7 +66,7 @@ export const PostOpportunityDialog = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   const { subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === "pro";
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   const [formData, setFormData] = useState({
     email: "",

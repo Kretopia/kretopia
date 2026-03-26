@@ -45,6 +45,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   workshop: '📚 Workshop',
   networking: '🤝 Networking',
   content: '📱 Content',
+  festival: '🎪 Festival',
+  showcase: '🌟 Showcase',
   general: '✨ Creative',
 };
 

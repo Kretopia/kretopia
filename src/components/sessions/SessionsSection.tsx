@@ -22,6 +22,10 @@ interface Session {
   creator_name: string;
   creator_avatar?: string;
   created_by: string;
+  is_ticketed?: boolean;
+  ticket_price?: number;
+  ticket_currency?: string;
+  event_type?: string;
 }
 
 interface SessionsSectionProps {

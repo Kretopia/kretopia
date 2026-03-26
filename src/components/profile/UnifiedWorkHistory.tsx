@@ -581,6 +581,16 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
           thumbnail_url: selectedCredit.thumbnailUrl,
         } : null}
       />
+
+      {/* Endorsement Dialog */}
+      {endorsementCredit && (
+        <CreditEndorsementDialog
+          open={!!endorsementCredit}
+          onOpenChange={(open) => !open && setEndorsementCredit(null)}
+          credit={endorsementCredit}
+          userId={userId}
+        />
+      )}
     </div>
   );
 }

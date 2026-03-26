@@ -10,6 +10,7 @@ import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, MapPin, Verified, Grid3X3, List, SlidersHorizontal, X, Users, Briefcase, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
 import { Helmet } from "react-helmet-async";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";

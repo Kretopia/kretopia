@@ -3578,6 +3578,48 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_invite_links: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string | null
+          current_uses: number | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          partner_code: string
+          partner_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          current_uses?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          partner_code: string
+          partner_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          current_uses?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          partner_code?: string
+          partner_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       partner_locations: {
         Row: {
           address: string
@@ -3646,6 +3688,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      partner_signups: {
+        Row: {
+          id: string
+          partner_link_id: string
+          signed_up_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          partner_link_id: string
+          signed_up_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          partner_link_id?: string
+          signed_up_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_signups_partner_link_id_fkey"
+            columns: ["partner_link_id"]
+            isOneToOne: false
+            referencedRelation: "partner_invite_links"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partner_submissions: {
         Row: {
@@ -4417,6 +4488,7 @@ export type Database = {
           onboarding_reminder_sent: boolean | null
           onboarding_started_at: string | null
           onboarding_step: number | null
+          partner_code_used: string | null
           partner_location_id: string | null
           passion_skills: Json | null
           payment_verified: boolean
@@ -4557,6 +4629,7 @@ export type Database = {
           onboarding_reminder_sent?: boolean | null
           onboarding_started_at?: string | null
           onboarding_step?: number | null
+          partner_code_used?: string | null
           partner_location_id?: string | null
           passion_skills?: Json | null
           payment_verified?: boolean
@@ -4697,6 +4770,7 @@ export type Database = {
           onboarding_reminder_sent?: boolean | null
           onboarding_started_at?: string | null
           onboarding_step?: number | null
+          partner_code_used?: string | null
           partner_location_id?: string | null
           passion_skills?: Json | null
           payment_verified?: boolean
@@ -8603,6 +8677,10 @@ export type Database = {
             Args: { code: string; new_user_id?: string; user_email: string }
             Returns: boolean
           }
+      use_partner_code: {
+        Args: { p_code: string; p_user_id: string }
+        Returns: boolean
+      }
       user_has_project_access: {
         Args: { project_id_param: string; user_id_param: string }
         Returns: boolean

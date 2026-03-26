@@ -49,10 +49,8 @@ export default function TalentManager() {
   const [creating, setCreating] = useState(false);
   const [customCode, setCustomCode] = useState("");
 
-  if (!user) return <Navigate to="/auth" replace />;
-
   useEffect(() => {
-    fetchManagerData();
+    if (user) fetchManagerData();
   }, [user]);
 
   const fetchManagerData = async () => {

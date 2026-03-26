@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 export interface Collaborator {
   id: string;
@@ -27,7 +28,7 @@ export function useProjectData(projectId: string | undefined) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === "pro";
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState<any>(null);

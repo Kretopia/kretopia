@@ -16,6 +16,7 @@ import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { ApplicantPipeline } from "@/components/opportunity/ApplicantPipeline";
 import { OpportunityAnalytics } from "@/components/opportunity/OpportunityAnalytics";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface Applicant {
   id: string;
@@ -60,7 +61,7 @@ const OpportunityDashboard = () => {
   const autoAnalyzedRef = useRef<Set<string>>(new Set());
   const { user, loading: authLoading, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
-  const isPro = subscriptionInfo.tier === 'pro';
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   useEffect(() => {
     console.log('[OpportunityDashboard] Auth state - loading:', authLoading, 'user:', user?.id);

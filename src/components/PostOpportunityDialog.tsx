@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Briefcase, Loader2, Upload, X, ArrowRightLeft, Handshake, Zap, Target, GraduationCap, UtensilsCrossed, Hotel, Gift, Instagram, Youtube, Music } from "lucide-react";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface PostOpportunityDialogProps {
   variant?: "default" | "outline" | "hero";
@@ -66,7 +67,7 @@ export const PostOpportunityDialog = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   const { subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === "pro";
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   const [formData, setFormData] = useState({
     email: "",

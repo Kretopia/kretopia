@@ -10,7 +10,7 @@ interface UndoSwipeButtonProps {
 }
 
 export const UndoSwipeButton = ({ onClick, disabled, userTier, undosRemaining }: UndoSwipeButtonProps) => {
-  const isPro = userTier === 'pro';
+  const isPro = userTier === 'pro' || userTier === 'enterprise' || userTier === 'founder';
   
   if (!isPro) {
     return (

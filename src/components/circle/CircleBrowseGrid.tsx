@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, MapPin, Verified, Sparkles, Users, Crown } from "lucide-react";
 import { SwipeFiltersState } from "./SwipeFilters";
 import { locationMatchesFilter } from "@/lib/locationGroups";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 const FREE_BROWSE_LIMIT = 6;
 
@@ -31,7 +32,7 @@ interface BrowseProfile {
 export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
   const navigate = useNavigate();
   const { user, subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === "pro" || subscriptionInfo.tier === "founder";
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
   const [profiles, setProfiles] = useState<BrowseProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

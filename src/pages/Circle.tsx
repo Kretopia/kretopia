@@ -14,6 +14,7 @@ import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/compon
 import { Users, Sparkles, UserPlus, MapPin } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 
 export default function Circle() {
@@ -48,7 +49,7 @@ export default function Circle() {
   }, [user?.id, navigate]);
 
   // Check if user is Pro
-  const isPro = subscriptionInfo.tier === 'pro';
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   // Sync tab with URL param when it changes
   useEffect(() => {

@@ -10,6 +10,7 @@ import {
   Plus, ArrowRight, Crown, DollarSign, FileText
 } from "lucide-react";
 import { FreeTierGate } from "@/components/FreeTierGate";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface HiringStats {
   jobsPosted: number;
@@ -28,7 +29,7 @@ export function CompanyHiringDashboard() {
   });
   const [recentApps, setRecentApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const isPro = subscriptionInfo.tier === 'pro' || subscriptionInfo.tier === 'founder';
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   useEffect(() => {
     if (!user) return;

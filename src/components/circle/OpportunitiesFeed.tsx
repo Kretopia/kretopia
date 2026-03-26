@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
 import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
 import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
+import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
 
 interface Opportunity {
   id: string;
@@ -268,7 +269,7 @@ export const OpportunitiesFeed = () => {
       )}
 
       {/* Cards */}
-      {!loading && opportunities.map(opp => {
+      {!loading && opportunities.map((opp, index) => {
         const config = getTypeConfig(opp.type);
         const TypeIcon = config.icon;
         const creator = opp.created_by ? creators[opp.created_by] : null;
@@ -276,6 +277,7 @@ export const OpportunitiesFeed = () => {
         const isBarter = opp.type === "barter";
 
         return (
+          <DiscoveryGate key={opp.id} totalItems={opportunities.length} freePreviewCount={4} index={index} itemLabel="gigs">
           <Card
             key={opp.id}
             className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer group ${
@@ -420,8 +422,10 @@ export const OpportunitiesFeed = () => {
               </div>
             </CardContent>
           </Card>
+          </DiscoveryGate>
         );
       })}
+      {!loading && <DiscoveryUpsell totalItems={opportunities.length} freePreviewCount={4} itemLabel="gigs" />}
     </div>
   );
 };

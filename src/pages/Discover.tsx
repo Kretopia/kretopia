@@ -10,6 +10,7 @@ import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, MapPin, Verified, Grid3X3, List, SlidersHorizontal, X, Users, Briefcase, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
 import { Helmet } from "react-helmet-async";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -328,15 +329,21 @@ const Discover = () => {
             </div>
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {profiles.map((profile) => (
-                <ProfileCard key={profile.user_id} profile={profile} onClick={() => navigate(`/profile/${profile.user_id}`)} />
+              {profiles.map((profile, index) => (
+                <DiscoveryGate key={profile.user_id} totalItems={profiles.length} freePreviewCount={6} index={index} itemLabel="creators">
+                  <ProfileCard profile={profile} onClick={() => navigate(`/profile/${profile.user_id}`)} />
+                </DiscoveryGate>
               ))}
+              <DiscoveryUpsell totalItems={profiles.length} freePreviewCount={6} itemLabel="creators" />
             </div>
           ) : (
             <div className="space-y-3">
-              {profiles.map((profile) => (
-                <ProfileListItem key={profile.user_id} profile={profile} onClick={() => navigate(`/profile/${profile.user_id}`)} />
+              {profiles.map((profile, index) => (
+                <DiscoveryGate key={profile.user_id} totalItems={profiles.length} freePreviewCount={6} index={index} itemLabel="creators">
+                  <ProfileListItem profile={profile} onClick={() => navigate(`/profile/${profile.user_id}`)} />
+                </DiscoveryGate>
               ))}
+              <DiscoveryUpsell totalItems={profiles.length} freePreviewCount={6} itemLabel="creators" />
             </div>
           )}
         </div>

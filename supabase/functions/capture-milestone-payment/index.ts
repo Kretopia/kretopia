@@ -116,16 +116,17 @@ serve(async (req) => {
         const talentRate = parseFloat(metadata.talentRate || String(milestone.amount));
         const platformFee = parseFloat(metadata.platformFee || '0');
         const managerCommission = parseFloat(metadata.managerCommission || '0');
-        const managerUserId = metadata.managerUserId || null;
+        const managerTableId = metadata.managerTableId || null;
+        const managerStripeAccountId = metadata.managerStripeAccountId || null;
 
-        logStep("Fee breakdown from metadata", { talentRate, platformFee, managerCommission, managerUserId });
+        logStep("Fee breakdown from metadata", { talentRate, platformFee, managerCommission, managerTableId, managerStripeAccountId });
 
         // Record manager commission if applicable
-        if (managerUserId && managerCommission > 0) {
+        if (managerTableId && managerCommission > 0) {
           const { error: commissionError } = await supabaseAdmin
             .from('referral_commissions')
             .insert({
-              manager_id: managerUserId,
+              manager_id: managerTableId,
               talent_user_id: milestone.created_by,
               source_type: 'milestone',
               source_id: milestoneId,
@@ -133,13 +134,50 @@ serve(async (req) => {
               commission_rate: 0.10,
               commission_amount: managerCommission,
               currency: 'USD',
-              status: 'earned',
+              status: managerStripeAccountId ? 'paid' : 'earned',
             });
 
           if (commissionError) {
             logStep("WARNING: Failed to record commission", { error: commissionError.message });
           } else {
-            logStep("Manager commission recorded", { managerUserId, amount: managerCommission });
+            logStep("Manager commission recorded", { managerTableId, amount: managerCommission });
+          }
+
+          // Transfer commission to manager's Stripe Connect account
+          if (managerStripeAccountId && managerCommission > 0) {
+            try {
+              const transfer = await stripe.transfers.create({
+                amount: Math.round(managerCommission * 100),
+                currency: 'usd',
+                destination: managerStripeAccountId,
+                description: `Manager commission for milestone: ${milestone.title}`,
+                metadata: {
+                  milestone_id: milestoneId,
+                  project_id: milestone.project_id,
+                  manager_table_id: managerTableId,
+                  commission_rate: '0.10',
+                },
+              });
+              logStep("Commission transferred to manager", { transferId: transfer.id, amount: managerCommission, destination: managerStripeAccountId });
+
+              // Update total_earned on talent_managers
+              await supabaseAdmin.rpc('increment_manager_earnings' as any, {
+                manager_id_input: managerTableId,
+                amount_input: managerCommission,
+              }).then(() => {
+                logStep("Manager earnings updated");
+              }).catch((err: any) => {
+                logStep("WARNING: Failed to update manager earnings", { error: String(err) });
+              });
+            } catch (transferErr: any) {
+              logStep("WARNING: Failed to transfer commission to manager", { error: transferErr.message });
+              // Update commission status back to 'earned' (pending manual payout)
+              await supabaseAdmin
+                .from('referral_commissions')
+                .update({ status: 'earned' })
+                .eq('manager_id', managerTableId)
+                .eq('source_id', milestoneId);
+            }
           }
         }
 

@@ -162,7 +162,7 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold text-lg">Creative Sessions</h3>
+          <h3 className="font-semibold text-lg">Events & Sessions</h3>
         </div>
         <Button 
           size="sm" 
@@ -170,7 +170,7 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
           onClick={() => setShowCreateDialog(true)}
         >
           <Plus className="h-4 w-4 mr-1" />
-          Host Session
+          Host Event
         </Button>
       </div>
 

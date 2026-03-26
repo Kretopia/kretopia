@@ -332,6 +332,54 @@ export const CreateSessionDialog = ({
             </div>
           </div>
 
+          {/* Ticketing */}
+          <div className="space-y-3 rounded-lg border p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Ticket className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="ticketed" className="text-sm font-medium">Paid Event / Tickets</Label>
+              </div>
+              <Switch
+                id="ticketed"
+                checked={formData.is_ticketed}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_ticketed: checked }))}
+              />
+            </div>
+            {formData.is_ticketed && (
+              <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="space-y-1">
+                  <Label className="text-xs">Price</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    placeholder="0.00"
+                    value={formData.ticket_price || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, ticket_price: parseFloat(e.target.value) || 0 }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Currency</Label>
+                  <Select
+                    value={formData.ticket_currency}
+                    onValueChange={(v) => setFormData(prev => ({ ...prev, ticket_currency: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="EUR">EUR (€)</SelectItem>
+                      <SelectItem value="GBP">GBP (£)</SelectItem>
+                      <SelectItem value="IDR">IDR (Rp)</SelectItem>
+                      <SelectItem value="TTD">TTD ($)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-4">
             <Button 
               type="button" 
@@ -350,7 +398,7 @@ export const CreateSessionDialog = ({
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Create Session
+              Create {formData.event_type === 'event' ? 'Event' : 'Session'}
             </Button>
           </div>
         </form>

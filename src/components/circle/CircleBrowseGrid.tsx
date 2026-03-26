@@ -68,6 +68,13 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
 
       let results = (data as any[]) || [];
 
+      // Sort boosted profiles to the top
+      results.sort((a, b) => {
+        const aBoosted = a.boost_expires_at && new Date(a.boost_expires_at) > new Date() ? 1 : 0;
+        const bBoosted = b.boost_expires_at && new Date(b.boost_expires_at) > new Date() ? 1 : 0;
+        return bBoosted - aBoosted;
+      });
+
       // Multi-role client-side filter
       if (roles.length > 1) {
         results = results.filter(p =>

@@ -10,14 +10,19 @@ export const awardXP = async (
   description: string
 ): Promise<{ success: boolean; xpAwarded: number; error?: any }> => {
   try {
-    const xpAmount = POINT_REWARDS[activityType];
+    let xpAmount = POINT_REWARDS[activityType];
 
-    // Get current XP
+    // Get current XP and check for 2x XP multiplier
     const { data: profile } = await supabase
       .from('profiles')
-      .select('xp')
+      .select('xp, double_xp_expires_at')
       .eq('user_id', userId)
       .single();
+
+    // Apply 2x multiplier if active
+    if (profile?.double_xp_expires_at && new Date(profile.double_xp_expires_at) > new Date()) {
+      xpAmount = xpAmount * 2;
+    }
 
     if (!profile) {
       return { success: false, xpAwarded: 0, error: 'Profile not found' };

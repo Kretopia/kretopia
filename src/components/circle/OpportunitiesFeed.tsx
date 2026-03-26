@@ -269,7 +269,7 @@ export const OpportunitiesFeed = () => {
       )}
 
       {/* Cards */}
-      {!loading && opportunities.map(opp => {
+      {!loading && opportunities.map((opp, index) => {
         const config = getTypeConfig(opp.type);
         const TypeIcon = config.icon;
         const creator = opp.created_by ? creators[opp.created_by] : null;

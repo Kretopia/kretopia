@@ -22,11 +22,23 @@ interface DiscoveryGateProps {
  * Pro/Enterprise/Founder users see everything.
  */
 export function DiscoveryGate({ totalItems, freePreviewCount, index, itemLabel, children }: DiscoveryGateProps) {
-  const { subscriptionInfo } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   // Pro users see everything
   if (isPro) return <>{children}</>;
+
+  // Check if user unlocked via Thrive Points
+  if (user) {
+    try {
+      const unlockKey = `thrivein_discovery_unlocked_${user.id}`;
+      const stored = localStorage.getItem(unlockKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.unlocked) return <>{children}</>;
+      }
+    } catch {}
+  }
 
   // Free users: show items within preview limit
   if (index < freePreviewCount) return <>{children}</>;

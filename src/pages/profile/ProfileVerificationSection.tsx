@@ -2,7 +2,6 @@ import { Card } from "@/components/ui/card";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
-import { PlatformConnectionCard } from "@/components/profile/PlatformConnectionCard";
 import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -66,7 +65,6 @@ export const ProfileVerificationSection = ({
           breakdown={(profile as any).verification_breakdown || undefined}
           onVerificationComplete={() => onRefresh()}
         />
-        <PlatformConnectionCard onCreditsImported={() => onRefresh()} />
       </div>
     </>
   );

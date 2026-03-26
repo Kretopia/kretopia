@@ -487,28 +487,68 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                   <p className="text-xs font-medium text-muted-foreground">
                     {webResults.length} result{webResults.length !== 1 ? 's' : ''} — tap to claim
                   </p>
-                  {webResults.map((result, i) => (
-                    <Card
-                      key={i}
-                      className="p-3 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                      onClick={() => claimResult(result)}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold truncate">{result.title}</p>
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
-                            {result.year && <span>{result.year}</span>}
-                            {result.platform && <Badge variant="secondary" className="text-[9px] h-4">{result.platform}</Badge>}
-                            {result.type && <Badge variant="outline" className="text-[9px] h-4 capitalize">{result.type.replace(/_/g, ' ')}</Badge>}
+                  {webResults.map((result, i) => {
+                    const platformLabel = result.platform || result.url?.match(/(?:https?:\/\/)?(?:www\.)?([^\/]+)/)?.[1] || '';
+                    const typeLabel = result.type?.replace(/_/g, ' ') || '';
+                    
+                    return (
+                      <Card
+                        key={i}
+                        className="p-3 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group"
+                        onClick={() => claimResult(result)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <p className="text-sm font-semibold">{result.title}</p>
+                            
+                            {/* Description */}
+                            {result.description && (
+                              <p className="text-[11px] text-muted-foreground line-clamp-2">{result.description}</p>
+                            )}
+                            
+                            {/* Platform + Type + Year badges */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {platformLabel && (
+                                <Badge variant="secondary" className="text-[9px] h-4 gap-0.5">
+                                  {platformLabel}
+                                </Badge>
+                              )}
+                              {typeLabel && (
+                                <Badge variant="outline" className="text-[9px] h-4 capitalize">
+                                  {typeLabel}
+                                </Badge>
+                              )}
+                              {result.year && (
+                                <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                  <Calendar className="h-2.5 w-2.5" />
+                                  {result.year}
+                                </span>
+                              )}
+                              {result.location && (
+                                <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                  <MapPin className="h-2.5 w-2.5" />
+                                  {result.location}
+                                </span>
+                              )}
+                            </div>
+                            
+                            {result.role_suggestion && (
+                              <p className="text-[11px] text-primary font-medium">
+                                Suggested role: {result.role_suggestion}
+                              </p>
+                            )}
+                            {result.client_brand && (
+                              <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                <Building2 className="h-2.5 w-2.5" />
+                                {result.client_brand}
+                              </p>
+                            )}
                           </div>
-                          {result.role_suggestion && (
-                            <p className="text-[11px] text-primary mt-0.5">Suggested role: {result.role_suggestion}</p>
-                          )}
+                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary shrink-0 mt-1" />
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary shrink-0 mt-1" />
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
 

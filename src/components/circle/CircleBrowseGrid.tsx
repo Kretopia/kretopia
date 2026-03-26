@@ -32,7 +32,8 @@ interface BrowseProfile {
 export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
   const navigate = useNavigate();
   const { user, subscriptionInfo } = useAuth();
-  const isPro = hasProAccess(subscriptionInfo.tier as any);
+  const hasPointsUnlock = user ? (() => { try { const s = localStorage.getItem(`thrivein_discovery_unlocked_${user.id}`); return s ? JSON.parse(s).unlocked : false; } catch { return false; } })() : false;
+  const isPro = hasProAccess(subscriptionInfo.tier as any) || hasPointsUnlock;
   const [profiles, setProfiles] = useState<BrowseProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

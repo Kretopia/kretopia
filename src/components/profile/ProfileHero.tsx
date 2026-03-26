@@ -33,6 +33,7 @@ interface ProfileHeroProps {
   isFromMatch?: boolean;
   onRefresh?: () => void;
   creditsCount?: number;
+  verifiedCreditsCount?: number;
   awardsCount?: number;
 }
 
@@ -55,6 +56,7 @@ export const ProfileHero = ({
   isFromMatch,
   onRefresh,
   creditsCount = 0,
+  verifiedCreditsCount = 0,
   awardsCount = 0
 }: ProfileHeroProps) => {
   const { user } = useAuth();
@@ -389,6 +391,9 @@ export const ProfileHero = ({
               <div className="text-center sm:text-left">
                 <span className="text-lg font-bold block">{creditsCount}</span>
                 <span className="text-xs text-muted-foreground">Credits</span>
+                {verifiedCreditsCount > 0 && (
+                  <span className="text-[10px] text-primary font-medium">{verifiedCreditsCount} Verified</span>
+                )}
               </div>
             )}
           </div>

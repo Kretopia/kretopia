@@ -45,6 +45,9 @@ export const ProfileContentSections = ({
 
   return (
     <div className="space-y-8">
+      {/* Pending verification requests */}
+      <CreditVerificationPanel userId={profile.user_id} />
+
       {/* Experience & Credits — Hero Position (IMDb-style) */}
       <section>
         <div className="flex items-center justify-between mb-4">

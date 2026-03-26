@@ -172,7 +172,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{user.display_name}</p>
+                        <p className="text-sm font-medium truncate">{user.full_name}</p>
                         <p className="text-xs text-muted-foreground truncate">{user.primary_role || user.username}</p>
                       </div>
                       <Send className="h-4 w-4 text-muted-foreground" />

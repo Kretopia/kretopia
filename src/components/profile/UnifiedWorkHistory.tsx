@@ -222,16 +222,29 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from("credits").insert({
+      const { data: insertedData, error } = await supabase.from("credits").insert({
         user_id: user.id,
         project_name: newCredit.project_name,
         role: newCredit.role,
         year: newCredit.year,
         platform: newCredit.platform || null,
         url: newCredit.url || null,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Trigger AI verification in background
+      if (insertedData) {
+        supabase.functions.invoke('verify-credit', {
+          body: {
+            credit_id: insertedData.id,
+            project_name: newCredit.project_name,
+            role: newCredit.role,
+            year: newCredit.year,
+            platform: newCredit.platform,
+          },
+        }).catch(err => console.log('AI verification queued:', err));
+      }
 
       toast.success("Credit added successfully");
       setNewCredit({

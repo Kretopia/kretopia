@@ -186,14 +186,15 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
 
         // Create endorsement requests for tagged collaborators
         for (const collab of selectedCollaborators) {
-          await supabase.from('credit_endorsements').insert({
+          const { error: endorseErr } = await supabase.from('credit_endorsements').insert({
             credit_id: insertedData.id,
             requested_by: userId,
             endorser_id: collab.user_id,
             endorser_name: collab.full_name,
             status: 'pending',
             relationship: 'collaborator',
-          }).catch(() => {});
+          });
+          if (endorseErr) console.log('Endorsement request error:', endorseErr);
         }
       }
 

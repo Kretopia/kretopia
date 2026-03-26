@@ -8486,6 +8486,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_endorsement_count: {
+        Args: { credit_id_param: string }
+        Returns: undefined
+      }
       is_profile_owner: { Args: { _profile_user_id: string }; Returns: boolean }
       send_opportunity_alerts: {
         Args: { opportunity_id_param: string }

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 /**
  * /join/:code route - stores invite code and redirects to auth
  * The code is stored in sessionStorage and auto-applied during signup
+ * Also checks if the code belongs to a talent manager for referral tracking
  */
 const JoinWithCode = () => {
   const { code } = useParams<{ code: string }>();
@@ -11,9 +12,12 @@ const JoinWithCode = () => {
 
   useEffect(() => {
     if (code) {
+      const upperCode = code.toUpperCase();
       // Store the invite code in sessionStorage for the signup flow
-      sessionStorage.setItem("invite_code", code.toUpperCase());
-      console.log(`Invite code "${code}" stored for signup`);
+      sessionStorage.setItem("invite_code", upperCode);
+      // Also store as potential manager referral code
+      sessionStorage.setItem("manager_referral_code", upperCode);
+      console.log(`Invite code "${upperCode}" stored for signup`);
     }
     
     // Redirect to auth page directly (skip install friction)

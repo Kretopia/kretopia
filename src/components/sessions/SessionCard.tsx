@@ -90,7 +90,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
           });
         
         setParticipation('going');
-        toast({ title: "Joined session! 🎉" });
+        toast({ title: "Joined! 🎉" });
       }
       onJoin?.();
     } catch (error) {

@@ -12,7 +12,7 @@ import { SkillsSection } from "@/components/profile/SkillsSection";
 import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { CreditsSection } from "@/components/profile/CreditsSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
-import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
+import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 import { VideoIntroSection } from "@/components/profile/VideoIntroSection";

@@ -422,8 +422,10 @@ export const OpportunitiesFeed = () => {
               </div>
             </CardContent>
           </Card>
+          </DiscoveryGate>
         );
       })}
+      {!loading && <DiscoveryUpsell totalItems={opportunities.length} freePreviewCount={4} itemLabel="gigs" />}
     </div>
   );
 };

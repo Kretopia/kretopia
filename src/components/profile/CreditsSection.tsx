@@ -158,13 +158,19 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
                           <SelectLabel>Film & TV</SelectLabel>
                           <SelectItem value="film">Film / Movie</SelectItem>
                           <SelectItem value="tv">TV Show / Series</SelectItem>
+                          <SelectItem value="short_film">Short Film</SelectItem>
+                          <SelectItem value="documentary">Documentary</SelectItem>
                           <SelectItem value="music_video">Music Video</SelectItem>
+                          <SelectItem value="web_series">Web Series</SelectItem>
                         </SelectGroup>
                         <SelectGroup>
                           <SelectLabel>Music & Audio</SelectLabel>
                           <SelectItem value="album">Album</SelectItem>
                           <SelectItem value="single">Single / Track</SelectItem>
+                          <SelectItem value="ep">EP</SelectItem>
+                          <SelectItem value="mixtape">Mixtape</SelectItem>
                           <SelectItem value="podcast">Podcast</SelectItem>
+                          <SelectItem value="audiobook">Audiobook</SelectItem>
                         </SelectGroup>
                         <SelectGroup>
                           <SelectLabel>Performing Arts</SelectLabel>
@@ -174,23 +180,48 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
                           <SelectItem value="comedy">Stand-up / Comedy</SelectItem>
                           <SelectItem value="spoken_word">Spoken Word / Poetry</SelectItem>
                           <SelectItem value="pantomime">Pantomime</SelectItem>
+                          <SelectItem value="recital">Recital</SelectItem>
+                          <SelectItem value="opera">Opera</SelectItem>
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel>Live Events</SelectLabel>
+                          <SelectLabel>Events & Productions</SelectLabel>
                           <SelectItem value="live_event">Live Event</SelectItem>
                           <SelectItem value="concert">Concert</SelectItem>
                           <SelectItem value="festival">Festival</SelectItem>
                           <SelectItem value="carnival">Carnival / Mas</SelectItem>
                           <SelectItem value="pageant">Pageant</SelectItem>
                           <SelectItem value="fashion_show">Fashion Show</SelectItem>
+                          <SelectItem value="awards_show">Awards Show / Ceremony</SelectItem>
+                          <SelectItem value="exhibition">Exhibition / Gallery Show</SelectItem>
+                          <SelectItem value="conference">Conference / Summit</SelectItem>
+                          <SelectItem value="launch_event">Launch Event</SelectItem>
                         </SelectGroup>
                         <SelectGroup>
-                          <SelectLabel>Commercial</SelectLabel>
+                          <SelectLabel>Content & Digital</SelectLabel>
+                          <SelectItem value="youtube_series">YouTube Series</SelectItem>
+                          <SelectItem value="ugc_campaign">UGC Campaign</SelectItem>
+                          <SelectItem value="livestream">Livestream</SelectItem>
+                          <SelectItem value="online_course">Online Course</SelectItem>
+                          <SelectItem value="workshop">Workshop / Masterclass</SelectItem>
+                          <SelectItem value="newsletter">Newsletter / Publication</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>Commercial & Corporate</SelectLabel>
                           <SelectItem value="commercial">TV / Radio Ad</SelectItem>
                           <SelectItem value="brand_campaign">Brand Campaign</SelectItem>
-                          <SelectItem value="corporate">Corporate Event</SelectItem>
+                          <SelectItem value="corporate">Corporate Event / Video</SelectItem>
                           <SelectItem value="hosting">MC / Hosting</SelectItem>
                           <SelectItem value="voiceover">Voiceover</SelectItem>
+                          <SelectItem value="influencer_campaign">Influencer Campaign</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>Business & Industry</SelectLabel>
+                          <SelectItem value="ar_project">A&R Project</SelectItem>
+                          <SelectItem value="talent_management">Talent Management</SelectItem>
+                          <SelectItem value="booking">Booking / Representation</SelectItem>
+                          <SelectItem value="label_release">Label Release</SelectItem>
+                          <SelectItem value="publishing">Publishing Deal</SelectItem>
+                          <SelectItem value="curation">Curation / Programming</SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>

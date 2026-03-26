@@ -28,6 +28,25 @@ import {
   Briefcase,
 } from "lucide-react";
 
+interface VerifiedCredit {
+  id: string;
+  source: string;
+  source_id: string;
+  credit_type: string;
+  title: string;
+  role: string;
+  year: number | null;
+  metadata: any;
+  verification_url: string;
+  verified_at: string;
+}
+
+interface VerifiedCreditsSectionProps {
+  userId: string;
+  isOwnProfile?: boolean;
+  onCreditsChanged?: () => void;
+}
+
 const CREDIT_TYPE_ICONS: Record<string, any> = {
   film: Film,
   movie: Film,

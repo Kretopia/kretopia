@@ -20,7 +20,15 @@ import {
   Trash2,
   Mic2,
   Play,
-  Eye
+  Eye,
+  Drama,
+  PersonStanding,
+  CalendarDays,
+  Sparkles,
+  Crown,
+  Shirt,
+  Megaphone,
+  Briefcase,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";

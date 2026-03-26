@@ -44,6 +44,9 @@ const POPULAR_SKILLS = [
   "Podcasting", "Blogging", "Influencer Marketing", "Livestreaming",
   // Performing Arts
   "Acting", "Choreography", "Dance", "Modeling",
+  "Theatre Performance", "Stage Acting", "Musical Theatre", "Spoken Word",
+  "Stand-up Comedy", "Pantomime", "Pageantry", "MC/Hosting",
+  "Casting", "Voice Coaching", "Dialect Coaching", "Props Design",
   // Business & Production
   "Event Production", "Marketing", "Web Development", "Creative Direction",
   "Project Management", "PR & Communications",

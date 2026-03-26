@@ -16,29 +16,17 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
-  Trash2
+  Trash2,
+  Mic2,
+  Drama,
+  PersonStanding,
+  CalendarDays,
+  Sparkles,
+  Crown,
+  Shirt,
+  Megaphone,
+  Briefcase,
 } from "lucide-react";
-
-interface VerifiedCredit {
-  id: string;
-  source: string;
-  source_id: string;
-  credit_type: string;
-  title: string;
-  role: string;
-  year: number | null;
-  metadata: any;
-  verification_url: string;
-  verified_at: string;
-}
-
-interface VerifiedCreditsSectionProps {
-  userId: string;
-  isOwnProfile?: boolean;
-  onCreditsChanged?: () => void;
-}
-
-import { Mic2 } from "lucide-react";
 
 const CREDIT_TYPE_ICONS: Record<string, any> = {
   film: Film,

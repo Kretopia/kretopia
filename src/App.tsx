@@ -247,6 +247,9 @@ const AppContent = () => {
             {/* Talent Manager */}
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
             
+            {/* Credit Database */}
+            <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
+            
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
 

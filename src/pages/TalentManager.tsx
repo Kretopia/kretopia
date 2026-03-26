@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Copy, Users, DollarSign, Link2, TrendingUp, Loader2 } from "lucide-react";
+import { Copy, Users, DollarSign, Link2, TrendingUp, Loader2, Briefcase, ShieldCheck, ArrowRight, Plus } from "lucide-react";
 import { SEO } from "@/components/SEO";
 
 interface ManagerData {
@@ -42,6 +42,7 @@ interface CommissionData {
 
 export default function TalentManager() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [manager, setManager] = useState<ManagerData | null>(null);
   const [referrals, setReferrals] = useState<ReferralData[]>([]);
   const [commissions, setCommissions] = useState<CommissionData[]>([]);
@@ -112,6 +113,13 @@ export default function TalentManager() {
       });
 
       if (error) throw error;
+
+      // Enable manager mode on profile
+      await supabase
+        .from("profiles")
+        .update({ is_manager_mode: true })
+        .eq("user_id", user!.id);
+
       toast.success("Manager profile created!");
       fetchManagerData();
     } catch (error: any) {
@@ -150,40 +158,72 @@ export default function TalentManager() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl pb-24 md:pb-6">
-      <SEO title="Talent Manager | ThriveIN" description="Manage your talent network and earn commissions on bookings." />
+      <SEO title="Talent Manager | ThriveIN" description="Manage your talent network, post jobs for clients, and earn commissions on bookings." />
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Talent Manager</h1>
         <p className="text-muted-foreground">
-          Share your referral link. Earn {manager?.commission_rate || 10}% on every booking your talents land.
+          Manage your roster, post jobs for clients, and earn {manager?.commission_rate || 10}% on every booking.
         </p>
       </div>
 
       {!manager ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Become a Talent Manager</CardTitle>
-            <CardDescription>
-              Get a unique referral link to share with your talent network. When they sign up and book gigs through ThriveIN, you earn an ongoing commission on every booking.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Custom Referral Code (optional)</Label>
-              <Input
-                value={customCode}
-                onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
-                placeholder="e.g., TTPANETWORK"
-                maxLength={20}
-              />
-              <p className="text-xs text-muted-foreground">Leave blank for auto-generated code</p>
-            </div>
-            <Button onClick={createManagerProfile} disabled={creating} className="w-full">
-              {creating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Users className="h-4 w-4 mr-2" />}
-              Activate Manager Profile
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          {/* Revenue Protection Messaging */}
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="pt-6">
+              <div className="flex gap-4">
+                <ShieldCheck className="h-8 w-8 text-primary shrink-0 mt-1" />
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-lg">Your revenue is protected</h3>
+                  <ul className="space-y-1.5 text-sm text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary font-bold">•</span>
+                      Earn <strong className="text-foreground">10% ongoing commission</strong> on every job your talent completes — not a one-time bonus
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary font-bold">•</span>
+                      Your referral link <strong className="text-foreground">permanently connects</strong> talent to you — they can't be reassigned
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary font-bold">•</span>
+                      Post jobs on behalf of your clients and <strong className="text-foreground">manage everything from one dashboard</strong>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary font-bold">•</span>
+                      Your talent gets access to <strong className="text-foreground">verified credits, portfolio, and more gig opportunities</strong>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Activate Your Manager Dashboard</CardTitle>
+              <CardDescription>
+                Get your unique referral link. When talent signs up through your link and books gigs, you earn ongoing commission on every job.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Custom Referral Code (optional)</Label>
+                <Input
+                  value={customCode}
+                  onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
+                  placeholder="e.g., TTPANETWORK"
+                  maxLength={20}
+                />
+                <p className="text-xs text-muted-foreground">Leave blank for auto-generated code</p>
+              </div>
+              <Button onClick={createManagerProfile} disabled={creating} className="w-full">
+                {creating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Users className="h-4 w-4 mr-2" />}
+                Activate Manager Profile
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <div className="space-y-6">
           {/* Stats */}
@@ -219,10 +259,45 @@ export default function TalentManager() {
             </Card>
           </div>
 
-          {/* Referral Link */}
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={copyLink}>
+              <CardContent className="pt-6 flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Link2 className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm">Share Referral Link</p>
+                  <p className="text-xs text-muted-foreground truncate font-mono">
+                    /join/{manager.referral_code}
+                  </p>
+                </div>
+                <Copy className="h-4 w-4 text-muted-foreground shrink-0" />
+              </CardContent>
+            </Card>
+            <Card 
+              className="cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => navigate("/post-opportunity")}
+            >
+              <CardContent className="pt-6 flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Briefcase className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-sm">Post Job for Client</p>
+                  <p className="text-xs text-muted-foreground">
+                    List gigs on behalf of your clients
+                  </p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Referral Link Details */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <Link2 className="h-5 w-5" />
                 Your Referral Link
               </CardTitle>
@@ -239,7 +314,7 @@ export default function TalentManager() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Share this with your talent network. Anyone who signs up through this link is automatically connected to you.
+                Share this with your talent network. Anyone who signs up through this link is permanently connected to you, and you earn commission on every gig they book.
               </p>
             </CardContent>
           </Card>
@@ -248,7 +323,7 @@ export default function TalentManager() {
           {commissions.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Recent Commissions</CardTitle>
+                <CardTitle className="text-base">Recent Commissions</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -277,7 +352,7 @@ export default function TalentManager() {
           {referrals.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Your Talents ({referrals.length})</CardTitle>
+                <CardTitle className="text-base">Your Talent Roster ({referrals.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -291,6 +366,21 @@ export default function TalentManager() {
               </CardContent>
             </Card>
           )}
+
+          {/* Revenue Protection Info */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-6">
+              <div className="flex gap-3 items-start">
+                <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-sm mb-1">How your revenue is protected</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Every talent who joins via your link is permanently attributed to you. You earn {manager.commission_rate}% on every gig they book — whether it's a job you posted or one they found themselves. Commissions are ongoing, not one-time. Your earnings grow as your roster grows.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

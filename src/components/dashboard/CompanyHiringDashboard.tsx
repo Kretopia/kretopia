@@ -97,8 +97,10 @@ export function CompanyHiringDashboard() {
         ))}
       </div>
 
-      {/* AI Talent Suggestions */}
-      <AITalentSuggestions />
+      {/* AI Talent Suggestions - Pro Feature */}
+      <FreeTierGate feature="aiApplicantRankings" featureLabel="AI Talent Finder" description="Upgrade to Pro to unlock AI-powered talent matching — instantly find the best creators for your projects.">
+        <AITalentSuggestions />
+      </FreeTierGate>
 
       {/* Recent Applications */}
       <Card>

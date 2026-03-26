@@ -219,6 +219,22 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu"
         </div>
       </Button>
 
+      {/* Manager Mode Toggle */}
+      <div className="flex items-center justify-between px-3 py-2">
+        <div className="flex items-center gap-3">
+          <Users className="h-5 w-5 text-muted-foreground" />
+          <div>
+            <p className="text-sm font-medium">Manager Mode</p>
+            <p className="text-[10px] text-muted-foreground">Earn commissions on referred jobs</p>
+          </div>
+        </div>
+        <Switch
+          checked={isManagerMode}
+          onCheckedChange={toggleManagerMode}
+          disabled={managerToggling}
+        />
+      </div>
+
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>

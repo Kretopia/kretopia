@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, Users } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft } from "lucide-react";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
@@ -75,8 +75,6 @@ const Settings = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
-  const [isManagerMode, setIsManagerMode] = useState(false);
-  const [managerToggling, setManagerToggling] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   // PWA Install
@@ -119,43 +117,18 @@ const Settings = () => {
     trackView();
   }, []);
 
-  // Fetch account type and manager mode
+  // Fetch account type
   useEffect(() => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("account_type, is_manager_mode")
+      .select("account_type")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.account_type) setAccountType(data.account_type);
-        if (data?.is_manager_mode) setIsManagerMode(true);
       });
   }, [user?.id]);
-
-  const toggleManagerMode = async (enabled: boolean) => {
-    if (!user) return;
-    setManagerToggling(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ is_manager_mode: enabled })
-        .eq("user_id", user.id);
-      if (error) throw error;
-      setIsManagerMode(enabled);
-      toast({
-        title: enabled ? "Manager Mode Activated" : "Manager Mode Deactivated",
-        description: enabled
-          ? "You now have access to the Talent Manager dashboard."
-          : "Manager dashboard hidden. You can re-enable anytime.",
-      });
-      if (enabled) navigate("/talent-manager");
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setManagerToggling(false);
-    }
-  };
 
   // PWA install detection
   useEffect(() => {
@@ -481,56 +454,6 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <AccountSwitcher currentAccountType={accountType} variant="settings" />
-            </CardContent>
-          </Card>
-
-          {/* Talent Manager Mode */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Talent Manager Mode
-              </CardTitle>
-              <CardDescription>
-                Manage a roster of talent, earn ongoing commissions, and post jobs on behalf of clients
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
-                <div className="flex-1">
-                  <p className="font-medium text-sm">
-                    {isManagerMode ? "Manager Mode Active" : "Activate Manager Mode"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {isManagerMode
-                      ? "Access your manager dashboard, referral links, and commission tracking"
-                      : "Get a referral link, track your talent roster, and earn 10% commission on every booking"}
-                  </p>
-                </div>
-                <Switch
-                  checked={isManagerMode}
-                  onCheckedChange={toggleManagerMode}
-                  disabled={managerToggling}
-                />
-              </div>
-              {isManagerMode && (
-                <Button
-                  variant="outline"
-                  className="w-full gap-2"
-                  onClick={() => navigate("/talent-manager")}
-                >
-                  <Users className="h-4 w-4" />
-                  Open Manager Dashboard
-                </Button>
-              )}
-              {!isManagerMode && (
-                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
-                  <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">Perfect for agencies & community leaders.</strong>{" "}
-                    Your existing revenue is protected — earn commissions on every job your talent completes through ThriveIN. Your referral link permanently connects talent to you.
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
 

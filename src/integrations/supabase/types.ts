@@ -5208,6 +5208,59 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_commissions: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          currency: string
+          gross_amount: number
+          id: string
+          manager_id: string
+          paid_at: string | null
+          source_id: string | null
+          source_type: string
+          status: string
+          talent_user_id: string
+        }
+        Insert: {
+          commission_amount: number
+          commission_rate: number
+          created_at?: string
+          currency?: string
+          gross_amount: number
+          id?: string
+          manager_id: string
+          paid_at?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          talent_user_id: string
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          currency?: string
+          gross_amount?: number
+          id?: string
+          manager_id?: string
+          paid_at?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          talent_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_commissions_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "talent_managers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_requests: {
         Row: {
           completed_at: string | null
@@ -6095,6 +6148,80 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      talent_managers: {
+        Row: {
+          commission_rate: number
+          created_at: string
+          display_name: string | null
+          id: string
+          is_active: boolean
+          manager_user_id: string
+          organization: string | null
+          referral_code: string
+          total_earned: number
+          total_referred: number
+          updated_at: string
+        }
+        Insert: {
+          commission_rate?: number
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_active?: boolean
+          manager_user_id: string
+          organization?: string | null
+          referral_code: string
+          total_earned?: number
+          total_referred?: number
+          updated_at?: string
+        }
+        Update: {
+          commission_rate?: number
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_active?: boolean
+          manager_user_id?: string
+          organization?: string | null
+          referral_code?: string
+          total_earned?: number
+          total_referred?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      talent_referrals: {
+        Row: {
+          id: string
+          manager_id: string
+          referred_at: string
+          status: string
+          talent_user_id: string
+        }
+        Insert: {
+          id?: string
+          manager_id: string
+          referred_at?: string
+          status?: string
+          talent_user_id: string
+        }
+        Update: {
+          id?: string
+          manager_id?: string
+          referred_at?: string
+          status?: string
+          talent_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_referrals_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "talent_managers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_entries: {
         Row: {

@@ -31,9 +31,11 @@ export const AchievementCard = ({
   imageUrl,
   url,
   verificationStatus = "unverified",
+  endorsementCount = 0,
   isFeatured = false,
   isOwnProfile = false,
   onDelete,
+  onRequestEndorsement,
   icon,
   metadata,
 }: AchievementCardProps) => {

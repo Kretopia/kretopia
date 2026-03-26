@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+// Known partner codes (non-commission, org-level tracking)
+const PARTNER_CODES = ["CREATIVETT", "ARTISTREGISTRY"];
+
 /**
  * /join/:code route - stores invite code and redirects to auth
- * The code is stored in sessionStorage and auto-applied during signup
- * Also checks if the code belongs to a talent manager for referral tracking
+ * Supports: personal invite codes, talent manager referral codes, and partner org codes
  */
 const JoinWithCode = () => {
   const { code } = useParams<{ code: string }>();
@@ -13,14 +15,20 @@ const JoinWithCode = () => {
   useEffect(() => {
     if (code) {
       const upperCode = code.toUpperCase();
-      // Store the invite code in sessionStorage for the signup flow
-      sessionStorage.setItem("invite_code", upperCode);
-      // Also store as potential manager referral code
-      sessionStorage.setItem("manager_referral_code", upperCode);
-      console.log(`Invite code "${upperCode}" stored for signup`);
+      
+      // Check if this is a partner organization code
+      if (PARTNER_CODES.includes(upperCode)) {
+        sessionStorage.setItem("partner_code", upperCode);
+        console.log(`Partner code "${upperCode}" stored for signup`);
+      } else {
+        // Store as personal invite code
+        sessionStorage.setItem("invite_code", upperCode);
+        // Also store as potential manager referral code
+        sessionStorage.setItem("manager_referral_code", upperCode);
+        console.log(`Invite code "${upperCode}" stored for signup`);
+      }
     }
     
-    // Redirect to auth page directly (skip install friction)
     navigate("/auth", { replace: true });
   }, [code, navigate]);
 

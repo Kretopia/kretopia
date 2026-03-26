@@ -95,6 +95,17 @@ Uses: 27 of 50
 
 ---
 
+## 🤝 Partner Organization Links
+
+| Partner | Link | Code |
+|---------|------|------|
+| CreativeTT | `thrivein.io/join/CREATIVETT` | `CREATIVETT` |
+| Artist Registry | `thrivein.io/join/ARTISTREGISTRY` | `ARTISTREGISTRY` |
+
+Partner links track signups without commission — purely for attribution and analytics.
+
+---
+
 ## 🎯 Ideal First Users
 
 Target creatives who:

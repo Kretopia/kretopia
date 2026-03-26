@@ -84,7 +84,7 @@ serve(async (req) => {
       const { data: referral } = await supabaseAdmin
         .from('talent_referrals')
         .select('manager_id, status')
-        .eq('referred_user_id', milestone.created_by)
+        .eq('talent_user_id', milestone.created_by)
         .eq('status', 'active')
         .limit(1)
         .maybeSingle();

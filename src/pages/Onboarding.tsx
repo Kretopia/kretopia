@@ -225,6 +225,16 @@ export default function Onboarding() {
         } catch (e) { console.error('[Onboarding] Auto-join event error:', e); }
       }
 
+      // Track partner organization signup
+      const partnerCode = sessionStorage.getItem('partner_code');
+      if (partnerCode && user) {
+        try {
+          await supabase.rpc('use_partner_code' as any, { p_code: partnerCode, p_user_id: user.id });
+          console.log('[Onboarding] Partner signup tracked:', partnerCode);
+          sessionStorage.removeItem('partner_code');
+        } catch (e) { console.error('[Onboarding] Partner tracking error:', e); }
+      }
+
       // Track talent manager referral
       const managerCode = sessionStorage.getItem('manager_referral_code');
       if (managerCode && user) {

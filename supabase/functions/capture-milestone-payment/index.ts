@@ -126,13 +126,14 @@ serve(async (req) => {
             .from('referral_commissions')
             .insert({
               manager_id: managerUserId,
-              talent_id: milestone.created_by,
-              milestone_id: milestoneId,
-              project_id: milestone.project_id,
-              commission_amount: managerCommission,
+              talent_user_id: milestone.created_by,
+              source_type: 'milestone',
+              source_id: milestoneId,
+              gross_amount: talentRate,
               commission_rate: 0.10,
+              commission_amount: managerCommission,
+              currency: 'USD',
               status: 'earned',
-              paid_by: user.id,
             });
 
           if (commissionError) {

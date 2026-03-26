@@ -68,8 +68,17 @@ interface DiscoveryUpsellProps {
  */
 export function DiscoveryUpsell({ totalItems, freePreviewCount, itemLabel }: DiscoveryUpsellProps) {
   const navigate = useNavigate();
-  const { subscriptionInfo } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
+
+  // Check points-based unlock
+  if (user) {
+    try {
+      const unlockKey = `thrivein_discovery_unlocked_${user.id}`;
+      const stored = localStorage.getItem(unlockKey);
+      if (stored && JSON.parse(stored).unlocked) return null;
+    } catch {}
+  }
 
   if (isPro || totalItems <= freePreviewCount) return null;
 

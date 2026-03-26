@@ -114,7 +114,14 @@ export const OpportunitiesFeed = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      setOpportunities((data as any[]) || []);
+      
+      // Sort priority gigs to the top
+      let sorted = ((data as any[]) || []).sort((a, b) => {
+        const aPriority = a.is_priority && a.priority_expires_at && new Date(a.priority_expires_at) > new Date() ? 1 : 0;
+        const bPriority = b.is_priority && b.priority_expires_at && new Date(b.priority_expires_at) > new Date() ? 1 : 0;
+        return bPriority - aPriority;
+      });
+      setOpportunities(sorted);
 
       if (data && data.length > 0) {
         const creatorIds = [...new Set(data.map(o => o.created_by).filter(Boolean))] as string[];

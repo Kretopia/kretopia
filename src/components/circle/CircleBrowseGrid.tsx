@@ -43,7 +43,7 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
     try {
       let query = supabase
         .from("public_profiles_discovery")
-        .select("user_id, full_name, avatar_url, role, bio, location, professional_skills, badge, verification_score, level, xp")
+        .select("user_id, full_name, avatar_url, role, bio, location, professional_skills, badge, verification_score, level, xp, boost_expires_at")
         .eq("onboarding_completed", true)
         .neq("user_id", user.id);
 

@@ -484,6 +484,56 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* Talent Manager Mode */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Talent Manager Mode
+              </CardTitle>
+              <CardDescription>
+                Manage a roster of talent, earn ongoing commissions, and post jobs on behalf of clients
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
+                <div className="flex-1">
+                  <p className="font-medium text-sm">
+                    {isManagerMode ? "Manager Mode Active" : "Activate Manager Mode"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isManagerMode
+                      ? "Access your manager dashboard, referral links, and commission tracking"
+                      : "Get a referral link, track your talent roster, and earn 10% commission on every booking"}
+                  </p>
+                </div>
+                <Switch
+                  checked={isManagerMode}
+                  onCheckedChange={toggleManagerMode}
+                  disabled={managerToggling}
+                />
+              </div>
+              {isManagerMode && (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => navigate("/talent-manager")}
+                >
+                  <Users className="h-4 w-4" />
+                  Open Manager Dashboard
+                </Button>
+              )}
+              {!isManagerMode && (
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
+                  <p className="text-xs text-muted-foreground">
+                    <strong className="text-foreground">Perfect for agencies & community leaders.</strong>{" "}
+                    Your existing revenue is protected — earn commissions on every job your talent completes through ThriveIN. Your referral link permanently connects talent to you.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Password & Security */}
           <Card>
             <CardHeader>

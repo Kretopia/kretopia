@@ -117,43 +117,18 @@ const Settings = () => {
     trackView();
   }, []);
 
-  // Fetch account type and manager mode
+  // Fetch account type
   useEffect(() => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("account_type, is_manager_mode")
+      .select("account_type")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.account_type) setAccountType(data.account_type);
-        if (data?.is_manager_mode) setIsManagerMode(true);
       });
   }, [user?.id]);
-
-  const toggleManagerMode = async (enabled: boolean) => {
-    if (!user) return;
-    setManagerToggling(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ is_manager_mode: enabled })
-        .eq("user_id", user.id);
-      if (error) throw error;
-      setIsManagerMode(enabled);
-      toast({
-        title: enabled ? "Manager Mode Activated" : "Manager Mode Deactivated",
-        description: enabled
-          ? "You now have access to the Talent Manager dashboard."
-          : "Manager dashboard hidden. You can re-enable anytime.",
-      });
-      if (enabled) navigate("/talent-manager");
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setManagerToggling(false);
-    }
-  };
 
   // PWA install detection
   useEffect(() => {

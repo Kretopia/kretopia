@@ -429,11 +429,13 @@ const DiscoverPage = () => {
                   </SelectContent>
                 </Select>
                 <span className="text-xs text-muted-foreground self-center ml-auto">{totalGigs} gigs</span>
-                <PostOpportunityDialog>
-                  <Button size="sm" className="h-8 text-xs gap-1">
-                    <Plus className="h-3 w-3" /> Post Gig
-                  </Button>
-                </PostOpportunityDialog>
+                <PostOpportunityDialog
+                  trigger={
+                    <Button size="sm" className="h-8 text-xs gap-1">
+                      <Plus className="h-3 w-3" /> Post Gig
+                    </Button>
+                  }
+                />
               </div>
 
               {gigsLoading ? (

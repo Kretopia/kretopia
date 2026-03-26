@@ -82,6 +82,7 @@ const EventPage = lazy(() => import("./pages/EventPage"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const DirectoryPage = lazy(() => import("./pages/DirectoryPage"));
+const DiscoverPage = lazy(() => import("./pages/DiscoverPage"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

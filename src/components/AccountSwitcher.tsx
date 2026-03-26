@@ -25,7 +25,7 @@ interface AccountSwitcherProps {
   variant?: "menu" | "settings";
 }
 
-export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu" }: AccountSwitcherProps) => {
+export const AccountSwitcher = ({ currentAccountType, onSwitch, onManagerModeChange, variant = "menu" }: AccountSwitcherProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();

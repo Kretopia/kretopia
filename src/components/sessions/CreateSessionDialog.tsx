@@ -114,6 +114,10 @@ export const CreateSessionDialog = ({
         max_participants: 10,
         latitude: null,
         longitude: null,
+        is_ticketed: false,
+        ticket_price: 0,
+        ticket_currency: 'USD',
+        event_type: 'session',
       });
       setDate(undefined);
     } catch (error: any) {

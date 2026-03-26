@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Wallet, Shield, Crown, Sparkles, DollarSign, FolderKanban, Search, BookOpen } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Wallet, Shield, Crown, Sparkles, DollarSign, FolderKanban, Search, BookOpen, Compass } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -125,13 +125,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <div className="hidden lg:flex items-center gap-1">
             {(accountType === "company"
               ? [
-                  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+                  { path: "/discover?tab=gigs", icon: Briefcase, label: "Gigs" },
+                  { path: "/discover", icon: Compass, label: "Discover" },
                   { path: "/desk", icon: FolderKanban, label: "Projects" },
                   { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
                 ]
               : [
                   { path: "/circle", icon: Users, label: "Circle" },
-                  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+                  { path: "/discover", icon: Compass, label: "Discover" },
                   { path: "/desk", icon: FolderKanban, label: "Projects" },
                   { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
                 ]

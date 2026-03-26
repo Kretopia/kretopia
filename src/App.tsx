@@ -82,6 +82,7 @@ const EventPage = lazy(() => import("./pages/EventPage"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const DirectoryPage = lazy(() => import("./pages/DirectoryPage"));
+const DiscoverPage = lazy(() => import("./pages/DiscoverPage"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -248,9 +249,11 @@ const AppContent = () => {
             {/* Talent Manager */}
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
             
-            {/* Credit Database */}
+            {/* Credit Database & Discover */}
             <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
-            <Route path="/directory" element={<ProtectedRoute><DirectoryPage /></ProtectedRoute>} />
+            <Route path="/directory" element={<Navigate to="/discover?tab=creators" replace />} />
+            <Route path="/discover" element={<ProtectedRoute><DiscoverPage /></ProtectedRoute>} />
+            <Route path="/opportunities" element={<Navigate to="/discover?tab=gigs" replace />} />
             
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
@@ -264,7 +267,7 @@ const AppContent = () => {
             <Route path="/claim/:claimToken" element={<ClaimProfile />} />
             <Route path="/post-opportunity" element={<PostOpportunity />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
-            <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+            
             
             {/* Search & Notifications */}
             <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
@@ -274,7 +277,7 @@ const AppContent = () => {
             <Route path="/dashboard" element={<Navigate to="/my-analytics" replace />} />
             <Route path="/spark" element={<Navigate to="/circle" replace />} />
             <Route path="/cre8" element={<Navigate to="/circle" replace />} />
-            <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+            
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             
             {/* 404 - Catch all */}

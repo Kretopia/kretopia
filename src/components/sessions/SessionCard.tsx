@@ -164,6 +164,18 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
             </div>
           )}
           
+          {session.is_ticketed && session.ticket_price && session.ticket_price > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <Ticket className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-primary">
+                {session.ticket_currency || 'USD'} {session.ticket_price.toFixed(2)}
+              </span>
+              <Badge variant="outline" className="text-xs ml-auto border-primary/30 text-primary">
+                Ticketed
+              </Badge>
+            </div>
+          )}
+          
           <div className="flex items-center gap-2 text-sm">
             <Users className="h-4 w-4 text-muted-foreground" />
             <span>

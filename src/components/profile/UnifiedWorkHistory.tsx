@@ -20,7 +20,15 @@ import {
   Trash2,
   Mic2,
   Play,
-  Eye
+  Eye,
+  Drama,
+  PersonStanding,
+  CalendarDays,
+  Sparkles,
+  Crown,
+  Shirt,
+  Megaphone,
+  Briefcase,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -82,6 +90,34 @@ const CREDIT_TYPE_ICONS: Record<string, any> = {
   podcast: Mic2,
   episode: Mic2,
   video: Video,
+  // Performing Arts
+  theatre: Drama,
+  theater: Drama,
+  stage: Drama,
+  play: Drama,
+  musical: Drama,
+  pantomime: Drama,
+  spoken_word: Mic2,
+  comedy: Drama,
+  dance: PersonStanding,
+  recital: PersonStanding,
+  // Live Events & Festivals
+  live_event: CalendarDays,
+  concert: Music,
+  festival: CalendarDays,
+  carnival: Sparkles,
+  pageant: Crown,
+  fashion_show: Shirt,
+  // Commercial & Corporate
+  commercial: Megaphone,
+  ad: Megaphone,
+  corporate: Briefcase,
+  hosting: Mic2,
+  mc: Mic2,
+  brand_campaign: Megaphone,
+  voiceover: Mic2,
+  // General
+  credit: Film,
 };
 
 const SOURCE_COLORS: Record<string, string> = {

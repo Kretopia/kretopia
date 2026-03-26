@@ -44,6 +44,9 @@ const POPULAR_SKILLS = [
   "Podcasting", "Blogging", "Influencer Marketing", "Livestreaming",
   // Performing Arts
   "Acting", "Choreography", "Dance", "Modeling",
+  "Theatre Performance", "Stage Acting", "Musical Theatre", "Spoken Word",
+  "Stand-up Comedy", "Pantomime", "Pageantry", "MC/Hosting",
+  "Casting", "Voice Coaching", "Dialect Coaching", "Props Design",
   // Business & Production
   "Event Production", "Marketing", "Web Development", "Creative Direction",
   "Project Management", "PR & Communications",
@@ -220,6 +223,30 @@ export default function Onboarding() {
           });
           console.log('[Onboarding] Auto-joined event:', pendingEventJoin);
         } catch (e) { console.error('[Onboarding] Auto-join event error:', e); }
+      }
+
+      // Track talent manager referral
+      const managerCode = sessionStorage.getItem('manager_referral_code');
+      if (managerCode && user) {
+        try {
+          const { data: managerData } = await supabase
+            .from('talent_managers')
+            .select('id')
+            .eq('referral_code', managerCode)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (managerData) {
+            await supabase.from('talent_referrals').insert({
+              manager_id: managerData.id,
+              talent_user_id: user.id,
+            });
+            // Update manager's total_referred count
+            await supabase.rpc('increment_manager_referrals' as any, { manager_id_input: managerData.id });
+            console.log('[Onboarding] Talent manager referral tracked:', managerCode);
+          }
+          sessionStorage.removeItem('manager_referral_code');
+        } catch (e) { console.error('[Onboarding] Manager referral tracking error:', e); }
       }
 
       try {

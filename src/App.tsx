@@ -79,6 +79,7 @@ const CheckIn = lazy(() => import("./pages/CheckIn"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const Guide = lazy(() => import("./pages/Guide"));
 const EventPage = lazy(() => import("./pages/EventPage"));
+const TalentManager = lazy(() => import("./pages/TalentManager"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -241,6 +242,9 @@ const AppContent = () => {
             
             {/* Rewards */}
             <Route path="/rewards" element={<ProtectedRoute><RewardsShop /></ProtectedRoute>} />
+            
+            {/* Talent Manager */}
+            <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
             
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />

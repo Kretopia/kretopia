@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Film } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
     year: new Date().getFullYear(),
     platform: "",
     url: "",
+    credit_type: "",
   });
 
   useEffect(() => {
@@ -84,6 +86,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
         year: new Date().getFullYear(),
         platform: "",
         url: "",
+        credit_type: "",
       });
       fetchCredits();
       onRefresh();
@@ -141,8 +144,56 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
                       id="project"
                       value={newCredit.project_name}
                       onChange={(e) => setNewCredit({ ...newCredit, project_name: e.target.value })}
-                      placeholder="e.g., The Matrix"
+                      placeholder="e.g., Romeo & Juliet, Coca-Cola Ad"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="creditType">Type</Label>
+                    <Select value={newCredit.credit_type} onValueChange={(v) => setNewCredit({ ...newCredit, credit_type: v })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Film & TV</SelectLabel>
+                          <SelectItem value="film">Film / Movie</SelectItem>
+                          <SelectItem value="tv">TV Show / Series</SelectItem>
+                          <SelectItem value="music_video">Music Video</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>Music & Audio</SelectLabel>
+                          <SelectItem value="album">Album</SelectItem>
+                          <SelectItem value="single">Single / Track</SelectItem>
+                          <SelectItem value="podcast">Podcast</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>Performing Arts</SelectLabel>
+                          <SelectItem value="theatre">Theatre / Play</SelectItem>
+                          <SelectItem value="musical">Musical Theatre</SelectItem>
+                          <SelectItem value="dance">Dance Performance</SelectItem>
+                          <SelectItem value="comedy">Stand-up / Comedy</SelectItem>
+                          <SelectItem value="spoken_word">Spoken Word / Poetry</SelectItem>
+                          <SelectItem value="pantomime">Pantomime</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>Live Events</SelectLabel>
+                          <SelectItem value="live_event">Live Event</SelectItem>
+                          <SelectItem value="concert">Concert</SelectItem>
+                          <SelectItem value="festival">Festival</SelectItem>
+                          <SelectItem value="carnival">Carnival / Mas</SelectItem>
+                          <SelectItem value="pageant">Pageant</SelectItem>
+                          <SelectItem value="fashion_show">Fashion Show</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel>Commercial</SelectLabel>
+                          <SelectItem value="commercial">TV / Radio Ad</SelectItem>
+                          <SelectItem value="brand_campaign">Brand Campaign</SelectItem>
+                          <SelectItem value="corporate">Corporate Event</SelectItem>
+                          <SelectItem value="hosting">MC / Hosting</SelectItem>
+                          <SelectItem value="voiceover">Voiceover</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Role *</Label>
@@ -150,7 +201,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
                       id="role"
                       value={newCredit.role}
                       onChange={(e) => setNewCredit({ ...newCredit, role: e.target.value })}
-                      placeholder="e.g., Director"
+                      placeholder="e.g., Lead Actor, Director, MC"
                     />
                   </div>
                   <div className="space-y-2">
@@ -164,15 +215,15 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="platform">Platform</Label>
+                    <Label htmlFor="platform">Venue / Platform</Label>
                     <Input
                       id="platform"
                       value={newCredit.platform}
                       onChange={(e) => setNewCredit({ ...newCredit, platform: e.target.value })}
-                      placeholder="e.g., Netflix, Spotify"
+                      placeholder="e.g., Queen's Hall, Netflix, NAPA"
                     />
                   </div>
-                  <div className="space-y-2 col-span-2">
+                  <div className="space-y-2">
                     <Label htmlFor="url">URL</Label>
                     <Input
                       id="url"

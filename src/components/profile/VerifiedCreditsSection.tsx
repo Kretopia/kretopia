@@ -16,7 +16,16 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
-  Trash2
+  Trash2,
+  Mic2,
+  Drama,
+  PersonStanding,
+  CalendarDays,
+  Sparkles,
+  Crown,
+  Shirt,
+  Megaphone,
+  Briefcase,
 } from "lucide-react";
 
 interface VerifiedCredit {
@@ -38,8 +47,6 @@ interface VerifiedCreditsSectionProps {
   onCreditsChanged?: () => void;
 }
 
-import { Mic2 } from "lucide-react";
-
 const CREDIT_TYPE_ICONS: Record<string, any> = {
   film: Film,
   movie: Film,
@@ -49,6 +56,32 @@ const CREDIT_TYPE_ICONS: Record<string, any> = {
   music_video: Video,
   podcast: Mic2,
   episode: Mic2,
+  // Performing Arts
+  theatre: Drama,
+  theater: Drama,
+  stage: Drama,
+  play: Drama,
+  musical: Drama,
+  pantomime: Drama,
+  spoken_word: Mic2,
+  comedy: Drama,
+  dance: PersonStanding,
+  recital: PersonStanding,
+  // Live Events & Festivals
+  live_event: CalendarDays,
+  concert: Music,
+  festival: CalendarDays,
+  carnival: Sparkles,
+  pageant: Crown,
+  fashion_show: Shirt,
+  // Commercial & Corporate
+  commercial: Megaphone,
+  ad: Megaphone,
+  corporate: Briefcase,
+  hosting: Mic2,
+  mc: Mic2,
+  brand_campaign: Megaphone,
+  voiceover: Mic2,
 };
 
 const SOURCE_COLORS: Record<string, string> = {

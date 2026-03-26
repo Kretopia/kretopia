@@ -49,7 +49,7 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
               className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90"
               size="sm"
             >
-              Upgrade to Pro - $12/mo
+              Upgrade to Pro
             </Button>
           </div>
         </div>

@@ -18,8 +18,10 @@ export const getPlatformFeePercentage = (tier: string | null): number => {
   if (!tier || tier === 'free') return PLATFORM_FEES.free;
   if (tier === 'founder') return PLATFORM_FEES.founder;
   if (tier === 'pro') return PLATFORM_FEES.pro;
+  if (tier === 'brand_pro') return PLATFORM_FEES.brand_pro;
+  if (tier === 'brand_enterprise') return PLATFORM_FEES.brand_enterprise;
   if (tier === 'studio') return PLATFORM_FEES.pro;
-  if (tier === 'enterprise') return PLATFORM_FEES.pro;
+  if (tier === 'enterprise') return PLATFORM_FEES.enterprise;
   return PLATFORM_FEES.free;
 };
 

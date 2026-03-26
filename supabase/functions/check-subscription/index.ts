@@ -12,11 +12,15 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Product ID to tier mapping
+// Product ID to tier mapping — includes both creator and brand products
 const PRODUCT_TIER_MAP: Record<string, string> = {
-  // Enterprise
+  // Brand Enterprise
+  'prod_UDoT2jPlIxVnLp': 'brand_enterprise',
+  // Brand Pro
+  'prod_UDoSA9g7yHRm3X': 'brand_pro',
+  // Creator Enterprise
   'prod_U5VmCaKx7g2lbw': 'enterprise',
-  // Pro (current + legacy)
+  // Creator Pro (current + legacy)
   'prod_TWc5tpvPKjy8hG': 'pro',
   'prod_TA5c8GtL6ioS2h': 'pro',
   'prod_TA5ihoppNqeijE': 'pro',
@@ -62,14 +66,9 @@ serve(async (req) => {
     if (profileData?.subscription_tier === 'founder') {
       logStep("Founder Circle member detected, preserving lifetime access");
       return new Response(JSON.stringify({
-        subscribed: true,
-        tier: 'founder',
-        product_id: 'prod_TzMqfksF7u6WBH',
-        subscription_end: null,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+        subscribed: true, tier: 'founder',
+        product_id: 'prod_TzMqfksF7u6WBH', subscription_end: null,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -77,129 +76,108 @@ serve(async (req) => {
     
     if (customers.data.length === 0) {
       logStep("No customer found");
-      // Preserve complimentary/manual trial Pro/Enterprise
       const isComplimentary = profileData?.subscription_status === 'active' && 
-        (profileData.subscription_tier === 'pro' || profileData.subscription_tier === 'enterprise');
+        ['pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       const isManualTrial = profileData?.subscription_status === 'trialing' && 
-        (profileData.subscription_tier === 'pro' || profileData.subscription_tier === 'enterprise');
+        ['pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       
       if (isComplimentary || isManualTrial) {
         logStep("Complimentary/trial profile detected, skipping downgrade");
         return new Response(JSON.stringify({
-          subscribed: false,
-          tier: profileData.subscription_tier,
-          product_id: null,
-          subscription_end: null,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
+          subscribed: false, tier: profileData.subscription_tier,
+          product_id: null, subscription_end: null,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
       }
       
-      await supabaseClient
-        .from('profiles')
-        .update({
-          subscription_tier: 'free',
-          subscription_status: 'none',
-          subscription_product_id: null,
-          subscription_end_date: null,
-        })
-        .eq('user_id', user.id);
+      await supabaseClient.from('profiles').update({
+        subscription_tier: 'free', subscription_status: 'none',
+        subscription_product_id: null, subscription_end_date: null,
+      }).eq('user_id', user.id);
       
       return new Response(JSON.stringify({ 
         subscribed: false, tier: 'free', product_id: null, subscription_end: null,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
     }
 
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId, status: "active", limit: 1,
-    });
+    // Check all active and trialing subscriptions (user may have both creator + brand)
+    const [activeSubs, trialingSubs] = await Promise.all([
+      stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 }),
+      stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 10 }),
+    ]);
 
-    let trialingSubs: any = { data: [] };
-    if (subscriptions.data.length === 0) {
-      trialingSubs = await stripe.subscriptions.list({
-        customer: customerId, status: "trialing", limit: 1,
-      });
-    }
-    const hasActiveSub = subscriptions.data.length > 0 || trialingSubs.data.length > 0;
-    let productId = null;
-    let subscriptionEnd = null;
-    let tier = 'free';
-    let subscriptionStatus = 'none';
-
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0] || trialingSubs.data[0];
-      subscriptionStatus = subscription.status;
-      
-      try {
-        const periodEnd = subscription.current_period_end;
-        if (typeof periodEnd === 'number') {
-          subscriptionEnd = new Date(periodEnd * 1000).toISOString();
-        } else if (typeof periodEnd === 'string') {
-          subscriptionEnd = new Date(periodEnd).toISOString();
-        } else if (periodEnd && typeof periodEnd === 'object' && 'toISOString' in periodEnd) {
-          subscriptionEnd = (periodEnd as Date).toISOString();
-        }
-      } catch (dateErr) {
-        logStep("Error parsing subscription end date", { error: String(dateErr) });
-      }
-      
-      productId = subscription.items.data[0].price.product as string;
-      tier = PRODUCT_TIER_MAP[productId] || 'free';
-      
-      logStep("Determined subscription tier", { productId, tier });
-      
-      await supabaseClient
-        .from('profiles')
-        .update({
-          subscription_tier: tier,
-          subscription_status: subscriptionStatus,
-          subscription_product_id: productId,
-          subscription_end_date: subscriptionEnd,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: subscription.id
-        })
-        .eq('user_id', user.id);
-    } else {
+    const allSubs = [...activeSubs.data, ...trialingSubs.data];
+    
+    if (allSubs.length === 0) {
       logStep("No active subscription found");
       const isComplimentaryNoSub = profileData?.subscription_status === 'active' && 
-        (profileData.subscription_tier === 'pro' || profileData.subscription_tier === 'enterprise');
+        ['pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       const isManualTrialNoSub = profileData?.subscription_status === 'trialing' && 
-        (profileData.subscription_tier === 'pro' || profileData.subscription_tier === 'enterprise');
+        ['pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       
       if (isComplimentaryNoSub || isManualTrialNoSub) {
-        tier = profileData.subscription_tier;
-      } else {
-        await supabaseClient
-          .from('profiles')
-          .update({
-            subscription_tier: 'free',
-            subscription_status: 'none',
-            subscription_product_id: null,
-            subscription_end_date: null,
-          })
-          .eq('user_id', user.id);
+        return new Response(JSON.stringify({
+          subscribed: false, tier: profileData.subscription_tier,
+          product_id: null, subscription_end: null,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
       }
+      
+      await supabaseClient.from('profiles').update({
+        subscription_tier: 'free', subscription_status: 'none',
+        subscription_product_id: null, subscription_end_date: null,
+      }).eq('user_id', user.id);
+
+      return new Response(JSON.stringify({
+        subscribed: false, tier: 'free', product_id: null, subscription_end: null,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
     }
 
+    // Determine the highest tier from all active subscriptions
+    const tierPriority: Record<string, number> = {
+      'brand_enterprise': 6, 'enterprise': 5, 'brand_pro': 4, 'pro': 3, 'free': 0,
+    };
+    
+    let bestTier = 'free';
+    let bestProductId: string | null = null;
+    let bestSubEnd: string | null = null;
+    let bestStatus = 'none';
+
+    for (const sub of allSubs) {
+      const productId = sub.items.data[0].price.product as string;
+      const subTier = PRODUCT_TIER_MAP[productId] || 'free';
+      if ((tierPriority[subTier] || 0) > (tierPriority[bestTier] || 0)) {
+        bestTier = subTier;
+        bestProductId = productId;
+        bestStatus = sub.status;
+        try {
+          const periodEnd = sub.current_period_end;
+          if (typeof periodEnd === 'number') bestSubEnd = new Date(periodEnd * 1000).toISOString();
+          else if (typeof periodEnd === 'string') bestSubEnd = new Date(periodEnd).toISOString();
+        } catch (e) { /* ignore date parse errors */ }
+      }
+    }
+    
+    logStep("Determined subscription tier", { bestTier, bestProductId, totalSubs: allSubs.length });
+    
+    await supabaseClient.from('profiles').update({
+      subscription_tier: bestTier,
+      subscription_status: bestStatus,
+      subscription_product_id: bestProductId,
+      subscription_end_date: bestSubEnd,
+      stripe_customer_id: customerId,
+    }).eq('user_id', user.id);
+
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub, tier, product_id: productId, subscription_end: subscriptionEnd
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+      subscribed: true, tier: bestTier,
+      product_id: bestProductId, subscription_end: bestSubEnd,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in check-subscription", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
     });
   }
 });

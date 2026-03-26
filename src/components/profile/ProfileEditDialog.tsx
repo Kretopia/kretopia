@@ -97,6 +97,19 @@ export const ROLE_OPTIONS = [
   // Dance & Performance
   { value: 'Dancer', label: 'Dancer' },
   { value: 'Choreographer', label: 'Choreographer' },
+  // Performing Arts
+  { value: 'Theatre Actor', label: 'Theatre / Stage Actor' },
+  { value: 'Theatre Director', label: 'Theatre Director' },
+  { value: 'Playwright', label: 'Playwright' },
+  { value: 'Musical Theatre', label: 'Musical Theatre Performer' },
+  { value: 'Stand-up Comic', label: 'Stand-up Comedian' },
+  { value: 'Spoken Word Artist', label: 'Spoken Word / Poet' },
+  { value: 'Pantomime Artist', label: 'Pantomime / Physical Theatre' },
+  { value: 'Pageant Coach', label: 'Pageant Coach / Director' },
+  { value: 'MC/Host', label: 'MC / Host / Emcee' },
+  { value: 'Casting Director', label: 'Casting Director' },
+  { value: 'Props Master', label: 'Props Master' },
+  { value: 'Dialect Coach', label: 'Dialect / Voice Coach' },
   // Tech & Development
   { value: 'Developer', label: 'Developer / Engineer' },
   { value: 'Game Designer', label: 'Game Designer' },

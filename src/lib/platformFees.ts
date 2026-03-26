@@ -1,9 +1,12 @@
 // Platform service fee structure — charged TO THE BRAND/COMPANY on top of talent rate
 // Talent receives 100% of their quoted rate
 export const PLATFORM_FEES = {
-  free: 0.20,     // 20% service fee for free brands
-  pro: 0.15,      // 15% for Pro brands
-  founder: 0.10,  // 10% for Founder Circle brands
+  free: 0.20,             // 20% service fee for free brands
+  pro: 0.15,              // 15% for Pro brands (creator pro)
+  brand_pro: 0.15,        // 15% for Brand Pro
+  brand_enterprise: 0.10, // 10% for Brand Enterprise
+  enterprise: 0.10,       // 10% for Enterprise
+  founder: 0.10,          // 10% for Founder Circle brands
 } as const;
 
 // Manager commission rate — also charged to the brand on top

@@ -168,19 +168,41 @@ export const CreateSessionDialog = ({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            ✨ Create a Session
+            ✨ Create an Event
           </DialogTitle>
           <DialogDescription>
-            Host a creative session and invite other creators to collaborate
+            Host a meetup, jam session, workshop, or event for creators
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Event Type Toggle */}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={formData.event_type === 'session' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => setFormData(prev => ({ ...prev, event_type: 'session' }))}
+            >
+              Jam Session
+            </Button>
+            <Button
+              type="button"
+              variant={formData.event_type === 'event' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}
+            >
+              Event / Meetup
+            </Button>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"
-              placeholder="e.g., Sunset Photo Walk, Music Jam"
+              placeholder={formData.event_type === 'event' ? "e.g., Creator Meetup Bali, Open Mic Night" : "e.g., Sunset Photo Walk, Music Jam"}
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               required
@@ -197,7 +219,7 @@ export const CreateSessionDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SESSION_CATEGORIES.map(cat => (
+                {EVENT_CATEGORIES.map(cat => (
                   <SelectItem key={cat.value} value={cat.value}>
                     {cat.label}
                   </SelectItem>

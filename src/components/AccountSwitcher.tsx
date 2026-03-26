@@ -21,10 +21,11 @@ import { cn } from "@/lib/utils";
 interface AccountSwitcherProps {
   currentAccountType: "individual" | "company";
   onSwitch?: () => void;
+  onManagerModeChange?: (enabled: boolean) => void;
   variant?: "menu" | "settings";
 }
 
-export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu" }: AccountSwitcherProps) => {
+export const AccountSwitcher = ({ currentAccountType, onSwitch, onManagerModeChange, variant = "menu" }: AccountSwitcherProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -60,6 +61,7 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu"
         .eq("user_id", user.id);
       if (error) throw error;
       setIsManagerMode(enabled);
+      onManagerModeChange?.(enabled);
       toast({
         title: enabled ? "Manager Mode Activated" : "Manager Mode Deactivated",
         description: enabled

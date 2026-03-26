@@ -32,6 +32,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [credits, setCredits] = useState<Credit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [endorsementCredit, setEndorsementCredit] = useState<Credit | null>(null);
   const [newCredit, setNewCredit] = useState({
     project_name: "",
     role: "",

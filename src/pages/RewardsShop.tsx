@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Snowflake, Crown, Eye, Sparkles, ShoppingBag,
   ArrowLeft, Zap, Star, Palette, Gift, Search, UserPlus,
+  Target, Unlock,
 } from "lucide-react";
 import { getTierByPoints } from "@/lib/tierSystem";
 
@@ -132,14 +133,56 @@ const RewardsShop = () => {
     if (!user) return;
     const boostExpiry = new Date();
     boostExpiry.setHours(boostExpiry.getHours() + 24);
-    await deductXP(1000);
+    await supabase
+      .from("profiles")
+      .update({ xp: userXP - 1000, boost_expires_at: boostExpiry.toISOString() })
+      .eq("user_id", user.id);
     await recordActivity("profile_boost_purchased", 1000, "Purchased 24h Profile Boost");
   };
 
   const buyDoubleXP = async () => {
     if (!user) return;
-    await deductXP(750);
+    const doubleExpiry = new Date();
+    doubleExpiry.setHours(doubleExpiry.getHours() + 24);
+    await supabase
+      .from("profiles")
+      .update({ xp: userXP - 750, double_xp_expires_at: doubleExpiry.toISOString() })
+      .eq("user_id", user.id);
     await recordActivity("double_xp_purchased", 750, "Purchased 2x XP for 24 hours");
+  };
+
+  const buyPriorityGig = async () => {
+    if (!user) return;
+    // User picks which gig to boost — for now boost their most recent active one
+    const { data: myGig } = await supabase
+      .from("opportunities")
+      .select("id")
+      .eq("created_by", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!myGig) {
+      toast({ title: "No active gig found", description: "Post a gig first, then boost it.", variant: "destructive" });
+      throw new Error("No active gig");
+    }
+    const expiry = new Date();
+    expiry.setHours(expiry.getHours() + 48);
+    await supabase
+      .from("opportunities")
+      .update({ is_priority: true, priority_expires_at: expiry.toISOString() })
+      .eq("id", myGig.id);
+    await deductXP(800);
+    await recordActivity("priority_gig_purchased", 800, "Purchased 48h Priority Gig boost");
+  };
+
+  const buyDiscoveryUnlock = async () => {
+    if (!user) return;
+    // Store unlock in localStorage (persists across sessions)
+    const unlockKey = `thrivein_discovery_unlocked_${user.id}`;
+    localStorage.setItem(unlockKey, JSON.stringify({ unlocked: true, timestamp: Date.now() }));
+    await deductXP(1500);
+    await recordActivity("discovery_unlock_purchased", 1500, "Purchased permanent Discovery unlock");
   };
 
   const buyProTrial = async () => {
@@ -291,6 +334,27 @@ const RewardsShop = () => {
       category: "boosts",
       action: buyProfileBoost,
       available: true,
+    },
+    {
+      id: "priority_gig",
+      name: "Priority Gig (48h)",
+      description: "Pin your most recent gig to the top of the Gigs feed for 48 hours.",
+      cost: 800,
+      icon: <Target className="h-6 w-6 text-cyan-400" />,
+      category: "boosts",
+      action: buyPriorityGig,
+      available: true,
+    },
+    {
+      id: "discovery_unlock",
+      name: "Unlock Full Discovery",
+      description: "Permanently unlock all creators and gigs in the discovery feed.",
+      cost: 1500,
+      icon: <Unlock className="h-6 w-6 text-emerald-400" />,
+      category: "upgrades",
+      action: buyDiscoveryUnlock,
+      available: true,
+      badge: "Permanent",
     },
     {
       id: "double_xp",

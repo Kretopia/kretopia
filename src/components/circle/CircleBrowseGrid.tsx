@@ -32,7 +32,8 @@ interface BrowseProfile {
 export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
   const navigate = useNavigate();
   const { user, subscriptionInfo } = useAuth();
-  const isPro = hasProAccess(subscriptionInfo.tier as any);
+  const hasPointsUnlock = user ? (() => { try { const s = localStorage.getItem(`thrivein_discovery_unlocked_${user.id}`); return s ? JSON.parse(s).unlocked : false; } catch { return false; } })() : false;
+  const isPro = hasProAccess(subscriptionInfo.tier as any) || hasPointsUnlock;
   const [profiles, setProfiles] = useState<BrowseProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -43,7 +44,7 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
     try {
       let query = supabase
         .from("public_profiles_discovery")
-        .select("user_id, full_name, avatar_url, role, bio, location, professional_skills, badge, verification_score, level, xp")
+        .select("user_id, full_name, avatar_url, role, bio, location, professional_skills, badge, verification_score, level, xp, boost_expires_at")
         .eq("onboarding_completed", true)
         .neq("user_id", user.id);
 
@@ -67,6 +68,13 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
       if (error) throw error;
 
       let results = (data as any[]) || [];
+
+      // Sort boosted profiles to the top
+      results.sort((a, b) => {
+        const aBoosted = a.boost_expires_at && new Date(a.boost_expires_at) > new Date() ? 1 : 0;
+        const bBoosted = b.boost_expires_at && new Date(b.boost_expires_at) > new Date() ? 1 : 0;
+        return bBoosted - aBoosted;
+      });
 
       // Multi-role client-side filter
       if (roles.length > 1) {

@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { TrustSignals } from "@/components/profile/TrustSignals";
-import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
@@ -39,13 +38,7 @@ export const ProfileVerificationSection = ({
 
       {/* Verification & Platform Connections */}
       <div className="space-y-3 mb-6">
-        {(profile.achievement_badges?.length > 0) && (
-          <AchievementBadges 
-            achievements={profile.achievement_badges || []}
-            showAll={false}
-          />
-        )}
-        <CredentialVerificationCard 
+        <CredentialVerificationCard
           userId={profile.user_id}
           fullName={profile.full_name}
           role={profile.role || ''}

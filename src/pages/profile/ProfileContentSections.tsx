@@ -8,7 +8,7 @@ import { CreditVerificationPanel } from "@/components/profile/CreditVerification
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
-import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { SkillsSection } from "@/components/profile/SkillsSection";
 import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
@@ -111,71 +111,70 @@ export const ProfileContentSections = ({
 
       case "reviews":
         return (
-          <div className="space-y-6">
-            <ReviewsSection
-              reviews={reviews}
-              isOwnProfile={true}
-              profileUserId={profile.user_id}
-              onRefresh={onRefresh}
-            />
-            <SocialStatsSection
-              youtubeSubscribers={profile.youtube_subscribers}
-              instagramFollowers={profile.instagram_followers}
-              tiktokFollowers={profile.tiktok_followers}
-              spotifyListeners={profile.spotify_listeners}
-              twitterFollowers={profile.twitter_followers}
-              linkedinConnections={profile.linkedin_connections}
-              verifiedMetrics={profile.social_verified}
-            />
-          </div>
+          <ReviewsSection
+            reviews={reviews}
+            isOwnProfile={true}
+            profileUserId={profile.user_id}
+            onRefresh={onRefresh}
+          />
         );
 
       case "press":
         return (
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Newspaper className="h-4 w-4 text-primary" />
-                Press Coverage
-                {!hasAdvancedProfile && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                    <Crown className="h-3 w-3" /> Pro
-                  </Badge>
+          <div className="space-y-6">
+            {/* Achievement Badges */}
+            {(profile.achievement_badges?.length > 0) && (
+              <AchievementBadges
+                achievements={profile.achievement_badges || []}
+                showAll={false}
+              />
+            )}
+
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+              <div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <Newspaper className="h-4 w-4 text-primary" />
+                  Press Coverage
+                  {!hasAdvancedProfile && (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                      <Crown className="h-3 w-3" /> Pro
+                    </Badge>
+                  )}
+                </h3>
+                {hasAdvancedProfile ? (
+                  <PressLinksSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
+                ) : (
+                  <div className="text-center py-6">
+                    <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
+                    <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                      <Crown className="h-3 w-3" /> Unlock
+                    </Button>
+                  </div>
                 )}
-              </h3>
-              {hasAdvancedProfile ? (
-                <PressLinksSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-              ) : (
-                <div className="text-center py-6">
-                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                    <Crown className="h-3 w-3" /> Unlock
-                  </Button>
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Award className="h-4 w-4 text-primary" />
-                Awards
-                {!hasAdvancedProfile && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                    <Crown className="h-3 w-3" /> Pro
-                  </Badge>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <Award className="h-4 w-4 text-primary" />
+                  Awards
+                  {!hasAdvancedProfile && (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                      <Crown className="h-3 w-3" /> Pro
+                    </Badge>
+                  )}
+                </h3>
+                {hasAdvancedProfile ? (
+                  <AwardsSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
+                ) : (
+                  <div className="text-center py-6">
+                    <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
+                    <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                      <Crown className="h-3 w-3" /> Unlock
+                    </Button>
+                  </div>
                 )}
-              </h3>
-              {hasAdvancedProfile ? (
-                <AwardsSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-              ) : (
-                <div className="text-center py-6">
-                  <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                    <Crown className="h-3 w-3" /> Unlock
-                  </Button>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         );

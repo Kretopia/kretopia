@@ -27,6 +27,7 @@ import { CreditScore } from "@/components/profile/CreditScore";
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
 import { ProfileVerificationSection } from "@/pages/profile/ProfileVerificationSection";
+import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
@@ -448,6 +449,19 @@ const ProfileContent = () => {
             portfolioCount={portfolioItems?.length || 0}
           />
         )}
+
+        {/* Social Stats - visible on main profile */}
+        <div className="mb-4">
+          <SocialStatsSection
+            youtubeSubscribers={profile.youtube_subscribers}
+            instagramFollowers={profile.instagram_followers}
+            tiktokFollowers={profile.tiktok_followers}
+            spotifyListeners={profile.spotify_listeners}
+            twitterFollowers={profile.twitter_followers}
+            linkedinConnections={profile.linkedin_connections}
+            verifiedMetrics={profile.social_verified}
+          />
+        </div>
 
         {/* Content Sections */}
         <ProfileContentSections

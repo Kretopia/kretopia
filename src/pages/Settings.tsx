@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, Users } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft } from "lucide-react";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";

@@ -116,10 +116,10 @@ const CreditDatabase = () => {
       if (userIds.length > 0) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('user_id, full_name, avatar_url, role, username')
+          .select('user_id, full_name, avatar_url, role')
           .in('user_id', userIds);
         const map = new Map<string, ProfileInfo>();
-        profileData?.forEach(p => map.set(p.user_id, p));
+        profileData?.forEach((p: any) => map.set(p.user_id, { ...p, username: null }));
         setProfiles(map);
       }
 

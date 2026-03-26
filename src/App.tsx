@@ -243,6 +243,9 @@ const AppContent = () => {
             {/* Rewards */}
             <Route path="/rewards" element={<ProtectedRoute><RewardsShop /></ProtectedRoute>} />
             
+            {/* Talent Manager */}
+            <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
+            
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
 

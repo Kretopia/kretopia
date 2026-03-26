@@ -368,6 +368,7 @@ const ProfileContent = () => {
           stats={stats}
           isOwnProfile={true}
           creditsCount={credits?.length || 0}
+          verifiedCreditsCount={credits?.filter((c: any) => c.verification_status === 'verified').length || 0}
           awardsCount={awards?.length || 0}
           onEdit={() => {
             setEditForm({

@@ -1519,17 +1519,26 @@ export type Database = {
       credits: {
         Row: {
           ai_confidence: number | null
+          client_brand: string | null
           collaborator_user_ids: string[] | null
           created_at: string
           credit_category: string | null
+          description: string | null
           display_order: number | null
           embed_data: Json | null
+          end_date: string | null
           endorsement_count: number | null
+          external_links: Json | null
           id: string
           is_featured: boolean | null
+          location: string | null
+          media_urls: string[] | null
+          payment_verified: boolean | null
           platform: string | null
           project_name: string
+          project_type: string | null
           role: string
+          start_date: string | null
           thumbnail_url: string | null
           updated_at: string
           url: string | null
@@ -1542,17 +1551,26 @@ export type Database = {
         }
         Insert: {
           ai_confidence?: number | null
+          client_brand?: string | null
           collaborator_user_ids?: string[] | null
           created_at?: string
           credit_category?: string | null
+          description?: string | null
           display_order?: number | null
           embed_data?: Json | null
+          end_date?: string | null
           endorsement_count?: number | null
+          external_links?: Json | null
           id?: string
           is_featured?: boolean | null
+          location?: string | null
+          media_urls?: string[] | null
+          payment_verified?: boolean | null
           platform?: string | null
           project_name: string
+          project_type?: string | null
           role: string
+          start_date?: string | null
           thumbnail_url?: string | null
           updated_at?: string
           url?: string | null
@@ -1565,17 +1583,26 @@ export type Database = {
         }
         Update: {
           ai_confidence?: number | null
+          client_brand?: string | null
           collaborator_user_ids?: string[] | null
           created_at?: string
           credit_category?: string | null
+          description?: string | null
           display_order?: number | null
           embed_data?: Json | null
+          end_date?: string | null
           endorsement_count?: number | null
+          external_links?: Json | null
           id?: string
           is_featured?: boolean | null
+          location?: string | null
+          media_urls?: string[] | null
+          payment_verified?: boolean | null
           platform?: string | null
           project_name?: string
+          project_type?: string | null
           role?: string
+          start_date?: string | null
           thumbnail_url?: string | null
           updated_at?: string
           url?: string | null

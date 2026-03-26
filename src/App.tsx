@@ -267,7 +267,7 @@ const AppContent = () => {
             <Route path="/claim/:claimToken" element={<ClaimProfile />} />
             <Route path="/post-opportunity" element={<PostOpportunity />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
-            <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+            
             
             {/* Search & Notifications */}
             <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />

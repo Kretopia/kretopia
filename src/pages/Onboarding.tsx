@@ -247,6 +247,9 @@ export default function Onboarding() {
           }
           sessionStorage.removeItem('manager_referral_code');
         } catch (e) { console.error('[Onboarding] Manager referral tracking error:', e); }
+      }
+
+      try {
         await supabase.functions.invoke("verify-profile", {
           body: { fullName: profile.full_name, role: profile.role, bio: "", location: profile.location, portfolioItems: 0, socialLinks: {}, accountType: "individual" as const },
         });

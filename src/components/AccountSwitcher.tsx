@@ -30,11 +30,49 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu"
   const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [isManagerMode, setIsManagerMode] = useState(false);
+  const [managerToggling, setManagerToggling] = useState(false);
 
   const isCompany = currentAccountType === "company";
   const targetType = isCompany ? "individual" : "company";
   const targetLabel = isCompany ? "Personal Creator" : "Company / Brand";
   const TargetIcon = isCompany ? User : Building2;
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("is_manager_mode")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.is_manager_mode) setIsManagerMode(true);
+      });
+  }, [user?.id]);
+
+  const toggleManagerMode = async (enabled: boolean) => {
+    if (!user) return;
+    setManagerToggling(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_manager_mode: enabled })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      setIsManagerMode(enabled);
+      toast({
+        title: enabled ? "Manager Mode Activated" : "Manager Mode Deactivated",
+        description: enabled
+          ? "You now have access to the Talent Manager dashboard."
+          : "Manager dashboard hidden. You can re-enable anytime.",
+      });
+      if (enabled) navigate("/talent-manager");
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setManagerToggling(false);
+    }
+  };
 
   const handleSwitch = async () => {
     if (!user) return;

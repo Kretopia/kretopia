@@ -3192,6 +3192,7 @@ export type Database = {
           location_country: string | null
           min_followers: number | null
           platform_requirements: string[] | null
+          posted_by_manager_id: string | null
           requirements: string | null
           skills: string[] | null
           status: string | null
@@ -3225,6 +3226,7 @@ export type Database = {
           location_country?: string | null
           min_followers?: number | null
           platform_requirements?: string[] | null
+          posted_by_manager_id?: string | null
           requirements?: string | null
           skills?: string[] | null
           status?: string | null
@@ -3258,6 +3260,7 @@ export type Database = {
           location_country?: string | null
           min_followers?: number | null
           platform_requirements?: string[] | null
+          posted_by_manager_id?: string | null
           requirements?: string | null
           skills?: string[] | null
           status?: string | null
@@ -3269,7 +3272,15 @@ export type Database = {
           verified_at?: string | null
           view_count?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_posted_by_manager_id_fkey"
+            columns: ["posted_by_manager_id"]
+            isOneToOne: false
+            referencedRelation: "talent_managers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       opportunity_views: {
         Row: {
@@ -4220,6 +4231,7 @@ export type Database = {
           invite_code_used: string | null
           invited_by: string | null
           is_claimed: boolean | null
+          is_manager_mode: boolean | null
           job_title: string | null
           last_active_date: string | null
           last_swipe_reset: string | null
@@ -4356,6 +4368,7 @@ export type Database = {
           invite_code_used?: string | null
           invited_by?: string | null
           is_claimed?: boolean | null
+          is_manager_mode?: boolean | null
           job_title?: string | null
           last_active_date?: string | null
           last_swipe_reset?: string | null
@@ -4492,6 +4505,7 @@ export type Database = {
           invite_code_used?: string | null
           invited_by?: string | null
           is_claimed?: boolean | null
+          is_manager_mode?: boolean | null
           job_title?: string | null
           last_active_date?: string | null
           last_swipe_reset?: string | null

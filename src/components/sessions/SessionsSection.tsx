@@ -252,13 +252,13 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
             <Card>
               <CardContent className="py-8 text-center">
                 <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="font-medium mb-2">No sessions hosted yet</p>
+                <p className="font-medium mb-2">No events hosted yet</p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Create your first session and invite others to collaborate
+                  Create your first event, meetup, or jam session and invite others
                 </p>
                 <Button variant="gradient" onClick={() => setShowCreateDialog(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Host a Session
+                  Host an Event
                 </Button>
               </CardContent>
             </Card>

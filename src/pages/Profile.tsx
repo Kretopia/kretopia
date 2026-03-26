@@ -288,7 +288,7 @@ const ProfileContent = () => {
           reviews={companyReviews}
           partnerDiscounts={partnerDiscounts}
           isOwnProfile={true}
-          isPro={userTier === 'pro'}
+          isPro={userTier === 'pro' || userTier === 'enterprise' || userTier === 'founder'}
           onRefresh={fetchData}
           onEdit={() => {
             setEditForm({

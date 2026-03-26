@@ -12,6 +12,21 @@ const logStep = (step: string, details?: any) => {
   console.log(`[MILESTONE-PAYMENT] ${step}${detailsStr}`);
 };
 
+// Platform service fee rates — charged to brand ON TOP of talent rate
+const PLATFORM_FEE_RATES: Record<string, number> = {
+  free: 0.20,
+  pro: 0.15,
+  founder: 0.10,
+  studio: 0.15,
+  enterprise: 0.15,
+};
+
+const MANAGER_COMMISSION_RATE = 0.10; // 10%
+
+const getPlatformFeeRate = (tier: string | null): number => {
+  return PLATFORM_FEE_RATES[tier || 'free'] || PLATFORM_FEE_RATES.free;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,6 +35,11 @@ serve(async (req) => {
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+  );
+
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
   try {
@@ -36,7 +56,60 @@ serve(async (req) => {
     if (!milestoneId || !amount || !title) {
       throw new Error("Missing required fields: milestoneId, amount, or title");
     }
-    logStep("Payment request received", { milestoneId, amount, title, useEscrow });
+
+    const talentRate = parseFloat(amount);
+    logStep("Payment request received", { milestoneId, talentRate, title, useEscrow });
+
+    // Get the brand's subscription tier to determine service fee
+    const { data: brandProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('user_id', user.id)
+      .single();
+
+    const brandTier = brandProfile?.subscription_tier || 'free';
+    const platformFeeRate = getPlatformFeeRate(brandTier);
+
+    // Check if a talent manager is involved (via talent_referrals)
+    const { data: milestone } = await supabaseAdmin
+      .from('milestones')
+      .select('created_by')
+      .eq('id', milestoneId)
+      .single();
+
+    let hasManager = false;
+    let managerUserId: string | null = null;
+
+    if (milestone?.created_by) {
+      const { data: referral } = await supabaseAdmin
+        .from('talent_referrals')
+        .select('manager_id, status')
+        .eq('referred_user_id', milestone.created_by)
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+
+      if (referral) {
+        hasManager = true;
+        managerUserId = referral.manager_id;
+      }
+    }
+
+    // Calculate fees — all charged to brand ON TOP of talent rate
+    const platformFee = Math.round(talentRate * platformFeeRate * 100) / 100;
+    const managerCommission = hasManager ? Math.round(talentRate * MANAGER_COMMISSION_RATE * 100) / 100 : 0;
+    const brandTotal = talentRate + platformFee + managerCommission;
+    const brandTotalCents = Math.round(brandTotal * 100);
+
+    logStep("Fee breakdown", {
+      talentRate,
+      brandTier,
+      platformFeeRate: `${platformFeeRate * 100}%`,
+      platformFee,
+      hasManager,
+      managerCommission,
+      brandTotal,
+    });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -52,23 +125,51 @@ serve(async (req) => {
       logStep("No existing customer, will create during checkout");
     }
 
-    // Create checkout session with dynamic amount
+    // Build line items showing transparent breakdown
+    const lineItems: any[] = [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Milestone: ${title}`,
+            description: `Talent rate (paid in full to creator)`,
+          },
+          unit_amount: Math.round(talentRate * 100),
+        },
+        quantity: 1,
+      },
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `ThriveIN Service Fee (${(platformFeeRate * 100).toFixed(0)}%)`,
+            description: `Platform service fee`,
+          },
+          unit_amount: Math.round(platformFee * 100),
+        },
+        quantity: 1,
+      },
+    ];
+
+    if (hasManager && managerCommission > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Talent Manager Commission (10%)`,
+            description: `Commission for talent representation`,
+          },
+          unit_amount: Math.round(managerCommission * 100),
+        },
+        quantity: 1,
+      });
+    }
+
+    // Create checkout session
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `Milestone Payment: ${title}`,
-              description: useEscrow ? `Escrow payment for project milestone (funds held until approved)` : `Payment for project milestone`,
-            },
-            unit_amount: Math.round(parseFloat(amount) * 100), // Convert to cents
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "payment",
       success_url: `${req.headers.get("origin")}/desk/${projectId}?payment=success&milestone=${milestoneId}&escrow=${useEscrow ? 'true' : 'false'}`,
       cancel_url: `${req.headers.get("origin")}/desk/${projectId}?payment=cancelled`,
@@ -77,10 +178,15 @@ serve(async (req) => {
         projectId,
         userId: user.id,
         useEscrow: useEscrow ? 'true' : 'false',
+        talentRate: String(talentRate),
+        platformFee: String(platformFee),
+        managerCommission: String(managerCommission),
+        managerUserId: managerUserId || '',
+        brandTier,
       },
     };
 
-    // For escrow, use manual capture (authorize only, don't capture immediately)
+    // For escrow, use manual capture
     if (useEscrow) {
       sessionConfig.payment_intent_data = {
         capture_method: 'manual',
@@ -88,6 +194,10 @@ serve(async (req) => {
           milestoneId,
           projectId,
           userId: user.id,
+          talentRate: String(talentRate),
+          platformFee: String(platformFee),
+          managerCommission: String(managerCommission),
+          managerUserId: managerUserId || '',
         },
       };
       logStep("Using escrow mode with manual capture");
@@ -95,9 +205,18 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url, escrow: useEscrow });
+    logStep("Checkout session created", { sessionId: session.id, url: session.url, escrow: useEscrow, brandTotal });
 
-    return new Response(JSON.stringify({ url: session.url, sessionId: session.id }), {
+    return new Response(JSON.stringify({ 
+      url: session.url, 
+      sessionId: session.id,
+      breakdown: {
+        talentRate,
+        platformFee,
+        managerCommission,
+        brandTotal,
+      }
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

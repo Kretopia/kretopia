@@ -33,6 +33,7 @@ interface ProfileHeroProps {
   isFromMatch?: boolean;
   onRefresh?: () => void;
   creditsCount?: number;
+  verifiedCreditsCount?: number;
   awardsCount?: number;
 }
 

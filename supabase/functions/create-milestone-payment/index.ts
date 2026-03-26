@@ -204,7 +204,8 @@ serve(async (req) => {
         talentRate: String(talentRate),
         platformFee: String(platformFee),
         managerCommission: String(managerCommission),
-        managerUserId: managerUserId || '',
+        managerTableId: managerTableId || '',
+        managerStripeAccountId: managerStripeAccountId || '',
         brandTier,
       },
     };
@@ -220,7 +221,8 @@ serve(async (req) => {
           talentRate: String(talentRate),
           platformFee: String(platformFee),
           managerCommission: String(managerCommission),
-          managerUserId: managerUserId || '',
+          managerTableId: managerTableId || '',
+          managerStripeAccountId: managerStripeAccountId || '',
         },
       };
       logStep("Using escrow mode with manual capture");

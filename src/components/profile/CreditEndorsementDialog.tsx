@@ -161,7 +161,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
                     <button
                       key={user.user_id}
                       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors text-left"
-                      onClick={() => sendEndorsementRequest(user.user_id, undefined, user.display_name)}
+                      onClick={() => sendEndorsementRequest(user.user_id, undefined, user.full_name)}
                       disabled={sending}
                     >
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">

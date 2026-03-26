@@ -97,6 +97,9 @@ export function CompanyHiringDashboard() {
         ))}
       </div>
 
+      {/* AI Talent Suggestions */}
+      <AITalentSuggestions />
+
       {/* Recent Applications */}
       <Card>
         <CardHeader className="pb-3">

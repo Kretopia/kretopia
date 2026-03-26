@@ -61,7 +61,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
     if (!user) {
       toast({
         title: "Not authenticated",
-        description: "Please log in to join sessions",
+        description: "Please log in to join events",
         variant: "destructive",
       });
       return;

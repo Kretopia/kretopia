@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { calculatePlatformFee, getFeeDisplayText } from "@/lib/platformFees";
+import { Switch } from "@/components/ui/switch";
+import { calculateBrandTotal, getFeeDisplayText } from "@/lib/platformFees";
 import { Calculator } from "lucide-react";
 
 interface FeeCalculatorProps {
@@ -11,12 +12,11 @@ interface FeeCalculatorProps {
 }
 
 export const FeeCalculator = ({ subscriptionTier = 'free' }: FeeCalculatorProps) => {
-  const [amount, setAmount] = useState<string>("100");
+  const [amount, setAmount] = useState<string>("1000");
+  const [hasManager, setHasManager] = useState(false);
 
   const numAmount = parseFloat(amount) || 0;
-  const platformFee = calculatePlatformFee(numAmount, subscriptionTier);
-  const stripeFee = Math.round((numAmount * 0.029 + 0.30) * 100) / 100; // 2.9% + $0.30
-  const recipientReceives = numAmount - platformFee - stripeFee;
+  const breakdown = calculateBrandTotal(numAmount, subscriptionTier, hasManager);
 
   return (
     <Card>
@@ -26,12 +26,12 @@ export const FeeCalculator = ({ subscriptionTier = 'free' }: FeeCalculatorProps)
           Fee Calculator
         </CardTitle>
         <CardDescription>
-          See exactly how fees affect your payments
+          See exactly how fees work — brands pay the service fee, talent keeps 100%
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="amount">Payment Amount</Label>
+          <Label htmlFor="amount">Talent Rate</Label>
           <div className="relative">
             <span className="absolute left-3 top-3 text-muted-foreground">$</span>
             <Input
@@ -46,38 +46,58 @@ export const FeeCalculator = ({ subscriptionTier = 'free' }: FeeCalculatorProps)
           </div>
         </div>
 
+        <div className="flex items-center justify-between">
+          <Label htmlFor="manager-toggle" className="text-sm">Talent Manager involved?</Label>
+          <Switch
+            id="manager-toggle"
+            checked={hasManager}
+            onCheckedChange={setHasManager}
+          />
+        </div>
+
         <div className="bg-muted rounded-lg p-4 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Payment Amount</span>
-            <span className="font-medium">${numAmount.toFixed(2)}</span>
+            <span className="font-semibold text-green-600">💰 Talent Receives</span>
+            <span className="font-bold text-green-600">${breakdown.talentPayout.toFixed(2)}</span>
           </div>
-          
+
           <Separator />
+
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Brand pays on top:</p>
           
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              Platform Fee ({getFeeDisplayText(subscriptionTier)})
+              ThriveIN Service Fee ({getFeeDisplayText(subscriptionTier)})
             </span>
-            <span className="text-destructive font-medium">-${platformFee.toFixed(2)}</span>
+            <span className="font-medium">+${breakdown.platformFee.toFixed(2)}</span>
           </div>
+
+          {hasManager && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">
+                Talent Manager Commission (10%)
+              </span>
+              <span className="font-medium">+${breakdown.managerCommission.toFixed(2)}</span>
+            </div>
+          )}
           
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              Stripe Fee (~2.9% + $0.30)
+              Stripe Processing (~2.9% + $0.30)
             </span>
-            <span className="text-destructive font-medium">-${stripeFee.toFixed(2)}</span>
+            <span className="font-medium">+${breakdown.stripeFee.toFixed(2)}</span>
           </div>
           
           <Separator />
           
           <div className="flex justify-between text-base">
-            <span className="font-semibold">Recipient Receives</span>
-            <span className="font-bold text-primary">${recipientReceives.toFixed(2)}</span>
+            <span className="font-semibold">Brand Pays Total</span>
+            <span className="font-bold text-primary">${breakdown.brandTotal.toFixed(2)}</span>
           </div>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          * This is an estimate. Actual Stripe fees may vary slightly based on payment method and location.
+          * Talent always receives their full quoted rate. Service fees and commissions are charged to the hiring brand/company. Stripe fees may vary slightly.
         </p>
       </CardContent>
     </Card>

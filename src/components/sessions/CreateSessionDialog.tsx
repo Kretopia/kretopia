@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, Clock, Users, Loader2 } from "lucide-react";
+import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { LocationSearchInput } from "./LocationSearchInput";
+import { Switch } from "@/components/ui/switch";
 
 interface CreateSessionDialogProps {
   open: boolean;
@@ -22,15 +23,17 @@ interface CreateSessionDialogProps {
   defaultLocation?: { lat: number; lng: number };
 }
 
-const SESSION_CATEGORIES = [
-  { value: 'music', label: '🎵 Music Session' },
-  { value: 'film', label: '🎬 Film Shoot' },
-  { value: 'photo', label: '📸 Photo Session' },
-  { value: 'art', label: '🎨 Art Collab' },
-  { value: 'podcast', label: '🎙️ Podcast Recording' },
+const EVENT_CATEGORIES = [
+  { value: 'music', label: '🎵 Music Jam / Concert' },
+  { value: 'film', label: '🎬 Film Shoot / Screening' },
+  { value: 'photo', label: '📸 Photo Walk / Shoot' },
+  { value: 'art', label: '🎨 Art Collab / Exhibition' },
+  { value: 'podcast', label: '🎙️ Podcast / Live Recording' },
   { value: 'content', label: '📱 Content Creation' },
-  { value: 'workshop', label: '📚 Workshop' },
-  { value: 'networking', label: '🤝 Networking' },
+  { value: 'workshop', label: '📚 Workshop / Masterclass' },
+  { value: 'networking', label: '🤝 Networking / Meetup' },
+  { value: 'festival', label: '🎪 Festival / Fair' },
+  { value: 'showcase', label: '🌟 Showcase / Open Mic' },
   { value: 'general', label: '✨ General Creative' },
 ];
 

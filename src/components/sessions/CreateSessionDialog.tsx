@@ -58,6 +58,10 @@ export const CreateSessionDialog = ({
     max_participants: 10,
     latitude: defaultLocation?.lat || null,
     longitude: defaultLocation?.lng || null,
+    is_ticketed: false,
+    ticket_price: 0,
+    ticket_currency: 'USD',
+    event_type: 'session' as 'session' | 'event',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

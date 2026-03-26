@@ -300,11 +300,21 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
               isFeatured={credit.is_featured}
               isOwnProfile={isOwnProfile}
               onDelete={() => handleDelete(credit.id)}
+              onRequestEndorsement={() => setEndorsementCredit(credit)}
               icon={<Film className="h-16 w-16" />}
               metadata={credit.platform ? { Platform: credit.platform } : undefined}
             />
           ))}
         </div>
+      )}
+
+      {endorsementCredit && (
+        <CreditEndorsementDialog
+          open={!!endorsementCredit}
+          onOpenChange={(open) => !open && setEndorsementCredit(null)}
+          credit={endorsementCredit}
+          userId={userId}
+        />
       )}
     </div>
   );

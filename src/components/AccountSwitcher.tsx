@@ -138,7 +138,24 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu"
           </Button>
         </div>
 
-        <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        {/* Talent Manager Mode Toggle */}
+        <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-card">
+          <div className="flex items-center gap-3">
+            <Users className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-medium text-sm">
+                {isManagerMode ? "Manager Mode Active" : "Activate Manager Mode"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Manage talent, earn commissions on referred jobs
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={isManagerMode}
+            onCheckedChange={toggleManagerMode}
+            disabled={managerToggling}
+          />
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">

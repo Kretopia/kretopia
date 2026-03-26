@@ -176,6 +176,13 @@ export const ProfileContentSections = ({
                 )}
               </div>
             </div>
+
+            {industryStats.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Industry Stats</h3>
+                <IndustryStatsSection stats={industryStats} isOwnProfile={true} onRefresh={onRefresh} />
+              </div>
+            )}
           </div>
         );
 

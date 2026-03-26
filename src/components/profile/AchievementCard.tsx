@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Shield, Star, Trash2, Award, Trophy } from "lucide-react";
+import { ExternalLink, Shield, Star, Trash2, Award, Trophy, UserPlus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 

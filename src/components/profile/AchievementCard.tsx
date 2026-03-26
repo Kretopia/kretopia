@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Shield, Star, Trash2, Award, Trophy } from "lucide-react";
+import { ExternalLink, Shield, Star, Trash2, Award, Trophy, UserPlus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -13,9 +13,11 @@ export interface AchievementCardProps {
   imageUrl?: string;
   url?: string;
   verificationStatus?: "unverified" | "pending" | "verified";
+  endorsementCount?: number;
   isFeatured?: boolean;
   isOwnProfile?: boolean;
   onDelete?: () => void;
+  onRequestEndorsement?: () => void;
   icon?: React.ReactNode;
   metadata?: Record<string, string | number>;
 }
@@ -29,9 +31,11 @@ export const AchievementCard = ({
   imageUrl,
   url,
   verificationStatus = "unverified",
+  endorsementCount = 0,
   isFeatured = false,
   isOwnProfile = false,
   onDelete,
+  onRequestEndorsement,
   icon,
   metadata,
 }: AchievementCardProps) => {
@@ -123,6 +127,12 @@ export const AchievementCard = ({
                       {value}
                     </Badge>
                   ))}
+                  {endorsementCount > 0 && (
+                    <Badge variant="outline" className="gap-0.5 text-[10px] px-1.5 py-0 border-primary/30 text-primary">
+                      <ShieldCheck className="h-2.5 w-2.5" />
+                      {endorsementCount} endorsed
+                    </Badge>
+                  )}
                   {isFeatured && (
                     <Badge variant="default" className="gap-0.5 text-[10px] px-1.5 py-0">
                       <Star className="h-2.5 w-2.5 fill-current" />
@@ -132,6 +142,17 @@ export const AchievementCard = ({
                   <VerificationBadge />
                 </div>
                 <div className="flex items-center gap-1">
+                  {isOwnProfile && onRequestEndorsement && verificationStatus !== 'verified' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onRequestEndorsement}
+                      className="h-6 px-1.5 text-[10px] gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <UserPlus className="h-3 w-3" />
+                      Verify
+                    </Button>
+                  )}
                   {url && (
                     <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-0">
                       <a href={url} target="_blank" rel="noopener noreferrer">

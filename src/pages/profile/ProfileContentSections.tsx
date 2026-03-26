@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Lock, Crown, Handshake } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
 
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";

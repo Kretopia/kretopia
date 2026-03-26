@@ -56,6 +56,7 @@ export const ProfileHero = ({
   isFromMatch,
   onRefresh,
   creditsCount = 0,
+  verifiedCreditsCount = 0,
   awardsCount = 0
 }: ProfileHeroProps) => {
   const { user } = useAuth();

@@ -78,7 +78,8 @@ serve(async (req) => {
       .single();
 
     let hasManager = false;
-    let managerUserId: string | null = null;
+    let managerTableId: string | null = null;
+    let managerStripeAccountId: string | null = null;
 
     if (milestone?.created_by) {
       const { data: referral } = await supabaseAdmin
@@ -91,7 +92,29 @@ serve(async (req) => {
 
       if (referral) {
         hasManager = true;
-        managerUserId = referral.manager_id;
+        managerTableId = referral.manager_id;
+
+        // Look up the manager's user ID and Stripe Connect account
+        const { data: managerRecord } = await supabaseAdmin
+          .from('talent_managers')
+          .select('manager_user_id')
+          .eq('id', referral.manager_id)
+          .single();
+
+        if (managerRecord?.manager_user_id) {
+          const { data: managerProfile } = await supabaseAdmin
+            .from('profiles')
+            .select('stripe_account_id, stripe_account_status')
+            .eq('user_id', managerRecord.manager_user_id)
+            .single();
+
+          if (managerProfile?.stripe_account_id && managerProfile?.stripe_account_status === 'active') {
+            managerStripeAccountId = managerProfile.stripe_account_id;
+            logStep("Manager has active Stripe Connect", { managerStripeAccountId });
+          } else {
+            logStep("Manager has no active Stripe Connect — commission will be recorded but not auto-transferred");
+          }
+        }
       }
     }
 

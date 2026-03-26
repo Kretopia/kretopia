@@ -449,6 +449,19 @@ const ProfileContent = () => {
           />
         )}
 
+        {/* Social Stats - visible on main profile */}
+        <div className="mb-4">
+          <SocialStatsSection
+            youtubeSubscribers={profile.youtube_subscribers}
+            instagramFollowers={profile.instagram_followers}
+            tiktokFollowers={profile.tiktok_followers}
+            spotifyListeners={profile.spotify_listeners}
+            twitterFollowers={profile.twitter_followers}
+            linkedinConnections={profile.linkedin_connections}
+            verifiedMetrics={profile.social_verified}
+          />
+        </div>
+
         {/* Content Sections */}
         <ProfileContentSections
           profile={profile}

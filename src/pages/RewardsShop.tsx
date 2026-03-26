@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Snowflake, Crown, Eye, Sparkles, ShoppingBag,
   ArrowLeft, Zap, Star, Palette, Gift, Search, UserPlus,
+  Target, Unlock,
 } from "lucide-react";
 import { getTierByPoints } from "@/lib/tierSystem";
 

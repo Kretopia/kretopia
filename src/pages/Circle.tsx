@@ -226,35 +226,12 @@ export default function Circle() {
             
             {/* Filters button - only show on Connect tab */}
             {activeTab === 'foryou' && (
-              <div className="flex items-center gap-2">
-                {/* Swipe/Browse toggle */}
-                <div className="flex items-center bg-muted rounded-lg p-0.5">
-                  <Button
-                    variant={connectMode === "swipe" ? "default" : "ghost"}
-                    size="sm"
-                    className="h-7 px-2.5 text-xs gap-1"
-                    onClick={() => setConnectMode("swipe")}
-                  >
-                    <Layers className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Swipe</span>
-                  </Button>
-                  <Button
-                    variant={connectMode === "browse" ? "default" : "ghost"}
-                    size="sm"
-                    className="h-7 px-2.5 text-xs gap-1"
-                    onClick={() => setConnectMode("browse")}
-                  >
-                    <Grid3X3 className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Browse</span>
-                  </Button>
-                </div>
-                <SwipeFilters
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  isPro={isPro}
-                  profilesCount={profilesCount}
-                />
-              </div>
+              <SwipeFilters
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                isPro={isPro}
+                profilesCount={profilesCount}
+              />
             )}
           </div>
         </div>

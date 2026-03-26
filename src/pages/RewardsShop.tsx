@@ -354,6 +354,7 @@ const RewardsShop = () => {
       action: buyDiscoveryUnlock,
       available: true,
       badge: "Permanent",
+    },
     {
       id: "double_xp",
       name: "2x Points (24 hours)",

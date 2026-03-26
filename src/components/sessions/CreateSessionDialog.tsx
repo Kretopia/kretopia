@@ -87,14 +87,18 @@ export const CreateSessionDialog = ({
         start_time: startTime.toISOString(),
         max_participants: formData.max_participants,
         is_public: true,
-        status: 'upcoming'
-      });
+        status: 'upcoming',
+        is_ticketed: formData.is_ticketed,
+        ticket_price: formData.is_ticketed ? formData.ticket_price : 0,
+        ticket_currency: formData.ticket_currency,
+        event_type: formData.event_type,
+      } as any);
 
       if (error) throw error;
 
       toast({
-        title: "Session created! 🎉",
-        description: "Others can now find and join your creative session",
+        title: "Event created! 🎉",
+        description: "Others can now find and join your event",
       });
 
       onOpenChange(false);

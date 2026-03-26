@@ -380,7 +380,7 @@ const DiscoverPage = () => {
                               {project.year && <span className="flex items-center gap-0.5"><CalendarDays className="h-2.5 w-2.5" /> {project.year}</span>}
                               {project.location && <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" /> {project.location}</span>}
                               {project.client && <span className="flex items-center gap-0.5"><Building2 className="h-2.5 w-2.5" /> {project.client}</span>}
-                              {project.verifiedCount > 0 && <Badge variant="outline" className="text-[9px] gap-0.5 h-4 border-green-500/30 text-green-600"><ShieldCheck className="h-2 w-2" /> {project.verifiedCount} verified</Badge>}
+                              {project.verifiedCount > 0 && <Badge variant="outline" className="text-[9px] gap-0.5 h-4 border-primary/30 text-primary"><ShieldCheck className="h-2 w-2" /> {project.verifiedCount} verified</Badge>}
                             </div>
                           </div>
                           {project.url && (

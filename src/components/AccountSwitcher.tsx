@@ -156,6 +156,9 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, variant = "menu"
             onCheckedChange={toggleManagerMode}
             disabled={managerToggling}
           />
+        </div>
+
+        <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">

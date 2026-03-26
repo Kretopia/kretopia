@@ -225,7 +225,28 @@ export default function Onboarding() {
         } catch (e) { console.error('[Onboarding] Auto-join event error:', e); }
       }
 
-      try {
+      // Track talent manager referral
+      const managerCode = sessionStorage.getItem('manager_referral_code');
+      if (managerCode && user) {
+        try {
+          const { data: managerData } = await supabase
+            .from('talent_managers')
+            .select('id')
+            .eq('referral_code', managerCode)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (managerData) {
+            await supabase.from('talent_referrals').insert({
+              manager_id: managerData.id,
+              talent_user_id: user.id,
+            });
+            // Update manager's total_referred count
+            await supabase.rpc('increment_manager_referrals' as any, { manager_id_input: managerData.id });
+            console.log('[Onboarding] Talent manager referral tracked:', managerCode);
+          }
+          sessionStorage.removeItem('manager_referral_code');
+        } catch (e) { console.error('[Onboarding] Manager referral tracking error:', e); }
         await supabase.functions.invoke("verify-profile", {
           body: { fullName: profile.full_name, role: profile.role, bio: "", location: profile.location, portfolioItems: 0, socialLinks: {}, accountType: "individual" as const },
         });

@@ -250,6 +250,7 @@ const AppContent = () => {
             
             {/* Credit Database */}
             <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
+            <Route path="/directory" element={<ProtectedRoute><DirectoryPage /></ProtectedRoute>} />
             
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />

@@ -227,9 +227,9 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
             <Card>
               <CardContent className="py-8 text-center">
                 <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="font-medium mb-2">No sessions joined yet</p>
+                <p className="font-medium mb-2">No events joined yet</p>
                 <p className="text-sm text-muted-foreground">
-                  Explore nearby sessions to find creative collaborations to join
+                  Explore nearby events and sessions to find creative collaborations
                 </p>
               </CardContent>
             </Card>

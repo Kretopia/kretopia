@@ -44,8 +44,8 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
     try {
       const { data } = await supabase
         .from('profiles')
-        .select('user_id, display_name, avatar_url, primary_role, username')
-        .or(`display_name.ilike.%${query}%,username.ilike.%${query}%`)
+        .select('user_id, full_name, avatar_url, primary_role, username')
+        .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
         .neq('user_id', userId)
         .limit(5);
       setSearchResults(data || []);

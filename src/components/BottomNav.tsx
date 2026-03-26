@@ -36,11 +36,13 @@ const BottomNav = memo(() => {
   const navItems = isCompany
     ? [
         { path: "/opportunities", icon: Briefcase, label: "Gigs", tourId: "opportunities-tab", tooltip: { id: "nav-jobs", title: "Post & Find Gigs", desc: "Browse and post creative gigs, jobs, and collaborations" } },
+        { path: "/directory", icon: Database, label: "Directory", tourId: "directory-tab", tooltip: { id: "nav-directory", title: "Directory", desc: "Search verified credits and discover creative professionals" } },
         { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, tasks, and collaborate with your team" } },
         { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your creator profile" } },
       ]
     : [
         { path: "/circle", icon: Users, label: "Circle", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Your Circle", desc: "Find creators to collaborate with" } },
+        { path: "/directory", icon: Database, label: "Directory", tourId: "directory-tab", tooltip: { id: "nav-directory", title: "Directory", desc: "Search verified credits and discover creative professionals" } },
         { path: "/opportunities", icon: Briefcase, label: "Gigs", tourId: "opportunities-tab", tooltip: { id: "nav-gigs", title: "Gigs", desc: "Find and post creative gigs, jobs, and collaborations" } },
         { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, milestones, and deliverables" } },
         { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your creator profile" } },

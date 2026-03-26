@@ -145,35 +145,6 @@ export const ProfileContentSections = ({
 
       <hr className="border-border" />
 
-      {/* Experience & Credits */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Experience & Credits</h2>
-          {!hasAdvancedProfile && (
-            <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
-              <Crown className="h-3 w-3" />
-              Pro
-            </Badge>
-          )}
-        </div>
-        {hasAdvancedProfile ? (
-          <UnifiedWorkHistory 
-            userId={profile.user_id}
-            isOwnProfile={true}
-            onRefresh={onRefresh}
-          />
-        ) : (
-          <div className="text-center py-8">
-            <Lock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-muted-foreground mb-4">Upgrade to Pro to add your professional credits</p>
-            <Button onClick={() => navigate("/subscription")} className="gap-2">
-              <Crown className="h-4 w-4" />
-              Upgrade to Pro
-            </Button>
-          </div>
-        )}
-      </section>
-
       <hr className="border-border" />
 
       {/* Press & Awards - side by side */}

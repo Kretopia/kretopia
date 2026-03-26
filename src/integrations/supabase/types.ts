@@ -1421,6 +1421,7 @@ export type Database = {
       }
       credits: {
         Row: {
+          collaborator_user_ids: string[] | null
           created_at: string
           display_order: number | null
           embed_data: Json | null
@@ -1435,9 +1436,12 @@ export type Database = {
           user_id: string
           verification_status: string | null
           verification_url: string | null
+          verified_by_name: string | null
+          verified_by_user_id: string | null
           year: number | null
         }
         Insert: {
+          collaborator_user_ids?: string[] | null
           created_at?: string
           display_order?: number | null
           embed_data?: Json | null
@@ -1452,9 +1456,12 @@ export type Database = {
           user_id: string
           verification_status?: string | null
           verification_url?: string | null
+          verified_by_name?: string | null
+          verified_by_user_id?: string | null
           year?: number | null
         }
         Update: {
+          collaborator_user_ids?: string[] | null
           created_at?: string
           display_order?: number | null
           embed_data?: Json | null
@@ -1469,6 +1476,8 @@ export type Database = {
           user_id?: string
           verification_status?: string | null
           verification_url?: string | null
+          verified_by_name?: string | null
+          verified_by_user_id?: string | null
           year?: number | null
         }
         Relationships: []
@@ -4211,6 +4220,7 @@ export type Database = {
           company_tagline: string | null
           cover_image_url: string | null
           created_at: string | null
+          credit_score: number | null
           daily_swipes: number | null
           discogs_verified: boolean | null
           email_verified: boolean
@@ -4348,6 +4358,7 @@ export type Database = {
           company_tagline?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          credit_score?: number | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
           email_verified?: boolean
@@ -4485,6 +4496,7 @@ export type Database = {
           company_tagline?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          credit_score?: number | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
           email_verified?: boolean

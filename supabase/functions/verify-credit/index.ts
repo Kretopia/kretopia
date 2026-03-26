@@ -35,7 +35,7 @@ serve(async (req) => {
     // Use Lovable AI to assess the credit
     if (lovableApiKey) {
       try {
-        const aiResponse = await fetch('https://ai.lovable.dev/v1/chat/completions', {
+        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${lovableApiKey}`,

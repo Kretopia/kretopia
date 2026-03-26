@@ -84,6 +84,14 @@ const CreditDatabase = () => {
         query = query.or(`project_name.ilike.%${search}%,role.ilike.%${search}%`);
       }
 
+      // Filter by category using credit_category
+      if (category !== 'all') {
+        const categoryGroup = CATEGORY_GROUPS.find(g => g.value === category);
+        if (categoryGroup?.types) {
+          query = query.in('credit_category', categoryGroup.types);
+        }
+      }
+
       const { data, error, count } = await query;
       if (error) throw error;
       

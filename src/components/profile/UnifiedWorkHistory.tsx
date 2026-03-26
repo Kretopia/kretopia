@@ -29,11 +29,13 @@ import {
   Shirt,
   Megaphone,
   Briefcase,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MediaPlayerModal } from "./MediaPlayerModal";
 import { parseMediaUrl } from "@/lib/mediaUtils";
+import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
 
 interface ManualCredit {
   id: string;
@@ -138,6 +140,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
   const [selectedCredit, setSelectedCredit] = useState<UnifiedCredit | null>(null);
+  const [endorsementCredit, setEndorsementCredit] = useState<{id: string; project_name: string; role: string; year?: number} | null>(null);
   const INITIAL_ITEMS_PER_SOURCE = 3;
   const [newCredit, setNewCredit] = useState({
     project_name: "",
@@ -219,16 +222,29 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from("credits").insert({
+      const { data: insertedData, error } = await supabase.from("credits").insert({
         user_id: user.id,
         project_name: newCredit.project_name,
         role: newCredit.role,
         year: newCredit.year,
         platform: newCredit.platform || null,
         url: newCredit.url || null,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Trigger AI verification in background
+      if (insertedData) {
+        supabase.functions.invoke('verify-credit', {
+          body: {
+            credit_id: insertedData.id,
+            project_name: newCredit.project_name,
+            role: newCredit.role,
+            year: newCredit.year,
+            platform: newCredit.platform,
+          },
+        }).catch(err => console.log('AI verification queued:', err));
+      }
 
       toast.success("Credit added successfully");
       setNewCredit({
@@ -480,6 +496,25 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                               )}
                             </Button>
                           )}
+                          {isOwnProfile && !credit.isVerified && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEndorsementCredit({
+                                  id: credit.id,
+                                  project_name: credit.title,
+                                  role: credit.role,
+                                  year: credit.year || undefined,
+                                });
+                              }}
+                              className="text-primary hover:text-primary hover:bg-primary/10"
+                              title="Request endorsement"
+                            >
+                              <UserPlus className="h-4 w-4" />
+                            </Button>
+                          )}
                           {isOwnProfile && (
                             <Button 
                               variant="ghost" 
@@ -546,6 +581,16 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
           thumbnail_url: selectedCredit.thumbnailUrl,
         } : null}
       />
+
+      {/* Endorsement Dialog */}
+      {endorsementCredit && (
+        <CreditEndorsementDialog
+          open={!!endorsementCredit}
+          onOpenChange={(open) => !open && setEndorsementCredit(null)}
+          credit={endorsementCredit}
+          userId={userId}
+        />
+      )}
     </div>
   );
 }

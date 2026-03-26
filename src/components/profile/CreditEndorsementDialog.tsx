@@ -44,8 +44,8 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
     try {
       const { data } = await supabase
         .from('profiles')
-        .select('user_id, display_name, avatar_url, primary_role, username')
-        .or(`display_name.ilike.%${query}%,username.ilike.%${query}%`)
+        .select('user_id, full_name, avatar_url, primary_role, username')
+        .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
         .neq('user_id', userId)
         .limit(5);
       setSearchResults(data || []);
@@ -161,18 +161,18 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
                     <button
                       key={user.user_id}
                       className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors text-left"
-                      onClick={() => sendEndorsementRequest(user.user_id, undefined, user.display_name)}
+                      onClick={() => sendEndorsementRequest(user.user_id, undefined, user.full_name)}
                       disabled={sending}
                     >
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                         {user.avatar_url ? (
                           <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xs font-medium">{user.display_name?.[0]}</span>
+                          <span className="text-xs font-medium">{user.full_name?.[0]}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{user.display_name}</p>
+                        <p className="text-sm font-medium truncate">{user.full_name}</p>
                         <p className="text-xs text-muted-foreground truncate">{user.primary_role || user.username}</p>
                       </div>
                       <Send className="h-4 w-4 text-muted-foreground" />

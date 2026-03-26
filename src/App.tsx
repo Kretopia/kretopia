@@ -81,6 +81,7 @@ const Guide = lazy(() => import("./pages/Guide"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
+const DirectoryPage = lazy(() => import("./pages/DirectoryPage"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -249,6 +250,7 @@ const AppContent = () => {
             
             {/* Credit Database */}
             <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
+            <Route path="/directory" element={<ProtectedRoute><DirectoryPage /></ProtectedRoute>} />
             
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />

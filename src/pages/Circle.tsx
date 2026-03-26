@@ -6,13 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { SwipeFeature } from "@/components/swipe";
-import { CircleBrowseGrid } from "@/components/circle/CircleBrowseGrid";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus, MapPin, Layers, Grid3X3 } from "lucide-react";
+import { Users, Sparkles, UserPlus, MapPin } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 
@@ -30,7 +29,7 @@ export default function Circle() {
   const [filters, setFilters] = useState<SwipeFiltersState>(DEFAULT_SWIPE_FILTERS);
   const [profilesCount, setProfilesCount] = useState(0);
   const [accountType, setAccountType] = useState<string>("individual");
-  const [connectMode, setConnectMode] = useState<"swipe" | "browse">("swipe");
+  
 
   // Redirect company accounts away from Circle
   useEffect(() => {
@@ -227,35 +226,12 @@ export default function Circle() {
             
             {/* Filters button - only show on Connect tab */}
             {activeTab === 'foryou' && (
-              <div className="flex items-center gap-2">
-                {/* Swipe/Browse toggle */}
-                <div className="flex items-center bg-muted rounded-lg p-0.5">
-                  <Button
-                    variant={connectMode === "swipe" ? "default" : "ghost"}
-                    size="sm"
-                    className="h-7 px-2.5 text-xs gap-1"
-                    onClick={() => setConnectMode("swipe")}
-                  >
-                    <Layers className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Swipe</span>
-                  </Button>
-                  <Button
-                    variant={connectMode === "browse" ? "default" : "ghost"}
-                    size="sm"
-                    className="h-7 px-2.5 text-xs gap-1"
-                    onClick={() => setConnectMode("browse")}
-                  >
-                    <Grid3X3 className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Browse</span>
-                  </Button>
-                </div>
-                <SwipeFilters
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  isPro={isPro}
-                  profilesCount={profilesCount}
-                />
-              </div>
+              <SwipeFilters
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                isPro={isPro}
+                profilesCount={profilesCount}
+              />
             )}
           </div>
         </div>
@@ -292,15 +268,11 @@ export default function Circle() {
 
           {/* Connect Tab - Swipe to match */}
           <TabsContent value="foryou" className="space-y-4">
-            {connectMode === "swipe" ? (
-              <SwipeFeature 
-                onMatch={handleMatch} 
-                filters={filters}
-                onProfilesCountChange={setProfilesCount}
-              />
-            ) : (
-              <CircleBrowseGrid filters={filters} />
-            )}
+            <SwipeFeature 
+              onMatch={handleMatch} 
+              filters={filters}
+              onProfilesCountChange={setProfilesCount}
+            />
           </TabsContent>
 
           {/* Nearby Tab */}

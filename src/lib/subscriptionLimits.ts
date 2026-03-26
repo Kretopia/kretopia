@@ -8,7 +8,7 @@
 
 import type { AccountType } from "./subscriptionConfig";
 
-export type SubscriptionTier = "free" | "pro" | "enterprise" | "founder";
+export type SubscriptionTier = "free" | "pro" | "enterprise" | "founder" | "brand_pro" | "brand_enterprise";
 
 export interface TierLimits {
   swipesPerDay: number; // -1 = unlimited
@@ -191,6 +191,42 @@ const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasCampaignAnalytics: true,
     hasScheduledSends: true,
   },
+  brand_pro: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: 3,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+    hasCampaignAnalytics: false,
+    hasScheduledSends: false,
+  },
+  brand_enterprise: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: -1,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+    hasCampaignAnalytics: true,
+    hasScheduledSends: true,
+  },
 };
 
 const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
@@ -266,6 +302,42 @@ const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasCampaignAnalytics: true,
     hasScheduledSends: true,
   },
+  brand_pro: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: 3,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+    hasCampaignAnalytics: false,
+    hasScheduledSends: false,
+  },
+  brand_enterprise: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: -1,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+    hasCampaignAnalytics: true,
+    hasScheduledSends: true,
+  },
 };
 
 /** Legacy flat export for backward compatibility (defaults to individual) */
@@ -282,7 +354,7 @@ export const getTierLimits = (
   tier: SubscriptionTier,
   accountType: AccountType = "individual"
 ): TierLimits => {
-  const effectiveTier = tier === "founder" ? "enterprise" : tier;
+  const effectiveTier = tier === "founder" ? "enterprise" : tier === "brand_pro" ? "pro" : tier === "brand_enterprise" ? "enterprise" : tier;
   const limitsMap = accountType === "company" ? COMPANY_LIMITS : INDIVIDUAL_LIMITS;
   return limitsMap[effectiveTier];
 };
@@ -334,6 +406,8 @@ export const getTierDisplayName = (tier: SubscriptionTier): string => {
     pro: "Pro",
     enterprise: "Enterprise",
     founder: "Founder Circle ⭕",
+    brand_pro: "Brand Pro",
+    brand_enterprise: "Brand Enterprise",
   };
   return names[tier];
 };

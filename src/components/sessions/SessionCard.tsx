@@ -225,7 +225,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
 
         {isPast && (
           <Badge variant="outline" className="w-full justify-center">
-            Session ended
+            Event ended
           </Badge>
         )}
       </CardContent>

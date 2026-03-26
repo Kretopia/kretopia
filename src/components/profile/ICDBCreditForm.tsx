@@ -10,8 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2 } from "lucide-react";
+import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { parseMediaUrl } from "@/lib/mediaUtils";
 
 const PROJECT_TYPES = [
   { label: "Film & TV", value: "film_tv", items: [
@@ -92,6 +94,11 @@ interface CollaboratorResult {
   role: string | null;
 }
 
+interface ExternalCollaborator {
+  name: string;
+  email: string;
+}
+
 interface WebCreditResult {
   title: string;
   type: string;
@@ -116,9 +123,11 @@ type FormStep = "search" | "details";
 export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCreditFormProps) {
   const [step, setStep] = useState<FormStep>("search");
   const [saving, setSaving] = useState(false);
+  const [showMore, setShowMore] = useState(false);
   
-  // AI Search state
+  // Search state
   const [searchQuery, setSearchQuery] = useState("");
+  const [linkInput, setLinkInput] = useState("");
   const [searching, setSearching] = useState(false);
   const [webResults, setWebResults] = useState<WebCreditResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -128,6 +137,11 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
   const [collabResults, setCollabResults] = useState<CollaboratorResult[]>([]);
   const [searchingCollabs, setSearchingCollabs] = useState(false);
   const [selectedCollaborators, setSelectedCollaborators] = useState<CollaboratorResult[]>([]);
+  
+  // External collaborators (Credit Chains)
+  const [externalCollabs, setExternalCollabs] = useState<ExternalCollaborator[]>([]);
+  const [extName, setExtName] = useState("");
+  const [extEmail, setExtEmail] = useState("");
 
   const [form, setForm] = useState({
     project_name: "",
@@ -145,16 +159,34 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
-  // AI-powered web search
-  const handleAISearch = useCallback(async () => {
-    if (!searchQuery.trim() || searchQuery.length < 2) return;
+  // Detect if input is a URL
+  const isUrl = (str: string) => {
+    try { new URL(str); return true; } catch { return false; }
+  };
+
+  // Detect platform from URL
+  const detectPlatformFromUrl = (url: string): { platform: string; type: string } => {
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return { platform: 'YouTube', type: 'youtube_series' };
+    if (url.includes('spotify.com')) return { platform: 'Spotify', type: 'single' };
+    if (url.includes('soundcloud.com')) return { platform: 'SoundCloud', type: 'single' };
+    if (url.includes('vimeo.com')) return { platform: 'Vimeo', type: 'film' };
+    if (url.includes('imdb.com')) return { platform: 'IMDb', type: 'film' };
+    if (url.includes('behance.net')) return { platform: 'Behance', type: 'graphic_design' };
+    if (url.includes('tiktok.com')) return { platform: 'TikTok', type: 'ugc_campaign' };
+    if (url.includes('instagram.com')) return { platform: 'Instagram', type: 'ugc_campaign' };
+    return { platform: '', type: '' };
+  };
+
+  // AI-powered web search (works for both text queries and URLs)
+  const handleSearch = useCallback(async (query?: string) => {
+    const q = query || searchQuery;
+    if (!q.trim() || q.length < 2) return;
     setSearching(true);
     setHasSearched(true);
     try {
       const { data, error } = await supabase.functions.invoke('search-credits-web', {
-        body: { query: searchQuery },
+        body: { query: q },
       });
-
       if (error) throw error;
       setWebResults(data?.results || []);
     } catch (err) {
@@ -166,27 +198,61 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     }
   }, [searchQuery]);
 
+  // Handle link paste — detect platform, auto-search, auto-fill URL
+  const handleLinkPaste = useCallback(async (url: string) => {
+    setLinkInput(url);
+    if (!isUrl(url)) return;
+    
+    const { platform, type } = detectPlatformFromUrl(url);
+    update("url", url);
+    if (platform) update("platform", platform);
+    if (type) update("project_type", type);
+    
+    // Search AI with the URL
+    setSearching(true);
+    setHasSearched(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('search-credits-web', {
+        body: { query: url },
+      });
+      if (error) throw error;
+      const results = data?.results || [];
+      setWebResults(results);
+      
+      // If exactly one result, auto-claim it
+      if (results.length === 1) {
+        claimResult(results[0]);
+        toast.success("Project detected! Review the details below.");
+      }
+    } catch {
+      toast.error('Could not analyze this link');
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
   // Claim a web result — auto-fill form
   const claimResult = (result: WebCreditResult) => {
-    setForm({
+    setForm(prev => ({
+      ...prev,
       project_name: result.title,
-      project_type: result.type || "",
-      role: result.role_suggestion || "",
+      project_type: result.type || prev.project_type || "",
+      role: result.role_suggestion || prev.role || "",
       description: result.description || "",
       start_date: result.year ? `${result.year}-01-01` : "",
       end_date: "",
       location: result.location || "",
-      platform: result.platform || "",
-      url: result.url || "",
+      platform: result.platform || prev.platform || "",
+      url: result.url || prev.url || "",
       client_brand: result.client_brand || "",
       credit_category: result.type || "",
-    });
+    }));
     setStep("details");
   };
 
   // Go to manual entry
   const goManual = () => {
-    setForm(prev => ({ ...prev, project_name: searchQuery }));
+    setForm(prev => ({ ...prev, project_name: searchQuery || prev.project_name }));
     setStep("details");
   };
 
@@ -203,6 +269,14 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
       setCollabResults((data || []).filter(p => !selectedCollaborators.find(s => s.user_id === p.user_id)));
     } catch { /* ignore */ }
     setSearchingCollabs(false);
+  };
+
+  const addExternalCollab = () => {
+    if (!extName.trim() || !extEmail.trim()) return;
+    if (!/\S+@\S+\.\S+/.test(extEmail)) { toast.error("Enter a valid email"); return; }
+    setExternalCollabs(prev => [...prev, { name: extName.trim(), email: extEmail.trim() }]);
+    setExtName("");
+    setExtEmail("");
   };
 
   const handleSubmit = async () => {
@@ -242,6 +316,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
       if (error) throw error;
 
       if (insertedData) {
+        // AI verification
         supabase.functions.invoke('verify-credit', {
           body: {
             credit_id: insertedData.id,
@@ -252,8 +327,9 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
           },
         }).catch(err => console.log('AI verification queued:', err));
 
+        // Platform collaborator endorsements
         for (const collab of selectedCollaborators) {
-          const { error: endorseErr } = await supabase.from('credit_endorsements').insert({
+          await supabase.from('credit_endorsements').insert({
             credit_id: insertedData.id,
             requested_by: userId,
             endorser_id: collab.user_id,
@@ -261,7 +337,32 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
             status: 'pending',
             relationship: 'collaborator',
           });
-          if (endorseErr) console.log('Endorsement request error:', endorseErr);
+        }
+
+        // Credit Chains — invite external collaborators
+        if (externalCollabs.length > 0) {
+          for (const ext of externalCollabs) {
+            // Create endorsement with email (no endorser_id since they're external)
+            await supabase.from('credit_endorsements').insert({
+              credit_id: insertedData.id,
+              requested_by: userId,
+              endorser_name: ext.name,
+              endorser_email: ext.email,
+              status: 'pending',
+              relationship: 'collaborator',
+            });
+          }
+          
+          // Send invite emails via edge function
+          supabase.functions.invoke('send-credit-invite', {
+            body: {
+              credit_id: insertedData.id,
+              project_name: form.project_name,
+              role: form.role,
+              inviter_id: userId,
+              external_collaborators: externalCollabs,
+            },
+          }).catch(err => console.log('Credit chain invites queued:', err));
         }
       }
 
@@ -280,16 +381,21 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
   const resetForm = () => {
     setStep("search");
     setSearchQuery("");
+    setLinkInput("");
     setWebResults([]);
     setHasSearched(false);
+    setShowMore(false);
     setForm({
       project_name: "", project_type: "", role: "", description: "",
       start_date: "", end_date: "", location: "", platform: "",
       url: "", client_brand: "", credit_category: "",
     });
     setSelectedCollaborators([]);
+    setExternalCollabs([]);
     setCollabSearch("");
     setCollabResults([]);
+    setExtName("");
+    setExtEmail("");
   };
 
   return (
@@ -308,8 +414,8 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
           </DialogTitle>
           <DialogDescription className="text-xs">
             {step === "search"
-              ? "Search for your work across platforms — we'll auto-fill the details"
-              : "Review and complete your credit details"
+              ? "Paste a link or search — we'll fill in the details"
+              : "Confirm your role and details"
             }
           </DialogDescription>
         </DialogHeader>
@@ -317,49 +423,69 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
         <ScrollArea className="max-h-[70vh] px-6 pb-6">
           {step === "search" ? (
             <div className="space-y-4">
-              {/* Unified AI Search */}
-              <div className="space-y-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAISearch()}
-                    placeholder="Search any project, song, film, event..."
-                    className="pl-9 pr-20 h-11 text-sm"
-                    autoFocus
-                  />
-                  <Button
-                    size="sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 text-xs gap-1"
-                    onClick={handleAISearch}
-                    disabled={searching || searchQuery.length < 2}
-                  >
-                    {searching ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-3.5 w-3.5" />
-                    )}
-                    Search
-                  </Button>
-                </div>
-                <p className="text-[10px] text-muted-foreground">
-                  Searches IMDb, Spotify, YouTube, Discogs, and more via AI
-                </p>
+              {/* Paste a Link */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium flex items-center gap-1">
+                  <Link2 className="h-3 w-3" /> Paste a link
+                </Label>
+                <Input
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  onPaste={(e) => {
+                    const pasted = e.clipboardData.getData('text');
+                    if (isUrl(pasted)) {
+                      e.preventDefault();
+                      handleLinkPaste(pasted);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && isUrl(linkInput)) handleLinkPaste(linkInput);
+                  }}
+                  placeholder="YouTube, Spotify, IMDb, Behance URL..."
+                  className="h-10 text-sm"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">or search</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              {/* AI Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="Search any project, song, film, event..."
+                  className="pl-9 pr-20 h-10 text-sm"
+                />
+                <Button
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 text-xs gap-1"
+                  onClick={() => handleSearch()}
+                  disabled={searching || searchQuery.length < 2}
+                >
+                  {searching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  Search
+                </Button>
               </div>
 
               {/* Results */}
               {searching && (
-                <div className="flex items-center justify-center py-8 gap-2">
+                <div className="flex items-center justify-center py-6 gap-2">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
                   <span className="text-sm text-muted-foreground">Searching platforms...</span>
                 </div>
               )}
 
               {!searching && webResults.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <p className="text-xs font-medium text-muted-foreground">
-                    {webResults.length} result{webResults.length !== 1 ? 's' : ''} found — tap to claim
+                    {webResults.length} result{webResults.length !== 1 ? 's' : ''} — tap to claim
                   </p>
                   {webResults.map((result, i) => (
                     <Card
@@ -370,18 +496,11 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold truncate">{result.title}</p>
-                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
                             {result.year && <span>{result.year}</span>}
-                            {result.platform && (
-                              <Badge variant="secondary" className="text-[9px] h-4">{result.platform}</Badge>
-                            )}
-                            {result.type && (
-                              <Badge variant="outline" className="text-[9px] h-4 capitalize">{result.type.replace(/_/g, ' ')}</Badge>
-                            )}
+                            {result.platform && <Badge variant="secondary" className="text-[9px] h-4">{result.platform}</Badge>}
+                            {result.type && <Badge variant="outline" className="text-[9px] h-4 capitalize">{result.type.replace(/_/g, ' ')}</Badge>}
                           </div>
-                          {result.description && (
-                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">{result.description}</p>
-                          )}
                           {result.role_suggestion && (
                             <p className="text-[11px] text-primary mt-0.5">Suggested role: {result.role_suggestion}</p>
                           )}
@@ -394,43 +513,36 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
               )}
 
               {!searching && hasSearched && webResults.length === 0 && (
-                <div className="text-center py-6">
-                  <p className="text-sm text-muted-foreground mb-1">No results found</p>
-                  <p className="text-xs text-muted-foreground">You can still add it manually</p>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">No results found — add it manually</p>
                 </div>
               )}
 
-              {/* Manual entry option */}
-              <div className="border-t pt-3">
-                <Button
-                  variant="outline"
-                  className="w-full text-sm gap-2"
-                  onClick={goManual}
-                >
-                  <Plus className="h-4 w-4" />
-                  {searchQuery ? `Add "${searchQuery}" manually` : "Add credit manually"}
-                </Button>
-              </div>
+              {/* Manual entry */}
+              <Button variant="outline" className="w-full text-sm gap-2" onClick={goManual}>
+                <Plus className="h-4 w-4" />
+                {searchQuery ? `Add "${searchQuery}" manually` : "Add credit manually"}
+              </Button>
             </div>
           ) : (
-            /* DETAILS STEP */
+            /* DETAILS STEP — simplified */
             <div className="space-y-4">
-              {/* Back button */}
               <Button variant="ghost" size="sm" className="h-7 text-xs -ml-2" onClick={() => setStep("search")}>
-                ← Back to search
+                ← Back
               </Button>
 
-              {/* Row 1: Project Name + Type */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Project Title *</Label>
-                  <Input
-                    value={form.project_name}
-                    onChange={(e) => update("project_name", e.target.value)}
-                    placeholder="e.g., Carnival 2025 Main Stage"
-                    className="h-9 text-sm"
-                  />
-                </div>
+              {/* Essential fields only */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Project Title *</Label>
+                <Input value={form.project_name} onChange={(e) => update("project_name", e.target.value)} placeholder="e.g., Carnival 2025 Main Stage" className="h-9 text-sm" />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Your Role *</Label>
+                <Input value={form.role} onChange={(e) => update("role", e.target.value)} placeholder="e.g., Stage Manager, Director, Producer" className="h-9 text-sm" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Project Type</Label>
                   <Select value={form.project_type} onValueChange={(v) => update("project_type", v)}>
@@ -449,78 +561,61 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              {/* Row 2: Role */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Your Role *</Label>
-                <Input
-                  value={form.role}
-                  onChange={(e) => update("role", e.target.value)}
-                  placeholder="e.g., Stage Manager, Director, Lead Vocalist"
-                  className="h-9 text-sm"
-                />
-              </div>
-
-              {/* Row 3: Description */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Description</Label>
-                <Textarea
-                  value={form.description}
-                  onChange={(e) => update("description", e.target.value)}
-                  placeholder="Brief description of your contribution..."
-                  className="min-h-[60px] text-sm resize-none"
-                  maxLength={500}
-                />
-              </div>
-
-              {/* Row 4: Dates */}
-              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> Start Date
+                    <Calendar className="h-3 w-3" /> Year / Date
                   </Label>
                   <Input type="date" value={form.start_date} onChange={(e) => update("start_date", e.target.value)} className="h-9 text-sm" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> End Date
-                  </Label>
-                  <Input type="date" value={form.end_date} onChange={(e) => update("end_date", e.target.value)} className="h-9 text-sm" />
-                </div>
               </div>
 
-              {/* Row 5: Location + Venue */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Location
-                  </Label>
-                  <Input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="e.g., Port of Spain, Trinidad" className="h-9 text-sm" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Venue / Platform</Label>
-                  <Input value={form.platform} onChange={(e) => update("platform", e.target.value)} placeholder="e.g., Queen's Hall, Netflix" className="h-9 text-sm" />
-                </div>
-              </div>
+              {/* Expandable additional fields */}
+              <Collapsible open={showMore} onOpenChange={setShowMore}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full text-xs gap-1 text-muted-foreground">
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+                    {showMore ? 'Less details' : 'More details (optional)'}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3 mt-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Description</Label>
+                    <Textarea
+                      value={form.description}
+                      onChange={(e) => update("description", e.target.value)}
+                      placeholder="Brief description of your contribution..."
+                      className="min-h-[50px] text-sm resize-none"
+                      maxLength={500}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium flex items-center gap-1"><MapPin className="h-3 w-3" /> Location</Label>
+                      <Input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="e.g., Port of Spain" className="h-9 text-sm" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Platform / Venue</Label>
+                      <Input value={form.platform} onChange={(e) => update("platform", e.target.value)} placeholder="e.g., Netflix, Queen's Hall" className="h-9 text-sm" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium flex items-center gap-1"><Building2 className="h-3 w-3" /> Client / Brand</Label>
+                      <Input value={form.client_brand} onChange={(e) => update("client_brand", e.target.value)} placeholder="e.g., Coca-Cola" className="h-9 text-sm" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium flex items-center gap-1"><Link2 className="h-3 w-3" /> Link</Label>
+                      <Input value={form.url} onChange={(e) => update("url", e.target.value)} placeholder="https://..." className="h-9 text-sm" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium flex items-center gap-1"><Calendar className="h-3 w-3" /> End Date</Label>
+                    <Input type="date" value={form.end_date} onChange={(e) => update("end_date", e.target.value)} className="h-9 text-sm" />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
-              {/* Row 6: Client + URL */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium flex items-center gap-1">
-                    <Building2 className="h-3 w-3" /> Client / Brand
-                  </Label>
-                  <Input value={form.client_brand} onChange={(e) => update("client_brand", e.target.value)} placeholder="e.g., Coca-Cola, NBC" className="h-9 text-sm" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium flex items-center gap-1">
-                    <Link2 className="h-3 w-3" /> External Link
-                  </Label>
-                  <Input value={form.url} onChange={(e) => update("url", e.target.value)} placeholder="https://..." className="h-9 text-sm" />
-                </div>
-              </div>
-
-              {/* Collaborators */}
+              {/* Collaborators — platform users */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium flex items-center gap-1">
                   <Users className="h-3 w-3" /> Tag Collaborators
@@ -535,10 +630,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                           <AvatarFallback className="text-[8px]">{c.full_name?.[0]}</AvatarFallback>
                         </Avatar>
                         {c.full_name?.split(' ')[0]}
-                        <button
-                          onClick={() => setSelectedCollaborators(prev => prev.filter(s => s.user_id !== c.user_id))}
-                          className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
-                        >
+                        <button onClick={() => setSelectedCollaborators(prev => prev.filter(s => s.user_id !== c.user_id))} className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5">
                           <X className="h-3 w-3" />
                         </button>
                       </Badge>
@@ -550,18 +642,15 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
                     value={collabSearch}
-                    onChange={(e) => {
-                      setCollabSearch(e.target.value);
-                      searchCollaborators(e.target.value);
-                    }}
-                    placeholder="Search by name..."
+                    onChange={(e) => { setCollabSearch(e.target.value); searchCollaborators(e.target.value); }}
+                    placeholder="Search platform users..."
                     className="h-9 text-sm pl-8"
                   />
                   {searchingCollabs && <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin" />}
                 </div>
 
                 {collabResults.length > 0 && (
-                  <div className="border rounded-md divide-y max-h-32 overflow-y-auto">
+                  <div className="border rounded-md divide-y max-h-28 overflow-y-auto">
                     {collabResults.map(p => (
                       <button
                         key={p.user_id}
@@ -585,10 +674,42 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                     ))}
                   </div>
                 )}
-                <p className="text-[10px] text-muted-foreground">
-                  Tagged collaborators receive a verification request to confirm this credit
-                </p>
               </div>
+
+              {/* Credit Chains — invite external collaborators */}
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full text-xs gap-1 text-muted-foreground">
+                    <Mail className="h-3.5 w-3.5" />
+                    Invite someone not on ThriveIN
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 mt-2">
+                  {externalCollabs.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {externalCollabs.map((ext, i) => (
+                        <Badge key={i} variant="outline" className="gap-1 pr-1 text-xs">
+                          <Mail className="h-3 w-3" />
+                          {ext.name}
+                          <button onClick={() => setExternalCollabs(prev => prev.filter((_, idx) => idx !== i))} className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-5 gap-2">
+                    <Input value={extName} onChange={(e) => setExtName(e.target.value)} placeholder="Name" className="h-8 text-xs col-span-2" />
+                    <Input value={extEmail} onChange={(e) => setExtEmail(e.target.value)} placeholder="Email" className="h-8 text-xs col-span-2" />
+                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={addExternalCollab} disabled={!extName || !extEmail}>
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    They'll receive an email + WhatsApp invite to claim their credit on ThriveIN
+                  </p>
+                </CollapsibleContent>
+              </Collapsible>
 
               {/* Submit */}
               <Button onClick={handleSubmit} disabled={saving} className="w-full">

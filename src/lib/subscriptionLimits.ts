@@ -95,8 +95,8 @@ export function getMonthlyCapForFeature(
   feature: FreeTierFeature,
   tier: SubscriptionTier
 ): number {
-  if (tier === "enterprise" || tier === "founder") return ENTERPRISE_TIER_MONTHLY_CAPS[feature];
-  if (tier === "pro") return PRO_TIER_MONTHLY_CAPS[feature];
+  if (tier === "enterprise" || tier === "founder" || tier === "brand_enterprise") return ENTERPRISE_TIER_MONTHLY_CAPS[feature];
+  if (tier === "pro" || tier === "brand_pro") return PRO_TIER_MONTHLY_CAPS[feature];
   return FREE_TIER_MONTHLY_CAPS[feature];
 }
 

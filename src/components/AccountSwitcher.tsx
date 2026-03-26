@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 interface AccountSwitcherProps {
   currentAccountType: "individual" | "company";
   onSwitch?: () => void;
+  onManagerModeChange?: (enabled: boolean) => void;
   variant?: "menu" | "settings";
 }
 

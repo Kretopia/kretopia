@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, Clock, Users, Loader2 } from "lucide-react";
+import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { LocationSearchInput } from "./LocationSearchInput";
+import { Switch } from "@/components/ui/switch";
 
 interface CreateSessionDialogProps {
   open: boolean;
@@ -22,15 +23,17 @@ interface CreateSessionDialogProps {
   defaultLocation?: { lat: number; lng: number };
 }
 
-const SESSION_CATEGORIES = [
-  { value: 'music', label: '🎵 Music Session' },
-  { value: 'film', label: '🎬 Film Shoot' },
-  { value: 'photo', label: '📸 Photo Session' },
-  { value: 'art', label: '🎨 Art Collab' },
-  { value: 'podcast', label: '🎙️ Podcast Recording' },
+const EVENT_CATEGORIES = [
+  { value: 'music', label: '🎵 Music Jam / Concert' },
+  { value: 'film', label: '🎬 Film Shoot / Screening' },
+  { value: 'photo', label: '📸 Photo Walk / Shoot' },
+  { value: 'art', label: '🎨 Art Collab / Exhibition' },
+  { value: 'podcast', label: '🎙️ Podcast / Live Recording' },
   { value: 'content', label: '📱 Content Creation' },
-  { value: 'workshop', label: '📚 Workshop' },
-  { value: 'networking', label: '🤝 Networking' },
+  { value: 'workshop', label: '📚 Workshop / Masterclass' },
+  { value: 'networking', label: '🤝 Networking / Meetup' },
+  { value: 'festival', label: '🎪 Festival / Fair' },
+  { value: 'showcase', label: '🌟 Showcase / Open Mic' },
   { value: 'general', label: '✨ General Creative' },
 ];
 
@@ -55,6 +58,10 @@ export const CreateSessionDialog = ({
     max_participants: 10,
     latitude: defaultLocation?.lat || null,
     longitude: defaultLocation?.lng || null,
+    is_ticketed: false,
+    ticket_price: 0,
+    ticket_currency: 'USD',
+    event_type: 'session' as 'session' | 'event',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,14 +87,18 @@ export const CreateSessionDialog = ({
         start_time: startTime.toISOString(),
         max_participants: formData.max_participants,
         is_public: true,
-        status: 'upcoming'
-      });
+        status: 'upcoming',
+        is_ticketed: formData.is_ticketed,
+        ticket_price: formData.is_ticketed ? formData.ticket_price : 0,
+        ticket_currency: formData.ticket_currency,
+        event_type: formData.event_type,
+      } as any);
 
       if (error) throw error;
 
       toast({
-        title: "Session created! 🎉",
-        description: "Others can now find and join your creative session",
+        title: "Event created! 🎉",
+        description: "Others can now find and join your event",
       });
 
       onOpenChange(false);
@@ -103,6 +114,10 @@ export const CreateSessionDialog = ({
         max_participants: 10,
         latitude: null,
         longitude: null,
+        is_ticketed: false,
+        ticket_price: 0,
+        ticket_currency: 'USD',
+        event_type: 'session',
       });
       setDate(undefined);
     } catch (error: any) {
@@ -153,19 +168,41 @@ export const CreateSessionDialog = ({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            ✨ Create a Session
+            ✨ Create an Event
           </DialogTitle>
           <DialogDescription>
-            Host a creative session and invite other creators to collaborate
+            Host a meetup, jam session, workshop, or event for creators
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Event Type Toggle */}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={formData.event_type === 'session' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => setFormData(prev => ({ ...prev, event_type: 'session' }))}
+            >
+              Jam Session
+            </Button>
+            <Button
+              type="button"
+              variant={formData.event_type === 'event' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}
+            >
+              Event / Meetup
+            </Button>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"
-              placeholder="e.g., Sunset Photo Walk, Music Jam"
+              placeholder={formData.event_type === 'event' ? "e.g., Creator Meetup Bali, Open Mic Night" : "e.g., Sunset Photo Walk, Music Jam"}
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               required
@@ -182,7 +219,7 @@ export const CreateSessionDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SESSION_CATEGORIES.map(cat => (
+                {EVENT_CATEGORIES.map(cat => (
                   <SelectItem key={cat.value} value={cat.value}>
                     {cat.label}
                   </SelectItem>
@@ -295,6 +332,54 @@ export const CreateSessionDialog = ({
             </div>
           </div>
 
+          {/* Ticketing */}
+          <div className="space-y-3 rounded-lg border p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Ticket className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="ticketed" className="text-sm font-medium">Paid Event / Tickets</Label>
+              </div>
+              <Switch
+                id="ticketed"
+                checked={formData.is_ticketed}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_ticketed: checked }))}
+              />
+            </div>
+            {formData.is_ticketed && (
+              <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="space-y-1">
+                  <Label className="text-xs">Price</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    placeholder="0.00"
+                    value={formData.ticket_price || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, ticket_price: parseFloat(e.target.value) || 0 }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Currency</Label>
+                  <Select
+                    value={formData.ticket_currency}
+                    onValueChange={(v) => setFormData(prev => ({ ...prev, ticket_currency: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="EUR">EUR (€)</SelectItem>
+                      <SelectItem value="GBP">GBP (£)</SelectItem>
+                      <SelectItem value="IDR">IDR (Rp)</SelectItem>
+                      <SelectItem value="TTD">TTD ($)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-4">
             <Button 
               type="button" 
@@ -313,7 +398,7 @@ export const CreateSessionDialog = ({
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Create Session
+              Create {formData.event_type === 'event' ? 'Event' : 'Session'}
             </Button>
           </div>
         </form>

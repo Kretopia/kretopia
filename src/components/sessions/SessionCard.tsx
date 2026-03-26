@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Calendar, Clock, Users, Check, Loader2 } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, Check, Loader2, Ticket } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,10 @@ interface Session {
   creator_name: string;
   creator_avatar?: string;
   created_by: string;
+  is_ticketed?: boolean;
+  ticket_price?: number;
+  ticket_currency?: string;
+  event_type?: string;
 }
 
 interface SessionCardProps {
@@ -41,6 +45,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   workshop: '📚 Workshop',
   networking: '🤝 Networking',
   content: '📱 Content',
+  festival: '🎪 Festival',
+  showcase: '🌟 Showcase',
   general: '✨ Creative',
 };
 
@@ -55,7 +61,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
     if (!user) {
       toast({
         title: "Not authenticated",
-        description: "Please log in to join sessions",
+        description: "Please log in to join events",
         variant: "destructive",
       });
       return;
@@ -72,7 +78,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
           .eq('user_id', user.id);
         
         setParticipation(null);
-        toast({ title: "Left session" });
+        toast({ title: "Left event" });
       } else {
         // Join as "going"
         await supabase
@@ -84,7 +90,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
           });
         
         setParticipation('going');
-        toast({ title: "Joined session! 🎉" });
+        toast({ title: "Joined! 🎉" });
       }
       onJoin?.();
     } catch (error) {
@@ -158,6 +164,18 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
             </div>
           )}
           
+          {session.is_ticketed && session.ticket_price && session.ticket_price > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <Ticket className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-primary">
+                {session.ticket_currency || 'USD'} {session.ticket_price.toFixed(2)}
+              </span>
+              <Badge variant="outline" className="text-xs ml-auto border-primary/30 text-primary">
+                Ticketed
+              </Badge>
+            </div>
+          )}
+          
           <div className="flex items-center gap-2 text-sm">
             <Users className="h-4 w-4 text-muted-foreground" />
             <span>
@@ -188,8 +206,13 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
               </>
             ) : isFull ? (
               "Full"
+            ) : session.is_ticketed && session.ticket_price ? (
+              <>
+                <Ticket className="h-4 w-4 mr-2" />
+                Get Ticket — {session.ticket_currency || '$'}{session.ticket_price}
+              </>
             ) : (
-              "Join Session"
+              "Join"
             )}
           </Button>
         )}
@@ -202,7 +225,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
 
         {isPast && (
           <Badge variant="outline" className="w-full justify-center">
-            Session ended
+            Event ended
           </Badge>
         )}
       </CardContent>

@@ -22,6 +22,10 @@ interface Session {
   creator_name: string;
   creator_avatar?: string;
   created_by: string;
+  is_ticketed?: boolean;
+  ticket_price?: number;
+  ticket_currency?: string;
+  event_type?: string;
 }
 
 interface SessionsSectionProps {
@@ -162,7 +166,7 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold text-lg">Creative Sessions</h3>
+          <h3 className="font-semibold text-lg">Events & Sessions</h3>
         </div>
         <Button 
           size="sm" 
@@ -170,7 +174,7 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
           onClick={() => setShowCreateDialog(true)}
         >
           <Plus className="h-4 w-4 mr-1" />
-          Host Session
+          Host Event
         </Button>
       </div>
 
@@ -198,13 +202,13 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
             <Card>
               <CardContent className="py-8 text-center">
                 <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="font-medium mb-2">No sessions nearby</p>
+                <p className="font-medium mb-2">No events nearby</p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Be the first to host a creative session in your area!
+                  Be the first to host a creative meetup, jam session, or event in your area!
                 </p>
                 <Button variant="gradient" onClick={() => setShowCreateDialog(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Host a Session
+                  Host an Event
                 </Button>
               </CardContent>
             </Card>
@@ -227,9 +231,9 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
             <Card>
               <CardContent className="py-8 text-center">
                 <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="font-medium mb-2">No sessions joined yet</p>
+                <p className="font-medium mb-2">No events joined yet</p>
                 <p className="text-sm text-muted-foreground">
-                  Explore nearby sessions to find creative collaborations to join
+                  Explore nearby events and sessions to find creative collaborations
                 </p>
               </CardContent>
             </Card>
@@ -252,13 +256,13 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
             <Card>
               <CardContent className="py-8 text-center">
                 <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="font-medium mb-2">No sessions hosted yet</p>
+                <p className="font-medium mb-2">No events hosted yet</p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Create your first session and invite others to collaborate
+                  Create your first event, meetup, or jam session and invite others
                 </p>
                 <Button variant="gradient" onClick={() => setShowCreateDialog(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Host a Session
+                  Host an Event
                 </Button>
               </CardContent>
             </Card>

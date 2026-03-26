@@ -964,17 +964,40 @@ const Auth = () => {
             {/* Step 1: Account Type Selection */}
             {signupStep === 1 && (
               <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
-                <div className="rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-5 border border-primary/20">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-lg bg-primary/20 p-2 shrink-0">
-                      <Sparkles className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm mb-1">Smart Matching for Creators</h4>
-                      <p className="text-xs text-muted-foreground">
-                        Swipe through verified creators with real portfolios. Match instantly and start collaborating.
-                      </p>
-                    </div>
+                {/* Quick Social Signup */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 gap-2"
+                    onClick={handleGoogleSignIn}
+                    disabled={googleLoading}
+                  >
+                    {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Chrome className="h-4 w-4" />}
+                    Google
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 gap-2"
+                    onClick={handleAppleSignIn}
+                    disabled={appleLoading}
+                  >
+                    {appleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                      </svg>
+                    )}
+                    Apple
+                  </Button>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">or sign up with email</span>
                   </div>
                 </div>
 
@@ -1021,25 +1044,14 @@ const Auth = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSignupStep(1)}
-                    className="flex-1"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleNextStep}
-                    variant="gradient"
-                    className="flex-1"
-                  >
-                    Continue
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleNextStep}
+                  variant="gradient"
+                  className="w-full"
+                >
+                  Continue with Email
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             )}
 

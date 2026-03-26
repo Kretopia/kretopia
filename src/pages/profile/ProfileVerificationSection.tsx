@@ -65,7 +65,6 @@ export const ProfileVerificationSection = ({
           breakdown={(profile as any).verification_breakdown || undefined}
           onVerificationComplete={() => onRefresh()}
         />
-        <PlatformConnectionCard onCreditsImported={() => onRefresh()} />
       </div>
     </>
   );

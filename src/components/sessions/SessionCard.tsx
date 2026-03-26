@@ -78,7 +78,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
           .eq('user_id', user.id);
         
         setParticipation(null);
-        toast({ title: "Left session" });
+        toast({ title: "Left event" });
       } else {
         // Join as "going"
         await supabase

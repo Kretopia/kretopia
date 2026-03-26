@@ -8,7 +8,7 @@
 
 import type { AccountType } from "./subscriptionConfig";
 
-export type SubscriptionTier = "free" | "pro" | "enterprise" | "founder";
+export type SubscriptionTier = "free" | "pro" | "enterprise" | "founder" | "brand_pro" | "brand_enterprise";
 
 export interface TierLimits {
   swipesPerDay: number; // -1 = unlimited

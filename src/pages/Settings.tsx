@@ -75,8 +75,6 @@ const Settings = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
-  const [isManagerMode, setIsManagerMode] = useState(false);
-  const [managerToggling, setManagerToggling] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   // PWA Install

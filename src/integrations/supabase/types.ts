@@ -3329,12 +3329,14 @@ export type Database = {
           id: string
           image_url: string | null
           is_guest_post: boolean | null
+          is_priority: boolean | null
           location: string | null
           location_city: string | null
           location_country: string | null
           min_followers: number | null
           platform_requirements: string[] | null
           posted_by_manager_id: string | null
+          priority_expires_at: string | null
           requirements: string | null
           skills: string[] | null
           status: string | null
@@ -3363,12 +3365,14 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_guest_post?: boolean | null
+          is_priority?: boolean | null
           location?: string | null
           location_city?: string | null
           location_country?: string | null
           min_followers?: number | null
           platform_requirements?: string[] | null
           posted_by_manager_id?: string | null
+          priority_expires_at?: string | null
           requirements?: string | null
           skills?: string[] | null
           status?: string | null
@@ -3397,12 +3401,14 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_guest_post?: boolean | null
+          is_priority?: boolean | null
           location?: string | null
           location_city?: string | null
           location_country?: string | null
           min_followers?: number | null
           platform_requirements?: string[] | null
           posted_by_manager_id?: string | null
+          priority_expires_at?: string | null
           requirements?: string | null
           skills?: string[] | null
           status?: string | null
@@ -4336,6 +4342,7 @@ export type Database = {
           badge: Database["public"]["Enums"]["user_badge"] | null
           behance_url: string | null
           bio: string | null
+          boost_expires_at: string | null
           calendly_url: string | null
           claim_token: string | null
           claimed_at: string | null
@@ -4356,6 +4363,7 @@ export type Database = {
           credit_score: number | null
           daily_swipes: number | null
           discogs_verified: boolean | null
+          double_xp_expires_at: string | null
           email_verified: boolean
           full_name: string
           google_maps_place_id: string | null
@@ -4474,6 +4482,7 @@ export type Database = {
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          boost_expires_at?: string | null
           calendly_url?: string | null
           claim_token?: string | null
           claimed_at?: string | null
@@ -4494,6 +4503,7 @@ export type Database = {
           credit_score?: number | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
+          double_xp_expires_at?: string | null
           email_verified?: boolean
           full_name: string
           google_maps_place_id?: string | null
@@ -4612,6 +4622,7 @@ export type Database = {
           badge?: Database["public"]["Enums"]["user_badge"] | null
           behance_url?: string | null
           bio?: string | null
+          boost_expires_at?: string | null
           calendly_url?: string | null
           claim_token?: string | null
           claimed_at?: string | null
@@ -4632,6 +4643,7 @@ export type Database = {
           credit_score?: number | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
+          double_xp_expires_at?: string | null
           email_verified?: boolean
           full_name?: string
           google_maps_place_id?: string | null

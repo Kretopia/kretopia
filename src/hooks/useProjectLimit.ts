@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 const FREE_MONTHLY_PROJECT_LIMIT = 1;
 
 export function useProjectLimit() {
   const { user, subscriptionInfo } = useAuth();
-  const isPro = subscriptionInfo.tier === 'pro' || subscriptionInfo.tier === 'enterprise' || subscriptionInfo.tier === 'founder';
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
   const [monthlyCount, setMonthlyCount] = useState(0);
   const [loading, setLoading] = useState(true);
 

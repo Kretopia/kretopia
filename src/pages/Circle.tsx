@@ -29,7 +29,7 @@ export default function Circle() {
   const [filters, setFilters] = useState<SwipeFiltersState>(DEFAULT_SWIPE_FILTERS);
   const [profilesCount, setProfilesCount] = useState(0);
   const [accountType, setAccountType] = useState<string>("individual");
-  const [connectMode, setConnectMode] = useState<"swipe" | "browse">("swipe");
+  
 
   // Redirect company accounts away from Circle
   useEffect(() => {

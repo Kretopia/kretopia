@@ -48,12 +48,12 @@ export const ProfileContentSections = ({
       {/* Pending verification requests */}
       <CreditVerificationPanel userId={profile.user_id} />
 
-      {/* Experience & Credits — Hero Position (IMDb-style) */}
+      {/* Experience & Credits — Hero Position (ICDB) */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-xl font-bold">Credits & Experience</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Your verified professional record — like IMDb, but for all creatives</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Your verified professional record — the Internet Creative Database</p>
           </div>
           {!hasAdvancedProfile && (
             <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
@@ -63,7 +63,7 @@ export const ProfileContentSections = ({
           )}
         </div>
         {hasAdvancedProfile ? (
-          <UnifiedWorkHistory 
+          <ICDBTimeline 
             userId={profile.user_id}
             isOwnProfile={true}
             onRefresh={onRefresh}

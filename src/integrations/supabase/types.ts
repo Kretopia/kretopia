@@ -1384,6 +1384,50 @@ export type Database = {
           },
         ]
       }
+      credit_ai_verifications: {
+        Row: {
+          ai_summary: string | null
+          confidence_score: number | null
+          credit_id: string
+          evidence_links: Json | null
+          id: string
+          last_checked_at: string
+          search_query: string | null
+          status: string
+          verified_at: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          confidence_score?: number | null
+          credit_id: string
+          evidence_links?: Json | null
+          id?: string
+          last_checked_at?: string
+          search_query?: string | null
+          status?: string
+          verified_at?: string
+        }
+        Update: {
+          ai_summary?: string | null
+          confidence_score?: number | null
+          credit_id?: string
+          evidence_links?: Json | null
+          id?: string
+          last_checked_at?: string
+          search_query?: string | null
+          status?: string
+          verified_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_ai_verifications_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: true
+            referencedRelation: "credits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_comments: {
         Row: {
           content: string
@@ -1419,12 +1463,68 @@ export type Database = {
           },
         ]
       }
+      credit_endorsements: {
+        Row: {
+          credit_id: string
+          endorser_email: string | null
+          endorser_id: string | null
+          endorser_name: string | null
+          id: string
+          relationship: string | null
+          requested_at: string
+          requested_by: string
+          responded_at: string | null
+          status: string
+          testimonial: string | null
+          token: string | null
+        }
+        Insert: {
+          credit_id: string
+          endorser_email?: string | null
+          endorser_id?: string | null
+          endorser_name?: string | null
+          id?: string
+          relationship?: string | null
+          requested_at?: string
+          requested_by: string
+          responded_at?: string | null
+          status?: string
+          testimonial?: string | null
+          token?: string | null
+        }
+        Update: {
+          credit_id?: string
+          endorser_email?: string | null
+          endorser_id?: string | null
+          endorser_name?: string | null
+          id?: string
+          relationship?: string | null
+          requested_at?: string
+          requested_by?: string
+          responded_at?: string | null
+          status?: string
+          testimonial?: string | null
+          token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_endorsements_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "credits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credits: {
         Row: {
+          ai_confidence: number | null
           collaborator_user_ids: string[] | null
           created_at: string
+          credit_category: string | null
           display_order: number | null
           embed_data: Json | null
+          endorsement_count: number | null
           id: string
           is_featured: boolean | null
           platform: string | null
@@ -1441,10 +1541,13 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          ai_confidence?: number | null
           collaborator_user_ids?: string[] | null
           created_at?: string
+          credit_category?: string | null
           display_order?: number | null
           embed_data?: Json | null
+          endorsement_count?: number | null
           id?: string
           is_featured?: boolean | null
           platform?: string | null
@@ -1461,10 +1564,13 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          ai_confidence?: number | null
           collaborator_user_ids?: string[] | null
           created_at?: string
+          credit_category?: string | null
           display_order?: number | null
           embed_data?: Json | null
+          endorsement_count?: number | null
           id?: string
           is_featured?: boolean | null
           platform?: string | null

@@ -76,10 +76,7 @@ const CreditDatabase = () => {
     try {
       let query = supabase
         .from('credits')
-        .select(`
-          id, project_name, role, year, verification_status, url, platform, endorsement_count, user_id,
-          profiles!credits_user_id_fkey(full_name, avatar_url, primary_role, username)
-        `, { count: 'exact' })
+        .select('id, project_name, role, year, verification_status, url, platform, endorsement_count, user_id', { count: 'exact' })
         .order('year', { ascending: false, nullsFirst: false })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
@@ -87,16 +84,27 @@ const CreditDatabase = () => {
         query = query.or(`project_name.ilike.%${search}%,role.ilike.%${search}%`);
       }
 
-      const selectedGroup = CATEGORY_GROUPS.find(g => g.value === category);
-      if (selectedGroup && selectedGroup.types) {
-        // Filter by credit_type - but the column might not exist on older records
-        // Use platform as a fallback category indicator
-      }
-
       const { data, error, count } = await query;
       if (error) throw error;
       
-      setCredits((data as any[]) || []);
+      // Fetch profiles for each unique user_id
+      const userIds = [...new Set((data || []).map(c => c.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, primary_role, username')
+        .in('user_id', userIds);
+      
+      const profileMap = (profiles || []).reduce((acc: any, p: any) => {
+        acc[p.user_id] = p;
+        return acc;
+      }, {});
+
+      const enriched = (data || []).map(credit => ({
+        ...credit,
+        profiles: profileMap[credit.user_id] || null,
+      }));
+
+      setCredits(enriched as any[]);
       setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching credits:', error);

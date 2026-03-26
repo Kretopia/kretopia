@@ -61,6 +61,7 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, onManagerModeCha
         .eq("user_id", user.id);
       if (error) throw error;
       setIsManagerMode(enabled);
+      onManagerModeChange?.(enabled);
       toast({
         title: enabled ? "Manager Mode Activated" : "Manager Mode Deactivated",
         description: enabled

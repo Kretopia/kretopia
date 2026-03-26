@@ -272,6 +272,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <AccountSwitcher 
                       currentAccountType={accountType} 
                       onSwitch={() => setIsOpen(false)}
+                      onManagerModeChange={(enabled) => setIsManagerMode(enabled)}
                     />
 
                     <Button 

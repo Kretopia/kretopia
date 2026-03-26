@@ -268,15 +268,11 @@ export default function Circle() {
 
           {/* Connect Tab - Swipe to match */}
           <TabsContent value="foryou" className="space-y-4">
-            {connectMode === "swipe" ? (
-              <SwipeFeature 
-                onMatch={handleMatch} 
-                filters={filters}
-                onProfilesCountChange={setProfilesCount}
-              />
-            ) : (
-              <CircleBrowseGrid filters={filters} />
-            )}
+            <SwipeFeature 
+              onMatch={handleMatch} 
+              filters={filters}
+              onProfilesCountChange={setProfilesCount}
+            />
           </TabsContent>
 
           {/* Nearby Tab */}

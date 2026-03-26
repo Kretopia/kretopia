@@ -13,9 +13,11 @@ export interface AchievementCardProps {
   imageUrl?: string;
   url?: string;
   verificationStatus?: "unverified" | "pending" | "verified";
+  endorsementCount?: number;
   isFeatured?: boolean;
   isOwnProfile?: boolean;
   onDelete?: () => void;
+  onRequestEndorsement?: () => void;
   icon?: React.ReactNode;
   metadata?: Record<string, string | number>;
 }

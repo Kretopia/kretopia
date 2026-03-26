@@ -496,6 +496,25 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                               )}
                             </Button>
                           )}
+                          {isOwnProfile && !credit.isVerified && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEndorsementCredit({
+                                  id: credit.id,
+                                  project_name: credit.title,
+                                  role: credit.role,
+                                  year: credit.year || undefined,
+                                });
+                              }}
+                              className="text-primary hover:text-primary hover:bg-primary/10"
+                              title="Request endorsement"
+                            >
+                              <UserPlus className="h-4 w-4" />
+                            </Button>
+                          )}
                           {isOwnProfile && (
                             <Button 
                               variant="ghost" 

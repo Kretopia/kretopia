@@ -33,20 +33,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const { subscriptionInfo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
+  const [isManagerMode, setIsManagerMode] = useState(false);
   const isLandingPage = location.pathname === "/";
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
 
-  // Fetch account type
+  // Fetch account type and manager mode
   useEffect(() => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("account_type")
+      .select("account_type, is_manager_mode")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.account_type) setAccountType(data.account_type);
+        if (data?.is_manager_mode) setIsManagerMode(true);
       });
   }, [user?.id]);
 

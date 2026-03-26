@@ -53,6 +53,8 @@ export default function TalentManager() {
     if (user) fetchManagerData();
   }, [user]);
 
+  if (!user) return <Navigate to="/auth" replace />;
+
   const fetchManagerData = async () => {
     try {
       const { data: managerData } = await supabase

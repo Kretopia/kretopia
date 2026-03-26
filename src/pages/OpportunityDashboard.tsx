@@ -16,6 +16,7 @@ import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { ApplicantPipeline } from "@/components/opportunity/ApplicantPipeline";
 import { OpportunityAnalytics } from "@/components/opportunity/OpportunityAnalytics";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface Applicant {
   id: string;

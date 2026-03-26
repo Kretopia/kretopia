@@ -13,6 +13,7 @@ import { Helmet } from "react-helmet-async";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 const PostOpportunity = () => {
   const [step, setStep] = useState<"form" | "sent" | "error">("form");

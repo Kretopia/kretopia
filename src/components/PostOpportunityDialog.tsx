@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Briefcase, Loader2, Upload, X, ArrowRightLeft, Handshake, Zap, Target, GraduationCap, UtensilsCrossed, Hotel, Gift, Instagram, Youtube, Music } from "lucide-react";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface PostOpportunityDialogProps {
   variant?: "default" | "outline" | "hero";

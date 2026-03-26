@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Briefcase, Loader2, X } from "lucide-react";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface PostAsOpportunityDialogProps {
   projectId: string;

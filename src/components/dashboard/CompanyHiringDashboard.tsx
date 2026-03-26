@@ -10,6 +10,7 @@ import {
   Plus, ArrowRight, Crown, DollarSign, FileText
 } from "lucide-react";
 import { FreeTierGate } from "@/components/FreeTierGate";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface HiringStats {
   jobsPosted: number;

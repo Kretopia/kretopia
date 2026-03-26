@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, MapPin, Verified, Sparkles, Users, Crown } from "lucide-react";
 import { SwipeFiltersState } from "./SwipeFilters";
 import { locationMatchesFilter } from "@/lib/locationGroups";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 const FREE_BROWSE_LIMIT = 6;
 

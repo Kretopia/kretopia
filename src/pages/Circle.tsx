@@ -14,6 +14,7 @@ import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/compon
 import { Users, Sparkles, UserPlus, MapPin } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 
 export default function Circle() {

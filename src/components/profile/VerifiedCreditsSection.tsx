@@ -50,12 +50,18 @@ interface VerifiedCreditsSectionProps {
 const CREDIT_TYPE_ICONS: Record<string, any> = {
   film: Film,
   movie: Film,
+  short_film: Film,
+  documentary: Film,
   tv: Tv,
   album: Disc3,
   single: Music,
+  ep: Music,
+  mixtape: Music,
   music_video: Video,
+  web_series: Video,
   podcast: Mic2,
   episode: Mic2,
+  audiobook: Mic2,
   // Performing Arts
   theatre: Drama,
   theater: Drama,
@@ -63,17 +69,29 @@ const CREDIT_TYPE_ICONS: Record<string, any> = {
   play: Drama,
   musical: Drama,
   pantomime: Drama,
+  opera: Drama,
   spoken_word: Mic2,
   comedy: Drama,
   dance: PersonStanding,
   recital: PersonStanding,
-  // Live Events & Festivals
+  // Events & Productions
   live_event: CalendarDays,
   concert: Music,
   festival: CalendarDays,
   carnival: Sparkles,
   pageant: Crown,
   fashion_show: Shirt,
+  awards_show: Crown,
+  exhibition: Sparkles,
+  conference: Briefcase,
+  launch_event: CalendarDays,
+  // Content & Digital
+  youtube_series: Video,
+  ugc_campaign: Video,
+  livestream: Video,
+  online_course: Briefcase,
+  workshop: Briefcase,
+  newsletter: Briefcase,
   // Commercial & Corporate
   commercial: Megaphone,
   ad: Megaphone,
@@ -82,6 +100,14 @@ const CREDIT_TYPE_ICONS: Record<string, any> = {
   mc: Mic2,
   brand_campaign: Megaphone,
   voiceover: Mic2,
+  influencer_campaign: Megaphone,
+  // Business & Industry
+  ar_project: Briefcase,
+  talent_management: Briefcase,
+  booking: Briefcase,
+  label_release: Disc3,
+  publishing: Briefcase,
+  curation: Sparkles,
 };
 
 const SOURCE_COLORS: Record<string, string> = {

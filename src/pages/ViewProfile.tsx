@@ -709,8 +709,8 @@ const ViewProfile = () => {
 
           {/* Experience & Credits */}
           <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
-            <h2 className="text-lg font-bold mb-4">Experience & Credits</h2>
-            <UnifiedWorkHistory 
+            <h2 className="text-lg font-bold mb-4">Credits & Experience</h2>
+            <ICDBTimeline 
               userId={profile.user_id}
               isOwnProfile={false}
               onRefresh={fetchData}

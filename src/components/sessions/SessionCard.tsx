@@ -206,8 +206,13 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
               </>
             ) : isFull ? (
               "Full"
+            ) : session.is_ticketed && session.ticket_price ? (
+              <>
+                <Ticket className="h-4 w-4 mr-2" />
+                Get Ticket — {session.ticket_currency || '$'}{session.ticket_price}
+              </>
             ) : (
-              "Join Session"
+              "Join"
             )}
           </Button>
         )}

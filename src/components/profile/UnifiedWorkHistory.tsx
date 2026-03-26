@@ -140,6 +140,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
   const [selectedCredit, setSelectedCredit] = useState<UnifiedCredit | null>(null);
+  const [endorsementCredit, setEndorsementCredit] = useState<{id: string; project_name: string; role: string; year?: number} | null>(null);
   const INITIAL_ITEMS_PER_SOURCE = 3;
   const [newCredit, setNewCredit] = useState({
     project_name: "",

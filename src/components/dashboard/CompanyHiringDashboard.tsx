@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { AITalentSuggestions } from "./AITalentSuggestions";
 
 interface HiringStats {
   jobsPosted: number;

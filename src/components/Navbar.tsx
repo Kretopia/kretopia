@@ -221,6 +221,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <DollarSign className="h-5 w-5" />
                       ThrivePay
                     </Button>
+                    {isManagerMode && (
+                      <Button 
+                        variant="ghost" 
+                        className="justify-start gap-3 h-12 w-full"
+                        onClick={() => handleNavigation("/talent-manager")}
+                      >
+                        <Users className="h-5 w-5" />
+                        Talent Manager
+                      </Button>
+                    )}
 
                     <Separator className="my-3" />
 

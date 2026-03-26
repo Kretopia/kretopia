@@ -1286,14 +1286,18 @@ export type Database = {
           created_by: string
           description: string | null
           end_time: string | null
+          event_type: string | null
           id: string
           is_public: boolean | null
+          is_ticketed: boolean | null
           latitude: number | null
           longitude: number | null
           max_participants: number | null
           start_time: string
           status: string | null
           tags: string[] | null
+          ticket_currency: string | null
+          ticket_price: number | null
           title: string
           updated_at: string
           venue_address: string | null
@@ -1306,14 +1310,18 @@ export type Database = {
           created_by: string
           description?: string | null
           end_time?: string | null
+          event_type?: string | null
           id?: string
           is_public?: boolean | null
+          is_ticketed?: boolean | null
           latitude?: number | null
           longitude?: number | null
           max_participants?: number | null
           start_time: string
           status?: string | null
           tags?: string[] | null
+          ticket_currency?: string | null
+          ticket_price?: number | null
           title: string
           updated_at?: string
           venue_address?: string | null
@@ -1326,14 +1334,18 @@ export type Database = {
           created_by?: string
           description?: string | null
           end_time?: string | null
+          event_type?: string | null
           id?: string
           is_public?: boolean | null
+          is_ticketed?: boolean | null
           latitude?: number | null
           longitude?: number | null
           max_participants?: number | null
           start_time?: string
           status?: string | null
           tags?: string[] | null
+          ticket_currency?: string | null
+          ticket_price?: number | null
           title?: string
           updated_at?: string
           venue_address?: string | null

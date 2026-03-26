@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
 import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
 import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
+import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
 
 interface Opportunity {
   id: string;

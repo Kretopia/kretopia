@@ -354,7 +354,7 @@ export const getTierLimits = (
   tier: SubscriptionTier,
   accountType: AccountType = "individual"
 ): TierLimits => {
-  const effectiveTier = tier === "founder" ? "enterprise" : tier;
+  const effectiveTier = tier === "founder" ? "enterprise" : tier === "brand_pro" ? "pro" : tier === "brand_enterprise" ? "enterprise" : tier;
   const limitsMap = accountType === "company" ? COMPANY_LIMITS : INDIVIDUAL_LIMITS;
   return limitsMap[effectiveTier];
 };

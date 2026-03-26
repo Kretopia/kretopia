@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Lock, Crown, Handshake } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
 
 import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
@@ -44,6 +45,9 @@ export const ProfileContentSections = ({
 
   return (
     <div className="space-y-8">
+      {/* Pending verification requests */}
+      <CreditVerificationPanel userId={profile.user_id} />
+
       {/* Experience & Credits — Hero Position (IMDb-style) */}
       <section>
         <div className="flex items-center justify-between mb-4">

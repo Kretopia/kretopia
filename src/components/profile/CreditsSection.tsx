@@ -74,14 +74,28 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from("credits").insert({
+      const { data: insertedData, error } = await supabase.from("credits").insert({
         user_id: user.id,
         ...newCredit,
-      });
+      }).select().single();
 
       if (error) throw error;
 
       toast.success("Credit added successfully");
+
+      // Trigger AI verification in background
+      if (insertedData) {
+        supabase.functions.invoke('verify-credit', {
+          body: {
+            credit_id: insertedData.id,
+            project_name: newCredit.project_name,
+            role: newCredit.role,
+            year: newCredit.year,
+            platform: newCredit.platform,
+          },
+        }).catch(err => console.log('AI verification queued:', err));
+      }
+
       setNewCredit({
         project_name: "",
         role: "",

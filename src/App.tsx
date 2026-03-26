@@ -80,6 +80,7 @@ const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const Guide = lazy(() => import("./pages/Guide"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
+const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -245,6 +246,9 @@ const AppContent = () => {
             
             {/* Talent Manager */}
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
+            
+            {/* Credit Database */}
+            <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
             
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />

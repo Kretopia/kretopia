@@ -406,6 +406,8 @@ export const getTierDisplayName = (tier: SubscriptionTier): string => {
     pro: "Pro",
     enterprise: "Enterprise",
     founder: "Founder Circle ⭕",
+    brand_pro: "Brand Pro",
+    brand_enterprise: "Brand Enterprise",
   };
   return names[tier];
 };

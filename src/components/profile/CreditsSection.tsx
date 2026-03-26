@@ -37,6 +37,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
     year: new Date().getFullYear(),
     platform: "",
     url: "",
+    credit_type: "",
   });
 
   useEffect(() => {

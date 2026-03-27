@@ -136,14 +136,12 @@ serve(async (req) => {
       activeCounts[c.cadence] = (activeCounts[c.cadence] || 0) + 1;
     }
 
-    const needed: { cadence: string; count: number; deadline_hours: number; is_flash: boolean }[] = [];
+    const needed: { cadence: string; count: number; deadline_hours: number }[] = [];
 
     // Always maintain at least 1 daily, 1 48hr, 1 weekly active
-    if (activeCounts.daily < 1) needed.push({ cadence: "daily", count: 1, deadline_hours: 24, is_flash: false });
-    if (activeCounts["48hr"] < 1) needed.push({ cadence: "48hr", count: 1, deadline_hours: 48, is_flash: false });
-    if (activeCounts.weekly < 1) needed.push({ cadence: "weekly", count: 1, deadline_hours: 168, is_flash: false });
-    // Occasionally add a flash challenge (every 6 hours)
-    if (activeCounts.flash < 1) needed.push({ cadence: "daily", count: 1, deadline_hours: 2, is_flash: true });
+    if (activeCounts.daily < 1) needed.push({ cadence: "daily", count: 1, deadline_hours: 24 });
+    if (activeCounts["48hr"] < 1) needed.push({ cadence: "48hr", count: 1, deadline_hours: 48 });
+    if (activeCounts.weekly < 1) needed.push({ cadence: "weekly", count: 1, deadline_hours: 168 });
 
     if (needed.length === 0) {
       return new Response(

@@ -290,17 +290,19 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
 
   return (
     <>
-      <Helmet>
-        <title>Events & Meetups | ThriveIN</title>
-        <meta name="description" content="Discover creative events, jam sessions, workshops, and meetups near you. Host your own or join the community." />
-      </Helmet>
+      {!embedded && (
+        <Helmet>
+          <title>Events & Meetups | ThriveIN</title>
+          <meta name="description" content="Discover creative events, jam sessions, workshops, and meetups near you. Host your own or join the community." />
+        </Helmet>
+      )}
 
-      <div className="min-h-screen bg-background">
-        <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+      <div className={embedded ? "" : "min-h-screen bg-background"}>
+        <div className={embedded ? "" : "max-w-2xl mx-auto px-4 pt-4 pb-24"}>
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-bold">Events</h1>
+              {!embedded && <h1 className="text-xl font-bold">Events</h1>}
               {upcomingCount > 0 && (
                 <p className="text-sm text-muted-foreground">{upcomingCount} coming up</p>
               )}

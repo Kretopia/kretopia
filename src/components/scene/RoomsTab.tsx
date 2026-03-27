@@ -72,7 +72,7 @@ export const RoomsTab = () => {
         .eq("is_active", true)
         .order("message_count", { ascending: false });
 
-      if (!roomsData?.length) { setPosts([]); setLoading(false); return; }
+      if (!roomsData?.length) { setRooms([]); setLoading(false); return; }
 
       const creatorIds = [...new Set(roomsData.map(r => r.created_by))];
       const { data: profiles } = await supabase

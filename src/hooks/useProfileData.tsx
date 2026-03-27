@@ -47,7 +47,7 @@ export const useProfileData = () => {
         supabase.from('portfolio_items').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(6)
       ]);
 
-      const { data, error } = profileResult;
+      let { data, error } = profileResult;
       
       if (error) {
         console.error('[Profile] Error loading profile:', error);
@@ -61,13 +61,53 @@ export const useProfileData = () => {
       }
 
       if (!data) {
-        toast({
-          title: 'Error',
-          description: 'Profile not found',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
+        console.warn('[Profile] Profile row missing, attempting auto-provision for user:', currentUserId);
+
+        const { data: authData } = await supabase.auth.getUser();
+        const metadata = authData?.user?.user_metadata as Record<string, any> | undefined;
+        const fallbackName = (metadata?.full_name || authData?.user?.email?.split('@')[0] || 'New User').trim();
+
+        const { error: createError } = await supabase.from('profiles').upsert(
+          {
+            user_id: currentUserId,
+            full_name: fallbackName || 'New User',
+            role: 'Creator',
+            onboarding_completed: false,
+            is_claimed: true,
+            account_type: metadata?.account_type === 'company' ? 'company' : 'individual',
+          },
+          { onConflict: 'user_id' }
+        );
+
+        if (createError) {
+          console.error('[Profile] Failed to auto-provision profile:', createError);
+          toast({
+            title: 'Error',
+            description: 'Profile not found. Please complete onboarding to create your profile.',
+            variant: 'destructive',
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        const { data: createdProfile, error: refetchError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', currentUserId)
+          .maybeSingle();
+
+        if (refetchError || !createdProfile) {
+          console.error('[Profile] Profile still missing after auto-provision:', refetchError);
+          toast({
+            title: 'Error',
+            description: 'Unable to load your profile right now.',
+            variant: 'destructive',
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        data = createdProfile;
       }
 
       setProfile({ ...data, section_order: data.section_order });

@@ -39,12 +39,7 @@ interface Opportunity {
   min_followers: number | null;
 }
 
-interface CreatorProfile {
-  user_id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  role: string | null;
-}
+// Use shared GigCreatorProfile from GigCard
 
 const TYPE_FILTERS = [
   { value: "all", label: "All", icon: Sparkles },

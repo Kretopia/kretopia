@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Check, Loader2, 
-  MessageCircle, Settings, Share2, Ticket, X, ExternalLink
+  MessageCircle, Settings, Share2, Ticket, X, ExternalLink, Pencil
 } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SessionParticipants } from "./SessionParticipants";
 import { SessionChat } from "./SessionChat";
 import { EventShareKit } from "./EventShareKit";
+import { EditEventDialog } from "./EditEventDialog";
 
 interface Session {
   id: string;

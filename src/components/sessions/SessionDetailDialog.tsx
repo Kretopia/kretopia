@@ -227,17 +227,12 @@ export const SessionDetailDialog = ({
             <div className="mx-3 sm:mx-5 mt-3 overflow-x-auto scrollbar-hide shrink-0">
             <TabsList className="w-max">
               <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="discussion">
-                <MessageSquare className="h-4 w-4 mr-1" /> Discussion
-              </TabsTrigger>
               <TabsTrigger value="participants">
                 <Users className="h-4 w-4 mr-1" /> People ({session.participant_count})
               </TabsTrigger>
-              {isParticipant && (
-                <TabsTrigger value="chat">
-                  <MessageCircle className="h-4 w-4 mr-1" /> Chat
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="chat">
+                <MessageCircle className="h-4 w-4 mr-1" /> Chat
+              </TabsTrigger>
               {isCreator && (
                 <TabsTrigger value="manage">
                   <Settings className="h-4 w-4 mr-1" /> Manage

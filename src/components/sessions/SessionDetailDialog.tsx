@@ -224,7 +224,7 @@ export const SessionDetailDialog = ({
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="mx-5 mt-3 w-fit shrink-0 overflow-x-auto">
+            <TabsList className="mx-3 sm:mx-5 mt-3 w-fit shrink-0 overflow-x-auto scrollbar-hide">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="discussion">
                 <MessageSquare className="h-4 w-4 mr-1" /> Discussion

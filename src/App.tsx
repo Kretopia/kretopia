@@ -205,7 +205,8 @@ const AppContent = () => {
             
             {/* Nearby Creators */}
             <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />
-            <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+            <Route path="/events" element={<Navigate to="/scene" replace />} />
+            <Route path="/scene" element={<ProtectedRoute><Scene /></ProtectedRoute>} />
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />

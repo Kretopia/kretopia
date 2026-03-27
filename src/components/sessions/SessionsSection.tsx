@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Sparkles, MapPin, Calendar, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { SessionCard } from "./SessionCard";
 import { CreateSessionDialog } from "./CreateSessionDialog";
 
@@ -34,6 +36,8 @@ interface SessionsSectionProps {
 
 export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [nearbySessions, setNearbySessions] = useState<Session[]>([]);
   const [mySessions, setMySessions] = useState<Session[]>([]);
@@ -160,6 +164,44 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
+
+  // Handle ticket purchase success — add participant after payment
+  useEffect(() => {
+    const ticketSuccess = searchParams.get('ticket_success');
+    if (!ticketSuccess || !user) return;
+
+    const addParticipant = async () => {
+      try {
+        // Check if already joined
+        const { data: existing } = await supabase
+          .from('jam_participants')
+          .select('id')
+          .eq('jam_id', ticketSuccess)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (!existing) {
+          await supabase.from('jam_participants').insert({
+            jam_id: ticketSuccess,
+            user_id: user.id,
+            status: 'going',
+          });
+        }
+
+        toast({ title: "Ticket purchased! 🎉", description: "You're in! See you at the event." });
+        fetchSessions();
+      } catch (err) {
+        console.error('Error adding participant after ticket purchase:', err);
+      }
+
+      // Clean URL params
+      searchParams.delete('ticket_success');
+      searchParams.delete('session_id');
+      setSearchParams(searchParams, { replace: true });
+    };
+
+    addParticipant();
+  }, [searchParams, user]);
 
   return (
     <div className="space-y-4">

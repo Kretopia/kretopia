@@ -106,14 +106,29 @@ export const SessionDetailDialog = ({
         await supabase.from('jam_participants').delete().eq('jam_id', session.id).eq('user_id', user.id);
         setParticipation(null);
         toast({ title: "Left event" });
+        onRefresh?.();
+      } else if (session.is_ticketed && session.ticket_price && session.ticket_price > 0 && !session.external_ticket_url) {
+        // Ticketed event — redirect to Stripe checkout
+        const { data, error } = await supabase.functions.invoke('purchase-event-ticket', {
+          body: { eventId: session.id }
+        });
+        if (error) throw error;
+        if (data?.url) {
+          const opened = window.open(data.url, '_blank');
+          if (!opened) window.location.href = data.url;
+        } else {
+          throw new Error("No checkout URL received");
+        }
       } else {
+        // Free event — join directly
         await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' });
         setParticipation('going');
         toast({ title: "You're in! 🎉" });
+        onRefresh?.();
       }
-      onRefresh?.();
-    } catch {
-      toast({ title: "Error", description: "Failed to update participation", variant: "destructive" });
+    } catch (err: any) {
+      console.error('Join/ticket error:', err);
+      toast({ title: "Error", description: err?.message || "Failed to process. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

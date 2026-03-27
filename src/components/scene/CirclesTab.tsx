@@ -239,7 +239,7 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
         sender_name: profileMap.get(m.user_id)?.full_name || "Unknown",
         sender_avatar: profileMap.get(m.user_id)?.avatar_url || undefined,
         reactions: reactionsMap.get(m.id) || {},
-        reply_preview: m.reply_to_id ? replyMap.get(m.reply_to_id) || null : null,
+        reply_preview: m.reply_to_id ? (replyMap.get(m.reply_to_id) || null) : null,
       })));
     } else {
       setMessages([]);

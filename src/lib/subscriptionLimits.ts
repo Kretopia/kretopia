@@ -67,8 +67,6 @@ export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, 
 };
 
 export const ENTERPRISE_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
-  aiLeadSearches: -1,
-  aiOutreachDrafts: -1,
   approvalRequests: -1,
   milestones: -1,
   invoices: -1,
@@ -77,7 +75,6 @@ export const ENTERPRISE_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY
   expenses: -1,
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
-  bulkEmails: 5000,
   workCredits: -1,
 };
 

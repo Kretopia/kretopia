@@ -1287,6 +1287,7 @@ export type Database = {
           description: string | null
           end_time: string | null
           event_type: string | null
+          external_ticket_url: string | null
           id: string
           is_public: boolean | null
           is_ticketed: boolean | null
@@ -1295,6 +1296,7 @@ export type Database = {
           max_participants: number | null
           start_time: string
           status: string | null
+          status_note: string | null
           tags: string[] | null
           ticket_currency: string | null
           ticket_price: number | null
@@ -1311,6 +1313,7 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           event_type?: string | null
+          external_ticket_url?: string | null
           id?: string
           is_public?: boolean | null
           is_ticketed?: boolean | null
@@ -1319,6 +1322,7 @@ export type Database = {
           max_participants?: number | null
           start_time: string
           status?: string | null
+          status_note?: string | null
           tags?: string[] | null
           ticket_currency?: string | null
           ticket_price?: number | null
@@ -1335,6 +1339,7 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           event_type?: string | null
+          external_ticket_url?: string | null
           id?: string
           is_public?: boolean | null
           is_ticketed?: boolean | null
@@ -1343,6 +1348,7 @@ export type Database = {
           max_participants?: number | null
           start_time?: string
           status?: string | null
+          status_note?: string | null
           tags?: string[] | null
           ticket_currency?: string | null
           ticket_price?: number | null

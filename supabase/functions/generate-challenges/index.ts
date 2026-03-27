@@ -187,10 +187,7 @@ Return ONLY valid JSON array:
   "description": "2-3 sentence creative brief",
   "category": "one of: ${categories.join(", ")}",
   "cadence": "daily|48hr|weekly",
-  "is_flash": boolean,
-  "requirements": "Specific submission requirements",
-  "tags": ["tag1", "tag2"],
-  "xp_reward": number (daily:100, 48hr:200, weekly:500, flash:150),
+  "xp_reward": number (daily:100, 48hr:200, weekly:500),
   "deadline_hours": number
 }]`,
           },

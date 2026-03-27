@@ -36,10 +36,6 @@ export interface TierLimits {
  * -1 = unlimited. These are per-calendar-month limits.
  */
 export const FREE_TIER_MONTHLY_CAPS = {
-  // ThriveFunnel (Sales)
-  aiLeadSearches: 3,
-  aiOutreachDrafts: 5,
-  
   // Project workspace
   approvalRequests: 2,
   milestones: 3,
@@ -54,16 +50,11 @@ export const FREE_TIER_MONTHLY_CAPS = {
   aiApplicantRankings: 2,
   aiJobDescriptions: 2,
 
-  // Bulk email
-  bulkEmails: 5,
-
   // Work / Credits
   workCredits: 10,
 } as const;
 
 export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
-  aiLeadSearches: -1,
-  aiOutreachDrafts: -1,
   approvalRequests: -1,
   milestones: -1,
   invoices: -1,
@@ -72,13 +63,10 @@ export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, 
   expenses: -1,
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
-  bulkEmails: 500,
   workCredits: -1,
 };
 
 export const ENTERPRISE_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
-  aiLeadSearches: -1,
-  aiOutreachDrafts: -1,
   approvalRequests: -1,
   milestones: -1,
   invoices: -1,
@@ -87,7 +75,6 @@ export const ENTERPRISE_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY
   expenses: -1,
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
-  bulkEmails: 5000,
   workCredits: -1,
 };
 
@@ -104,8 +91,6 @@ export function getMonthlyCapForFeature(
 
 export function getFeatureDisplayName(feature: FreeTierFeature): string {
   const names: Record<FreeTierFeature, string> = {
-    aiLeadSearches: "AI lead searches",
-    aiOutreachDrafts: "AI outreach drafts",
     approvalRequests: "approval requests",
     milestones: "milestones",
     invoices: "invoices",
@@ -114,7 +99,6 @@ export function getFeatureDisplayName(feature: FreeTierFeature): string {
     expenses: "expenses",
     aiApplicantRankings: "AI applicant rankings",
     aiJobDescriptions: "AI job descriptions",
-    bulkEmails: "bulk emails",
     workCredits: "work credits",
   };
   return names[feature];

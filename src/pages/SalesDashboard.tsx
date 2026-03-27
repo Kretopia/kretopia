@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Send, Target, Users, TrendingUp, Mail, Crown, Lock, Kanban, BarChart3 } from "lucide-react";
 import LeadsTab from "@/components/thrive-ai/LeadsTab";
 import OutreachTab from "@/components/thrive-ai/OutreachTab";
-import { FreeTierGate } from "@/components/FreeTierGate";
+
 import { LeadPipelineKanban } from "@/components/sales/LeadPipelineKanban";
 import { ConversionFunnel } from "@/components/sales/ConversionFunnel";
 
@@ -214,27 +214,19 @@ const SalesDashboard = () => {
         </TabsList>
 
         <TabsContent value="leads">
-          <FreeTierGate feature="aiLeadSearches" featureLabel="AI Lead Scout" description="Upgrade to Pro for unlimited lead searches, CRM pipeline, and CSV export.">
-            <LeadsTab />
-          </FreeTierGate>
+          <LeadsTab />
         </TabsContent>
 
         <TabsContent value="pipeline">
-          <FreeTierGate feature="aiLeadSearches" featureLabel="Pipeline View" description="Upgrade to Pro for the visual pipeline kanban and lead management.">
-            <LeadPipelineKanban />
-          </FreeTierGate>
+          <LeadPipelineKanban />
         </TabsContent>
 
         <TabsContent value="outreach">
-          <FreeTierGate feature="aiOutreachDrafts" featureLabel="AI Outreach" description="Upgrade to Pro for unlimited outreach sequences and AI-powered email drafts.">
-            <OutreachTab />
-          </FreeTierGate>
+          <OutreachTab />
         </TabsContent>
 
         <TabsContent value="analytics">
-          <FreeTierGate feature="aiLeadSearches" featureLabel="Conversion Analytics" description="Upgrade to Pro for conversion funnel analytics and lead scoring.">
-            <ConversionFunnel leads={leads} />
-          </FreeTierGate>
+          <ConversionFunnel leads={leads} />
         </TabsContent>
       </Tabs>
     </div>

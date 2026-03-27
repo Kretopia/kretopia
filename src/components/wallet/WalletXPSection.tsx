@@ -134,10 +134,10 @@ export function WalletXPSection() {
     await recordActivity("extra_work_credits_purchased", 400, "Purchased +5 Work Credits");
   };
 
-  const buyExtraLeads = async () => {
+  const buyExtraAIBriefs = async () => {
     await deductXP(800);
-    addBonusUses("aiLeadSearches", 5);
-    await recordActivity("extra_leads_purchased", 800, "Purchased +5 Lead Searches");
+    addBonusUses("aiBriefs", 5);
+    await recordActivity("extra_briefs_purchased", 800, "Purchased +5 AI Briefs");
   };
 
   const buyExtraInvoices = async () => {
@@ -222,7 +222,7 @@ export function WalletXPSection() {
     { id: "profile_boost", name: "24h Profile Boost", description: "Top of Discover for 24 hours.", cost: 1000, icon: <Eye className="h-5 w-5 text-amber-400" />, action: buyProfileBoost, available: true },
     { id: "double_xp", name: "2x Points (24 hours)", description: "Double points on all activities.", cost: 750, icon: <Zap className="h-5 w-5 text-yellow-400" />, action: buyDoubleXP, available: true },
     { id: "extra_work_credits", name: "+5 Work Credits", description: "Add 5 more work credits this month.", cost: 400, icon: <Image className="h-5 w-5 text-emerald-400" />, action: buyExtraWorkCredits, available: true, badge: "Popular" },
-    { id: "extra_leads", name: "+5 Lead Searches", description: "5 extra AI lead searches this month.", cost: 800, icon: <Search className="h-5 w-5 text-sky-400" />, action: buyExtraLeads, available: true },
+    { id: "extra_briefs", name: "+5 AI Briefs", description: "5 extra AI briefs this month.", cost: 800, icon: <Search className="h-5 w-5 text-sky-400" />, action: buyExtraAIBriefs, available: true },
     { id: "extra_invoices", name: "+3 Invoices", description: "3 extra invoices this month.", cost: 300, icon: <FileText className="h-5 w-5 text-teal-400" />, action: buyExtraInvoices, available: true },
     { id: "priority_gig", name: "Priority Gig Listing", description: "Pin your opportunity for 24h.", cost: 1500, icon: <Briefcase className="h-5 w-5 text-orange-400" />, action: buyPriorityGig, available: true },
     { id: "analytics_unlock", name: "Analytics Report", description: "Full profile analytics export (1x).", cost: 2000, icon: <BarChart3 className="h-5 w-5 text-violet-400" />, action: buyAnalyticsReport, available: true },

@@ -12,13 +12,12 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   Search, ShieldCheck, ExternalLink, Loader2, Users, UserPlus,
   Compass, Filter, MapPin, Building2, CalendarDays, MessageSquare, Award,
-  Briefcase, Handshake, ArrowRightLeft, Clock, DollarSign, Plus, ArrowRight,
+  Briefcase, Plus,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
-import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
-import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
+import GigCard, { type GigCreatorProfile } from "@/components/opportunity/GigCard";
 import { formatDistanceToNow, parseISO } from "date-fns";
 
 const CATEGORY_GROUPS = [
@@ -44,11 +43,6 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
   fashion_collection: "fashion", editorial_shoot: "fashion", runway: "fashion",
 };
 
-const TYPE_ICONS: Record<string, any> = {
-  paid: DollarSign,
-  collab: Handshake,
-  barter: ArrowRightLeft,
-};
 
 interface CreditResult {
   id: string; project_name: string; role: string; year: number | null;
@@ -192,8 +186,8 @@ const DiscoverPage = () => {
     try {
       let query = supabase
         .from('opportunities')
-        .select('id, title, description, type, compensation, location, skills, created_at, created_by, status', { count: 'exact' })
-        .eq('status', 'open')
+        .select('id, title, description, type, compensation, location, skills, created_at, created_by, status, image_url, barter_offering, barter_requesting, platform_requirements, min_followers, is_priority, priority_expires_at', { count: 'exact' })
+        .in('status', ['open', 'active'])
         .order('created_at', { ascending: false })
         .range(gigPage * PAGE_SIZE, (gigPage + 1) * PAGE_SIZE - 1);
 
@@ -449,40 +443,8 @@ const DiscoverPage = () => {
                 <div className="space-y-2">
                   {gigs.map(gig => {
                     const creator = gig.created_by ? gigProfiles.get(gig.created_by) : null;
-                    const TypeIcon = TYPE_ICONS[gig.type] || Briefcase;
                     return (
-                      <Card key={gig.id} className="overflow-hidden cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate(`/opportunity/${gig.id}`)}>
-                        <CardContent className="p-3">
-                          <div className="flex items-start gap-3">
-                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                              <TypeIcon className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-semibold truncate">{gig.title}</h3>
-                              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{gig.description}</p>
-                              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                <Badge variant="outline" className="text-[9px] h-4 capitalize">{gig.type}</Badge>
-                                {gig.compensation && <span className="text-[10px] text-primary font-medium">{gig.compensation}</span>}
-                                {gig.location && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" /> {gig.location}</span>}
-                                {gig.created_at && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Clock className="h-2.5 w-2.5" /> {formatDistanceToNow(parseISO(gig.created_at), { addSuffix: true })}</span>}
-                              </div>
-                              {creator && (
-                                <div className="flex items-center gap-1.5 mt-2">
-                                  <Avatar className="h-5 w-5">
-                                    <AvatarImage src={creator.avatar_url || ''} />
-                                    <AvatarFallback className="text-[8px]">{creator.full_name?.[0]}</AvatarFallback>
-                                  </Avatar>
-                                  <span className="text-[10px] text-muted-foreground">{creator.full_name}</span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex flex-col gap-1 shrink-0" onClick={e => e.stopPropagation()}>
-                              <EasyApplyButton opportunityId={gig.id} opportunityTitle={gig.title} />
-                              <BookmarkButton opportunityId={gig.id} />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <GigCard key={gig.id} opportunity={gig as any} creator={creator ? { user_id: creator.user_id, full_name: creator.full_name, avatar_url: creator.avatar_url, role: creator.role } : null} />
                     );
                   })}
                   <Pagination page={gigPage} setPage={setGigPage} total={totalGigs} />

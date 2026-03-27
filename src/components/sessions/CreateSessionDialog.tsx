@@ -87,7 +87,7 @@ export const CreateSessionDialog = ({
   const uploadCover = async (): Promise<string | null> => {
     if (!coverFile || !user) return null;
     const ext = coverFile.name.split('.').pop();
-    const path = `events/${user.id}/${Date.now()}.${ext}`;
+    const path = `${user.id}/events/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from('portfolio').upload(path, coverFile);
     if (error) throw error;
     const { data: { publicUrl } } = supabase.storage.from('portfolio').getPublicUrl(path);

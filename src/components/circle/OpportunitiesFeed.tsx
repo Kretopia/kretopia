@@ -73,7 +73,7 @@ export const OpportunitiesFeed = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [creators, setCreators] = useState<Record<string, CreatorProfile>>({});
+  const [creators, setCreators] = useState<Record<string, GigCreatorProfile>>({});
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");

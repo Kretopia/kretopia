@@ -58,12 +58,9 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
     "30 swipes/day",
     "Work credits (up to 10/month)",
     "Direct messaging",
-    "🤖 3 AI lead searches/month",
-    "🤖 5 AI outreach drafts/month",
     "🤖 3 AI briefs/month",
     "📊 5 expenses/month",
     "📊 2 invoices/month",
-    "📧 5 bulk emails/month",
     "🔓 2 approval requests/month",
     "🔓 3 milestones/month",
     "🔓 1 template use/month",
@@ -77,7 +74,6 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
     "🤖 2 AI job descriptions/month",
     "📊 5 expenses/month",
     "📊 2 invoices/month",
-    "📧 5 bulk emails/month",
     "20% platform service fee",
   ],
 };
@@ -86,12 +82,9 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "Unlimited swipes & matches",
     "Unlimited work credits & portfolio",
-    "🤖 Unlimited AI Lead Scout & CRM",
-    "🤖 Unlimited AI Outreach Sequences",
     "🤖 Unlimited AI Briefs & Templates",
     "📊 Unlimited Expense Tracking & Invoicing",
     "📊 Full P&L Dashboard & Reports",
-    "📧 500 bulk emails/month",
     "🔓 Unlimited Workspace Tools",
     "AI match explanations",
     "Profile verification badge",
@@ -103,13 +96,10 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
   company: [
     "Unlimited opportunity postings",
     "🤖 AI Talent Suggestions — top matches delivered to you",
-    "🤖 Unlimited AI Talent Scout & Pipeline",
-    "🤖 Unlimited AI Outreach Sequences",
     "🤖 Unlimited AI Job Descriptions",
     "🤖 Unlimited AI Applicant Ranking",
     "📊 Unlimited Expense Tracking & Invoicing",
     "📊 Full P&L Dashboard & Reports",
-    "📧 500 bulk emails/month",
     "🔓 Applicant tracking dashboard",
     "🔓 Branded company page",
     "Advanced search & talent filters",
@@ -124,7 +114,6 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
 export const ENTERPRISE_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "Everything in Pro, plus:",
-    "📧 5,000 bulk emails/month",
     "📊 Campaign analytics (open/click tracking)",
     "⏰ Scheduled email sends",
     "🤖 Priority AI processing",
@@ -134,7 +123,6 @@ export const ENTERPRISE_FEATURES: Record<AccountType, string[]> = {
   ],
   company: [
     "Everything in Brand Pro, plus:",
-    "📧 5,000 bulk emails/month",
     "📊 Campaign analytics (open/click tracking)",
     "⏰ Scheduled email sends",
     "🤖 Priority AI processing",

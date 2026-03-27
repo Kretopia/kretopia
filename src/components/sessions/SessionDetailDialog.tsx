@@ -312,19 +312,9 @@ export const SessionDetailDialog = ({
                 </div>
               </TabsContent>
 
-              <TabsContent value="discussion" className="h-full m-0 flex flex-col overflow-hidden">
-                <EventComments eventId={session.id} isCreator={isCreator} />
+              <TabsContent value="chat" className="h-full m-0 flex flex-col overflow-hidden">
+                <SessionChat sessionId={session.id} isCreator={isCreator} />
               </TabsContent>
-
-              <TabsContent value="participants" className="h-full overflow-y-auto m-0">
-                <SessionParticipants sessionId={session.id} creatorId={session.created_by} isCreator={isCreator} onRefresh={onRefresh} />
-              </TabsContent>
-
-              {isParticipant && (
-                <TabsContent value="chat" className="h-full m-0 flex flex-col overflow-hidden">
-                  <SessionChat sessionId={session.id} isCreator={isCreator} />
-                </TabsContent>
-              )}
 
               {isCreator && (
                 <TabsContent value="manage" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">

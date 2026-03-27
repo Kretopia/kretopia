@@ -16,7 +16,7 @@ import { SessionParticipants } from "./SessionParticipants";
 import { SessionChat } from "./SessionChat";
 import { EventShareKit } from "./EventShareKit";
 import { EditEventDialog } from "./EditEventDialog";
-import { EventComments } from "./EventComments";
+
 import { EventCohosts } from "./EventCohosts";
 import { EventRecapButton } from "./EventRecapButton";
 

@@ -35,7 +35,7 @@ const BottomNav = memo(() => {
     ? [
         { path: "/opportunities", icon: Briefcase, label: "Gigs", tourId: "gigs-tab", tooltip: { id: "nav-gigs", title: "Gigs", desc: "Post and manage hiring opportunities" } },
         { path: "/discover", icon: Compass, label: "Discover", tourId: "discover-tab", tooltip: { id: "nav-discover", title: "Discover", desc: "Browse creators and talent" } },
-        { path: "/events", icon: CalendarDays, label: "Events", tourId: "events-tab", tooltip: { id: "nav-events", title: "Events", desc: "Discover & host creative events" } },
+        { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & conversations" } },
         { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects and deliverables" } },
         { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your company profile" } },
       ]

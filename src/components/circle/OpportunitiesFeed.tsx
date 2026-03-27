@@ -15,7 +15,6 @@ import {
   Search,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
 
 interface Opportunity {

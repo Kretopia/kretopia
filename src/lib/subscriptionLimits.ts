@@ -36,10 +36,9 @@ export interface TierLimits {
  * -1 = unlimited. These are per-calendar-month limits.
  */
 export const FREE_TIER_MONTHLY_CAPS = {
-  // ThriveAI
+  // ThriveFunnel (Sales)
   aiLeadSearches: 3,
   aiOutreachDrafts: 5,
-  aiChatMessages: 20,
   
   // Project workspace
   approvalRequests: 2,
@@ -57,12 +56,14 @@ export const FREE_TIER_MONTHLY_CAPS = {
 
   // Bulk email
   bulkEmails: 5,
+
+  // Work / Credits
+  workCredits: 10,
 } as const;
 
 export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
   aiLeadSearches: -1,
   aiOutreachDrafts: -1,
-  aiChatMessages: -1,
   approvalRequests: -1,
   milestones: -1,
   invoices: -1,
@@ -72,12 +73,12 @@ export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, 
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
   bulkEmails: 500,
+  workCredits: -1,
 };
 
 export const ENTERPRISE_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
   aiLeadSearches: -1,
   aiOutreachDrafts: -1,
-  aiChatMessages: -1,
   approvalRequests: -1,
   milestones: -1,
   invoices: -1,
@@ -87,6 +88,7 @@ export const ENTERPRISE_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
   bulkEmails: 5000,
+  workCredits: -1,
 };
 
 export type FreeTierFeature = keyof typeof FREE_TIER_MONTHLY_CAPS;
@@ -104,7 +106,6 @@ export function getFeatureDisplayName(feature: FreeTierFeature): string {
   const names: Record<FreeTierFeature, string> = {
     aiLeadSearches: "AI lead searches",
     aiOutreachDrafts: "AI outreach drafts",
-    aiChatMessages: "AI chat messages",
     approvalRequests: "approval requests",
     milestones: "milestones",
     invoices: "invoices",
@@ -114,6 +115,7 @@ export function getFeatureDisplayName(feature: FreeTierFeature): string {
     aiApplicantRankings: "AI applicant rankings",
     aiJobDescriptions: "AI job descriptions",
     bulkEmails: "bulk emails",
+    workCredits: "work credits",
   };
   return names[feature];
 }

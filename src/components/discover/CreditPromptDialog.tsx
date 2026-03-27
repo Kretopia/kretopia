@@ -22,7 +22,7 @@ export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogPro
     "AI match explanations",
     "Undo swipe feature (3/day)",
     "Profile verification badge",
-    "Unlimited portfolio items",
+    "Unlimited work credits & portfolio",
     "Advanced search filters",
     "Press, credits & awards sections",
   ];

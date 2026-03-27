@@ -12,16 +12,19 @@ interface Feature {
 
 const features: Feature[] = [
   { name: "Daily Swipes", free: "30", pro: "Unlimited" },
-  { name: "Portfolio Items", free: "5", pro: "Unlimited" },
+  { name: "Work Credits", free: "10/month", pro: "Unlimited" },
   { name: "Basic Profile", free: true, pro: true },
   { name: "Direct Messaging", free: true, pro: true },
   { name: "Browse Matches", free: true, pro: true },
+  { name: "AI Lead Searches", free: "3/month", pro: "Unlimited" },
+  { name: "AI Outreach Drafts", free: "5/month", pro: "Unlimited" },
+  { name: "AI Briefs", free: "3/month", pro: "Unlimited" },
+  { name: "Invoices", free: "2/month", pro: "Unlimited" },
   { name: "AI Match Explanations", free: false, pro: true },
   { name: "Undo Swipe", free: false, pro: "3/day" },
   { name: "Profile Verification Badge", free: false, pro: true },
   { name: "Advanced Search Filters", free: false, pro: true },
-  { name: "Press Links & Credits", free: false, pro: true },
-  { name: "Awards Section", free: false, pro: true },
+  { name: "Press Links & Awards", free: false, pro: true },
   { name: "Priority Support", free: false, pro: true },
 ];
 

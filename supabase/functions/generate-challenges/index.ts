@@ -23,9 +23,9 @@ serve(async (req) => {
     // 1. Finalize any expired active challenges first
     const { data: expired } = await supabase
       .from("challenges")
-      .select("id, title, cadence, xp_reward, is_flash")
+      .select("id, title, cadence, xp_reward")
       .eq("status", "active")
-      .lt("deadline", new Date().toISOString());
+      .lt("ends_at", new Date().toISOString());
 
     if (expired && expired.length > 0) {
       for (const ch of expired) {
@@ -128,24 +128,20 @@ serve(async (req) => {
     // Count active challenges by cadence
     const { data: activeChallenges } = await supabase
       .from("challenges")
-      .select("cadence, is_flash")
-      .eq("status", "active")
-      .eq("type", "platform");
+      .select("cadence")
+      .eq("status", "active");
 
-    const activeCounts: Record<string, number> = { daily: 0, "48hr": 0, weekly: 0, flash: 0 };
+    const activeCounts: Record<string, number> = { daily: 0, "48hr": 0, weekly: 0 };
     for (const c of activeChallenges || []) {
-      if (c.is_flash) activeCounts.flash++;
-      else activeCounts[c.cadence] = (activeCounts[c.cadence] || 0) + 1;
+      activeCounts[c.cadence] = (activeCounts[c.cadence] || 0) + 1;
     }
 
-    const needed: { cadence: string; count: number; deadline_hours: number; is_flash: boolean }[] = [];
+    const needed: { cadence: string; count: number; deadline_hours: number }[] = [];
 
     // Always maintain at least 1 daily, 1 48hr, 1 weekly active
-    if (activeCounts.daily < 1) needed.push({ cadence: "daily", count: 1, deadline_hours: 24, is_flash: false });
-    if (activeCounts["48hr"] < 1) needed.push({ cadence: "48hr", count: 1, deadline_hours: 48, is_flash: false });
-    if (activeCounts.weekly < 1) needed.push({ cadence: "weekly", count: 1, deadline_hours: 168, is_flash: false });
-    // Occasionally add a flash challenge (every 6 hours)
-    if (activeCounts.flash < 1) needed.push({ cadence: "daily", count: 1, deadline_hours: 2, is_flash: true });
+    if (activeCounts.daily < 1) needed.push({ cadence: "daily", count: 1, deadline_hours: 24 });
+    if (activeCounts["48hr"] < 1) needed.push({ cadence: "48hr", count: 1, deadline_hours: 48 });
+    if (activeCounts.weekly < 1) needed.push({ cadence: "weekly", count: 1, deadline_hours: 168 });
 
     if (needed.length === 0) {
       return new Response(
@@ -156,7 +152,6 @@ serve(async (req) => {
 
     // 3. Generate challenges using AI
     const challengeDescriptions = needed.map((n) => {
-      if (n.is_flash) return "1 flash challenge (2-hour sprint, intense, specific)";
       return `1 ${n.cadence} challenge (${n.deadline_hours}h deadline)`;
     });
 
@@ -192,10 +187,7 @@ Return ONLY valid JSON array:
   "description": "2-3 sentence creative brief",
   "category": "one of: ${categories.join(", ")}",
   "cadence": "daily|48hr|weekly",
-  "is_flash": boolean,
-  "requirements": "Specific submission requirements",
-  "tags": ["tag1", "tag2"],
-  "xp_reward": number (daily:100, 48hr:200, weekly:500, flash:150),
+  "xp_reward": number (daily:100, 48hr:200, weekly:500),
   "deadline_hours": number
 }]`,
           },
@@ -240,8 +232,8 @@ Return ONLY valid JSON array:
 
     const inserted = [];
     for (const ch of challenges) {
-      const deadlineHours = ch.deadline_hours || (ch.is_flash ? 2 : ch.cadence === "daily" ? 24 : ch.cadence === "48hr" ? 48 : 168);
-      const deadline = new Date(now.getTime() + deadlineHours * 60 * 60 * 1000);
+      const deadlineHours = ch.deadline_hours || (ch.cadence === "daily" ? 24 : ch.cadence === "48hr" ? 48 : 168);
+      const endsAt = new Date(now.getTime() + deadlineHours * 60 * 60 * 1000);
 
       const { data: newChallenge, error } = await supabase
         .from("challenges")
@@ -249,17 +241,12 @@ Return ONLY valid JSON array:
           title: ch.title,
           description: ch.description,
           category: ch.category || "visual",
-          type: "platform",
           cadence: ch.cadence || "daily",
-          deadline: deadline.toISOString(),
-          requirements: ch.requirements || null,
-          tags: ch.tags || [],
+          starts_at: now.toISOString(),
+          ends_at: endsAt.toISOString(),
           xp_reward: ch.xp_reward || 100,
-          is_flash: ch.is_flash || false,
           status: "active",
           created_by: createdBy,
-          allow_swap: true,
-          max_swaps: 3,
         })
         .select()
         .single();

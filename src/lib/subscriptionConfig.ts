@@ -56,11 +56,10 @@ export const BRAND_SUBSCRIPTION_PRODUCTS = {
 export const FREE_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "30 swipes/day",
-    "Portfolio (up to 5 items)",
+    "Work credits (up to 10/month)",
     "Direct messaging",
     "🤖 3 AI lead searches/month",
     "🤖 5 AI outreach drafts/month",
-    "🤖 20 AI chat messages/month",
     "🤖 3 AI briefs/month",
     "📊 5 expenses/month",
     "📊 2 invoices/month",
@@ -86,9 +85,9 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
 export const PRO_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "Unlimited swipes & matches",
+    "Unlimited work credits & portfolio",
     "🤖 Unlimited AI Lead Scout & CRM",
     "🤖 Unlimited AI Outreach Sequences",
-    "🤖 Unlimited AI Chat & Insights",
     "🤖 Unlimited AI Briefs & Templates",
     "📊 Unlimited Expense Tracking & Invoicing",
     "📊 Full P&L Dashboard & Reports",
@@ -96,7 +95,6 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
     "🔓 Unlimited Workspace Tools",
     "AI match explanations",
     "Profile verification badge",
-    "Unlimited portfolio items",
     "Advanced search filters",
     "Undo swipes (3/day)",
     "Press, credits & awards sections",

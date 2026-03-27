@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
     for (const challenge of expiringChallenges) {
       const hoursLeft = Math.ceil(
-        (new Date(challenge.deadline).getTime() - now.getTime()) /
+        (new Date(challenge.ends_at).getTime() - now.getTime()) /
           (1000 * 60 * 60)
       );
 

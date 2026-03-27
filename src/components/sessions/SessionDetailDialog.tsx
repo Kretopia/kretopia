@@ -65,6 +65,7 @@ export const SessionDetailDialog = ({
   const [participation, setParticipation] = useState<'going' | 'interested' | 'maybe' | null>(null);
   const [activeTab, setActiveTab] = useState("details");
   const [showShareKit, setShowShareKit] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     if (open && session && user) {

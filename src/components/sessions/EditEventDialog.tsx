@@ -112,6 +112,7 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
       ticket_price: data.ticket_price || 0,
       ticket_currency: data.ticket_currency || 'USD',
       event_type: (data.event_type as any) || 'session',
+      external_ticket_url: (data as any).external_ticket_url || '',
     });
     setFetching(false);
   };

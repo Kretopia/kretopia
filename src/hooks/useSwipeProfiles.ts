@@ -119,6 +119,9 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         if (!p.bio || p.bio.length < 20) return false;
         // Hide non-ODOS unclaimed profiles from discovery
         if (p.is_claimed === false && p.badge !== 'odos') return false;
+        // Hide incomplete profiles
+        if (!p.full_name || p.full_name === 'New User' || p.full_name === '') return false;
+        if (!p.role || p.role === 'Creator' || p.role === '') return false;
         return true;
       });
 

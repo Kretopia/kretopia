@@ -23,10 +23,10 @@ Deno.serve(async (req) => {
 
     const { data: expiringChallenges, error: challengeErr } = await supabase
       .from("challenges")
-      .select("id, title, deadline, cadence")
+      .select("id, title, ends_at, cadence")
       .eq("status", "active")
-      .gte("deadline", now.toISOString())
-      .lte("deadline", sixHoursFromNow.toISOString());
+      .gte("ends_at", now.toISOString())
+      .lte("ends_at", sixHoursFromNow.toISOString());
 
     if (challengeErr) throw challengeErr;
 

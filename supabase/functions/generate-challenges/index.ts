@@ -23,9 +23,9 @@ serve(async (req) => {
     // 1. Finalize any expired active challenges first
     const { data: expired } = await supabase
       .from("challenges")
-      .select("id, title, cadence, xp_reward, is_flash")
+      .select("id, title, cadence, xp_reward")
       .eq("status", "active")
-      .lt("deadline", new Date().toISOString());
+      .lt("ends_at", new Date().toISOString());
 
     if (expired && expired.length > 0) {
       for (const ch of expired) {

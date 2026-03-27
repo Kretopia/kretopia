@@ -152,7 +152,7 @@ export const SessionDetailDialog = ({
           </div>
 
           {/* Event Info Header */}
-          <div className="px-5 pb-4 pt-3 border-b shrink-0 space-y-3">
+          <div className="px-4 sm:px-5 pb-4 pt-3 border-b shrink-0 space-y-3">
             <div className="flex items-start gap-3">
               <Avatar className="h-11 w-11 ring-2 ring-primary/30 shrink-0">
                 <AvatarImage src={session.creator_avatar} />

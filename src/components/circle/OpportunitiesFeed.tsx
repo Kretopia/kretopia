@@ -132,7 +132,7 @@ export const OpportunitiesFeed = () => {
 
   useEffect(() => { fetchOpportunities(); }, [fetchOpportunities]);
 
-  const getTypeConfig = (type: string) => TYPE_CONFIG[type] || TYPE_CONFIG.job;
+  
 
   return (
     <div className="space-y-4">

@@ -36,10 +36,9 @@ export interface TierLimits {
  * -1 = unlimited. These are per-calendar-month limits.
  */
 export const FREE_TIER_MONTHLY_CAPS = {
-  // ThriveAI
+  // ThriveFunnel (Sales)
   aiLeadSearches: 3,
   aiOutreachDrafts: 5,
-  aiChatMessages: 20,
   
   // Project workspace
   approvalRequests: 2,
@@ -57,6 +56,9 @@ export const FREE_TIER_MONTHLY_CAPS = {
 
   // Bulk email
   bulkEmails: 5,
+
+  // Work / Credits
+  workCredits: 10,
 } as const;
 
 export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {

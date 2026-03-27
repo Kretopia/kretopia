@@ -78,7 +78,7 @@ export const OpportunitiesFeed = () => {
       let query = supabase
         .from("opportunities")
         .select("*")
-        .eq("status", "active")
+        .in("status", ["active", "open"])
         .order("created_at", { ascending: false })
         .limit(30);
 

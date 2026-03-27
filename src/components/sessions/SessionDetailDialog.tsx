@@ -75,6 +75,8 @@ export const SessionDetailDialog = ({
   const [activeTab, setActiveTab] = useState("details");
   const [showShareKit, setShowShareKit] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showCohosts, setShowCohosts] = useState(false);
+  const [showRecap, setShowRecap] = useState(false);
 
   useEffect(() => {
     if (open && session && user) {

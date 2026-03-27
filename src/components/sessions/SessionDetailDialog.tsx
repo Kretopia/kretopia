@@ -36,6 +36,9 @@ interface Session {
   ticket_price?: number;
   ticket_currency?: string;
   event_type?: string;
+  external_ticket_url?: string;
+  status?: string;
+  status_note?: string;
 }
 
 interface SessionDetailDialogProps {
@@ -180,9 +183,15 @@ export const SessionDetailDialog = ({
 
             {/* Action Buttons Row */}
             <div className="flex gap-2">
-              {!isPast && !isCreator && (
+              {!isPast && !isCreator && session.status !== 'cancelled' && (
                 <Button
-                  onClick={handleJoin}
+                  onClick={() => {
+                    if (session.external_ticket_url && !participation) {
+                      window.open(session.external_ticket_url, '_blank');
+                      return;
+                    }
+                    handleJoin();
+                  }}
                   disabled={loading || (isFull && !participation)}
                   variant={participation ? "outline" : "gradient"}
                   size="sm"
@@ -191,14 +200,17 @@ export const SessionDetailDialog = ({
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : participation ? (
                     <><Check className="h-4 w-4 mr-1.5" /> Going</>
                   ) : isTicketed ? (
-                    <><Ticket className="h-4 w-4 mr-1.5" /> Get Ticket — {currencySymbol}{session.ticket_price}</>
+                    <>{session.external_ticket_url ? <ExternalLink className="h-4 w-4 mr-1.5" /> : <Ticket className="h-4 w-4 mr-1.5" />} Get Ticket — {currencySymbol}{session.ticket_price}</>
                   ) : isFull ? "Full" : "Join Event"}
                 </Button>
               )}
-              {isCreator && !isPast && (
+              {session.status === 'cancelled' && (
+                <Badge variant="destructive" className="flex-1 justify-center py-2">Event Cancelled</Badge>
+              )}
+              {isCreator && !isPast && session.status !== 'cancelled' && (
                 <Badge variant="secondary" className="flex-1 justify-center py-2">You're hosting</Badge>
               )}
-              {isPast && (
+              {isPast && session.status !== 'cancelled' && (
                 <Badge variant="outline" className="flex-1 justify-center py-2">Event ended</Badge>
               )}
               <Button size="sm" variant="outline" onClick={() => setShowShareKit(true)} className="gap-1.5">

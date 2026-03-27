@@ -34,6 +34,9 @@ interface EventItem {
   ticket_currency?: string;
   event_type?: string;
   cover_image_url?: string;
+  external_ticket_url?: string;
+  status?: string;
+  status_note?: string;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {

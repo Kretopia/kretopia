@@ -9,11 +9,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Loader2, Lock, 
-  Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink
+  Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
+import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: '🎵 Music', film: '🎬 Film', photo: '📸 Photo', art: '🎨 Art',
@@ -34,10 +35,12 @@ const EventPage = () => {
   const [event, setEvent] = useState<any>(null);
   const [creator, setCreator] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
+  const [attendeeAvatars, setAttendeeAvatars] = useState<{ avatar_url: string | null; full_name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [participation, setParticipation] = useState<string | null>(null);
   const [showShareKit, setShowShareKit] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     if (eventId) fetchEvent();
@@ -56,9 +59,18 @@ const EventPage = () => {
         .from('public_profiles_safe').select('full_name, avatar_url, role').eq('user_id', eventData.created_by).single();
       setCreator(profileData);
 
-      const { count } = await supabase
-        .from('jam_participants').select('*', { count: 'exact', head: true }).eq('jam_id', eventId).in('status', ['going', 'interested']);
+      // Get participant count and avatars
+      const { data: participants, count } = await supabase
+        .from('jam_participants').select('user_id', { count: 'exact' }).eq('jam_id', eventId).in('status', ['going', 'interested']);
       setParticipantCount(count || 0);
+
+      // Fetch first 8 attendee avatars
+      if (participants && participants.length > 0) {
+        const userIds = participants.slice(0, 8).map(p => p.user_id);
+        const { data: profiles } = await supabase
+          .from('profiles').select('avatar_url, full_name').in('user_id', userIds);
+        setAttendeeAvatars(profiles || []);
+      }
 
       if (user) {
         const { data: part } = await supabase
@@ -76,6 +88,11 @@ const EventPage = () => {
     if (!user) {
       sessionStorage.setItem('pending_event_join', eventId!);
       navigate('/auth?event=' + eventId);
+      return;
+    }
+    // If external ticket URL, redirect there
+    if (event?.external_ticket_url) {
+      window.open(event.external_ticket_url, '_blank');
       return;
     }
     handleJoin();
@@ -142,6 +159,9 @@ const EventPage = () => {
   const isAuthenticated = !!user;
   const isTicketed = event.is_ticketed && event.ticket_price > 0;
   const currencySymbol = CURRENCY_SYMBOLS[event.ticket_currency || 'USD'] || '$';
+  const isCancelled = event.status === 'cancelled';
+  const isCompleted = event.status === 'completed';
+  const hasExternalTicket = !!event.external_ticket_url;
 
   const now = new Date();
   const diff = startDate.getTime() - now.getTime();
@@ -168,6 +188,32 @@ const EventPage = () => {
 
         <div className="max-w-2xl mx-auto px-4 pb-12 -mt-8 relative z-10">
           
+          {/* Cancelled/Completed Banner */}
+          {isCancelled && (
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-destructive shrink-0" />
+              <div>
+                <p className="font-semibold text-destructive">Event Cancelled</p>
+                {event.status_note && <p className="text-sm text-muted-foreground">{event.status_note}</p>}
+              </div>
+            </div>
+          )}
+          {isCompleted && (
+            <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+              <Check className="h-5 w-5 text-green-600 shrink-0" />
+              <p className="font-semibold text-green-600">Event Completed</p>
+            </div>
+          )}
+
+          {/* Host Edit Button */}
+          {isCreator && (
+            <div className="flex justify-end mb-2">
+              <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)} className="gap-1.5">
+                <Pencil className="h-3.5 w-3.5" /> Edit Event
+              </Button>
+            </div>
+          )}
+          
           {/* Event Header */}
           <div className="text-center mb-6">
             <Badge variant="secondary" className="mb-3 text-sm">
@@ -190,7 +236,7 @@ const EventPage = () => {
             </div>
 
             {/* Countdown */}
-            {!isPast && diff > 0 && (
+            {!isPast && !isCancelled && diff > 0 && (
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="text-center px-4 py-2 rounded-lg bg-primary/10">
                   <p className="text-2xl font-bold text-primary">{daysUntil}</p>
@@ -211,7 +257,7 @@ const EventPage = () => {
           </div>
 
           {/* Ticket Banner (for ticketed events) */}
-          {isTicketed && !isPast && (
+          {isTicketed && !isPast && !isCancelled && (
             <Card className="mb-6 border-primary/30 bg-primary/5 overflow-hidden">
               <CardContent className="p-5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -230,11 +276,20 @@ const EventPage = () => {
                 ) : (
                   <Button variant="gradient" onClick={handleJoinOrSignup} disabled={joining || isFull}>
                     {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                      <>{!isAuthenticated ? "Sign Up & Get Ticket" : isFull ? "Sold Out" : "Get Ticket"}</>
+                      <>
+                        {!isAuthenticated ? "Sign Up & Get Ticket" : isFull ? "Sold Out" : hasExternalTicket ? (
+                          <><ExternalLink className="h-4 w-4 mr-1.5" /> Get Ticket</>
+                        ) : "Get Ticket"}
+                      </>
                     )}
                   </Button>
                 )}
               </CardContent>
+              {hasExternalTicket && (
+                <div className="px-5 pb-3">
+                  <p className="text-xs text-muted-foreground">🔗 Tickets via external platform</p>
+                </div>
+              )}
             </Card>
           )}
 
@@ -283,11 +338,33 @@ const EventPage = () => {
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <Users className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="font-medium">{participantCount} / {event.max_participants || '∞'} going</p>
                   {isFull && <p className="text-xs text-destructive">This event is full</p>}
                 </div>
               </div>
+
+              {/* Attendee Avatars */}
+              {attendeeAvatars.length > 0 && (
+                <div className="flex items-center gap-2 pt-1">
+                  <div className="flex -space-x-2">
+                    {attendeeAvatars.map((a, i) => (
+                      <Avatar key={i} className="h-8 w-8 border-2 border-background">
+                        <AvatarImage src={a.avatar_url || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                          {a.full_name?.charAt(0) || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
+                    {participantCount > attendeeAvatars.length && (
+                      <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground">+{participantCount - attendeeAvatars.length}</span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground">are going</span>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -312,37 +389,39 @@ const EventPage = () => {
           )}
 
           {/* CTA */}
-          <div className="space-y-3">
-            {isPast ? (
-              <Badge variant="outline" className="w-full justify-center py-3 text-base">This event has ended</Badge>
-            ) : isCreator ? (
-              <div className="space-y-3">
-                <Badge variant="secondary" className="w-full justify-center py-3 text-base">You're hosting this event</Badge>
-                <Button variant="outline" className="w-full" onClick={() => setShowShareKit(true)}>
-                  <Share2 className="h-4 w-4 mr-2" /> Share Event
-                </Button>
-              </div>
-            ) : participation ? (
-              <div className="space-y-3">
-                <Button variant="outline" className="w-full" onClick={handleJoin} disabled={joining}>
-                  {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                    <><Check className="h-4 w-4 mr-2" /> You're going — Tap to leave</>
+          {!isCancelled && (
+            <div className="space-y-3">
+              {isPast || isCompleted ? (
+                <Badge variant="outline" className="w-full justify-center py-3 text-base">This event has ended</Badge>
+              ) : isCreator ? (
+                <div className="space-y-3">
+                  <Badge variant="secondary" className="w-full justify-center py-3 text-base">You're hosting this event</Badge>
+                  <Button variant="outline" className="w-full" onClick={() => setShowShareKit(true)}>
+                    <Share2 className="h-4 w-4 mr-2" /> Share Event
+                  </Button>
+                </div>
+              ) : participation ? (
+                <div className="space-y-3">
+                  <Button variant="outline" className="w-full" onClick={handleJoin} disabled={joining}>
+                    {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                      <><Check className="h-4 w-4 mr-2" /> You're going — Tap to leave</>
+                    )}
+                  </Button>
+                  <Button variant="ghost" className="w-full" onClick={() => setShowShareKit(true)}>
+                    <Share2 className="h-4 w-4 mr-2" /> Share with friends
+                  </Button>
+                </div>
+              ) : !isTicketed ? (
+                <Button variant="gradient" className="w-full py-6 text-lg" onClick={handleJoinOrSignup} disabled={joining || isFull}>
+                  {joining ? <Loader2 className="h-5 w-5 animate-spin" /> : !isAuthenticated ? (
+                    <><Sparkles className="h-5 w-5 mr-2" /> Sign Up & Join Event <ArrowRight className="h-5 w-5 ml-2" /></>
+                  ) : isFull ? "Event Full" : (
+                    <><Sparkles className="h-5 w-5 mr-2" /> Join Event</>
                   )}
                 </Button>
-                <Button variant="ghost" className="w-full" onClick={() => setShowShareKit(true)}>
-                  <Share2 className="h-4 w-4 mr-2" /> Share with friends
-                </Button>
-              </div>
-            ) : !isTicketed ? (
-              <Button variant="gradient" className="w-full py-6 text-lg" onClick={handleJoinOrSignup} disabled={joining || isFull}>
-                {joining ? <Loader2 className="h-5 w-5 animate-spin" /> : !isAuthenticated ? (
-                  <><Sparkles className="h-5 w-5 mr-2" /> Sign Up & Join Event <ArrowRight className="h-5 w-5 ml-2" /></>
-                ) : isFull ? "Event Full" : (
-                  <><Sparkles className="h-5 w-5 mr-2" /> Join Event</>
-                )}
-              </Button>
-            ) : null}
-          </div>
+              ) : null}
+            </div>
+          )}
 
           {/* Powered by ThriveIN */}
           {!isAuthenticated && (
@@ -355,6 +434,15 @@ const EventPage = () => {
 
           {isAuthenticated && (
             <EventShareKit event={event} open={showShareKit} onOpenChange={setShowShareKit} />
+          )}
+          
+          {isCreator && (
+            <EditEventDialog 
+              eventId={event.id} 
+              open={showEditDialog} 
+              onOpenChange={setShowEditDialog} 
+              onUpdated={fetchEvent}
+            />
           )}
         </div>
       </div>

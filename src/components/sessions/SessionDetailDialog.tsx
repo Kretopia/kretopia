@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Check, Loader2, 
-  MessageCircle, Settings, Share2, Ticket, X, ExternalLink, Pencil
+  MessageCircle, Share2, Ticket, X, ExternalLink, Pencil, MoreVertical, Crown, Sparkles, Ban, CheckCircle
 } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

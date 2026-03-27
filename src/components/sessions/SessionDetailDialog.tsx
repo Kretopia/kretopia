@@ -142,11 +142,60 @@ export const SessionDetailDialog = ({
               <div className="h-20 bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
             )}
             
-            {/* Close button */}
-            <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-8 w-8 bg-background/60 backdrop-blur-sm hover:bg-background/80 rounded-full"
-              onClick={() => onOpenChange(false)}>
-              <X className="h-4 w-4" />
-            </Button>
+            {/* Top-right actions */}
+            <div className="absolute top-2 right-2 flex gap-1.5">
+              {isCreator && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 bg-background/60 backdrop-blur-sm hover:bg-background/80 rounded-full">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                      <Pencil className="h-4 w-4 mr-2" /> Edit Event
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowShareKit(true)}>
+                      <Share2 className="h-4 w-4 mr-2" /> Share / QR Code
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowCohosts(true)}>
+                      <Crown className="h-4 w-4 mr-2" /> Manage Co-hosts
+                    </DropdownMenuItem>
+                    {isPast && (
+                      <DropdownMenuItem onClick={() => setShowRecap(true)}>
+                        <Sparkles className="h-4 w-4 mr-2" /> Post Recap
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive"
+                      onClick={async () => {
+                        await supabase.from('creative_jams').update({ status: 'cancelled', status_note: 'Cancelled by host' } as any).eq('id', session.id).eq('created_by', user?.id || '');
+                        toast({ title: "Event cancelled" });
+                        onRefresh?.();
+                        onOpenChange(false);
+                      }}
+                    >
+                      <Ban className="h-4 w-4 mr-2" /> Cancel Event
+                    </DropdownMenuItem>
+                    {!isPast && (
+                      <DropdownMenuItem onClick={async () => {
+                        await supabase.from('creative_jams').update({ status: 'completed' } as any).eq('id', session.id).eq('created_by', user?.id || '');
+                        toast({ title: "Event marked complete ✅" });
+                        onRefresh?.();
+                        onOpenChange(false);
+                      }}>
+                        <CheckCircle className="h-4 w-4 mr-2" /> Mark Complete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              <Button size="icon" variant="ghost" className="h-8 w-8 bg-background/60 backdrop-blur-sm hover:bg-background/80 rounded-full"
+                onClick={() => onOpenChange(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
 
             {/* Category badge */}
             <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">

@@ -191,8 +191,8 @@ const DiscoverPage = () => {
     try {
       let query = supabase
         .from('opportunities')
-        .select('id, title, description, type, compensation, location, skills, created_at, created_by, status', { count: 'exact' })
-        .eq('status', 'open')
+        .select('id, title, description, type, compensation, location, skills, created_at, created_by, status, image_url, barter_offering, barter_requesting, platform_requirements, min_followers, is_priority, priority_expires_at', { count: 'exact' })
+        .in('status', ['open', 'active'])
         .order('created_at', { ascending: false })
         .range(gigPage * PAGE_SIZE, (gigPage + 1) * PAGE_SIZE - 1);
 

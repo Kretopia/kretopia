@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Check, Loader2, 
-  MessageCircle, Settings, Share2, Ticket, X, ExternalLink, Pencil
+  MessageCircle, Share2, Ticket, X, ExternalLink, Pencil, MoreVertical, Crown, Sparkles, Ban, CheckCircle
 } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -72,6 +75,8 @@ export const SessionDetailDialog = ({
   const [activeTab, setActiveTab] = useState("details");
   const [showShareKit, setShowShareKit] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showCohosts, setShowCohosts] = useState(false);
+  const [showRecap, setShowRecap] = useState(false);
 
   useEffect(() => {
     if (open && session && user) {
@@ -139,11 +144,60 @@ export const SessionDetailDialog = ({
               <div className="h-20 bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
             )}
             
-            {/* Close button */}
-            <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-8 w-8 bg-background/60 backdrop-blur-sm hover:bg-background/80 rounded-full"
-              onClick={() => onOpenChange(false)}>
-              <X className="h-4 w-4" />
-            </Button>
+            {/* Top-right actions */}
+            <div className="absolute top-2 right-2 flex gap-1.5">
+              {isCreator && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 bg-background/60 backdrop-blur-sm hover:bg-background/80 rounded-full">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                      <Pencil className="h-4 w-4 mr-2" /> Edit Event
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowShareKit(true)}>
+                      <Share2 className="h-4 w-4 mr-2" /> Share / QR Code
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowCohosts(true)}>
+                      <Crown className="h-4 w-4 mr-2" /> Manage Co-hosts
+                    </DropdownMenuItem>
+                    {isPast && (
+                      <DropdownMenuItem onClick={() => setShowRecap(true)}>
+                        <Sparkles className="h-4 w-4 mr-2" /> Post Recap
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive"
+                      onClick={async () => {
+                        await supabase.from('creative_jams').update({ status: 'cancelled', status_note: 'Cancelled by host' } as any).eq('id', session.id).eq('created_by', user?.id || '');
+                        toast({ title: "Event cancelled" });
+                        onRefresh?.();
+                        onOpenChange(false);
+                      }}
+                    >
+                      <Ban className="h-4 w-4 mr-2" /> Cancel Event
+                    </DropdownMenuItem>
+                    {!isPast && (
+                      <DropdownMenuItem onClick={async () => {
+                        await supabase.from('creative_jams').update({ status: 'completed' } as any).eq('id', session.id).eq('created_by', user?.id || '');
+                        toast({ title: "Event marked complete ✅" });
+                        onRefresh?.();
+                        onOpenChange(false);
+                      }}>
+                        <CheckCircle className="h-4 w-4 mr-2" /> Mark Complete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              <Button size="icon" variant="ghost" className="h-8 w-8 bg-background/60 backdrop-blur-sm hover:bg-background/80 rounded-full"
+                onClick={() => onOpenChange(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
 
             {/* Category badge */}
             <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">
@@ -233,11 +287,6 @@ export const SessionDetailDialog = ({
               <TabsTrigger value="chat">
                 <MessageCircle className="h-4 w-4 mr-1" /> Chat
               </TabsTrigger>
-              {isCreator && (
-                <TabsTrigger value="manage">
-                  <Settings className="h-4 w-4 mr-1" /> Manage
-                </TabsTrigger>
-              )}
             </TabsList>
             </div>
 
@@ -320,40 +369,6 @@ export const SessionDetailDialog = ({
                 <SessionChat sessionId={session.id} isCreator={isCreator} />
               </TabsContent>
 
-              {isCreator && (
-                <TabsContent value="manage" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">
-                  <div className="space-y-4">
-                    <Button variant="default" className="w-full gap-2" onClick={() => setShowEditDialog(true)}>
-                      <Pencil className="h-4 w-4" /> Edit Event Details
-                    </Button>
-                    <Button variant="outline" className="w-full" onClick={() => setShowShareKit(true)}>
-                      <Share2 className="h-4 w-4 mr-2" /> Share Event / Get QR Code
-                    </Button>
-                    
-                    {/* Co-hosts */}
-                    <EventCohosts eventId={session.id} isCreator={isCreator} />
-
-                    {/* Post-event recap */}
-                    {isPast && (
-                      <EventRecapButton 
-                        eventId={session.id} 
-                        eventTitle={session.title} 
-                        eventCategory={session.category}
-                        venueName={session.venue_name}
-                      />
-                    )}
-
-                    <div className="p-4 rounded-lg bg-muted/50">
-                      <h4 className="font-medium mb-2">Moderation</h4>
-                      <p className="text-sm text-muted-foreground mb-3">As the host, you can remove participants and manage the event space.</p>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• Go to "People" tab to remove participants</li>
-                        <li>• Go to "Chat" tab to delete inappropriate messages</li>
-                      </ul>
-                    </div>
-                  </div>
-                </TabsContent>
-              )}
             </div>
           </Tabs>
         </DialogContent>
@@ -369,6 +384,29 @@ export const SessionDetailDialog = ({
           onOpenChange={setShowEditDialog} 
           onUpdated={() => { onRefresh?.(); onOpenChange(false); }}
         />
+      )}
+      {session && isCreator && showCohosts && (
+        <Dialog open={showCohosts} onOpenChange={setShowCohosts}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <EventCohosts eventId={session.id} isCreator={isCreator} />
+          </DialogContent>
+        </Dialog>
+      )}
+      {session && isCreator && showRecap && (
+        <Dialog open={showRecap} onOpenChange={setShowRecap}>
+          <DialogContent className="max-w-sm">
+            <div className="space-y-4 py-2">
+              <h3 className="font-semibold text-lg">Post Event Recap</h3>
+              <p className="text-sm text-muted-foreground">Share a recap of this event to your feed so your network can see what happened.</p>
+              <EventRecapButton 
+                eventId={session.id} 
+                eventTitle={session.title} 
+                eventCategory={session.category}
+                venueName={session.venue_name}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );

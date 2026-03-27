@@ -17,8 +17,7 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
-import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
-import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
+import GigCard, { type GigCreatorProfile } from "@/components/opportunity/GigCard";
 import { formatDistanceToNow, parseISO } from "date-fns";
 
 const CATEGORY_GROUPS = [

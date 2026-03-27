@@ -134,10 +134,10 @@ export function WalletXPSection() {
     await recordActivity("extra_work_credits_purchased", 400, "Purchased +5 Work Credits");
   };
 
-  const buyExtraLeads = async () => {
+  const buyExtraAIBriefs = async () => {
     await deductXP(800);
-    addBonusUses("aiLeadSearches", 5);
-    await recordActivity("extra_leads_purchased", 800, "Purchased +5 Lead Searches");
+    addBonusUses("aiBriefs", 5);
+    await recordActivity("extra_briefs_purchased", 800, "Purchased +5 AI Briefs");
   };
 
   const buyExtraInvoices = async () => {

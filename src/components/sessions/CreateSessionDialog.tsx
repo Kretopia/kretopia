@@ -152,6 +152,7 @@ export const CreateSessionDialog = ({
         ticket_price: 0,
         ticket_currency: 'USD',
         event_type: 'session',
+        external_ticket_url: '',
       });
       setDate(undefined);
       setCoverFile(null);

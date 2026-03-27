@@ -43,11 +43,6 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
   fashion_collection: "fashion", editorial_shoot: "fashion", runway: "fashion",
 };
 
-const TYPE_ICONS: Record<string, any> = {
-  paid: DollarSign,
-  collab: Handshake,
-  barter: ArrowRightLeft,
-};
 
 interface CreditResult {
   id: string; project_name: string; role: string; year: number | null;

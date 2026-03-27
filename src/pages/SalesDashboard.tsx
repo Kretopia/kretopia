@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Send, Target, Users, TrendingUp, Mail, Crown, Lock, Kanban, BarChart3 } from "lucide-react";
 import LeadsTab from "@/components/thrive-ai/LeadsTab";
 import OutreachTab from "@/components/thrive-ai/OutreachTab";
-import { FreeTierGate } from "@/components/FreeTierGate";
+
 import { LeadPipelineKanban } from "@/components/sales/LeadPipelineKanban";
 import { ConversionFunnel } from "@/components/sales/ConversionFunnel";
 

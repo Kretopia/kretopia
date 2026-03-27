@@ -312,6 +312,10 @@ export const SessionDetailDialog = ({
                 </div>
               </TabsContent>
 
+              <TabsContent value="participants" className="h-full overflow-y-auto m-0">
+                <SessionParticipants sessionId={session.id} creatorId={session.created_by} isCreator={isCreator} onRefresh={onRefresh} />
+              </TabsContent>
+
               <TabsContent value="chat" className="h-full m-0 flex flex-col overflow-hidden">
                 <SessionChat sessionId={session.id} isCreator={isCreator} />
               </TabsContent>

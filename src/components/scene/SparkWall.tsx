@@ -212,7 +212,6 @@ export const SparkWall = () => {
 
   const handleClip = async (post: SparkPost) => {
     if (!user) return;
-    const { toast: t } = useToast;
     let postId = post.id;
     
     // Ensure feed_post exists

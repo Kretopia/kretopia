@@ -385,6 +385,29 @@ export const SessionDetailDialog = ({
           onUpdated={() => { onRefresh?.(); onOpenChange(false); }}
         />
       )}
+      {session && isCreator && showCohosts && (
+        <Dialog open={showCohosts} onOpenChange={setShowCohosts}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <EventCohosts eventId={session.id} isCreator={isCreator} />
+          </DialogContent>
+        </Dialog>
+      )}
+      {session && isCreator && showRecap && (
+        <Dialog open={showRecap} onOpenChange={setShowRecap}>
+          <DialogContent className="max-w-sm">
+            <div className="space-y-4 py-2">
+              <h3 className="font-semibold text-lg">Post Event Recap</h3>
+              <p className="text-sm text-muted-foreground">Share a recap of this event to your feed so your network can see what happened.</p>
+              <EventRecapButton 
+                eventId={session.id} 
+                eventTitle={session.title} 
+                eventCategory={session.category}
+                venueName={session.venue_name}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 };

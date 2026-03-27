@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   Search, ShieldCheck, ExternalLink, Loader2, Users, UserPlus,
   Compass, Filter, MapPin, Building2, CalendarDays, MessageSquare, Award,
-  Briefcase, Handshake, ArrowRightLeft, Clock, DollarSign, Plus, ArrowRight,
+  Briefcase, Plus,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";

@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { parseMediaUrl } from "@/lib/mediaUtils";
 import { AudioWaveformPlayer } from "@/components/profile/AudioWaveformPlayer";
+import { SparkComposer } from "@/components/scene/SparkComposer";
 
 interface SparkPost {
   id: string;

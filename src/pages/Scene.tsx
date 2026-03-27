@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Flame, MessageSquare } from "lucide-react";
 import Events from "./Events";
 import { SparkWall } from "@/components/scene/SparkWall";
-import { RoomsTab } from "@/components/scene/RoomsTab";
+import { CirclesTab } from "@/components/scene/CirclesTab";
 
 const Scene = () => {
   const [activeTab, setActiveTab] = useState("spark");
@@ -38,9 +38,9 @@ const Scene = () => {
                 <CalendarDays className="h-3.5 w-3.5" />
                 Events
               </TabsTrigger>
-              <TabsTrigger value="rooms" className="gap-1.5 text-xs sm:text-sm">
+              <TabsTrigger value="circles" className="gap-1.5 text-xs sm:text-sm">
                 <MessageSquare className="h-3.5 w-3.5" />
-                Rooms
+                Circles
               </TabsTrigger>
             </TabsList>
 
@@ -52,8 +52,8 @@ const Scene = () => {
               <EventsEmbed />
             </TabsContent>
 
-            <TabsContent value="rooms" className="mt-0">
-              <RoomsTab />
+            <TabsContent value="circles" className="mt-0">
+              <CirclesTab />
             </TabsContent>
           </Tabs>
         </div>
@@ -62,7 +62,6 @@ const Scene = () => {
   );
 };
 
-// Embedded events — reuses the Events page content without duplicate layout
 const EventsEmbed = () => {
   return <Events embedded />;
 };

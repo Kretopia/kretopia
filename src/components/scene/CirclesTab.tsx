@@ -359,7 +359,7 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
           <p className="text-xs text-muted-foreground">{circle.member_count} members</p>
         </div>
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={shareCircle}>
-          {copied ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
+          {copied ? <Check className="h-4 w-4 text-primary" /> : <Share2 className="h-4 w-4" />}
         </Button>
         {!isMember && <Button size="sm" variant="gradient" onClick={joinCircle}>Join</Button>}
       </div>

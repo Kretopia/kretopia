@@ -152,7 +152,6 @@ serve(async (req) => {
 
     // 3. Generate challenges using AI
     const challengeDescriptions = needed.map((n) => {
-      if (n.is_flash) return "1 flash challenge (2-hour sprint, intense, specific)";
       return `1 ${n.cadence} challenge (${n.deadline_hours}h deadline)`;
     });
 

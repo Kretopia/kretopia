@@ -295,7 +295,7 @@ export const CreateSessionDialog = ({
               }))}
               placeholder="Search for a venue, address, or place..."
             />
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button 
                 type="button" 
                 variant="outline" 

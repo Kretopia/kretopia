@@ -6263,6 +6263,38 @@ export type Database = {
           },
         ]
       }
+      spark_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "spark_room_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spark_room_members: {
         Row: {
           id: string
@@ -6297,7 +6329,12 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          media_type: string | null
           media_url: string | null
+          message_type: string
+          poll_data: Json | null
+          reactions: Json | null
+          reply_to_id: string | null
           room_id: string
           user_id: string
         }
@@ -6305,7 +6342,12 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          media_type?: string | null
           media_url?: string | null
+          message_type?: string
+          poll_data?: Json | null
+          reactions?: Json | null
+          reply_to_id?: string | null
           room_id: string
           user_id: string
         }
@@ -6313,11 +6355,23 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          media_type?: string | null
           media_url?: string | null
+          message_type?: string
+          poll_data?: Json | null
+          reactions?: Json | null
+          reply_to_id?: string | null
           room_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "spark_room_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "spark_room_messages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "spark_room_messages_room_id_fkey"
             columns: ["room_id"]
@@ -6334,8 +6388,11 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          icon_emoji: string | null
           id: string
+          invite_code: string | null
           is_active: boolean
+          is_private: boolean
           member_count: number
           message_count: number
           title: string
@@ -6347,8 +6404,11 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          icon_emoji?: string | null
           id?: string
+          invite_code?: string | null
           is_active?: boolean
+          is_private?: boolean
           member_count?: number
           message_count?: number
           title: string
@@ -6360,8 +6420,11 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          icon_emoji?: string | null
           id?: string
+          invite_code?: string | null
           is_active?: boolean
+          is_private?: boolean
           member_count?: number
           message_count?: number
           title?: string

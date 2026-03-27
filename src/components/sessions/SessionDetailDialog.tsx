@@ -287,11 +287,6 @@ export const SessionDetailDialog = ({
               <TabsTrigger value="chat">
                 <MessageCircle className="h-4 w-4 mr-1" /> Chat
               </TabsTrigger>
-              {isCreator && (
-                <TabsTrigger value="manage">
-                  <Settings className="h-4 w-4 mr-1" /> Manage
-                </TabsTrigger>
-              )}
             </TabsList>
             </div>
 

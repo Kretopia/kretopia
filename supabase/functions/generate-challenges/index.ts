@@ -232,8 +232,8 @@ Return ONLY valid JSON array:
 
     const inserted = [];
     for (const ch of challenges) {
-      const deadlineHours = ch.deadline_hours || (ch.is_flash ? 2 : ch.cadence === "daily" ? 24 : ch.cadence === "48hr" ? 48 : 168);
-      const deadline = new Date(now.getTime() + deadlineHours * 60 * 60 * 1000);
+      const deadlineHours = ch.deadline_hours || (ch.cadence === "daily" ? 24 : ch.cadence === "48hr" ? 48 : 168);
+      const endsAt = new Date(now.getTime() + deadlineHours * 60 * 60 * 1000);
 
       const { data: newChallenge, error } = await supabase
         .from("challenges")
@@ -241,17 +241,12 @@ Return ONLY valid JSON array:
           title: ch.title,
           description: ch.description,
           category: ch.category || "visual",
-          type: "platform",
           cadence: ch.cadence || "daily",
-          deadline: deadline.toISOString(),
-          requirements: ch.requirements || null,
-          tags: ch.tags || [],
+          starts_at: now.toISOString(),
+          ends_at: endsAt.toISOString(),
           xp_reward: ch.xp_reward || 100,
-          is_flash: ch.is_flash || false,
           status: "active",
           created_by: createdBy,
-          allow_swap: true,
-          max_swaps: 3,
         })
         .select()
         .single();

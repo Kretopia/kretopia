@@ -171,6 +171,7 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
           ticket_currency: formData.ticket_currency,
           event_type: formData.event_type,
           cover_image_url: coverUrl,
+          external_ticket_url: formData.external_ticket_url || null,
         } as any)
         .eq('id', eventId)
         .eq('created_by', user.id);

@@ -59,15 +59,7 @@ const SKILLS_OPTIONS = [
   'Motion Graphics', 'Graphic Design', 'Podcast Production', 'Live Streaming',
 ];
 
-const TYPE_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: typeof Briefcase }> = {
-  job: { label: "Paid Gig", color: "text-green-600", bgColor: "bg-green-500/10 border-green-500/20", icon: Briefcase },
-  collab: { label: "Collaboration", color: "text-blue-600", bgColor: "bg-blue-500/10 border-blue-500/20", icon: Handshake },
-  collaboration: { label: "Collaboration", color: "text-blue-600", bgColor: "bg-blue-500/10 border-blue-500/20", icon: Handshake },
-  gig: { label: "Quick Gig", color: "text-yellow-600", bgColor: "bg-yellow-500/10 border-yellow-500/20", icon: Zap },
-  project: { label: "Project", color: "text-cyan-600", bgColor: "bg-cyan-500/10 border-cyan-500/20", icon: Target },
-  internship: { label: "Internship", color: "text-orange-600", bgColor: "bg-orange-500/10 border-orange-500/20", icon: GraduationCap },
-  barter: { label: "Barter", color: "text-purple-600", bgColor: "bg-purple-500/10 border-purple-500/20", icon: ArrowRightLeft },
-};
+// TYPE_CONFIG moved to shared GigCard component
 
 export const OpportunitiesFeed = () => {
   const { user } = useAuth();

@@ -369,40 +369,6 @@ export const SessionDetailDialog = ({
                 <SessionChat sessionId={session.id} isCreator={isCreator} />
               </TabsContent>
 
-              {isCreator && (
-                <TabsContent value="manage" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">
-                  <div className="space-y-4">
-                    <Button variant="default" className="w-full gap-2" onClick={() => setShowEditDialog(true)}>
-                      <Pencil className="h-4 w-4" /> Edit Event Details
-                    </Button>
-                    <Button variant="outline" className="w-full" onClick={() => setShowShareKit(true)}>
-                      <Share2 className="h-4 w-4 mr-2" /> Share Event / Get QR Code
-                    </Button>
-                    
-                    {/* Co-hosts */}
-                    <EventCohosts eventId={session.id} isCreator={isCreator} />
-
-                    {/* Post-event recap */}
-                    {isPast && (
-                      <EventRecapButton 
-                        eventId={session.id} 
-                        eventTitle={session.title} 
-                        eventCategory={session.category}
-                        venueName={session.venue_name}
-                      />
-                    )}
-
-                    <div className="p-4 rounded-lg bg-muted/50">
-                      <h4 className="font-medium mb-2">Moderation</h4>
-                      <p className="text-sm text-muted-foreground mb-3">As the host, you can remove participants and manage the event space.</p>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• Go to "People" tab to remove participants</li>
-                        <li>• Go to "Chat" tab to delete inappropriate messages</li>
-                      </ul>
-                    </div>
-                  </div>
-                </TabsContent>
-              )}
             </div>
           </Tabs>
         </DialogContent>

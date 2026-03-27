@@ -73,6 +73,7 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
     ticket_price: 0,
     ticket_currency: 'USD',
     event_type: 'session' as 'session' | 'event',
+    external_ticket_url: '',
   });
 
   useEffect(() => {

@@ -268,16 +268,32 @@ export const SparkWall = () => {
     );
   }
 
+  const handleRefresh = () => {
+    hasFetched.current = false;
+    fetchPosts();
+  };
+
   return (
     <div className="space-y-4">
+      <SparkComposer userProfile={userProfile} onPostCreated={handleRefresh} />
       {posts.map(post => (
-        <SparkMediaCard
-          key={post.id}
-          post={post}
-          onReact={() => handleReaction(post)}
-          onClip={() => handleClip(post)}
-          onNavigate={(userId) => navigate(`/profile/${userId}`)}
-        />
+        post.is_portfolio_item && post.portfolio_item ? (
+          <SparkMediaCard
+            key={post.id}
+            post={post}
+            onReact={() => handleReaction(post)}
+            onClip={() => handleClip(post)}
+            onNavigate={(userId) => navigate(`/profile/${userId}`)}
+          />
+        ) : (
+          <SparkTextCard
+            key={post.id}
+            post={post}
+            onReact={() => handleReaction(post)}
+            onClip={() => handleClip(post)}
+            onNavigate={(userId) => navigate(`/profile/${userId}`)}
+          />
+        )
       ))}
     </div>
   );

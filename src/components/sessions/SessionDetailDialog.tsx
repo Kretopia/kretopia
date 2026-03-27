@@ -301,6 +301,9 @@ export const SessionDetailDialog = ({
               {isCreator && (
                 <TabsContent value="manage" className="h-full overflow-y-auto px-5 py-4 m-0">
                   <div className="space-y-4">
+                    <Button variant="default" className="w-full gap-2" onClick={() => setShowEditDialog(true)}>
+                      <Pencil className="h-4 w-4" /> Edit Event Details
+                    </Button>
                     <Button variant="outline" className="w-full" onClick={() => setShowShareKit(true)}>
                       <Share2 className="h-4 w-4 mr-2" /> Share Event / Get QR Code
                     </Button>

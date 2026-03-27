@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, Compass, FolderKanban, User, CalendarDays, Briefcase } from "lucide-react";
+import { Users, Compass, FolderKanban, User, Flame, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";

@@ -85,9 +85,9 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
 export const PRO_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "Unlimited swipes & matches",
+    "Unlimited work credits & portfolio",
     "🤖 Unlimited AI Lead Scout & CRM",
     "🤖 Unlimited AI Outreach Sequences",
-    "🤖 Unlimited AI Chat & Insights",
     "🤖 Unlimited AI Briefs & Templates",
     "📊 Unlimited Expense Tracking & Invoicing",
     "📊 Full P&L Dashboard & Reports",
@@ -95,7 +95,6 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
     "🔓 Unlimited Workspace Tools",
     "AI match explanations",
     "Profile verification badge",
-    "Unlimited portfolio items",
     "Advanced search filters",
     "Undo swipes (3/day)",
     "Press, credits & awards sections",

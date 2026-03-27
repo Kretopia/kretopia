@@ -56,11 +56,10 @@ export const BRAND_SUBSCRIPTION_PRODUCTS = {
 export const FREE_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "30 swipes/day",
-    "Portfolio (up to 5 items)",
+    "Work credits (up to 10/month)",
     "Direct messaging",
     "🤖 3 AI lead searches/month",
     "🤖 5 AI outreach drafts/month",
-    "🤖 20 AI chat messages/month",
     "🤖 3 AI briefs/month",
     "📊 5 expenses/month",
     "📊 2 invoices/month",

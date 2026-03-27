@@ -128,22 +128,16 @@ export function WalletXPSection() {
     await recordActivity("pro_trial_purchased", 2500, "Purchased 3-Day Pro Trial");
   };
 
-  const buyExtraPortfolio = async () => {
+  const buyExtraWorkCredits = async () => {
     await deductXP(400);
-    addBonusUses("portfolio_slots", 3);
-    await recordActivity("extra_portfolio_purchased", 400, "Purchased +3 Portfolio Slots");
+    addBonusUses("workCredits", 5);
+    await recordActivity("extra_work_credits_purchased", 400, "Purchased +5 Work Credits");
   };
 
   const buyExtraLeads = async () => {
     await deductXP(800);
     addBonusUses("aiLeadSearches", 5);
     await recordActivity("extra_leads_purchased", 800, "Purchased +5 Lead Searches");
-  };
-
-  const buyExtraOutreach = async () => {
-    await deductXP(600);
-    addBonusUses("aiOutreachDrafts", 10);
-    await recordActivity("extra_outreach_purchased", 600, "Purchased +10 Outreach Drafts");
   };
 
   const buyExtraInvoices = async () => {

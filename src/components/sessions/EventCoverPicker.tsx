@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -175,7 +176,10 @@ export const EventCoverPicker = ({
       {/* Cropper Dialog */}
       <Dialog open={showCropper} onOpenChange={(open) => { if (!open) { setShowCropper(false); setCropSource(null); } }}>
         <DialogContent className="max-w-lg p-0 overflow-hidden">
-          <div className="relative h-[50vh] sm:h-[60vh] bg-black">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Crop Image</DialogTitle>
+          </DialogHeader>
+          <div className="relative h-[40vh] sm:h-[60vh] bg-black">
             {cropSource && (
               <Cropper
                 image={cropSource}

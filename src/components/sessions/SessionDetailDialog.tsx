@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Check, Loader2, 
-  MessageCircle, Settings, Share2, Ticket, X, ExternalLink
+  MessageCircle, Settings, Share2, Ticket, X, ExternalLink, Pencil
 } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SessionParticipants } from "./SessionParticipants";
 import { SessionChat } from "./SessionChat";
 import { EventShareKit } from "./EventShareKit";
+import { EditEventDialog } from "./EditEventDialog";
 
 interface Session {
   id: string;
@@ -64,6 +65,7 @@ export const SessionDetailDialog = ({
   const [participation, setParticipation] = useState<'going' | 'interested' | 'maybe' | null>(null);
   const [activeTab, setActiveTab] = useState("details");
   const [showShareKit, setShowShareKit] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     if (open && session && user) {
@@ -299,6 +301,9 @@ export const SessionDetailDialog = ({
               {isCreator && (
                 <TabsContent value="manage" className="h-full overflow-y-auto px-5 py-4 m-0">
                   <div className="space-y-4">
+                    <Button variant="default" className="w-full gap-2" onClick={() => setShowEditDialog(true)}>
+                      <Pencil className="h-4 w-4" /> Edit Event Details
+                    </Button>
                     <Button variant="outline" className="w-full" onClick={() => setShowShareKit(true)}>
                       <Share2 className="h-4 w-4 mr-2" /> Share Event / Get QR Code
                     </Button>
@@ -320,6 +325,14 @@ export const SessionDetailDialog = ({
 
       {session && (
         <EventShareKit event={session} open={showShareKit} onOpenChange={setShowShareKit} />
+      )}
+      {session && isCreator && (
+        <EditEventDialog 
+          eventId={session.id} 
+          open={showEditDialog} 
+          onOpenChange={setShowEditDialog} 
+          onUpdated={() => { onRefresh?.(); onOpenChange(false); }}
+        />
       )}
     </>
   );

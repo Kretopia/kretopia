@@ -79,6 +79,7 @@ const CheckIn = lazy(() => import("./pages/CheckIn"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const Guide = lazy(() => import("./pages/Guide"));
 const EventPage = lazy(() => import("./pages/EventPage"));
+const Events = lazy(() => import("./pages/Events"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const DirectoryPage = lazy(() => import("./pages/DirectoryPage"));
@@ -203,6 +204,7 @@ const AppContent = () => {
             
             {/* Nearby Creators */}
             <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />
+            <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />

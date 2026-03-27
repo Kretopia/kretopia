@@ -11,7 +11,7 @@ import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus, MapPin } from "lucide-react";
+import { Users, Sparkles, UserPlus } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -220,7 +220,6 @@ export default function Circle() {
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {activeTab === 'foryou' ? 'Swipe to discover & connect' : 
-                 activeTab === 'nearby' ? 'Find creators in your area' : 
                  `${connections.length} connection${connections.length !== 1 ? 's' : ''} in your network`}
               </p>
             </div>
@@ -246,15 +245,11 @@ export default function Circle() {
         />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
+          <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Connect</span>
               <span className="sm:hidden">Match</span>
-            </TabsTrigger>
-            <TabsTrigger value="nearby" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Nearby
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -276,25 +271,8 @@ export default function Circle() {
             />
           </TabsContent>
 
-          {/* Nearby Tab */}
-          <TabsContent value="nearby" className="space-y-4">
-            <div className="text-center py-10">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Discover Nearby Creators</h3>
-              <p className="text-sm text-muted-foreground mb-1">
-                Find creators, sessions & events in your area
-              </p>
-              <p className="text-xs text-muted-foreground mb-6">
-                Your location is protected — others only see an approximate area
-              </p>
-              <Button onClick={() => navigate('/nearby')} size="lg" className="gap-2">
-                <MapPin className="h-4 w-4" />
-                Open Map View
-              </Button>
-            </div>
-          </TabsContent>
+
+
 
           {/* My Network Tab */}
           <TabsContent value="network" className="space-y-6">

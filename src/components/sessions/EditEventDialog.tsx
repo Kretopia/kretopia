@@ -326,27 +326,64 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
               <Switch checked={formData.is_ticketed} onCheckedChange={checked => setFormData(prev => ({ ...prev, is_ticketed: checked }))} />
             </div>
             {formData.is_ticketed && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Price</Label>
-                  <Input type="number" min={0} step={0.01} value={formData.ticket_price || ''}
-                    onChange={e => setFormData(prev => ({ ...prev, ticket_price: parseFloat(e.target.value) || 0 }))} />
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Price</Label>
+                    <Input type="number" min={0} step={0.01} value={formData.ticket_price || ''}
+                      onChange={e => setFormData(prev => ({ ...prev, ticket_price: parseFloat(e.target.value) || 0 }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Currency</Label>
+                    <Select value={formData.ticket_currency} onValueChange={v => setFormData(prev => ({ ...prev, ticket_currency: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD ($)</SelectItem>
+                        <SelectItem value="EUR">EUR (€)</SelectItem>
+                        <SelectItem value="GBP">GBP (£)</SelectItem>
+                        <SelectItem value="IDR">IDR (Rp)</SelectItem>
+                        <SelectItem value="TTD">TTD ($)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Currency</Label>
-                  <Select value={formData.ticket_currency} onValueChange={v => setFormData(prev => ({ ...prev, ticket_currency: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD ($)</SelectItem>
-                      <SelectItem value="EUR">EUR (€)</SelectItem>
-                      <SelectItem value="GBP">GBP (£)</SelectItem>
-                      <SelectItem value="IDR">IDR (Rp)</SelectItem>
-                      <SelectItem value="TTD">TTD ($)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-xs">External Ticket Link (optional)</Label>
+                  <Input 
+                    type="url" 
+                    placeholder="https://nomeo.io/m/... or Eventbrite link" 
+                    value={formData.external_ticket_url}
+                    onChange={e => setFormData(prev => ({ ...prev, external_ticket_url: e.target.value }))}
+                  />
+                  <p className="text-[10px] text-muted-foreground">Redirect users to Nomeo, Eventbrite, etc. for ticket purchase.</p>
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Event Status */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Event Status</Label>
+            <div className="flex gap-2">
+              <Button type="button" size="sm" variant="outline" className="flex-1 text-xs"
+                onClick={async () => {
+                  await supabase.from('creative_jams').update({ status: 'cancelled', status_note: 'Cancelled by host' } as any).eq('id', eventId).eq('created_by', user?.id || '');
+                  toast({ title: "Event cancelled" });
+                  onUpdated?.();
+                  onOpenChange(false);
+                }}>
+                Cancel Event
+              </Button>
+              <Button type="button" size="sm" variant="outline" className="flex-1 text-xs"
+                onClick={async () => {
+                  await supabase.from('creative_jams').update({ status: 'completed' } as any).eq('id', eventId).eq('created_by', user?.id || '');
+                  toast({ title: "Event marked complete ✅" });
+                  onUpdated?.();
+                  onOpenChange(false);
+                }}>
+                Mark Complete
+              </Button>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4">

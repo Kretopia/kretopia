@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Clock, Users, Loader2, Ticket, ImagePlus, X, Trash2 } from "lucide-react";
+import { CalendarIcon, Clock, Users, Loader2, Ticket, X, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { LocationSearchInput } from "./LocationSearchInput";
 import { Switch } from "@/components/ui/switch";
+import { EventCoverPicker } from "./EventCoverPicker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -234,24 +235,12 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
               onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}>Event / Meetup</Button>
           </div>
 
-          {/* Cover Image */}
-          <div className="space-y-2">
-            <Label>Cover Image / Flyer</Label>
-            {coverPreview ? (
-              <div className="relative rounded-lg overflow-hidden border">
-                <img src={coverPreview} alt="Cover" className="w-full h-40 object-cover" />
-                <Button type="button" size="icon" variant="destructive" className="absolute top-2 right-2 h-7 w-7" onClick={removeCover}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center h-32 rounded-lg border-2 border-dashed border-muted-foreground/30 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
-                <ImagePlus className="h-8 w-8 text-muted-foreground mb-2" />
-                <span className="text-sm text-muted-foreground">Upload a flyer or cover image</span>
-                <input type="file" accept="image/*" className="hidden" onChange={handleCoverSelect} />
-              </label>
-            )}
-          </div>
+          <EventCoverPicker
+            coverPreview={coverPreview}
+            onCoverChange={(file, preview) => { setCoverFile(file); setCoverPreview(preview); if (!file && !preview) setExistingCoverUrl(null); }}
+            eventTitle={formData.title}
+            eventCategory={formData.category}
+          />
 
           <div className="space-y-2">
             <Label>Title *</Label>

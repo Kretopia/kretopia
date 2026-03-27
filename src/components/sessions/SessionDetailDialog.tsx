@@ -330,7 +330,7 @@ export const SessionDetailDialog = ({
               )}
 
               {isCreator && (
-                <TabsContent value="manage" className="h-full overflow-y-auto px-5 py-4 m-0">
+                <TabsContent value="manage" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">
                   <div className="space-y-4">
                     <Button variant="default" className="w-full gap-2" onClick={() => setShowEditDialog(true)}>
                       <Pencil className="h-4 w-4" /> Edit Event Details

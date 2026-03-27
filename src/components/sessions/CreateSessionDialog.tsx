@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { LocationSearchInput } from "./LocationSearchInput";
 import { Switch } from "@/components/ui/switch";
+import { EventCoverPicker } from "./EventCoverPicker";
 
 interface CreateSessionDialogProps {
   open: boolean;

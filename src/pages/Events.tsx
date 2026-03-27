@@ -183,7 +183,7 @@ const FeaturedEvents = ({ events, onSelect }: { events: EventItem[]; onSelect: (
   );
 };
 
-const Events = () => {
+const Events = ({ embedded }: { embedded?: boolean }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<EventItem[]>([]);

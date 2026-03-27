@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Check, Loader2, 
-  MessageCircle, Settings, Share2, Ticket, X, ExternalLink, Pencil, MessageSquare
+  MessageCircle, Settings, Share2, Ticket, X, ExternalLink, Pencil
 } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,7 @@ import { SessionParticipants } from "./SessionParticipants";
 import { SessionChat } from "./SessionChat";
 import { EventShareKit } from "./EventShareKit";
 import { EditEventDialog } from "./EditEventDialog";
-import { EventComments } from "./EventComments";
+
 import { EventCohosts } from "./EventCohosts";
 import { EventRecapButton } from "./EventRecapButton";
 
@@ -227,17 +227,12 @@ export const SessionDetailDialog = ({
             <div className="mx-3 sm:mx-5 mt-3 overflow-x-auto scrollbar-hide shrink-0">
             <TabsList className="w-max">
               <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="discussion">
-                <MessageSquare className="h-4 w-4 mr-1" /> Discussion
-              </TabsTrigger>
               <TabsTrigger value="participants">
                 <Users className="h-4 w-4 mr-1" /> People ({session.participant_count})
               </TabsTrigger>
-              {isParticipant && (
-                <TabsTrigger value="chat">
-                  <MessageCircle className="h-4 w-4 mr-1" /> Chat
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="chat">
+                <MessageCircle className="h-4 w-4 mr-1" /> Chat
+              </TabsTrigger>
               {isCreator && (
                 <TabsTrigger value="manage">
                   <Settings className="h-4 w-4 mr-1" /> Manage
@@ -317,19 +312,13 @@ export const SessionDetailDialog = ({
                 </div>
               </TabsContent>
 
-              <TabsContent value="discussion" className="h-full m-0 flex flex-col overflow-hidden">
-                <EventComments eventId={session.id} isCreator={isCreator} />
-              </TabsContent>
-
               <TabsContent value="participants" className="h-full overflow-y-auto m-0">
                 <SessionParticipants sessionId={session.id} creatorId={session.created_by} isCreator={isCreator} onRefresh={onRefresh} />
               </TabsContent>
 
-              {isParticipant && (
-                <TabsContent value="chat" className="h-full m-0 flex flex-col overflow-hidden">
-                  <SessionChat sessionId={session.id} isCreator={isCreator} />
-                </TabsContent>
-              )}
+              <TabsContent value="chat" className="h-full m-0 flex flex-col overflow-hidden">
+                <SessionChat sessionId={session.id} isCreator={isCreator} />
+              </TabsContent>
 
               {isCreator && (
                 <TabsContent value="manage" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">

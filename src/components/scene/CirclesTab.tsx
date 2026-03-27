@@ -223,10 +223,12 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
         map[r.emoji].push(r.user_id);
       });
 
-      const replyMap = new Map(repliesRes.data?.map((r: any) => [r.id, {
-        content: r.content?.substring(0, 60) || "",
-        sender_name: profileMap.get(r.user_id)?.full_name || "Unknown",
-      }]) || []);
+      const replyMap = new Map<string, { content: string; sender_name: string }>(
+        (repliesRes.data || []).map((r: any) => [r.id, {
+          content: r.content?.substring(0, 60) || "",
+          sender_name: profileMap.get(r.user_id)?.full_name || "Unknown",
+        }])
+      );
 
       setMessages(data.map(m => ({
         ...m,

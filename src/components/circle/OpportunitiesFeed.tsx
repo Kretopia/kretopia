@@ -9,14 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportunitiesDialog";
+import GigCard, { type GigCreatorProfile } from "@/components/opportunity/GigCard";
 import { 
-  Briefcase, Handshake, ArrowRightLeft, MapPin, Clock, 
-  DollarSign, Plus, Sparkles, User, AlertTriangle,
-  Search, Zap, Target, GraduationCap, X, Gift, ArrowRight, Shield
+  Briefcase, Handshake, ArrowRightLeft,
+  Plus, Sparkles, Zap, Target, GraduationCap, X,
+  Search,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
-import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
 import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
 

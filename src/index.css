@@ -312,6 +312,15 @@ All colors MUST be HSL.
   }
 }
 
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Native safe area utilities */
 .safe-top {
   padding-top: env(safe-area-inset-top, 0px);

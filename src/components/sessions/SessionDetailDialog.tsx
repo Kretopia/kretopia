@@ -127,7 +127,7 @@ export const SessionDetailDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[700px] h-[90vh] sm:h-[85vh] flex flex-col p-0 overflow-hidden gap-0">
+        <DialogContent className="sm:max-w-[700px] h-[100dvh] sm:h-[85vh] flex flex-col p-0 overflow-hidden gap-0 rounded-none sm:rounded-lg">
           {/* Hero Cover Image */}
           <div className="relative shrink-0">
             {session.cover_image_url ? (
@@ -152,7 +152,7 @@ export const SessionDetailDialog = ({
           </div>
 
           {/* Event Info Header */}
-          <div className="px-5 pb-4 pt-3 border-b shrink-0 space-y-3">
+          <div className="px-4 sm:px-5 pb-4 pt-3 border-b shrink-0 space-y-3">
             <div className="flex items-start gap-3">
               <Avatar className="h-11 w-11 ring-2 ring-primary/30 shrink-0">
                 <AvatarImage src={session.creator_avatar} />
@@ -224,7 +224,7 @@ export const SessionDetailDialog = ({
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="mx-5 mt-3 w-fit shrink-0 overflow-x-auto">
+            <TabsList className="mx-3 sm:mx-5 mt-3 w-fit shrink-0 overflow-x-auto scrollbar-hide">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="discussion">
                 <MessageSquare className="h-4 w-4 mr-1" /> Discussion
@@ -245,7 +245,7 @@ export const SessionDetailDialog = ({
             </TabsList>
 
             <div className="flex-1 overflow-hidden">
-              <TabsContent value="details" className="h-full overflow-y-auto px-5 py-4 m-0">
+              <TabsContent value="details" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">
                 <div className="space-y-5">
                   {session.description && (
                     <div>
@@ -330,7 +330,7 @@ export const SessionDetailDialog = ({
               )}
 
               {isCreator && (
-                <TabsContent value="manage" className="h-full overflow-y-auto px-5 py-4 m-0">
+                <TabsContent value="manage" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">
                   <div className="space-y-4">
                     <Button variant="default" className="w-full gap-2" onClick={() => setShowEditDialog(true)}>
                       <Pencil className="h-4 w-4" /> Edit Event Details

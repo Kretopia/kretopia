@@ -244,6 +244,7 @@ export const SessionDetailDialog = ({
                 </TabsTrigger>
               )}
             </TabsList>
+            </div>
 
             <div className="flex-1 overflow-hidden">
               <TabsContent value="details" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">

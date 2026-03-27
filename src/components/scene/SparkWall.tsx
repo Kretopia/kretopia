@@ -55,109 +55,92 @@ export const SparkWall = () => {
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch portfolio items directly — media-first approach
+      // Fetch portfolio items + profiles in parallel (2 queries instead of 5 sequential)
       const { data: portfolioItems } = await supabase
         .from("portfolio_items")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(60);
+        .limit(30);
 
       if (!portfolioItems?.length) {
-        // Fallback to feed_posts
-        const { data: feedPosts } = await supabase
-          .from("feed_posts")
-          .select(`*, portfolio_items (title, media_url, media_type, thumbnail_url, description, embed_code, category)`)
-          .order("created_at", { ascending: false })
-          .limit(40);
-        
-        if (!feedPosts?.length) { setPosts([]); setLoading(false); return; }
-
-        const userIds = [...new Set(feedPosts.map(p => p.user_id))];
-        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, avatar_url, role").in("user_id", userIds);
-        const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
-        
-        setPosts(feedPosts.map(p => ({
-          ...p,
-          profile: profileMap.get(p.user_id) || { full_name: "Unknown", avatar_url: null, role: null },
-          portfolio_item: p.portfolio_items as any,
-          reaction_count: 0, comment_count: 0, has_reacted: false, has_clipped: false,
-        })));
+        setPosts([]);
         setLoading(false);
         return;
       }
 
-      // Build posts from portfolio items
+      // Parallel: profiles + linked feed posts
       const userIds = [...new Set(portfolioItems.map(p => p.user_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, avatar_url, role")
-        .in("user_id", userIds);
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      const portfolioIds = portfolioItems.map(p => p.id);
+      
+      const [profilesResult, linkedPostsResult] = await Promise.all([
+        supabase.from("profiles").select("user_id, full_name, avatar_url, role").in("user_id", userIds),
+        supabase.from("feed_posts").select("id, portfolio_item_id").in("portfolio_item_id", portfolioIds),
+      ]);
 
-      // Check for existing feed_posts linked to these portfolio items for reactions/clips
-      const { data: linkedPosts } = await supabase
-        .from("feed_posts")
-        .select("id, portfolio_item_id")
-        .in("portfolio_item_id", portfolioItems.map(p => p.id));
+      const profileMap = new Map(profilesResult.data?.map(p => [p.user_id, p]) || []);
+      const postIdMap = new Map(linkedPostsResult.data?.map(lp => [lp.portfolio_item_id, lp.id]) || []);
 
-      const postIdMap = new Map(linkedPosts?.map(lp => [lp.portfolio_item_id, lp.id]) || []);
-      const feedPostIds = linkedPosts?.map(lp => lp.id) || [];
-
-      // Get reactions
-      const { data: reactions } = feedPostIds.length ? await supabase
-        .from("feed_reactions")
-        .select("post_id, user_id")
-        .in("post_id", feedPostIds) : { data: [] };
-
-      const reactionCounts = new Map<string, number>();
-      const userReactions = new Set<string>();
-      reactions?.forEach(r => {
-        reactionCounts.set(r.post_id, (reactionCounts.get(r.post_id) || 0) + 1);
-        if (r.user_id === user?.id) userReactions.add(r.post_id);
-      });
-
-      // Get clips
-      const { data: clips } = user && feedPostIds.length ? await supabase
-        .from("feed_clips")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .in("post_id", feedPostIds) : { data: [] };
-      const clippedPosts = new Set(clips?.map(c => c.post_id) || []);
-
-      const enriched: SparkPost[] = portfolioItems.map(item => {
-        const feedPostId = postIdMap.get(item.id);
-        return {
-          id: feedPostId || item.id,
-          user_id: item.user_id,
-          content: null,
-          media_urls: null,
+      // Build posts immediately — show UI fast
+      const enriched: SparkPost[] = portfolioItems.map(item => ({
+        id: postIdMap.get(item.id) || item.id,
+        user_id: item.user_id,
+        content: null,
+        media_urls: null,
+        media_type: item.media_type,
+        post_type: "portfolio",
+        created_at: item.created_at,
+        portfolio_item_id: item.id,
+        auto_activity_message: null,
+        is_portfolio_item: true,
+        category: item.category,
+        profile: profileMap.get(item.user_id) || { full_name: "Unknown", avatar_url: null, role: null },
+        portfolio_item: {
+          title: item.title,
+          media_url: item.media_url,
           media_type: item.media_type,
-          post_type: "portfolio",
-          created_at: item.created_at,
-          portfolio_item_id: item.id,
-          auto_activity_message: null,
-          is_portfolio_item: true,
+          thumbnail_url: item.thumbnail_url,
+          description: item.description,
+          embed_code: item.embed_code,
           category: item.category,
-          profile: profileMap.get(item.user_id) || { full_name: "Unknown", avatar_url: null, role: null },
-          portfolio_item: {
-            title: item.title,
-            media_url: item.media_url,
-            media_type: item.media_type,
-            thumbnail_url: item.thumbnail_url,
-            description: item.description,
-            embed_code: item.embed_code,
-            category: item.category,
-          },
-          reaction_count: feedPostId ? (reactionCounts.get(feedPostId) || 0) : 0,
-          comment_count: 0,
-          has_reacted: feedPostId ? userReactions.has(feedPostId) : false,
-          has_clipped: feedPostId ? clippedPosts.has(feedPostId) : false,
-        };
-      });
+        },
+        reaction_count: 0,
+        comment_count: 0,
+        has_reacted: false,
+        has_clipped: false,
+      }));
 
       // Shuffle for discovery
       const shuffled = enriched.sort(() => Math.random() - 0.5);
       setPosts(shuffled);
+      setLoading(false);
+
+      // Enrich with reactions/clips in background (non-blocking)
+      const feedPostIds = linkedPostsResult.data?.map(lp => lp.id) || [];
+      if (feedPostIds.length > 0) {
+        const [reactionsResult, clipsResult] = await Promise.all([
+          supabase.from("feed_reactions").select("post_id, user_id").in("post_id", feedPostIds),
+          user ? supabase.from("feed_clips").select("post_id").eq("user_id", user.id).in("post_id", feedPostIds) : Promise.resolve({ data: [] }),
+        ]);
+
+        const reactionCounts = new Map<string, number>();
+        const userReactions = new Set<string>();
+        reactionsResult.data?.forEach(r => {
+          reactionCounts.set(r.post_id, (reactionCounts.get(r.post_id) || 0) + 1);
+          if (r.user_id === user?.id) userReactions.add(r.post_id);
+        });
+        const clippedPosts = new Set(clipsResult.data?.map((c: any) => c.post_id) || []);
+
+        setPosts(prev => prev.map(p => {
+          const feedPostId = postIdMap.get(p.portfolio_item_id || "");
+          if (!feedPostId) return p;
+          return {
+            ...p,
+            reaction_count: reactionCounts.get(feedPostId) || 0,
+            has_reacted: userReactions.has(feedPostId),
+            has_clipped: clippedPosts.has(feedPostId),
+          };
+        }));
+      }
     } catch (err) {
       console.error("Error fetching spark posts:", err);
     } finally {

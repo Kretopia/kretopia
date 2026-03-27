@@ -226,6 +226,9 @@ export const SessionDetailDialog = ({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
             <TabsList className="mx-5 mt-3 w-fit shrink-0 overflow-x-auto">
               <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="discussion">
+                <MessageSquare className="h-4 w-4 mr-1" /> Discussion
+              </TabsTrigger>
               <TabsTrigger value="participants">
                 <Users className="h-4 w-4 mr-1" /> People ({session.participant_count})
               </TabsTrigger>
@@ -287,7 +290,13 @@ export const SessionDetailDialog = ({
                             <p className="text-sm text-muted-foreground">General Admission</p>
                           </div>
                           {!isCreator && !isPast && !participation && (
-                            <Button variant="gradient" size="sm" onClick={handleJoin} disabled={loading || isFull}>
+                            <Button variant="gradient" size="sm" onClick={() => {
+                              if (session.external_ticket_url) {
+                                window.open(session.external_ticket_url, '_blank');
+                              } else {
+                                handleJoin();
+                              }
+                            }} disabled={loading || isFull}>
                               <Ticket className="h-4 w-4 mr-1.5" /> Get Ticket
                             </Button>
                           )}
@@ -297,10 +306,17 @@ export const SessionDetailDialog = ({
                             </Badge>
                           )}
                         </div>
+                        {session.external_ticket_url && (
+                          <p className="text-xs text-muted-foreground mt-2">🔗 Tickets via external platform</p>
+                        )}
                       </div>
                     </div>
                   )}
                 </div>
+              </TabsContent>
+
+              <TabsContent value="discussion" className="h-full m-0 flex flex-col overflow-hidden">
+                <EventComments eventId={session.id} isCreator={isCreator} />
               </TabsContent>
 
               <TabsContent value="participants" className="h-full overflow-y-auto m-0">
@@ -322,6 +338,20 @@ export const SessionDetailDialog = ({
                     <Button variant="outline" className="w-full" onClick={() => setShowShareKit(true)}>
                       <Share2 className="h-4 w-4 mr-2" /> Share Event / Get QR Code
                     </Button>
+                    
+                    {/* Co-hosts */}
+                    <EventCohosts eventId={session.id} isCreator={isCreator} />
+
+                    {/* Post-event recap */}
+                    {isPast && (
+                      <EventRecapButton 
+                        eventId={session.id} 
+                        eventTitle={session.title} 
+                        eventCategory={session.category}
+                        venueName={session.venue_name}
+                      />
+                    )}
+
                     <div className="p-4 rounded-lg bg-muted/50">
                       <h4 className="font-medium mb-2">Moderation</h4>
                       <p className="text-sm text-muted-foreground mb-3">As the host, you can remove participants and manage the event space.</p>

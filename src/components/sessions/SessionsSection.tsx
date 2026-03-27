@@ -36,6 +36,8 @@ interface SessionsSectionProps {
 
 export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [nearbySessions, setNearbySessions] = useState<Session[]>([]);
   const [mySessions, setMySessions] = useState<Session[]>([]);

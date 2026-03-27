@@ -270,6 +270,7 @@ export const OpportunitiesFeed = () => {
             <GigCard opportunity={opp} creator={creator} />
           </DiscoveryGate>
         );
+      })}
       {!loading && <DiscoveryUpsell totalItems={opportunities.length} freePreviewCount={4} itemLabel="gigs" />}
     </div>
   );

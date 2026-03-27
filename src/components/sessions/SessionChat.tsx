@@ -236,7 +236,7 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
   return (
     <>
       <div className="flex flex-col h-full">
-        <ScrollArea className="flex-1 px-6" ref={scrollRef}>
+        <ScrollArea className="flex-1 px-4 sm:px-6" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <MessageCircle className="h-12 w-12 mb-4 text-muted-foreground/50" />

@@ -127,7 +127,7 @@ export const SessionDetailDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[700px] h-[90vh] sm:h-[85vh] flex flex-col p-0 overflow-hidden gap-0">
+        <DialogContent className="sm:max-w-[700px] h-[100dvh] sm:h-[85vh] flex flex-col p-0 overflow-hidden gap-0 rounded-none sm:rounded-lg">
           {/* Hero Cover Image */}
           <div className="relative shrink-0">
             {session.cover_image_url ? (

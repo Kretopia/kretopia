@@ -271,25 +271,8 @@ export default function Circle() {
             />
           </TabsContent>
 
-          {/* Nearby Tab */}
-          <TabsContent value="nearby" className="space-y-4">
-            <div className="text-center py-10">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Discover Nearby Creators</h3>
-              <p className="text-sm text-muted-foreground mb-1">
-                Find creators, sessions & events in your area
-              </p>
-              <p className="text-xs text-muted-foreground mb-6">
-                Your location is protected — others only see an approximate area
-              </p>
-              <Button onClick={() => navigate('/nearby')} size="lg" className="gap-2">
-                <MapPin className="h-4 w-4" />
-                Open Map View
-              </Button>
-            </div>
-          </TabsContent>
+
+
 
           {/* My Network Tab */}
           <TabsContent value="network" className="space-y-6">

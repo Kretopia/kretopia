@@ -106,7 +106,6 @@ export function getFeatureDisplayName(feature: FreeTierFeature): string {
   const names: Record<FreeTierFeature, string> = {
     aiLeadSearches: "AI lead searches",
     aiOutreachDrafts: "AI outreach drafts",
-    aiChatMessages: "AI chat messages",
     approvalRequests: "approval requests",
     milestones: "milestones",
     invoices: "invoices",
@@ -116,6 +115,7 @@ export function getFeatureDisplayName(feature: FreeTierFeature): string {
     aiApplicantRankings: "AI applicant rankings",
     aiJobDescriptions: "AI job descriptions",
     bulkEmails: "bulk emails",
+    workCredits: "work credits",
   };
   return names[feature];
 }

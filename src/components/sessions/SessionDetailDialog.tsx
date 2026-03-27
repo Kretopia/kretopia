@@ -36,6 +36,9 @@ interface Session {
   ticket_price?: number;
   ticket_currency?: string;
   event_type?: string;
+  external_ticket_url?: string;
+  status?: string;
+  status_note?: string;
 }
 
 interface SessionDetailDialogProps {

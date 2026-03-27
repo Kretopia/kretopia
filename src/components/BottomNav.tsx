@@ -58,7 +58,8 @@ const BottomNav = memo(() => {
         {navItems.map((item) => {
           const { path, icon: Icon, label, tourId, tooltip } = item;
           const isActive = location.pathname === path || 
-            (path === "/discover" && (location.pathname === "/directory" || location.pathname === "/opportunities"));
+            (path === "/discover" && (location.pathname === "/directory" || location.pathname === "/opportunities")) ||
+            (path === "/opportunities" && location.pathname === "/opportunities");
           
           const linkContent = (
             <Link

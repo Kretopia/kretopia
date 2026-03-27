@@ -326,6 +326,14 @@ export const SessionDetailDialog = ({
       {session && (
         <EventShareKit event={session} open={showShareKit} onOpenChange={setShowShareKit} />
       )}
+      {session && isCreator && (
+        <EditEventDialog 
+          eventId={session.id} 
+          open={showEditDialog} 
+          onOpenChange={setShowEditDialog} 
+          onUpdated={() => { onRefresh?.(); onOpenChange(false); }}
+        />
+      )}
     </>
   );
 };

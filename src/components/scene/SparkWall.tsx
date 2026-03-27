@@ -449,7 +449,74 @@ const SparkMediaCard = ({
   );
 };
 
-// Inline embed player for YouTube, Spotify, SoundCloud, Vimeo, TikTok
+// Text/link post card — styled as a visual card so it doesn't break the media-first aesthetic
+const SparkTextCard = ({ 
+  post, onReact, onClip, onNavigate 
+}: { 
+  post: SparkPost; 
+  onReact: () => void; 
+  onClip: () => void; 
+  onNavigate: (userId: string) => void;
+}) => {
+  const mediaUrls = post.media_urls as string[] | null;
+  const hasMedia = mediaUrls && mediaUrls.length > 0;
+  const isImage = hasMedia && post.media_type === "image";
+  const isVideo = hasMedia && post.media_type === "video";
+
+  return (
+    <Card className="overflow-hidden border-border/50">
+      {/* Creator Header */}
+      <div className="flex items-center gap-2.5 p-3 pb-2 cursor-pointer" onClick={() => onNavigate(post.user_id)}>
+        <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+          <AvatarImage src={post.profile?.avatar_url || ""} />
+          <AvatarFallback className="text-xs">{post.profile?.full_name?.[0]}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold truncate hover:text-primary transition-colors">{post.profile?.full_name}</p>
+          <p className="text-[11px] text-muted-foreground truncate">
+            {post.profile?.role} · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+          </p>
+        </div>
+      </div>
+
+      {/* Text content as visual card */}
+      {post.content && !hasMedia && (
+        <div className="mx-3 mb-2 p-4 rounded-xl bg-gradient-to-br from-primary/5 via-accent/10 to-primary/5 border border-primary/10">
+          <p className="text-sm leading-relaxed">{post.content}</p>
+        </div>
+      )}
+
+      {/* Text + media */}
+      {post.content && hasMedia && (
+        <div className="px-3 pb-1">
+          <p className="text-sm">{post.content}</p>
+        </div>
+      )}
+
+      {/* Media */}
+      {isImage && <img src={mediaUrls![0]} alt="shared" className="w-full max-h-[500px] object-cover" loading="lazy" />}
+      {isVideo && (
+        <video src={mediaUrls![0]} controls className="w-full max-h-[500px]" preload="metadata" />
+      )}
+
+      {/* Action Bar */}
+      <div className="flex items-center px-2 py-1.5">
+        <Button variant="ghost" size="sm" className={cn("gap-1.5 h-8", post.has_reacted && "text-primary")} onClick={onReact}>
+          <Flame className={cn("h-4 w-4", post.has_reacted && "fill-primary")} />
+          {post.reaction_count > 0 && <span className="text-xs font-medium">{post.reaction_count}</span>}
+        </Button>
+        <Button variant="ghost" size="sm" className="gap-1.5 h-8" onClick={() => onNavigate(post.user_id)}>
+          <MessageCircle className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className={cn("gap-1.5 h-8 ml-auto", post.has_clipped && "text-primary")} onClick={onClip}>
+          <Paperclip className={cn("h-4 w-4", post.has_clipped && "fill-primary/20")} />
+        </Button>
+      </div>
+    </Card>
+  );
+};
+
+
 const EmbedPlayer = ({ mediaInfo, mediaType }: { mediaInfo: NonNullable<ReturnType<typeof parseMediaUrl>>; mediaType: string }) => {
   const isAudio = mediaInfo.platform === "spotify" || mediaInfo.platform === "soundcloud";
   

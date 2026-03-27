@@ -117,7 +117,7 @@ export const OpportunitiesFeed = () => {
             .select("user_id, full_name, avatar_url, role")
             .in("user_id", creatorIds);
           if (profiles) {
-            const map: Record<string, CreatorProfile> = {};
+            const map: Record<string, GigCreatorProfile> = {};
             profiles.forEach(p => { map[p.user_id] = p; });
             setCreators(map);
           }

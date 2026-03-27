@@ -266,7 +266,7 @@ const SparkCard = ({
           <Button
             variant="ghost"
             size="sm"
-            className={cn("h-7 px-2 gap-1", post.has_reacted && "text-orange-500")}
+            className={cn("h-7 px-2 gap-1", post.has_reacted && "text-primary")}
             onClick={onReact}
           >
             <Flame className={cn("h-3.5 w-3.5", post.has_reacted && "fill-primary text-primary")} />

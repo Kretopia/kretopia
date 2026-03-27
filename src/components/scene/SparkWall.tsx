@@ -269,7 +269,7 @@ const SparkCard = ({
             className={cn("h-7 px-2 gap-1", post.has_reacted && "text-orange-500")}
             onClick={onReact}
           >
-            <Flame className={cn("h-3.5 w-3.5", post.has_reacted && "fill-orange-500")} />
+            <Flame className={cn("h-3.5 w-3.5", post.has_reacted && "fill-primary text-primary")} />
             {post.reaction_count > 0 && <span className="text-[10px]">{post.reaction_count}</span>}
           </Button>
           <Button

@@ -165,6 +165,44 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
     fetchSessions();
   }, [fetchSessions]);
 
+  // Handle ticket purchase success — add participant after payment
+  useEffect(() => {
+    const ticketSuccess = searchParams.get('ticket_success');
+    if (!ticketSuccess || !user) return;
+
+    const addParticipant = async () => {
+      try {
+        // Check if already joined
+        const { data: existing } = await supabase
+          .from('jam_participants')
+          .select('id')
+          .eq('jam_id', ticketSuccess)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (!existing) {
+          await supabase.from('jam_participants').insert({
+            jam_id: ticketSuccess,
+            user_id: user.id,
+            status: 'going',
+          });
+        }
+
+        toast({ title: "Ticket purchased! 🎉", description: "You're in! See you at the event." });
+        fetchSessions();
+      } catch (err) {
+        console.error('Error adding participant after ticket purchase:', err);
+      }
+
+      // Clean URL params
+      searchParams.delete('ticket_success');
+      searchParams.delete('session_id');
+      setSearchParams(searchParams, { replace: true });
+    };
+
+    addParticipant();
+  }, [searchParams, user]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

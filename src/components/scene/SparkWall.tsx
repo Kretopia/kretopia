@@ -80,8 +80,8 @@ export const SparkWall = () => {
         portfolioIds.length > 0 ? supabase.from("feed_posts").select("id, portfolio_item_id").in("portfolio_item_id", portfolioIds) : Promise.resolve({ data: [] }),
       ]);
 
-      const profileMap = new Map(profilesResult.data?.map(p => [p.user_id, p]) || []);
-      const postIdMap = new Map(linkedPostsResult.data?.map(lp => [lp.portfolio_item_id, lp.id]) || []);
+      const profileMap = new Map<string, any>(profilesResult.data?.map(p => [p.user_id, p] as [string, any]) || []);
+      const postIdMap = new Map<string, string>(linkedPostsResult.data?.map(lp => [lp.portfolio_item_id, lp.id] as [string, string]) || []);
 
       // Set user profile for composer
       if (userRef.current) {

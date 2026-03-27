@@ -128,14 +128,12 @@ serve(async (req) => {
     // Count active challenges by cadence
     const { data: activeChallenges } = await supabase
       .from("challenges")
-      .select("cadence, is_flash")
-      .eq("status", "active")
-      .eq("type", "platform");
+      .select("cadence")
+      .eq("status", "active");
 
-    const activeCounts: Record<string, number> = { daily: 0, "48hr": 0, weekly: 0, flash: 0 };
+    const activeCounts: Record<string, number> = { daily: 0, "48hr": 0, weekly: 0 };
     for (const c of activeChallenges || []) {
-      if (c.is_flash) activeCounts.flash++;
-      else activeCounts[c.cadence] = (activeCounts[c.cadence] || 0) + 1;
+      activeCounts[c.cadence] = (activeCounts[c.cadence] || 0) + 1;
     }
 
     const needed: { cadence: string; count: number; deadline_hours: number; is_flash: boolean }[] = [];

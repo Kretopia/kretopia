@@ -80,6 +80,7 @@ interface Credit {
   platform?: string;
   source?: string;
   isVerified?: boolean;
+  verificationTier?: 'icdb' | 'ai' | 'peer' | 'payment' | 'manual';
 }
 
 interface IndustryStat {

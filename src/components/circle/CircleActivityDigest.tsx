@@ -65,15 +65,8 @@ export const CircleActivityDigest = ({ className }: { className?: string }) => {
         });
       });
 
-      // Count messages per circle
-      messagesRes.data?.forEach((msg: any) => {
-        const circleId = msg.circle_channels?.circle_id;
-        if (circleId && circleStats.has(circleId)) {
-          const s = circleStats.get(circleId)!;
-          s.newMessages++;
-          if (msg.created_at > s.lastActivity) s.lastActivity = msg.created_at;
-        }
-      });
+      // Note: message counting skipped since circle_messages isn't in typed schema
+      // Activity is tracked via new members and events instead
 
       membersRes.data?.forEach(m => {
         if (circleStats.has(m.room_id)) circleStats.get(m.room_id)!.newMembers++;

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { SwipeFeature } from "@/components/swipe";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
+import { CirclesTab } from "@/components/scene/CirclesTab";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";

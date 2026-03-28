@@ -17,7 +17,7 @@ export const HowItWorksSection = () => {
             Get Paid.
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Three steps from "I need someone" to working together with milestone payments.
+            Three steps from "I did the work" to getting paid and building your verified reputation.
           </p>
         </div>
 

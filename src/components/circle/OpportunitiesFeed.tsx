@@ -137,7 +137,7 @@ export const OpportunitiesFeed = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, searchQuery, selectedSkill]);
+  }, [activeFilter, searchQuery, selectedSkill, locationFilter]);
 
   useEffect(() => { fetchOpportunities(); }, [fetchOpportunities]);
 

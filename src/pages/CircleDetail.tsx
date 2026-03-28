@@ -11,10 +11,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ArrowLeft, Hash, Megaphone, Calendar, ShoppingBag, Image,
   Plus, Send, Settings, Users, Lock, Globe, DollarSign, Loader2,
-  Share2, Check, Pin, Reply, MessageSquare, Crown,
+  Share2, Check, Pin, Reply, MessageSquare, Crown, BarChart3,
 } from "lucide-react";
 import { CircleMessageBubble, type CircleMessage } from "@/components/circle/CircleMessageBubble";
 import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
+import { CirclePollCreator } from "@/components/circle/CirclePollCreator";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { cn } from "@/lib/utils";
 

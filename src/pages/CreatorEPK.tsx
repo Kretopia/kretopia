@@ -388,6 +388,15 @@ const CreatorEPK = () => {
             </Badge>
           )}
 
+          {/* ICDB Creator ID */}
+          {(profile as any).icdb_creator_id && (
+            <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted/50 border">
+              <Fingerprint className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[11px] font-mono font-semibold text-primary">{(profile as any).icdb_creator_id}</span>
+              <Badge variant="outline" className="text-[9px] h-4 border-primary/20">ICDB</Badge>
+            </div>
+          )}
+
           {/* Bio */}
           {profile.bio && (
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">

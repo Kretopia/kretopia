@@ -275,8 +275,14 @@ const AppContent = () => {
             <Route path="/claim/:claimToken" element={<ClaimProfile />} />
             <Route path="/post-opportunity" element={<PostOpportunity />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
-            
-            
+
+
+// Catch-all: authenticated → /circle, unauthenticated → /
+const CatchAllRedirect = () => {
+  const { user } = useAuth();
+  return <Navigate to={user ? "/circle" : "/"} replace />;
+};
+
             {/* Search & Notifications */}
             <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />

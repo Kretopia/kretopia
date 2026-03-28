@@ -1,48 +1,23 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, Compass, User, Flame, Sparkles, MessageSquareMore } from "lucide-react";
+import { Briefcase, Flame, Sparkles, MessageSquareMore } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { memo, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { memo } from "react";
 import { OnboardingTooltip } from "@/components/onboarding/OnboardingTooltip";
 
 const BottomNav = memo(() => {
   const location = useLocation();
-  const { user } = useAuth();
-  const [accountType, setAccountType] = useState<string>("individual");
-
-  useEffect(() => {
-    if (!user?.id) return;
-    supabase
-      .from("profiles")
-      .select("account_type")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.account_type) setAccountType(data.account_type);
-      });
-  }, [user?.id]);
 
   // Hide bottom nav on landing page
   if (location.pathname === "/") {
     return null;
   }
 
-  const isCompany = accountType === "company";
-  
-  const navItems = isCompany
-    ? [
-        { path: "/discover", icon: Compass, label: "Discover", tourId: "discover-tab", tooltip: { id: "nav-discover", title: "Discover", desc: "Browse creators and talent" } },
-        { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & nearby creators" } },
-        { path: "/circles", icon: MessageSquareMore, label: "Circles", tourId: "circles-tab", tooltip: { id: "nav-circles", title: "Circles", desc: "Join community spaces" } },
-        { path: "/discover?tab=gigs", icon: Users, label: "Gigs", tourId: "gigs-tab", tooltip: { id: "nav-gigs", title: "Gigs", desc: "Post and manage hiring" } },
-      ]
-    : [
-        { path: "/circle", icon: Sparkles, label: "Match", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Match", desc: "Swipe to discover & connect with creators" } },
-        { path: "/circles", icon: MessageSquareMore, label: "Circles", tourId: "circles-tab", tooltip: { id: "nav-circles", title: "Circles", desc: "Community spaces & conversations" } },
-        { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & nearby creators" } },
-        { path: "/discover", icon: Compass, label: "Discover", tourId: "discover-tab", tooltip: { id: "nav-discover", title: "Discover", desc: "Browse creators, credits, and gigs" } },
-      ];
+  const navItems = [
+    { path: "/circle", icon: Sparkles, label: "Match", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Match", desc: "Swipe & browse creators" } },
+    { path: "/opportunities", icon: Briefcase, label: "Gigs", tourId: "gigs-tab", tooltip: { id: "nav-gigs", title: "Gigs", desc: "Jobs, barters & collabs" } },
+    { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & nearby" } },
+    { path: "/circles", icon: MessageSquareMore, label: "Circles", tourId: "circles-tab", tooltip: { id: "nav-circles", title: "Circles", desc: "Community spaces" } },
+  ];
 
   return (
     <nav 
@@ -55,7 +30,7 @@ const BottomNav = memo(() => {
         {navItems.map((item) => {
           const { path, icon: Icon, label, tourId, tooltip } = item;
           const isActive = location.pathname === path || 
-            (path === "/discover" && location.pathname === "/directory") ||
+            (path === "/opportunities" && location.pathname === "/opportunity-dashboard") ||
             (path === "/circle" && location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"));
           
           const linkContent = (

@@ -5,13 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
+import { CreatorBrowseGrid } from "@/components/circle/CreatorBrowseGrid";
 import { SwipeFeature } from "@/components/swipe";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus } from "lucide-react";
+import { Users, Sparkles, UserPlus, LayoutGrid } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -32,7 +33,7 @@ export default function Circle() {
   const [accountType, setAccountType] = useState<string>("individual");
   
 
-  // Redirect company accounts away from Circle
+  // Fetch account type
   useEffect(() => {
     if (!user?.id) return;
     supabase
@@ -42,11 +43,8 @@ export default function Circle() {
       .maybeSingle()
       .then(({ data }) => {
         if (data?.account_type) setAccountType(data.account_type);
-        if (data?.account_type === "company") {
-          navigate("/opportunities", { replace: true });
-        }
       });
-  }, [user?.id, navigate]);
+  }, [user?.id]);
 
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
@@ -164,6 +162,7 @@ export default function Circle() {
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {activeTab === 'foryou' ? 'Swipe to discover & connect' : 
+                 activeTab === 'browse' ? 'Search & browse all creators' :
                  `${connections.length} connection${connections.length !== 1 ? 's' : ''} in your network`}
               </p>
             </div>
@@ -178,10 +177,14 @@ export default function Circle() {
         <ProfileVisibilityBanner isVisible={profileVisibility.isVisible} missingFields={profileVisibility.missingFields} />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
+          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Match
+              Swipe
+            </TabsTrigger>
+            <TabsTrigger value="browse" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+              <LayoutGrid className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Browse
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -196,6 +199,10 @@ export default function Circle() {
 
           <TabsContent value="foryou" className="space-y-4">
             <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
+          </TabsContent>
+
+          <TabsContent value="browse" className="space-y-4">
+            <CreatorBrowseGrid />
           </TabsContent>
 
           <TabsContent value="network" className="space-y-6">

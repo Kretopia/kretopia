@@ -265,9 +265,9 @@ const AppContent = () => {
             
             {/* Credit Database & Discover */}
             <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
-            <Route path="/directory" element={<Navigate to="/discover?tab=creators" replace />} />
-            <Route path="/discover" element={<ProtectedRoute><DiscoverPage /></ProtectedRoute>} />
-            <Route path="/opportunities" element={<Navigate to="/discover?tab=gigs" replace />} />
+            <Route path="/directory" element={<Navigate to="/circle?tab=browse" replace />} />
+            <Route path="/discover" element={<Navigate to="/circle?tab=browse" replace />} />
+            <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
             
             {/* Check-in */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />

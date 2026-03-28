@@ -36,6 +36,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [marketSales, setMarketSales] = useState<any[]>([]);
   const [marketPurchases, setMarketPurchases] = useState<any[]>([]);
+  const [circleRevenue, setCircleRevenue] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"this_month" | "last_month" | "last_3" | "last_6" | "year" | "all">("this_month");
   const sym = getCurrencySymbol();

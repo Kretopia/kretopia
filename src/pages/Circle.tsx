@@ -12,7 +12,7 @@ import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus } from "lucide-react";
+import { Users, Sparkles, UserPlus, MessageSquare } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";

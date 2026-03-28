@@ -297,7 +297,7 @@ export const OpportunitiesFeed = () => {
       </div>
 
       {/* Active filter badges */}
-      {(searchQuery || selectedSkill !== "all") && (
+      {(searchQuery || selectedSkill !== "all" || locationFilter !== "all" || compensationFilter !== "all") && (
         <div className="flex gap-2 flex-wrap">
           {searchQuery && (
             <Badge variant="secondary" className="gap-1">
@@ -307,8 +307,20 @@ export const OpportunitiesFeed = () => {
           )}
           {selectedSkill !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              Skill: {selectedSkill}
+              {selectedSkill}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedSkill("all")} />
+            </Badge>
+          )}
+          {locationFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              📍 {locationFilter}
+              <X className="h-3 w-3 cursor-pointer" onClick={() => setLocationFilter("all")} />
+            </Badge>
+          )}
+          {compensationFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              💰 {compensationFilter}
+              <X className="h-3 w-3 cursor-pointer" onClick={() => setCompensationFilter("all")} />
             </Badge>
           )}
         </div>

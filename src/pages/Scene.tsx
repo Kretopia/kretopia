@@ -53,6 +53,7 @@ const Scene = () => {
             </TabsList>
 
             <TabsContent value="spark" className="mt-0">
+              <GetStartedChecklist />
               <SparkWall />
             </TabsContent>
 

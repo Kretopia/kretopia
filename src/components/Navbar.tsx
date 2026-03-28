@@ -156,7 +156,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           {user && !isLandingPage && (
             <div className="flex items-center gap-1">
               <Link to="/search" aria-label="Search">
-                <Button variant="ghost" size="icon" className="h-10 w-10 hidden sm:inline-flex">
+                <Button variant="ghost" size="icon" className="h-10 w-10">
                   <Search className="h-5 w-5" />
                 </Button>
               </Link>

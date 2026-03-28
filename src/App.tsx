@@ -130,6 +130,12 @@ const DefaultRoute = () => {
   return <Navigate to="/circle" replace />;
 };
 
+// Catch-all: authenticated users go to /circle, others to landing
+const CatchAllRedirect = () => {
+  const { user } = useAuth();
+  return <Navigate to={user ? "/circle" : "/"} replace />;
+};
+
 // Track page views
 const PageViewTracker = () => {
   const location = useLocation();
@@ -276,7 +282,6 @@ const AppContent = () => {
             <Route path="/post-opportunity" element={<PostOpportunity />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
-            
             {/* Search & Notifications */}
             <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
@@ -288,8 +293,8 @@ const AppContent = () => {
             
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             
-            {/* 404 - Catch all: redirect to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* 404 - Catch all: redirect to main app */}
+            <Route path="*" element={<CatchAllRedirect />} />
           </Routes>
         </Suspense>
       </main>

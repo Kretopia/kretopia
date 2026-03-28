@@ -2326,6 +2326,7 @@ export type Database = {
           content: string | null
           created_at: string
           id: string
+          is_ai_generated: boolean | null
           is_portfolio_item: boolean | null
           link_title: string | null
           link_url: string | null
@@ -2346,6 +2347,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           id?: string
+          is_ai_generated?: boolean | null
           is_portfolio_item?: boolean | null
           link_title?: string | null
           link_url?: string | null
@@ -2366,6 +2368,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           id?: string
+          is_ai_generated?: boolean | null
           is_portfolio_item?: boolean | null
           link_title?: string | null
           link_url?: string | null

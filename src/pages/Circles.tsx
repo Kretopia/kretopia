@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CircleCard, type CircleData } from "@/components/circle/CircleCard";
+import { CircleRecommendations } from "@/components/circle/CircleRecommendations";
+import { CircleActivityDigest } from "@/components/circle/CircleActivityDigest";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";

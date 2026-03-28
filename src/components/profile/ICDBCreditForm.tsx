@@ -181,12 +181,62 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     return { platform: '', type: '' };
   };
 
+  // Search ICDB canonical database
+  const searchIcdb = useCallback(async (q: string) => {
+    if (q.length < 2) { setIcdbMatches([]); return; }
+    try {
+      const { data, error } = await supabase.functions.invoke('search-icdb', {
+        body: { query: q },
+      });
+      if (!error && data) {
+        setIcdbMatches(data.projects || []);
+        setIcdbSuggestions(data.suggestions || []);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  // Claim an ICDB canonical project role
+  const claimIcdbRole = async (project: any, role: any) => {
+    try {
+      // Claim the role in ICDB
+      if (role?.id) {
+        await supabase.from('icdb_project_roles').update({
+          claimed_by: userId,
+          is_claimed: true,
+        }).eq('id', role.id);
+      }
+
+      // Auto-fill the form with project details
+      setForm(prev => ({
+        ...prev,
+        project_name: project.title,
+        project_type: project.type || '',
+        role: role?.role_title || '',
+        description: project.description || '',
+        start_date: project.year ? `${project.year}-01-01` : '',
+        location: project.location || '',
+        platform: project.platform || '',
+        url: project.external_url || '',
+        client_brand: project.client_brand || '',
+        credit_category: project.type || '',
+      }));
+      setStep("details");
+      toast.success("Project found in ICDB! Confirm your details.");
+    } catch {
+      toast.error("Failed to claim — try manual entry");
+    }
+  };
+
   // AI-powered web search (works for both text queries and URLs)
   const handleSearch = useCallback(async (query?: string) => {
     const q = query || searchQuery;
     if (!q.trim() || q.length < 2) return;
     setSearching(true);
     setHasSearched(true);
+
+    // Search ICDB canonical database in parallel with web search
+    searchIcdb(q);
+
     try {
       const { data, error } = await supabase.functions.invoke('search-credits-web', {
         body: { query: q },
@@ -200,7 +250,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     } finally {
       setSearching(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, searchIcdb]);
 
   // Handle link paste — detect platform, auto-search, auto-fill URL
   const handleLinkPaste = useCallback(async (url: string) => {

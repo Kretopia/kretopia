@@ -26,10 +26,10 @@ export const HeroSection = () => {
           
           {/* Headline — tight, punchy */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
-            Find work.
+            Your work.
             <br />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Get paid.
+              Verified & paid.
             </span>
           </h1>
           

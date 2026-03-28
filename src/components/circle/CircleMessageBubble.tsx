@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Reply, Smile, Pin, Crown, Shield, X, Download } from "lucide-react";
+import { CirclePollDisplay } from "./CirclePollCreator";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ interface Props {
   showReactions: string | null;
   isAdmin: boolean;
   onPin?: (msgId: string, isPinned: boolean) => void;
+  onPollVote?: (msgId: string, optionIndex: number) => void;
 }
 
 const REACTION_EMOJIS = ["🔥", "❤️", "🙌", "💯", "😂", "🎯"];
@@ -100,7 +102,7 @@ const ImageLightbox = ({ src, alt, open, onClose, senderName, timestamp }: {
 );
 
 export const CircleMessageBubble = ({
-  msg, isOwn, userId, onReply, onReact, onToggleReaction, showReactions, isAdmin, onPin,
+  msg, isOwn, userId, onReply, onReact, onToggleReaction, showReactions, isAdmin, onPin, onPollVote,
 }: Props) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -179,7 +181,16 @@ export const CircleMessageBubble = ({
               <audio src={msg.media_url} controls className="mb-1 w-full max-w-[200px]" />
             )}
 
-            {msg.content && <p className="text-sm break-words">{msg.content}</p>}
+            {/* Poll display */}
+            {msg.message_type === "poll" && msg.poll_data && (
+              <CirclePollDisplay
+                pollData={msg.poll_data}
+                userId={userId}
+                onVote={(optionIndex) => onPollVote?.(msg.id, optionIndex)}
+              />
+            )}
+
+            {msg.content && msg.message_type !== "poll" && <p className="text-sm break-words">{msg.content}</p>}
             <p className={cn("text-[10px] mt-0.5 opacity-50", isOwn ? "text-primary-foreground" : "text-muted-foreground")}>
               {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
             </p>

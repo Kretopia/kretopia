@@ -18,24 +18,6 @@ const SalesDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("leads");
   const isPro = subscriptionInfo.subscribed;
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminChecked, setAdminChecked] = useState(false);
-
-  // Check if user is admin — only admins can access this page
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user?.id) return;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      setIsAdmin(!!data);
-      setAdminChecked(true);
-    };
-    checkAdmin();
-  }, [user?.id]);
 
   // Fetch lead stats
   const { data: leads = [] } = useQuery({
@@ -106,24 +88,9 @@ const SalesDashboard = () => {
     return null;
   }
 
-  if (adminChecked && !isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="text-center space-y-3">
-          <Lock className="h-12 w-12 text-muted-foreground mx-auto" />
-          <h2 className="text-xl font-bold">Admin Only</h2>
-          <p className="text-sm text-muted-foreground">This tool is restricted to platform administrators.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!adminChecked) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Checking access...</div>
-      </div>
-    );
+  if (!user) {
+    navigate("/auth");
+    return null;
   }
 
   const totalLeads = leads.length;

@@ -228,7 +228,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Grow</p>
                       <MenuButton icon={Trophy} label="Challenges" onClick={() => handleNavigation("/challenges")} badge="New" />
                       <MenuButton icon={Gift} label="Rewards" onClick={() => handleNavigation("/rewards")} />
-                      <MenuButton icon={CheckCircle} label="Daily Check-In" onClick={() => handleNavigation("/checkin")} />
+                      <MenuButton icon={CheckCircle} label="Daily Check-In" onClick={() => handleNavigation("/daily-checkin")} />
 
                       <Separator className="my-3" />
 

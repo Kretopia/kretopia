@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
+import { ModeDiscoverySheet } from "./components/ModeDiscoverySheet";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboarding";
 import { SkipLink } from "./components/ui/skip-link";
@@ -78,6 +79,7 @@ const Accounting = lazy(() => import("./pages/Accounting"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
+const DailyCheckIn = lazy(() => import("./pages/DailyCheckIn"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const Guide = lazy(() => import("./pages/Guide"));
 const EventPage = lazy(() => import("./pages/EventPage"));
@@ -168,6 +170,7 @@ const AppContent = () => {
       <PageViewTracker />
       {!isPublicEPK && !isAuthPage && !isDeckPage && <Navbar user={user} />}
       {user && !isPublicEPK && !isAuthPage && !isDeckPage && <BottomNav />}
+      {user && !isPublicEPK && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
       <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
@@ -270,6 +273,7 @@ const AppContent = () => {
             
             {/* Check-in & Challenges */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+            <Route path="/daily-checkin" element={<ProtectedRoute><DailyCheckIn /></ProtectedRoute>} />
             <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
 
             {/* Public Event Page */}

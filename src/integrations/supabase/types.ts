@@ -4627,6 +4627,7 @@ export type Database = {
           cover_image_url: string | null
           created_at: string | null
           credit_score: number | null
+          current_streak: number | null
           daily_swipes: number | null
           discogs_verified: boolean | null
           double_xp_expires_at: string | null
@@ -4651,6 +4652,7 @@ export type Database = {
           is_manager_mode: boolean | null
           job_title: string | null
           last_active_date: string | null
+          last_checkin_date: string | null
           last_swipe_reset: string | null
           latitude: number | null
           level: number | null
@@ -4714,6 +4716,7 @@ export type Database = {
           tiktok_url: string | null
           total_engagement_rate: number | null
           total_reviews: number | null
+          total_xp: number | null
           tour_completed: boolean | null
           twitter_followers: number | null
           twitter_url: string | null
@@ -4768,6 +4771,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string | null
           credit_score?: number | null
+          current_streak?: number | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
           double_xp_expires_at?: string | null
@@ -4792,6 +4796,7 @@ export type Database = {
           is_manager_mode?: boolean | null
           job_title?: string | null
           last_active_date?: string | null
+          last_checkin_date?: string | null
           last_swipe_reset?: string | null
           latitude?: number | null
           level?: number | null
@@ -4855,6 +4860,7 @@ export type Database = {
           tiktok_url?: string | null
           total_engagement_rate?: number | null
           total_reviews?: number | null
+          total_xp?: number | null
           tour_completed?: boolean | null
           twitter_followers?: number | null
           twitter_url?: string | null
@@ -4909,6 +4915,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string | null
           credit_score?: number | null
+          current_streak?: number | null
           daily_swipes?: number | null
           discogs_verified?: boolean | null
           double_xp_expires_at?: string | null
@@ -4933,6 +4940,7 @@ export type Database = {
           is_manager_mode?: boolean | null
           job_title?: string | null
           last_active_date?: string | null
+          last_checkin_date?: string | null
           last_swipe_reset?: string | null
           latitude?: number | null
           level?: number | null
@@ -4996,6 +5004,7 @@ export type Database = {
           tiktok_url?: string | null
           total_engagement_rate?: number | null
           total_reviews?: number | null
+          total_xp?: number | null
           tour_completed?: boolean | null
           twitter_followers?: number | null
           twitter_url?: string | null

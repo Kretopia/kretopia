@@ -8,7 +8,7 @@ const CREATE_ITEMS = [
   { path: "/circle", icon: Sparkles, label: "Match" },
   { path: "/scene", icon: Flame, label: "Scene" },
   { path: "/circles", icon: MessageSquareMore, label: "Circles" },
-  { path: "/challenges", icon: Trophy, label: "Challenges" },
+  { path: "/credits", icon: Database, label: "ICDB" },
 ];
 
 const WORK_ITEMS = [

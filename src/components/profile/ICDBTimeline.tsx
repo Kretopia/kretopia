@@ -119,6 +119,28 @@ const getPlatformIcon = (platform: string | null) => {
   return null;
 };
 
+// Helper to map portfolio media_type to a credit project_type
+const mapMediaTypeToProjectType = (mediaType: string): string => {
+  const map: Record<string, string> = {
+    video: 'youtube_series', image: 'photography', audio: 'single',
+    document: 'publishing', link: 'ugc_campaign',
+  };
+  return map[mediaType?.toLowerCase()] || 'ugc_campaign';
+};
+
+// Helper to detect platform from URL
+const detectPlatformFromUrl = (url: string | null): string | null => {
+  if (!url) return null;
+  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'YouTube';
+  if (url.includes('vimeo.com')) return 'Vimeo';
+  if (url.includes('spotify.com')) return 'Spotify';
+  if (url.includes('soundcloud.com')) return 'SoundCloud';
+  if (url.includes('tiktok.com')) return 'TikTok';
+  if (url.includes('instagram.com')) return 'Instagram';
+  if (url.includes('behance.net')) return 'Behance';
+  return null;
+};
+
 interface ICDBTimelineProps {
   userId: string;
   isOwnProfile: boolean;

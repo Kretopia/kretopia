@@ -234,14 +234,8 @@ const ICDBProjectPage = () => {
             <h2 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Full Credits</h2>
           </div>
 
-          <div className="space-y-6">
-            {Object.entries(departments).map(([dept, deptRoles]) => (
-              <div key={dept}>
-                {Object.keys(departments).length > 1 && (
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 border-b pb-1">{dept}</h3>
-                )}
-                <div className="space-y-1.5">
-                  {deptRoles.map(role => (
+          <div className="space-y-1.5">
+              {allRoles.map(role => (
                     <div
                       key={role.id}
                       className={cn(

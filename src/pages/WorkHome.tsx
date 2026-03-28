@@ -97,7 +97,7 @@ const WorkHome = () => {
 
         {/* Quick Stats Row */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/desk")}>
+          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
             <p className="text-2xl font-bold">{activeProjects.length}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Active Projects</p>
           </Card>

@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Flame, MessageCircle, Paperclip, Loader2, Play, Music, Volume2, VolumeX } from "lucide-react";
+import { Flame, MessageCircle, Paperclip, Loader2, Play, Music, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +25,7 @@ interface SparkPost {
   portfolio_item_id: string | null;
   auto_activity_message: string | null;
   is_portfolio_item: boolean | null;
+  is_ai_generated: boolean;
   category: string | null;
   profile?: {
     full_name: string;
@@ -62,7 +63,7 @@ export const SparkWall = () => {
       // Fetch both portfolio items AND user-created spark posts in parallel
       const [portfolioRes, sparkPostsRes] = await Promise.all([
         supabase.from("portfolio_items").select("*").order("created_at", { ascending: false }).limit(30),
-        supabase.from("feed_posts").select("*").eq("source_type", "spark").order("created_at", { ascending: false }).limit(20),
+        supabase.from("feed_posts").select("*").in("source_type", ["spark", "ai_spark"]).order("created_at", { ascending: false }).limit(20),
       ]);
 
       const portfolioItems = portfolioRes.data || [];
@@ -100,6 +101,7 @@ export const SparkWall = () => {
         portfolio_item_id: item.id,
         auto_activity_message: null,
         is_portfolio_item: true,
+        is_ai_generated: false,
         category: item.category,
         profile: profileMap.get(item.user_id) || { full_name: "Unknown", avatar_url: null, role: null },
         portfolio_item: {
@@ -126,6 +128,7 @@ export const SparkWall = () => {
         portfolio_item_id: null,
         auto_activity_message: null,
         is_portfolio_item: false,
+        is_ai_generated: !!(sp as any).is_ai_generated || (sp as any).source_type === "ai_spark",
         category: sp.category,
         profile: profileMap.get(sp.user_id) || { full_name: "Unknown", avatar_url: null, role: null },
         portfolio_item: undefined,
@@ -338,6 +341,11 @@ const SparkMediaCard = ({
             {post.profile?.role} · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
           </p>
         </div>
+        {post.is_ai_generated && (
+          <Badge variant="secondary" className="text-[10px] shrink-0 gap-0.5 bg-primary/10 text-primary border-primary/20 py-0">
+            <Sparkles className="h-2.5 w-2.5" /> AI
+          </Badge>
+        )}
         {categoryEmoji && (
           <Badge variant="secondary" className="text-xs shrink-0 gap-1">
             {categoryEmoji}
@@ -477,6 +485,11 @@ const SparkTextCard = ({
             {post.profile?.role} · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
           </p>
         </div>
+        {post.is_ai_generated && (
+          <Badge variant="secondary" className="text-[10px] shrink-0 gap-0.5 bg-primary/10 text-primary border-primary/20 py-0">
+            <Sparkles className="h-2.5 w-2.5" /> AI
+          </Badge>
+        )}
       </div>
 
       {/* Text content as visual card */}

@@ -219,7 +219,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     /* ====== CREATE MODE MENU ====== */
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
-                      <MenuButton icon={Globe} label="Credit Database (ICDB)" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} />
 
                       <Separator className="my-3" />

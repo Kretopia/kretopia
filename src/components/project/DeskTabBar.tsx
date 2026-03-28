@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { MessageSquare, CheckSquare, FolderOpen, LayoutGrid, CheckCircle2, Wallet } from "lucide-react";
+import { MessageSquare, CheckSquare, FolderOpen, LayoutGrid, CheckCircle2, Wallet, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const DESK_TABS = [
@@ -8,6 +8,7 @@ export const DESK_TABS = [
   { id: "files", label: "Files", icon: FolderOpen },
   { id: "board", label: "Board", icon: LayoutGrid },
   { id: "approvals", label: "Approvals", icon: CheckCircle2 },
+  { id: "scope", label: "Scope AI", icon: Shield },
   { id: "finance", label: "Finance", icon: Wallet },
 ] as const;
 

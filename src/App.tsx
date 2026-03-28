@@ -268,8 +268,9 @@ const AppContent = () => {
             <Route path="/discover" element={<Navigate to="/circle?tab=browse" replace />} />
             <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
             
-            {/* Check-in */}
+            {/* Check-in & Challenges */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+            <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
 
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />

@@ -179,10 +179,14 @@ export default function Circle() {
         <ProfileVisibilityBanner isVisible={profileVisibility.isVisible} missingFields={profileVisibility.missingFields} />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
+          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Match
+              Swipe
+            </TabsTrigger>
+            <TabsTrigger value="browse" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+              <LayoutGrid className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Browse
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -197,6 +201,10 @@ export default function Circle() {
 
           <TabsContent value="foryou" className="space-y-4">
             <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
+          </TabsContent>
+
+          <TabsContent value="browse" className="space-y-4">
+            <CreatorBrowseGrid />
           </TabsContent>
 
           <TabsContent value="network" className="space-y-6">

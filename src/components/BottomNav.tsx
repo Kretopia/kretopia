@@ -33,7 +33,7 @@ const BottomNav = memo(() => {
   const navItems = isCompany
     ? [
         { path: "/discover", icon: Compass, label: "Discover", tourId: "discover-tab", tooltip: { id: "nav-discover", title: "Discover", desc: "Browse creators and talent" } },
-        { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & conversations" } },
+        { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & nearby creators" } },
         { path: "/circles", icon: MessageSquareMore, label: "Circles", tourId: "circles-tab", tooltip: { id: "nav-circles", title: "Circles", desc: "Join community spaces" } },
         { path: "/discover?tab=gigs", icon: Users, label: "Gigs", tourId: "gigs-tab", tooltip: { id: "nav-gigs", title: "Gigs", desc: "Post and manage hiring" } },
       ]

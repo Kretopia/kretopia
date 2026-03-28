@@ -145,39 +145,41 @@ function CreatorCard({ creator, onConnect, onMessage, onNavigate }: {
         </div>
       </div>
 
-      <CardContent className="pt-9 pb-3 px-3 space-y-2">
-        {/* Name & badges */}
-        <div className="flex items-start justify-between gap-1">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-bold truncate">{creator.full_name}</p>
-              {(creator.badge === 'odos' || creator.badge === 'ODOS') && (
-                <Badge variant="secondary" className="text-[8px] h-3.5 px-1 bg-primary/10 text-primary">ODOS</Badge>
-              )}
-              {creator.verification_status === 'verified' && (
-                <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
-              )}
-            </div>
-            {creator.role && <p className="text-[11px] text-muted-foreground truncate">{creator.role}</p>}
-          </div>
-          {creator.level && creator.level > 0 && (
+      <CardContent className="pt-9 pb-3 px-3 space-y-1.5">
+        {/* Level badge */}
+        {creator.level && creator.level > 0 && (
+          <div className="flex justify-end -mt-1 -mb-0.5">
             <Badge variant="outline" className="text-[9px] h-5 shrink-0 gap-0.5 font-semibold">
               <Star className="h-2.5 w-2.5 fill-primary text-primary" /> Lvl {creator.level}
             </Badge>
-          )}
+          </div>
+        )}
+
+        {/* Name & badges */}
+        <div className="min-w-0">
+          <div className="flex items-center gap-1">
+            <p className="text-sm font-bold truncate max-w-[80%]">{creator.full_name}</p>
+            {(creator.badge === 'odos' || creator.badge === 'ODOS') && (
+              <Badge variant="secondary" className="text-[8px] h-3.5 px-1 bg-primary/10 text-primary shrink-0">ODOS</Badge>
+            )}
+            {creator.verification_status === 'verified' && (
+              <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
+            )}
+          </div>
+          {creator.role && <p className="text-[11px] text-muted-foreground truncate">{creator.role}</p>}
         </div>
 
         {/* Location */}
         {creator.location && (
           <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-            <MapPin className="h-2.5 w-2.5" /> {creator.location}
+            <MapPin className="h-2.5 w-2.5 shrink-0" /> <span className="truncate">{creator.location}</span>
           </p>
         )}
 
-        {/* Role as tag */}
+        {/* Role tag */}
         {creator.role && (
           <div className="flex flex-wrap gap-1">
-            <Badge variant="secondary" className="text-[9px] h-4 px-1.5 font-normal">{creator.role}</Badge>
+            <Badge variant="secondary" className="text-[9px] h-4 px-1.5 font-normal truncate max-w-full">{creator.role}</Badge>
           </div>
         )}
 
@@ -334,15 +336,27 @@ export function CreatorBrowseGrid() {
           incoming.data?.forEach(c => myConnections.add(c.user_id));
 
           if (myConnections.size > 0) {
+            // Batch: get all connections for visible creators in two queries instead of N
+            const visibleIds = profiles.map(p => p.user_id);
+            const [allOut, allIn] = await Promise.all([
+              supabase.from('connections').select('user_id, connected_user_id').in('user_id', visibleIds).eq('status', 'accepted'),
+              supabase.from('connections').select('user_id, connected_user_id').in('connected_user_id', visibleIds).eq('status', 'accepted'),
+            ]);
+
+            const creatorConnectionsMap = new Map<string, Set<string>>();
+            allOut.data?.forEach(c => {
+              const set = creatorConnectionsMap.get(c.user_id) || new Set();
+              set.add(c.connected_user_id);
+              creatorConnectionsMap.set(c.user_id, set);
+            });
+            allIn.data?.forEach(c => {
+              const set = creatorConnectionsMap.get(c.connected_user_id) || new Set();
+              set.add(c.user_id);
+              creatorConnectionsMap.set(c.connected_user_id, set);
+            });
+
             for (const profile of profiles) {
-              // Check mutual: how many of this creator's connections overlap with mine
-              const [pOut, pIn] = await Promise.all([
-                supabase.from('connections').select('connected_user_id').eq('user_id', profile.user_id).eq('status', 'accepted'),
-                supabase.from('connections').select('user_id').eq('connected_user_id', profile.user_id).eq('status', 'accepted'),
-              ]);
-              const theirConnections = new Set<string>();
-              pOut.data?.forEach(c => theirConnections.add(c.connected_user_id));
-              pIn.data?.forEach(c => theirConnections.add(c.user_id));
+              const theirConnections = creatorConnectionsMap.get(profile.user_id) || new Set();
               let mutual = 0;
               myConnections.forEach(id => { if (theirConnections.has(id)) mutual++; });
               profile.mutual_connections = mutual;

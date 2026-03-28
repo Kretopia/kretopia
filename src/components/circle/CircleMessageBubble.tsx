@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Reply, Smile, Pin, Crown, Shield, X, Download } from "lucide-react";
+import { CirclePollDisplay } from "./CirclePollCreator";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 

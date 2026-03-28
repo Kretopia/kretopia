@@ -317,7 +317,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
             <p className="text-xl sm:text-2xl font-bold truncate">{sym}{stats.totalIncome.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">Invoices + marketplace ({preferredCurrency})</p>
+            <p className="text-[10px] text-muted-foreground">Invoices + marketplace + circles ({preferredCurrency})</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-amber-500">

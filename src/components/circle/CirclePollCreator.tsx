@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BarChart3, Plus, X, Send } from "lucide-react";
+import { BarChart3, Plus, X, Send, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CirclePollCreatorProps {

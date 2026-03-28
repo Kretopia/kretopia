@@ -334,15 +334,17 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       }
 
       // Step 2: Fetch ALL data in parallel for speed
-      const [swipesResult, connectionsResult, portfolioResult, profilesResult] = await Promise.all([
+      const [swipesResult, connectionsResult, portfolioResult, creditsResult, profilesResult] = await Promise.all([
         // Get swipes this user has made
         supabase.from('swipes').select('target_id').eq('user_id', user.id),
         // Get accepted connections only
         supabase.from('connections').select('user_id, connected_user_id').eq('status', 'accepted'),
         // Get all portfolio items to find users with portfolios
         supabase.from('portfolio_items').select('user_id'),
+        // Get all credits to find users with work credits
+        supabase.from('credits').select('user_id'),
         // Get all profiles with onboarding completed
-        supabase.from('profiles').select('user_id, full_name, role, bio, avatar_url, location, collab_intent, onboarding_completed')
+        supabase.from('profiles').select('user_id, full_name, role, bio, avatar_url, location, collab_intent, onboarding_completed, is_claimed, badge')
           .eq('onboarding_completed', true)
       ]);
 
@@ -357,32 +359,38 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
       });
       console.log('[ForYou] User is connected to:', connectedUserIds.size, 'profiles');
 
-      // Build portfolio user set
-      const portfolioUserIds = new Set<string>();
+      // Build portfolio + credits user sets
+      const workUserIds = new Set<string>();
       const portfolioCountMap = new Map<string, number>();
       portfolioResult.data?.forEach(item => {
-        portfolioUserIds.add(item.user_id);
+        workUserIds.add(item.user_id);
         portfolioCountMap.set(item.user_id, (portfolioCountMap.get(item.user_id) || 0) + 1);
       });
-      console.log('[ForYou] Users with portfolios:', portfolioUserIds.size);
+      creditsResult.data?.forEach(item => {
+        workUserIds.add(item.user_id);
+      });
+      console.log('[ForYou] Users with work items:', workUserIds.size);
 
-      // Step 3: Filter candidates
+      // Step 3: Filter candidates — quality gates matching public_profiles_discovery
       const allProfiles = profilesResult.data || [];
       console.log('[ForYou] Total profiles fetched:', allProfiles.length);
 
       const candidates = allProfiles.filter(p => {
-        // Exclude self
         if (p.user_id === user.id) return false;
-        // Exclude already swiped
         if (swipedUserIds.has(p.user_id)) return false;
-        // Exclude accepted connections
         if (connectedUserIds.has(p.user_id)) return false;
         // Must have avatar
         if (!p.avatar_url || p.avatar_url.trim() === '') return false;
         // Must have bio (20+ chars)
         if (!p.bio || p.bio.trim().length < 20) return false;
-        // Must have at least 1 portfolio item
-        if (!portfolioUserIds.has(p.user_id)) return false;
+        // Must have at least 1 portfolio item OR credit
+        if (!workUserIds.has(p.user_id)) return false;
+        // Hide unclaimed profiles (unless ODOS badge)
+        if (p.is_claimed === false && p.badge !== 'odos') return false;
+        // Hide placeholder names
+        if (!p.full_name || p.full_name === 'New User' || p.full_name === '') return false;
+        // Hide placeholder roles
+        if (!p.role || p.role === 'Creator' || p.role === '') return false;
         return true;
       });
 

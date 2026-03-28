@@ -11,10 +11,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ArrowLeft, Hash, Megaphone, Calendar, ShoppingBag, Image,
   Plus, Send, Settings, Users, Lock, Globe, DollarSign, Loader2,
-  Share2, Check, Pin, Reply, MessageSquare, Crown,
+  Share2, Check, Pin, Reply, MessageSquare, Crown, BarChart3,
 } from "lucide-react";
 import { CircleMessageBubble, type CircleMessage } from "@/components/circle/CircleMessageBubble";
 import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
+import { CirclePollCreator } from "@/components/circle/CirclePollCreator";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { cn } from "@/lib/utils";
 
@@ -63,6 +64,7 @@ const CircleDetail = () => {
   const [newChannelName, setNewChannelName] = useState("");
   const [newChannelType, setNewChannelType] = useState("text");
   const [copied, setCopied] = useState(false);
+  const [showPollCreator, setShowPollCreator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -615,6 +617,31 @@ const CircleDetail = () => {
           </div>
         )}
 
+        {/* Poll Creator */}
+        {showPollCreator && (
+          <div className="px-3 pt-2">
+            <CirclePollCreator
+              onSubmit={async (question, options) => {
+                const pollData = { question, options: options.map(o => ({ text: o, votes: [] as string[] })) };
+                if (!activeChannel?.id || !user || !circle) return;
+                const { data: profile } = await supabase.from("profiles").select("full_name, avatar_url").eq("user_id", user.id).single();
+                await supabase.from("spark_room_messages").insert({
+                  room_id: circle.id,
+                  channel_id: activeChannel.id,
+                  user_id: user.id,
+                  content: `📊 ${question}`,
+                  message_type: "poll",
+                  poll_data: pollData,
+                } as any);
+                setShowPollCreator(false);
+                setNewMessage("");
+                fetchMessages();
+              }}
+              onCancel={() => setShowPollCreator(false)}
+            />
+          </div>
+        )}
+
         {/* Input */}
         {activeChannel?.channel_type !== "events" && (
           <div className="flex gap-2 p-3 border-t border-border bg-card/50">
@@ -622,6 +649,11 @@ const CircleDetail = () => {
             <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => fileRef.current?.click()}>
               <Plus className="h-4 w-4" />
             </Button>
+            {isMod && (
+              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => setShowPollCreator(!showPollCreator)}>
+                <BarChart3 className="h-4 w-4" />
+              </Button>
+            )}
             <Input
               placeholder={`Message #${activeChannel?.name || "general"}...`}
               value={newMessage}

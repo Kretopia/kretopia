@@ -202,10 +202,16 @@ const CreatorEPK = () => {
         setDigitalProducts(productsRes.data || []);
         
         // Combine manual and verified credits
-        const manualCredits = (creditsRes.data || []).map((c: any) => ({
-          ...c,
-          isVerified: false
-        }));
+        const manualCredits = (creditsRes.data || []).map((c: any) => {
+          let tier: Credit['verificationTier'] = 'manual';
+          if (c.verification_status === 'verified' && c.endorsement_count >= 2) tier = 'peer';
+          else if (c.ai_confidence && c.ai_confidence >= 0.7) tier = 'ai';
+          return {
+            ...c,
+            isVerified: tier !== 'manual',
+            verificationTier: tier,
+          };
+        });
         const verifiedCreditsData = (verifiedCreditsRes.data || []).map((c: any) => ({
           id: c.id,
           project_name: c.title,
@@ -213,13 +219,23 @@ const CreatorEPK = () => {
           year: c.year,
           platform: c.source,
           isVerified: true,
+          verificationTier: 'ai' as const,
           source: c.source
+        }));
+
+        // ICDB claimed credits
+        const icdbClaimed = (icdbRes.data || []).map((c: any) => ({
+          id: c.id,
+          project_name: c.person_name || 'ICDB Credit',
+          role: c.role_title,
+          isVerified: true,
+          verificationTier: 'icdb' as const,
         }));
         
         // Combine and sort by year
-        const allCredits = [...verifiedCreditsData, ...manualCredits]
+        const allCredits = [...icdbClaimed, ...verifiedCreditsData, ...manualCredits]
           .sort((a, b) => (b.year || 0) - (a.year || 0))
-          .slice(0, 8);
+          .slice(0, 12);
         
         setCredits(allCredits);
 

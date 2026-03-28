@@ -273,6 +273,7 @@ const AppContent = () => {
             
             {/* Check-in & Challenges */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+            <Route path="/daily-checkin" element={<ProtectedRoute><DailyCheckIn /></ProtectedRoute>} />
             <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
 
             {/* Public Event Page */}

@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail } from "lucide-react";
+import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail, Database, ShieldCheck, UserPlus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { parseMediaUrl } from "@/lib/mediaUtils";
@@ -132,6 +132,10 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
   const [webResults, setWebResults] = useState<WebCreditResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // ICDB canonical project matches
+  const [icdbMatches, setIcdbMatches] = useState<any[]>([]);
+  const [icdbSuggestions, setIcdbSuggestions] = useState<any[]>([]);
+
   // Collaborator state
   const [collabSearch, setCollabSearch] = useState("");
   const [collabResults, setCollabResults] = useState<CollaboratorResult[]>([]);
@@ -177,12 +181,62 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     return { platform: '', type: '' };
   };
 
+  // Search ICDB canonical database
+  const searchIcdb = useCallback(async (q: string) => {
+    if (q.length < 2) { setIcdbMatches([]); return; }
+    try {
+      const { data, error } = await supabase.functions.invoke('search-icdb', {
+        body: { query: q },
+      });
+      if (!error && data) {
+        setIcdbMatches(data.projects || []);
+        setIcdbSuggestions(data.suggestions || []);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  // Claim an ICDB canonical project role
+  const claimIcdbRole = async (project: any, role: any) => {
+    try {
+      // Claim the role in ICDB
+      if (role?.id) {
+        await supabase.from('icdb_project_roles').update({
+          claimed_by: userId,
+          is_claimed: true,
+        }).eq('id', role.id);
+      }
+
+      // Auto-fill the form with project details
+      setForm(prev => ({
+        ...prev,
+        project_name: project.title,
+        project_type: project.type || '',
+        role: role?.role_title || '',
+        description: project.description || '',
+        start_date: project.year ? `${project.year}-01-01` : '',
+        location: project.location || '',
+        platform: project.platform || '',
+        url: project.external_url || '',
+        client_brand: project.client_brand || '',
+        credit_category: project.type || '',
+      }));
+      setStep("details");
+      toast.success("Project found in ICDB! Confirm your details.");
+    } catch {
+      toast.error("Failed to claim — try manual entry");
+    }
+  };
+
   // AI-powered web search (works for both text queries and URLs)
   const handleSearch = useCallback(async (query?: string) => {
     const q = query || searchQuery;
     if (!q.trim() || q.length < 2) return;
     setSearching(true);
     setHasSearched(true);
+
+    // Search ICDB canonical database in parallel with web search
+    searchIcdb(q);
+
     try {
       const { data, error } = await supabase.functions.invoke('search-credits-web', {
         body: { query: q },
@@ -196,7 +250,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     } finally {
       setSearching(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, searchIcdb]);
 
   // Handle link paste — detect platform, auto-search, auto-fill URL
   const handleLinkPaste = useCallback(async (url: string) => {
@@ -383,6 +437,8 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     setSearchQuery("");
     setLinkInput("");
     setWebResults([]);
+    setIcdbMatches([]);
+    setIcdbSuggestions([]);
     setHasSearched(false);
     setShowMore(false);
     setForm({
@@ -474,11 +530,77 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                 </Button>
               </div>
 
+              {/* ICDB Canonical Matches */}
+              {!searching && icdbMatches.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium flex items-center gap-1">
+                    <Database className="h-3 w-3 text-primary" />
+                    ICDB Verified Projects
+                  </p>
+                  {icdbMatches.slice(0, 5).map((project: any) => (
+                    <Card
+                      key={project.id}
+                      className="p-3 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all border-primary/20"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold flex-1">{project.title}</p>
+                          <Badge variant="outline" className="text-[9px] h-4 gap-0.5 border-blue-500/30 text-blue-600 shrink-0">
+                            <ShieldCheck className="h-2 w-2" /> ICDB
+                          </Badge>
+                        </div>
+                        {project.description && (
+                          <p className="text-[11px] text-muted-foreground line-clamp-1">{project.description}</p>
+                        )}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge variant="secondary" className="text-[9px] h-4 capitalize">
+                            {project.type?.replace(/_/g, ' ')}
+                          </Badge>
+                          {project.year && <span className="text-[10px] text-muted-foreground">{project.year}</span>}
+                          {project.client_brand && (
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                              <Building2 className="h-2.5 w-2.5" /> {project.client_brand}
+                            </span>
+                          )}
+                        </div>
+                        {/* Claimable roles */}
+                        {project.icdb_project_roles?.filter((r: any) => !r.is_claimed).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {project.icdb_project_roles.filter((r: any) => !r.is_claimed).map((role: any) => (
+                              <Button
+                                key={role.id}
+                                variant="outline"
+                                size="sm"
+                                className="h-5 text-[9px] gap-0.5 px-2"
+                                onClick={() => claimIcdbRole(project, role)}
+                              >
+                                <UserPlus className="h-2.5 w-2.5" /> {role.role_title}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                        {/* If no unclaimed roles, allow claiming with custom role */}
+                        {(!project.icdb_project_roles || project.icdb_project_roles.filter((r: any) => !r.is_claimed).length === 0) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-6 text-[10px] gap-1 mt-1"
+                            onClick={() => claimIcdbRole(project, { role_title: '' })}
+                          >
+                            <Plus className="h-3 w-3" /> Add my role on this project
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
               {/* Results */}
               {searching && (
                 <div className="flex items-center justify-center py-6 gap-2">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Searching platforms...</span>
+                  <span className="text-sm text-muted-foreground">Searching ICDB & platforms...</span>
                 </div>
               )}
 

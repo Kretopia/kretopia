@@ -135,11 +135,29 @@ export const SparkWall = () => {
         reaction_count: 0, comment_count: 0, has_reacted: false, has_clipped: false,
       }));
 
-      // Merge and shuffle
-      const enriched = [...portfolioPosts, ...userPosts];
-      for (let i = enriched.length - 1; i > 0; i--) {
+      // Sort user posts (sparks) first by recency, then shuffle portfolio items among them
+      const sortedUserPosts = [...userPosts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      
+      // Shuffle portfolio posts
+      const shuffledPortfolio = [...portfolioPosts];
+      for (let i = shuffledPortfolio.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [enriched[i], enriched[j]] = [enriched[j], enriched[i]];
+        [shuffledPortfolio[i], shuffledPortfolio[j]] = [shuffledPortfolio[j], shuffledPortfolio[i]];
+      }
+      
+      // Interleave: user posts first, then sprinkle portfolio items
+      const enriched: SparkPost[] = [];
+      let pIdx = 0;
+      for (let i = 0; i < sortedUserPosts.length; i++) {
+        enriched.push(sortedUserPosts[i]);
+        // Insert a portfolio item every 2 user posts
+        if ((i + 1) % 2 === 0 && pIdx < shuffledPortfolio.length) {
+          enriched.push(shuffledPortfolio[pIdx++]);
+        }
+      }
+      // Add remaining portfolio items
+      while (pIdx < shuffledPortfolio.length) {
+        enriched.push(shuffledPortfolio[pIdx++]);
       }
       setPosts(enriched);
       setLoading(false);

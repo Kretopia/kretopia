@@ -87,45 +87,75 @@ export const CirclePollDisplay = ({
   userId?: string;
   onVote: (optionIndex: number) => void;
 }) => {
-  const totalVotes = pollData.options.reduce((sum, o) => sum + o.votes.length, 0);
-  const hasVoted = pollData.options.some(o => o.votes.includes(userId || ""));
+  const totalVotes = pollData.options.reduce((sum, o) => sum + (o.votes?.length || 0), 0);
+  const hasVoted = pollData.options.some(o => o.votes?.includes(userId || ""));
+  const votedIndex = pollData.options.findIndex(o => o.votes?.includes(userId || ""));
 
   return (
-    <div className="space-y-2 mt-1">
+    <div className="space-y-2 mt-1 mb-1">
       <p className="text-sm font-semibold flex items-center gap-1.5">
         <BarChart3 className="h-3.5 w-3.5 text-primary" />
         {pollData.question}
       </p>
       <div className="space-y-1.5">
         {pollData.options.map((opt, idx) => {
-          const pct = totalVotes > 0 ? Math.round((opt.votes.length / totalVotes) * 100) : 0;
-          const myVote = opt.votes.includes(userId || "");
+          const votes = opt.votes?.length || 0;
+          const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+          const myVote = idx === votedIndex;
           return (
             <button
               key={idx}
               onClick={() => !hasVoted && onVote(idx)}
               disabled={hasVoted}
               className={cn(
-                "w-full relative rounded-lg border p-2 text-left text-xs transition-all overflow-hidden",
-                hasVoted ? "cursor-default" : "hover:border-primary/50 cursor-pointer",
-                myVote && "border-primary bg-primary/5"
+                "w-full relative rounded-lg border p-2.5 text-left text-xs transition-all overflow-hidden",
+                hasVoted ? "cursor-default" : "hover:border-primary/50 cursor-pointer active:scale-[0.98]",
+                myVote ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border"
               )}
             >
               {hasVoted && (
                 <div
-                  className="absolute inset-y-0 left-0 bg-primary/10 transition-all"
+                  className={cn(
+                    "absolute inset-y-0 left-0 transition-all duration-500 rounded-l-lg",
+                    myVote ? "bg-primary/15" : "bg-muted/60"
+                  )}
                   style={{ width: `${pct}%` }}
                 />
               )}
-              <div className="relative flex items-center justify-between">
-                <span className={cn("font-medium", myVote && "text-primary")}>{opt.text}</span>
-                {hasVoted && <span className="text-[10px] text-muted-foreground">{pct}%</span>}
+              <div className="relative flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  {!hasVoted && (
+                    <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/40 shrink-0" />
+                  )}
+                  {hasVoted && myVote && (
+                    <div className="h-3.5 w-3.5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                      <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                    </div>
+                  )}
+                  {hasVoted && !myVote && (
+                    <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
+                  )}
+                  <span className={cn("font-medium", myVote && "text-primary")}>{opt.text}</span>
+                </div>
+                {hasVoted && (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[10px] text-muted-foreground font-medium">{votes}</span>
+                    <span className="text-[10px] text-muted-foreground">({pct}%)</span>
+                  </div>
+                )}
               </div>
             </button>
           );
         })}
       </div>
-      <p className="text-[10px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</p>
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] text-muted-foreground">
+          {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
+        </p>
+        {hasVoted && (
+          <p className="text-[10px] text-primary font-medium">✓ You voted</p>
+        )}
+      </div>
     </div>
   );
 };

@@ -72,7 +72,7 @@ export const getDiscoveryMissingFields = (profile: Profile, portfolioCount: numb
   }
   
   if (portfolioCount < 1) {
-    missing.push('At least 1 Portfolio Item');
+    missing.push('At least 1 Work Item (Portfolio or Credit)');
   }
   
   return missing;

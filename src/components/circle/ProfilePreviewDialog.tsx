@@ -173,7 +173,7 @@ export const ProfilePreviewDialog = ({
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
                     <Award className="h-4 w-4" />
-                    Recent Work
+                    Work
                   </h4>
                   <div className="grid grid-cols-2 gap-3">
                     {displayPortfolio.map((item: any) => (

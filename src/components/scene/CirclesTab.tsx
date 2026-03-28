@@ -574,7 +574,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
 };
 
 // ─── Create Circle Dialog with paid options ───
-const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; onCreated: () => void }) => {
+export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; onCreated: () => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [title, setTitle] = useState("");

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { MessageSquareMore, TrendingUp, Plus, Search, Users, Sparkles, Filter } from "lucide-react";
+import { MessageSquareMore, TrendingUp, Plus, Search, Users, Sparkles } from "lucide-react";
+import { CreateCircleDialog } from "@/components/scene/CirclesTab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,7 @@ const CirclesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("explore");
+  const [showCreate, setShowCreate] = useState(false);
 
   const fetchCircles = useCallback(async () => {
     setLoading(true);
@@ -113,9 +115,10 @@ const CirclesPage = () => {
                 </h1>
                 <p className="text-sm text-muted-foreground">Community spaces for creatives</p>
               </div>
-              <Button variant="gradient" size="sm" className="gap-1.5" onClick={() => navigate("/scene?tab=circles")}>
+              <Button variant="gradient" size="sm" className="gap-1.5" onClick={() => setShowCreate(true)}>
                 <Plus className="h-4 w-4" /> Create
               </Button>
+              <CreateCircleDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchCircles} />
             </div>
           </div>
 

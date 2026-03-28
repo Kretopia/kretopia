@@ -282,8 +282,10 @@ const AppContent = () => {
             
             {/* Credit Database & Discover */}
             <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
+            <Route path="/credits/hub" element={<ProtectedRoute><ICDBHub /></ProtectedRoute>} />
             <Route path="/credits/project/:projectId" element={<ProtectedRoute><ICDBProjectPage /></ProtectedRoute>} />
             <Route path="/credits/discover" element={<ProtectedRoute><ICDBDiscovery /></ProtectedRoute>} />
+            <Route path="/verify-credit" element={<BrandVerify />} />
             <Route path="/directory" element={<Navigate to="/circle?tab=browse" replace />} />
             <Route path="/discover" element={<Navigate to="/credits/discover" replace />} />
             <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />

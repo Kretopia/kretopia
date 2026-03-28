@@ -152,7 +152,7 @@ function CreatorCard({ creator, onConnect, onMessage, onNavigate }: {
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <p className="text-sm font-bold truncate">{creator.full_name}</p>
-              {creator.badge === 'ODOS' && (
+              {(creator.badge === 'odos' || creator.badge === 'ODOS') && (
                 <Badge variant="secondary" className="text-[8px] h-3.5 px-1 bg-primary/10 text-primary">ODOS</Badge>
               )}
               {creator.verification_status === 'verified' && (

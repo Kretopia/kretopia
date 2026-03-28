@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import Events from "./Events";
 import { SparkWall } from "@/components/scene/SparkWall";
 import { ClipsWall } from "@/components/scene/ClipsWall";
+import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
+import { SmartNudgeBanner } from "@/components/notifications/SmartNudgeBanner";
 
 const Scene = () => {
   const [activeTab, setActiveTab] = useState("spark");
@@ -52,6 +54,8 @@ const Scene = () => {
             </TabsList>
 
             <TabsContent value="spark" className="mt-0">
+              <SmartNudgeBanner />
+              <GetStartedChecklist />
               <SparkWall />
             </TabsContent>
 

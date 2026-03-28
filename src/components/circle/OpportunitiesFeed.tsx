@@ -13,8 +13,9 @@ import GigCard, { type GigCreatorProfile } from "@/components/opportunity/GigCar
 import { 
   Briefcase, Handshake, ArrowRightLeft,
   Plus, Sparkles, Zap, Target, GraduationCap, X,
-  Search,
+  Search, MapPin, SlidersHorizontal, DollarSign,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useNavigate } from "react-router-dom";
 import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
 
@@ -70,6 +71,11 @@ export const OpportunitiesFeed = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSkill, setSelectedSkill] = useState("all");
   const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [compensationFilter, setCompensationFilter] = useState("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const activeFilterCount = [selectedSkill !== "all", locationFilter !== "all", compensationFilter !== "all"].filter(Boolean).length;
 
   const fetchOpportunities = useCallback(async () => {
     setLoading(true);
@@ -95,6 +101,10 @@ export const OpportunitiesFeed = () => {
 
       if (selectedSkill !== "all") {
         query = query.contains("skills", [selectedSkill]);
+      }
+
+      if (locationFilter !== "all") {
+        query = query.ilike("location", `%${locationFilter}%`);
       }
 
       const { data, error } = await query;
@@ -127,7 +137,7 @@ export const OpportunitiesFeed = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, searchQuery, selectedSkill]);
+  }, [activeFilter, searchQuery, selectedSkill, locationFilter]);
 
   useEffect(() => { fetchOpportunities(); }, [fetchOpportunities]);
 
@@ -168,7 +178,7 @@ export const OpportunitiesFeed = () => {
         </div>
       </div>
 
-      {/* Search & Skills Filter */}
+      {/* Search & Filters */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -184,21 +194,110 @@ export const OpportunitiesFeed = () => {
             </Button>
           )}
         </div>
-        <Select value={selectedSkill} onValueChange={setSelectedSkill}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Skill" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Skills</SelectItem>
-            {SKILLS_OPTIONS.map(skill => (
-              <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="relative shrink-0">
+              <SlidersHorizontal className="h-4 w-4" />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] text-primary-foreground flex items-center justify-center font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="rounded-t-2xl max-h-[70vh]">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4" />
+                Filter Gigs
+              </SheetTitle>
+            </SheetHeader>
+            <div className="space-y-5 py-4">
+              {/* Skill Filter */}
+              <div>
+                <label className="text-sm font-medium flex items-center gap-1.5 mb-2">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  Skill
+                </label>
+                <Select value={selectedSkill} onValueChange={setSelectedSkill}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Skills" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Skills</SelectItem>
+                    {SKILLS_OPTIONS.map(skill => (
+                      <SelectItem key={skill} value={skill}>{skill}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Location Filter */}
+              <div>
+                <label className="text-sm font-medium flex items-center gap-1.5 mb-2">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                  Location
+                </label>
+                <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any Location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any Location</SelectItem>
+                    <SelectItem value="Remote">Remote</SelectItem>
+                    <SelectItem value="New York">New York</SelectItem>
+                    <SelectItem value="Los Angeles">Los Angeles</SelectItem>
+                    <SelectItem value="London">London</SelectItem>
+                    <SelectItem value="Lagos">Lagos</SelectItem>
+                    <SelectItem value="Toronto">Toronto</SelectItem>
+                    <SelectItem value="Kingston">Kingston</SelectItem>
+                    <SelectItem value="Trinidad">Trinidad</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Compensation Filter */}
+              <div>
+                <label className="text-sm font-medium flex items-center gap-1.5 mb-2">
+                  <DollarSign className="h-3.5 w-3.5 text-primary" />
+                  Compensation
+                </label>
+                <Select value={compensationFilter} onValueChange={setCompensationFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    <SelectItem value="paid">Paid Only</SelectItem>
+                    <SelectItem value="barter">Barter/Trade</SelectItem>
+                    <SelectItem value="volunteer">Volunteer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setSelectedSkill("all");
+                    setLocationFilter("all");
+                    setCompensationFilter("all");
+                  }}
+                >
+                  Clear All
+                </Button>
+                <Button className="flex-1" onClick={() => setFiltersOpen(false)}>
+                  Show Results
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Active filter badges */}
-      {(searchQuery || selectedSkill !== "all") && (
+      {(searchQuery || selectedSkill !== "all" || locationFilter !== "all" || compensationFilter !== "all") && (
         <div className="flex gap-2 flex-wrap">
           {searchQuery && (
             <Badge variant="secondary" className="gap-1">
@@ -208,8 +307,20 @@ export const OpportunitiesFeed = () => {
           )}
           {selectedSkill !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              Skill: {selectedSkill}
+              {selectedSkill}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedSkill("all")} />
+            </Badge>
+          )}
+          {locationFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              📍 {locationFilter}
+              <X className="h-3 w-3 cursor-pointer" onClick={() => setLocationFilter("all")} />
+            </Badge>
+          )}
+          {compensationFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              💰 {compensationFilter}
+              <X className="h-3 w-3 cursor-pointer" onClick={() => setCompensationFilter("all")} />
             </Badge>
           )}
         </div>

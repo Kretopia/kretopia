@@ -791,6 +791,53 @@ export type Database = {
         }
         Relationships: []
       }
+      circle_subscriptions: {
+        Row: {
+          amount: number | null
+          circle_id: string
+          created_at: string | null
+          currency: string | null
+          expires_at: string | null
+          id: string
+          started_at: string | null
+          status: string | null
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          circle_id: string
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          circle_id?: string
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_subscriptions_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communities: {
         Row: {
           category: string | null
@@ -1281,6 +1328,7 @@ export type Database = {
       creative_jams: {
         Row: {
           category: string
+          circle_id: string | null
           cover_image_url: string | null
           created_at: string
           created_by: string
@@ -1307,6 +1355,7 @@ export type Database = {
         }
         Insert: {
           category?: string
+          circle_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by: string
@@ -1333,6 +1382,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          circle_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by?: string
@@ -1358,6 +1408,13 @@ export type Database = {
           venue_name?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "creative_jams_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "creative_jams_created_by_fkey"
             columns: ["created_by"]
@@ -6299,18 +6356,21 @@ export type Database = {
         Row: {
           id: string
           joined_at: string
+          role: string | null
           room_id: string
           user_id: string
         }
         Insert: {
           id?: string
           joined_at?: string
+          role?: string | null
           room_id: string
           user_id: string
         }
         Update: {
           id?: string
           joined_at?: string
+          role?: string | null
           room_id?: string
           user_id?: string
         }
@@ -6329,9 +6389,11 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_pinned: boolean | null
           media_type: string | null
           media_url: string | null
           message_type: string
+          pinned_by: string | null
           poll_data: Json | null
           reactions: Json | null
           reply_to_id: string | null
@@ -6342,9 +6404,11 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          is_pinned?: boolean | null
           media_type?: string | null
           media_url?: string | null
           message_type?: string
+          pinned_by?: string | null
           poll_data?: Json | null
           reactions?: Json | null
           reply_to_id?: string | null
@@ -6355,9 +6419,11 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_pinned?: boolean | null
           media_type?: string | null
           media_url?: string | null
           message_type?: string
+          pinned_by?: string | null
           poll_data?: Json | null
           reactions?: Json | null
           reply_to_id?: string | null
@@ -6384,49 +6450,67 @@ export type Database = {
       spark_rooms: {
         Row: {
           category: string
+          circle_type: string | null
           cover_image_url: string | null
+          cover_url: string | null
           created_at: string
           created_by: string
+          currency: string | null
           description: string | null
           icon_emoji: string | null
           id: string
           invite_code: string | null
           is_active: boolean
+          is_paid: boolean | null
           is_private: boolean
           member_count: number
           message_count: number
+          price_monthly: number | null
+          rules: string | null
           title: string
           updated_at: string
         }
         Insert: {
           category?: string
+          circle_type?: string | null
           cover_image_url?: string | null
+          cover_url?: string | null
           created_at?: string
           created_by: string
+          currency?: string | null
           description?: string | null
           icon_emoji?: string | null
           id?: string
           invite_code?: string | null
           is_active?: boolean
+          is_paid?: boolean | null
           is_private?: boolean
           member_count?: number
           message_count?: number
+          price_monthly?: number | null
+          rules?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           category?: string
+          circle_type?: string | null
           cover_image_url?: string | null
+          cover_url?: string | null
           created_at?: string
           created_by?: string
+          currency?: string | null
           description?: string | null
           icon_emoji?: string | null
           id?: string
           invite_code?: string | null
           is_active?: boolean
+          is_paid?: boolean | null
           is_private?: boolean
           member_count?: number
           message_count?: number
+          price_monthly?: number | null
+          rules?: string | null
           title?: string
           updated_at?: string
         }

@@ -5,53 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Plus, Loader2, MessageSquare, Users, Search, Send, ArrowLeft,
-  Share2, Lock, Globe, Smile, Reply, Copy, Check,
+  Share2, Lock, Globe, Reply, Check, Settings, Pin, Crown,
+  DollarSign, Calendar,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-
-interface Circle {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string;
-  icon_emoji: string;
-  cover_image_url: string | null;
-  member_count: number;
-  message_count: number;
-  created_by: string;
-  created_at: string;
-  is_active: boolean;
-  is_private: boolean;
-  invite_code: string | null;
-  creator_name?: string;
-  creator_avatar?: string;
-  is_member?: boolean;
-}
-
-interface CircleMessage {
-  id: string;
-  content: string;
-  user_id: string;
-  created_at: string;
-  media_url: string | null;
-  media_type: string | null;
-  message_type: string;
-  reply_to_id: string | null;
-  poll_data: any;
-  sender_name?: string;
-  sender_avatar?: string;
-  reactions?: Record<string, string[]>; // emoji -> user_ids
-  reply_preview?: { content: string; sender_name: string } | null;
-}
+import { CircleCard, type CircleData } from "@/components/circle/CircleCard";
+import { CircleMessageBubble, type CircleMessage } from "@/components/circle/CircleMessageBubble";
+import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
+import { useNavigate } from "react-router-dom";
 
 const CIRCLE_CATEGORIES = [
   { value: "general", label: "General", emoji: "💬" },
@@ -73,10 +42,10 @@ const REACTION_EMOJIS = ["🔥", "❤️", "🙌", "💯", "😂", "🎯"];
 export const CirclesTab = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [circles, setCircles] = useState<Circle[]>([]);
+  const [circles, setCircles] = useState<CircleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
+  const [selectedCircle, setSelectedCircle] = useState<CircleData | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
   const fetchCircles = useCallback(async () => {
@@ -93,20 +62,27 @@ export const CirclesTab = () => {
       const creatorIds = [...new Set(roomsData.map(r => r.created_by))];
       const [profilesRes, membershipsRes] = await Promise.all([
         supabase.from("profiles").select("user_id, full_name, avatar_url").in("user_id", creatorIds),
-        user ? supabase.from("spark_room_members").select("room_id").eq("user_id", user.id) : Promise.resolve({ data: [] }),
+        user ? supabase.from("spark_room_members").select("room_id, role").eq("user_id", user.id) : Promise.resolve({ data: [] }),
       ]);
 
       const profileMap = new Map(profilesRes.data?.map(p => [p.user_id, p]) || []);
-      const memberRoomIds = new Set(membershipsRes.data?.map((m: any) => m.room_id) || []);
+      const memberMap = new Map((membershipsRes.data as any[])?.map(m => [m.room_id, m.role]) || []);
 
       setCircles(roomsData.map(r => ({
         ...r,
         icon_emoji: r.icon_emoji || "💬",
         is_private: r.is_private || false,
+        is_paid: r.is_paid || false,
+        price_monthly: r.price_monthly || 0,
+        currency: r.currency || "USD",
+        circle_type: r.circle_type || "community",
         invite_code: r.invite_code || null,
+        rules: r.rules || null,
+        cover_url: r.cover_url || null,
         creator_name: profileMap.get(r.created_by)?.full_name || "Unknown",
         creator_avatar: profileMap.get(r.created_by)?.avatar_url || undefined,
-        is_member: memberRoomIds.has(r.id),
+        is_member: memberMap.has(r.id),
+        user_role: memberMap.get(r.id) || undefined,
       })));
     } catch (err) {
       console.error("Error fetching circles:", err);
@@ -156,30 +132,11 @@ export const CirclesTab = () => {
   );
 };
 
-const CircleCard = ({ circle, onClick }: { circle: Circle; onClick: () => void }) => (
-  <div className="flex gap-3 p-3 rounded-xl border border-border/50 bg-card hover:bg-accent/5 cursor-pointer transition-all hover:shadow-md" onClick={onClick}>
-    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-xl">
-      {circle.icon_emoji}
-    </div>
-    <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-2 mb-0.5">
-        <h3 className="font-semibold text-sm truncate">{circle.title}</h3>
-        {circle.is_private && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
-        {circle.is_member && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">Joined</Badge>}
-      </div>
-      {circle.description && <p className="text-xs text-muted-foreground line-clamp-1 mb-1">{circle.description}</p>}
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {circle.member_count}</span>
-        <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {circle.message_count}</span>
-      </div>
-    </div>
-  </div>
-);
-
-// ─── Circle Detail with rich messaging ───
-const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }) => {
+// ─── Circle Detail with rich messaging, pinning, admin controls ───
+const CircleDetail = ({ circle, onBack }: { circle: CircleData; onBack: () => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<CircleMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState("");
@@ -188,8 +145,15 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
   const [replyTo, setReplyTo] = useState<CircleMessage | null>(null);
   const [showReactions, setShowReactions] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [showPinned, setShowPinned] = useState(false);
+  const [userRole, setUserRole] = useState(circle.user_role || "member");
+  const [circleEvents, setCircleEvents] = useState<any[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const isAdmin = userRole === "admin" || circle.created_by === user?.id;
+  const isMod = isAdmin || userRole === "moderator";
 
   const fetchMessages = useCallback(async () => {
     setLoading(true);
@@ -204,17 +168,18 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
       const userIds = [...new Set(data.map(m => m.user_id))];
       const replyIds = data.filter(m => m.reply_to_id).map(m => m.reply_to_id);
 
-      const [profilesRes, reactionsRes, repliesRes] = await Promise.all([
+      const [profilesRes, reactionsRes, repliesRes, membersRes] = await Promise.all([
         supabase.from("profiles").select("user_id, full_name, avatar_url").in("user_id", userIds),
         supabase.from("spark_message_reactions").select("*").in("message_id", data.map(m => m.id)),
         replyIds.length > 0
           ? supabase.from("spark_room_messages").select("id, content, user_id").in("id", replyIds)
           : Promise.resolve({ data: [] }),
+        supabase.from("spark_room_members").select("user_id, role").eq("room_id", circle.id).in("user_id", userIds),
       ]);
 
       const profileMap = new Map(profilesRes.data?.map(p => [p.user_id, p]) || []);
-      
-      // Build reactions map: message_id -> { emoji -> [user_ids] }
+      const roleMap = new Map((membersRes.data as any[])?.map(m => [m.user_id, m.role]) || []);
+
       const reactionsMap = new Map<string, Record<string, string[]>>();
       reactionsRes.data?.forEach((r: any) => {
         if (!reactionsMap.has(r.message_id)) reactionsMap.set(r.message_id, {});
@@ -223,7 +188,7 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
         map[r.emoji].push(r.user_id);
       });
 
-      const replyMap = new Map<string, { content: string; sender_name: string }>(
+      const replyMap = new Map(
         (repliesRes.data || []).map((r: any) => [r.id, {
           content: r.content?.substring(0, 60) || "",
           sender_name: profileMap.get(r.user_id)?.full_name || "Unknown",
@@ -236,8 +201,10 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
         reply_to_id: m.reply_to_id || null,
         poll_data: m.poll_data || null,
         media_type: m.media_type || null,
+        is_pinned: m.is_pinned || false,
         sender_name: profileMap.get(m.user_id)?.full_name || "Unknown",
         sender_avatar: profileMap.get(m.user_id)?.avatar_url || undefined,
+        sender_role: roleMap.get(m.user_id) || "member",
         reactions: reactionsMap.get(m.id) || {},
         reply_preview: m.reply_to_id ? (replyMap.get(m.reply_to_id) || null) : null,
       })));
@@ -247,12 +214,23 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
     setLoading(false);
   }, [circle.id]);
 
-  useEffect(() => { fetchMessages(); }, [fetchMessages]);
-
-  // Scroll to bottom on new messages
+  // Fetch events linked to this circle
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+    const fetchEvents = async () => {
+      const { data } = await supabase
+        .from("creative_jams")
+        .select("id, title, start_time, status")
+        .eq("circle_id", circle.id)
+        .gte("start_time", new Date().toISOString())
+        .order("start_time", { ascending: true })
+        .limit(3);
+      setCircleEvents(data || []);
+    };
+    fetchEvents();
+  }, [circle.id]);
+
+  useEffect(() => { fetchMessages(); }, [fetchMessages]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length]);
 
   // Real-time subscription
   useEffect(() => {
@@ -266,8 +244,17 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
 
   const joinCircle = async () => {
     if (!user) return;
+    // For paid circles, redirect to payment (future ThrivePay integration)
+    if (circle.is_paid && circle.price_monthly > 0) {
+      toast({
+        title: "Premium Circle",
+        description: `This circle costs $${circle.price_monthly}/mo. Payment integration coming soon!`,
+      });
+      return;
+    }
     await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
     setIsMember(true);
+    setUserRole("member");
     toast({ title: "Joined!", description: `You're now in ${circle.title}` });
   };
 
@@ -297,26 +284,19 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
       toast({ title: "File too large", description: "Max 10MB", variant: "destructive" });
       return;
     }
-
     if (!isMember) {
       await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
       setIsMember(true);
     }
-
     const ext = file.name.split(".").pop();
     const path = `circles/${circle.id}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("media").upload(path, file);
     if (error) { toast({ title: "Upload failed", variant: "destructive" }); return; }
     const { data: urlData } = supabase.storage.from("media").getPublicUrl(path);
-
     const mediaType = file.type.startsWith("video") ? "video" : file.type.startsWith("audio") ? "audio" : "image";
     await supabase.from("spark_room_messages").insert({
-      room_id: circle.id,
-      user_id: user.id,
-      content: "",
-      media_url: urlData.publicUrl,
-      media_type: mediaType,
-      message_type: "media",
+      room_id: circle.id, user_id: user.id, content: "",
+      media_url: urlData.publicUrl, media_type: mediaType, message_type: "media",
     });
   };
 
@@ -331,6 +311,14 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
       await supabase.from("spark_message_reactions").insert({ message_id: messageId, user_id: user.id, emoji });
     }
     setShowReactions(null);
+  };
+
+  const pinMessage = async (messageId: string, pin: boolean) => {
+    await supabase.from("spark_room_messages")
+      .update({ is_pinned: pin, pinned_by: pin ? user?.id : null })
+      .eq("id", messageId);
+    fetchMessages();
+    toast({ title: pin ? "Message pinned 📌" : "Message unpinned" });
   };
 
   const shareCircle = async () => {
@@ -350,10 +338,12 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
     }
   };
 
+  const pinnedMessages = messages.filter(m => m.is_pinned);
+
   return (
     <div className="flex flex-col h-[calc(100vh-220px)]">
       {/* Header */}
-      <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+      <div className="flex items-center gap-2 pb-2 border-b border-border/50">
         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={onBack}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -364,14 +354,81 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
           <div className="flex items-center gap-1.5">
             <h2 className="font-semibold text-sm truncate">{circle.title}</h2>
             {circle.is_private ? <Lock className="h-3 w-3 text-muted-foreground" /> : <Globe className="h-3 w-3 text-muted-foreground" />}
+            {circle.is_paid && (
+              <Badge variant="outline" className="text-[9px] px-1 py-0 border-amber-500/50 text-amber-600">
+                <DollarSign className="h-2.5 w-2.5" />{circle.price_monthly}/mo
+              </Badge>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">{circle.member_count} members</p>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={shareCircle}>
-          {copied ? <Check className="h-4 w-4 text-primary" /> : <Share2 className="h-4 w-4" />}
-        </Button>
-        {!isMember && <Button size="sm" variant="gradient" onClick={joinCircle}>Join</Button>}
+        <div className="flex items-center gap-1">
+          {pinnedMessages.length > 0 && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowPinned(!showPinned)}>
+              <Pin className="h-4 w-4 text-amber-500" />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={shareCircle}>
+            {copied ? <Check className="h-4 w-4 text-primary" /> : <Share2 className="h-4 w-4" />}
+          </Button>
+          {isAdmin && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowAdmin(true)}>
+              <Settings className="h-4 w-4" />
+            </Button>
+          )}
+          {!isMember && (
+            <Button size="sm" variant="gradient" onClick={joinCircle}>
+              {circle.is_paid ? `$${circle.price_monthly}/mo` : "Join"}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Upcoming events banner */}
+      {circleEvents.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto py-2 px-1 border-b border-border/30">
+          {circleEvents.map(event => (
+            <button
+              key={event.id}
+              onClick={() => navigate(`/events/${event.id}`)}
+              className="flex items-center gap-1.5 bg-primary/5 border border-primary/10 rounded-lg px-2.5 py-1.5 shrink-0 hover:bg-primary/10 transition-colors"
+            >
+              <Calendar className="h-3 w-3 text-primary" />
+              <span className="text-xs font-medium truncate max-w-[120px]">{event.title}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {new Date(event.start_time).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Pinned messages panel */}
+      {showPinned && pinnedMessages.length > 0 && (
+        <div className="border-b border-amber-500/20 bg-amber-500/5 p-2 space-y-1 max-h-32 overflow-y-auto">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold flex items-center gap-1 text-amber-700">
+              <Pin className="h-3 w-3" /> Pinned ({pinnedMessages.length})
+            </p>
+            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setShowPinned(false)}>
+              <span className="text-xs">✕</span>
+            </Button>
+          </div>
+          {pinnedMessages.map(pm => (
+            <div key={pm.id} className="text-xs text-muted-foreground truncate">
+              <span className="font-medium text-foreground">{pm.sender_name}:</span> {pm.content}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Circle rules (if any) */}
+      {circle.rules && isMember && messages.length === 0 && (
+        <Card className="mx-1 mt-2 p-3 border-primary/10 bg-primary/5">
+          <p className="text-xs font-semibold mb-1">📋 Circle Rules</p>
+          <p className="text-xs text-muted-foreground whitespace-pre-line">{circle.rules}</p>
+        </Card>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto py-3 space-y-1">
@@ -383,103 +440,20 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
             <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
           </div>
         ) : (
-          messages.map(msg => {
-            const isOwn = msg.user_id === user?.id;
-            return (
-              <div key={msg.id} className="group px-1">
-                {/* Reply preview */}
-                {msg.reply_preview && (
-                  <div className={cn("flex mb-0.5", isOwn && "justify-end")}>
-                    <div className="text-[10px] text-muted-foreground bg-muted/50 rounded px-2 py-0.5 max-w-[60%] truncate flex items-center gap-1">
-                      <Reply className="h-2.5 w-2.5 shrink-0" />
-                      <span className="font-medium">{msg.reply_preview.sender_name}:</span> {msg.reply_preview.content}
-                    </div>
-                  </div>
-                )}
-                <div className={cn("flex gap-2 items-end", isOwn && "flex-row-reverse")}>
-                  {!isOwn && (
-                    <Avatar className="h-6 w-6 shrink-0 mb-1">
-                      <AvatarImage src={msg.sender_avatar || ""} />
-                      <AvatarFallback className="text-[9px]">{msg.sender_name?.[0]}</AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div className="max-w-[75%]">
-                    <div className={cn(
-                      "rounded-2xl px-3 py-2 relative",
-                      isOwn ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted rounded-bl-md"
-                    )}>
-                      {!isOwn && <p className="text-[10px] font-medium mb-0.5 opacity-70">{msg.sender_name}</p>}
-
-                      {/* Media content */}
-                      {msg.media_url && msg.media_type === "image" && (
-                        <img src={msg.media_url} className="rounded-lg max-h-52 mb-1" alt="shared" loading="lazy" />
-                      )}
-                      {msg.media_url && msg.media_type === "video" && (
-                        <video src={msg.media_url} controls className="rounded-lg max-h-52 mb-1 w-full" />
-                      )}
-                      {msg.media_url && msg.media_type === "audio" && (
-                        <audio src={msg.media_url} controls className="mb-1 w-full max-w-[200px]" />
-                      )}
-
-                      {msg.content && <p className="text-sm break-words">{msg.content}</p>}
-                      <p className={cn("text-[10px] mt-0.5 opacity-50", isOwn ? "text-primary-foreground" : "text-muted-foreground")}>
-                        {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                      </p>
-                    </div>
-
-                    {/* Reactions display */}
-                    {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                      <div className={cn("flex flex-wrap gap-1 mt-0.5", isOwn && "justify-end")}>
-                        {Object.entries(msg.reactions).map(([emoji, userIds]) => (
-                          <button
-                            key={emoji}
-                            onClick={() => toggleReaction(msg.id, emoji)}
-                            className={cn(
-                              "text-xs px-1.5 py-0.5 rounded-full border transition-colors",
-                              userIds.includes(user?.id || "")
-                                ? "bg-primary/10 border-primary/30 text-primary"
-                                : "bg-muted/50 border-border/50 hover:bg-muted"
-                            )}
-                          >
-                            {emoji} {userIds.length}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action buttons (visible on hover) */}
-                  <div className={cn("flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mb-1", isOwn && "flex-row-reverse")}>
-                    <button
-                      className="p-1 rounded hover:bg-muted/80 text-muted-foreground"
-                      onClick={() => setReplyTo(msg)}
-                      title="Reply"
-                    >
-                      <Reply className="h-3 w-3" />
-                    </button>
-                    <button
-                      className="p-1 rounded hover:bg-muted/80 text-muted-foreground relative"
-                      onClick={() => setShowReactions(showReactions === msg.id ? null : msg.id)}
-                      title="React"
-                    >
-                      <Smile className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Reaction picker */}
-                {showReactions === msg.id && (
-                  <div className={cn("flex gap-1 mt-1 ml-8 p-1.5 bg-card rounded-full border border-border/50 shadow-lg w-fit", isOwn && "ml-auto mr-8")}>
-                    {REACTION_EMOJIS.map(emoji => (
-                      <button key={emoji} className="text-sm hover:scale-125 transition-transform p-0.5" onClick={() => toggleReaction(msg.id, emoji)}>
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })
+          messages.map(msg => (
+            <CircleMessageBubble
+              key={msg.id}
+              msg={msg}
+              isOwn={msg.user_id === user?.id}
+              userId={user?.id}
+              onReply={setReplyTo}
+              onReact={(id) => setShowReactions(showReactions === id ? null : id)}
+              onToggleReaction={toggleReaction}
+              showReactions={showReactions}
+              isAdmin={isMod}
+              onPin={isMod ? pinMessage : undefined}
+            />
+          ))
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -514,11 +488,14 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
           <Send className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Admin Panel */}
+      {showAdmin && <CircleAdminPanel circle={circle} onClose={() => setShowAdmin(false)} />}
     </div>
   );
 };
 
-// ─── Create Circle Dialog ───
+// ─── Create Circle Dialog with paid options ───
 const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; onCreated: () => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -526,6 +503,9 @@ const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; 
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("general");
   const [isPrivate, setIsPrivate] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [price, setPrice] = useState("");
+  const [rules, setRules] = useState("");
   const [creating, setCreating] = useState(false);
 
   const selectedCat = CIRCLE_CATEGORIES.find(c => c.value === category);
@@ -539,16 +519,19 @@ const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; 
         description: description.trim() || null,
         category,
         icon_emoji: selectedCat?.emoji || "💬",
-        is_private: isPrivate,
+        is_private: isPrivate || isPaid,
+        is_paid: isPaid,
+        price_monthly: isPaid ? parseFloat(price) || 0 : 0,
+        rules: rules.trim() || null,
         created_by: user.id,
       }).select().single();
 
       if (error) throw error;
       if (data) {
-        await supabase.from("spark_room_members").insert({ room_id: data.id, user_id: user.id });
+        await supabase.from("spark_room_members").insert({ room_id: data.id, user_id: user.id, role: "admin" });
       }
       toast({ title: "Circle created! 🎉", description: `${title} is live` });
-      setTitle(""); setDescription(""); setCategory("general"); setIsPrivate(false);
+      setTitle(""); setDescription(""); setCategory("general"); setIsPrivate(false); setIsPaid(false); setPrice(""); setRules("");
       onOpenChange(false);
       onCreated();
     } catch {
@@ -563,11 +546,12 @@ const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; 
       <DialogTrigger asChild>
         <Button variant="gradient" size="sm" className="gap-1.5 shrink-0"><Plus className="h-4 w-4" /> Circle</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Create a Circle</DialogTitle></DialogHeader>
         <div className="space-y-4 mt-2">
           <Input placeholder="Circle name..." value={title} onChange={e => setTitle(e.target.value)} maxLength={100} />
           <Textarea placeholder="What's this circle about? (optional)" value={description} onChange={e => setDescription(e.target.value)} maxLength={300} className="min-h-[80px]" />
+          
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">Category</p>
             <div className="flex flex-wrap gap-1.5">
@@ -578,16 +562,44 @@ const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; 
               ))}
             </div>
           </div>
+
           <div className="flex items-center gap-3">
             <Button variant={isPrivate ? "default" : "outline"} size="sm" className="gap-1.5 text-xs h-7 rounded-full" onClick={() => setIsPrivate(!isPrivate)}>
               {isPrivate ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
               {isPrivate ? "Private" : "Public"}
             </Button>
-            <p className="text-[10px] text-muted-foreground">{isPrivate ? "Invite only" : "Anyone can join"}</p>
+            <Button variant={isPaid ? "default" : "outline"} size="sm" className="gap-1.5 text-xs h-7 rounded-full" onClick={() => setIsPaid(!isPaid)}>
+              <DollarSign className="h-3 w-3" />
+              {isPaid ? "Paid" : "Free"}
+            </Button>
           </div>
-          <Button className="w-full" variant="gradient" onClick={handleCreate} disabled={!title.trim() || creating}>
+
+          {isPaid && (
+            <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-3">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <Input
+                type="number"
+                placeholder="Monthly price (USD)"
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                className="h-8"
+                min="1"
+              />
+              <span className="text-xs text-muted-foreground">/mo</span>
+            </div>
+          )}
+
+          <Textarea
+            placeholder="Circle rules or guidelines (optional)"
+            value={rules}
+            onChange={e => setRules(e.target.value)}
+            maxLength={500}
+            className="min-h-[60px]"
+          />
+
+          <Button className="w-full" variant="gradient" onClick={handleCreate} disabled={!title.trim() || creating || (isPaid && !price)}>
             {creating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Create Circle
+            {isPaid ? `Create Paid Circle • $${price || '0'}/mo` : "Create Circle"}
           </Button>
         </div>
       </DialogContent>

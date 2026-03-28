@@ -625,6 +625,7 @@ const CircleDetail = () => {
                 showReactions={showReactions}
                 isAdmin={isMod}
                 onPin={isMod ? pinMessage : undefined}
+                onPollVote={handlePollVote}
               />
             ))
           )}

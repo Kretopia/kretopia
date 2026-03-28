@@ -53,10 +53,9 @@ const WorkHome = () => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const [projRes, gigsRes]: any[] = await Promise.all([
-        supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(5),
-        supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("posted_by", user.id).order("created_at", { ascending: false }).limit(5),
-      ]);
+      const projRes = await supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(5);
+      // @ts-ignore – deep type instantiation
+      const gigsRes = await supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("posted_by", user.id).order("created_at", { ascending: false }).limit(5);
       setProjects(projRes.data || []);
       setGigs(gigsRes.data || []);
       setLoading(false);

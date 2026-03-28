@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Sparkles, ArrowRight } from "lucide-react";
 
 const TOOLS_REPLACED = [
+  { emoji: "🎬", tool: "Verified Creative Credits", replaces: "IMDb / Muso.AI" },
   { emoji: "💼", tool: "Find Work & Gigs", replaces: "Fiverr / Upwork" },
   { emoji: "🤝", tool: "AI Creator Matching", replaces: "Vampr / Bumble Bizz" },
   { emoji: "💬", tool: "Project Workspaces", replaces: "Slack + Trello" },

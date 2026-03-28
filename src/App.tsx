@@ -90,6 +90,8 @@ const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const ICDBDiscovery = lazy(() => import("./pages/ICDBDiscovery"));
+const ICDBHub = lazy(() => import("./pages/ICDBHub"));
+const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const Challenges = lazy(() => import("./pages/Challenges"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({

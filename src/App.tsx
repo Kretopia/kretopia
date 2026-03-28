@@ -31,6 +31,7 @@ const ViewProfile = lazy(() => import("./pages/ViewProfile"));
 
 const Circle = lazy(() => import("./pages/Circle"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
+const CirclesPage = lazy(() => import("./pages/Circles"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ProjectsList = lazy(() => import("./pages/ProjectsList"));
@@ -173,6 +174,7 @@ const AppContent = () => {
             {/* Core Feature Pages - Only 4 Active */}
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
+            <Route path="/circles" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}

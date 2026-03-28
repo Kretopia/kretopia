@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Wallet, Shield, Crown, Sparkles, DollarSign, FolderKanban, Search, BookOpen, Compass } from "lucide-react";
+import { LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles, DollarSign, FolderKanban, Search, BookOpen, Compass, BarChart3, ShoppingBag, Gift, MessageSquareMore } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -125,15 +125,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <div className="hidden lg:flex items-center gap-1">
             {(accountType === "company"
               ? [
-                  { path: "/discover?tab=gigs", icon: Briefcase, label: "Gigs" },
                   { path: "/discover", icon: Compass, label: "Discover" },
-                  { path: "/desk", icon: FolderKanban, label: "Projects" },
+                  { path: "/circles", icon: MessageSquareMore, label: "Circles" },
+                  { path: "/scene", icon: Sparkles, label: "Scene" },
                   { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
                 ]
               : [
-                  { path: "/circle", icon: Users, label: "Circle" },
+                  { path: "/circle", icon: Sparkles, label: "Match" },
+                  { path: "/circles", icon: MessageSquareMore, label: "Circles" },
                   { path: "/discover", icon: Compass, label: "Discover" },
-                  { path: "/desk", icon: FolderKanban, label: "Projects" },
                   { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
                 ]
             ).map(({ path, icon: Icon, label }) => {
@@ -204,10 +204,47 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/my-analytics")}
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                      My Analytics
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
                       onClick={() => handleNavigation("/guide")}
                     >
                       <BookOpen className="h-5 w-5" />
                       How to Win
+                    </Button>
+
+                    <Separator className="my-3" />
+
+                    {/* Work */}
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Work</p>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/desk")}
+                    >
+                      <FolderKanban className="h-5 w-5" />
+                      Projects
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/market")}
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      Marketplace
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/rewards")}
+                    >
+                      <Gift className="h-5 w-5" />
+                      Rewards
                     </Button>
 
                     <Separator className="my-3" />

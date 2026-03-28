@@ -292,7 +292,7 @@ export function CreatorBrowseGrid() {
         query = query.ilike('location', `%${locationFilter.trim()}%`);
       }
       if (isPro && verifiedCreatorsOnly) {
-        query = query.eq('badge', 'ODOS');
+        query = query.in('badge', ['odos', 'ODOS']);
       }
       if (isPro && minLevel !== "all") {
         query = query.gte('level', parseInt(minLevel));

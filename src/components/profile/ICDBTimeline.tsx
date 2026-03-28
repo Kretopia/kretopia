@@ -142,9 +142,10 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
 
   const fetchCredits = async () => {
     try {
-      const [manualRes, verifiedRes] = await Promise.all([
+      const [manualRes, verifiedRes, portfolioRes] = await Promise.all([
         supabase.from('credits').select('*').eq('user_id', userId).order('year', { ascending: false }),
         supabase.from('verified_credits').select('*').eq('user_id', userId).order('year', { ascending: false, nullsFirst: false }),
+        supabase.from('portfolio_items').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       ]);
 
       const manual: ICDBCredit[] = (manualRes.data || []).map((c: any) => ({
@@ -176,7 +177,36 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         source: 'verified' as const,
       }));
 
-      const all = [...verified, ...manual].sort((a, b) => (b.year || 0) - (a.year || 0));
+      // Convert portfolio items into ICDBCredit format so they appear in the unified Work view
+      const portfolio: ICDBCredit[] = (portfolioRes.data || []).map((p: any) => ({
+        id: `portfolio-${p.id}`,
+        project_name: p.title,
+        role: p.category || 'Portfolio',
+        year: p.created_at ? new Date(p.created_at).getFullYear() : null,
+        project_type: mapMediaTypeToProjectType(p.media_type),
+        description: p.description,
+        start_date: null,
+        end_date: null,
+        location: null,
+        platform: detectPlatformFromUrl(p.media_url),
+        url: p.media_url,
+        client_brand: null,
+        thumbnail_url: p.thumbnail_url,
+        verification_status: null,
+        endorsement_count: 0,
+        collaborator_user_ids: null,
+        ai_confidence: null,
+        credit_category: p.category,
+        is_featured: p.featured || false,
+        source: 'manual' as const,
+      }));
+
+      const all = [...verified, ...manual, ...portfolio].sort((a, b) => {
+        // Featured items first, then by year
+        if (a.is_featured && !b.is_featured) return -1;
+        if (!a.is_featured && b.is_featured) return 1;
+        return (b.year || 0) - (a.year || 0);
+      });
       setCredits(all);
 
       const allCollabIds = new Set<string>();

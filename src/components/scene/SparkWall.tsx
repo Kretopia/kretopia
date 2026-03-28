@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Flame, MessageCircle, Paperclip, Loader2, Play, Music, Volume2, VolumeX } from "lucide-react";
+import { Flame, MessageCircle, Paperclip, Loader2, Play, Music, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";

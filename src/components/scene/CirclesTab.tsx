@@ -42,6 +42,7 @@ const REACTION_EMOJIS = ["🔥", "❤️", "🙌", "💯", "😂", "🎯"];
 export const CirclesTab = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [circles, setCircles] = useState<CircleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");

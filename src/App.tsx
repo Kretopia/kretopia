@@ -51,7 +51,7 @@ const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
 const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
-const Discover = lazy(() => import("./pages/Discover"));
+
 const Search = lazy(() => import("./pages/Search"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const TestEmails = lazy(() => import("./pages/TestEmails"));
@@ -85,8 +85,6 @@ const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
-const DirectoryPage = lazy(() => import("./pages/DirectoryPage"));
-const DiscoverPage = lazy(() => import("./pages/DiscoverPage"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

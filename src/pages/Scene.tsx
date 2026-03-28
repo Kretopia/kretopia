@@ -26,7 +26,7 @@ const Scene = () => {
               <Flame className="h-5 w-5 text-primary" />
               Scene
             </h1>
-            <p className="text-sm text-muted-foreground">Events, inspiration & conversations</p>
+            <p className="text-sm text-muted-foreground">Events, inspiration & nearby creators</p>
           </div>
 
           {/* Sub-tabs */}

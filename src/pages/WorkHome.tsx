@@ -55,7 +55,7 @@ const WorkHome = () => {
       setLoading(true);
       const [projRes, gigsRes] = await Promise.all([
         supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(5),
-        supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("posted_by", user.id).order("created_at", { ascending: false }).limit(5),
+        supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("posted_by", user.id).order("created_at", { ascending: false }).limit(5) as any,
       ]);
       setProjects(projRes.data || []);
       setGigs(gigsRes.data || []);

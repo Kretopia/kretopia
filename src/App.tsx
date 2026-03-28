@@ -204,7 +204,8 @@ const AppContent = () => {
             <Route path="/guide" element={<Guide />} />
             
             {/* ThriveDesk - Lightweight Project Workspace */}
-            <Route path="/desk" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />
+            <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
+            <Route path="/desk/projects" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             
             {/* Subscription & Payment Routes */}

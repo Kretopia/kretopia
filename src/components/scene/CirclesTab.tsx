@@ -334,11 +334,20 @@ const CircleDetail = ({ circle, onBack }: { circle: Circle; onBack: () => void }
   };
 
   const shareCircle = async () => {
-    const url = `${window.location.origin}/scene?circle=${circle.invite_code || circle.id}`;
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast({ title: "Link copied! 🔗", description: "Share it with others" });
+    const url = `https://www.thrivein.io/circle?tab=circles&circle=${circle.invite_code || circle.id}`;
+    const shareText = `Join "${circle.title}" on ThriveIN — where creatives connect, collaborate, and grow together 🚀\n\n${url}`;
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      if (navigator.share) {
+        await navigator.share({ title: circle.title, text: shareText, url });
+      } else {
+        toast({ title: "Link copied! 🔗", description: "Share it with others" });
+      }
+    } catch {
+      toast({ title: "Link copied! 🔗", description: "Share it with others" });
+    }
   };
 
   return (

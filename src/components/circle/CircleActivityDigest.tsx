@@ -41,9 +41,8 @@ export const CircleActivityDigest = ({ className }: { className?: string }) => {
       const roomIds = memberships.map(m => m.room_id);
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-      const [roomsRes, messagesRes, membersRes, eventsRes] = await Promise.all([
+      const [roomsRes, membersRes, eventsRes] = await Promise.all([
         supabase.from("spark_rooms").select("id, title, icon_emoji").in("id", roomIds),
-        supabase.from("circle_messages").select("id, channel_id, created_at, circle_channels!inner(circle_id)").gte("created_at", since),
         supabase.from("spark_room_members").select("room_id, joined_at").in("room_id", roomIds).gte("joined_at", since),
         supabase.from("creative_jams").select("id, circle_id, start_time").in("circle_id", roomIds).gte("start_time", new Date().toISOString()),
       ]);

@@ -41,10 +41,11 @@ export const CircleRecommendations = ({ className }: { className?: string }) => 
       const notJoined = allCirclesRes.data?.filter(c => !joinedIds.has(c.id)) || [];
       const profile = profileRes.data;
 
-      const userSkills = [
+      const rawSkills = [
         ...(Array.isArray(profile?.professional_skills) ? profile.professional_skills : Object.keys(profile?.professional_skills || {})),
         ...(Array.isArray(profile?.passion_skills) ? profile.passion_skills : Object.keys(profile?.passion_skills || {})),
-      ].map(s => s.toLowerCase());
+      ];
+      const userSkills = rawSkills.map(s => String(s).toLowerCase());
 
       const userRole = profile?.role?.toLowerCase() || "";
 

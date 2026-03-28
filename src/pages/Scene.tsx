@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Bookmark, CalendarDays, Flame, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Events from "./Events";
+import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { SparkWall } from "@/components/scene/SparkWall";
 import { ClipsWall } from "@/components/scene/ClipsWall";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";

@@ -172,6 +172,7 @@ const AppContent = () => {
             
             {/* Core Feature Pages - Only 4 Active */}
             <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+            <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}

@@ -2503,6 +2503,102 @@ export type Database = {
         }
         Relationships: []
       }
+      icdb_brand_verifications: {
+        Row: {
+          brand_email: string
+          brand_name: string
+          created_at: string
+          id: string
+          notes: string | null
+          project_id: string | null
+          role_id: string | null
+          status: string
+          submitted_by: string
+          verification_token: string
+          verified_at: string | null
+        }
+        Insert: {
+          brand_email: string
+          brand_name: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          role_id?: string | null
+          status?: string
+          submitted_by: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Update: {
+          brand_email?: string
+          brand_name?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          role_id?: string | null
+          status?: string
+          submitted_by?: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "icdb_brand_verifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "icdb_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "icdb_brand_verifications_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "icdb_project_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      icdb_bulk_submissions: {
+        Row: {
+          company_name: string
+          contact_email: string
+          created_at: string
+          id: string
+          processed_at: string | null
+          processed_count: number | null
+          projects_data: Json
+          status: string
+          submitted_by: string
+          total_count: number | null
+        }
+        Insert: {
+          company_name: string
+          contact_email: string
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_count?: number | null
+          projects_data?: Json
+          status?: string
+          submitted_by: string
+          total_count?: number | null
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_count?: number | null
+          projects_data?: Json
+          status?: string
+          submitted_by?: string
+          total_count?: number | null
+        }
+        Relationships: []
+      }
       icdb_companies: {
         Row: {
           created_at: string | null
@@ -2546,7 +2642,9 @@ export type Database = {
         Row: {
           claimed_by: string | null
           created_at: string | null
+          department: string | null
           id: string
+          industry_code: string | null
           is_claimed: boolean | null
           person_name: string | null
           project_id: string
@@ -2555,7 +2653,9 @@ export type Database = {
         Insert: {
           claimed_by?: string | null
           created_at?: string | null
+          department?: string | null
           id?: string
+          industry_code?: string | null
           is_claimed?: boolean | null
           person_name?: string | null
           project_id: string
@@ -2564,7 +2664,9 @@ export type Database = {
         Update: {
           claimed_by?: string | null
           created_at?: string | null
+          department?: string | null
           id?: string
+          industry_code?: string | null
           is_claimed?: boolean | null
           person_name?: string | null
           project_id?: string
@@ -2634,6 +2736,39 @@ export type Database = {
           type?: string
           updated_at?: string | null
           year?: number | null
+        }
+        Relationships: []
+      }
+      icdb_role_taxonomy: {
+        Row: {
+          aliases: string[] | null
+          code: string
+          created_at: string
+          department: string
+          description: string | null
+          id: string
+          industry: string
+          title: string
+        }
+        Insert: {
+          aliases?: string[] | null
+          code: string
+          created_at?: string
+          department: string
+          description?: string | null
+          id?: string
+          industry: string
+          title: string
+        }
+        Update: {
+          aliases?: string[] | null
+          code?: string
+          created_at?: string
+          department?: string
+          description?: string | null
+          id?: string
+          industry?: string
+          title?: string
         }
         Relationships: []
       }
@@ -4769,6 +4904,7 @@ export type Database = {
           full_name: string
           google_maps_place_id: string | null
           hourly_rate: number | null
+          icdb_creator_id: string | null
           id: string
           id_verified: boolean
           id_verified_at: string | null
@@ -4913,6 +5049,7 @@ export type Database = {
           full_name: string
           google_maps_place_id?: string | null
           hourly_rate?: number | null
+          icdb_creator_id?: string | null
           id?: string
           id_verified?: boolean
           id_verified_at?: string | null
@@ -5057,6 +5194,7 @@ export type Database = {
           full_name?: string
           google_maps_place_id?: string | null
           hourly_rate?: number | null
+          icdb_creator_id?: string | null
           id?: string
           id_verified?: boolean
           id_verified_at?: string | null
@@ -8924,6 +9062,7 @@ export type Database = {
         }[]
       }
       generate_claim_token: { Args: never; Returns: string }
+      generate_icdb_creator_id: { Args: never; Returns: string }
       generate_invite_codes: {
         Args: { num_codes?: number; user_id_param: string }
         Returns: undefined

@@ -6529,6 +6529,7 @@ export type Database = {
           rules: string | null
           title: string
           updated_at: string
+          welcome_message: string | null
         }
         Insert: {
           category?: string
@@ -6551,6 +6552,7 @@ export type Database = {
           rules?: string | null
           title: string
           updated_at?: string
+          welcome_message?: string | null
         }
         Update: {
           category?: string
@@ -6573,6 +6575,7 @@ export type Database = {
           rules?: string | null
           title?: string
           updated_at?: string
+          welcome_message?: string | null
         }
         Relationships: []
       }

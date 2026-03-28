@@ -196,9 +196,35 @@ const CircleDetail = () => {
       return;
     }
     await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
+    // System welcome message
+    const { data: profile } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+    const memberName = profile?.full_name || "A new member";
+    await supabase.from("spark_room_messages").insert({
+      room_id: circle.id,
+      user_id: user.id,
+      content: `👋 ${memberName} just joined the circle! Welcome aboard!`,
+      message_type: "system",
+    });
+    // Auto-welcome DM
+    try {
+      const { data: roomData } = await supabase
+        .from("spark_rooms")
+        .select("welcome_message, created_by")
+        .eq("id", circle.id)
+        .single();
+      if (roomData?.welcome_message && roomData.created_by !== user.id) {
+        await supabase.from("messages").insert({
+          sender_id: roomData.created_by,
+          receiver_id: user.id,
+          content: roomData.welcome_message,
+        });
+      }
+    } catch (e) {
+      console.error("Welcome DM failed:", e);
+    }
     setIsMember(true);
     setUserRole("member");
-    toast({ title: "Joined!", description: `You're now in ${circle.title}` });
+    toast({ title: "Welcome! 🎉", description: `You're now in ${circle.title}` });
   };
 
   const sendMessage = async () => {

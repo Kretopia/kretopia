@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   TrendingUp, TrendingDown, DollarSign, FileText, Clock,
   CheckCircle2, AlertCircle, Download, ArrowUpRight, ArrowDownLeft,
-  PieChart, BarChart3, Calendar, Receipt, ShoppingBag, Store
+  PieChart, BarChart3, Calendar, Receipt, ShoppingBag, Store, Users
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval } from "date-fns";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [marketSales, setMarketSales] = useState<any[]>([]);
   const [marketPurchases, setMarketPurchases] = useState<any[]>([]);
+  const [circleRevenue, setCircleRevenue] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"this_month" | "last_month" | "last_3" | "last_6" | "year" | "all">("this_month");
   const sym = getCurrencySymbol();
@@ -70,8 +71,14 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
         .eq("status", "completed")
         .order("created_at", { ascending: false });
 
-      const [{ data: invData }, { data: payData }, { data: expData }, { data: salesData }, { data: purchData }] = await Promise.all([
-        invoiceQuery, paymentQuery, expenseQuery, salesQuery, purchasesQuery
+      // Circle subscription revenue (where user owns circles)
+      const circleRevenueQuery = supabase
+        .from("circle_subscriptions")
+        .select("*, circle:spark_rooms(title, created_by)")
+        .eq("status", "active");
+
+      const [{ data: invData }, { data: payData }, { data: expData }, { data: salesData }, { data: purchData }, { data: circleData }] = await Promise.all([
+        invoiceQuery, paymentQuery, expenseQuery, salesQuery, purchasesQuery, circleRevenueQuery
       ]);
 
       setInvoices(invData || []);
@@ -79,6 +86,8 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       setExpenses(expData || []);
       setMarketSales(salesData || []);
       setMarketPurchases(purchData || []);
+      // Filter circle revenue to only circles owned by this user
+      setCircleRevenue((circleData || []).filter((c: any) => c.circle?.created_by === user!.id));
     } catch (err) {
       console.error("Error loading accounting data:", err);
     } finally {
@@ -159,8 +168,11 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
     const marketplaceIncome = filteredMarketSales.reduce((s, o) => s + convert(Number(o.amount) - Number(o.platform_fee || 0), "USD"), 0);
     // Marketplace spend (buyer purchases)
     const marketplaceSpend = filteredMarketPurchases.reduce((s, o) => s + convert(Number(o.amount), "USD"), 0);
+    
+    // Circle subscription revenue
+    const circleIncome = circleRevenue.reduce((s, c) => s + convert(Number(c.amount || 0), c.currency || "USD"), 0);
 
-    const totalIncome = totalCollected + marketplaceIncome;
+    const totalIncome = totalCollected + marketplaceIncome + circleIncome;
     const totalSpend = totalExpenses + marketplaceSpend;
     // Collection rate: use period-filtered invoiced total vs period-filtered collected
     const collectionRate = totalInvoiced > 0 ? Math.min((totalCollected / totalInvoiced) * 100, 100) : 0;
@@ -171,8 +183,9 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       paidCount: paidInPeriod.length, totalInvoiceCount: filteredInvoices.length,
       marketplaceIncome, marketplaceSpend, totalIncome, totalSpend,
       marketSalesCount: filteredMarketSales.length, marketPurchaseCount: filteredMarketPurchases.length,
+      circleIncome, circleSubCount: circleRevenue.length,
     };
-  }, [filteredInvoices, filteredPayments, filteredExpenses, filteredMarketSales, filteredMarketPurchases, invoices, convert]);
+  }, [filteredInvoices, filteredPayments, filteredExpenses, filteredMarketSales, filteredMarketPurchases, invoices, circleRevenue, convert]);
 
   const monthlyRevenue = useMemo(() => {
     const months: Record<string, { invoiced: number; collected: number; payments: number; marketSales: number }> = {};
@@ -304,7 +317,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
           </CardHeader>
           <CardContent className="px-3 sm:px-4 pb-3">
             <p className="text-xl sm:text-2xl font-bold truncate">{sym}{stats.totalIncome.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">Invoices + marketplace ({preferredCurrency})</p>
+            <p className="text-[10px] text-muted-foreground">Invoices + marketplace + circles ({preferredCurrency})</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-amber-500">
@@ -345,12 +358,19 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       </div>
 
       {/* Secondary stats — compact row */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">
           <Store className="h-4 w-4 text-primary shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-semibold truncate">{sym}{stats.marketplaceIncome.toFixed(0)}</p>
             <p className="text-[10px] text-muted-foreground">{stats.marketSalesCount} market sales</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">
+          <Users className="h-4 w-4 text-primary shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold truncate">{sym}{stats.circleIncome.toFixed(0)}</p>
+            <p className="text-[10px] text-muted-foreground">{stats.circleSubCount} circle subs</p>
           </div>
         </div>
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">
@@ -385,6 +405,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
               invoiceIncome={stats.totalCollected}
               marketplaceIncome={stats.marketplaceIncome}
               paymentIncome={stats.received}
+              circleIncome={stats.circleIncome}
               currency={sym}
             />
             <IncomeGoalTracker currentIncome={stats.totalIncome} currencySymbol={sym} />

@@ -33,7 +33,7 @@ export default function Circle() {
   const [accountType, setAccountType] = useState<string>("individual");
   
 
-  // Redirect company accounts away from Circle
+  // Fetch account type
   useEffect(() => {
     if (!user?.id) return;
     supabase
@@ -43,11 +43,8 @@ export default function Circle() {
       .maybeSingle()
       .then(({ data }) => {
         if (data?.account_type) setAccountType(data.account_type);
-        if (data?.account_type === "company") {
-          navigate("/opportunities", { replace: true });
-        }
       });
-  }, [user?.id, navigate]);
+  }, [user?.id]);
 
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 

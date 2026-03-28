@@ -43,7 +43,8 @@ export const CreateSessionDialog = ({
   open, 
   onOpenChange, 
   onCreated,
-  defaultLocation 
+  defaultLocation,
+  defaultCircleId,
 }: CreateSessionDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -52,6 +53,7 @@ export const CreateSessionDialog = ({
   const [time, setTime] = useState("14:00");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [userCircles, setUserCircles] = useState<{ id: string; title: string; icon_emoji: string }[]>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -67,7 +69,28 @@ export const CreateSessionDialog = ({
     ticket_currency: 'USD',
     event_type: 'session' as 'session' | 'event',
     external_ticket_url: '',
+    circle_id: defaultCircleId || '',
   });
+
+  // Fetch user's circles for the dropdown
+  useEffect(() => {
+    if (!user || !open) return;
+    const fetchCircles = async () => {
+      const { data: memberships } = await supabase
+        .from("spark_room_members")
+        .select("room_id")
+        .eq("user_id", user.id);
+      if (!memberships?.length) return;
+      const roomIds = memberships.map(m => m.room_id);
+      const { data: rooms } = await supabase
+        .from("spark_rooms")
+        .select("id, title, icon_emoji")
+        .in("id", roomIds)
+        .eq("is_active", true);
+      setUserCircles(rooms || []);
+    };
+    fetchCircles();
+  }, [user, open]);
 
   const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

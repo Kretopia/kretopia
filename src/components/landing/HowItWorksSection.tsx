@@ -10,7 +10,7 @@ export const HowItWorksSection = () => {
             <span>How It Works</span>
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            Profile.{" "}
+            Claim.{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               Match.
             </span>{" "}

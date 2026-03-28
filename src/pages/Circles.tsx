@@ -113,7 +113,7 @@ const CirclesPage = () => {
                 </h1>
                 <p className="text-sm text-muted-foreground">Community spaces for creatives</p>
               </div>
-              <Button variant="gradient" size="sm" className="gap-1.5" onClick={() => navigate("/circles/create")}>
+              <Button variant="gradient" size="sm" className="gap-1.5" onClick={() => navigate("/scene?tab=circles")}>
                 <Plus className="h-4 w-4" /> Create
               </Button>
             </div>

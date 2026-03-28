@@ -606,7 +606,18 @@ const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: boolean; 
 
       if (error) throw error;
       if (data) {
+        // Add creator as admin member
         await supabase.from("spark_room_members").insert({ room_id: data.id, user_id: user.id, role: "admin" });
+        // Create default "general" channel
+        await supabase.from("circle_channels").insert({
+          circle_id: data.id,
+          name: "general",
+          channel_type: "text",
+          icon_emoji: "💬",
+          position: 0,
+          is_default: true,
+          created_by: user.id,
+        } as any);
       }
       toast({ title: "Circle created! 🎉", description: `${title} is live` });
       setTitle(""); setDescription(""); setCategory("general"); setIsPrivate(false); setIsPaid(false); setPrice(""); setRules("");

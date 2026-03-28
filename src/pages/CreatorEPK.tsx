@@ -27,7 +27,8 @@ import {
   UserCheck,
   ArrowRight,
   Package,
-  Download
+  Download,
+  Database
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
@@ -80,6 +81,7 @@ interface Credit {
   platform?: string;
   source?: string;
   isVerified?: boolean;
+  verificationTier?: 'icdb' | 'ai' | 'peer' | 'payment' | 'manual';
 }
 
 interface IndustryStat {
@@ -131,7 +133,7 @@ const CreatorEPK = () => {
         setProfile(profileData);
 
         // Fetch all data in parallel
-        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes] = await Promise.all([
+        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes, icdbRes] = await Promise.all([
           // Portfolio items
           supabase
             .from('portfolio_items')
@@ -157,7 +159,7 @@ const CreatorEPK = () => {
           // Manual Credits (work history)
           supabase
             .from('credits')
-            .select('id, project_name, role, year, platform')
+            .select('id, project_name, role, year, platform, verification_status, ai_confidence, endorsement_count')
             .eq('user_id', userId)
             .order('year', { ascending: false })
             .limit(6),
@@ -184,7 +186,14 @@ const CreatorEPK = () => {
             .eq('user_id', userId)
             .eq('is_active', true)
             .order('created_at', { ascending: false })
-            .limit(6)
+            .limit(6),
+
+          // ICDB claimed roles
+          supabase
+            .from('icdb_project_roles')
+            .select('id, role_title, person_name, is_claimed, project_id')
+            .eq('claimed_by', userId)
+            .eq('is_claimed', true),
         ]);
 
         setPortfolioItems(portfolioRes.data || []);
@@ -194,10 +203,16 @@ const CreatorEPK = () => {
         setDigitalProducts(productsRes.data || []);
         
         // Combine manual and verified credits
-        const manualCredits = (creditsRes.data || []).map((c: any) => ({
-          ...c,
-          isVerified: false
-        }));
+        const manualCredits = (creditsRes.data || []).map((c: any) => {
+          let tier: Credit['verificationTier'] = 'manual';
+          if (c.verification_status === 'verified' && c.endorsement_count >= 2) tier = 'peer';
+          else if (c.ai_confidence && c.ai_confidence >= 0.7) tier = 'ai';
+          return {
+            ...c,
+            isVerified: tier !== 'manual',
+            verificationTier: tier,
+          };
+        });
         const verifiedCreditsData = (verifiedCreditsRes.data || []).map((c: any) => ({
           id: c.id,
           project_name: c.title,
@@ -205,13 +220,23 @@ const CreatorEPK = () => {
           year: c.year,
           platform: c.source,
           isVerified: true,
+          verificationTier: 'ai' as const,
           source: c.source
+        }));
+
+        // ICDB claimed credits
+        const icdbClaimed = (icdbRes.data || []).map((c: any) => ({
+          id: c.id,
+          project_name: c.person_name || 'ICDB Credit',
+          role: c.role_title,
+          isVerified: true,
+          verificationTier: 'icdb' as const,
         }));
         
         // Combine and sort by year
-        const allCredits = [...verifiedCreditsData, ...manualCredits]
+        const allCredits = [...icdbClaimed, ...verifiedCreditsData, ...manualCredits]
           .sort((a, b) => (b.year || 0) - (a.year || 0))
-          .slice(0, 8);
+          .slice(0, 12);
         
         setCredits(allCredits);
 
@@ -506,46 +531,54 @@ const CreatorEPK = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Work History
+                Verified Filmography
               </h3>
-              {credits.some(c => c.isVerified) && (
-                <Badge variant="outline" className="text-xs gap-1 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Verified Credits
-                </Badge>
-              )}
+              <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
+                <Database className="h-3 w-3" />
+                ICDB
+              </Badge>
             </div>
             <div className="space-y-2">
-              {credits.map((credit) => (
-                <div
-                  key={credit.id}
-                  className={cn(
-                    "flex items-center justify-between p-3 rounded-lg",
-                    credit.isVerified 
-                      ? "bg-green-500/10 border border-green-500/20" 
-                      : "bg-muted/50"
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-sm truncate">{credit.project_name || credit.title}</p>
-                      {credit.isVerified && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30">
-                          <CheckCircle2 className="h-2.5 w-2.5" />
-                          {credit.source?.toUpperCase()}
-                        </Badge>
-                      )}
+              {credits.map((credit) => {
+                const tierConfig = {
+                  icdb: { label: 'ICDB', className: 'bg-primary/10 text-primary border-primary/30' },
+                  peer: { label: 'Peer', className: 'bg-green-500/10 text-green-600 border-green-500/30' },
+                  ai: { label: 'AI', className: 'bg-blue-500/10 text-blue-600 border-blue-500/30' },
+                  payment: { label: 'Paid', className: 'bg-amber-500/10 text-amber-600 border-amber-500/30' },
+                  manual: { label: '', className: '' },
+                }[credit.verificationTier || 'manual'];
+
+                return (
+                  <div
+                    key={credit.id}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-lg",
+                      credit.isVerified
+                        ? "bg-primary/5 border border-primary/10"
+                        : "bg-muted/50"
+                    )}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm truncate">{credit.project_name || credit.title}</p>
+                        {credit.isVerified && tierConfig.label && (
+                          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 gap-0.5", tierConfig.className)}>
+                            <CheckCircle2 className="h-2.5 w-2.5" />
+                            {tierConfig.label}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {credit.role}
+                        {credit.platform && ` • ${credit.platform}`}
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {credit.role}
-                      {credit.platform && !credit.isVerified && ` • ${credit.platform}`}
-                    </p>
+                    {credit.year && (
+                      <span className="text-xs text-muted-foreground shrink-0 ml-2">{credit.year}</span>
+                    )}
                   </div>
-                  {credit.year && (
-                    <span className="text-xs text-muted-foreground shrink-0 ml-2">{credit.year}</span>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

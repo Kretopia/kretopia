@@ -88,6 +88,8 @@ const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
+const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
+const ICDBDiscovery = lazy(() => import("./pages/ICDBDiscovery"));
 const Challenges = lazy(() => import("./pages/Challenges"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({
@@ -278,8 +280,10 @@ const AppContent = () => {
             
             {/* Credit Database & Discover */}
             <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
+            <Route path="/credits/project/:projectId" element={<ProtectedRoute><ICDBProjectPage /></ProtectedRoute>} />
+            <Route path="/credits/discover" element={<ProtectedRoute><ICDBDiscovery /></ProtectedRoute>} />
             <Route path="/directory" element={<Navigate to="/circle?tab=browse" replace />} />
-            <Route path="/discover" element={<Navigate to="/circle?tab=browse" replace />} />
+            <Route path="/discover" element={<Navigate to="/credits/discover" replace />} />
             <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
             
             {/* Check-in & Challenges */}

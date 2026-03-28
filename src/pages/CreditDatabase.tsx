@@ -328,6 +328,11 @@ const CreditDatabase = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+          <div className="flex justify-end mt-2">
+            <Button variant="outline" size="sm" className="gap-1.5 text-[11px] h-7" onClick={() => navigate('/credits/discover')}>
+              <Sparkles className="h-3 w-3" /> AI Discovery
+            </Button>
+          </div>
         </div>
 
         {/* Results */}
@@ -358,7 +363,7 @@ const CreditDatabase = () => {
                 <div className="space-y-3">
                   {/* DB results */}
                   {icdbProjects.map(project => (
-                    <Card key={project.id} className="overflow-hidden hover:shadow-sm transition-shadow">
+                    <Card key={project.id} className="overflow-hidden hover:shadow-sm transition-shadow cursor-pointer" onClick={() => navigate(`/credits/project/${project.id}`)}>
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="min-w-0">

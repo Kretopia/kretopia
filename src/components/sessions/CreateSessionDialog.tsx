@@ -375,6 +375,7 @@ export const CreateSessionDialog = ({
             </div>
           )}
 
+          <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">Cancel</Button>
             <Button type="submit" disabled={loading || !date || !formData.title} className="flex-1" variant="gradient">
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

@@ -36,20 +36,15 @@ import { DegreeBadge } from "@/components/circle/DegreeBadge";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
 
 // Import profile section components
-import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { SkillsSection } from "@/components/profile/SkillsSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
-import { PressLinksSection } from "@/components/profile/PressLinksSection";
-import { AwardsSection } from "@/components/profile/AwardsSection";
-import { ReviewsSection } from "@/components/profile/ReviewsSection";
-import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { TrustSignals } from "@/components/profile/TrustSignals";
-import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { ProfileRatingSummary } from "@/components/profile/ProfileRatingSummary";
 import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
 import { ServicePackagesSection } from "@/components/profile/ServicePackagesSection";
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
+import { ViewProfileTabs } from "@/components/profile/ViewProfileTabs";
 
 interface Profile {
   user_id: string;
@@ -643,124 +638,18 @@ const ViewProfile = () => {
           {/* Service Packages */}
           <ServicePackagesSection userId={profile.user_id} isOwnProfile={false} />
 
-          {/* Trust Signals */}
-          <Card className="p-4 mb-6">
-            <TrustSignals
-              emailVerified={(profile as any).email_verified}
-              phoneVerified={(profile as any).phone_verified}
-              idVerified={(profile as any).id_verified}
-              paymentVerified={(profile as any).payment_verified}
-              isOwnProfile={false}
-            />
-          </Card>
-
-          {/* Achievement Badges */}
-          {profile.achievement_badges && profile.achievement_badges.length > 0 && (
-            <div className="mb-6">
-              <AchievementBadges 
-                achievements={profile.achievement_badges}
-                showAll={true}
-              />
-            </div>
-          )}
-
-          {/* Portfolio Section */}
-          {portfolioItems.length > 0 && (
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
-              <h2 className="text-lg font-bold mb-4">Portfolio</h2>
-              <PortfolioSection 
-                items={portfolioItems} 
-                isOwnProfile={false}
-                onRefresh={fetchData}
-              />
-            </div>
-          )}
-
-          {/* Skills Section */}
-          {(profile.professional_skills?.length > 0 || profile.passion_skills?.length > 0) && (
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
-              <SkillsSection
-                professionalSkills={Array.isArray(profile.professional_skills) ? profile.professional_skills : []}
-                passionSkills={Array.isArray(profile.passion_skills) ? profile.passion_skills : []}
-                jobTitle={profile.job_title}
-                industry={profile.industry}
-                isOwnProfile={false}
-                userId={profile.user_id}
-                onRefresh={fetchData}
-              />
-            </div>
-          )}
-
-          {/* Social Stats */}
-          {(profile.youtube_subscribers || profile.instagram_followers || profile.tiktok_followers || 
-            profile.spotify_listeners || profile.twitter_followers || profile.linkedin_connections) && (
-            <div className="mb-6">
-              <SocialStatsSection 
-                youtubeSubscribers={profile.youtube_subscribers}
-                instagramFollowers={profile.instagram_followers}
-                tiktokFollowers={profile.tiktok_followers}
-                spotifyListeners={profile.spotify_listeners}
-                twitterFollowers={profile.twitter_followers}
-                linkedinConnections={profile.linkedin_connections}
-                verifiedMetrics={profile.social_verified}
-              />
-            </div>
-          )}
-
-          {/* Experience & Credits */}
-          <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
-            <h2 className="text-lg font-bold mb-4">Credits & Experience</h2>
-            <ICDBTimeline 
-              userId={profile.user_id}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
-          </div>
-
-          {/* Press Links */}
-          <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
-            <h3 className="font-semibold mb-4">Press Coverage</h3>
-            <PressLinksSection 
-              userId={profile.user_id}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
-          </div>
-
-          {/* Awards */}
-          <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
-            <h3 className="font-semibold mb-4">Awards</h3>
-            <AwardsSection 
-              userId={profile.user_id}
-              isOwnProfile={false}
-              onRefresh={fetchData}
-            />
-          </div>
-
-          {/* Collaboration History */}
-          <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm mb-6">
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Handshake className="h-4 w-4 text-primary" />
-              Collaboration History
-            </h3>
-            <CollaborationHistory 
-              userId={profile.user_id}
-              isOwnProfile={false}
-              viewerUserId={user?.id}
-            />
-          </div>
-
-          {/* Reviews */}
-          {reviews.length > 0 && (
-            <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-              <ReviewsSection 
-                reviews={reviews}
-                isOwnProfile={false}
-                profileUserId={profile.user_id}
-                onRefresh={fetchData}
-              />
-            </div>
-          )}
+          {/* Tabbed Content Sections */}
+          <ViewProfileTabs
+            profile={profile}
+            portfolioItems={portfolioItems}
+            reviews={reviews}
+            credits={credits}
+            awards={awards}
+            userId={profile.user_id}
+            isMatched={isMatched}
+            connectionStatus={connectionStatus}
+            onRefresh={fetchData}
+          />
         </div>
       </div>
 

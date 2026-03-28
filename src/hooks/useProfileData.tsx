@@ -124,6 +124,9 @@ export const useProfileData = () => {
         projects: portfolioResult.data?.length || 0,
       }));
       setPortfolioItems(portfolioResult.data || []);
+
+      // Also count credits for unified "Work" count (updated after background fetch)
+
       
       // Stop loading - show UI immediately
       setIsLoading(false);

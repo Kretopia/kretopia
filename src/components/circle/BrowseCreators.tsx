@@ -140,10 +140,8 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
     setLoading(true);
     try {
       const { data } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, subscription_tier, level, verification_status, instagram_followers, youtube_subscribers, tiktok_followers')
-        .not('avatar_url', 'is', null)
-        .not('bio', 'is', null)
+        .from('public_profiles_discovery')
+        .select('user_id, full_name, role, bio, avatar_url, location, collab_intent, level, verification_score')
         .neq('user_id', user!.id)
         .order('created_at', { ascending: false })
         .limit(100);

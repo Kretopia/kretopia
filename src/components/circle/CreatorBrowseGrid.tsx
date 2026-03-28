@@ -271,10 +271,8 @@ export function CreatorBrowseGrid() {
     setCreatorsLoading(true);
     try {
       let query = supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, role, location, level, badge, bio, verification_status', { count: 'exact' })
-        .eq('is_claimed', true)
-        .not('full_name', 'is', null)
+        .from('public_profiles_discovery')
+        .select('user_id, full_name, avatar_url, role, location, level, badge, bio, verification_score', { count: 'exact' })
         .order('level', { ascending: false })
         .range(creatorPage * PAGE_SIZE, (creatorPage + 1) * PAGE_SIZE - 1);
 

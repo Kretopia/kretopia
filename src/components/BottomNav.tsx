@@ -6,9 +6,9 @@ import { useNavMode, NavMode } from "@/hooks/useNavMode";
 
 const CREATE_ITEMS = [
   { path: "/circle", icon: Sparkles, label: "Match" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
   { path: "/scene", icon: Flame, label: "Scene" },
   { path: "/circles", icon: MessageSquareMore, label: "Circles" },
+  { path: "/challenges", icon: Trophy, label: "Challenges" },
 ];
 
 const WORK_ITEMS = [

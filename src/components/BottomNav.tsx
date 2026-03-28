@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Users, Compass, FolderKanban, User, Flame, Briefcase } from "lucide-react";
+import { Users, Compass, User, Flame, Sparkles, MessageSquareMore } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,23 +28,20 @@ const BottomNav = memo(() => {
     return null;
   }
 
-  const profilePath = user?.id ? `/profile/${user.id}` : "/profile";
   const isCompany = accountType === "company";
   
   const navItems = isCompany
     ? [
-        { path: "/opportunities", icon: Briefcase, label: "Gigs", tourId: "gigs-tab", tooltip: { id: "nav-gigs", title: "Gigs", desc: "Post and manage hiring opportunities" } },
         { path: "/discover", icon: Compass, label: "Discover", tourId: "discover-tab", tooltip: { id: "nav-discover", title: "Discover", desc: "Browse creators and talent" } },
         { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & conversations" } },
-        { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects and deliverables" } },
-        { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your company profile" } },
+        { path: "/circles", icon: MessageSquareMore, label: "Circles", tourId: "circles-tab", tooltip: { id: "nav-circles", title: "Circles", desc: "Join community spaces" } },
+        { path: "/discover?tab=gigs", icon: Users, label: "Gigs", tourId: "gigs-tab", tooltip: { id: "nav-gigs", title: "Gigs", desc: "Post and manage hiring" } },
       ]
     : [
-        { path: "/circle", icon: Users, label: "My Circle", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "My Circle", desc: "Find creators to collaborate with" } },
+        { path: "/circle", icon: Sparkles, label: "Match", tourId: "circle-tab", tooltip: { id: "nav-circle", title: "Match", desc: "Swipe to discover & connect with creators" } },
+        { path: "/circles", icon: MessageSquareMore, label: "Circles", tourId: "circles-tab", tooltip: { id: "nav-circles", title: "Circles", desc: "Community spaces & conversations" } },
+        { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & nearby" } },
         { path: "/discover", icon: Compass, label: "Discover", tourId: "discover-tab", tooltip: { id: "nav-discover", title: "Discover", desc: "Browse creators, credits, and gigs" } },
-        { path: "/scene", icon: Flame, label: "Scene", tourId: "scene-tab", tooltip: { id: "nav-scene", title: "Scene", desc: "Events, inspiration & conversations" } },
-        { path: "/desk", icon: FolderKanban, label: "Projects", tourId: "projects-tab", tooltip: { id: "nav-desk", title: "Your Projects", desc: "Manage projects, milestones, and deliverables" } },
-        { path: profilePath, icon: User, label: "Profile", tourId: "profile-tab", tooltip: { id: "nav-profile", title: "Your Profile", desc: "View and edit your creator profile" } },
       ];
 
   return (
@@ -58,8 +55,8 @@ const BottomNav = memo(() => {
         {navItems.map((item) => {
           const { path, icon: Icon, label, tourId, tooltip } = item;
           const isActive = location.pathname === path || 
-            (path === "/discover" && (location.pathname === "/directory" || location.pathname === "/opportunities")) ||
-            (path === "/opportunities" && location.pathname === "/opportunities");
+            (path === "/discover" && location.pathname === "/directory") ||
+            (path === "/circle" && location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"));
           
           const linkContent = (
             <Link

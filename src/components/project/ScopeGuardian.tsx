@@ -15,6 +15,7 @@ import {
   Copy, Check, Milestone, ArrowRight, Info
 } from "lucide-react";
 import { FreeTierGate } from "@/components/FreeTierGate";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ScopeGuardianProps {
   projectId: string;

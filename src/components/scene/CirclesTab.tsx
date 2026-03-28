@@ -242,14 +242,54 @@ const CircleDetail = ({ circle, onBack }: { circle: CircleData; onBack: () => vo
     return () => { supabase.removeChannel(channel); };
   }, [circle.id, fetchMessages]);
 
+  // Check for successful paid circle join from redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const joinedCircleId = params.get('joined');
+    const sessionId = params.get('session_id');
+    if (joinedCircleId === circle.id && sessionId) {
+      // Verify payment and grant membership
+      const verifyPayment = async () => {
+        try {
+          const { error } = await supabase.functions.invoke('verify-circle-payment', {
+            body: { circleId: circle.id, sessionId },
+          });
+          if (!error) {
+            setIsMember(true);
+            setUserRole("member");
+            toast({ title: "Welcome! 🎉", description: `You're now a member of ${circle.title}` });
+            // Clean up URL params
+            window.history.replaceState({}, '', window.location.pathname + '?tab=circles');
+          }
+        } catch (err) {
+          console.error("Error verifying circle payment:", err);
+        }
+      };
+      verifyPayment();
+    }
+  }, [circle.id]);
+
   const joinCircle = async () => {
     if (!user) return;
-    // For paid circles, redirect to payment (future ThrivePay integration)
+    // For paid circles, redirect to Stripe checkout via ThrivePay
     if (circle.is_paid && circle.price_monthly > 0) {
-      toast({
-        title: "Premium Circle",
-        description: `This circle costs $${circle.price_monthly}/mo. Payment integration coming soon!`,
-      });
+      try {
+        toast({ title: "Redirecting to payment...", description: `$${circle.price_monthly}/mo for ${circle.title}` });
+        const { data, error } = await supabase.functions.invoke('join-paid-circle', {
+          body: { circleId: circle.id },
+        });
+        if (error) throw error;
+        if (data?.url) {
+          window.open(data.url, '_blank');
+        }
+      } catch (err: any) {
+        const msg = err?.message || "Payment failed";
+        toast({
+          title: "Payment Error",
+          description: msg.includes("ThrivePay") ? msg : "Could not start payment. Please try again.",
+          variant: "destructive",
+        });
+      }
       return;
     }
     await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });

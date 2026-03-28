@@ -99,7 +99,13 @@ export const CirclesTab = () => {
   );
 
   if (selectedCircle) {
-    return <CircleDetail circle={selectedCircle} onBack={() => { setSelectedCircle(null); fetchCircles(); }} />;
+    return (
+      <CircleDetail 
+        circle={selectedCircle} 
+        onBack={() => { setSelectedCircle(null); fetchCircles(); }} 
+        onOpenFullPage={() => navigate(`/circle/${selectedCircle.id}`)}
+      />
+    );
   }
 
   return (

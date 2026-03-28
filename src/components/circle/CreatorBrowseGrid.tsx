@@ -336,15 +336,27 @@ export function CreatorBrowseGrid() {
           incoming.data?.forEach(c => myConnections.add(c.user_id));
 
           if (myConnections.size > 0) {
+            // Batch: get all connections for visible creators in two queries instead of N
+            const visibleIds = profiles.map(p => p.user_id);
+            const [allOut, allIn] = await Promise.all([
+              supabase.from('connections').select('user_id, connected_user_id').in('user_id', visibleIds).eq('status', 'accepted'),
+              supabase.from('connections').select('user_id, connected_user_id').in('connected_user_id', visibleIds).eq('status', 'accepted'),
+            ]);
+
+            const creatorConnectionsMap = new Map<string, Set<string>>();
+            allOut.data?.forEach(c => {
+              const set = creatorConnectionsMap.get(c.user_id) || new Set();
+              set.add(c.connected_user_id);
+              creatorConnectionsMap.set(c.user_id, set);
+            });
+            allIn.data?.forEach(c => {
+              const set = creatorConnectionsMap.get(c.connected_user_id) || new Set();
+              set.add(c.user_id);
+              creatorConnectionsMap.set(c.connected_user_id, set);
+            });
+
             for (const profile of profiles) {
-              // Check mutual: how many of this creator's connections overlap with mine
-              const [pOut, pIn] = await Promise.all([
-                supabase.from('connections').select('connected_user_id').eq('user_id', profile.user_id).eq('status', 'accepted'),
-                supabase.from('connections').select('user_id').eq('connected_user_id', profile.user_id).eq('status', 'accepted'),
-              ]);
-              const theirConnections = new Set<string>();
-              pOut.data?.forEach(c => theirConnections.add(c.connected_user_id));
-              pIn.data?.forEach(c => theirConnections.add(c.user_id));
+              const theirConnections = creatorConnectionsMap.get(profile.user_id) || new Set();
               let mutual = 0;
               myConnections.forEach(id => { if (theirConnections.has(id)) mutual++; });
               profile.mutual_connections = mutual;

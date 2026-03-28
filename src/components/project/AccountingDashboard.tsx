@@ -168,8 +168,11 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
     const marketplaceIncome = filteredMarketSales.reduce((s, o) => s + convert(Number(o.amount) - Number(o.platform_fee || 0), "USD"), 0);
     // Marketplace spend (buyer purchases)
     const marketplaceSpend = filteredMarketPurchases.reduce((s, o) => s + convert(Number(o.amount), "USD"), 0);
+    
+    // Circle subscription revenue
+    const circleIncome = circleRevenue.reduce((s, c) => s + convert(Number(c.amount || 0), c.currency || "USD"), 0);
 
-    const totalIncome = totalCollected + marketplaceIncome;
+    const totalIncome = totalCollected + marketplaceIncome + circleIncome;
     const totalSpend = totalExpenses + marketplaceSpend;
     // Collection rate: use period-filtered invoiced total vs period-filtered collected
     const collectionRate = totalInvoiced > 0 ? Math.min((totalCollected / totalInvoiced) * 100, 100) : 0;
@@ -180,8 +183,9 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       paidCount: paidInPeriod.length, totalInvoiceCount: filteredInvoices.length,
       marketplaceIncome, marketplaceSpend, totalIncome, totalSpend,
       marketSalesCount: filteredMarketSales.length, marketPurchaseCount: filteredMarketPurchases.length,
+      circleIncome, circleSubCount: circleRevenue.length,
     };
-  }, [filteredInvoices, filteredPayments, filteredExpenses, filteredMarketSales, filteredMarketPurchases, invoices, convert]);
+  }, [filteredInvoices, filteredPayments, filteredExpenses, filteredMarketSales, filteredMarketPurchases, invoices, circleRevenue, convert]);
 
   const monthlyRevenue = useMemo(() => {
     const months: Record<string, { invoiced: number; collected: number; payments: number; marketSales: number }> = {};

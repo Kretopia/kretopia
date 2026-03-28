@@ -13,8 +13,9 @@ import GigCard, { type GigCreatorProfile } from "@/components/opportunity/GigCar
 import { 
   Briefcase, Handshake, ArrowRightLeft,
   Plus, Sparkles, Zap, Target, GraduationCap, X,
-  Search,
+  Search, MapPin, SlidersHorizontal, DollarSign,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useNavigate } from "react-router-dom";
 import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
 

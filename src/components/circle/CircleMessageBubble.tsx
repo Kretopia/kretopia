@@ -36,6 +36,7 @@ interface Props {
   showReactions: string | null;
   isAdmin: boolean;
   onPin?: (msgId: string, isPinned: boolean) => void;
+  onPollVote?: (msgId: string, optionIndex: number) => void;
 }
 
 const REACTION_EMOJIS = ["🔥", "❤️", "🙌", "💯", "😂", "🎯"];

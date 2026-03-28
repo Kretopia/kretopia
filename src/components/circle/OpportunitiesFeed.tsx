@@ -103,6 +103,10 @@ export const OpportunitiesFeed = () => {
         query = query.contains("skills", [selectedSkill]);
       }
 
+      if (locationFilter !== "all") {
+        query = query.ilike("location", `%${locationFilter}%`);
+      }
+
       const { data, error } = await query;
       if (error) throw error;
       

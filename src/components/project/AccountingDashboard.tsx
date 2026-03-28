@@ -358,12 +358,19 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       </div>
 
       {/* Secondary stats — compact row */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">
           <Store className="h-4 w-4 text-primary shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-semibold truncate">{sym}{stats.marketplaceIncome.toFixed(0)}</p>
             <p className="text-[10px] text-muted-foreground">{stats.marketSalesCount} market sales</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">
+          <Users className="h-4 w-4 text-primary shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold truncate">{sym}{stats.circleIncome.toFixed(0)}</p>
+            <p className="text-[10px] text-muted-foreground">{stats.circleSubCount} circle subs</p>
           </div>
         </div>
         <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/50 border">

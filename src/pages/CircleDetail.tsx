@@ -64,6 +64,7 @@ const CircleDetail = () => {
   const [newChannelName, setNewChannelName] = useState("");
   const [newChannelType, setNewChannelType] = useState("text");
   const [copied, setCopied] = useState(false);
+  const [showPollCreator, setShowPollCreator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 

@@ -1,14 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Flame, MessageSquareMore, Briefcase, LayoutDashboard, Wallet, User, Target } from "lucide-react";
+import { Sparkles, Flame, MessageSquareMore, Briefcase, LayoutDashboard, Wallet, User, Target, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useRef, useCallback } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";
 
 const CREATE_ITEMS = [
   { path: "/circle", icon: Sparkles, label: "Match" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
   { path: "/scene", icon: Flame, label: "Scene" },
   { path: "/circles", icon: MessageSquareMore, label: "Circles" },
+  { path: "/challenges", icon: Trophy, label: "Challenges" },
 ];
 
 const WORK_ITEMS = [

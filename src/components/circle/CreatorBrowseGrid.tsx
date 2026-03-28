@@ -454,26 +454,8 @@ export function CreatorBrowseGrid() {
 
   return (
     <div className="space-y-3">
-      {/* Mode toggle: Creators / Credits */}
+      {/* View controls */}
       <div className="flex items-center gap-2">
-        <div className="flex bg-muted rounded-lg p-0.5 flex-1">
-          <button
-            onClick={() => { setMode("creators"); setSearch(""); setCreatorPage(0); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              mode === "creators" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            <Users className="h-3.5 w-3.5" /> Creators
-          </button>
-          <button
-            onClick={() => { setMode("credits"); setSearch(""); setCreditPage(0); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              mode === "credits" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            <Award className="h-3.5 w-3.5" /> Credits (ICDB)
-          </button>
-        </div>
         {mode === "creators" && (
           <>
             <div className="flex bg-muted rounded-lg p-0.5">

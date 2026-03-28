@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, Search, BookOpen, BarChart3, ShoppingBag, Gift, MessageSquareMore,
-  MapPin, Trophy, CheckCircle, Target, Zap, Globe, UserCheck, Palette
+  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
@@ -93,9 +93,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const desktopNavItems = mode === "create"
     ? [
         { path: "/circle", icon: Sparkles, label: "Match" },
-        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
         { path: "/scene", icon: Zap, label: "Scene" },
         { path: "/circles", icon: MessageSquareMore, label: "Circles" },
+        { path: "/challenges", icon: Trophy, label: "Challenges" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },
@@ -220,13 +220,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
                       <MenuButton icon={Globe} label="Credit Database (ICDB)" onClick={() => handleNavigation("/credits")} />
-                      <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} />
 
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Grow</p>
-                      <MenuButton icon={Trophy} label="Challenges" onClick={() => handleNavigation("/challenges")} badge="New" />
                       <MenuButton icon={Gift} label="Rewards" onClick={() => handleNavigation("/rewards")} />
                       <MenuButton icon={CheckCircle} label="Daily Check-In" onClick={() => handleNavigation("/daily-checkin")} />
 
@@ -242,14 +240,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     /* ====== WORK MODE MENU ====== */
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
-                      <MenuButton icon={FolderKanban} label="All Projects" onClick={() => handleNavigation("/desk")} />
                       <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
-                      <MenuButton icon={Target} label="Pipeline & Leads" onClick={() => handleNavigation("/sales")} />
+                      <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
 
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Earn</p>
-                      <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
                       <MenuButton icon={ShoppingBag} label="Marketplace" onClick={() => handleNavigation("/market")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />

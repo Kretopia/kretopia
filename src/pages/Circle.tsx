@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
+import { CreatorBrowseGrid } from "@/components/circle/CreatorBrowseGrid";
 import { SwipeFeature } from "@/components/swipe";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";

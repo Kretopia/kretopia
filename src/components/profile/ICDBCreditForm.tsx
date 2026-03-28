@@ -528,11 +528,77 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                 </Button>
               </div>
 
+              {/* ICDB Canonical Matches */}
+              {!searching && icdbMatches.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium flex items-center gap-1">
+                    <Database className="h-3 w-3 text-primary" />
+                    ICDB Verified Projects
+                  </p>
+                  {icdbMatches.slice(0, 5).map((project: any) => (
+                    <Card
+                      key={project.id}
+                      className="p-3 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all border-primary/20"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold flex-1">{project.title}</p>
+                          <Badge variant="outline" className="text-[9px] h-4 gap-0.5 border-blue-500/30 text-blue-600 shrink-0">
+                            <ShieldCheck className="h-2 w-2" /> ICDB
+                          </Badge>
+                        </div>
+                        {project.description && (
+                          <p className="text-[11px] text-muted-foreground line-clamp-1">{project.description}</p>
+                        )}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge variant="secondary" className="text-[9px] h-4 capitalize">
+                            {project.type?.replace(/_/g, ' ')}
+                          </Badge>
+                          {project.year && <span className="text-[10px] text-muted-foreground">{project.year}</span>}
+                          {project.client_brand && (
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                              <Building2 className="h-2.5 w-2.5" /> {project.client_brand}
+                            </span>
+                          )}
+                        </div>
+                        {/* Claimable roles */}
+                        {project.icdb_project_roles?.filter((r: any) => !r.is_claimed).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {project.icdb_project_roles.filter((r: any) => !r.is_claimed).map((role: any) => (
+                              <Button
+                                key={role.id}
+                                variant="outline"
+                                size="sm"
+                                className="h-5 text-[9px] gap-0.5 px-2"
+                                onClick={() => claimIcdbRole(project, role)}
+                              >
+                                <UserPlus className="h-2.5 w-2.5" /> {role.role_title}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                        {/* If no unclaimed roles, allow claiming with custom role */}
+                        {(!project.icdb_project_roles || project.icdb_project_roles.filter((r: any) => !r.is_claimed).length === 0) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-6 text-[10px] gap-1 mt-1"
+                            onClick={() => claimIcdbRole(project, { role_title: '' })}
+                          >
+                            <Plus className="h-3 w-3" /> Add my role on this project
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
               {/* Results */}
               {searching && (
                 <div className="flex items-center justify-center py-6 gap-2">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Searching platforms...</span>
+                  <span className="text-sm text-muted-foreground">Searching ICDB & platforms...</span>
                 </div>
               )}
 

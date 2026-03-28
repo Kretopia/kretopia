@@ -93,9 +93,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const desktopNavItems = mode === "create"
     ? [
         { path: "/circle", icon: Sparkles, label: "Match" },
-        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
         { path: "/scene", icon: Zap, label: "Scene" },
         { path: "/circles", icon: MessageSquareMore, label: "Circles" },
+        { path: "/challenges", icon: Trophy, label: "Challenges" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },

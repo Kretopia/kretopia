@@ -12,6 +12,7 @@ import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import { ModeDiscoverySheet } from "./components/ModeDiscoverySheet";
+import { ModeThemeSync } from "./components/ModeThemeSync";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboarding";
 import { SkipLink } from "./components/ui/skip-link";

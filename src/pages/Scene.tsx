@@ -2,11 +2,10 @@ import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Flame, MessageSquare, MapPin } from "lucide-react";
+import { CalendarDays, Flame, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Events from "./Events";
 import { SparkWall } from "@/components/scene/SparkWall";
-import { CirclesTab } from "@/components/scene/CirclesTab";
 
 const Scene = () => {
   const [activeTab, setActiveTab] = useState("spark");

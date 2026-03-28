@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Flame, Gift, Sparkles, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format, differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 
 const DailyCheckIn = () => {
   const { user } = useAuth();
@@ -22,9 +22,8 @@ const DailyCheckIn = () => {
   const [xpEarned, setXpEarned] = useState(0);
   const [weekDays, setWeekDays] = useState<boolean[]>([false, false, false, false, false, false, false]);
 
-  if (!user) return <Navigate to="/auth" replace />;
-
   useEffect(() => {
+    if (!user?.id) return;
     fetchCheckInStatus();
   }, [user?.id]);
 
@@ -38,25 +37,27 @@ const DailyCheckIn = () => {
         .maybeSingle();
 
       if (profile) {
-        const currentStreak = profile.current_streak || 0;
+        const currentStreak = (profile as any).current_streak || 0;
+        const lastDate = (profile as any).last_checkin_date;
+        const totalXp = (profile as any).total_xp || 0;
+        
         setStreak(currentStreak);
-        setLastCheckIn(profile.last_checkin_date);
-        setXpEarned(profile.total_xp || 0);
+        setLastCheckIn(lastDate);
+        setXpEarned(totalXp);
 
-        if (profile.last_checkin_date) {
-          const lastDate = new Date(profile.last_checkin_date);
+        if (lastDate) {
+          const last = new Date(lastDate);
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          lastDate.setHours(0, 0, 0, 0);
-          setTodayChecked(differenceInCalendarDays(today, lastDate) === 0);
+          last.setHours(0, 0, 0, 0);
+          setTodayChecked(differenceInCalendarDays(today, last) === 0);
 
-          // Build week visualization
           const days: boolean[] = [];
           for (let i = 6; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
             d.setHours(0, 0, 0, 0);
-            const diff = differenceInCalendarDays(lastDate, d);
+            const diff = differenceInCalendarDays(last, d);
             days.push(diff >= 0 && diff < currentStreak && differenceInCalendarDays(d, today) <= 0);
           }
           setWeekDays(days);
@@ -96,7 +97,7 @@ const DailyCheckIn = () => {
           current_streak: newStreak,
           last_checkin_date: today,
           total_xp: (xpEarned || 0) + bonusXP,
-        })
+        } as any)
         .eq("user_id", user.id);
 
       if (error) throw error;
@@ -118,6 +119,8 @@ const DailyCheckIn = () => {
     }
   };
 
+  if (!user) return <Navigate to="/auth" replace />;
+
   const streakTier = streak >= 30 ? "Legendary" : streak >= 14 ? "On Fire" : streak >= 7 ? "Hot Streak" : streak >= 3 ? "Warming Up" : "Getting Started";
   const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -128,16 +131,14 @@ const DailyCheckIn = () => {
         <meta name="description" content="Check in daily to build your streak, earn XP, and unlock rewards." />
       </Helmet>
 
-      {/* Header */}
       <div className="text-center mb-6">
         <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-          <Flame className={cn("h-8 w-8 transition-colors", streak > 0 ? "text-orange-500" : "text-muted-foreground")} />
+          <Flame className={cn("h-8 w-8 transition-colors", streak > 0 ? "text-primary" : "text-muted-foreground")} />
         </div>
         <h1 className="text-2xl font-bold">Daily Check-In</h1>
         <p className="text-sm text-muted-foreground mt-1">Show up, earn XP, build momentum</p>
       </div>
 
-      {/* Streak card */}
       <Card className="mb-4 border-primary/20">
         <CardContent className="pt-6 text-center">
           <div className="text-5xl font-bold text-primary mb-1">{streak}</div>
@@ -146,7 +147,6 @@ const DailyCheckIn = () => {
         </CardContent>
       </Card>
 
-      {/* Week tracker */}
       <Card className="mb-4">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -176,7 +176,6 @@ const DailyCheckIn = () => {
         </CardContent>
       </Card>
 
-      {/* Check-in button */}
       <Button
         onClick={handleCheckIn}
         disabled={todayChecked || checking || loading}
@@ -185,7 +184,7 @@ const DailyCheckIn = () => {
       >
         {todayChecked ? (
           <>
-            <CheckCircle className="h-5 w-5 text-green-500" />
+            <CheckCircle className="h-5 w-5 text-primary" />
             Checked In Today ✓
           </>
         ) : checking ? (
@@ -198,7 +197,6 @@ const DailyCheckIn = () => {
         )}
       </Button>
 
-      {/* Rewards info */}
       <Card className="mt-4 bg-muted/30">
         <CardContent className="pt-4">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">

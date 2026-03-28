@@ -130,6 +130,12 @@ const DefaultRoute = () => {
   return <Navigate to="/circle" replace />;
 };
 
+// Catch-all: authenticated users go to /circle, others to landing
+const CatchAllRedirect = () => {
+  const { user } = useAuth();
+  return <Navigate to={user ? "/circle" : "/"} replace />;
+};
+
 // Track page views
 const PageViewTracker = () => {
   const location = useLocation();

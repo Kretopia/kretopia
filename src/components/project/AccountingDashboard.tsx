@@ -71,8 +71,14 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
         .eq("status", "completed")
         .order("created_at", { ascending: false });
 
-      const [{ data: invData }, { data: payData }, { data: expData }, { data: salesData }, { data: purchData }] = await Promise.all([
-        invoiceQuery, paymentQuery, expenseQuery, salesQuery, purchasesQuery
+      // Circle subscription revenue (where user owns circles)
+      const circleRevenueQuery = supabase
+        .from("circle_subscriptions")
+        .select("*, circle:spark_rooms(title, created_by)")
+        .eq("status", "active");
+
+      const [{ data: invData }, { data: payData }, { data: expData }, { data: salesData }, { data: purchData }, { data: circleData }] = await Promise.all([
+        invoiceQuery, paymentQuery, expenseQuery, salesQuery, purchasesQuery, circleRevenueQuery
       ]);
 
       setInvoices(invData || []);

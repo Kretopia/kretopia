@@ -617,6 +617,35 @@ const CircleDetail = () => {
           </div>
         )}
 
+        {/* Poll Creator */}
+        {showPollCreator && (
+          <div className="px-3 pt-2">
+            <CirclePollCreator
+              onSubmit={async (question, options) => {
+                const pollData = { question, options: options.map(o => ({ text: o, votes: [] })) };
+                setNewMessage(`📊 Poll: ${question}`);
+                // Send as a poll message
+                if (!activeChannel?.id || !user) return;
+                const { data: profile } = await supabase.from("profiles").select("full_name, avatar_url").eq("user_id", user.id).single();
+                const { data } = await supabase.from("circle_messages").insert({
+                  channel_id: activeChannel.id,
+                  user_id: user.id,
+                  content: `📊 ${question}`,
+                  message_type: "poll",
+                  poll_data: pollData,
+                }).select().single();
+                if (data) {
+                  setMessages(prev => [...prev, { ...data, sender_name: profile?.full_name || "You", sender_avatar: profile?.avatar_url, sender_role: userRole, reactions: {}, reply_preview: null }]);
+                  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                }
+                setShowPollCreator(false);
+                setNewMessage("");
+              }}
+              onCancel={() => setShowPollCreator(false)}
+            />
+          </div>
+        )}
+
         {/* Input */}
         {activeChannel?.channel_type !== "events" && (
           <div className="flex gap-2 p-3 border-t border-border bg-card/50">
@@ -624,6 +653,11 @@ const CircleDetail = () => {
             <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => fileRef.current?.click()}>
               <Plus className="h-4 w-4" />
             </Button>
+            {isMod && (
+              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => setShowPollCreator(!showPollCreator)}>
+                <BarChart3 className="h-4 w-4" />
+              </Button>
+            )}
             <Input
               placeholder={`Message #${activeChannel?.name || "general"}...`}
               value={newMessage}

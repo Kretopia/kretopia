@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Flame, MapPin } from "lucide-react";
+import { Bookmark, CalendarDays, Flame, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Events from "./Events";
 import { SparkWall } from "@/components/scene/SparkWall";
+import { ClipsWall } from "@/components/scene/ClipsWall";
 
 const Scene = () => {
   const [activeTab, setActiveTab] = useState("spark");
@@ -31,18 +32,22 @@ const Scene = () => {
 
           {/* Sub-tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full mb-4 grid grid-cols-3">
-              <TabsTrigger value="spark" className="gap-1.5 text-xs sm:text-sm">
+            <TabsList className="w-full mb-4 grid grid-cols-4">
+              <TabsTrigger value="spark" className="gap-1 text-xs">
                 <Flame className="h-3.5 w-3.5" />
                 Spark
               </TabsTrigger>
-              <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm">
+              <TabsTrigger value="events" className="gap-1 text-xs">
                 <CalendarDays className="h-3.5 w-3.5" />
                 Events
               </TabsTrigger>
-              <TabsTrigger value="nearby" className="gap-1.5 text-xs sm:text-sm">
+              <TabsTrigger value="nearby" className="gap-1 text-xs">
                 <MapPin className="h-3.5 w-3.5" />
                 Nearby
+              </TabsTrigger>
+              <TabsTrigger value="clips" className="gap-1 text-xs">
+                <Bookmark className="h-3.5 w-3.5" />
+                Clips
               </TabsTrigger>
             </TabsList>
 
@@ -56,6 +61,10 @@ const Scene = () => {
 
             <TabsContent value="nearby" className="mt-0">
               <NearbyEmbed onOpenMap={() => navigate('/nearby')} />
+            </TabsContent>
+
+            <TabsContent value="clips" className="mt-0">
+              <ClipsWall />
             </TabsContent>
 
           </Tabs>

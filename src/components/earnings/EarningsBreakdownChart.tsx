@@ -6,6 +6,7 @@ interface EarningsBreakdownChartProps {
   invoiceIncome: number;
   marketplaceIncome: number;
   paymentIncome: number;
+  circleIncome?: number;
   currency: string;
 }
 
@@ -14,17 +15,19 @@ const COLORS = [
   "hsl(142 76% 36%)",    // green
   "hsl(262 83% 58%)",    // violet
   "hsl(38 92% 50%)",     // amber
+  "hsl(200 80% 50%)",    // blue
 ];
 
-export function EarningsBreakdownChart({ invoiceIncome, marketplaceIncome, paymentIncome, currency }: EarningsBreakdownChartProps) {
+export function EarningsBreakdownChart({ invoiceIncome, marketplaceIncome, paymentIncome, circleIncome = 0, currency }: EarningsBreakdownChartProps) {
   const data = useMemo(() => {
     const items = [
       { name: "Invoices", value: invoiceIncome },
       { name: "Marketplace", value: marketplaceIncome },
       { name: "Direct Payments", value: paymentIncome },
+      { name: "Circles", value: circleIncome },
     ].filter(d => d.value > 0);
     return items;
-  }, [invoiceIncome, marketplaceIncome, paymentIncome]);
+  }, [invoiceIncome, marketplaceIncome, paymentIncome, circleIncome]);
 
   const total = data.reduce((s, d) => s + d.value, 0);
 

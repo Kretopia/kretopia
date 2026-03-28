@@ -405,6 +405,7 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
               invoiceIncome={stats.totalCollected}
               marketplaceIncome={stats.marketplaceIncome}
               paymentIncome={stats.received}
+              circleIncome={stats.circleIncome}
               currency={sym}
             />
             <IncomeGoalTracker currentIncome={stats.totalIncome} currencySymbol={sym} />

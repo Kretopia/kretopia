@@ -306,6 +306,18 @@ const CircleDetail = () => {
     toast({ title: pin ? "Message pinned 📌" : "Message unpinned" });
   };
 
+  const handlePollVote = async (messageId: string, optionIndex: number) => {
+    if (!user?.id) return;
+    const msg = messages.find(m => m.id === messageId);
+    if (!msg?.poll_data) return;
+    const pollData = JSON.parse(JSON.stringify(msg.poll_data));
+    const alreadyVoted = pollData.options.some((o: any) => o.votes?.includes(user.id));
+    if (alreadyVoted) return;
+    pollData.options[optionIndex].votes = [...(pollData.options[optionIndex].votes || []), user.id];
+    await supabase.from("spark_room_messages").update({ poll_data: pollData } as any).eq("id", messageId);
+    fetchMessages();
+  };
+
   const shareCircle = async () => {
     const url = `https://www.thrivein.io/circle/${circle.id}`;
     const shareText = `Join "${circle.title}" on ThriveIN — where creatives connect, collaborate, and grow together 🚀\n\n${url}`;

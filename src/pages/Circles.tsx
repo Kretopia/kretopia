@@ -142,6 +142,12 @@ const CirclesPage = () => {
             </div>
           )}
 
+          {/* AI Recommendations */}
+          <CircleRecommendations className="mb-3" />
+
+          {/* Activity Digest (for My Circles tab context) */}
+          {activeTab === "mine" && <CircleActivityDigest className="mb-3" />}
+
           {/* Search */}
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

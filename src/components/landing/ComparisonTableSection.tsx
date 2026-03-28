@@ -22,7 +22,7 @@ export const ComparisonTableSection = () => {
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             You're Using{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              8 Different Apps
+              9 Different Apps
             </span>
           </h2>
           <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground">

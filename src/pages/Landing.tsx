@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { LiveCreatorPreview } from "@/components/landing/LiveCreatorPreview";
 import { PortfolioShowcase } from "@/components/landing/PortfolioShowcase";
+import { ICDBSection } from "@/components/landing/ICDBSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PostOpportunitySection } from "@/components/landing/PostOpportunitySection";
 import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
@@ -24,7 +25,6 @@ const Landing = () => {
       
       analytics.pageView("landing");
 
-      // Fetch active opportunities count
       const { count } = await supabase
         .from("opportunities")
         .select("id", { count: "exact", head: true })
@@ -45,12 +45,13 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="ThriveIN - Find Work. Get Paid. The Creative Economy Platform"
-        description="Set your rates, get matched with real gigs, manage projects & invoices — and get paid on time. The all-in-one platform for creative professionals."
+        title="ThriveIN - The Internet Creative Database | Verified Credits, Gigs & Payments"
+        description="IMDb for every creative industry. Claim verified credits, find gigs, manage projects & get paid — the all-in-one platform for creative professionals."
         url="https://thrivein.io"
       />
       <HeroSection />
       <LiveCreatorPreview />
+      <ICDBSection />
       <PortfolioShowcase />
       <HowItWorksSection />
       <ComparisonTableSection />

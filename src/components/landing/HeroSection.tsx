@@ -35,8 +35,8 @@ export const HeroSection = () => {
           
           {/* Subhead — one clear sentence */}
           <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Set your rates, get matched with real gigs, manage projects & invoices
-            — and actually <span className="font-semibold text-foreground">get paid on time.</span>
+            The Internet Creative Database — claim credits, get AI-verified, find gigs, 
+            manage projects & invoices — and actually <span className="font-semibold text-foreground">get paid on time.</span>
           </p>
           
           {/* CTAs */}

@@ -19,7 +19,6 @@ interface ProjectRole {
   id: string;
   role_title: string;
   person_name: string | null;
-  department: string | null;
   is_claimed: boolean;
   claimed_by: string | null;
   profile?: { full_name: string; avatar_url: string | null; role: string | null } | null;

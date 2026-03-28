@@ -286,8 +286,7 @@ const ICDBProjectPage = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
 
           {/* Share / Copy link */}

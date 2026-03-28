@@ -2,11 +2,10 @@ import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Flame, MessageSquare, MapPin } from "lucide-react";
+import { CalendarDays, Flame, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Events from "./Events";
 import { SparkWall } from "@/components/scene/SparkWall";
-import { CirclesTab } from "@/components/scene/CirclesTab";
 
 const Scene = () => {
   const [activeTab, setActiveTab] = useState("spark");
@@ -32,7 +31,7 @@ const Scene = () => {
 
           {/* Sub-tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full mb-4 grid grid-cols-4">
+            <TabsList className="w-full mb-4 grid grid-cols-3">
               <TabsTrigger value="spark" className="gap-1.5 text-xs sm:text-sm">
                 <Flame className="h-3.5 w-3.5" />
                 Spark
@@ -44,10 +43,6 @@ const Scene = () => {
               <TabsTrigger value="nearby" className="gap-1.5 text-xs sm:text-sm">
                 <MapPin className="h-3.5 w-3.5" />
                 Nearby
-              </TabsTrigger>
-              <TabsTrigger value="circles" className="gap-1.5 text-xs sm:text-sm">
-                <MessageSquare className="h-3.5 w-3.5" />
-                Circles
               </TabsTrigger>
             </TabsList>
 
@@ -63,9 +58,6 @@ const Scene = () => {
               <NearbyEmbed onOpenMap={() => navigate('/nearby')} />
             </TabsContent>
 
-            <TabsContent value="circles" className="mt-0">
-              <CirclesTab />
-            </TabsContent>
           </Tabs>
         </div>
       </div>

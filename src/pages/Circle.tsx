@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { SwipeFeature } from "@/components/swipe";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
+import { CirclesTab } from "@/components/scene/CirclesTab";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { InviteDialog } from "@/components/InviteDialog";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus } from "lucide-react";
+import { Users, Sparkles, UserPlus, MessageSquare } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -245,11 +246,14 @@ export default function Circle() {
         />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
+          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Connect</span>
-              <span className="sm:hidden">Match</span>
+              Match
+            </TabsTrigger>
+            <TabsTrigger value="circles" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Circles
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -262,7 +266,7 @@ export default function Circle() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Connect Tab - Swipe to match */}
+          {/* Match Tab */}
           <TabsContent value="foryou" className="space-y-4">
             <SwipeFeature 
               onMatch={handleMatch} 
@@ -271,7 +275,10 @@ export default function Circle() {
             />
           </TabsContent>
 
-
+          {/* Circles Tab */}
+          <TabsContent value="circles" className="mt-0">
+            <CirclesTab />
+          </TabsContent>
 
 
           {/* My Network Tab */}

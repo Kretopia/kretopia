@@ -181,7 +181,16 @@ export const CircleMessageBubble = ({
               <audio src={msg.media_url} controls className="mb-1 w-full max-w-[200px]" />
             )}
 
-            {msg.content && <p className="text-sm break-words">{msg.content}</p>}
+            {/* Poll display */}
+            {msg.message_type === "poll" && msg.poll_data && (
+              <CirclePollDisplay
+                pollData={msg.poll_data}
+                userId={userId}
+                onVote={(optionIndex) => onPollVote?.(msg.id, optionIndex)}
+              />
+            )}
+
+            {msg.content && msg.message_type !== "poll" && <p className="text-sm break-words">{msg.content}</p>}
             <p className={cn("text-[10px] mt-0.5 opacity-50", isOwn ? "text-primary-foreground" : "text-muted-foreground")}>
               {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
             </p>

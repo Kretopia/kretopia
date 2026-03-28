@@ -86,7 +86,22 @@ const CircleDetail = () => {
 
       if (circleRes.data) setCircle(circleRes.data);
       
-      const chans = (channelsRes.data || []) as Channel[];
+      let chans = (channelsRes.data || []) as Channel[];
+      
+      // Auto-create default channel if none exist and user is the creator
+      if (chans.length === 0 && circleRes.data && user && circleRes.data.created_by === user.id) {
+        const { data: newChan } = await supabase.from("circle_channels").insert({
+          circle_id: circleId,
+          name: "general",
+          channel_type: "text",
+          icon_emoji: "💬",
+          position: 0,
+          is_default: true,
+          created_by: user.id,
+        } as any).select().single();
+        if (newChan) chans = [newChan as Channel];
+      }
+      
       setChannels(chans);
       if (chans.length > 0) setActiveChannel(chans.find(c => c.is_default) || chans[0]);
 

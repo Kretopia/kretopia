@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail } from "lucide-react";
+import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail, Database, ShieldCheck, UserPlus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { parseMediaUrl } from "@/lib/mediaUtils";

@@ -139,7 +139,7 @@ export const CirclesTab = () => {
 };
 
 // ─── Circle Detail with rich messaging, pinning, admin controls ───
-const CircleDetail = ({ circle, onBack }: { circle: CircleData; onBack: () => void }) => {
+const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; onBack: () => void; onOpenFullPage?: () => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();

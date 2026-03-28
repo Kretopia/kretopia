@@ -423,6 +423,11 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
               <Settings className="h-4 w-4" />
             </Button>
           )}
+          {onOpenFullPage && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs gap-1" onClick={onOpenFullPage}>
+              Full View
+            </Button>
+          )}
           {!isMember && (
             <Button size="sm" variant="gradient" onClick={joinCircle}>
               {circle.is_paid ? `$${circle.price_monthly}/mo` : "Join"}

@@ -57,6 +57,25 @@ All colors MUST be HSL.
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Mode accent tokens — overridden by [data-nav-mode] */
+    --mode-accent: 271 91% 65%;
+    --mode-accent-foreground: 0 0% 100%;
+    --mode-glow: 0 0 40px hsl(271 91% 65% / 0.3);
+  }
+
+  /* Create mode — warm purple-pink creative energy */
+  [data-nav-mode="create"] {
+    --mode-accent: 271 91% 65%;
+    --mode-accent-foreground: 0 0% 100%;
+    --mode-glow: 0 0 40px hsl(271 91% 65% / 0.3);
+  }
+
+  /* Work mode — cool teal-blue professional focus */
+  [data-nav-mode="work"] {
+    --mode-accent: 189 94% 43%;
+    --mode-accent-foreground: 0 0% 100%;
+    --mode-glow: 0 0 40px hsl(189 94% 43% / 0.3);
   }
 
   .dark {

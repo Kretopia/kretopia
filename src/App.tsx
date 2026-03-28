@@ -135,10 +135,13 @@ const DefaultRoute = () => {
   return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;
 };
 
-// Catch-all: authenticated users go to /circle, others to landing
+// Catch-all: authenticated users go to mode-aware home
 const CatchAllRedirect = () => {
   const { user } = useAuth();
-  return <Navigate to={user ? "/circle" : "/"} replace />;
+  if (!user) return <Navigate to="/" replace />;
+  let mode = "create";
+  try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}
+  return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;
 };
 
 // Track page views

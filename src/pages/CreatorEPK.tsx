@@ -530,46 +530,54 @@ const CreatorEPK = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Work History
+                Verified Filmography
               </h3>
-              {credits.some(c => c.isVerified) && (
-                <Badge variant="outline" className="text-xs gap-1 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Verified Credits
-                </Badge>
-              )}
+              <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
+                <Database className="h-3 w-3" />
+                ICDB
+              </Badge>
             </div>
             <div className="space-y-2">
-              {credits.map((credit) => (
-                <div
-                  key={credit.id}
-                  className={cn(
-                    "flex items-center justify-between p-3 rounded-lg",
-                    credit.isVerified 
-                      ? "bg-green-500/10 border border-green-500/20" 
-                      : "bg-muted/50"
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-sm truncate">{credit.project_name || credit.title}</p>
-                      {credit.isVerified && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30">
-                          <CheckCircle2 className="h-2.5 w-2.5" />
-                          {credit.source?.toUpperCase()}
-                        </Badge>
-                      )}
+              {credits.map((credit) => {
+                const tierConfig = {
+                  icdb: { label: 'ICDB', className: 'bg-primary/10 text-primary border-primary/30' },
+                  peer: { label: 'Peer', className: 'bg-green-500/10 text-green-600 border-green-500/30' },
+                  ai: { label: 'AI', className: 'bg-blue-500/10 text-blue-600 border-blue-500/30' },
+                  payment: { label: 'Paid', className: 'bg-amber-500/10 text-amber-600 border-amber-500/30' },
+                  manual: { label: '', className: '' },
+                }[credit.verificationTier || 'manual'];
+
+                return (
+                  <div
+                    key={credit.id}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-lg",
+                      credit.isVerified
+                        ? "bg-primary/5 border border-primary/10"
+                        : "bg-muted/50"
+                    )}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm truncate">{credit.project_name || credit.title}</p>
+                        {credit.isVerified && tierConfig.label && (
+                          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 gap-0.5", tierConfig.className)}>
+                            <CheckCircle2 className="h-2.5 w-2.5" />
+                            {tierConfig.label}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {credit.role}
+                        {credit.platform && ` • ${credit.platform}`}
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {credit.role}
-                      {credit.platform && !credit.isVerified && ` • ${credit.platform}`}
-                    </p>
+                    {credit.year && (
+                      <span className="text-xs text-muted-foreground shrink-0 ml-2">{credit.year}</span>
+                    )}
                   </div>
-                  {credit.year && (
-                    <span className="text-xs text-muted-foreground shrink-0 ml-2">{credit.year}</span>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

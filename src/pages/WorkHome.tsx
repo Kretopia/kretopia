@@ -7,6 +7,7 @@ import {
   FolderKanban, Briefcase, DollarSign, Target, ArrowRight, Plus,
   Clock, TrendingUp, AlertCircle, CheckCircle2, Loader2
 } from "lucide-react";
+import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

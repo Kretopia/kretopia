@@ -54,6 +54,7 @@ const Scene = () => {
             </TabsList>
 
             <TabsContent value="spark" className="mt-0">
+              <SmartNudgeBanner />
               <GetStartedChecklist />
               <SparkWall />
             </TabsContent>

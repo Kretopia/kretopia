@@ -266,7 +266,7 @@ export default function Circle() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Connect Tab - Swipe to match */}
+          {/* Match Tab */}
           <TabsContent value="foryou" className="space-y-4">
             <SwipeFeature 
               onMatch={handleMatch} 
@@ -275,7 +275,10 @@ export default function Circle() {
             />
           </TabsContent>
 
-
+          {/* Circles Tab */}
+          <TabsContent value="circles" className="mt-0">
+            <CirclesTab />
+          </TabsContent>
 
 
           {/* My Network Tab */}

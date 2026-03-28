@@ -1,4 +1,4 @@
-import { Sparkles, Heart, Briefcase, Link, Users, DollarSign } from "lucide-react";
+import { Sparkles, Heart, Briefcase, Link, Users, DollarSign, Database } from "lucide-react";
 
 export const HowItWorksSection = () => {
   return (

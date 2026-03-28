@@ -240,14 +240,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     /* ====== WORK MODE MENU ====== */
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
-                      <MenuButton icon={FolderKanban} label="All Projects" onClick={() => handleNavigation("/desk")} />
                       <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
-                      <MenuButton icon={Target} label="Pipeline & Leads" onClick={() => handleNavigation("/sales")} />
+                      <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
 
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Earn</p>
-                      <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
                       <MenuButton icon={ShoppingBag} label="Marketplace" onClick={() => handleNavigation("/market")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />

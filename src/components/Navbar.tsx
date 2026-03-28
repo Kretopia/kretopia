@@ -204,10 +204,47 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <Button 
                       variant="ghost" 
                       className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/my-analytics")}
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                      My Analytics
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
                       onClick={() => handleNavigation("/guide")}
                     >
                       <BookOpen className="h-5 w-5" />
                       How to Win
+                    </Button>
+
+                    <Separator className="my-3" />
+
+                    {/* Work */}
+                    <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Work</p>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/desk")}
+                    >
+                      <FolderKanban className="h-5 w-5" />
+                      Projects
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/market")}
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      Marketplace
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="justify-start gap-3 h-12 w-full"
+                      onClick={() => handleNavigation("/rewards")}
+                    >
+                      <Gift className="h-5 w-5" />
+                      Rewards
                     </Button>
 
                     <Separator className="my-3" />

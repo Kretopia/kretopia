@@ -58,9 +58,6 @@ const Scene = () => {
               <NearbyEmbed onOpenMap={() => navigate('/nearby')} />
             </TabsContent>
 
-            <TabsContent value="circles" className="mt-0">
-              <CirclesTab />
-            </TabsContent>
           </Tabs>
         </div>
       </div>

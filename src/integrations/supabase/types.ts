@@ -2503,6 +2503,140 @@ export type Database = {
         }
         Relationships: []
       }
+      icdb_companies: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          industry: string | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          project_count: number | null
+          type: string | null
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          project_count?: number | null
+          type?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          project_count?: number | null
+          type?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      icdb_project_roles: {
+        Row: {
+          claimed_by: string | null
+          created_at: string | null
+          id: string
+          is_claimed: boolean | null
+          person_name: string | null
+          project_id: string
+          role_title: string
+        }
+        Insert: {
+          claimed_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_claimed?: boolean | null
+          person_name?: string | null
+          project_id: string
+          role_title: string
+        }
+        Update: {
+          claimed_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_claimed?: boolean | null
+          person_name?: string | null
+          project_id?: string
+          role_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "icdb_project_roles_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "icdb_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      icdb_projects: {
+        Row: {
+          category: string | null
+          client_brand: string | null
+          contributor_count: number | null
+          cover_image_url: string | null
+          created_at: string | null
+          description: string | null
+          external_url: string | null
+          id: string
+          is_verified: boolean | null
+          location: string | null
+          metadata: Json | null
+          platform: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          year: number | null
+        }
+        Insert: {
+          category?: string | null
+          client_brand?: string | null
+          contributor_count?: number | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          external_url?: string | null
+          id?: string
+          is_verified?: boolean | null
+          location?: string | null
+          metadata?: Json | null
+          platform?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+          year?: number | null
+        }
+        Update: {
+          category?: string | null
+          client_brand?: string | null
+          contributor_count?: number | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          external_url?: string | null
+          id?: string
+          is_verified?: boolean | null
+          location?: string | null
+          metadata?: Json | null
+          platform?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       income_goals: {
         Row: {
           created_at: string

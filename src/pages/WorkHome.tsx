@@ -84,12 +84,15 @@ const WorkHome = () => {
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">
         {/* Header */}
-        <div className="mb-2">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <FolderKanban className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
-            Work Dashboard
-          </h1>
-          <p className="text-sm text-muted-foreground">Your business at a glance</p>
+        <div className="mb-2 flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <FolderKanban className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
+              Work Dashboard
+            </h1>
+            <p className="text-sm text-muted-foreground">Your business at a glance</p>
+          </div>
+          <CrossModeNudge targetMode="create" label="Switch to Create →" targetPath="/scene" />
         </div>
 
         {/* Quick Stats Row */}

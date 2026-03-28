@@ -791,6 +791,56 @@ export type Database = {
         }
         Relationships: []
       }
+      circle_channels: {
+        Row: {
+          channel_type: string
+          circle_id: string
+          created_at: string | null
+          created_by: string
+          description: string | null
+          icon_emoji: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          position: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          channel_type?: string
+          circle_id: string
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          icon_emoji?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          position?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          channel_type?: string
+          circle_id?: string
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          icon_emoji?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          position?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_channels_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       circle_subscriptions: {
         Row: {
           amount: number | null
@@ -6386,6 +6436,7 @@ export type Database = {
       }
       spark_room_messages: {
         Row: {
+          channel_id: string | null
           content: string
           created_at: string
           id: string
@@ -6401,6 +6452,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          channel_id?: string | null
           content: string
           created_at?: string
           id?: string
@@ -6416,6 +6468,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          channel_id?: string | null
           content?: string
           created_at?: string
           id?: string
@@ -6431,6 +6484,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "spark_room_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "circle_channels"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "spark_room_messages_reply_to_id_fkey"
             columns: ["reply_to_id"]

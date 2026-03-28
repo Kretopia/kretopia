@@ -42,6 +42,7 @@ const REACTION_EMOJIS = ["🔥", "❤️", "🙌", "💯", "😂", "🎯"];
 export const CirclesTab = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [circles, setCircles] = useState<CircleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,7 +100,13 @@ export const CirclesTab = () => {
   );
 
   if (selectedCircle) {
-    return <CircleDetail circle={selectedCircle} onBack={() => { setSelectedCircle(null); fetchCircles(); }} />;
+    return (
+      <CircleDetail 
+        circle={selectedCircle} 
+        onBack={() => { setSelectedCircle(null); fetchCircles(); }} 
+        onOpenFullPage={() => navigate(`/circle/${selectedCircle.id}`)}
+      />
+    );
   }
 
   return (
@@ -133,7 +140,7 @@ export const CirclesTab = () => {
 };
 
 // ─── Circle Detail with rich messaging, pinning, admin controls ───
-const CircleDetail = ({ circle, onBack }: { circle: CircleData; onBack: () => void }) => {
+const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; onBack: () => void; onOpenFullPage?: () => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -414,6 +421,11 @@ const CircleDetail = ({ circle, onBack }: { circle: CircleData; onBack: () => vo
           {isAdmin && (
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowAdmin(true)}>
               <Settings className="h-4 w-4" />
+            </Button>
+          )}
+          {onOpenFullPage && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs gap-1" onClick={onOpenFullPage}>
+              Full View
             </Button>
           )}
           {!isMember && (

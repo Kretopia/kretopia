@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ interface CreateSessionDialogProps {
   onOpenChange: (open: boolean) => void;
   onCreated?: () => void;
   defaultLocation?: { lat: number; lng: number };
+  defaultCircleId?: string;
 }
 
 const EVENT_CATEGORIES = [
@@ -42,7 +43,8 @@ export const CreateSessionDialog = ({
   open, 
   onOpenChange, 
   onCreated,
-  defaultLocation 
+  defaultLocation,
+  defaultCircleId,
 }: CreateSessionDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -51,6 +53,7 @@ export const CreateSessionDialog = ({
   const [time, setTime] = useState("14:00");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [userCircles, setUserCircles] = useState<{ id: string; title: string; icon_emoji: string }[]>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -66,7 +69,28 @@ export const CreateSessionDialog = ({
     ticket_currency: 'USD',
     event_type: 'session' as 'session' | 'event',
     external_ticket_url: '',
+    circle_id: defaultCircleId || '',
   });
+
+  // Fetch user's circles for the dropdown
+  useEffect(() => {
+    if (!user || !open) return;
+    const fetchCircles = async () => {
+      const { data: memberships } = await supabase
+        .from("spark_room_members")
+        .select("room_id")
+        .eq("user_id", user.id);
+      if (!memberships?.length) return;
+      const roomIds = memberships.map(m => m.room_id);
+      const { data: rooms } = await supabase
+        .from("spark_rooms")
+        .select("id, title, icon_emoji")
+        .in("id", roomIds)
+        .eq("is_active", true);
+      setUserCircles(rooms || []);
+    };
+    fetchCircles();
+  }, [user, open]);
 
   const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -127,6 +151,7 @@ export const CreateSessionDialog = ({
         event_type: formData.event_type,
         cover_image_url: coverUrl,
         external_ticket_url: formData.external_ticket_url || null,
+        circle_id: formData.circle_id || null,
       } as any);
 
       if (error) throw error;
@@ -154,6 +179,7 @@ export const CreateSessionDialog = ({
         ticket_currency: 'USD',
         event_type: 'session',
         external_ticket_url: '',
+        circle_id: '',
       });
       setDate(undefined);
       setCoverFile(null);
@@ -329,6 +355,25 @@ export const CreateSessionDialog = ({
               </div>
             )}
           </div>
+
+          {/* Link to Circle */}
+          {userCircles.length > 0 && (
+            <div className="space-y-2">
+              <Label>Link to Circle (optional)</Label>
+              <Select value={formData.circle_id} onValueChange={(v) => setFormData(prev => ({ ...prev, circle_id: v === 'none' ? '' : v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a circle..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No circle</SelectItem>
+                  {userCircles.map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.icon_emoji} {c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">Event will appear in the circle's events section</p>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">Cancel</Button>

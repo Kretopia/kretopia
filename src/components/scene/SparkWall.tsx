@@ -101,6 +101,7 @@ export const SparkWall = () => {
         portfolio_item_id: item.id,
         auto_activity_message: null,
         is_portfolio_item: true,
+        is_ai_generated: false,
         category: item.category,
         profile: profileMap.get(item.user_id) || { full_name: "Unknown", avatar_url: null, role: null },
         portfolio_item: {

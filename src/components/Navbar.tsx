@@ -95,7 +95,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/scene", icon: Zap, label: "Scene" },
         { path: "/circles", icon: MessageSquareMore, label: "Circles" },
-        { path: "/challenges", icon: Trophy, label: "Challenges" },
+        { path: "/credits", icon: Globe, label: "ICDB" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },

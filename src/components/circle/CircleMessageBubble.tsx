@@ -104,6 +104,17 @@ export const CircleMessageBubble = ({
 }: Props) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  // System messages (welcome, join notifications)
+  if (msg.message_type === "system") {
+    return (
+      <div className="flex justify-center py-1.5 px-1">
+        <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-full px-3 py-1 text-center max-w-[80%]">
+          {msg.content}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="group px-1">
       {/* Pinned indicator */}

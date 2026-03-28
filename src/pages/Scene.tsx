@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,33 @@ import { SparkWall } from "@/components/scene/SparkWall";
 import { ClipsWall } from "@/components/scene/ClipsWall";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
 import { SmartNudgeBanner } from "@/components/notifications/SmartNudgeBanner";
+import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const Scene = () => {
   const [activeTab, setActiveTab] = useState("spark");
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [visibility, setVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
+
+  useEffect(() => {
+    if (!user) return;
+    const check = async () => {
+      const [profileRes, creditsRes, portfolioRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("portfolio_items").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      ]);
+      if (profileRes.data) {
+        const workCount = (creditsRes.count || 0) + (portfolioRes.count || 0);
+        const missing = getDiscoveryMissingFields(profileRes.data as any, workCount);
+        setVisibility({ isVisible: missing.length === 0, missingFields: missing });
+      }
+    };
+    check();
+  }, [user]);
 
   return (
     <>
@@ -23,6 +46,9 @@ const Scene = () => {
 
       <div className="min-h-screen bg-background">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
+          {/* Profile Visibility Banner */}
+          <ProfileVisibilityBanner isVisible={visibility.isVisible} missingFields={visibility.missingFields} />
+
           {/* Header */}
           <div className="mb-4">
             <h1 className="text-xl font-bold flex items-center gap-2">

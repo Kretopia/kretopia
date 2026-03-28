@@ -11,6 +11,7 @@ import { ApprovalWorkflows } from "@/components/project/ApprovalWorkflows";
 import { CreativeAssetLibrary } from "@/components/project/CreativeAssetLibrary";
 import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicker";
 import { CreativeBoard } from "@/components/project/CreativeBoard";
+import { ScopeGuardian } from "@/components/project/ScopeGuardian";
 import { UsageLimitBanner } from "@/components/project/ProGate";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { cn } from "@/lib/utils";

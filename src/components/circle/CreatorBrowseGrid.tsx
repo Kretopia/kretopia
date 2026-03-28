@@ -32,7 +32,6 @@ interface ProfileInfo {
   level: number | null;
   badge: string | null;
   bio?: string | null;
-  skills?: string[] | null;
   verification_status?: string | null;
 }
 

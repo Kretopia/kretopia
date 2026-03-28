@@ -86,6 +86,8 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
       setExpenses(expData || []);
       setMarketSales(salesData || []);
       setMarketPurchases(purchData || []);
+      // Filter circle revenue to only circles owned by this user
+      setCircleRevenue((circleData || []).filter((c: any) => c.circle?.created_by === user!.id));
     } catch (err) {
       console.error("Error loading accounting data:", err);
     } finally {

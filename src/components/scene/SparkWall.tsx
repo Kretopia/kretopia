@@ -25,6 +25,7 @@ interface SparkPost {
   portfolio_item_id: string | null;
   auto_activity_message: string | null;
   is_portfolio_item: boolean | null;
+  is_ai_generated: boolean;
   category: string | null;
   profile?: {
     full_name: string;

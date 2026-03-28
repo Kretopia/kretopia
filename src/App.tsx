@@ -288,8 +288,8 @@ const AppContent = () => {
             
             <Route path="/marketplace" element={<Navigate to="/market" replace />} />
             
-            {/* 404 - Catch all: redirect to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* 404 - Catch all: redirect to main app */}
+            <Route path="*" element={<CatchAllRedirect />} />
           </Routes>
         </Suspense>
       </main>

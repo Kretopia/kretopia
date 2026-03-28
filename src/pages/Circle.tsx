@@ -165,6 +165,7 @@ export default function Circle() {
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {activeTab === 'foryou' ? 'Swipe to discover & connect' : 
+                 activeTab === 'browse' ? 'Search & browse all creators' :
                  `${connections.length} connection${connections.length !== 1 ? 's' : ''} in your network`}
               </p>
             </div>

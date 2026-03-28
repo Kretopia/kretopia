@@ -30,6 +30,7 @@ import {
   Download,
   Database
 } from "lucide-react";
+import { Fingerprint } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";

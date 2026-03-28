@@ -437,6 +437,8 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     setSearchQuery("");
     setLinkInput("");
     setWebResults([]);
+    setIcdbMatches([]);
+    setIcdbSuggestions([]);
     setHasSearched(false);
     setShowMore(false);
     setForm({

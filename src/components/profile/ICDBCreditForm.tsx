@@ -132,6 +132,10 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
   const [webResults, setWebResults] = useState<WebCreditResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // ICDB canonical project matches
+  const [icdbMatches, setIcdbMatches] = useState<any[]>([]);
+  const [icdbSuggestions, setIcdbSuggestions] = useState<any[]>([]);
+
   // Collaborator state
   const [collabSearch, setCollabSearch] = useState("");
   const [collabResults, setCollabResults] = useState<CollaboratorResult[]>([]);

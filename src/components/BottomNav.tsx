@@ -19,8 +19,8 @@ const WORK_ITEMS = [
 ];
 
 const MODE_META: Record<NavMode, { label: string; accent: string }> = {
-  create: { label: "Create", accent: "bg-primary" },
-  work: { label: "Work", accent: "bg-accent-foreground" },
+  create: { label: "Create", accent: "bg-[hsl(var(--mode-accent))]" },
+  work: { label: "Work", accent: "bg-[hsl(var(--mode-accent))]" },
 };
 
 const BottomNav = memo(() => {

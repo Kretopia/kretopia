@@ -158,6 +158,7 @@ export function ScopeGuardian({ projectId, project, milestones, onMilestonesGene
       for (const ms of milestoneResult.milestones) {
         await supabase.from('milestones').insert({
           project_id: projectId,
+          created_by: user?.id || '',
           title: ms.title,
           description: `${ms.description}\n\nDeliverables:\n${ms.deliverables.map(d => `• ${d}`).join('\n')}`,
           amount: 0,

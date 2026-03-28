@@ -286,7 +286,7 @@ export function CreatorBrowseGrid() {
         query = query.or(`full_name.ilike.%${search}%,role.ilike.%${search}%,location.ilike.%${search}%`);
       }
       if (isPro && skillFilter !== "all") {
-        query = query.contains('skills', [skillFilter]);
+        query = query.ilike('role', `%${skillFilter}%`);
       }
       if (isPro && locationFilter.trim()) {
         query = query.ilike('location', `%${locationFilter.trim()}%`);

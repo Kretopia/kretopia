@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   TrendingUp, TrendingDown, DollarSign, FileText, Clock,
   CheckCircle2, AlertCircle, Download, ArrowUpRight, ArrowDownLeft,
-  PieChart, BarChart3, Calendar, Receipt, ShoppingBag, Store
+  PieChart, BarChart3, Calendar, Receipt, ShoppingBag, Store, Users
 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval } from "date-fns";
 import { toast } from "sonner";

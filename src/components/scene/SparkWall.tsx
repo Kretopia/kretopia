@@ -485,6 +485,11 @@ const SparkTextCard = ({
             {post.profile?.role} · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
           </p>
         </div>
+        {post.is_ai_generated && (
+          <Badge variant="secondary" className="text-[10px] shrink-0 gap-0.5 bg-primary/10 text-primary border-primary/20 py-0">
+            <Sparkles className="h-2.5 w-2.5" /> AI
+          </Badge>
+        )}
       </div>
 
       {/* Text content as visual card */}

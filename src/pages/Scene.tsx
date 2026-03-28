@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Bookmark, CalendarDays, Flame, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Events from "./Events";
+import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { SparkWall } from "@/components/scene/SparkWall";
 import { ClipsWall } from "@/components/scene/ClipsWall";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
@@ -50,12 +51,15 @@ const Scene = () => {
           <ProfileVisibilityBanner isVisible={visibility.isVisible} missingFields={visibility.missingFields} />
 
           {/* Header */}
-          <div className="mb-4">
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Flame className="h-5 w-5 text-primary" />
-              Scene
-            </h1>
-            <p className="text-sm text-muted-foreground">Events, inspiration & nearby creators</p>
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <h1 className="text-xl font-bold flex items-center gap-2">
+                <Flame className="h-5 w-5 text-primary" />
+                Scene
+              </h1>
+              <p className="text-sm text-muted-foreground">Events, inspiration & nearby creators</p>
+            </div>
+            <CrossModeNudge targetMode="work" label="Switch to Work →" targetPath="/desk" />
           </div>
 
           {/* Sub-tabs */}

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useMemo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +12,7 @@ import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import { ModeDiscoverySheet } from "./components/ModeDiscoverySheet";
+import { ModeThemeSync } from "./components/ModeThemeSync";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboarding";
 import { SkipLink } from "./components/ui/skip-link";
@@ -88,6 +89,7 @@ const Scene = lazy(() => import("./pages/Scene"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const Challenges = lazy(() => import("./pages/Challenges"));
+const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -120,7 +122,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Redirect to Circle (Match) after login, or onboarding if not completed
+// Mode-aware default route: Create→Scene, Work→Desk
 const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
@@ -128,13 +130,20 @@ const DefaultRoute = () => {
   if (!user) return <Landing />;
   if (onboardingLoading) return <LoadingFallback />;
   if (!isComplete) return <Navigate to="/onboarding" replace />;
-  return <Navigate to="/circle" replace />;
+  
+  // Read mode synchronously from localStorage to avoid flash
+  let mode = "create";
+  try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}
+  return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;
 };
 
-// Catch-all: authenticated users go to /circle, others to landing
+// Catch-all: authenticated users go to mode-aware home
 const CatchAllRedirect = () => {
   const { user } = useAuth();
-  return <Navigate to={user ? "/circle" : "/"} replace />;
+  if (!user) return <Navigate to="/" replace />;
+  let mode = "create";
+  try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}
+  return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;
 };
 
 // Track page views
@@ -165,6 +174,7 @@ const AppContent = () => {
   
   return (
     <div className="h-full overflow-auto">
+      <ModeThemeSync />
       <NetworkStatus />
       <SkipLink />
       <PageViewTracker />
@@ -194,7 +204,8 @@ const AppContent = () => {
             <Route path="/guide" element={<Guide />} />
             
             {/* ThriveDesk - Lightweight Project Workspace */}
-            <Route path="/desk" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />
+            <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
+            <Route path="/desk/projects" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
             
             {/* Subscription & Payment Routes */}

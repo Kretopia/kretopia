@@ -178,6 +178,7 @@ export const CreateSessionDialog = ({
         ticket_currency: 'USD',
         event_type: 'session',
         external_ticket_url: '',
+        circle_id: '',
       });
       setDate(undefined);
       setCoverFile(null);

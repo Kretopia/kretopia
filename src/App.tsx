@@ -89,6 +89,7 @@ const Scene = lazy(() => import("./pages/Scene"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const Challenges = lazy(() => import("./pages/Challenges"));
+const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

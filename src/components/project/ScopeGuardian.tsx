@@ -83,7 +83,7 @@ export function ScopeGuardian({ projectId, project, milestones, onMilestonesGene
   const [milestoneResult, setMilestoneResult] = useState<MilestoneResult | null>(null);
   const [scopeDrift, setScopeDrift] = useState<ScopeDriftResult | null>(null);
   const [copiedResponse, setCopiedResponse] = useState(false);
-
+  const { user } = useAuth();
   const callScopeGuardian = async (action: string, extra: Record<string, any> = {}) => {
     setLoading(true);
     try {

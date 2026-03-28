@@ -5,6 +5,11 @@ import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, Dol
 export const WhyCreatorsChooseSection = () => {
   const features = [
     {
+      icon: <Award className="h-5 w-5" />,
+      title: "Verified Credits (ICDB)",
+      text: "Claim your work on any project — AI + peer verification builds a reputation that lasts"
+    },
+    {
       icon: <Brain className="h-5 w-5" />,
       title: "AI Matching",
       text: "Swipe through portfolios, get matched by style & skills"
@@ -15,14 +20,9 @@ export const WhyCreatorsChooseSection = () => {
       text: "Discover verified creatives in your area on a map"
     },
     {
-      icon: <Zap className="h-5 w-5" />,
-      title: "Creative Sessions",
-      text: "Join local meetups, co-working & creative jams"
-    },
-    {
       icon: <Shield className="h-5 w-5" />,
-      title: "Verified Credentials",
-      text: "AI checks IMDB, Spotify, Grammy & more"
+      title: "Portable Creator ID",
+      text: "One unique ID across industries — embed it anywhere, own your reputation"
     },
     {
       icon: <MessageSquare className="h-5 w-5" />,

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Sparkles, ArrowRight } from "lucide-react";
 
 const TOOLS_REPLACED = [
+  { emoji: "🎬", tool: "Verified Creative Credits", replaces: "IMDb / Muso.AI" },
   { emoji: "💼", tool: "Find Work & Gigs", replaces: "Fiverr / Upwork" },
   { emoji: "🤝", tool: "AI Creator Matching", replaces: "Vampr / Bumble Bizz" },
   { emoji: "💬", tool: "Project Workspaces", replaces: "Slack + Trello" },
@@ -21,7 +22,7 @@ export const ComparisonTableSection = () => {
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             You're Using{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              8 Different Apps
+              9 Different Apps
             </span>
           </h2>
           <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground">

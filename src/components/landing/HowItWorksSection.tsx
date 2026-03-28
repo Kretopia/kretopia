@@ -1,4 +1,4 @@
-import { Sparkles, Heart, Briefcase, Link, Users, DollarSign } from "lucide-react";
+import { Sparkles, Heart, Briefcase, Link, Users, DollarSign, Database } from "lucide-react";
 
 export const HowItWorksSection = () => {
   return (
@@ -10,14 +10,14 @@ export const HowItWorksSection = () => {
             <span>How It Works</span>
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            Profile.{" "}
+            Claim.{" "}
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               Match.
             </span>{" "}
             Get Paid.
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Three steps from "I need someone" to working together with milestone payments.
+            Three steps from "I did the work" to getting paid and building your verified reputation.
           </p>
         </div>
 
@@ -27,15 +27,15 @@ export const HowItWorksSection = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
             <div className="relative bg-card border border-border/50 rounded-2xl p-6 sm:p-8 hover:border-primary/30 transition-all h-full">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-2xl font-bold text-primary">
-                <Link className="h-6 w-6" />
+                <Database className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-xl font-bold">One Link Profile</h3>
+              <h3 className="mb-2 text-xl font-bold">Claim Your Credits</h3>
               <p className="text-muted-foreground">
-                Your EPK with portfolio, credits, reviews, services & products — share anywhere to attract clients and collaborators.
+                Add every project you've worked on to ICDB — from brand campaigns to album credits. AI verifies against IMDb, Spotify & more.
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm text-primary font-medium">AI-verified credentials</span>
+                <span className="text-sm text-primary font-medium">AI + peer verified</span>
               </div>
             </div>
           </div>

@@ -174,15 +174,10 @@ function CreatorCard({ creator, onConnect, onMessage, onNavigate }: {
           </p>
         )}
 
-        {/* Skills tags */}
-        {creator.skills && creator.skills.length > 0 && (
+        {/* Role as tag */}
+        {creator.role && (
           <div className="flex flex-wrap gap-1">
-            {creator.skills.slice(0, 3).map(skill => (
-              <Badge key={skill} variant="secondary" className="text-[9px] h-4 px-1.5 font-normal">{skill}</Badge>
-            ))}
-            {creator.skills.length > 3 && (
-              <Badge variant="secondary" className="text-[9px] h-4 px-1.5 font-normal text-muted-foreground">+{creator.skills.length - 3}</Badge>
-            )}
+            <Badge variant="secondary" className="text-[9px] h-4 px-1.5 font-normal">{creator.role}</Badge>
           </div>
         )}
 

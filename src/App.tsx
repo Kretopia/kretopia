@@ -85,6 +85,7 @@ const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
+const Challenges = lazy(() => import("./pages/Challenges"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -267,8 +268,9 @@ const AppContent = () => {
             <Route path="/discover" element={<Navigate to="/circle?tab=browse" replace />} />
             <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
             
-            {/* Check-in */}
+            {/* Check-in & Challenges */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+            <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
 
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />

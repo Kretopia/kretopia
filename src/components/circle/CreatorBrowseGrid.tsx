@@ -276,7 +276,7 @@ export function CreatorBrowseGrid() {
     try {
       let query = supabase
         .from('profiles')
-        .select('user_id, full_name, avatar_url, role, location, level, badge, bio, skills, verification_status', { count: 'exact' })
+        .select('user_id, full_name, avatar_url, role, location, level, badge, bio, verification_status', { count: 'exact' })
         .eq('is_claimed', true)
         .not('full_name', 'is', null)
         .order('level', { ascending: false })

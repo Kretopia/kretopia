@@ -102,7 +102,7 @@ const ImageLightbox = ({ src, alt, open, onClose, senderName, timestamp }: {
 );
 
 export const CircleMessageBubble = ({
-  msg, isOwn, userId, onReply, onReact, onToggleReaction, showReactions, isAdmin, onPin,
+  msg, isOwn, userId, onReply, onReact, onToggleReaction, showReactions, isAdmin, onPin, onPollVote,
 }: Props) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 

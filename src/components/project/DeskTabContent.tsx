@@ -89,6 +89,15 @@ export const DeskTabContent = memo(({
           <CreativeBoard projectId={projectId} currentUserId={currentUserId} />
         )}
 
+        {activeTab === "scope" && (
+          <ScopeGuardian
+            projectId={projectId}
+            project={project}
+            milestones={milestones}
+            onMilestonesGenerated={onUpdate}
+          />
+        )}
+
         {activeTab === "finance" && (
           <FreeTierGate feature="milestones" featureLabel="Finance Tools" description="Upgrade to Pro for unlimited milestones, invoices, and project payments.">
             <div className="space-y-6">

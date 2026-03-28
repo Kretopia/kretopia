@@ -123,19 +123,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
         {/* Desktop Navigation */}
         {user && !isLandingPage && (
           <div className="hidden lg:flex items-center gap-1">
-            {(accountType === "company"
-              ? [
-                  { path: "/discover", icon: Compass, label: "Discover" },
-                  { path: "/circles", icon: MessageSquareMore, label: "Circles" },
-                  { path: "/scene", icon: Sparkles, label: "Scene" },
-                  { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
-                ]
-              : [
-                  { path: "/circle", icon: Sparkles, label: "Match" },
-                  { path: "/circles", icon: MessageSquareMore, label: "Circles" },
-                  { path: "/discover", icon: Compass, label: "Discover" },
-                  { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
-                ]
+            {[
+                { path: "/circle", icon: Sparkles, label: "Match" },
+                { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+                { path: "/circles", icon: MessageSquareMore, label: "Circles" },
+                { path: "/scene", icon: Sparkles, label: "Scene" },
+                { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
+              ]
             ).map(({ path, icon: Icon, label }) => {
               const isActive = path.includes("?") ? location.pathname === path.split("?")[0] && location.search.includes(path.split("?")[1]) : location.pathname === path;
               return (

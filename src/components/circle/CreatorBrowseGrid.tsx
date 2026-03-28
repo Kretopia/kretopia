@@ -674,7 +674,7 @@ export function CreatorBrowseGrid() {
                       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/profile/${creator.user_id}`)}>
                         <div className="flex items-center gap-1.5">
                           <p className="text-sm font-semibold truncate">{creator.full_name}</p>
-                          {creator.badge === 'ODOS' && <Badge variant="secondary" className="text-[9px] h-4">ODOS</Badge>}
+                          {(creator.badge === 'odos' || creator.badge === 'ODOS') && <Badge variant="secondary" className="text-[9px] h-4">ODOS</Badge>}
                           {creator.verification_status === 'verified' && <ShieldCheck className="h-3 w-3 text-primary" />}
                         </div>
                         {creator.role && <p className="text-xs text-muted-foreground truncate">{creator.role}</p>}

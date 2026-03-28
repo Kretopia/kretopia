@@ -169,6 +169,7 @@ const AppContent = () => {
       <PageViewTracker />
       {!isPublicEPK && !isAuthPage && !isDeckPage && <Navbar user={user} />}
       {user && !isPublicEPK && !isAuthPage && !isDeckPage && <BottomNav />}
+      {user && !isPublicEPK && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
       <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>

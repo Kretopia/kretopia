@@ -622,24 +622,20 @@ const CircleDetail = () => {
           <div className="px-3 pt-2">
             <CirclePollCreator
               onSubmit={async (question, options) => {
-                const pollData = { question, options: options.map(o => ({ text: o, votes: [] })) };
-                setNewMessage(`📊 Poll: ${question}`);
-                // Send as a poll message
-                if (!activeChannel?.id || !user) return;
+                const pollData = { question, options: options.map(o => ({ text: o, votes: [] as string[] })) };
+                if (!activeChannel?.id || !user || !circle) return;
                 const { data: profile } = await supabase.from("profiles").select("full_name, avatar_url").eq("user_id", user.id).single();
-                const { data } = await supabase.from("circle_messages").insert({
+                await supabase.from("spark_room_messages").insert({
+                  room_id: circle.id,
                   channel_id: activeChannel.id,
                   user_id: user.id,
                   content: `📊 ${question}`,
                   message_type: "poll",
                   poll_data: pollData,
-                }).select().single();
-                if (data) {
-                  setMessages(prev => [...prev, { ...data, sender_name: profile?.full_name || "You", sender_avatar: profile?.avatar_url, sender_role: userRole, reactions: {}, reply_preview: null }]);
-                  messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-                }
+                } as any);
                 setShowPollCreator(false);
                 setNewMessage("");
+                fetchMessages();
               }}
               onCancel={() => setShowPollCreator(false)}
             />

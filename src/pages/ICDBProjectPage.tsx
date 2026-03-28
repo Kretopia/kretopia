@@ -131,13 +131,8 @@ const ICDBProjectPage = () => {
 
   const formatType = (t: string) => t.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
-  // Group roles by department
-  const departments = roles.reduce((acc, role) => {
-    const dept = role.department || "General";
-    if (!acc[dept]) acc[dept] = [];
-    acc[dept].push(role);
-    return acc;
-  }, {} as Record<string, ProjectRole[]>);
+  // Group roles by role_title prefix (e.g. "Director" roles together)
+  const allRoles = roles;
 
   if (loading) {
     return (

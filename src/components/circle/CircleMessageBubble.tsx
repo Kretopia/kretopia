@@ -42,6 +42,10 @@ const REACTION_EMOJIS = ["🔥", "❤️", "🙌", "💯", "😂", "🎯"];
 const roleIndicator = (role?: string) => {
   if (role === 'admin') return <Crown className="h-2.5 w-2.5 text-amber-500 inline ml-0.5" />;
   if (role === 'moderator') return <Shield className="h-2.5 w-2.5 text-blue-500 inline ml-0.5" />;
+  if (role === 'mentor') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1 rounded-full font-medium">✨ Mentor</span>;
+  if (role === 'featured') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 rounded-full font-medium">⭐ Featured</span>;
+  if (role === 'og') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 rounded-full font-medium">🏆 OG</span>;
+  if (role === 'vip') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 px-1 rounded-full font-medium">💎 VIP</span>;
   return null;
 };
 
@@ -99,6 +103,17 @@ export const CircleMessageBubble = ({
   msg, isOwn, userId, onReply, onReact, onToggleReaction, showReactions, isAdmin, onPin,
 }: Props) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // System messages (welcome, join notifications)
+  if (msg.message_type === "system") {
+    return (
+      <div className="flex justify-center py-1.5 px-1">
+        <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-full px-3 py-1 text-center max-w-[80%]">
+          {msg.content}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="group px-1">

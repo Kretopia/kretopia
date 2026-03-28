@@ -220,13 +220,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
                       <MenuButton icon={Globe} label="Credit Database (ICDB)" onClick={() => handleNavigation("/credits")} />
-                      <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} />
 
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Grow</p>
-                      <MenuButton icon={Trophy} label="Challenges" onClick={() => handleNavigation("/challenges")} badge="New" />
                       <MenuButton icon={Gift} label="Rewards" onClick={() => handleNavigation("/rewards")} />
                       <MenuButton icon={CheckCircle} label="Daily Check-In" onClick={() => handleNavigation("/daily-checkin")} />
 

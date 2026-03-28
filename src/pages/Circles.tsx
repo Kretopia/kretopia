@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { MessageSquareMore, TrendingUp, Plus, Search, Users, Sparkles, Filter } from "lucide-react";
+import { MessageSquareMore, TrendingUp, Plus, Search, Users, Sparkles } from "lucide-react";
+import { CreateCircleDialog } from "@/components/scene/CirclesTab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

@@ -130,7 +130,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 { path: "/scene", icon: Sparkles, label: "Scene" },
                 { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
               ]
-            ).map(({ path, icon: Icon, label }) => {
+            .map(({ path, icon: Icon, label }) => {
               const isActive = path.includes("?") ? location.pathname === path.split("?")[0] && location.search.includes(path.split("?")[1]) : location.pathname === path;
               return (
                 <Link

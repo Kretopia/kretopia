@@ -131,7 +131,7 @@ const CreatorEPK = () => {
         setProfile(profileData);
 
         // Fetch all data in parallel
-        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes] = await Promise.all([
+        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes, icdbRes] = await Promise.all([
           // Portfolio items
           supabase
             .from('portfolio_items')
@@ -157,7 +157,7 @@ const CreatorEPK = () => {
           // Manual Credits (work history)
           supabase
             .from('credits')
-            .select('id, project_name, role, year, platform')
+            .select('id, project_name, role, year, platform, verification_status, ai_confidence, endorsement_count')
             .eq('user_id', userId)
             .order('year', { ascending: false })
             .limit(6),
@@ -184,7 +184,14 @@ const CreatorEPK = () => {
             .eq('user_id', userId)
             .eq('is_active', true)
             .order('created_at', { ascending: false })
-            .limit(6)
+            .limit(6),
+
+          // ICDB claimed roles
+          supabase
+            .from('icdb_project_roles')
+            .select('id, role_title, person_name, is_claimed, project_id')
+            .eq('claimed_by', userId)
+            .eq('is_claimed', true),
         ]);
 
         setPortfolioItems(portfolioRes.data || []);

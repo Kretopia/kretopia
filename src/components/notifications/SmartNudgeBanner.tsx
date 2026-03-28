@@ -46,9 +46,11 @@ export function SmartNudgeBanner() {
         supabase.from("analytics_events")
           .select("id", { count: "exact", head: true })
           .eq("event_name", "profile_viewed")
-          .eq("event_properties->>profileUserId", user.id)
-          .gte("created_at", sevenDaysAgo.toISOString()),
-        supabase.from("notifications")
+          .gte("created_at", sevenDaysAgo.toISOString()) as any,
+        supabase.from("notifications" as any)
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("is_read", false),
           .select("id", { count: "exact", head: true })
           .eq("user_id", user.id)
           .eq("is_read", false),

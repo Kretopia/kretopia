@@ -27,7 +27,8 @@ import {
   UserCheck,
   ArrowRight,
   Package,
-  Download
+  Download,
+  Database
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";

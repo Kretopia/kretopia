@@ -30,6 +30,7 @@ import {
   Download,
   Database
 } from "lucide-react";
+import { Fingerprint } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";
@@ -119,7 +120,7 @@ const CreatorEPK = () => {
         // Fetch from profiles table directly - RLS allows public read
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed')
+          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed, icdb_creator_id')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -386,6 +387,15 @@ const CreatorEPK = () => {
               <Sparkles className="h-3 w-3 mr-1" />
               {verificationBadge.label}
             </Badge>
+          )}
+
+          {/* ICDB Creator ID */}
+          {(profile as any).icdb_creator_id && (
+            <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted/50 border">
+              <Fingerprint className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[11px] font-mono font-semibold text-primary">{(profile as any).icdb_creator_id}</span>
+              <Badge variant="outline" className="text-[9px] h-4 border-primary/20">ICDB</Badge>
+            </div>
           )}
 
           {/* Bio */}

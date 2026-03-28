@@ -151,6 +151,7 @@ export const CreateSessionDialog = ({
         event_type: formData.event_type,
         cover_image_url: coverUrl,
         external_ticket_url: formData.external_ticket_url || null,
+        circle_id: formData.circle_id || null,
       } as any);
 
       if (error) throw error;

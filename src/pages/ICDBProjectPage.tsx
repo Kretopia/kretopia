@@ -73,7 +73,7 @@ const ICDBProjectPage = () => {
       // Fetch roles
       const { data: rolesData } = await supabase
         .from("icdb_project_roles")
-        .select("id, role_title, person_name, department, is_claimed, claimed_by")
+        .select("id, role_title, person_name, is_claimed, claimed_by")
         .eq("project_id", projectId)
         .order("role_title");
 

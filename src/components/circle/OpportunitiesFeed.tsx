@@ -71,6 +71,11 @@ export const OpportunitiesFeed = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSkill, setSelectedSkill] = useState("all");
   const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [compensationFilter, setCompensationFilter] = useState("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const activeFilterCount = [selectedSkill !== "all", locationFilter !== "all", compensationFilter !== "all"].filter(Boolean).length;
 
   const fetchOpportunities = useCallback(async () => {
     setLoading(true);

@@ -328,6 +328,11 @@ const CreditDatabase = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+          <div className="flex justify-end mt-2">
+            <Button variant="outline" size="sm" className="gap-1.5 text-[11px] h-7" onClick={() => navigate('/credits/discover')}>
+              <Sparkles className="h-3 w-3" /> AI Discovery
+            </Button>
+          </div>
         </div>
 
         {/* Results */}

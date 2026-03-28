@@ -22,6 +22,7 @@ interface CreateSessionDialogProps {
   onOpenChange: (open: boolean) => void;
   onCreated?: () => void;
   defaultLocation?: { lat: number; lng: number };
+  defaultCircleId?: string;
 }
 
 const EVENT_CATEGORIES = [

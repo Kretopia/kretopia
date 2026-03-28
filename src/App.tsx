@@ -120,7 +120,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Redirect to Circle (Match) after login, or onboarding if not completed
+// Mode-aware default route: Create→Scene, Work→Desk
 const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
@@ -128,7 +128,11 @@ const DefaultRoute = () => {
   if (!user) return <Landing />;
   if (onboardingLoading) return <LoadingFallback />;
   if (!isComplete) return <Navigate to="/onboarding" replace />;
-  return <Navigate to="/circle" replace />;
+  
+  // Read mode synchronously from localStorage to avoid flash
+  let mode = "create";
+  try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}
+  return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;
 };
 
 // Catch-all: authenticated users go to /circle, others to landing

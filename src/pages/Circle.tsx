@@ -246,11 +246,14 @@ export default function Circle() {
         />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
+          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Connect</span>
-              <span className="sm:hidden">Match</span>
+              Match
+            </TabsTrigger>
+            <TabsTrigger value="circles" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Circles
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

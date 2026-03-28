@@ -38,6 +38,7 @@ const CirclesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("explore");
+  const [showCreate, setShowCreate] = useState(false);
 
   const fetchCircles = useCallback(async () => {
     setLoading(true);

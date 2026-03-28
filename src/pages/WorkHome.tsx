@@ -108,7 +108,7 @@ const WorkHome = () => {
         </div>
 
         {/* Active Projects Widget */}
-        <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk" }}>
+        <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk/projects" }}>
           {activeProjects.length === 0 ? (
             <div className="text-center py-4">
               <p className="text-sm text-muted-foreground mb-2">No active projects</p>

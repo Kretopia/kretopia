@@ -36,20 +36,15 @@ import { DegreeBadge } from "@/components/circle/DegreeBadge";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
 
 // Import profile section components
-import { PortfolioSection } from "@/components/profile/PortfolioSection";
 import { SkillsSection } from "@/components/profile/SkillsSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
-import { PressLinksSection } from "@/components/profile/PressLinksSection";
-import { AwardsSection } from "@/components/profile/AwardsSection";
-import { ReviewsSection } from "@/components/profile/ReviewsSection";
-import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { TrustSignals } from "@/components/profile/TrustSignals";
-import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { ProfileRatingSummary } from "@/components/profile/ProfileRatingSummary";
 import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
 import { ServicePackagesSection } from "@/components/profile/ServicePackagesSection";
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
+import { ViewProfileTabs } from "@/components/profile/ViewProfileTabs";
 
 interface Profile {
   user_id: string;

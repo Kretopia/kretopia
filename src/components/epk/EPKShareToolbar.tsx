@@ -1,0 +1,135 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Share2, Copy, Check, MessageCircle, Send } from "lucide-react";
+
+interface EPKShareToolbarProps {
+  profileName: string;
+  profileRole: string;
+  userId: string;
+}
+
+export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareToolbarProps) => {
+  const [copied, setCopied] = useState(false);
+
+  const epkUrl = `https://thrivein.io/epk/${userId}`;
+  const shareText = `Check out my verified creative portfolio on ThriveIN 🎬\n\n${profileName} — ${profileRole}\n\n`;
+  const shortShareText = `Check out my verified creative portfolio on ThriveIN 🎬 ${profileName} — ${profileRole}`;
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profileName} — ${profileRole} | ThriveIN`,
+          text: shortShareText,
+          url: epkUrl,
+        });
+      } catch (e) {
+        // User cancelled share
+      }
+    }
+  };
+
+  const handleWhatsApp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(shareText + epkUrl)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleInstagram = () => {
+    // Instagram doesn't support direct URL sharing — copy link and prompt
+    navigator.clipboard.writeText(`${shortShareText}\n${epkUrl}`);
+    toast.success("Link & caption copied! Paste it in your Instagram Story or bio.");
+  };
+
+  const handleX = () => {
+    const text = `${shortShareText}`;
+    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(epkUrl)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(epkUrl);
+    setCopied(true);
+    toast.success("EPK link copied!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="mb-6 p-4 rounded-xl bg-primary/5 border border-primary/20">
+      <div className="flex items-center gap-2 mb-3">
+        <Share2 className="h-4 w-4 text-primary" />
+        <span className="text-sm font-semibold">Share your EPK</span>
+      </div>
+      
+      {/* Link preview */}
+      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-background border text-xs">
+        <span className="truncate text-muted-foreground flex-1 font-mono">{epkUrl}</span>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-7 px-2 shrink-0"
+          onClick={handleCopyLink}
+        >
+          {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+        </Button>
+      </div>
+
+      {/* Share buttons */}
+      <div className="grid grid-cols-4 gap-2">
+        {navigator.share && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-10 flex-col gap-0.5 text-[10px] col-span-4 mb-1"
+            onClick={handleNativeShare}
+          >
+            <Share2 className="h-4 w-4" />
+            Share
+          </Button>
+        )}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="h-10 flex-col gap-0.5 text-[10px]"
+          onClick={handleWhatsApp}
+        >
+          <MessageCircle className="h-4 w-4 text-green-500" />
+          WhatsApp
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="h-10 flex-col gap-0.5 text-[10px]"
+          onClick={handleInstagram}
+        >
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+          </svg>
+          Instagram
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="h-10 flex-col gap-0.5 text-[10px]"
+          onClick={handleX}
+        >
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+          X
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="h-10 flex-col gap-0.5 text-[10px]"
+          onClick={handleCopyLink}
+        >
+          {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+      </div>
+    </div>
+  );
+};

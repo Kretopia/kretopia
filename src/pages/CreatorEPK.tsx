@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
+import { EPKShareToolbar } from "@/components/epk/EPKShareToolbar";
+import { EPKReviews } from "@/components/epk/EPKReviews";
+import { EPKFooterCTA } from "@/components/epk/EPKFooterCTA";
 import { getMediaThumbnail } from "@/lib/mediaUtils";
 import {
   MapPin, 
@@ -103,10 +106,20 @@ const CreatorEPK = () => {
   const [credits, setCredits] = useState<Credit[]>([]);
   const [industryStats, setIndustryStats] = useState<IndustryStat[]>([]);
   const [digitalProducts, setDigitalProducts] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const shareRef = useRef<HTMLDivElement>(null);
+
+  // Check if current user is the profile owner
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id || null);
+    });
+  }, []);
 
   useEffect(() => {
     const fetchPublicProfile = async () => {
@@ -134,7 +147,7 @@ const CreatorEPK = () => {
         setProfile(profileData);
 
         // Fetch all data in parallel
-        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes, icdbRes] = await Promise.all([
+        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes, icdbRes, reviewsRes] = await Promise.all([
           // Portfolio items
           supabase
             .from('portfolio_items')
@@ -195,6 +208,15 @@ const CreatorEPK = () => {
             .select('id, role_title, person_name, is_claimed, project_id')
             .eq('claimed_by', userId)
             .eq('is_claimed', true),
+
+          // Reviews
+          supabase
+            .from('company_reviews')
+            .select('id, rating, review_text, created_at, reviewer_id')
+            .eq('company_id', userId)
+            .eq('status', 'published')
+            .order('created_at', { ascending: false })
+            .limit(5),
         ]);
 
         setPortfolioItems(portfolioRes.data || []);
@@ -202,6 +224,10 @@ const CreatorEPK = () => {
         setAwards(awardsRes.data || []);
         setIndustryStats(statsRes.data || []);
         setDigitalProducts(productsRes.data || []);
+        setReviews((reviewsRes.data || []).map((r: any) => ({
+          ...r,
+          reviewer_name: 'Verified Client',
+        })));
         
         // Combine manual and verified credits
         const manualCredits = (creditsRes.data || []).map((c: any) => {
@@ -308,8 +334,7 @@ const CreatorEPK = () => {
   };
 
   const verificationBadge = getVerificationBadge();
-
-  // Prepare skills for structured data
+  const isOwner = currentUserId === userId;
   const allSkills = [
     ...(Array.isArray(profile.professional_skills) 
       ? profile.professional_skills.map((s: any) => typeof s === 'string' ? s : s?.skill || s?.name).filter(Boolean)
@@ -423,6 +448,17 @@ const CreatorEPK = () => {
             </div>
           )}
         </div>
+
+        {/* Owner Share Toolbar */}
+        {isOwner && (
+          <div ref={shareRef}>
+            <EPKShareToolbar
+              profileName={profile.full_name}
+              profileRole={profile.role || 'Creator'}
+              userId={userId || ''}
+            />
+          </div>
+        )}
 
         {/* Unclaimed Profile Banner */}
         {profile.is_claimed === false && (
@@ -741,18 +777,12 @@ const CreatorEPK = () => {
           </div>
         )}
 
-        {/* Rating */}
-        {profile.average_rating && profile.average_rating > 0 && (
-          <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50">
-              <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
-              <span className="font-semibold">{profile.average_rating.toFixed(1)}</span>
-              <span className="text-muted-foreground text-sm">
-                ({profile.total_reviews || 0} reviews)
-              </span>
-            </div>
-          </div>
-        )}
+        {/* Reviews */}
+        <EPKReviews
+          reviews={reviews}
+          averageRating={profile.average_rating}
+          totalReviews={profile.total_reviews}
+        />
 
         {/* Digital Products & Services */}
         {digitalProducts.length > 0 && (
@@ -807,69 +837,13 @@ const CreatorEPK = () => {
       </div>
 
       {/* Fixed Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border p-4">
-        <div className="max-w-lg mx-auto space-y-3">
-          {/* Primary CTA - Different for claimed vs unclaimed profiles */}
-          {profile.is_claimed === false ? (
-            <>
-              {/* Claim Profile - Primary for unclaimed */}
-              <Button 
-                onClick={() => setShowClaimDialog(true)}
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
-                size="lg"
-              >
-                <UserCheck className="h-5 w-5 mr-2" />
-                Claim This Profile
-              </Button>
-              
-              {/* Secondary - Sign up for others */}
-              <Button 
-                onClick={() => navigate('/auth')}
-                variant="outline"
-                className="w-full h-10 text-sm"
-                size="default"
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Not you? Sign Up to Connect
-              </Button>
-            </>
-          ) : (
-            /* Connect CTA - For claimed profiles */
-            <Button 
-              onClick={() => navigate('/auth')}
-              className="w-full h-12 text-base font-semibold"
-              size="lg"
-            >
-              <Mail className="h-5 w-5 mr-2" />
-              Sign Up to Connect
-            </Button>
-          )}
-          
-          {/* Secondary Links */}
-          <div className="flex items-center justify-center gap-4 text-sm">
-            <button 
-              onClick={() => navigate('/')}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              About ThriveIN
-            </button>
-            <span className="text-muted-foreground">•</span>
-            <button 
-              onClick={() => navigate('/auth')}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Log In
-            </button>
-          </div>
-
-          {/* Branding */}
-          <div className="text-center pt-1">
-            <p className="text-xs text-muted-foreground">
-              Powered by <span className="font-semibold text-primary">ThriveIN</span>
-            </p>
-          </div>
-        </div>
-      </div>
+      <EPKFooterCTA
+        isOwner={isOwner}
+        isUnclaimed={profile.is_claimed === false}
+        profileName={profile.full_name}
+        onClaimClick={() => setShowClaimDialog(true)}
+        onShareClick={() => shareRef.current?.scrollIntoView({ behavior: 'smooth' })}
+      />
     </div>
   );
 };

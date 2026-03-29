@@ -334,8 +334,7 @@ const CreatorEPK = () => {
   };
 
   const verificationBadge = getVerificationBadge();
-
-  // Prepare skills for structured data
+  const isOwner = currentUserId === userId;
   const allSkills = [
     ...(Array.isArray(profile.professional_skills) 
       ? profile.professional_skills.map((s: any) => typeof s === 'string' ? s : s?.skill || s?.name).filter(Boolean)

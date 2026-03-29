@@ -145,6 +145,28 @@ export default function Onboarding() {
       setCurrentStep(2);
     } else if (currentStep === 2) {
       analytics.onboardingStep(2, selectedSkills.length > 0 ? "skills_selected" : "skills_skipped");
+      try {
+        await supabase.from("profiles").update({
+          onboarding_step: 3,
+          professional_skills: selectedSkills.length > 0
+            ? selectedSkills.map(skill => ({ skill, level: 3, category: "General" })) as any
+            : null,
+        }).eq("user_id", user!.id);
+      } catch (e) { console.error("Error saving skills:", e); }
+      setCurrentStep(3);
+    } else if (currentStep === 3) {
+      analytics.onboardingStep(3, firstCredit.project_name ? "credit_added" : "credit_skipped");
+      if (firstCredit.project_name && firstCredit.role) {
+        try {
+          await supabase.from("credits").insert({
+            user_id: user!.id,
+            project_name: firstCredit.project_name,
+            role: firstCredit.role,
+            project_type: firstCredit.project_type || null,
+            year: new Date().getFullYear(),
+          });
+        } catch (e) { console.error("Error adding first credit:", e); }
+      }
       await completeOnboarding();
     }
   };

@@ -73,6 +73,7 @@ export default function Onboarding() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [pendingConnectForCelebration, setPendingConnectForCelebration] = useState<string | null>(null);
   const [hourlyRate, setHourlyRate] = useState("");
+  const [firstCredit, setFirstCredit] = useState({ project_name: "", role: "", project_type: "" });
 
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");

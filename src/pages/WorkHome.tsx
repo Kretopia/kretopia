@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 
 interface WidgetProps {
   title: string;

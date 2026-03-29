@@ -777,18 +777,12 @@ const CreatorEPK = () => {
           </div>
         )}
 
-        {/* Rating */}
-        {profile.average_rating && profile.average_rating > 0 && (
-          <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50">
-              <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
-              <span className="font-semibold">{profile.average_rating.toFixed(1)}</span>
-              <span className="text-muted-foreground text-sm">
-                ({profile.total_reviews || 0} reviews)
-              </span>
-            </div>
-          </div>
-        )}
+        {/* Reviews */}
+        <EPKReviews
+          reviews={reviews}
+          averageRating={profile.average_rating}
+          totalReviews={profile.total_reviews}
+        />
 
         {/* Digital Products & Services */}
         {digitalProducts.length > 0 && (

@@ -125,7 +125,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Create
+                Explore
               </button>
               <button
                 onClick={() => setMode("work")}

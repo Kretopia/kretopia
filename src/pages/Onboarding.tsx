@@ -535,7 +535,7 @@ export default function Onboarding() {
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
                 <Button onClick={handleNext} disabled={loading} className="flex-1 gap-2" size="lg">
-                  {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Setting up...</> : <>Let's Go! <ArrowRight className="h-4 w-4" /></>}
+                  Continue <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
 
@@ -544,6 +544,66 @@ export default function Onboarding() {
                   You can skip this — add skills & rates from your profile anytime
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Step 3: First Credit */}
+          {currentStep === 3 && (
+            <div className="space-y-5">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-1">Add your first credit</h2>
+                <p className="text-muted-foreground text-sm">What's one project you've worked on? This builds your verified resume.</p>
+              </div>
+
+              <div className="border border-border rounded-lg p-4 space-y-4 bg-muted/30">
+                <div>
+                  <Label htmlFor="project_name">Project Name</Label>
+                  <Input
+                    id="project_name"
+                    value={firstCredit.project_name}
+                    onChange={(e) => setFirstCredit(prev => ({ ...prev, project_name: e.target.value }))}
+                    placeholder='e.g. "Summer Vibes EP", "Nike Campaign"'
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="credit_role">Your Role</Label>
+                  <Input
+                    id="credit_role"
+                    value={firstCredit.role}
+                    onChange={(e) => setFirstCredit(prev => ({ ...prev, role: e.target.value }))}
+                    placeholder="e.g. Producer, Director, Designer"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="project_type">Type</Label>
+                  <Select value={firstCredit.project_type || undefined} onValueChange={(v) => setFirstCredit(prev => ({ ...prev, project_type: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="music">Music</SelectItem>
+                      <SelectItem value="film">Film / Video</SelectItem>
+                      <SelectItem value="design">Design</SelectItem>
+                      <SelectItem value="photography">Photography</SelectItem>
+                      <SelectItem value="fashion">Fashion</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                      <SelectItem value="brand">Brand Campaign</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground">
+                This is the start of your ICDB profile — like IMDb, but for every creative industry.
+              </p>
+
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" onClick={() => setCurrentStep(2)}>Back</Button>
+                <Button onClick={handleNext} disabled={loading} className="flex-1 gap-2" size="lg">
+                  {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Setting up...</> : <>
+                    {firstCredit.project_name ? "Finish" : "Skip for now"} <ArrowRight className="h-4 w-4" />
+                  </>}
+                </Button>
+              </div>
             </div>
           )}
 

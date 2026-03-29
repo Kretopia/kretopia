@@ -49,6 +49,7 @@ const WorkHome = () => {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<any[]>([]);
   const [gigs, setGigs] = useState<any[]>([]);
+  const [showCreateProject, setShowCreateProject] = useState(false);
   const [pipelineCount, setPipelineCount] = useState(0);
 
   useEffect(() => {

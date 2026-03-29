@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 
 interface WidgetProps {
   title: string;
@@ -48,6 +49,7 @@ const WorkHome = () => {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<any[]>([]);
   const [gigs, setGigs] = useState<any[]>([]);
+  const [showCreateProject, setShowCreateProject] = useState(false);
   const [pipelineCount, setPipelineCount] = useState(0);
 
   useEffect(() => {
@@ -114,9 +116,9 @@ const WorkHome = () => {
         {/* Active Projects Widget */}
         <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk/projects" }}>
           {activeProjects.length === 0 ? (
-            <div className="text-center py-4">
+             <div className="text-center py-4">
               <p className="text-sm text-muted-foreground mb-2">No active projects</p>
-              <Button size="sm" variant="outline" onClick={() => navigate("/desk")} className="gap-1">
+              <Button size="sm" variant="outline" onClick={() => setShowCreateProject(true)} className="gap-1">
                 <Plus className="h-3 w-3" /> Create Project
               </Button>
             </div>
@@ -191,6 +193,12 @@ const WorkHome = () => {
           </Button>
         </div>
       </div>
+
+      <CreateProjectDialog
+        open={showCreateProject}
+        onOpenChange={setShowCreateProject}
+        onSuccess={() => setShowCreateProject(false)}
+      />
     </>
   );
 };

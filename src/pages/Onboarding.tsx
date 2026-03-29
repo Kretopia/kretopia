@@ -365,7 +365,7 @@ export default function Onboarding() {
     }
   }, [currentStep, navigate]);
 
-  const progress = currentStep === 7 ? 100 : (currentStep / 3) * 100;
+  const progress = currentStep === 7 ? 100 : (currentStep / 4) * 100;
   const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === profile.role);
 
   return (

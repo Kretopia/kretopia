@@ -106,10 +106,20 @@ const CreatorEPK = () => {
   const [credits, setCredits] = useState<Credit[]>([]);
   const [industryStats, setIndustryStats] = useState<IndustryStat[]>([]);
   const [digitalProducts, setDigitalProducts] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const shareRef = useRef<HTMLDivElement>(null);
+
+  // Check if current user is the profile owner
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id || null);
+    });
+  }, []);
 
   useEffect(() => {
     const fetchPublicProfile = async () => {

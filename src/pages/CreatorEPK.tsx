@@ -449,6 +449,17 @@ const CreatorEPK = () => {
           )}
         </div>
 
+        {/* Owner Share Toolbar */}
+        {isOwner && (
+          <div ref={shareRef}>
+            <EPKShareToolbar
+              profileName={profile.full_name}
+              profileRole={profile.role || 'Creator'}
+              userId={userId || ''}
+            />
+          </div>
+        )}
+
         {/* Unclaimed Profile Banner */}
         {profile.is_claimed === false && (
           <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">

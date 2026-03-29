@@ -147,7 +147,7 @@ const CreatorEPK = () => {
         setProfile(profileData);
 
         // Fetch all data in parallel
-        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes, icdbRes] = await Promise.all([
+        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes, icdbRes, reviewsRes] = await Promise.all([
           // Portfolio items
           supabase
             .from('portfolio_items')
@@ -208,6 +208,15 @@ const CreatorEPK = () => {
             .select('id, role_title, person_name, is_claimed, project_id')
             .eq('claimed_by', userId)
             .eq('is_claimed', true),
+
+          // Reviews
+          supabase
+            .from('company_reviews')
+            .select('id, rating, review_text, created_at, reviewer_id')
+            .eq('company_id', userId)
+            .eq('status', 'published')
+            .order('created_at', { ascending: false })
+            .limit(5),
         ]);
 
         setPortfolioItems(portfolioRes.data || []);
@@ -215,6 +224,10 @@ const CreatorEPK = () => {
         setAwards(awardsRes.data || []);
         setIndustryStats(statsRes.data || []);
         setDigitalProducts(productsRes.data || []);
+        setReviews((reviewsRes.data || []).map((r: any) => ({
+          ...r,
+          reviewer_name: 'Verified Client',
+        })));
         
         // Combine manual and verified credits
         const manualCredits = (creditsRes.data || []).map((c: any) => {

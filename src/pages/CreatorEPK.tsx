@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
+import { EPKShareToolbar } from "@/components/epk/EPKShareToolbar";
+import { EPKReviews } from "@/components/epk/EPKReviews";
+import { EPKFooterCTA } from "@/components/epk/EPKFooterCTA";
 import { getMediaThumbnail } from "@/lib/mediaUtils";
 import {
   MapPin, 

@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, MapPin, ChevronRight, Eye } from "lucide-react";
+import { MessageCircle, MapPin, ChevronRight, Film } from "lucide-react";
 import { NetworkVisualization } from "./NetworkVisualization";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Connection {
   user_id: string;

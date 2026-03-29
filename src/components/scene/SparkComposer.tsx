@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Image, Link2, Loader2, Send, X, Sparkles, Wand2 } from "lucide-react";
+import { Image, Link2, Loader2, Send, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 
 interface SparkComposerProps {
   userProfile?: { full_name: string; avatar_url: string | null; role: string | null } | null;

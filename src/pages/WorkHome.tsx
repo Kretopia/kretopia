@@ -193,6 +193,12 @@ const WorkHome = () => {
           </Button>
         </div>
       </div>
+
+      <CreateProjectDialog
+        open={showCreateProject}
+        onOpenChange={setShowCreateProject}
+        onSuccess={() => setShowCreateProject(false)}
+      />
     </>
   );
 };

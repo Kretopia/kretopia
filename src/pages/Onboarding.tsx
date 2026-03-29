@@ -21,7 +21,8 @@ import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
 const STEPS = [
   { id: 1, title: "You", icon: User },
   { id: 2, title: "Skills", icon: Briefcase },
-  { id: 3, title: "Done", icon: Sparkles },
+  { id: 3, title: "First Credit", icon: CheckCircle2 },
+  { id: 4, title: "Done", icon: Sparkles },
 ];
 
 // Top skills — curated for speed, not exhaustive
@@ -72,6 +73,7 @@ export default function Onboarding() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [pendingConnectForCelebration, setPendingConnectForCelebration] = useState<string | null>(null);
   const [hourlyRate, setHourlyRate] = useState("");
+  const [firstCredit, setFirstCredit] = useState({ project_name: "", role: "", project_type: "" });
 
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");
@@ -144,6 +146,28 @@ export default function Onboarding() {
       setCurrentStep(2);
     } else if (currentStep === 2) {
       analytics.onboardingStep(2, selectedSkills.length > 0 ? "skills_selected" : "skills_skipped");
+      try {
+        await supabase.from("profiles").update({
+          onboarding_step: 3,
+          professional_skills: selectedSkills.length > 0
+            ? selectedSkills.map(skill => ({ skill, level: 3, category: "General" })) as any
+            : null,
+        }).eq("user_id", user!.id);
+      } catch (e) { console.error("Error saving skills:", e); }
+      setCurrentStep(3);
+    } else if (currentStep === 3) {
+      analytics.onboardingStep(3, firstCredit.project_name ? "credit_added" : "credit_skipped");
+      if (firstCredit.project_name && firstCredit.role) {
+        try {
+          await supabase.from("credits").insert({
+            user_id: user!.id,
+            project_name: firstCredit.project_name,
+            role: firstCredit.role,
+            project_type: firstCredit.project_type || null,
+            year: new Date().getFullYear(),
+          });
+        } catch (e) { console.error("Error adding first credit:", e); }
+      }
       await completeOnboarding();
     }
   };
@@ -341,7 +365,7 @@ export default function Onboarding() {
     }
   }, [currentStep, navigate]);
 
-  const progress = currentStep === 7 ? 100 : (currentStep / 3) * 100;
+  const progress = currentStep === 7 ? 100 : (currentStep / 4) * 100;
   const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === profile.role);
 
   return (
@@ -511,7 +535,7 @@ export default function Onboarding() {
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
                 <Button onClick={handleNext} disabled={loading} className="flex-1 gap-2" size="lg">
-                  {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Setting up...</> : <>Let's Go! <ArrowRight className="h-4 w-4" /></>}
+                  Continue <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
 
@@ -520,6 +544,66 @@ export default function Onboarding() {
                   You can skip this — add skills & rates from your profile anytime
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Step 3: First Credit */}
+          {currentStep === 3 && (
+            <div className="space-y-5">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-1">Add your first credit</h2>
+                <p className="text-muted-foreground text-sm">What's one project you've worked on? This builds your verified resume.</p>
+              </div>
+
+              <div className="border border-border rounded-lg p-4 space-y-4 bg-muted/30">
+                <div>
+                  <Label htmlFor="project_name">Project Name</Label>
+                  <Input
+                    id="project_name"
+                    value={firstCredit.project_name}
+                    onChange={(e) => setFirstCredit(prev => ({ ...prev, project_name: e.target.value }))}
+                    placeholder='e.g. "Summer Vibes EP", "Nike Campaign"'
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="credit_role">Your Role</Label>
+                  <Input
+                    id="credit_role"
+                    value={firstCredit.role}
+                    onChange={(e) => setFirstCredit(prev => ({ ...prev, role: e.target.value }))}
+                    placeholder="e.g. Producer, Director, Designer"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="project_type">Type</Label>
+                  <Select value={firstCredit.project_type || undefined} onValueChange={(v) => setFirstCredit(prev => ({ ...prev, project_type: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="music">Music</SelectItem>
+                      <SelectItem value="film">Film / Video</SelectItem>
+                      <SelectItem value="design">Design</SelectItem>
+                      <SelectItem value="photography">Photography</SelectItem>
+                      <SelectItem value="fashion">Fashion</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                      <SelectItem value="brand">Brand Campaign</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground">
+                This is the start of your ICDB profile — like IMDb, but for every creative industry.
+              </p>
+
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" onClick={() => setCurrentStep(2)}>Back</Button>
+                <Button onClick={handleNext} disabled={loading} className="flex-1 gap-2" size="lg">
+                  {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Setting up...</> : <>
+                    {firstCredit.project_name ? "Finish" : "Skip for now"} <ArrowRight className="h-4 w-4" />
+                  </>}
+                </Button>
+              </div>
             </div>
           )}
 

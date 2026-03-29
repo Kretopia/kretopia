@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
-  DollarSign, FolderKanban, Search, BookOpen, BarChart3, ShoppingBag, Gift, MessageSquareMore,
-  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette
+  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag,
+  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
@@ -218,45 +218,32 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   {mode === "create" ? (
                     /* ====== CREATE MODE MENU ====== */
                     <>
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
-                      <MenuButton icon={Search} label="Search" onClick={() => handleNavigation("/search")} />
+                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
+                      <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
+                      <MenuButton icon={Palette} label="My EPK" onClick={() => handleNavigation(`/epk/${user?.id}`)} />
 
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Grow</p>
                       <MenuButton icon={Trophy} label="Challenges" onClick={() => handleNavigation("/challenges")} />
-                      <MenuButton icon={Gift} label="Rewards" onClick={() => handleNavigation("/rewards")} />
                       <MenuButton icon={CheckCircle} label="Daily Check-In" onClick={() => handleNavigation("/daily-checkin")} />
-
-                      <Separator className="my-3" />
-
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Showcase</p>
-                      <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                      <MenuButton icon={Palette} label="My EPK" onClick={() => handleNavigation(`/epk/${user?.id}`)} />
                       <MenuButton icon={BarChart3} label="My Analytics" onClick={() => handleNavigation("/my-analytics")} />
-                      <MenuButton icon={BookOpen} label="How to Win" onClick={() => handleNavigation("/guide")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */
                     <>
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
-                      <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
-                      <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
+                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
+                      <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
 
                       <Separator className="my-3" />
 
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Earn</p>
+                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
+                      <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
+                      <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={ShoppingBag} label="Marketplace" onClick={() => handleNavigation("/market")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                       )}
-
-                      <Separator className="my-3" />
-
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Insights</p>
-                      <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                      <MenuButton icon={BarChart3} label="Analytics" onClick={() => handleNavigation("/my-analytics")} />
-                      <MenuButton icon={BookOpen} label="How to Win" onClick={() => handleNavigation("/guide")} />
                     </>
                   )}
 

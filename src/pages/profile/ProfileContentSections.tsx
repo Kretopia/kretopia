@@ -32,11 +32,9 @@ interface ProfileContentSectionsProps {
 
 const PROFILE_TABS = [
   { id: "work", label: "Work", icon: Briefcase },
-  { id: "reviews", label: "Reviews", icon: Star },
-  { id: "press", label: "Press & Awards", icon: Award },
   { id: "skills", label: "Skills", icon: Zap },
-  { id: "collabs", label: "Collabs", icon: Handshake },
-  { id: "shop", label: "Shop", icon: ShoppingBag },
+  { id: "reviews", label: "Reviews", icon: Star },
+  { id: "more", label: "More", icon: Award },
 ] as const;
 
 type TabId = typeof PROFILE_TABS[number]["id"];
@@ -89,100 +87,8 @@ export const ProfileContentSections = ({
                 <h2 className="text-lg font-bold">Work</h2>
                 <p className="text-xs text-muted-foreground">Your creative portfolio & verified credits</p>
               </div>
-              {!hasAdvancedProfile && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
-                  <Crown className="h-3 w-3" /> Pro
-                </Badge>
-              )}
             </div>
-            {hasAdvancedProfile ? (
-              <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-            ) : (
-              <div className="text-center py-8">
-                <Lock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground mb-4">Upgrade to Pro to build your professional credit history</p>
-                <Button onClick={() => navigate("/subscription")} className="gap-2">
-                  <Crown className="h-4 w-4" /> Upgrade to Pro
-                </Button>
-              </div>
-            )}
-          </div>
-        );
-
-      case "reviews":
-        return (
-          <ReviewsSection
-            reviews={reviews}
-            isOwnProfile={true}
-            profileUserId={profile.user_id}
-            onRefresh={onRefresh}
-          />
-        );
-
-      case "press":
-        return (
-          <div className="space-y-6">
-            {/* Achievement Badges */}
-            {(profile.achievement_badges?.length > 0) && (
-              <AchievementBadges
-                achievements={profile.achievement_badges || []}
-                showAll={false}
-              />
-            )}
-
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-              <div>
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
-                  <Newspaper className="h-4 w-4 text-primary" />
-                  Press Coverage
-                  {!hasAdvancedProfile && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                      <Crown className="h-3 w-3" /> Pro
-                    </Badge>
-                  )}
-                </h3>
-                {hasAdvancedProfile ? (
-                  <PressLinksSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-                ) : (
-                  <div className="text-center py-6">
-                    <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                    <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
-                    <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                      <Crown className="h-3 w-3" /> Unlock
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
-                  <Award className="h-4 w-4 text-primary" />
-                  Awards
-                  {!hasAdvancedProfile && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                      <Crown className="h-3 w-3" /> Pro
-                    </Badge>
-                  )}
-                </h3>
-                {hasAdvancedProfile ? (
-                  <AwardsSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-                ) : (
-                  <div className="text-center py-6">
-                    <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                    <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
-                    <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                      <Crown className="h-3 w-3" /> Unlock
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {industryStats.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Industry Stats</h3>
-                <IndustryStatsSection stats={industryStats} isOwnProfile={true} onRefresh={onRefresh} />
-              </div>
-            )}
+            <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
           </div>
         );
 
@@ -199,19 +105,93 @@ export const ProfileContentSections = ({
           />
         );
 
-      case "collabs":
+      case "reviews":
         return (
-          <div>
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Handshake className="h-5 w-5 text-primary" />
-              Collaboration History
-            </h2>
-            <CollaborationHistory userId={profile.user_id} isOwnProfile={true} />
-          </div>
+          <ReviewsSection
+            reviews={reviews}
+            isOwnProfile={true}
+            profileUserId={profile.user_id}
+            onRefresh={onRefresh}
+          />
         );
 
-      case "shop":
-        return <DigitalProductsSection userId={profile.user_id} isOwner={true} />;
+      case "more":
+        return (
+          <div className="space-y-8">
+            {/* Collaboration History */}
+            <div>
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Handshake className="h-5 w-5 text-primary" />
+                Collaboration History
+              </h2>
+              <CollaborationHistory userId={profile.user_id} isOwnProfile={true} />
+            </div>
+
+            {/* Press & Awards */}
+            <div className="space-y-6">
+              {(profile.achievement_badges?.length > 0) && (
+                <AchievementBadges achievements={profile.achievement_badges || []} showAll={false} />
+              )}
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Newspaper className="h-4 w-4 text-primary" />
+                    Press Coverage
+                    {!hasAdvancedProfile && (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                        <Crown className="h-3 w-3" /> Pro
+                      </Badge>
+                    )}
+                  </h3>
+                  {hasAdvancedProfile ? (
+                    <PressLinksSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
+                  ) : (
+                    <div className="text-center py-6">
+                      <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                      <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
+                      <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                        <Crown className="h-3 w-3" /> Unlock
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Award className="h-4 w-4 text-primary" />
+                    Awards
+                    {!hasAdvancedProfile && (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
+                        <Crown className="h-3 w-3" /> Pro
+                      </Badge>
+                    )}
+                  </h3>
+                  {hasAdvancedProfile ? (
+                    <AwardsSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
+                  ) : (
+                    <div className="text-center py-6">
+                      <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                      <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
+                      <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
+                        <Crown className="h-3 w-3" /> Unlock
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {industryStats.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Industry Stats</h3>
+                  <IndustryStatsSection stats={industryStats} isOwnProfile={true} onRefresh={onRefresh} />
+                </div>
+              )}
+            </div>
+
+            {/* Shop */}
+            <div>
+              <DigitalProductsSection userId={profile.user_id} isOwner={true} />
+            </div>
+          </div>
+        );
 
       default:
         return null;

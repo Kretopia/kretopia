@@ -49,9 +49,9 @@ export function ModeDiscoverySheet() {
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
-            <span className="font-semibold text-sm">Create</span>
+            <span className="font-semibold text-sm">Explore</span>
             <span className="text-[11px] text-muted-foreground text-center leading-tight">
-              Connect, discover, get inspired
+              Discover, connect, get inspired
             </span>
           </button>
 

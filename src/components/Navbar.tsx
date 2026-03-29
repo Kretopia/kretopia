@@ -125,7 +125,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Create
+                Explore
               </button>
               <button
                 onClick={() => setMode("work")}
@@ -198,7 +198,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
                         )}
                       >
-                        Create
+                        Explore
                       </button>
                       <button
                         onClick={() => setMode("work")}
@@ -216,7 +216,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
 
                   {mode === "create" ? (
-                    /* ====== CREATE MODE MENU ====== */
+                    /* ====== EXPLORE MODE MENU ====== */
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />

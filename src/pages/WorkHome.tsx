@@ -116,9 +116,9 @@ const WorkHome = () => {
         {/* Active Projects Widget */}
         <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk/projects" }}>
           {activeProjects.length === 0 ? (
-            <div className="text-center py-4">
+             <div className="text-center py-4">
               <p className="text-sm text-muted-foreground mb-2">No active projects</p>
-              <Button size="sm" variant="outline" onClick={() => navigate("/desk")} className="gap-1">
+              <Button size="sm" variant="outline" onClick={() => setShowCreateProject(true)} className="gap-1">
                 <Plus className="h-3 w-3" /> Create Project
               </Button>
             </div>

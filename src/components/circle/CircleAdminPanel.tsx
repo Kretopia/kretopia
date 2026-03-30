@@ -360,6 +360,11 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
           </div>
         )}
 
+        {/* Invite View */}
+        {activeView === 'invite' && (
+          <CircleInviteTools circleId={circle.id} circleTitle={circle.title} inviteCode={circle.invite_code} />
+        )}
+
         {/* Events View */}
         {activeView === 'events' && (
           <CircleEvents circleId={circle.id} circleTitle={circle.title} />

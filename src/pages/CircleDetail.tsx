@@ -245,12 +245,8 @@ const CircleDetail = () => {
   };
 
   const sendMessage = async () => {
-    if (!user || !newMessage.trim() || sending || !activeChannel) return;
+    if (!user || !newMessage.trim() || sending || !activeChannel || !isMember) return;
     setSending(true);
-    if (!isMember) {
-      await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
-      setIsMember(true);
-    }
     await supabase.from("spark_room_messages").insert({
       room_id: circle.id,
       user_id: user.id,

@@ -179,26 +179,45 @@ export function useSwipeActions(currentUserId: string | undefined) {
       // No client-side notification creation needed - prevents duplicates
       console.log('[useSwipeActions] Match created - notifications handled by database trigger');
 
-      // Try to send email notifications to both users using user-authenticated endpoint
+      // Send match email notifications to both users
       try {
         console.log('[useSwipeActions] Sending match email notifications...');
-        // Send email to the other user (target) about the match
-        const { error: emailError } = await supabase.functions.invoke('send-user-email', {
-          body: {
-            type: 'match',
-            recipientId: targetId,
-            data: {
-              matchedUserName: currentUserProfile?.full_name,
-              matchedUserRole: currentUserProfile?.role
+        
+        // Notify the target user about the match
+        const matchEmailPromises = [
+          supabase.functions.invoke('send-notification-email', {
+            body: {
+              recipientId: targetId,
+              type: 'match',
+              data: {
+                userName: matchedProfile?.full_name || 'there',
+                matchName: currentUserProfile?.full_name || 'A creator',
+              }
             }
+          }),
+          // Also notify the current user
+          supabase.functions.invoke('send-notification-email', {
+            body: {
+              recipientId: currentUserId,
+              type: 'match',
+              data: {
+                userName: currentUserProfile?.full_name || 'there',
+                matchName: matchedProfile?.full_name || 'A creator',
+              }
+            }
+          })
+        ];
+
+        const results = await Promise.allSettled(matchEmailPromises);
+        results.forEach((result, i) => {
+          if (result.status === 'rejected') {
+            console.warn(`[useSwipeActions] Match email ${i} failed:`, result.reason);
+          } else if (result.value?.error) {
+            console.warn(`[useSwipeActions] Match email ${i} error:`, result.value.error);
+          } else {
+            console.log(`[useSwipeActions] Match email ${i} sent successfully`);
           }
         });
-        
-        if (emailError) {
-          console.warn('[useSwipeActions] Match email to target failed:', emailError);
-        } else {
-          console.log('[useSwipeActions] Match email sent to target user');
-        }
       } catch (emailError) {
         console.warn('[useSwipeActions] Email notification failed (non-blocking):', emailError);
       }

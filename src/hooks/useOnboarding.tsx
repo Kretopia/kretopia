@@ -84,8 +84,18 @@ export function useOnboarding() {
 
       // Send welcome email after onboarding completes
       try {
-        await supabase.functions.invoke('send-user-email', {
-          body: { type: 'welcome' }
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', user.id)
+          .single();
+
+        await supabase.functions.invoke('send-notification-email', {
+          body: { 
+            to: user.email,
+            type: 'welcome',
+            data: { userName: profile?.full_name || 'there' }
+          }
         });
         console.log('[Onboarding] Welcome email sent');
       } catch (emailErr) {

@@ -224,10 +224,6 @@ export default function Onboarding() {
         onboarding_step: 6,
         xp: 100,
       };
-      if (hourlyRate) {
-        updateData.hourly_rate = parseFloat(hourlyRate);
-        updateData.rate_currency = 'USD';
-      }
       await supabase.from("profiles").update(updateData).eq("user_id", user.id);
 
       const pendingConnect = localStorage.getItem('pendingConnect');

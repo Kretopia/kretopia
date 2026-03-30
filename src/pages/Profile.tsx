@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import jsPDF from 'jspdf';
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
+import { PageTransition } from "@/components/PageTransition";
 
 // Context & Hooks
 import { ProfileProvider, useProfileContext } from "@/contexts/ProfileContext";

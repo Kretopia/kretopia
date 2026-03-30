@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Receipt, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Receipt, Sparkles, Loader2, Camera, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { EXPENSE_CATEGORIES } from "./ExpenseCategories";
 
@@ -24,6 +24,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -37,6 +38,55 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     recurring_interval: "monthly",
     payment_method: "card",
   });
+
+  const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setScanning(true);
+    try {
+      // Convert to base64
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(",")[1]); // Remove data:image/...;base64, prefix
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { data, error } = await supabase.functions.invoke("scan-receipt", {
+        body: { image_base64: base64 },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Auto-fill the form
+      setForm(prev => ({
+        ...prev,
+        title: data.title || prev.title,
+        amount: data.amount?.toString() || prev.amount,
+        currency: data.currency || prev.currency,
+        category: data.category || prev.category,
+        vendor: data.vendor || prev.vendor,
+        date: data.date || prev.date,
+        tax_deductible: data.tax_deductible ?? prev.tax_deductible,
+        notes: data.notes || (data.line_items?.length
+          ? `Items: ${data.line_items.map((i: any) => `${i.description} (${data.currency} ${i.amount})`).join(", ")}`
+          : prev.notes),
+      }));
+
+      toast.success("Receipt scanned! Review the details below.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to scan receipt");
+    } finally {
+      setScanning(false);
+      // Reset file input
+      e.target.value = "";
+    }
+  };
 
   const handleAutoCategorize = async () => {
     if (!form.title) return;
@@ -109,6 +159,40 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
+          {/* Scan Receipt CTA */}
+          <label className={`flex items-center gap-3 p-3 rounded-lg border-2 border-dashed cursor-pointer transition-all ${scanning ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-primary/5"}`}>
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              {scanning ? (
+                <Loader2 className="h-5 w-5 text-primary animate-spin" />
+              ) : (
+                <Camera className="h-5 w-5 text-primary" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold">
+                {scanning ? "Scanning receipt..." : "Scan a Receipt or Bill"}
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                {scanning ? "AI is extracting the details" : "Upload a photo and AI will fill everything in"}
+              </p>
+            </div>
+            <ScanLine className="h-4 w-4 text-muted-foreground shrink-0" />
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleScanReceipt}
+              disabled={scanning}
+            />
+          </label>
+
+          <div className="relative flex items-center">
+            <div className="flex-1 border-t border-border" />
+            <span className="px-2 text-[10px] text-muted-foreground">or enter manually</span>
+            <div className="flex-1 border-t border-border" />
+          </div>
+
           <div>
             <Label className="text-xs">Title *</Label>
             <Input placeholder="e.g. Adobe Creative Cloud" value={form.title}

@@ -74,8 +74,11 @@ export default function Onboarding() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [pendingConnectForCelebration, setPendingConnectForCelebration] = useState<string | null>(null);
-  const [hourlyRate, setHourlyRate] = useState("");
   const [firstCredit, setFirstCredit] = useState({ project_name: "", role: "", project_type: "" });
+  const [creditLink, setCreditLink] = useState("");
+  const [aiCreditPrompt, setAiCreditPrompt] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState("");
 
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");

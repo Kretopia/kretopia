@@ -105,7 +105,7 @@ const Scene = () => {
           </Tabs>
         </div>
       </div>
-    </>
+    </PageTransition>
   );
 };
 

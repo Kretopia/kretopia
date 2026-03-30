@@ -189,6 +189,10 @@ const WorkHome = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3 pt-2">
+          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => setShowCreateProject(true)}>
+            <FolderKanban className="h-4 w-4" />
+            <span className="text-xs">New Workspace</span>
+          </Button>
           <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/post-opportunity")}>
             <Briefcase className="h-4 w-4" />
             <span className="text-xs">Post a Gig</span>
@@ -196,6 +200,10 @@ const WorkHome = () => {
           <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/thrivepay")}>
             <DollarSign className="h-4 w-4" />
             <span className="text-xs">ThrivePay</span>
+          </Button>
+          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/accounting")}>
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-xs">Earnings</span>
           </Button>
         </div>
       </div>

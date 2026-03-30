@@ -155,15 +155,15 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
         {contentSections.map((section, i) => (
           <div key={i}>
             {/* Render markdown section */}
-            <article className="prose prose-lg dark:prose-invert max-w-none
-              prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-10 prose-headings:mb-4
-              prose-h2:text-xl prose-h2:border-b prose-h2:border-border/30 prose-h2:pb-2
-              prose-p:text-[15px] prose-p:leading-[1.8] prose-p:text-muted-foreground prose-p:mb-5
+            <article className="prose prose-sm dark:prose-invert max-w-none
+              prose-headings:font-semibold prose-headings:tracking-tight prose-headings:mt-8 prose-headings:mb-3
+              prose-h2:text-base prose-h2:border-b prose-h2:border-border/30 prose-h2:pb-2
+              prose-p:text-[13px] prose-p:leading-[1.75] prose-p:text-muted-foreground prose-p:mb-4
               prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline
-              prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:not-italic prose-blockquote:text-foreground prose-blockquote:font-medium prose-blockquote:text-base
+              prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-2.5 prose-blockquote:px-4 prose-blockquote:not-italic prose-blockquote:text-foreground prose-blockquote:font-medium prose-blockquote:text-sm
               prose-strong:text-foreground
-              prose-li:text-[15px] prose-li:text-muted-foreground prose-li:leading-[1.8]
-              prose-ul:my-4 prose-ol:my-4
+              prose-li:text-[13px] prose-li:text-muted-foreground prose-li:leading-[1.75]
+              prose-ul:my-3 prose-ol:my-3
             ">
               <ReactMarkdown>{section}</ReactMarkdown>
             </article>

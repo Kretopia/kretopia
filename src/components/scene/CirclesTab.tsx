@@ -354,8 +354,8 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
       return;
     }
     if (!isMember) {
-      await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
-      setIsMember(true);
+      toast({ title: "Join required", description: "You must join this circle first", variant: "destructive" });
+      return;
     }
     const ext = file.name.split(".").pop();
     const path = `circles/${circle.id}/${Date.now()}.${ext}`;

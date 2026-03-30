@@ -545,8 +545,8 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
         </div>
       )}
 
-      {/* Input area */}
-      <div className="flex gap-2 pt-3 border-t border-border/50">
+      {/* Input area - only for members */}
+      {isMember ? <div className="flex gap-2 pt-3 border-t border-border/50">
         <input ref={fileRef} type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={handleMediaUpload} />
         <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => fileRef.current?.click()}>
           <Plus className="h-4 w-4" />

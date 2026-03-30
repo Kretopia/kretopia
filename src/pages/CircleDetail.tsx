@@ -667,7 +667,7 @@ const CircleDetail = () => {
         )}
 
         {/* Input */}
-        {activeChannel?.channel_type !== "events" && (
+        {activeChannel?.channel_type !== "events" && isMember && (
           <div className="flex gap-2 p-3 border-t border-border bg-card/50">
             <input ref={fileRef} type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={handleMediaUpload} />
             <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => fileRef.current?.click()}>

@@ -68,7 +68,7 @@ export function UsersTab() {
     }
   };
 
-  const updateUserRole = async (userId: string, role: "admin" | "moderator" | "user") => {
+  const updateUserRole = async (userId: string, role: "admin" | "moderator" | "writer" | "user") => {
     try {
       // First, remove existing role
       await supabase.from("user_roles").delete().eq("user_id", userId);

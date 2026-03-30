@@ -18,7 +18,7 @@ const DEFAULT_CONTENT = {
   tagline: "Free to start • Pro when you're ready • No credit card required",
 };
 
-export const LaunchingInBaliSection = () => {
+export const BottomCTASection = () => {
   // Detect TT users via Intl timezone as a lightweight, no-permission check
   const isTrinidad = (() => {
     try {

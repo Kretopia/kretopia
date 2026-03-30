@@ -236,6 +236,9 @@ const AppContent = () => {
             <Route path="/events" element={<Navigate to="/scene" replace />} />
             <Route path="/scene" element={<ProtectedRoute><Scene /></ProtectedRoute>} />
             
+            {/* Public Magazine Article - SEO accessible */}
+            <Route path="/magazine/:slug" element={<MagazineArticlePage />} />
+            
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />
             

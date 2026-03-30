@@ -122,10 +122,11 @@ const WorkHome = () => {
         <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk/projects" }}>
           {activeProjects.length === 0 ? (
              <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground mb-2">No active projects</p>
-              <Button size="sm" variant="outline" onClick={() => setShowCreateProject(true)} className="gap-1">
-                <Plus className="h-3 w-3" /> Create Project
-              </Button>
+              <p className="text-sm font-medium mb-1">Start your first workspace</p>
+              <p className="text-xs text-muted-foreground mb-3">Manage any creative project — freelance gigs, client work, or personal projects. All your files, tasks & comms in one place.</p>
+               <Button size="sm" onClick={() => setShowCreateProject(true)} className="gap-1">
+                 <Plus className="h-3 w-3" /> Create Workspace
+               </Button>
             </div>
           ) : (
             <div className="space-y-2">

@@ -27,6 +27,7 @@ import { useOnlinePresence, OnlineDot } from "@/components/messages/OnlinePresen
 import { MessageReplyBanner, InlineReply } from "@/components/messages/MessageReply";
 import { FileText } from "lucide-react";
 import { ConversationListSkeleton } from "@/components/skeletons/MessagesSkeletons";
+import { PageTransition } from "@/components/PageTransition";
 
 interface Conversation {
   conversation_id: string;
@@ -481,6 +482,7 @@ const Messages = () => {
   };
 
   return (
+    <PageTransition>
     <div className="flex h-[calc(100dvh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 lg:pb-0">
       {/* Conversations List */}
       <div
@@ -597,7 +599,7 @@ const Messages = () => {
                         <div className="flex items-center gap-1.5">
                           <p className="font-semibold text-sm sm:text-base truncate">{partner.name || 'Unknown'}</p>
                           {isOnline && (
-                            <span className="text-[10px] text-green-500 font-medium">online</span>
+                            <span className="text-[10px] text-success font-medium">online</span>
                           )}
                         </div>
                         <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0 ml-2">
@@ -668,7 +670,7 @@ const Messages = () => {
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     {onlineUsers.has(otherUser.id) ? (
-                      <span className="text-green-500">Online</span>
+                      <span className="text-success">Online</span>
                     ) : (
                       otherUser.role || ''
                     )}
@@ -946,6 +948,7 @@ const Messages = () => {
         />
       )}
     </div>
+    </PageTransition>
   );
 };
 

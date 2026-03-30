@@ -16,6 +16,8 @@ import { Users, Sparkles, UserPlus, LayoutGrid } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { PageTransition } from "@/components/PageTransition";
+import { SwipeCardSkeleton, ConnectionListSkeleton } from "@/components/skeletons/CircleSkeletons";
 
 
 export default function Circle() {
@@ -140,6 +142,7 @@ export default function Circle() {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
       <SEO title="Match - Find Your Creative Partner" description="Swipe to connect with creators" />
       
@@ -235,5 +238,6 @@ export default function Circle() {
 
       <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
     </div>
+    </PageTransition>
   );
 }

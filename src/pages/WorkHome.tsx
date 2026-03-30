@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
+import { PageTransition } from "@/components/PageTransition";
 
 interface WidgetProps {
   title: string;
@@ -82,7 +83,7 @@ const WorkHome = () => {
   const activeGigs = gigs.filter(g => g.status === "active" || g.status === "open");
 
   return (
-    <>
+    <PageTransition>
       <Helmet>
         <title>Work Dashboard | ThriveIN</title>
         <meta name="description" content="Your creative business command center — projects, gigs, pipeline at a glance." />
@@ -134,7 +135,7 @@ const WorkHome = () => {
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all"
                   onClick={() => navigate(`/desk/${p.id}`)}
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
                   <span className="text-sm font-medium truncate flex-1">{p.title}</span>
                   <span className="text-[10px] text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(p.updated_at), { addSuffix: true })}
@@ -203,7 +204,7 @@ const WorkHome = () => {
         onOpenChange={setShowCreateProject}
         onSuccess={() => setShowCreateProject(false)}
       />
-    </>
+    </PageTransition>
   );
 };
 

@@ -27,6 +27,7 @@ import { useOnlinePresence, OnlineDot } from "@/components/messages/OnlinePresen
 import { MessageReplyBanner, InlineReply } from "@/components/messages/MessageReply";
 import { FileText } from "lucide-react";
 import { ConversationListSkeleton } from "@/components/skeletons/MessagesSkeletons";
+import { PageTransition } from "@/components/PageTransition";
 
 interface Conversation {
   conversation_id: string;

@@ -4,13 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { DollarSign } from "lucide-react";
+
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, User, Briefcase } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, User, Briefcase, Link2, Wand2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { OnboardingCelebration } from "@/components/onboarding/OnboardingCelebration";
@@ -72,8 +74,11 @@ export default function Onboarding() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [pendingConnectForCelebration, setPendingConnectForCelebration] = useState<string | null>(null);
-  const [hourlyRate, setHourlyRate] = useState("");
   const [firstCredit, setFirstCredit] = useState({ project_name: "", role: "", project_type: "" });
+  const [creditLink, setCreditLink] = useState("");
+  const [aiCreditPrompt, setAiCreditPrompt] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState("");
 
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");
@@ -219,10 +224,6 @@ export default function Onboarding() {
         onboarding_step: 6,
         xp: 100,
       };
-      if (hourlyRate) {
-        updateData.hourly_rate = parseFloat(hourlyRate);
-        updateData.rate_currency = 'USD';
-      }
       await supabase.from("profiles").update(updateData).eq("user_id", user.id);
 
       const pendingConnect = localStorage.getItem('pendingConnect');
@@ -441,40 +442,49 @@ export default function Onboarding() {
                 )}
               </div>
 
-              {/* Location */}
-              <div>
-                <Label htmlFor="location">Where are you based?</Label>
-                {showCustomLocation || (!LOCATION_OPTIONS.some(opt => opt.value === profile.location) && profile.location) ? (
-                  <div className="space-y-2">
-                    <Input id="location" value={profile.location} onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))} placeholder="City, Country" />
-                    <Button type="button" variant="ghost" size="sm" onClick={() => { setShowCustomLocation(false); setProfile(prev => ({ ...prev, location: '' })); }}>Choose from list</Button>
-                  </div>
-                ) : (
-                  <Select value={profile.location || undefined} onValueChange={(value) => { if (value === 'Other') { setShowCustomLocation(true); setProfile(prev => ({ ...prev, location: '' })); } else { setProfile(prev => ({ ...prev, location: value })); } }}>
-                    <SelectTrigger><SelectValue placeholder="Select location" /></SelectTrigger>
+              {/* Location — Country then City */}
+              <div className="space-y-3">
+                <div>
+                  <Label>Country / Region</Label>
+                  <Select value={selectedCountry || undefined} onValueChange={(value) => {
+                    setSelectedCountry(value);
+                    // For small countries, just set the country as location
+                    const country = LOCATION_HIERARCHY.find(c => c.value === value);
+                    if (country && country.cities.length <= 1) {
+                      setProfile(prev => ({ ...prev, location: country.cities[0]?.value || value }));
+                    } else {
+                      setProfile(prev => ({ ...prev, location: '' }));
+                    }
+                  }}>
+                    <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
                     <SelectContent className="max-h-[280px]">
                       {LOCATION_HIERARCHY.map(country => (
-                        <SelectGroup key={country.value}>
-                          <SelectLabel className="text-xs font-semibold text-muted-foreground">{country.flag} {country.label}</SelectLabel>
-                          <SelectItem value={country.value}>{country.flag} {country.label} (All)</SelectItem>
-                          {country.cities.map(city => (
-                            <SelectItem key={city.value} value={city.value} className="pl-6">{city.label}</SelectItem>
-                          ))}
-                        </SelectGroup>
+                        <SelectItem key={country.value} value={country.value}>{country.flag} {country.label}</SelectItem>
                       ))}
-                      <SelectGroup>
-                        <SelectLabel className="text-xs font-semibold text-muted-foreground">🌴 Regional</SelectLabel>
-                        <SelectItem value="Caribbean">🌴 Caribbean</SelectItem>
-                        <SelectItem value="Europe">🇪🇺 Europe</SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="text-xs font-semibold text-muted-foreground">🌍 Other</SelectLabel>
-                        <SelectItem value="Remote">🌍 Remote / Worldwide</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectGroup>
+                      <SelectItem value="Remote">🌍 Remote / Worldwide</SelectItem>
                     </SelectContent>
                   </Select>
-                )}
+                </div>
+
+                {/* Show city dropdown only for countries with multiple cities */}
+                {selectedCountry && (() => {
+                  const country = LOCATION_HIERARCHY.find(c => c.value === selectedCountry);
+                  if (!country || country.cities.length <= 1) return null;
+                  return (
+                    <div>
+                      <Label>City</Label>
+                      <Select value={profile.location || undefined} onValueChange={(value) => setProfile(prev => ({ ...prev, location: value }))}>
+                        <SelectTrigger><SelectValue placeholder="Select city (optional)" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={country.value}>{country.label} (General)</SelectItem>
+                          {country.cities.map(city => (
+                            <SelectItem key={city.value} value={city.value}>{city.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Continue */}
@@ -513,27 +523,6 @@ export default function Onboarding() {
                 </p>
               )}
 
-              {/* Rate Card - lightweight inline */}
-              <div className="border border-dashed border-primary/30 rounded-lg p-4 bg-primary/5">
-                <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">What's your hourly rate?</span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">Optional</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">$</span>
-                  <Input
-                    value={hourlyRate}
-                    onChange={(e) => setHourlyRate(e.target.value)}
-                    placeholder="e.g. 50"
-                    type="number"
-                    className="h-9 max-w-[120px]"
-                  />
-                  <span className="text-xs text-muted-foreground">/hr USD</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-1.5">Profiles with rates get 3x more gig inquiries</p>
-              </div>
-
               {/* Navigation */}
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
@@ -542,9 +531,9 @@ export default function Onboarding() {
                 </Button>
               </div>
 
-              {selectedSkills.length === 0 && !hourlyRate && (
+              {selectedSkills.length === 0 && (
                 <p className="text-xs text-center text-muted-foreground">
-                  You can skip this — add skills & rates from your profile anytime
+                  You can skip this — add skills from your profile anytime
                 </p>
               )}
             </div>
@@ -558,42 +547,127 @@ export default function Onboarding() {
                 <p className="text-muted-foreground text-sm">What's one project you've worked on? This builds your verified resume.</p>
               </div>
 
-              <div className="border border-border rounded-lg p-4 space-y-4 bg-muted/30">
-                <div>
-                  <Label htmlFor="project_name">Project Name</Label>
-                  <Input
-                    id="project_name"
-                    value={firstCredit.project_name}
-                    onChange={(e) => setFirstCredit(prev => ({ ...prev, project_name: e.target.value }))}
-                    placeholder='e.g. "Summer Vibes EP", "Nike Campaign"'
-                  />
+              <Tabs defaultValue="manual" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-9">
+                  <TabsTrigger value="manual" className="text-xs gap-1"><Briefcase className="h-3 w-3" /> Manual</TabsTrigger>
+                  <TabsTrigger value="link" className="text-xs gap-1"><Link2 className="h-3 w-3" /> Paste Link</TabsTrigger>
+                  <TabsTrigger value="ai" className="text-xs gap-1"><Wand2 className="h-3 w-3" /> AI Import</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="manual" className="mt-3">
+                  <div className="border border-border rounded-lg p-4 space-y-4 bg-muted/30">
+                    <div>
+                      <Label htmlFor="project_name">Project Name</Label>
+                      <Input id="project_name" value={firstCredit.project_name} onChange={(e) => setFirstCredit(prev => ({ ...prev, project_name: e.target.value }))} placeholder='e.g. "Summer Vibes EP", "Nike Campaign"' />
+                    </div>
+                    <div>
+                      <Label htmlFor="credit_role">Your Role</Label>
+                      <Input id="credit_role" value={firstCredit.role} onChange={(e) => setFirstCredit(prev => ({ ...prev, role: e.target.value }))} placeholder="e.g. Producer, Director, Designer" />
+                    </div>
+                    <div>
+                      <Label htmlFor="project_type">Type</Label>
+                      <Select value={firstCredit.project_type || undefined} onValueChange={(v) => setFirstCredit(prev => ({ ...prev, project_type: v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="music">Music</SelectItem>
+                          <SelectItem value="film">Film / Video</SelectItem>
+                          <SelectItem value="design">Design</SelectItem>
+                          <SelectItem value="photography">Photography</SelectItem>
+                          <SelectItem value="fashion">Fashion</SelectItem>
+                          <SelectItem value="event">Event</SelectItem>
+                          <SelectItem value="brand">Brand Campaign</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="link" className="mt-3">
+                  <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
+                    <p className="text-xs text-muted-foreground">Paste a link to your work (YouTube, Spotify, Vimeo, SoundCloud, Behance, etc.) and we'll auto-fill the details.</p>
+                    <Input
+                      value={creditLink}
+                      onChange={(e) => setCreditLink(e.target.value)}
+                      placeholder="https://youtube.com/watch?v=... or spotify.com/track/..."
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full gap-2"
+                      disabled={!creditLink.trim() || aiLoading}
+                      onClick={async () => {
+                        setAiLoading(true);
+                        try {
+                          const { data } = await supabase.functions.invoke('ai-credit-import', {
+                            body: { type: 'link', content: creditLink, userId: user!.id }
+                          });
+                          if (data?.project_name) {
+                            setFirstCredit({ project_name: data.project_name, role: data.role || '', project_type: data.project_type || '' });
+                            toast({ title: "✨ Credit imported!", description: `Found: ${data.project_name}` });
+                          } else {
+                            toast({ title: "Couldn't extract details", description: "Try adding manually instead", variant: "destructive" });
+                          }
+                        } catch (e) {
+                          console.error('Link import error:', e);
+                          toast({ title: "Import failed", description: "Try adding manually instead", variant: "destructive" });
+                        } finally { setAiLoading(false); }
+                      }}
+                    >
+                      {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                      Import from Link
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="ai" className="mt-3">
+                  <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
+                    <p className="text-xs text-muted-foreground">Describe a project you worked on and AI will structure it as a credit.</p>
+                    <Textarea
+                      value={aiCreditPrompt}
+                      onChange={(e) => setAiCreditPrompt(e.target.value)}
+                      placeholder='e.g. "I directed a music video for Machel Montano last Carnival" or "I designed the brand identity for a local coffee shop"'
+                      rows={3}
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full gap-2"
+                      disabled={!aiCreditPrompt.trim() || aiLoading}
+                      onClick={async () => {
+                        setAiLoading(true);
+                        try {
+                          const { data } = await supabase.functions.invoke('ai-credit-import', {
+                            body: { type: 'description', content: aiCreditPrompt, userId: user!.id }
+                          });
+                          if (data?.project_name) {
+                            setFirstCredit({ project_name: data.project_name, role: data.role || '', project_type: data.project_type || '' });
+                            toast({ title: "✨ Credit created!", description: `Generated: ${data.project_name}` });
+                          } else {
+                            toast({ title: "Couldn't generate credit", description: "Try adding manually", variant: "destructive" });
+                          }
+                        } catch (e) {
+                          console.error('AI import error:', e);
+                          toast({ title: "AI import failed", description: "Try adding manually", variant: "destructive" });
+                        } finally { setAiLoading(false); }
+                      }}
+                    >
+                      {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                      Generate Credit with AI
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              {/* Show preview if credit is populated */}
+              {firstCredit.project_name && (
+                <div className="border border-primary/20 rounded-lg p-3 bg-primary/5">
+                  <p className="text-xs text-muted-foreground mb-1">Credit Preview</p>
+                  <p className="font-medium text-sm">{firstCredit.project_name}</p>
+                  {firstCredit.role && <p className="text-xs text-muted-foreground">{firstCredit.role}</p>}
+                  {firstCredit.project_type && <p className="text-xs text-muted-foreground capitalize">{firstCredit.project_type}</p>}
                 </div>
-                <div>
-                  <Label htmlFor="credit_role">Your Role</Label>
-                  <Input
-                    id="credit_role"
-                    value={firstCredit.role}
-                    onChange={(e) => setFirstCredit(prev => ({ ...prev, role: e.target.value }))}
-                    placeholder="e.g. Producer, Director, Designer"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="project_type">Type</Label>
-                  <Select value={firstCredit.project_type || undefined} onValueChange={(v) => setFirstCredit(prev => ({ ...prev, project_type: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="music">Music</SelectItem>
-                      <SelectItem value="film">Film / Video</SelectItem>
-                      <SelectItem value="design">Design</SelectItem>
-                      <SelectItem value="photography">Photography</SelectItem>
-                      <SelectItem value="fashion">Fashion</SelectItem>
-                      <SelectItem value="event">Event</SelectItem>
-                      <SelectItem value="brand">Brand Campaign</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              )}
 
               <p className="text-xs text-center text-muted-foreground">
                 This is the start of your ICDB profile — like IMDb, but for every creative industry.

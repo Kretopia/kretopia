@@ -365,31 +365,34 @@ export default function Onboarding() {
     }
   }, [currentStep, navigate]);
 
-  const progress = currentStep === 7 ? 100 : (currentStep / 4) * 100;
+  const progress = currentStep >= 4 ? 100 : (currentStep / 4) * 100;
   const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === profile.role);
+  const showStepProgress = currentStep <= 4;
 
   return (
     <>
       <SEO title="Welcome to ThriveIN - Set Up Your Profile" description="Set up your creator profile on ThriveIN in under 60 seconds." />
       <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex items-center justify-center p-4">
         <Card className="w-full max-w-lg p-6 sm:p-8">
-          {/* Progress */}
-          <div className="mb-6">
-            <Progress value={progress} className="h-2 mb-4" />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              {STEPS.map((step) => {
-                const Icon = step.icon;
-                const isComplete = currentStep > step.id;
-                const isCurrent = currentStep === step.id;
-                return (
-                  <div key={step.id} className={`flex flex-col items-center gap-1 ${isCurrent ? "text-primary font-medium" : isComplete ? "text-green-500" : ""}`}>
-                    {isComplete ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                    <span>{step.title}</span>
-                  </div>
-                );
-              })}
+          {/* Progress — hidden on email verification step */}
+          {showStepProgress && (
+            <div className="mb-6">
+              <Progress value={progress} className="h-2 mb-4" />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                {STEPS.map((step) => {
+                  const Icon = step.icon;
+                  const isComplete = currentStep > step.id;
+                  const isCurrent = currentStep === step.id;
+                  return (
+                    <div key={step.id} className={`flex flex-col items-center gap-1 ${isCurrent ? "text-primary font-medium" : isComplete ? "text-primary/70" : ""}`}>
+                      {isComplete ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                      <span>{step.title}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Step 1: Profile Basics */}
           {currentStep === 1 && (

@@ -1,28 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, AlertCircle, Briefcase, User, Loader2, ArrowRight, ArrowLeft, Lock, CheckCircle2, X, Mail, RefreshCw, Chrome, Eye, EyeOff } from "lucide-react";
+import { Lock } from "lucide-react";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
-import { AuthCreatorTeaser } from "@/components/auth/AuthCreatorTeaser";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { validateEmail, validatePassword } from "@/lib/validation";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
-import { Progress } from "@/components/ui/progress";
-import { Card } from "@/components/ui/card";
+
+// Refactored sub-components
+import { AuthBrandingPanel } from "@/components/auth/AuthBrandingPanel";
+import { SignInForm } from "@/components/auth/SignInForm";
+import { SignUpWizard } from "@/components/auth/SignUpWizard";
+import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
+import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -31,52 +25,26 @@ const Auth = () => {
   const [inviteCode, setInviteCode] = useState("");
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [loading, setLoading] = useState(false);
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState("");
-  const [inviteError, setInviteError] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
-  const [resetLoading, setResetLoading] = useState(false);
-  const [opportunitiesCount, setOpportunitiesCount] = useState<number>(0);
-  
-  // Multi-step signup state - 3 steps now (account type, email, password)
-  const [signupStep, setSignupStep] = useState(1);
-  const totalSteps = 3;
-  const [inviteValidated, setInviteValidated] = useState(false);
-  const [validatingInvite, setValidatingInvite] = useState(false);
-  
-  // Password reset state
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [newPasswordError, setNewPasswordError] = useState("");
-  const [confirmNewPasswordError, setConfirmNewPasswordError] = useState("");
   const [showWaitlistForm, setShowWaitlistForm] = useState(false);
-  // Email confirmation state
-  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
-  const [confirmationEmail, setConfirmationEmail] = useState("");
-  const [resendingEmail, setResendingEmail] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  
+
   const claimProfileId = searchParams.get("claim");
   const redirectTo = claimProfileId ? `/profile/${claimProfileId}?showClaim=true` : (searchParams.get("redirect") || "/circle");
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 
-  // Track auth funnel with granular events
   const authLoadTime = useState(() => Date.now())[0];
   const hasTrackedView = useState(false);
-  
-  // Redirect if already authenticated & fetch opportunities count & pre-fill invite code
+
+  // Redirect if already authenticated & track page view
   useEffect(() => {
-    // Track page view with referrer context
     if (!hasTrackedView[0]) {
       hasTrackedView[1](true);
       const trackPage = async () => {
@@ -85,7 +53,7 @@ const Auth = () => {
         trackEvent({
           eventName: 'auth_page_loaded',
           eventCategory: EventCategory.AUTH,
-          properties: { 
+          properties: {
             referrer: document.referrer,
             has_invite_code: !!(searchParams.get("invite") || searchParams.get("inviteCode") || sessionStorage.getItem("invite_code")),
             has_claim: !!searchParams.get("claim"),
@@ -96,30 +64,22 @@ const Auth = () => {
       };
       trackPage();
     }
-    
+
     if (user) {
-      // Handle auto-connect if user just logged in with connect parameter
       if (connectUserId) {
         handleAutoConnect(connectUserId);
       } else {
-        // Check if user needs onboarding (especially for Google sign-up)
         const checkOnboarding = async () => {
           const { data: profile } = await supabase
             .from('profiles')
             .select('onboarding_completed, account_type')
             .eq('user_id', user.id)
             .single();
-          
+
           if (!profile || !profile.onboarding_completed) {
-            // New user or incomplete onboarding
             const { analytics } = await import("@/lib/analytics");
             analytics.onboardingStart();
-            
-            if (profile?.account_type === 'company') {
-              navigate("/company-onboarding");
-            } else {
-              navigate("/onboarding");
-            }
+            navigate(profile?.account_type === 'company' ? "/company-onboarding" : "/onboarding");
           } else {
             navigate(redirectTo);
           }
@@ -127,35 +87,21 @@ const Auth = () => {
         checkOnboarding();
       }
     }
-    
-    // Pre-fill invite code from URL or sessionStorage (from /join/:code route)
+
+    // Pre-fill invite code
     const inviteFromUrl = searchParams.get("invite") || searchParams.get("inviteCode");
     const inviteFromSession = sessionStorage.getItem("invite_code");
-    
     if (inviteFromUrl) {
       setInviteCode(inviteFromUrl.toUpperCase());
     } else if (inviteFromSession) {
       setInviteCode(inviteFromSession.toUpperCase());
-      // Clear it after use so it doesn't persist
       sessionStorage.removeItem("invite_code");
     }
-    
-    // Fetch opportunities count for social proof
-    const fetchCount = async () => {
-      const { count } = await supabase
-        .from('opportunities')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'active');
-      setOpportunitiesCount(count || 0);
-    };
-    fetchCount();
   }, [user, navigate, redirectTo, searchParams, connectUserId]);
 
   const handleAutoConnect = async (targetUserId: string) => {
     if (!user) return;
-    
     try {
-      // Check if connection already exists
       const { data: existingConnection } = await supabase
         .from('connections')
         .select('*')
@@ -163,189 +109,89 @@ const Auth = () => {
         .maybeSingle();
 
       if (existingConnection) {
-        toast({
-          title: "Already Connected",
-          description: "You're already connected with this user",
-        });
+        toast({ title: "Already Connected", description: "You're already connected with this user" });
         navigate('/circle?tab=network');
         return;
       }
 
-      // Get target user's profile and current user's profile
       const [{ data: targetProfile }, { data: currentProfile }] = await Promise.all([
         supabase.from('profiles').select('full_name, avatar_url, role').eq('user_id', targetUserId).single(),
         supabase.from('profiles').select('full_name, avatar_url, role').eq('user_id', user.id).single()
       ]);
 
-      // Create bidirectional ACCEPTED connections (instant connection via QR/link)
       const { error: connectionError } = await supabase
         .from('connections')
         .insert([
           { user_id: user.id, connected_user_id: targetUserId, status: 'accepted' },
           { user_id: targetUserId, connected_user_id: user.id, status: 'accepted' }
         ]);
-
       if (connectionError) throw connectionError;
 
-      // Create a match record for this connection
-      await supabase.from('matches').insert({
-        user1_id: user.id,
-        user2_id: targetUserId,
-        match_type: 'creator',
-        status: 'active'
-      });
+      await supabase.from('matches').insert({ user1_id: user.id, user2_id: targetUserId, match_type: 'creator', status: 'active' });
 
-      // Send notifications to both users about the new connection
-      const notifications = [
-        {
-          user_id: user.id,
-          type: 'connection',
-          title: `Connected with ${targetProfile?.full_name || 'a creator'}! 🎉`,
-          message: `You're now connected via QR code. Start collaborating!`,
-          link: `/profile/${targetUserId}?from=match`,
-          action_url: `/messages?user=${targetUserId}`,
-          action_text: 'Send Message',
-          image_url: targetProfile?.avatar_url
-        },
-        {
-          user_id: targetUserId,
-          type: 'connection',
-          title: `${currentProfile?.full_name || 'Someone'} connected with you! 🎉`,
-          message: `New connection via QR code. Say hello!`,
-          link: `/profile/${user.id}?from=match`,
-          action_url: `/messages?user=${user.id}`,
-          action_text: 'Send Message',
-          image_url: currentProfile?.avatar_url
-        }
-      ];
+      await supabase.from('notifications').insert([
+        { user_id: user.id, type: 'connection', title: `Connected with ${targetProfile?.full_name || 'a creator'}! 🎉`, message: `You're now connected via QR code. Start collaborating!`, link: `/profile/${targetUserId}?from=match`, action_url: `/messages?user=${targetUserId}`, action_text: 'Send Message', image_url: targetProfile?.avatar_url },
+        { user_id: targetUserId, type: 'connection', title: `${currentProfile?.full_name || 'Someone'} connected with you! 🎉`, message: `New connection via QR code. Say hello!`, link: `/profile/${user.id}?from=match`, action_url: `/messages?user=${user.id}`, action_text: 'Send Message', image_url: currentProfile?.avatar_url }
+      ]);
 
-      await supabase.from('notifications').insert(notifications);
-
-      toast({
-        title: "Connected! 🎉",
-        description: `You and ${targetProfile?.full_name || 'this creator'} are now connected!`,
-      });
-
-      // Navigate to their profile with match context
+      toast({ title: "Connected! 🎉", description: `You and ${targetProfile?.full_name || 'this creator'} are now connected!` });
       navigate(`/profile/${targetUserId}?from=match`);
     } catch (error) {
       console.error('Auto-connect error:', error);
-      toast({
-        title: "Connection Failed",
-        description: "Unable to create connection",
-        variant: "destructive",
-      });
+      toast({ title: "Connection Failed", description: "Unable to create connection", variant: "destructive" });
       navigate(redirectTo);
     }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate inputs
-    const emailValidation = validateEmail(email);
-    const passwordValidation = validatePassword(password);
-    
-    if (!emailValidation.valid) {
-      setEmailError(emailValidation.error || "");
-      return;
-    }
-    if (!passwordValidation.valid) {
-      setPasswordError(passwordValidation.error || "");
-      return;
-    }
-    
-    setEmailError("");
-    setPasswordError("");
     setLoading(true);
-    
-    // Track sign-in attempt
+
     const { trackEvent, EventCategory } = await import("@/lib/analytics");
-    trackEvent({
-      eventName: 'signin_attempt',
-      eventCategory: EventCategory.AUTH,
-      properties: { time_on_page_ms: Date.now() - authLoadTime },
-    });
+    trackEvent({ eventName: 'signin_attempt', eventCategory: EventCategory.AUTH, properties: { time_on_page_ms: Date.now() - authLoadTime } });
 
     try {
-      // Aggressively clear any corrupted session data before login
       try {
         localStorage.removeItem('sb-kwmcocsitwssrtzkdojh-auth-token');
         sessionStorage.clear();
         await supabase.auth.signOut({ scope: 'local' });
       } catch (cleanupErr) {
         console.warn('[Auth] Session cleanup warning:', cleanupErr);
-        // Continue anyway - we want to try the login
       }
-      
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        // Track auth errors
         const { analytics: errAnalytics } = await import("@/lib/analytics");
-        const errorType = error.message.includes("Invalid login") ? "invalid_credentials" 
+        const errorType = error.message.includes("Invalid login") ? "invalid_credentials"
           : error.message.includes("Failed to fetch") ? "network_error" : "other";
         errAnalytics.errorOccurred('signin_failed', errorType, 'auth');
-        
-        // Handle network errors specifically
+
         if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
-          toast({
-            title: "Connection Error",
-            description: "Please check your internet connection and try again.",
-            variant: "destructive",
-          });
+          toast({ title: "Connection Error", description: "Please check your internet connection and try again.", variant: "destructive" });
         } else if (error.message.includes("Invalid login credentials")) {
-          toast({
-            title: "Login Failed",
-            description: "Invalid email or password. Please try again.",
-            variant: "destructive",
-          });
+          toast({ title: "Login Failed", description: "Invalid email or password. Please try again.", variant: "destructive" });
         } else {
-          toast({
-            title: "Error",
-            description: error.message,
-            variant: "destructive",
-          });
+          toast({ title: "Error", description: error.message, variant: "destructive" });
         }
       } else {
-        // Track successful sign in
         const { analytics } = await import("@/lib/analytics");
         analytics.signIn('email');
-        
-        // Check if user is admin and redirect accordingly
+
         const { data: { user: signedInUser } } = await supabase.auth.getUser();
         if (signedInUser) {
           const { data: adminData } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", signedInUser.id)
-            .eq("role", "admin")
-            .maybeSingle();
-          
-          console.log('[Auth] Admin check result:', adminData);
-          const isAdmin = !!adminData;
-          
-          toast({
-            title: "Welcome back!",
-            description: "You've successfully signed in",
-          });
-          
-          navigate(isAdmin ? "/admin" : redirectTo);
+            .from("user_roles").select("role").eq("user_id", signedInUser.id).eq("role", "admin").maybeSingle();
+
+          toast({ title: "Welcome back!", description: "You've successfully signed in" });
+          navigate(!!adminData ? "/admin" : redirectTo);
         } else {
           navigate(redirectTo);
         }
       }
     } catch (err: any) {
-      // Handle any unexpected errors (like network failures)
       console.error('[Auth] Sign in error:', err);
-      toast({
-        title: "Connection Error",
-        description: "Unable to connect. Please check your internet and try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Connection Error", description: "Unable to connect. Please check your internet and try again.", variant: "destructive" });
     }
     setLoading(false);
   };
@@ -353,924 +199,171 @@ const Auth = () => {
   const handleOAuthSignIn = async (provider: "google" | "apple") => {
     const setLoadingFn = provider === "google" ? setGoogleLoading : setAppleLoading;
     setLoadingFn(true);
-    
+
     const { analytics } = await import("@/lib/analytics");
     analytics.featureUsed(`${provider}_signin_attempt`);
-    
+
     try {
-      // Always use Lovable Cloud managed OAuth (works on all domains including custom)
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
-      });
-      
-      if ('redirected' in result && result.redirected) {
-        return;
-      }
-      
+      const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: window.location.origin });
+
+      if ('redirected' in result && result.redirected) return;
+
       if (result.error) {
         const errorMsg = result.error.message;
-        
-        if (errorMsg.includes("cancelled")) {
-          setLoadingFn(false);
-          return;
-        }
-        
+        if (errorMsg.includes("cancelled")) { setLoadingFn(false); return; }
         if (errorMsg.includes("Popup was blocked") || errorMsg.includes("blocked")) {
           analytics.errorOccurred(`${provider}_signin`, "popup_blocked", "auth");
-          toast({
-            title: "Pop-up Blocked",
-            description: "Please allow pop-ups for this site or try opening the app in a new tab.",
-            variant: "destructive",
-          });
-          setLoadingFn(false);
-          return;
+          toast({ title: "Pop-up Blocked", description: "Please allow pop-ups for this site or try opening the app in a new tab.", variant: "destructive" });
+          setLoadingFn(false); return;
         }
-
         if (errorMsg.includes("Preview mode") || errorMsg.includes("not supported")) {
-          toast({
-            title: "Open in New Tab",
-            description: `${provider === "google" ? "Google" : "Apple"} sign-in works best when the app is opened directly. Click the arrow icon to open in a new tab.`,
-            variant: "destructive",
-          });
-          setLoadingFn(false);
-          return;
+          toast({ title: "Open in New Tab", description: `${provider === "google" ? "Google" : "Apple"} sign-in works best when the app is opened directly.`, variant: "destructive" });
+          setLoadingFn(false); return;
         }
-        
         analytics.errorOccurred(`${provider}_signin`, errorMsg, "auth");
-        toast({
-          title: `${provider === "google" ? "Google" : "Apple"} Sign-In Failed`,
-          description: errorMsg,
-          variant: "destructive",
-        });
-        setLoadingFn(false);
-        return;
+        toast({ title: `${provider === "google" ? "Google" : "Apple"} Sign-In Failed`, description: errorMsg, variant: "destructive" });
+        setLoadingFn(false); return;
       } else {
         analytics.signIn(provider);
-        toast({
-          title: "Welcome!",
-          description: `Signed in with ${provider === "google" ? "Google" : "Apple"} successfully.`,
-        });
+        toast({ title: "Welcome!", description: `Signed in with ${provider === "google" ? "Google" : "Apple"} successfully.` });
       }
     } catch (err: any) {
       console.error(`${provider} sign-in error:`, err);
-      toast({
-        title: "Error",
-        description: `Failed to sign in with ${provider === "google" ? "Google" : "Apple"}. Please try again.`,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: `Failed to sign in with ${provider === "google" ? "Google" : "Apple"}. Please try again.`, variant: "destructive" });
       setLoadingFn(false);
-    }
-  };
-
-  const handleGoogleSignIn = () => handleOAuthSignIn("google");
-  const handleAppleSignIn = () => handleOAuthSignIn("apple");
-
-  const validateInviteCode = async (code: string) => {
-    if (!code.trim()) {
-      setInviteError("Please enter an invite code");
-      return false;
-    }
-    
-    setValidatingInvite(true);
-    setInviteError("");
-    
-    try {
-      const { data, error } = await supabase.rpc('validate_invite_code', { code: code.trim() });
-      
-      if (error || !data) {
-        setInviteError("Invalid or expired invite code");
-        setInviteValidated(false);
-        return false;
-      }
-      
-      setInviteValidated(true);
-      return true;
-    } catch (err) {
-      setInviteError("Failed to validate invite code");
-      setInviteValidated(false);
-      return false;
-    } finally {
-      setValidatingInvite(false);
-    }
-  };
-
-  const handleNextStep = async () => {
-    const { analytics } = await import("@/lib/analytics");
-    
-    // Validate current step before proceeding
-    if (signupStep === 1) {
-      // Account type is always selected (has default)
-      analytics.featureUsed("signup_step", { step: 1, step_name: "account_type", account_type: accountType });
-      setSignupStep(2);
-    } else if (signupStep === 2) {
-      // Validate email
-      const emailValidation = validateEmail(email);
-      if (!emailValidation.valid) {
-        setEmailError(emailValidation.error || "");
-        return;
-      }
-      setEmailError("");
-      analytics.featureUsed("signup_step", { step: 2, step_name: "email" });
-      setSignupStep(3);
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Final validation
-    const passwordValidation = validatePassword(password);
-    
-    if (!passwordValidation.valid) {
-      setPasswordError(passwordValidation.error || "");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setConfirmPasswordError("Passwords don't match");
-      return;
-    }
-    
-    setPasswordError("");
-    setConfirmPasswordError("");
     setLoading(true);
-    
-    // Track signup attempt with timing
-    const { trackEvent, EventCategory } = await import("@/lib/analytics");
-    trackEvent({
-      eventName: 'signup_attempt',
-      eventCategory: EventCategory.AUTH,
-      properties: { time_on_page_ms: Date.now() - authLoadTime, account_type: accountType, has_invite_code: !!inviteCode },
-    });
 
-    // Email confirmation link should go to Circle (after onboarding is done)
+    const { trackEvent, EventCategory } = await import("@/lib/analytics");
+    trackEvent({ eventName: 'signup_attempt', eventCategory: EventCategory.AUTH, properties: { time_on_page_ms: Date.now() - authLoadTime, account_type: accountType, has_invite_code: !!inviteCode } });
+
     const { data: signUpData, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email, password,
       options: {
         emailRedirectTo: `${window.location.origin}/circle`,
-        data: {
-          account_type: accountType,
-          invite_code: inviteCode,
-        },
+        data: { account_type: accountType, invite_code: inviteCode },
       },
     });
 
     if (error) {
-      // Track signup errors
       const { analytics: errAnalytics } = await import("@/lib/analytics");
-      const errorType = error.message.includes("already registered") ? "already_registered" : "other";
-      errAnalytics.errorOccurred('signup_failed', errorType, 'auth');
-      
+      errAnalytics.errorOccurred('signup_failed', error.message.includes("already registered") ? "already_registered" : "other", 'auth');
+
       if (error.message.includes("already registered")) {
-        toast({
-          title: "Account Exists",
-          description: "This email is already registered. Please sign in instead.",
-          variant: "destructive",
-        });
+        toast({ title: "Account Exists", description: "This email is already registered. Please sign in instead.", variant: "destructive" });
       } else {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: error.message, variant: "destructive" });
       }
     } else {
-      // Track successful sign up
       const { analytics } = await import("@/lib/analytics");
       analytics.signUp('email');
       analytics.onboardingStart();
-      
-      // Use the invite code after successful signup
+
       if (signUpData?.user && inviteCode) {
         try {
-          await supabase.rpc('use_invite_code', { 
-            code: inviteCode.trim(), 
-            user_email: email,
-            new_user_id: signUpData.user.id
-          });
-        } catch (inviteErr) {
-          console.error('Error using invite code:', inviteErr);
-        }
+          await supabase.rpc('use_invite_code', { code: inviteCode.trim(), user_email: email, new_user_id: signUpData.user.id });
+        } catch (inviteErr) { console.error('Error using invite code:', inviteErr); }
       }
-      
-      // Store connect user ID for after onboarding if present
-      if (connectUserId) {
-        localStorage.setItem('pendingConnect', connectUserId);
-      }
-      
-      // Go directly to onboarding - email verification happens at the end
-      toast({
-        title: "Welcome to ThriveIN! 🎉",
-        description: "Let's set up your profile.",
-      });
-      
-      if (accountType === "company") {
-        navigate("/company-onboarding");
-      } else {
-        navigate("/onboarding");
-      }
+
+      if (connectUserId) localStorage.setItem('pendingConnect', connectUserId);
+
+      toast({ title: "Welcome to ThriveIN! 🎉", description: "Let's set up your profile." });
+      navigate(accountType === "company" ? "/company-onboarding" : "/onboarding");
     }
     setLoading(false);
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Track forgot password attempt
-    const { analytics } = await import("@/lib/analytics");
-    analytics.featureUsed("forgot_password_attempt");
-    
-    const emailValidation = validateEmail(resetEmail);
-    if (!emailValidation.valid) {
-      toast({
-        title: "Invalid Email",
-        description: emailValidation.error || "Please enter a valid email",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setResetLoading(true);
-
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/auth?reset=true`,
-    });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      analytics.featureUsed("forgot_password_sent");
-      toast({
-        title: "Check Your Email",
-        description: "We've sent you a password reset link. Please check your inbox.",
-      });
-      setShowForgotPassword(false);
-      setResetEmail("");
-    }
-
-    setResetLoading(false);
-  };
-
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate new password
-    const passwordValidation = validatePassword(newPassword);
-    if (!passwordValidation.valid) {
-      setNewPasswordError(passwordValidation.error || "");
-      return;
-    }
-
-    if (newPassword !== confirmNewPassword) {
-      setConfirmNewPasswordError("Passwords don't match");
-      return;
-    }
-
-    setNewPasswordError("");
-    setConfirmNewPasswordError("");
+  const handlePasswordReset = async (newPassword: string) => {
     setLoading(true);
-
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "Password Reset Successful",
-        description: "Your password has been updated. Start matching!",
-      });
-      
-      // Redirect to Circle after a short delay
-      setTimeout(() => {
-        navigate("/circle");
-      }, 1500);
+      toast({ title: "Password Reset Successful", description: "Your password has been updated. Start matching!" });
+      setTimeout(() => navigate("/circle"), 1500);
     }
-
     setLoading(false);
   };
-
 
   return (
     <div className="flex min-h-screen">
-      {/* Left branding panel - hidden on mobile */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,hsl(var(--primary)/0.15),transparent_60%)]" />
-        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-secondary/10 blur-3xl" />
-        
-        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
-          <div className="mb-8">
-            <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              thriveIN
-            </span>
-            <span className="ml-2 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-              Beta
-            </span>
-          </div>
-          
-          <h2 className="text-3xl xl:text-4xl font-bold leading-tight mb-4">
-            Your Creative Career,{" "}
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              One Platform.
-            </span>
-          </h2>
-          <p className="text-muted-foreground mb-10 max-w-md leading-relaxed">
-            Match with collaborators, manage projects, send invoices, and sell your work — all in one place.
-          </p>
-          
-          <div className="space-y-4">
-            {[
-              { icon: "🎯", label: "AI-Powered Matching", desc: "Find your perfect collaborator in seconds" },
-              { icon: "💼", label: "Project Workspaces", desc: "Manage briefs, assets & milestones together" },
-              { icon: "💰", label: "Built-in Invoicing", desc: "Get paid faster with integrated payments" },
-              { icon: "🏪", label: "Creative Marketplace", desc: "Sell beats, presets, templates & more" },
-            ].map((item) => (
-              <div key={item.label} className="flex items-start gap-3 rounded-xl bg-card/50 border border-border/50 p-3 backdrop-blur-sm">
-                <span className="text-lg mt-0.5">{item.icon}</span>
-                <div>
-                  <div className="font-semibold text-sm">{item.label}</div>
-                  <div className="text-xs text-muted-foreground">{item.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Live creator teaser */}
-          <AuthCreatorTeaser />
+      <AuthBrandingPanel />
 
-          {/* Quick benefits reminder */}
-          <div className="mt-6">
-            <p className="text-xs text-muted-foreground">
-              ⚡ 60-second setup • No credit card • 1-month Pro free
+      <div className="flex w-full lg:w-1/2 items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
+        <div className="w-full max-w-md">
+          <div className="mb-6 sm:mb-8 text-center">
+            <div className="lg:hidden mb-4">
+              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                thriveIN
+              </span>
+              <span className="ml-2 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                Beta
+              </span>
+            </div>
+            <h1 className="mb-2 text-2xl sm:text-3xl font-bold">
+              {isPasswordReset ? "Reset Your Password" : "Welcome to thriveIN"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {isPasswordReset ? "Enter your new password below" : "Where creators find work — and get paid"}
             </p>
           </div>
-        </div>
-      </div>
 
-      {/* Right form panel */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
-      <div className="w-full max-w-md">
-        <div className="mb-6 sm:mb-8 text-center">
-          {/* Mobile-only branding */}
-          <div className="lg:hidden mb-4">
-            <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              thriveIN
-            </span>
-            <span className="ml-2 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-              Beta
-            </span>
-          </div>
-          <h1 className="mb-2 text-2xl sm:text-3xl font-bold">
-            {isPasswordReset ? "Reset Your Password" : "Welcome to thriveIN"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {isPasswordReset 
-              ? "Enter your new password below" 
-              : "Where creators find work — and get paid"}
-          </p>
-        </div>
-
-        {isPasswordReset ? (
-          <form onSubmit={handlePasswordReset} className="space-y-4 sm:space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                placeholder="••••••••"
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  setNewPasswordError("");
-                }}
-                required
-                minLength={8}
-                className={`h-11 sm:h-10 text-base ${newPasswordError ? "border-destructive" : ""}`}
-                autoComplete="new-password"
-              />
-              {newPasswordError && (
-                <p className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {newPasswordError}
-                </p>
-              )}
-              <PasswordStrengthIndicator password={newPassword} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-new-password">Confirm New Password</Label>
-              <Input
-                id="confirm-new-password"
-                type="password"
-                placeholder="••••••••"
-                value={confirmNewPassword}
-                onChange={(e) => {
-                  setConfirmNewPassword(e.target.value);
-                  setConfirmNewPasswordError("");
-                }}
-                required
-                className={`h-11 sm:h-10 text-base ${confirmNewPasswordError ? "border-destructive" : ""}`}
-                autoComplete="new-password"
-              />
-              {confirmNewPasswordError && (
-                <p className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {confirmNewPasswordError}
-                </p>
-              )}
-            </div>
-            <Button
-              type="submit"
-              variant="gradient"
-              size="lg"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Resetting Password...
-                </>
-              ) : (
-                "Reset Password"
-              )}
-            </Button>
-          </form>
-        ) : (
-          <>
+          {isPasswordReset ? (
+            <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />
+          ) : (
             <Tabs defaultValue="signin" className="w-full" onValueChange={async (tab) => {
               const { trackEvent, EventCategory } = await import("@/lib/analytics");
-              trackEvent({
-                eventName: 'auth_tab_switch',
-                eventCategory: EventCategory.AUTH,
-                properties: { tab, time_on_page_ms: Date.now() - authLoadTime },
-              });
+              trackEvent({ eventName: 'auth_tab_switch', eventCategory: EventCategory.AUTH, properties: { tab, time_on_page_ms: Date.now() - authLoadTime } });
             }}>
-          <TabsList className="mb-6 grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
+              <TabsList className="mb-6 grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="signin">
-
-            <form onSubmit={handleSignIn} className="space-y-4 sm:space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
-                <Input
-                  id="signin-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setEmailError("");
-                  }}
-                  required
-                  className={`h-11 sm:h-10 text-base ${emailError ? "border-destructive" : ""}`}
-                  autoComplete="email"
+              <TabsContent value="signin">
+                <SignInForm
+                  email={email} setEmail={setEmail}
+                  password={password} setPassword={setPassword}
+                  loading={loading} onSubmit={handleSignIn}
+                  onForgotPassword={() => setShowForgotPassword(true)}
+                  onGoogleSignIn={() => handleOAuthSignIn("google")}
+                  onAppleSignIn={() => handleOAuthSignIn("apple")}
+                  googleLoading={googleLoading} appleLoading={appleLoading}
                 />
-                {emailError && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {emailError}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signin-password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="signin-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setPasswordError("");
-                    }}
-                    required
-                    className={`h-11 sm:h-10 text-base pr-10 ${passwordError ? "border-destructive" : ""}`}
-                    autoComplete="current-password"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                  </Button>
-                </div>
-                {passwordError && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {passwordError}
-                  </p>
-                )}
-              </div>
-              <Button
-                type="submit"
-                variant="gradient"
-                size="lg"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </Button>
+              </TabsContent>
 
-              <div className="mt-4 text-center">
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot your password?
-                </button>
-              </div>
-
-              {/* Social Login Divider */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">or continue with</span>
-                </div>
-              </div>
-
-              {/* Social Login Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-11 gap-2"
-                  onClick={handleGoogleSignIn}
-                  disabled={googleLoading}
-                >
-                  {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Chrome className="h-4 w-4" />}
-                  Google
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-11 gap-2"
-                  onClick={handleAppleSignIn}
-                  disabled={appleLoading}
-                >
-                  {appleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                    </svg>
-                  )}
-                  Apple
-                </Button>
-              </div>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            {/* Progress indicator */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Step {signupStep} of {totalSteps}</span>
-                <span className="text-sm text-muted-foreground">
-                  {signupStep === 1 && "I am a..."}
-                  {signupStep === 2 && "Your email"}
-                  {signupStep === 3 && "Create password"}
-                </span>
-              </div>
-              <Progress value={(signupStep / totalSteps) * 100} className="h-2" />
-            </div>
-
-            {/* Step 1: Account Type Selection */}
-            {signupStep === 1 && (
-              <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
-                {/* Quick Social Signup */}
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-11 gap-2"
-                    onClick={handleGoogleSignIn}
-                    disabled={googleLoading}
-                  >
-                    {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Chrome className="h-4 w-4" />}
-                    Google
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-11 gap-2"
-                    onClick={handleAppleSignIn}
-                    disabled={appleLoading}
-                  >
-                    {appleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                      </svg>
-                    )}
-                    Apple
-                  </Button>
-                </div>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">or sign up with email</span>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Label className="text-base">I am a...</Label>
-                  <div className="space-y-3">
-                    <Card 
-                      className={`p-4 cursor-pointer transition-all hover:shadow-md border-2 ${
-                        accountType === 'individual' ? 'border-primary bg-primary/5' : 'border-border'
-                      }`}
-                      onClick={() => setAccountType('individual')}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-lg bg-primary/10 p-2.5">
-                          <User className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold mb-1">Creator / Creative</div>
-                          <div className="text-sm text-muted-foreground">
-                            Find collaborators, showcase your portfolio, and match with other creators
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-
-                    <Card 
-                      className={`p-4 cursor-pointer transition-all hover:shadow-md border-2 ${
-                        accountType === 'company' ? 'border-primary bg-primary/5' : 'border-border'
-                      }`}
-                      onClick={() => setAccountType('company')}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-lg bg-primary/10 p-2.5">
-                          <Briefcase className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold mb-1">Brand / Venue / Company</div>
-                          <div className="text-sm text-muted-foreground">
-                            Discover and connect with talented creators for your projects
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleNextStep}
-                  variant="gradient"
-                  className="w-full"
-                >
-                  Continue with Email
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
-            {/* Step 2: Email */}
-            {signupStep === 2 && (
-              <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email Address</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setEmailError("");
-                    }}
-                    required
-                    className={`h-11 text-base ${emailError ? "border-destructive" : ""}`}
-                    autoComplete="email"
-                    autoFocus
-                  />
-                  {emailError && (
-                    <p className="text-sm text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {emailError}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSignupStep(1)}
-                    className="flex-1"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleNextStep}
-                    variant="gradient"
-                    className="flex-1"
-                  >
-                    Continue
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Password */}
-            {signupStep === 3 && (
-              <form onSubmit={handleSignUp} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Create Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="signup-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        setPasswordError("");
-                      }}
-                      required
-                      minLength={8}
-                      className={`h-11 text-base pr-10 ${passwordError ? "border-destructive" : ""}`}
-                      autoComplete="new-password"
-                      autoFocus
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                    </Button>
-                  </div>
-                  {passwordError && (
-                    <p className="text-sm text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {passwordError}
-                    </p>
-                  )}
-                  <PasswordStrengthIndicator password={password} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirm-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        setConfirmPasswordError("");
-                      }}
-                      required
-                      className={`h-11 text-base pr-10 ${confirmPasswordError ? "border-destructive" : ""}`}
-                      autoComplete="new-password"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                    </Button>
-                  </div>
-                  {confirmPasswordError && (
-                    <p className="text-sm text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {confirmPasswordError}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSignupStep(2)}
-                    className="flex-1"
-                    disabled={loading}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="gradient"
-                    className="flex-1"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      "Create Account"
-                    )}
-                  </Button>
-                </div>
-              </form>
-            )}
-          </TabsContent>
-          </Tabs>
-          </>
-        )}
-
-        <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Reset Password</DialogTitle>
-              <DialogDescription>
-                Enter your email address and we'll send you a link to reset your password.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-email">Email</Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  required
+              <TabsContent value="signup">
+                <SignUpWizard
+                  email={email} setEmail={setEmail}
+                  password={password} setPassword={setPassword}
+                  confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
+                  accountType={accountType} setAccountType={setAccountType}
+                  loading={loading} onSubmit={handleSignUp}
+                  onGoogleSignIn={() => handleOAuthSignIn("google")}
+                  onAppleSignIn={() => handleOAuthSignIn("apple")}
+                  googleLoading={googleLoading} appleLoading={appleLoading}
                 />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowForgotPassword(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="gradient"
-                  className="flex-1"
-                  disabled={resetLoading}
-                >
-                  {resetLoading ? "Sending..." : "Send Reset Link"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+              </TabsContent>
+            </Tabs>
+          )}
 
-        {/* Waitlist/Request Access Dialog */}
-        <Dialog open={showWaitlistForm} onOpenChange={setShowWaitlistForm}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5 text-primary" />
-                Request Access
-              </DialogTitle>
-              <DialogDescription>
-                No invite code? Apply to join and our AI will verify your profile.
-              </DialogDescription>
-            </DialogHeader>
-            <WaitlistForm />
-          </DialogContent>
-        </Dialog>
+          <ForgotPasswordDialog open={showForgotPassword} onOpenChange={setShowForgotPassword} />
+
+          <Dialog open={showWaitlistForm} onOpenChange={setShowWaitlistForm}>
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-primary" /> Request Access
+                </DialogTitle>
+                <DialogDescription>No invite code? Apply to join and our AI will verify your profile.</DialogDescription>
+              </DialogHeader>
+              <WaitlistForm />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>

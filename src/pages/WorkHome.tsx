@@ -56,11 +56,15 @@ const WorkHome = () => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const projRes = await supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(5);
-      // @ts-ignore – deep type instantiation
-      const gigsRes = await supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("posted_by", user.id).order("created_at", { ascending: false }).limit(5);
+      const [projRes, gigsRes, leadsRes] = await Promise.all([
+        supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(5),
+        // @ts-ignore – deep type instantiation
+        supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("posted_by", user.id).order("created_at", { ascending: false }).limit(5),
+        supabase.from("leads").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      ]);
       setProjects(projRes.data || []);
       setGigs(gigsRes.data || []);
+      setPipelineCount(leadsRes.count || 0);
       setLoading(false);
     };
     load();

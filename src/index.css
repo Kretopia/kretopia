@@ -36,6 +36,10 @@ All colors MUST be HSL.
     --input: 240 6% 90%;
     --ring: 271 91% 65%;
 
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
     --radius: 0.75rem;
 
     /* Enhanced gradient system */
@@ -106,6 +110,11 @@ All colors MUST be HSL.
     --border: 0 0% 18%;
     --input: 0 0% 15%;
     --ring: 271 91% 65%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
 
     --gradient-accent: linear-gradient(180deg, hsl(0 0% 7%), hsl(0 0% 10%));
     --gradient-subtle: linear-gradient(180deg, hsl(271 91% 65% / 0.08), hsl(330 81% 60% / 0.08));

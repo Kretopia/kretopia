@@ -507,8 +507,10 @@ const ProfileContent = () => {
 
 export default function Profile() {
   return (
-    <ProfileProvider>
-      <ProfileContent />
-    </ProfileProvider>
+    <PageTransition>
+      <ProfileProvider>
+        <ProfileContent />
+      </ProfileProvider>
+    </PageTransition>
   );
 }

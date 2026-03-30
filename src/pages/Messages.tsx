@@ -670,7 +670,7 @@ const Messages = () => {
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     {onlineUsers.has(otherUser.id) ? (
-                      <span className="text-green-500">Online</span>
+                      <span className="text-success">Online</span>
                     ) : (
                       otherUser.role || ''
                     )}

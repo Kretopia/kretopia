@@ -135,7 +135,7 @@ const WorkHome = () => {
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all"
                   onClick={() => navigate(`/desk/${p.id}`)}
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
                   <span className="text-sm font-medium truncate flex-1">{p.title}</span>
                   <span className="text-[10px] text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(p.updated_at), { addSuffix: true })}

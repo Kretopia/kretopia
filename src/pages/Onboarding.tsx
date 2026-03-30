@@ -127,6 +127,25 @@ export default function Onboarding() {
     analytics.onboardingStart();
   };
 
+  const handleCreditSearch = async () => {
+    if (searchQuery.trim().length < 2) return;
+    setSearchLoading(true);
+    setHasSearched(true);
+    setSearchResults([]);
+    try {
+      const { data, error } = await supabase.functions.invoke('search-credits-web', {
+        body: { query: searchQuery },
+      });
+      if (error) throw error;
+      setSearchResults(data?.results || []);
+    } catch (e) {
+      console.error('Credit search error:', e);
+      toast({ title: "Search failed", description: "Try again or add manually", variant: "destructive" });
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   const handleNext = async () => {
     const { analytics } = await import("@/lib/analytics");
 

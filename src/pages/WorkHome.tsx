@@ -204,7 +204,7 @@ const WorkHome = () => {
         onOpenChange={setShowCreateProject}
         onSuccess={() => setShowCreateProject(false)}
       />
-    </>
+    </PageTransition>
   );
 };
 

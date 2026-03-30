@@ -321,6 +321,19 @@ const CircleDetail = () => {
     } catch { toast({ title: "Link copied! 🔗" }); }
   };
 
+  const handleCircleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !circle || !isAdmin) return;
+    const ext = file.name.split(".").pop();
+    const path = `circles/${circle.id}/avatar-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("media").upload(path, file);
+    if (error) { toast({ title: "Upload failed", variant: "destructive" }); return; }
+    const { data: urlData } = supabase.storage.from("media").getPublicUrl(path);
+    await supabase.from("spark_rooms").update({ cover_url: urlData.publicUrl }).eq("id", circle.id);
+    setCircle({ ...circle, cover_url: urlData.publicUrl });
+    toast({ title: "Circle image updated! 🎨" });
+  };
+
   const createChannel = async () => {
     if (!user || !newChannelName.trim()) return;
     await supabase.from("circle_channels").insert({

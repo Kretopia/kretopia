@@ -279,6 +279,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   />
 
                   <MenuButton icon={Settings} label="Settings" onClick={() => handleNavigation("/settings")} />
+                  <MenuButton icon={MessageSquarePlus} label="Send Feedback" onClick={() => {
+                    setIsOpen(false);
+                    // Re-enable feedback widget if dismissed
+                    sessionStorage.removeItem("feedback-dismissed");
+                    // Trigger feedback widget open
+                    window.dispatchEvent(new CustomEvent("open-feedback"));
+                  }} />
 
                   {/* Admin Section */}
                   {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (

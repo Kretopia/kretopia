@@ -17,6 +17,7 @@ export function FeedbackWidget() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("feedback-dismissed") === "true");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);

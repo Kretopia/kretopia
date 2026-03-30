@@ -332,12 +332,8 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
   };
 
   const sendMessage = async () => {
-    if (!user || !newMessage.trim() || sending) return;
+    if (!user || !newMessage.trim() || sending || !isMember) return;
     setSending(true);
-    if (!isMember) {
-      await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
-      setIsMember(true);
-    }
     await supabase.from("spark_room_messages").insert({
       room_id: circle.id,
       user_id: user.id,
@@ -358,8 +354,8 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
       return;
     }
     if (!isMember) {
-      await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
-      setIsMember(true);
+      toast({ title: "Join required", description: "You must join this circle first", variant: "destructive" });
+      return;
     }
     const ext = file.name.split(".").pop();
     const path = `circles/${circle.id}/${Date.now()}.${ext}`;
@@ -549,8 +545,8 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
         </div>
       )}
 
-      {/* Input area */}
-      <div className="flex gap-2 pt-3 border-t border-border/50">
+      {/* Input area - only for members */}
+      {isMember ? <div className="flex gap-2 pt-3 border-t border-border/50">
         <input ref={fileRef} type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={handleMediaUpload} />
         <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => fileRef.current?.click()}>
           <Plus className="h-4 w-4" />
@@ -565,7 +561,13 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
         <Button size="icon" className="h-9 w-9 shrink-0" onClick={sendMessage} disabled={!newMessage.trim() || sending}>
           <Send className="h-4 w-4" />
         </Button>
-      </div>
+      </div> : (
+        <div className="flex items-center justify-center py-3 border-t border-border/50">
+          <Button size="sm" variant="gradient" onClick={joinCircle}>
+            {circle.is_paid ? `Join • $${circle.price_monthly}/mo` : "Join to chat"}
+          </Button>
+        </div>
+      )}
 
       {/* Admin Panel */}
       {showAdmin && <CircleAdminPanel circle={circle} onClose={() => setShowAdmin(false)} />}

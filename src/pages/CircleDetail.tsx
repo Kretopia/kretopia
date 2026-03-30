@@ -245,12 +245,8 @@ const CircleDetail = () => {
   };
 
   const sendMessage = async () => {
-    if (!user || !newMessage.trim() || sending || !activeChannel) return;
+    if (!user || !newMessage.trim() || sending || !activeChannel || !isMember) return;
     setSending(true);
-    if (!isMember) {
-      await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
-      setIsMember(true);
-    }
     await supabase.from("spark_room_messages").insert({
       room_id: circle.id,
       user_id: user.id,
@@ -272,8 +268,8 @@ const CircleDetail = () => {
       return;
     }
     if (!isMember) {
-      await supabase.from("spark_room_members").insert({ room_id: circle.id, user_id: user.id });
-      setIsMember(true);
+      toast({ title: "Join required", description: "You must join this circle first", variant: "destructive" });
+      return;
     }
     const ext = file.name.split(".").pop();
     const path = `circles/${circle.id}/${Date.now()}.${ext}`;
@@ -671,7 +667,7 @@ const CircleDetail = () => {
         )}
 
         {/* Input */}
-        {activeChannel?.channel_type !== "events" && (
+        {activeChannel?.channel_type !== "events" && isMember && (
           <div className="flex gap-2 p-3 border-t border-border bg-card/50">
             <input ref={fileRef} type="file" accept="image/*,video/*,audio/*" className="hidden" onChange={handleMediaUpload} />
             <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => fileRef.current?.click()}>
@@ -691,6 +687,14 @@ const CircleDetail = () => {
             />
             <Button size="icon" className="h-9 w-9 shrink-0" onClick={sendMessage} disabled={!newMessage.trim() || sending}>
               <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        {activeChannel?.channel_type !== "events" && !isMember && (
+          <div className="flex items-center justify-center gap-3 p-3 border-t border-border bg-card/50">
+            <p className="text-sm text-muted-foreground">Join to participate</p>
+            <Button size="sm" variant="gradient" onClick={joinCircle}>
+              {circle?.is_paid ? `Join • $${circle.price_monthly}/mo` : "Join Circle"}
             </Button>
           </div>
         )}

@@ -78,6 +78,10 @@ export default function Onboarding() {
   const [creditLink, setCreditLink] = useState("");
   const [aiCreditPrompt, setAiCreditPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("");
 
   // Email verification state

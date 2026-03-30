@@ -95,9 +95,9 @@ const WorkHome = () => {
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
               <FolderKanban className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
-              Work Dashboard
+              Creative HQ
             </h1>
-            <p className="text-sm text-muted-foreground">Your business at a glance</p>
+            <p className="text-sm text-muted-foreground">Your creative business command center</p>
           </div>
           <CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />
         </div>

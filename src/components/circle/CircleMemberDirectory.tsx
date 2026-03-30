@@ -49,11 +49,19 @@ export const CircleMemberDirectory = ({ members, onMessage }: CircleMemberDirect
   const grouped = useMemo(() => {
     const groups: Record<string, Member[]> = {};
     filteredMembers.forEach(m => {
-      const group = ["admin", "moderator"].includes(m.role) ? "Staff" : "Members";
+      let group: string;
+      if (m.role === "admin") group = "Admins";
+      else if (m.role === "moderator") group = "Moderators";
+      else group = "Members";
       if (!groups[group]) groups[group] = [];
       groups[group].push(m);
     });
-    return groups;
+    // Sort groups: Admins first, then Moderators, then Members
+    const ordered: Record<string, Member[]> = {};
+    for (const key of ["Admins", "Moderators", "Members"]) {
+      if (groups[key]) ordered[key] = groups[key];
+    }
+    return ordered;
   }, [filteredMembers]);
 
   return (

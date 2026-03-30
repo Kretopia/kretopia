@@ -36,6 +36,10 @@ All colors MUST be HSL.
     --input: 240 6% 90%;
     --ring: 271 91% 65%;
 
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
     --radius: 0.75rem;
 
     /* Enhanced gradient system */

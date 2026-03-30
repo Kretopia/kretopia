@@ -7,7 +7,7 @@ import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PostOpportunitySection } from "@/components/landing/PostOpportunitySection";
 import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
-import { LaunchingInBaliSection } from "@/components/landing/LaunchingInBaliSection";
+import { BottomCTASection } from "@/components/landing/BottomCTASection";
 import { AccountingSuiteSection } from "@/components/landing/AccountingSuiteSection";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";

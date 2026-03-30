@@ -58,7 +58,7 @@ const Landing = () => {
       <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
       <WhyCreatorsChooseSection />
       <AccountingSuiteSection />
-      <LaunchingInBaliSection />
+      <BottomCTASection />
     </div>
   );
 };

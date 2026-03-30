@@ -948,6 +948,7 @@ const Messages = () => {
         />
       )}
     </div>
+    </PageTransition>
   );
 };
 

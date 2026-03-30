@@ -45,16 +45,27 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
 
     setScanning(true);
     try {
-      // Convert to base64
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          const result = reader.result as string;
-          resolve(result.split(",")[1]); // Remove data:image/...;base64, prefix
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      // Compress image before sending to reduce payload size on mobile
+      const compressImage = (f: File, maxWidth = 1200, quality = 0.7): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const scale = Math.min(1, maxWidth / img.width);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return reject(new Error("Canvas not supported"));
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL("image/jpeg", quality);
+            resolve(dataUrl.split(",")[1]);
+          };
+          img.onerror = reject;
+          img.src = URL.createObjectURL(f);
+        });
+      };
+
+      const base64 = await compressImage(file);
 
       const { data, error } = await supabase.functions.invoke("scan-receipt", {
         body: { image_base64: base64 },

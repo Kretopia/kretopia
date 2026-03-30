@@ -442,40 +442,49 @@ export default function Onboarding() {
                 )}
               </div>
 
-              {/* Location */}
-              <div>
-                <Label htmlFor="location">Where are you based?</Label>
-                {showCustomLocation || (!LOCATION_OPTIONS.some(opt => opt.value === profile.location) && profile.location) ? (
-                  <div className="space-y-2">
-                    <Input id="location" value={profile.location} onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))} placeholder="City, Country" />
-                    <Button type="button" variant="ghost" size="sm" onClick={() => { setShowCustomLocation(false); setProfile(prev => ({ ...prev, location: '' })); }}>Choose from list</Button>
-                  </div>
-                ) : (
-                  <Select value={profile.location || undefined} onValueChange={(value) => { if (value === 'Other') { setShowCustomLocation(true); setProfile(prev => ({ ...prev, location: '' })); } else { setProfile(prev => ({ ...prev, location: value })); } }}>
-                    <SelectTrigger><SelectValue placeholder="Select location" /></SelectTrigger>
+              {/* Location — Country then City */}
+              <div className="space-y-3">
+                <div>
+                  <Label>Country / Region</Label>
+                  <Select value={selectedCountry || undefined} onValueChange={(value) => {
+                    setSelectedCountry(value);
+                    // For small countries, just set the country as location
+                    const country = LOCATION_HIERARCHY.find(c => c.value === value);
+                    if (country && country.cities.length <= 1) {
+                      setProfile(prev => ({ ...prev, location: country.cities[0]?.value || value }));
+                    } else {
+                      setProfile(prev => ({ ...prev, location: '' }));
+                    }
+                  }}>
+                    <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
                     <SelectContent className="max-h-[280px]">
                       {LOCATION_HIERARCHY.map(country => (
-                        <SelectGroup key={country.value}>
-                          <SelectLabel className="text-xs font-semibold text-muted-foreground">{country.flag} {country.label}</SelectLabel>
-                          <SelectItem value={country.value}>{country.flag} {country.label} (All)</SelectItem>
-                          {country.cities.map(city => (
-                            <SelectItem key={city.value} value={city.value} className="pl-6">{city.label}</SelectItem>
-                          ))}
-                        </SelectGroup>
+                        <SelectItem key={country.value} value={country.value}>{country.flag} {country.label}</SelectItem>
                       ))}
-                      <SelectGroup>
-                        <SelectLabel className="text-xs font-semibold text-muted-foreground">🌴 Regional</SelectLabel>
-                        <SelectItem value="Caribbean">🌴 Caribbean</SelectItem>
-                        <SelectItem value="Europe">🇪🇺 Europe</SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="text-xs font-semibold text-muted-foreground">🌍 Other</SelectLabel>
-                        <SelectItem value="Remote">🌍 Remote / Worldwide</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectGroup>
+                      <SelectItem value="Remote">🌍 Remote / Worldwide</SelectItem>
                     </SelectContent>
                   </Select>
-                )}
+                </div>
+
+                {/* Show city dropdown only for countries with multiple cities */}
+                {selectedCountry && (() => {
+                  const country = LOCATION_HIERARCHY.find(c => c.value === selectedCountry);
+                  if (!country || country.cities.length <= 1) return null;
+                  return (
+                    <div>
+                      <Label>City</Label>
+                      <Select value={profile.location || undefined} onValueChange={(value) => setProfile(prev => ({ ...prev, location: value }))}>
+                        <SelectTrigger><SelectValue placeholder="Select city (optional)" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={country.value}>{country.label} (General)</SelectItem>
+                          {country.cities.map(city => (
+                            <SelectItem key={city.value} value={city.value}>{city.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Continue */}

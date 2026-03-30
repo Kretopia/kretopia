@@ -482,6 +482,7 @@ const Messages = () => {
   };
 
   return (
+    <PageTransition>
     <div className="flex h-[calc(100dvh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 lg:pb-0">
       {/* Conversations List */}
       <div

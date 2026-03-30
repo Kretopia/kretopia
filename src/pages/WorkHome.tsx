@@ -85,8 +85,8 @@ const WorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Work Dashboard | ThriveIN</title>
-        <meta name="description" content="Your creative business command center — projects, gigs, pipeline at a glance." />
+        <title>Creative HQ | ThriveIN</title>
+        <meta name="description" content="Your creative business command center — projects, gigs, payments, and tools all in one place." />
       </Helmet>
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">

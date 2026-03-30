@@ -224,10 +224,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <Separator className="my-3" />
 
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Grow</p>
+                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
                       <MenuButton icon={Trophy} label="Challenges" onClick={() => handleNavigation("/challenges")} />
                       <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
-                      <MenuButton icon={CheckCircle} label="Daily Check-In" onClick={() => handleNavigation("/daily-checkin")} />
                       <MenuButton icon={BarChart3} label="My Analytics" onClick={() => handleNavigation("/my-analytics")} />
                     </>
                   ) : (
@@ -242,9 +241,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={ShoppingBag} label="Marketplace" onClick={() => handleNavigation("/market")} />
-                      {isManagerMode && (
-                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
-                      )}
+                      <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                     </>
                   )}
 

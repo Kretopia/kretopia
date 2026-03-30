@@ -68,7 +68,7 @@ export function UsersTab() {
     }
   };
 
-  const updateUserRole = async (userId: string, role: "admin" | "moderator" | "user") => {
+  const updateUserRole = async (userId: string, role: "admin" | "moderator" | "writer" | "user") => {
     try {
       // First, remove existing role
       await supabase.from("user_roles").delete().eq("user_id", userId);
@@ -179,6 +179,12 @@ export function UsersTab() {
                         Moderator
                       </Badge>
                     )}
+                    {userRole === "writer" && (
+                      <Badge variant="secondary" className="bg-blue-500/10 text-blue-600">
+                        <Shield className="mr-1 h-3 w-3" />
+                        Writer
+                      </Badge>
+                    )}
                     {userRole === "user" && (
                       <Badge variant="outline">User</Badge>
                     )}
@@ -207,6 +213,7 @@ export function UsersTab() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="user">User</SelectItem>
+                        <SelectItem value="writer">Writer</SelectItem>
                         <SelectItem value="moderator">Moderator</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>

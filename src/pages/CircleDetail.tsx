@@ -92,6 +92,7 @@ const CircleDetail = () => {
       
       let chans = (channelsRes.data || []) as Channel[];
       if (chans.length === 0 && circleRes.data && user && circleRes.data.created_by === user.id) {
+        // Only create default channel if none exist at all
         const { data: newChan } = await supabase.from("circle_channels").insert({
           circle_id: circleId,
           name: "general",
@@ -104,6 +105,15 @@ const CircleDetail = () => {
         if (newChan) chans = [newChan as Channel];
       }
       
+      // Deduplicate channels by name (keep the one with lowest position/oldest)
+      const seen = new Set<string>();
+      chans = chans.filter(c => {
+        const key = `${c.name}-${c.channel_type}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
       setChannels(chans);
       if (chans.length > 0) setActiveChannel(chans.find(c => c.is_default) || chans[0]);
 

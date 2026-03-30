@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Bookmark, CalendarDays, Flame, MapPin } from "lucide-react";
+import { Bookmark, CalendarDays, Flame, MapPin, BookOpen, Headphones } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Events from "./Events";
 import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { SparkWall } from "@/components/scene/SparkWall";
 import { ClipsWall } from "@/components/scene/ClipsWall";
+import { MagazineWall } from "@/components/scene/MagazineWall";
+import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
 import { SmartNudgeBanner } from "@/components/notifications/SmartNudgeBanner";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
@@ -48,7 +50,6 @@ const Scene = () => {
 
       <div className="min-h-screen bg-background">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
-          {/* Profile Visibility Banner */}
           <ProfileVisibilityBanner isVisible={visibility.isVisible} missingFields={visibility.missingFields} />
 
           {/* Header */}
@@ -63,24 +64,32 @@ const Scene = () => {
             <CrossModeNudge targetMode="work" label="Switch to Work →" targetPath="/desk" />
           </div>
 
-          {/* Sub-tabs */}
+          {/* Sub-tabs - scrollable for 6 tabs on mobile */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full mb-4 grid grid-cols-4">
-              <TabsTrigger value="spark" className="gap-1 text-xs">
-                <Flame className="h-3.5 w-3.5" />
-                Spark
+            <TabsList className="w-full mb-4 flex overflow-x-auto scrollbar-hide gap-0.5">
+              <TabsTrigger value="spark" className="gap-1 text-xs flex-1 min-w-0">
+                <Flame className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Spark</span>
               </TabsTrigger>
-              <TabsTrigger value="events" className="gap-1 text-xs">
-                <CalendarDays className="h-3.5 w-3.5" />
-                Events
+              <TabsTrigger value="magazine" className="gap-1 text-xs flex-1 min-w-0">
+                <BookOpen className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Magazine</span>
               </TabsTrigger>
-              <TabsTrigger value="nearby" className="gap-1 text-xs">
-                <MapPin className="h-3.5 w-3.5" />
-                Nearby
+              <TabsTrigger value="podcast" className="gap-1 text-xs flex-1 min-w-0">
+                <Headphones className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Podcast</span>
               </TabsTrigger>
-              <TabsTrigger value="clips" className="gap-1 text-xs">
-                <Bookmark className="h-3.5 w-3.5" />
-                Clips
+              <TabsTrigger value="events" className="gap-1 text-xs flex-1 min-w-0">
+                <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Events</span>
+              </TabsTrigger>
+              <TabsTrigger value="nearby" className="gap-1 text-xs flex-1 min-w-0">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Nearby</span>
+              </TabsTrigger>
+              <TabsTrigger value="clips" className="gap-1 text-xs flex-1 min-w-0">
+                <Bookmark className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Clips</span>
               </TabsTrigger>
             </TabsList>
 
@@ -88,6 +97,14 @@ const Scene = () => {
               <SmartNudgeBanner />
               <GetStartedChecklist />
               <SparkWall />
+            </TabsContent>
+
+            <TabsContent value="magazine" className="mt-0">
+              <MagazineWall />
+            </TabsContent>
+
+            <TabsContent value="podcast" className="mt-0">
+              <PodcastPlayer />
             </TabsContent>
 
             <TabsContent value="events" className="mt-0">
@@ -101,7 +118,6 @@ const Scene = () => {
             <TabsContent value="clips" className="mt-0">
               <ClipsWall />
             </TabsContent>
-
           </Tabs>
         </div>
       </div>

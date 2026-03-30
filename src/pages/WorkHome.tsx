@@ -85,8 +85,8 @@ const WorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Work Dashboard | ThriveIN</title>
-        <meta name="description" content="Your creative business command center — projects, gigs, pipeline at a glance." />
+        <title>Creative HQ | ThriveIN</title>
+        <meta name="description" content="Your creative business command center — projects, gigs, payments, and tools all in one place." />
       </Helmet>
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">
@@ -95,9 +95,9 @@ const WorkHome = () => {
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
               <FolderKanban className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
-              Work Dashboard
+              Creative HQ
             </h1>
-            <p className="text-sm text-muted-foreground">Your business at a glance</p>
+            <p className="text-sm text-muted-foreground">Your creative business command center</p>
           </div>
           <CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />
         </div>
@@ -122,10 +122,11 @@ const WorkHome = () => {
         <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk/projects" }}>
           {activeProjects.length === 0 ? (
              <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground mb-2">No active projects</p>
-              <Button size="sm" variant="outline" onClick={() => setShowCreateProject(true)} className="gap-1">
-                <Plus className="h-3 w-3" /> Create Project
-              </Button>
+              <p className="text-sm font-medium mb-1">Start your first workspace</p>
+              <p className="text-xs text-muted-foreground mb-3">Manage any creative project — freelance gigs, client work, or personal projects. All your files, tasks & comms in one place.</p>
+               <Button size="sm" onClick={() => setShowCreateProject(true)} className="gap-1">
+                 <Plus className="h-3 w-3" /> Create Workspace
+               </Button>
             </div>
           ) : (
             <div className="space-y-2">
@@ -188,6 +189,10 @@ const WorkHome = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3 pt-2">
+          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => setShowCreateProject(true)}>
+            <FolderKanban className="h-4 w-4" />
+            <span className="text-xs">New Workspace</span>
+          </Button>
           <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/post-opportunity")}>
             <Briefcase className="h-4 w-4" />
             <span className="text-xs">Post a Gig</span>
@@ -195,6 +200,10 @@ const WorkHome = () => {
           <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/thrivepay")}>
             <DollarSign className="h-4 w-4" />
             <span className="text-xs">ThrivePay</span>
+          </Button>
+          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/accounting")}>
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-xs">Earnings</span>
           </Button>
         </div>
       </div>

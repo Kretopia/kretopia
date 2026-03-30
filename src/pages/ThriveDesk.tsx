@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2, Menu, X, PanelRightOpen } from "lucide-react";
+import { Loader2, Menu, X, PanelRightOpen, FolderKanban } from "lucide-react";
 import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
@@ -36,8 +36,19 @@ const ThriveDesk = () => {
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Project not found</p>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <FolderKanban className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-lg font-bold mb-1">Workspace not found</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            This workspace may have been removed or you don't have access.
+          </p>
+          <Button onClick={() => window.history.back()} variant="outline">
+            Go Back
+          </Button>
+        </div>
       </div>
     );
   }

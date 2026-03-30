@@ -70,7 +70,30 @@ export function useSwipeActions(currentUserId: string | undefined) {
       }
 
       if (!theirSwipe) {
-        console.log('[useSwipeActions] No mutual swipe found yet - interest sent');
+        console.log('[useSwipeActions] No mutual swipe found yet - sending interest notification');
+        
+        // Send "someone's interested" notification to the target user
+        try {
+          const { data: swiperProfile } = await supabase
+            .from('profiles')
+            .select('full_name, role, avatar_url')
+            .eq('user_id', currentUserId)
+            .single();
+
+          if (swiperProfile) {
+            supabase.functions.invoke('notify-swipe', {
+              body: {
+                recipientId: targetId,
+                swiperName: swiperProfile.full_name || 'A creator',
+                swiperRole: swiperProfile.role || 'Creator',
+                swiperAvatar: swiperProfile.avatar_url,
+              }
+            }).catch(err => console.warn('[useSwipeActions] Interest notification failed:', err));
+          }
+        } catch (notifyErr) {
+          console.warn('[useSwipeActions] Interest notification error (non-blocking):', notifyErr);
+        }
+        
         return { success: true, isMatch: false };
       }
 

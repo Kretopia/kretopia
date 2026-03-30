@@ -241,9 +241,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={ShoppingBag} label="Marketplace" onClick={() => handleNavigation("/market")} />
-                      {isManagerMode && (
-                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
-                      )}
+                      <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                     </>
                   )}
 

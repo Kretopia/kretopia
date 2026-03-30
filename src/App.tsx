@@ -86,6 +86,7 @@ const Guide = lazy(() => import("./pages/Guide"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
+const MagazineArticlePage = lazy(() => import("./pages/MagazineArticlePage"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
@@ -234,6 +235,9 @@ const AppContent = () => {
             <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />
             <Route path="/events" element={<Navigate to="/scene" replace />} />
             <Route path="/scene" element={<ProtectedRoute><Scene /></ProtectedRoute>} />
+            
+            {/* Public Magazine Article - SEO accessible */}
+            <Route path="/magazine/:slug" element={<MagazineArticlePage />} />
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />

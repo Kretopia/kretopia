@@ -690,6 +690,14 @@ const CircleDetail = () => {
             </Button>
           </div>
         )}
+        {activeChannel?.channel_type !== "events" && !isMember && (
+          <div className="flex items-center justify-center gap-3 p-3 border-t border-border bg-card/50">
+            <p className="text-sm text-muted-foreground">Join to participate</p>
+            <Button size="sm" variant="gradient" onClick={joinCircle}>
+              {circle?.is_paid ? `Join • $${circle.price_monthly}/mo` : "Join Circle"}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Admin Panel */}

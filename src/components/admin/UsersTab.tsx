@@ -179,6 +179,12 @@ export function UsersTab() {
                         Moderator
                       </Badge>
                     )}
+                    {userRole === "writer" && (
+                      <Badge variant="secondary" className="bg-blue-500/10 text-blue-600">
+                        <Shield className="mr-1 h-3 w-3" />
+                        Writer
+                      </Badge>
+                    )}
                     {userRole === "user" && (
                       <Badge variant="outline">User</Badge>
                     )}

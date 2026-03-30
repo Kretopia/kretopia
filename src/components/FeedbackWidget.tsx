@@ -42,6 +42,13 @@ export function FeedbackWidget() {
     }
   }, [open]);
 
+  // Listen for "open-feedback" event from hamburger menu
+  useEffect(() => {
+    const handler = () => { setDismissed(false); setOpen(true); };
+    window.addEventListener("open-feedback", handler);
+    return () => window.removeEventListener("open-feedback", handler);
+  }, []);
+
   if (!user) return null;
 
   const handleSend = async () => {

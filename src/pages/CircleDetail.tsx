@@ -69,6 +69,7 @@ const CircleDetail = () => {
   const [showPollCreator, setShowPollCreator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const circleAvatarRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = userRole === "admin" || circle?.created_by === user?.id;
   const isMod = isAdmin || userRole === "moderator";
@@ -92,6 +93,7 @@ const CircleDetail = () => {
       
       let chans = (channelsRes.data || []) as Channel[];
       if (chans.length === 0 && circleRes.data && user && circleRes.data.created_by === user.id) {
+        // Only create default channel if none exist at all
         const { data: newChan } = await supabase.from("circle_channels").insert({
           circle_id: circleId,
           name: "general",
@@ -104,6 +106,15 @@ const CircleDetail = () => {
         if (newChan) chans = [newChan as Channel];
       }
       
+      // Deduplicate channels by name (keep the one with lowest position/oldest)
+      const seen = new Set<string>();
+      chans = chans.filter(c => {
+        const key = `${c.name}-${c.channel_type}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
       setChannels(chans);
       if (chans.length > 0) setActiveChannel(chans.find(c => c.is_default) || chans[0]);
 
@@ -310,6 +321,19 @@ const CircleDetail = () => {
     } catch { toast({ title: "Link copied! 🔗" }); }
   };
 
+  const handleCircleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !circle || !isAdmin) return;
+    const ext = file.name.split(".").pop();
+    const path = `circles/${circle.id}/avatar-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("media").upload(path, file);
+    if (error) { toast({ title: "Upload failed", variant: "destructive" }); return; }
+    const { data: urlData } = supabase.storage.from("media").getPublicUrl(path);
+    await supabase.from("spark_rooms").update({ cover_url: urlData.publicUrl }).eq("id", circle.id);
+    setCircle({ ...circle, cover_url: urlData.publicUrl });
+    toast({ title: "Circle image updated! 🎨" });
+  };
+
   const createChannel = async () => {
     if (!user || !newChannelName.trim()) return;
     await supabase.from("circle_channels").insert({
@@ -366,13 +390,21 @@ const CircleDetail = () => {
             <Button variant="ghost" size="icon" className="h-7 w-7 lg:hidden shrink-0" onClick={() => setShowSidebar(false)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            {circle.cover_url ? (
-              <img src={circle.cover_url} className="w-9 h-9 rounded-xl object-cover" alt="" />
-            ) : (
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
-                {circle.icon_emoji || "💬"}
-              </div>
-            )}
+            <div className="relative group cursor-pointer" onClick={() => isAdmin && circleAvatarRef.current?.click()}>
+              {circle.cover_url ? (
+                <img src={circle.cover_url} className="w-9 h-9 rounded-xl object-cover" alt="" />
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
+                  {circle.icon_emoji || "💬"}
+                </div>
+              )}
+              {isAdmin && (
+                <div className="absolute inset-0 rounded-xl bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Image className="h-3.5 w-3.5 text-white" />
+                </div>
+              )}
+            </div>
+            <input ref={circleAvatarRef} type="file" accept="image/*" className="hidden" onChange={handleCircleAvatarUpload} />
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-sm truncate">{circle.title}</h2>
               <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">

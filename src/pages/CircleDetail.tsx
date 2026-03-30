@@ -376,13 +376,21 @@ const CircleDetail = () => {
             <Button variant="ghost" size="icon" className="h-7 w-7 lg:hidden shrink-0" onClick={() => setShowSidebar(false)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            {circle.cover_url ? (
-              <img src={circle.cover_url} className="w-9 h-9 rounded-xl object-cover" alt="" />
-            ) : (
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
-                {circle.icon_emoji || "💬"}
-              </div>
-            )}
+            <div className="relative group cursor-pointer" onClick={() => isAdmin && circleAvatarRef.current?.click()}>
+              {circle.cover_url ? (
+                <img src={circle.cover_url} className="w-9 h-9 rounded-xl object-cover" alt="" />
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
+                  {circle.icon_emoji || "💬"}
+                </div>
+              )}
+              {isAdmin && (
+                <div className="absolute inset-0 rounded-xl bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Image className="h-3.5 w-3.5 text-white" />
+                </div>
+              )}
+            </div>
+            <input ref={circleAvatarRef} type="file" accept="image/*" className="hidden" onChange={handleCircleAvatarUpload} />
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-sm truncate">{circle.title}</h2>
               <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">

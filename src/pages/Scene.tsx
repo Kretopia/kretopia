@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Flame, BookOpen, Headphones } from "lucide-react";
@@ -7,6 +7,8 @@ import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { SparkWall } from "@/components/scene/SparkWall";
 import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
+import { SceneHero } from "@/components/scene/SceneHero";
+import { SceneContentPreviews } from "@/components/scene/SceneContentPreviews";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
 import { SmartNudgeBanner } from "@/components/notifications/SmartNudgeBanner";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
@@ -37,6 +39,10 @@ const Scene = () => {
     check();
   }, [user]);
 
+  const handleNavigate = useCallback((tab: string) => {
+    setActiveTab(tab);
+  }, []);
+
   return (
     <PageTransition>
       <Helmet>
@@ -49,33 +55,41 @@ const Scene = () => {
           <ProfileVisibilityBanner isVisible={visibility.isVisible} missingFields={visibility.missingFields} />
 
           {/* Header */}
-          <div className="mb-4 flex items-start justify-between">
+          <div className="mb-3 flex items-start justify-between">
             <div>
               <h1 className="text-xl font-bold flex items-center gap-2">
                 <Flame className="h-5 w-5 text-primary" />
                 Scene
               </h1>
-              <p className="text-sm text-muted-foreground">Events, inspiration & nearby creators</p>
+              <p className="text-xs text-muted-foreground">Events, inspiration & creative culture</p>
             </div>
             <CrossModeNudge targetMode="work" label="Switch to Work →" targetPath="/desk" />
           </div>
 
-          {/* 4 clean tabs */}
+          {/* Hero Carousel */}
+          <SceneHero onNavigate={handleNavigate} />
+
+          {/* Content Previews */}
+          {activeTab === "spark" && (
+            <SceneContentPreviews onNavigate={handleNavigate} />
+          )}
+
+          {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full mb-4 grid grid-cols-4">
-              <TabsTrigger value="spark" className="gap-1.5 text-xs">
+            <TabsList className="w-full mb-4 grid grid-cols-4 h-10 rounded-xl bg-muted/60 p-1">
+              <TabsTrigger value="spark" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Flame className="h-3.5 w-3.5" />
                 Spark
               </TabsTrigger>
-              <TabsTrigger value="magazine" className="gap-1.5 text-xs">
+              <TabsTrigger value="magazine" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <BookOpen className="h-3.5 w-3.5" />
                 Magazine
               </TabsTrigger>
-              <TabsTrigger value="podcast" className="gap-1.5 text-xs">
+              <TabsTrigger value="podcast" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Headphones className="h-3.5 w-3.5" />
                 Podcast
               </TabsTrigger>
-              <TabsTrigger value="events" className="gap-1.5 text-xs">
+              <TabsTrigger value="events" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <CalendarDays className="h-3.5 w-3.5" />
                 Events
               </TabsTrigger>

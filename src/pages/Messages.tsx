@@ -599,7 +599,7 @@ const Messages = () => {
                         <div className="flex items-center gap-1.5">
                           <p className="font-semibold text-sm sm:text-base truncate">{partner.name || 'Unknown'}</p>
                           {isOnline && (
-                            <span className="text-[10px] text-green-500 font-medium">online</span>
+                            <span className="text-[10px] text-success font-medium">online</span>
                           )}
                         </div>
                         <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0 ml-2">

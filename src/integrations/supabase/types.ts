@@ -3174,6 +3174,63 @@ export type Database = {
         }
         Relationships: []
       }
+      magazine_articles: {
+        Row: {
+          author_avatar_url: string | null
+          author_name: string
+          author_user_id: string | null
+          category: string
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          id: string
+          is_featured: boolean | null
+          is_published: boolean | null
+          read_time_minutes: number | null
+          subtitle: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          author_avatar_url?: string | null
+          author_name?: string
+          author_user_id?: string | null
+          category?: string
+          content: string
+          cover_image_url?: string | null
+          created_at?: string
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          read_time_minutes?: number | null
+          subtitle?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          author_avatar_url?: string | null
+          author_name?: string
+          author_user_id?: string | null
+          category?: string
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          read_time_minutes?: number | null
+          subtitle?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       marketplace_orders: {
         Row: {
           amount: number
@@ -4403,6 +4460,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      podcast_episodes: {
+        Row: {
+          audio_url: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          embed_url: string | null
+          episode_number: number | null
+          guest_name: string | null
+          guest_role: string | null
+          id: string
+          is_published: boolean | null
+          published_at: string | null
+          season_number: number | null
+          title: string
+        }
+        Insert: {
+          audio_url?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          embed_url?: string | null
+          episode_number?: number | null
+          guest_name?: string | null
+          guest_role?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          season_number?: number | null
+          title: string
+        }
+        Update: {
+          audio_url?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          embed_url?: string | null
+          episode_number?: number | null
+          guest_name?: string | null
+          guest_role?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          season_number?: number | null
+          title?: string
+        }
+        Relationships: []
       }
       portfolio_comments: {
         Row: {

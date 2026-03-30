@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import {
   BarChart3, Users, MessageSquare, TrendingUp, Crown, Shield, User,
-  Settings, Calendar, DollarSign, Mail, Sparkles, Check, Loader2,
+  Settings, Calendar, DollarSign, Mail, Sparkles, Check, Loader2, UserPlus,
 } from "lucide-react";
+import { CircleInviteTools } from "./CircleInviteTools";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -38,7 +39,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
   const [members, setMembers] = useState<CircleMember[]>([]);
   const [stats, setStats] = useState({ messagesThisWeek: 0, newMembersThisWeek: 0, totalReactions: 0, messagesLastWeek: 0, newMembersLastWeek: 0 });
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState<'analytics' | 'members' | 'settings' | 'events'>('analytics');
+  const [activeView, setActiveView] = useState<'analytics' | 'members' | 'settings' | 'events' | 'invite'>('analytics');
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [welcomeDmEnabled, setWelcomeDmEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -127,6 +128,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
   const views = [
     { key: 'analytics' as const, icon: BarChart3, label: 'Analytics' },
     { key: 'members' as const, icon: Users, label: 'Members' },
+    { key: 'invite' as const, icon: UserPlus, label: 'Invite' },
     { key: 'settings' as const, icon: Settings, label: 'Settings' },
     { key: 'events' as const, icon: Calendar, label: 'Events' },
   ];
@@ -142,13 +144,13 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
         </DialogHeader>
 
         {/* Tab buttons */}
-        <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
+        <div className="flex gap-1 bg-muted/50 rounded-lg p-1 overflow-x-auto">
           {views.map(v => (
             <Button
               key={v.key}
               variant={activeView === v.key ? 'default' : 'ghost'}
               size="sm"
-              className="flex-1 text-xs"
+              className="text-xs whitespace-nowrap shrink-0"
               onClick={() => setActiveView(v.key)}
             >
               <v.icon className="h-3.5 w-3.5 mr-1" />
@@ -356,6 +358,11 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               Save Settings
             </Button>
           </div>
+        )}
+
+        {/* Invite View */}
+        {activeView === 'invite' && (
+          <CircleInviteTools circleId={circle.id} circleTitle={circle.title} inviteCode={circle.invite_code} />
         )}
 
         {/* Events View */}

@@ -25,6 +25,7 @@ interface Article {
   read_time_minutes: number;
   view_count: number;
   created_at: string;
+  slug: string | null;
 }
 
 const CATEGORIES = ["all", "inspiration", "business", "culture", "how-to", "spotlight"];

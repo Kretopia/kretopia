@@ -3187,6 +3187,7 @@ export type Database = {
           is_featured: boolean | null
           is_published: boolean | null
           read_time_minutes: number | null
+          slug: string | null
           subtitle: string | null
           tags: string[] | null
           title: string
@@ -3205,6 +3206,7 @@ export type Database = {
           is_featured?: boolean | null
           is_published?: boolean | null
           read_time_minutes?: number | null
+          slug?: string | null
           subtitle?: string | null
           tags?: string[] | null
           title: string
@@ -3223,6 +3225,7 @@ export type Database = {
           is_featured?: boolean | null
           is_published?: boolean | null
           read_time_minutes?: number | null
+          slug?: string | null
           subtitle?: string | null
           tags?: string[] | null
           title?: string

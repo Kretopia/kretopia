@@ -128,6 +128,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
   const views = [
     { key: 'analytics' as const, icon: BarChart3, label: 'Analytics' },
     { key: 'members' as const, icon: Users, label: 'Members' },
+    { key: 'invite' as const, icon: UserPlus, label: 'Invite' },
     { key: 'settings' as const, icon: Settings, label: 'Settings' },
     { key: 'events' as const, icon: Calendar, label: 'Events' },
   ];

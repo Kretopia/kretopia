@@ -69,6 +69,7 @@ const CircleDetail = () => {
   const [showPollCreator, setShowPollCreator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const circleAvatarRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = userRole === "admin" || circle?.created_by === user?.id;
   const isMod = isAdmin || userRole === "moderator";

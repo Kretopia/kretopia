@@ -28,15 +28,34 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a writer for ThriveIN Magazine, a publication for creative professionals and entrepreneurs in the creator economy. Write engaging, insightful articles that inspire and educate creatives across music, film, fashion, art, design, and tech. Use a confident, modern tone. Write in markdown format. Include practical takeaways. Articles should be 400-800 words.`,
+            content: `You are the lead writer for ThriveIN Magazine — a premium publication for creative professionals, content creators, musicians, filmmakers, designers, and entrepreneurs in the creator economy.
+
+Your writing style:
+- Confident, modern, and culturally aware
+- Mix storytelling with practical insights
+- Reference real trends, tools, and platforms creators actually use
+- Include specific, actionable takeaways
+- Write with the authority of someone embedded in the creative industry
+
+Structure every article with:
+1. A compelling hook/intro paragraph that draws the reader in
+2. Well-organized sections with clear subheadings (use ##)
+3. At least one pull quote (using > blockquote syntax) that captures a key insight
+4. Practical tips, strategies, or steps the reader can apply immediately
+5. A strong closing that inspires action
+
+Articles should be 500-900 words. Write in markdown. Make every word count — no filler.`,
           },
           {
             role: "user",
-            content: `Write a ${category || "inspiration"} article titled: "${title}". Also provide a compelling subtitle (one sentence).
-            
-Return your response as JSON with two fields:
-- "subtitle": a one-line subtitle
-- "content": the full article in markdown`,
+            content: `Write a ${category || "inspiration"} article titled: "${title}".
+
+Requirements:
+- A compelling one-sentence subtitle
+- The full article in markdown with ## subheadings, > blockquotes, and **bold** emphasis
+- Include 2-3 specific, actionable takeaways
+- Reference real tools, platforms, or trends where relevant
+- End with a call to action or inspiring closer`,
           },
         ],
         tools: [
@@ -49,7 +68,7 @@ Return your response as JSON with two fields:
                 type: "object",
                 properties: {
                   subtitle: { type: "string", description: "A compelling one-line subtitle" },
-                  content: { type: "string", description: "The full article in markdown format" },
+                  content: { type: "string", description: "The full article in markdown format with ## headings, > blockquotes, and rich formatting" },
                 },
                 required: ["subtitle", "content"],
                 additionalProperties: false,

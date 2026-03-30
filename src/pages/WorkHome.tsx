@@ -83,7 +83,7 @@ const WorkHome = () => {
   const activeGigs = gigs.filter(g => g.status === "active" || g.status === "open");
 
   return (
-    <>
+    <PageTransition>
       <Helmet>
         <title>Work Dashboard | ThriveIN</title>
         <meta name="description" content="Your creative business command center — projects, gigs, pipeline at a glance." />

@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
+import { PageTransition } from "@/components/PageTransition";
 
 interface WidgetProps {
   title: string;

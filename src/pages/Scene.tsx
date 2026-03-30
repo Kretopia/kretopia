@@ -14,6 +14,7 @@ import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { PageTransition } from "@/components/PageTransition";
 
 const Scene = () => {
   const [activeTab, setActiveTab] = useState("spark");

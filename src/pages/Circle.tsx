@@ -238,5 +238,6 @@ export default function Circle() {
 
       <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
     </div>
+    </PageTransition>
   );
 }

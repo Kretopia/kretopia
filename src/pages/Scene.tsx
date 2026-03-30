@@ -40,7 +40,7 @@ const Scene = () => {
   }, [user]);
 
   return (
-    <>
+    <PageTransition>
       <Helmet>
         <title>Scene | ThriveIN</title>
         <meta name="description" content="Your creative community hub — browse events, discover work, and join conversations." />

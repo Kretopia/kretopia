@@ -9372,7 +9372,7 @@ export type Database = {
     }
     Enums: {
       account_type: "individual" | "company"
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "writer"
       location_precision: "exact" | "approximate" | "area_only"
       user_badge: "og" | "beta" | "official" | "founder" | "odos"
     }
@@ -9503,7 +9503,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["individual", "company"],
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "writer"],
       location_precision: ["exact", "approximate", "area_only"],
       user_badge: ["og", "beta", "official", "founder", "odos"],
     },

@@ -561,7 +561,13 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
         <Button size="icon" className="h-9 w-9 shrink-0" onClick={sendMessage} disabled={!newMessage.trim() || sending}>
           <Send className="h-4 w-4" />
         </Button>
-      </div>
+      </div> : (
+        <div className="flex items-center justify-center py-3 border-t border-border/50">
+          <Button size="sm" variant="gradient" onClick={joinCircle}>
+            {circle.is_paid ? `Join • $${circle.price_monthly}/mo` : "Join to chat"}
+          </Button>
+        </div>
+      )}
 
       {/* Admin Panel */}
       {showAdmin && <CircleAdminPanel circle={circle} onClose={() => setShowAdmin(false)} />}

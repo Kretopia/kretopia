@@ -94,7 +94,7 @@ const WorkHome = () => {
             </h1>
             <p className="text-sm text-muted-foreground">Your business at a glance</p>
           </div>
-          <CrossModeNudge targetMode="create" label="Switch to Create →" targetPath="/scene" />
+          <CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />
         </div>
 
         {/* Quick Stats Row */}

@@ -551,39 +551,73 @@ export default function Onboarding() {
                 <p className="text-muted-foreground text-sm">What's one project you've worked on? This builds your verified resume.</p>
               </div>
 
-              <Tabs defaultValue="manual" className="w-full">
+              <Tabs defaultValue="search" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 h-9">
-                  <TabsTrigger value="manual" className="text-xs gap-1"><Briefcase className="h-3 w-3" /> Manual</TabsTrigger>
+                  <TabsTrigger value="search" className="text-xs gap-1"><Search className="h-3 w-3" /> AI Search</TabsTrigger>
                   <TabsTrigger value="link" className="text-xs gap-1"><Link2 className="h-3 w-3" /> Paste Link</TabsTrigger>
-                  <TabsTrigger value="ai" className="text-xs gap-1"><Wand2 className="h-3 w-3" /> AI Import</TabsTrigger>
+                  <TabsTrigger value="manual" className="text-xs gap-1"><Briefcase className="h-3 w-3" /> Manual</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="manual" className="mt-3">
-                  <div className="border border-border rounded-lg p-4 space-y-4 bg-muted/30">
-                    <div>
-                      <Label htmlFor="project_name">Project Name</Label>
-                      <Input id="project_name" value={firstCredit.project_name} onChange={(e) => setFirstCredit(prev => ({ ...prev, project_name: e.target.value }))} placeholder='e.g. "Summer Vibes EP", "Nike Campaign"' />
+                <TabsContent value="search" className="mt-3">
+                  <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
+                    <p className="text-xs text-muted-foreground">Search for a project you worked on — type its name or yours and AI will find it.</p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder='e.g. "Machel Montano Soca Kingdom" or your name'
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && searchQuery.trim().length >= 2) {
+                            e.preventDefault();
+                            handleCreditSearch();
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        disabled={searchQuery.trim().length < 2 || searchLoading}
+                        onClick={handleCreditSearch}
+                      >
+                        {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      </Button>
                     </div>
-                    <div>
-                      <Label htmlFor="credit_role">Your Role</Label>
-                      <Input id="credit_role" value={firstCredit.role} onChange={(e) => setFirstCredit(prev => ({ ...prev, role: e.target.value }))} placeholder="e.g. Producer, Director, Designer" />
-                    </div>
-                    <div>
-                      <Label htmlFor="project_type">Type</Label>
-                      <Select value={firstCredit.project_type || undefined} onValueChange={(v) => setFirstCredit(prev => ({ ...prev, project_type: v }))}>
-                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="music">Music</SelectItem>
-                          <SelectItem value="film">Film / Video</SelectItem>
-                          <SelectItem value="design">Design</SelectItem>
-                          <SelectItem value="photography">Photography</SelectItem>
-                          <SelectItem value="fashion">Fashion</SelectItem>
-                          <SelectItem value="event">Event</SelectItem>
-                          <SelectItem value="brand">Brand Campaign</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {searchLoading && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                        <Loader2 className="h-3 w-3 animate-spin" /> Searching creative databases...
+                      </div>
+                    )}
+                    {hasSearched && !searchLoading && searchResults.length === 0 && (
+                      <p className="text-xs text-muted-foreground text-center py-2">No results found. Try a different search or add manually.</p>
+                    )}
+                    {searchResults.length > 0 && (
+                      <div className="max-h-48 overflow-y-auto space-y-2">
+                        {searchResults.map((result, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className="w-full text-left border border-border rounded-md p-2.5 hover:bg-accent/50 transition-colors"
+                            onClick={() => {
+                              setFirstCredit({
+                                project_name: result.title || '',
+                                role: result.role_suggestion || '',
+                                project_type: result.type || '',
+                              });
+                              setSearchResults([]);
+                              toast({ title: "✨ Credit selected!", description: result.title });
+                            }}
+                          >
+                            <p className="font-medium text-sm truncate">{result.title}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {result.year && <span className="text-xs text-muted-foreground">{result.year}</span>}
+                              {result.type && <span className="text-xs text-muted-foreground capitalize">• {result.type.replace(/_/g, ' ')}</span>}
+                              {result.platform && <span className="text-xs text-muted-foreground">• {result.platform}</span>}
+                            </div>
+                            {result.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{result.description}</p>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 
@@ -624,41 +658,32 @@ export default function Onboarding() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="ai" className="mt-3">
-                  <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
-                    <p className="text-xs text-muted-foreground">Describe a project you worked on and AI will structure it as a credit.</p>
-                    <Textarea
-                      value={aiCreditPrompt}
-                      onChange={(e) => setAiCreditPrompt(e.target.value)}
-                      placeholder='e.g. "I directed a music video for Machel Montano last Carnival" or "I designed the brand identity for a local coffee shop"'
-                      rows={3}
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="w-full gap-2"
-                      disabled={!aiCreditPrompt.trim() || aiLoading}
-                      onClick={async () => {
-                        setAiLoading(true);
-                        try {
-                          const { data } = await supabase.functions.invoke('ai-credit-import', {
-                            body: { type: 'description', content: aiCreditPrompt, userId: user!.id }
-                          });
-                          if (data?.project_name) {
-                            setFirstCredit({ project_name: data.project_name, role: data.role || '', project_type: data.project_type || '' });
-                            toast({ title: "✨ Credit created!", description: `Generated: ${data.project_name}` });
-                          } else {
-                            toast({ title: "Couldn't generate credit", description: "Try adding manually", variant: "destructive" });
-                          }
-                        } catch (e) {
-                          console.error('AI import error:', e);
-                          toast({ title: "AI import failed", description: "Try adding manually", variant: "destructive" });
-                        } finally { setAiLoading(false); }
-                      }}
-                    >
-                      {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                      Generate Credit with AI
-                    </Button>
+                <TabsContent value="manual" className="mt-3">
+                  <div className="border border-border rounded-lg p-4 space-y-4 bg-muted/30">
+                    <div>
+                      <Label htmlFor="project_name">Project Name</Label>
+                      <Input id="project_name" value={firstCredit.project_name} onChange={(e) => setFirstCredit(prev => ({ ...prev, project_name: e.target.value }))} placeholder='e.g. "Summer Vibes EP", "Nike Campaign"' />
+                    </div>
+                    <div>
+                      <Label htmlFor="credit_role">Your Role</Label>
+                      <Input id="credit_role" value={firstCredit.role} onChange={(e) => setFirstCredit(prev => ({ ...prev, role: e.target.value }))} placeholder="e.g. Producer, Director, Designer" />
+                    </div>
+                    <div>
+                      <Label htmlFor="project_type">Type</Label>
+                      <Select value={firstCredit.project_type || undefined} onValueChange={(v) => setFirstCredit(prev => ({ ...prev, project_type: v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="music">Music</SelectItem>
+                          <SelectItem value="film">Film / Video</SelectItem>
+                          <SelectItem value="design">Design</SelectItem>
+                          <SelectItem value="photography">Photography</SelectItem>
+                          <SelectItem value="fashion">Fashion</SelectItem>
+                          <SelectItem value="event">Event</SelectItem>
+                          <SelectItem value="brand">Brand Campaign</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </TabsContent>
               </Tabs>

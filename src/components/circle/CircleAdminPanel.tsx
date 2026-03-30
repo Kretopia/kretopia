@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import {
   BarChart3, Users, MessageSquare, TrendingUp, Crown, Shield, User,
-  Settings, Calendar, DollarSign, Mail, Sparkles, Check, Loader2,
+  Settings, Calendar, DollarSign, Mail, Sparkles, Check, Loader2, UserPlus,
 } from "lucide-react";
+import { CircleInviteTools } from "./CircleInviteTools";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";

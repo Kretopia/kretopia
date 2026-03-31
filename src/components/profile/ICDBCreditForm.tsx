@@ -546,7 +546,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold flex-1">{project.title}</p>
                           <Badge variant="outline" className="text-[9px] h-4 gap-0.5 border-blue-500/30 text-blue-600 shrink-0">
-                            <ShieldCheck className="h-2 w-2" /> ICDB
+                            <ShieldCheck className="h-2 w-2" /> Verified
                           </Badge>
                         </div>
                         {project.description && (

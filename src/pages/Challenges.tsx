@@ -346,7 +346,7 @@ const Challenges = () => {
             </h2>
             <div className="space-y-2">
               {myEntries.map((entry: any) => (
-                <Card key={entry.id} className="overflow-hidden">
+                <Card key={entry.id} className="overflow-hidden cursor-pointer hover:shadow-sm transition-shadow" onClick={() => navigate(`/challenges/${entry.challenge_id}`)}>
                   <CardContent className="p-3 flex items-center gap-3">
                     {entry.media_url && (
                       <img src={entry.media_url} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />

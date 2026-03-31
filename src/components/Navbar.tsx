@@ -220,9 +220,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
+                      <MenuButton icon={Globe} label="View EPK" onClick={() => handleNavigation(`/epk/${user?.id}`)} />
                       <Button
                         variant="ghost"
-                        className="justify-start gap-3 h-12 w-full text-primary font-medium"
+                        className="justify-start gap-3 h-12 w-full text-muted-foreground"
                         onClick={() => {
                           setIsOpen(false);
                           const epkUrl = `${window.location.origin}/epk/${user?.id}`;
@@ -234,8 +235,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           }
                         }}
                       >
-                        <Globe className="h-5 w-5" />
-                        <span className="flex-1 text-left">Share EPK</span>
+                        <Share2 className="h-5 w-5" />
+                        <span className="flex-1 text-left">Share EPK Link</span>
                       </Button>
 
                       <Separator className="my-3" />

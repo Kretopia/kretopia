@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Trophy, Clock, Users, Flame, Zap, Crown, Timer, Star, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";

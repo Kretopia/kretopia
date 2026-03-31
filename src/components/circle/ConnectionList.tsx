@@ -130,7 +130,7 @@ export const ConnectionList = ({ connections, loading, onMessage }: ConnectionLi
                 
                 <p className="text-sm text-muted-foreground truncate">{connection.role}</p>
                 
-                {/* Recent ICDb Credit */}
+                {/* Recent ThriveRecord Credit */}
                 {credit && (
                   <div className="flex items-center gap-1.5 text-xs text-primary/70 mt-1">
                     <Film className="h-3 w-3 shrink-0" />

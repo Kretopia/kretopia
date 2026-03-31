@@ -49,7 +49,7 @@ const ICDBHub = () => {
   return (
     <>
       <Helmet>
-        <title>ICDB Hub - Internet Creative Database | ThriveIN</title>
+        <title>ThriveRecord™ — Your Verified Creative Record | ThriveIN</title>
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">
@@ -60,14 +60,14 @@ const ICDBHub = () => {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">ICDB Hub</h1>
-                <p className="text-[11px] text-muted-foreground">Your creative identity command center</p>
+                <h1 className="text-xl font-bold tracking-tight">ThriveRecord™</h1>
+                <p className="text-[11px] text-muted-foreground">Your verified creative record — portable, permanent, professional</p>
               </div>
             </div>
 
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => navigate('/credits')}>
-                <Search className="h-3 w-3" /> Browse ICDB
+                <Search className="h-3 w-3" /> Browse Records
               </Button>
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => navigate('/credits/discover')}>
                 <Database className="h-3 w-3" /> AI Discovery
@@ -115,11 +115,12 @@ const ICDBHub = () => {
                 creditCount={creditCount}
               />
               <div className="p-4 rounded-xl bg-muted/30 border space-y-2">
-                <h3 className="text-sm font-semibold">What is your ICDB Creator ID?</h3>
+                <h3 className="text-sm font-semibold">What is your ThriveRecord™ ID?</h3>
                 <p className="text-xs text-muted-foreground">
                   Your unique, portable identity across the creative industry. Use it in contracts, 
                   bios, and platforms to link back to your verified creative history. Think of it as 
-                  your creative social security number — one ID that proves who you are and what you've built.
+                  your creative passport — one ID that proves who you are and what you've built, 
+                  trusted by labels, agencies, and brands worldwide.
                 </p>
               </div>
             </div>

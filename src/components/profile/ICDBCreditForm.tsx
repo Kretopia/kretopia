@@ -221,7 +221,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
         credit_category: project.type || '',
       }));
       setStep("details");
-      toast.success("Project found in ThriveRecord! Confirm your details.");
+      toast.success("Project found in ThriveCredits! Confirm your details.");
     } catch {
       toast.error("Failed to claim — try manual entry");
     }

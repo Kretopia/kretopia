@@ -49,17 +49,22 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
-  // Get current user's profile for the match modal
+  // Get current user's profile for the match modal + check completion
   useEffect(() => {
     if (user?.id) {
-      supabase
-        .from('profiles')
-        .select('avatar_url, full_name')
-        .eq('user_id', user.id)
-        .single()
-        .then(({ data }) => {
-          setCurrentUserProfile(data);
-        });
+      Promise.all([
+        supabase.from('profiles').select('avatar_url, full_name, bio').eq('user_id', user.id).single(),
+        supabase.from('portfolio_items').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      ]).then(([profileRes, portfolioRes, creditsRes]) => {
+        if (profileRes.data) {
+          setCurrentUserProfile(profileRes.data);
+          const workCount = (portfolioRes.count || 0) + (creditsRes.count || 0);
+          const missing = getDiscoveryMissingFields(profileRes.data as any, workCount);
+          setProfileIncomplete(missing.length > 0);
+          setMissingFields(missing);
+        }
+      });
     }
   }, [user?.id]);
 

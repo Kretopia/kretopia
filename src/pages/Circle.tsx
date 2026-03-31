@@ -222,7 +222,7 @@ export default function Circle() {
             )}
             {connections.length === 0 && !connectionsLoading && (
               <div className="text-center py-6 border-t">
-                <p className="text-muted-foreground mb-4">Start connecting with creators to grow your network!</p>
+                <p className="text-muted-foreground mb-4">Start connecting with creators to grow your professional circle!</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button onClick={() => setActiveTab("foryou")} variant="outline" className="gap-2">
                     <Sparkles className="h-4 w-4" /> View Today's Picks

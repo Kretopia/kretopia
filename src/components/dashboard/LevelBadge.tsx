@@ -23,16 +23,16 @@ export function LevelBadge({ level, xp }: LevelBadgeProps) {
             {levelData.icon}
           </div>
           <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Thrive Status</p>
             <h3 className={`text-2xl font-bold bg-gradient-to-r ${levelData.color} bg-clip-text text-transparent`}>
               {levelData.name}
             </h3>
-            <p className="text-sm text-muted-foreground">Level {level}</p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-lg font-bold">{xp} XP</p>
           <p className="text-xs text-muted-foreground">
-            {xpNeeded - xpInLevel} to next
+            {xpNeeded - xpInLevel} to next tier
           </p>
         </div>
       </div>

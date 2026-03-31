@@ -5,10 +5,10 @@ import { memo, useRef, useCallback } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";
 
 const CREATE_ITEMS = [
-  { path: "/circle", icon: Sparkles, label: "Match" },
   { path: "/scene", icon: Flame, label: "Scene" },
-  { path: "/circles", icon: MessageSquareMore, label: "Circles" },
+  { path: "/circle", icon: Sparkles, label: "Match" },
   { path: "/credits", icon: Database, label: "ICDB" },
+  { path: "/circles", icon: MessageSquareMore, label: "Circles" },
 ];
 
 const WORK_ITEMS = [

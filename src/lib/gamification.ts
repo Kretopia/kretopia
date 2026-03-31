@@ -1,12 +1,12 @@
-// Gamification level names and tiers
+// Thrive Status — premium airline-style tiers
 export const LEVEL_NAMES = {
-  'Spark': { range: [1, 5], color: 'from-yellow-400 to-orange-500', icon: '✨' },
-  'Rising Star': { range: [6, 10], color: 'from-orange-500 to-pink-500', icon: '⭐' },
-  'Creator': { range: [11, 20], color: 'from-pink-500 to-purple-500', icon: '🎨' },
-  'Maverick': { range: [21, 30], color: 'from-purple-500 to-blue-500', icon: '🚀' },
-  'Visionary': { range: [31, 50], color: 'from-blue-500 to-cyan-500', icon: '👁️' },
-  'Legend': { range: [51, 75], color: 'from-cyan-500 to-green-500', icon: '🏆' },
-  'Icon': { range: [76, 999], color: 'from-green-500 to-emerald-500', icon: '👑' },
+  'Member': { range: [1, 5], color: 'from-slate-400 to-slate-500', icon: '🪪' },
+  'Silver': { range: [6, 10], color: 'from-gray-300 to-slate-400', icon: '🥈' },
+  'Gold': { range: [11, 20], color: 'from-amber-400 to-yellow-500', icon: '🥇' },
+  'Thriver': { range: [21, 30], color: 'from-purple-500 to-indigo-500', icon: '💎' },
+  'Elite': { range: [31, 50], color: 'from-indigo-500 to-blue-600', icon: '✈️' },
+  'Icon': { range: [51, 75], color: 'from-blue-600 to-cyan-400', icon: '👑' },
+  'Legend': { range: [76, 999], color: 'from-amber-500 to-rose-500', icon: '🏆' },
 } as const;
 
 export function getLevelName(level: number): string {
@@ -15,7 +15,7 @@ export function getLevelName(level: number): string {
       return name;
     }
   }
-  return 'Icon';
+  return 'Legend';
 }
 
 export function getLevelData(level: number) {

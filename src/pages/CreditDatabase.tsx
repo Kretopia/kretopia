@@ -330,7 +330,7 @@ const CreditDatabase = () => {
           </Tabs>
           <div className="flex justify-end gap-2 mt-2">
             <Button variant="outline" size="sm" className="gap-1.5 text-[11px] h-7" onClick={() => navigate('/credits/hub')}>
-              <Database className="h-3 w-3" /> My Record
+              <Database className="h-3 w-3" /> My Credits
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5 text-[11px] h-7" onClick={() => navigate('/credits/discover')}>
               <Sparkles className="h-3 w-3" /> AI Discovery

@@ -251,10 +251,10 @@ const CreatorEPK = () => {
           source: c.source
         }));
 
-        // ICDB claimed credits
+        // ThriveCredits claimed credits
         const icdbClaimed = (icdbRes.data || []).map((c: any) => ({
           id: c.id,
-          project_name: c.person_name || 'ICDB Credit',
+          project_name: c.person_name || 'Claimed Credit',
           role: c.role_title,
           isVerified: true,
           verificationTier: 'icdb' as const,
@@ -572,19 +572,56 @@ const CreatorEPK = () => {
           </div>
         )}
 
-        {/* Work History / Credits */}
+        {/* ThriveCredits™ — Verified Work History */}
         {credits.length > 0 && (
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Verified Filmography
+                ThriveCredits™
               </h3>
               <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
                 <Database className="h-3 w-3" />
-                ICDB
+                {credits.filter(c => c.isVerified).length} verified
               </Badge>
             </div>
-            <div className="space-y-2">
+
+            {/* Featured credits — horizontal Netflix-style scroll */}
+            {credits.filter(c => c.isVerified).length > 0 && (
+              <div className="mb-4">
+                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                  {credits.filter(c => c.isVerified).slice(0, 8).map((credit) => {
+                    const tierConfig = {
+                      icdb: { label: 'Verified', className: 'bg-primary/10 text-primary border-primary/30' },
+                      peer: { label: 'Peer', className: 'bg-green-500/10 text-green-600 border-green-500/30' },
+                      ai: { label: 'AI', className: 'bg-blue-500/10 text-blue-600 border-blue-500/30' },
+                      payment: { label: 'Paid', className: 'bg-amber-500/10 text-amber-600 border-amber-500/30' },
+                      manual: { label: '', className: '' },
+                    }[credit.verificationTier || 'manual'];
+
+                    return (
+                      <div key={credit.id} className="flex-shrink-0 w-[140px]">
+                        <div className="rounded-lg overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 hover:border-primary/30 transition-all h-[180px] flex flex-col items-center justify-center gap-2 p-3 text-center">
+                          <CheckCircle2 className="h-8 w-8 text-primary/40" />
+                          <p className="text-xs font-semibold leading-tight line-clamp-2">{credit.project_name || credit.title}</p>
+                          <p className="text-[10px] text-muted-foreground truncate w-full">{credit.role}</p>
+                          {tierConfig.label && (
+                            <Badge variant="outline" className={cn("text-[8px] h-3.5 px-1", tierConfig.className)}>
+                              {tierConfig.label}
+                            </Badge>
+                          )}
+                          {credit.year && (
+                            <span className="text-[10px] text-muted-foreground">{credit.year}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Full credit list */}
+            <div className="space-y-1.5">
               {credits.map((credit) => {
                 const tierConfig = {
                   icdb: { label: 'Verified', className: 'bg-primary/10 text-primary border-primary/30' },

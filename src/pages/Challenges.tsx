@@ -255,7 +255,7 @@ const Challenges = () => {
                   <Card key={challenge.id} className={cn(
                     "overflow-hidden transition-all hover:shadow-md group cursor-pointer",
                     isEndingSoon && "ring-1 ring-destructive/30"
-                  )}>
+                  )} onClick={() => navigate(`/challenges/${challenge.id}`)}>
                     {challenge.cover_image_url && (
                       <div className="relative h-28 overflow-hidden">
                         <img

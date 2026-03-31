@@ -234,7 +234,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     setSearching(true);
     setHasSearched(true);
 
-    // Search ThriveRecord canonical database in parallel with web search
+    // Search ThriveCredits canonical database in parallel with web search
     searchIcdb(q);
 
     try {

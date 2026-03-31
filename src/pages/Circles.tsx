@@ -86,7 +86,9 @@ const CirclesPage = () => {
   useEffect(() => { fetchCircles(); }, [fetchCircles]);
 
   const myCircles = circles.filter(c => c.is_member);
-  const trendingCircles = circles.slice(0, 5);
+  const trendingCircles = circles
+    .sort((a, b) => b.message_count - a.message_count)
+    .slice(0, 5);
 
   const displayCircles = (activeTab === "mine" ? myCircles : circles).filter(c => {
     const matchSearch = !searchQuery || 

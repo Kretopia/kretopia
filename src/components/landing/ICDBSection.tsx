@@ -19,7 +19,7 @@ export const ICDBSection = () => {
         <div className="text-center mb-10 sm:mb-14">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs sm:text-sm font-medium text-primary">
             <Database className="h-3.5 w-3.5" />
-            <span>Internet Creative Database</span>
+            <span>ThriveRecord™</span>
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             Your Work.{" "}
@@ -28,7 +28,7 @@ export const ICDBSection = () => {
             </span>
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            IMDb for every creative industry. Claim your credits, get verified by peers and AI, 
+            The global standard for creative records. Claim your credits, get verified by peers and AI, 
             and build a reputation that follows you — not a platform.
           </p>
         </div>

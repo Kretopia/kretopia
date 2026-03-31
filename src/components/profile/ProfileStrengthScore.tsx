@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle2, Circle, AlertCircle, ChevronRight, Zap } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
+import { cn } from "@/lib/utils";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -56,61 +56,76 @@ export const ProfileStrengthScore = ({
   pressCount = 0
 }: ProfileStrengthScoreProps) => {
   const { score, items } = calculateProfileStrength(profile, portfolioCount, creditsCount, awardsCount, pressCount);
+  const nextItem = items.find(i => !i.completed);
+  const completedCount = items.filter(i => i.completed).length;
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 50) return "text-yellow-600";
-    return "text-red-600";
-  };
-
-  const getScoreMessage = (score: number) => {
-    if (score >= 90) return "Outstanding! Your profile is highly attractive to collaborators.";
-    if (score >= 70) return "Great job! A few more touches to perfect your profile.";
-    if (score >= 50) return "Good start! Complete more sections to stand out.";
-    return "Let's build your profile! Complete the key sections below.";
-  };
+  const ringColor = score >= 80 ? "stroke-emerald-500" : score >= 50 ? "stroke-amber-500" : "stroke-primary";
+  const circumference = 2 * Math.PI * 36;
+  const offset = circumference - (score / 100) * circumference;
 
   return (
-    <Card className="border-2 border-primary/20">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-primary" />
-          Profile Strength
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Card className="border border-border/50 overflow-hidden">
+      <CardContent className="p-4">
         <div className="flex items-center gap-4">
-          <div className={`text-4xl font-bold ${getScoreColor(score)}`}>
-            {score}%
+          {/* SVG Ring */}
+          <div className="relative w-20 h-20 shrink-0">
+            <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="36" fill="none" stroke="currentColor" strokeWidth="4" className="text-muted/30" />
+              <circle
+                cx="40" cy="40" r="36" fill="none" strokeWidth="4"
+                strokeLinecap="round"
+                className={cn(ringColor, "transition-all duration-700 ease-out")}
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-lg font-bold">{score}%</span>
+              <span className="text-[9px] text-muted-foreground">{completedCount}/{items.length}</span>
+            </div>
           </div>
-          <div className="flex-1">
-            <Progress value={score} className="h-3" />
-            <p className="text-sm text-muted-foreground mt-2">
-              {getScoreMessage(score)}
+
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold mb-0.5">Profile Strength</h3>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              {score >= 90 ? "🏆 Outstanding! You stand out." :
+               score >= 70 ? "Almost there! A few more touches." :
+               score >= 50 ? "Good start! Keep building." :
+               "Let's make you discoverable!"}
             </p>
+
+            {/* Next action nudge */}
+            {nextItem && (
+              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-primary/5 border border-primary/10">
+                <Zap className="h-3 w-3 text-primary shrink-0" />
+                <span className="text-[11px] font-medium truncate">{nextItem.label}</span>
+                <span className="text-[10px] text-primary ml-auto shrink-0">+{nextItem.points}pts</span>
+                <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <h4 className="font-semibold text-sm">Profile Checklist</h4>
-          <div className="grid gap-2">
-            {items.map((item, index) => (
-              <div key={index} className="flex items-center gap-2 text-sm">
-                {item.completed ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                ) : (
-                  <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                )}
-                <span className={item.completed ? "text-muted-foreground line-through" : ""}>
-                  {item.label}
-                </span>
-                <span className="ml-auto text-xs text-muted-foreground">
-                  +{item.points} pts
-                </span>
-              </div>
-            ))}
+        {/* Compact checklist - only incomplete items */}
+        {items.filter(i => !i.completed).length > 0 && (
+          <div className="mt-3 pt-3 border-t border-border/30">
+            <div className="grid grid-cols-2 gap-1.5">
+              {items.map((item, index) => (
+                <div key={index} className={cn(
+                  "flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md",
+                  item.completed ? "text-muted-foreground/50" : "text-foreground"
+                )}>
+                  {item.completed ? (
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+                  ) : (
+                    <Circle className="h-3 w-3 text-muted-foreground/40 shrink-0" />
+                  )}
+                  <span className={cn("truncate", item.completed && "line-through")}>{item.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

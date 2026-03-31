@@ -68,10 +68,14 @@ const EventCard = ({ event, onClick }: { event: EventItem; onClick: () => void }
   const isTicketed = event.is_ticketed && event.ticket_price && event.ticket_price > 0;
   const currencySymbol = CURRENCY_SYMBOLS[event.ticket_currency || 'USD'] || '$';
   const spotsLeft = event.max_participants - event.participant_count;
+  const isHot = event.participant_count >= 5;
+  const isSoon = !isPast && (startDate.getTime() - Date.now()) < 48 * 60 * 60 * 1000;
 
   return (
     <div 
-      className="flex gap-3 p-3 rounded-xl border border-border/50 bg-card hover:bg-accent/5 cursor-pointer transition-all hover:shadow-md group"
+      className={`flex gap-3 p-3 rounded-xl border bg-card hover:bg-accent/5 cursor-pointer transition-all hover:shadow-md group ${
+        isSoon ? "border-primary/30 shadow-sm shadow-primary/5" : "border-border/50"
+      }`}
       onClick={onClick}
     >
       {/* Cover image or date block */}
@@ -115,8 +119,14 @@ const EventCard = ({ event, onClick }: { event: EventItem; onClick: () => void }
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            {isHot && (
+              <Badge className="text-[10px] py-0 px-1.5 bg-orange-500/10 text-orange-600 border-0">🔥 Hot</Badge>
+            )}
+            {isSoon && !isPast && (
+              <Badge className="text-[10px] py-0 px-1.5 bg-primary/10 text-primary border-0">⚡ Soon</Badge>
+            )}
             {spotsLeft <= 5 && spotsLeft > 0 && !isPast && (
-              <Badge variant="destructive" className="text-[10px] py-0 px-1.5">{spotsLeft} spots</Badge>
+              <Badge variant="destructive" className="text-[10px] py-0 px-1.5">{spotsLeft} left</Badge>
             )}
             {spotsLeft <= 0 && !isPast && (
               <Badge variant="destructive" className="text-[10px] py-0 px-1.5">Full</Badge>
@@ -302,12 +312,19 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
-              {!embedded && <h1 className="text-xl font-bold">Events</h1>}
+              {!embedded && (
+                <h1 className="text-xl font-bold flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Events & Meetups
+                </h1>
+              )}
               {upcomingCount > 0 && (
-                <p className="text-sm text-muted-foreground">{upcomingCount} coming up</p>
+                <p className="text-sm text-muted-foreground">
+                  {upcomingCount} coming up · {events.filter(e => e.participant_count >= 5).length} trending
+                </p>
               )}
             </div>
-            <Button variant="gradient" size="sm" onClick={() => setShowCreate(true)} className="gap-1.5">
+            <Button variant="gradient" size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-full">
               <Plus className="h-4 w-4" /> Host Event
             </Button>
           </div>

@@ -192,7 +192,7 @@ export default function Circle() {
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Network
+              Pro Circle
               {connections.length > 0 && (
                 <span className="ml-1 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
                   {connections.length}

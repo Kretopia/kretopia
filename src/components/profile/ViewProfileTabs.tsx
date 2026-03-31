@@ -85,40 +85,6 @@ export const ViewProfileTabs = ({
           </div>
         );
 
-      case "reviews":
-        return reviews.length > 0 ? (
-          <ReviewsSection
-            reviews={reviews}
-            isOwnProfile={false}
-            profileUserId={userId}
-            onRefresh={onRefresh}
-          />
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <Star className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No reviews yet</p>
-          </div>
-        );
-
-      case "press":
-        return (
-          <div className="space-y-6">
-            {profile.achievement_badges?.length > 0 && (
-              <AchievementBadges achievements={profile.achievement_badges} showAll />
-            )}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-              <div>
-                <h3 className="font-semibold mb-3">Press Coverage</h3>
-                <PressLinksSection userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">Awards</h3>
-                <AwardsSection userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
-              </div>
-            </div>
-          </div>
-        );
-
       case "skills":
         return (
           <div className="space-y-6">
@@ -146,19 +112,54 @@ export const ViewProfileTabs = ({
           </div>
         );
 
-      case "collabs":
-        return (
-          <div>
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Handshake className="h-5 w-5 text-primary" />
-              Collaboration History
-            </h2>
-            <CollaborationHistory userId={userId} isOwnProfile={false} viewerUserId={user?.id} />
+      case "reviews":
+        return reviews.length > 0 ? (
+          <ReviewsSection
+            reviews={reviews}
+            isOwnProfile={false}
+            profileUserId={userId}
+            onRefresh={onRefresh}
+          />
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Star className="h-10 w-10 mx-auto mb-3 opacity-30" />
+            <p className="text-sm">No reviews yet</p>
           </div>
         );
 
-      case "shop":
-        return <DigitalProductsSection userId={userId} isOwner={false} />;
+      case "more":
+        return (
+          <div className="space-y-8">
+            {/* Collaboration History */}
+            <div>
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Handshake className="h-5 w-5 text-primary" />
+                Collaboration History
+              </h2>
+              <CollaborationHistory userId={userId} isOwnProfile={false} viewerUserId={user?.id} />
+            </div>
+
+            {/* Press & Awards */}
+            <div className="space-y-6">
+              {profile.achievement_badges?.length > 0 && (
+                <AchievementBadges achievements={profile.achievement_badges} showAll />
+              )}
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+                <div>
+                  <h3 className="font-semibold mb-3">Press Coverage</h3>
+                  <PressLinksSection userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-3">Awards</h3>
+                  <AwardsSection userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
+                </div>
+              </div>
+            </div>
+
+            {/* Shop */}
+            <DigitalProductsSection userId={userId} isOwner={false} />
+          </div>
+        );
 
       default:
         return null;

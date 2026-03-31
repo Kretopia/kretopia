@@ -267,8 +267,8 @@ const CreditDatabase = () => {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">ThriveRecord™</h1>
-                <p className="text-xs text-muted-foreground">The Global Creative Record</p>
+                <h1 className="text-2xl font-bold tracking-tight">ThriveCredits™</h1>
+                <p className="text-xs text-muted-foreground">Your Verified Creative History</p>
               </div>
             </div>
 

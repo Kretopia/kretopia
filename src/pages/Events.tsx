@@ -68,10 +68,14 @@ const EventCard = ({ event, onClick }: { event: EventItem; onClick: () => void }
   const isTicketed = event.is_ticketed && event.ticket_price && event.ticket_price > 0;
   const currencySymbol = CURRENCY_SYMBOLS[event.ticket_currency || 'USD'] || '$';
   const spotsLeft = event.max_participants - event.participant_count;
+  const isHot = event.participant_count >= 5;
+  const isSoon = !isPast && (startDate.getTime() - Date.now()) < 48 * 60 * 60 * 1000;
 
   return (
     <div 
-      className="flex gap-3 p-3 rounded-xl border border-border/50 bg-card hover:bg-accent/5 cursor-pointer transition-all hover:shadow-md group"
+      className={`flex gap-3 p-3 rounded-xl border bg-card hover:bg-accent/5 cursor-pointer transition-all hover:shadow-md group ${
+        isSoon ? "border-primary/30 shadow-sm shadow-primary/5" : "border-border/50"
+      }`}
       onClick={onClick}
     >
       {/* Cover image or date block */}

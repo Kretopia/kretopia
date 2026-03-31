@@ -95,7 +95,12 @@ const ThriveDesk = () => {
         </header>
 
         {/* Tab Bar */}
-        <DeskTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+        <DeskTabBar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          taskCount={tasks.filter(t => t.status !== 'done').length}
+          messageCount={messages.length}
+        />
 
         {/* Credit Confirmation Banner */}
         <ConfirmCreditBanner

@@ -86,7 +86,9 @@ const CirclesPage = () => {
   useEffect(() => { fetchCircles(); }, [fetchCircles]);
 
   const myCircles = circles.filter(c => c.is_member);
-  const trendingCircles = circles.slice(0, 5);
+  const trendingCircles = circles
+    .sort((a, b) => b.message_count - a.message_count)
+    .slice(0, 5);
 
   const displayCircles = (activeTab === "mine" ? myCircles : circles).filter(c => {
     const matchSearch = !searchQuery || 
@@ -113,7 +115,7 @@ const CirclesPage = () => {
                   <MessageSquareMore className="h-5 w-5 text-primary" />
                   Circles
                 </h1>
-                <p className="text-sm text-muted-foreground">Community spaces for creatives</p>
+                <p className="text-xs text-muted-foreground">{circles.length} circles · {circles.reduce((a, c) => a + c.member_count, 0).toLocaleString()} members</p>
               </div>
               <CreateCircleDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchCircles} />
             </div>

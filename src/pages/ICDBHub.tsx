@@ -60,8 +60,8 @@ const ICDBHub = () => {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">ThriveRecord™</h1>
-                <p className="text-[11px] text-muted-foreground">Your verified creative record — portable, permanent, professional</p>
+                <h1 className="text-xl font-bold tracking-tight">ThriveCredits™</h1>
+                <p className="text-[11px] text-muted-foreground">Your verified creative history — portable, permanent, professional</p>
               </div>
             </div>
 

@@ -67,7 +67,7 @@ const ICDBHub = () => {
 
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => navigate('/credits')}>
-                <Search className="h-3 w-3" /> Browse ICDB
+                <Search className="h-3 w-3" /> Browse Records
               </Button>
               <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => navigate('/credits/discover')}>
                 <Database className="h-3 w-3" /> AI Discovery

@@ -119,8 +119,14 @@ const EventCard = ({ event, onClick }: { event: EventItem; onClick: () => void }
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            {isHot && (
+              <Badge className="text-[10px] py-0 px-1.5 bg-orange-500/10 text-orange-600 border-0">🔥 Hot</Badge>
+            )}
+            {isSoon && !isPast && (
+              <Badge className="text-[10px] py-0 px-1.5 bg-primary/10 text-primary border-0">⚡ Soon</Badge>
+            )}
             {spotsLeft <= 5 && spotsLeft > 0 && !isPast && (
-              <Badge variant="destructive" className="text-[10px] py-0 px-1.5">{spotsLeft} spots</Badge>
+              <Badge variant="destructive" className="text-[10px] py-0 px-1.5">{spotsLeft} left</Badge>
             )}
             {spotsLeft <= 0 && !isPast && (
               <Badge variant="destructive" className="text-[10px] py-0 px-1.5">Full</Badge>

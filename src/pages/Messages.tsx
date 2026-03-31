@@ -892,7 +892,7 @@ const Messages = () => {
           </ScrollArea>
 
           {/* Message Input */}
-          <div className="p-4 border-t border-border bg-card space-y-2">
+          <div className="p-3 sm:p-4 border-t border-border bg-card/95 backdrop-blur-sm space-y-2">
             {/* Reply Banner */}
             {replyTo && (
               <MessageReplyBanner replyTo={replyTo} onCancel={() => setReplyTo(null)} />
@@ -920,18 +920,20 @@ const Messages = () => {
                 onAttach={(url, type, fileName) => setAttachment({ url, type, fileName })}
                 disabled={!!attachment}
               />
-              <Input
-                ref={inputRef}
-                value={newMessage}
-                onChange={handleInputChange}
-                placeholder={replyTo ? "Reply..." : "Message..."}
-                className="flex-1 rounded-full"
-              />
+              <div className="flex-1 relative">
+                <Input
+                  ref={inputRef}
+                  value={newMessage}
+                  onChange={handleInputChange}
+                  placeholder={replyTo ? "Reply..." : "Type a message..."}
+                  className="flex-1 rounded-full pr-10 bg-muted/50"
+                />
+              </div>
               <Button 
                 type="submit" 
                 size="icon" 
                 disabled={!newMessage.trim() && !attachment}
-                className="rounded-full"
+                className="rounded-full h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 shadow-sm"
               >
                 <Send className="h-4 w-4" />
               </Button>

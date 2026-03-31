@@ -312,12 +312,19 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
-              {!embedded && <h1 className="text-xl font-bold">Events</h1>}
+              {!embedded && (
+                <h1 className="text-xl font-bold flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Events & Meetups
+                </h1>
+              )}
               {upcomingCount > 0 && (
-                <p className="text-sm text-muted-foreground">{upcomingCount} coming up</p>
+                <p className="text-sm text-muted-foreground">
+                  {upcomingCount} coming up · {events.filter(e => e.participant_count >= 5).length} trending
+                </p>
               )}
             </div>
-            <Button variant="gradient" size="sm" onClick={() => setShowCreate(true)} className="gap-1.5">
+            <Button variant="gradient" size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-full">
               <Plus className="h-4 w-4" /> Host Event
             </Button>
           </div>

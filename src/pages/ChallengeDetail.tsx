@@ -382,31 +382,58 @@ const ChallengeDetail = () => {
                 <DialogTitle className="text-lg">Submit Entry</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                {/* Upload area */}
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className={cn(
-                    "border-2 border-dashed rounded-xl h-48 flex flex-col items-center justify-center cursor-pointer transition-colors",
-                    submitPreview ? "border-primary/50" : "border-muted-foreground/20 hover:border-primary/30"
-                  )}
-                >
-                  {submitPreview ? (
-                    <img src={submitPreview} alt="Preview" className="w-full h-full object-cover rounded-xl" />
-                  ) : (
+                {/* Upload area - category-aware */}
+                {(() => {
+                  const cat = challenge?.category?.toLowerCase() || "";
+                  const isAudio = cat === "music" || cat === "audio";
+                  const isWriting = cat === "writing";
+                  const acceptTypes = isAudio ? "audio/*,image/*,video/*" 
+                    : isWriting ? "image/*,video/*,application/pdf" 
+                    : "image/*,video/*,audio/*";
+                  const UploadIcon = isAudio ? Mic : isWriting ? FileText : Camera;
+                  const hint = isAudio ? "Audio, image, or video" 
+                    : isWriting ? "Image, video, or PDF" 
+                    : "Image, video, or audio";
+
+                  return (
                     <>
-                      <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">Tap to upload</p>
-                      <p className="text-[10px] text-muted-foreground/60">Image or video</p>
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                          "border-2 border-dashed rounded-xl h-48 flex flex-col items-center justify-center cursor-pointer transition-colors",
+                          submitPreview ? "border-primary/50" : "border-muted-foreground/20 hover:border-primary/30"
+                        )}
+                      >
+                        {submitFile && submitFile.type.startsWith("audio") ? (
+                          <div className="flex flex-col items-center gap-2 p-4">
+                            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Music className="h-7 w-7 text-primary" />
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate max-w-[200px]">{submitFile.name}</p>
+                            <audio src={submitPreview!} controls className="w-full max-w-[240px] h-8" />
+                          </div>
+                        ) : submitFile && submitFile.type.startsWith("video") ? (
+                          <video src={submitPreview!} controls className="w-full h-full object-cover rounded-xl" />
+                        ) : submitPreview ? (
+                          <img src={submitPreview} alt="Preview" className="w-full h-full object-cover rounded-xl" />
+                        ) : (
+                          <>
+                            <UploadIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                            <p className="text-sm text-muted-foreground">Tap to upload</p>
+                            <p className="text-[10px] text-muted-foreground/60">{hint}</p>
+                          </>
+                        )}
+                      </div>
+                      <input 
+                        ref={fileInputRef} 
+                        type="file" 
+                        accept={acceptTypes} 
+                        className="hidden" 
+                        onChange={handleFileSelect} 
+                      />
                     </>
-                  )}
-                </div>
-                <input 
-                  ref={fileInputRef} 
-                  type="file" 
-                  accept="image/*,video/*" 
-                  className="hidden" 
-                  onChange={handleFileSelect} 
-                />
+                  );
+                })()}
                 <Input 
                   placeholder="Title (optional)" 
                   value={submitTitle} 

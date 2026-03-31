@@ -48,17 +48,37 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
 
   // Category-themed inline images for visual breaks
   const inlineImages: Record<string, string[]> = {
-    inspiration: [
-      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80",
-      "https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&q=80",
+    fashion: [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
+      "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
+    ],
+    "art-culture": [
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80",
+      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&q=80",
+    ],
+    music: [
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80",
+      "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800&q=80",
+    ],
+    film: [
+      "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=80",
+      "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
+    ],
+    "events-festivals": [
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80",
+      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80",
+    ],
+    photography: [
+      "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=800&q=80",
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
     ],
     business: [
       "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80",
       "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80",
     ],
-    culture: [
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80",
-      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&q=80",
+    inspiration: [
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80",
+      "https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&q=80",
     ],
     "how-to": [
       "https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=800&q=80",

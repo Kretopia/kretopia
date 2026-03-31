@@ -102,7 +102,7 @@ export const MagazineWall = () => {
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             )}
           >
-            {cat === "how-to" ? "How-To" : cat}
+            {formatCategoryLabel(cat)}
           </button>
         ))}
       </div>

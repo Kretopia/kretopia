@@ -140,14 +140,7 @@ const ChallengeDetail = () => {
         .insert({ entry_id: entryId, user_id: user!.id });
       if (voteError) throw voteError;
 
-      // Increment vote count
-      const entry = entries?.find((e: any) => e.id === entryId);
-      if (entry) {
-        await supabase
-          .from("challenge_entries")
-          .update({ vote_count: (entry.vote_count || 0) + 1 })
-          .eq("id", entryId);
-      }
+      // vote_count updated automatically via database trigger
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["challenge-entries", id] });

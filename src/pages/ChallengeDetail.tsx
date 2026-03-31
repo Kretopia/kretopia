@@ -173,7 +173,9 @@ const ChallengeDetail = () => {
 
         const { data: urlData } = supabase.storage.from("media").getPublicUrl(path);
         mediaUrl = urlData.publicUrl;
-        mediaType = submitFile.type.startsWith("video") ? "video" : "image";
+        mediaType = submitFile.type.startsWith("video") ? "video" 
+          : submitFile.type.startsWith("audio") ? "audio" 
+          : "image";
       }
 
       const { error } = await supabase.from("challenge_entries").insert({

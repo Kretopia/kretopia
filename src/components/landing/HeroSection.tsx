@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Zap, Briefcase } from "lucide-react";
+import { ArrowRight, Briefcase, Database, ShieldCheck } from "lucide-react";
 
 export const HeroSection = () => {
   const handleCtaClick = async () => {
     const { analytics } = await import("@/lib/analytics");
-    analytics.ctaClick("hero_get_started", "landing_hero");
+    analytics.ctaClick("hero_claim_credits", "landing_hero");
   };
   
   return (
@@ -20,44 +20,45 @@ export const HeroSection = () => {
         <div className="animate-slide-up text-center">
           {/* Tagline chip */}
           <div className="mb-8 sm:mb-10 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs sm:text-sm backdrop-blur-sm">
-            <Zap className="h-3.5 w-3.5 text-primary" />
-            <span className="font-medium text-primary/90">Built for creatives who mean business</span>
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <span className="font-medium text-primary/90">The Thrive Industry Network</span>
           </div>
           
-          {/* Headline — tight, punchy */}
+          {/* Headline — credits-first */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
-            Your work.
+            Claim your credits.
             <br />
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Verified & paid.
+              Own your career.
             </span>
           </h1>
           
-          {/* Subhead — one clear sentence */}
+          {/* Subhead — credits as the entry point */}
           <p className="mx-auto mt-6 sm:mt-8 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-            ThriveCredits™ — claim credits, get AI-verified, find gigs, 
-            manage projects & invoices — and actually <span className="font-semibold text-foreground">get paid on time.</span>
+            ThriveCredits™ verifies every project you've ever worked on — 
+            film, music, events, fashion, ads — so you can{" "}
+            <span className="font-semibold text-foreground">get hired on reputation, not just a résumé.</span>
           </p>
           
-          {/* CTAs */}
+          {/* CTAs — credits-first */}
           <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link to="/auth" className="w-full sm:w-auto" onClick={handleCtaClick}>
               <Button variant="hero" size="lg" className="w-full sm:w-auto sm:px-8 text-base sm:text-lg shadow-glow transition-smooth hover:-translate-y-1 group">
-                <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Get Started — It's Free
+                <Database className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Claim Your Credits — Free
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
             <Link to="/post-opportunity" className="w-full sm:w-auto">
               <Button variant="outline" size="lg" className="w-full sm:w-auto sm:px-8 text-base sm:text-lg group border-primary/30 hover:border-primary/60">
                 <Briefcase className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Hire Talent
+                Hire Verified Talent
               </Button>
             </Link>
           </div>
           
           <p className="mt-5 text-xs text-muted-foreground/70">
-            ⚡ Free forever • Set your rates in 60 seconds • No credit card needed
+            🎬 Film • 🎵 Music • 🎪 Events • 👗 Fashion • 📢 Ads • 🎭 Theatre — every creative industry, one verified record
           </p>
         </div>
       </div>

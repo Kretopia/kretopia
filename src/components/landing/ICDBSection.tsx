@@ -28,8 +28,8 @@ export const ICDBSection = () => {
             </span>
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            The global standard for creative records. Claim your credits, get verified by peers and AI, 
-            and build a reputation that follows you — not a platform.
+            Every project gets a permanent page. Claim your role, get verified by peers and AI, 
+            and build a reputation that travels with you — not locked to any platform.
           </p>
         </div>
 

@@ -50,13 +50,13 @@ const Landing = () => {
         url="https://thrivein.io"
       />
       <HeroSection />
-      <LiveCreatorPreview />
       <ICDBSection />
-      <PortfolioShowcase />
       <HowItWorksSection />
-      <ComparisonTableSection />
-      <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
+      <LiveCreatorPreview />
       <WhyCreatorsChooseSection />
+      <ComparisonTableSection />
+      <PortfolioShowcase />
+      <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
       <AccountingSuiteSection />
       <BottomCTASection />
     </div>

@@ -7,7 +7,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { 
   ArrowLeft, Trophy, Clock, Users, Flame, Zap, Crown, Star, 
-  Upload, Heart, Camera, ChevronUp, Award, Medal, Shield, Target
+  Upload, Heart, Camera, ChevronUp, Award, Medal, Shield, Target,
+  Music, FileText, Video, Mic
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

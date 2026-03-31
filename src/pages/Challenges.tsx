@@ -382,7 +382,7 @@ const Challenges = () => {
             </h2>
             <div className="grid grid-cols-2 gap-2">
               {pastChallenges.slice(0, 4).map((challenge) => (
-                <Card key={challenge.id} className="overflow-hidden group cursor-pointer hover:shadow-sm transition-shadow">
+                <Card key={challenge.id} className="overflow-hidden group cursor-pointer hover:shadow-sm transition-shadow" onClick={() => navigate(`/challenges/${challenge.id}`)}>
                   <div className="relative h-20 bg-muted">
                     {challenge.cover_image_url ? (
                       <img src={challenge.cover_image_url} alt={challenge.title} className="w-full h-full object-cover" />

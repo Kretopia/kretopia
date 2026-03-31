@@ -78,7 +78,7 @@ export const BulkProjectSubmission = ({ currentUserId }: BulkProjectSubmissionPr
 
       if (error) throw error;
       setResult({ processed: data.processed, total: data.total });
-      toast.success(`${data.processed} projects submitted to ICDB!`);
+      toast.success(`${data.processed} projects submitted to ThriveCredits!`);
     } catch (err) {
       console.error(err);
       toast.error("Failed to submit projects");

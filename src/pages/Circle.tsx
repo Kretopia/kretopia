@@ -145,7 +145,7 @@ export default function Circle() {
   return (
     <PageTransition>
     <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
-      <SEO title="Match - Find Your Creative Partner" description="Swipe to connect with creators" />
+      <SEO title="Match - Find Your Creative Collaborators" description="Swipe to connect with creators" />
       
       <div className="container mx-auto px-3 sm:px-4 pt-2">
         <PageTip
@@ -167,7 +167,7 @@ export default function Circle() {
               <p className="text-xs text-muted-foreground mt-0.5">
                 {activeTab === 'foryou' ? 'Swipe to discover & connect' : 
                  activeTab === 'browse' ? 'Search & browse all creators' :
-                 `${connections.length} connection${connections.length !== 1 ? 's' : ''} in your network`}
+                 `${connections.length} collaborator${connections.length !== 1 ? 's' : ''} in your circle`}
               </p>
             </div>
             {activeTab === 'foryou' && (
@@ -192,7 +192,7 @@ export default function Circle() {
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Network
+              Pro Circle
               {connections.length > 0 && (
                 <span className="ml-1 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
                   {connections.length}
@@ -214,15 +214,15 @@ export default function Circle() {
             {connections.length > 0 && (
               <div className="border-t pt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold">Your Connections</h3>
-                  <p className="text-sm text-muted-foreground">{connections.length} connection{connections.length !== 1 ? 's' : ''}</p>
+                  <h3 className="font-semibold">Your Collaborators</h3>
+                  <p className="text-sm text-muted-foreground">{connections.length} collaborator{connections.length !== 1 ? 's' : ''}</p>
                 </div>
                 <ConnectionList connections={connections} loading={connectionsLoading} onMessage={handleMessage} />
               </div>
             )}
             {connections.length === 0 && !connectionsLoading && (
               <div className="text-center py-6 border-t">
-                <p className="text-muted-foreground mb-4">Start connecting with creators to grow your network!</p>
+                <p className="text-muted-foreground mb-4">Start connecting with creators to grow your professional circle!</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button onClick={() => setActiveTab("foryou")} variant="outline" className="gap-2">
                     <Sparkles className="h-4 w-4" /> View Today's Picks

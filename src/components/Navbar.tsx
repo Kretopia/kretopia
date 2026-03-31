@@ -92,10 +92,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
   // Desktop nav items per mode
   const desktopNavItems = mode === "create"
     ? [
-        { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/scene", icon: Zap, label: "Scene" },
-        { path: "/circles", icon: MessageSquareMore, label: "Circles" },
+        { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/credits", icon: Globe, label: "ICDB" },
+        { path: "/circles", icon: MessageSquareMore, label: "Circles" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },
@@ -220,12 +220,28 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                      <MenuButton icon={Palette} label="My EPK" onClick={() => handleNavigation(`/epk/${user?.id}`)} />
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 h-12 w-full text-primary font-medium"
+                        onClick={() => {
+                          setIsOpen(false);
+                          const epkUrl = `${window.location.origin}/epk/${user?.id}`;
+                          if (navigator.share) {
+                            navigator.share({ title: 'My Creative EPK', url: epkUrl }).catch(() => {});
+                          } else {
+                            navigator.clipboard.writeText(epkUrl);
+                            toast({ title: "EPK link copied!", description: "Share it anywhere" });
+                          }
+                        }}
+                      >
+                        <Globe className="h-5 w-5" />
+                        <span className="flex-1 text-left">Share EPK</span>
+                      </Button>
 
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
-                      <MenuButton icon={Trophy} label="Challenges" onClick={() => handleNavigation("/challenges")} />
+                      <MenuButton icon={Trophy} label="Cre8 Arena" onClick={() => handleNavigation("/challenges")} />
                       <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={BarChart3} label="My Analytics" onClick={() => handleNavigation("/my-analytics")} />
                     </>

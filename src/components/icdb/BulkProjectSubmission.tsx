@@ -94,7 +94,7 @@ export const BulkProjectSubmission = ({ currentUserId }: BulkProjectSubmissionPr
           <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-3" />
           <h3 className="font-semibold mb-1">Projects Submitted!</h3>
           <p className="text-sm text-muted-foreground">
-            {result.processed} of {result.total} projects added to ICDB as verified entries.
+            {result.processed} of {result.total} projects added to ThriveCredits™ as verified entries.
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Tagged creators can now claim their credits.

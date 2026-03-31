@@ -507,6 +507,13 @@ const ChallengeDetail = () => {
                           onMouseEnter={e => (e.target as HTMLVideoElement).play()}
                           onMouseLeave={e => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0; }}
                         />
+                      ) : entry.media_type === "audio" ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 gap-2">
+                          <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
+                            <Music className="h-5 w-5 text-primary" />
+                          </div>
+                          <audio src={entry.media_url} controls className="w-[85%] h-7" />
+                        </div>
                       ) : (
                         <img 
                           src={entry.media_url} 

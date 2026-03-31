@@ -145,7 +145,7 @@ export default function Circle() {
   return (
     <PageTransition>
     <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
-      <SEO title="Match - Find Your Creative Partner" description="Swipe to connect with creators" />
+      <SEO title="Match - Find Your Creative Collaborators" description="Swipe to connect with creators" />
       
       <div className="container mx-auto px-3 sm:px-4 pt-2">
         <PageTip

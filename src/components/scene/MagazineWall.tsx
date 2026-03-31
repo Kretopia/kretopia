@@ -30,6 +30,28 @@ interface Article {
 
 const CATEGORIES = ["all", "fashion", "art-culture", "music", "film", "events-festivals", "impact", "community", "web3-ai", "taste-of-bali", "photography", "business", "lifestyle-wellness", "bali-developments", "inspiration", "how-to", "spotlight"];
 
+const CATEGORY_LABELS: Record<string, string> = {
+  all: "All",
+  fashion: "Fashion",
+  "art-culture": "Art & Culture",
+  music: "Music",
+  film: "Film",
+  "events-festivals": "Events & Festivals",
+  impact: "Impact",
+  community: "Community",
+  "web3-ai": "Web3 & AI",
+  "taste-of-bali": "Taste of Bali",
+  photography: "Photography",
+  business: "Business",
+  "lifestyle-wellness": "Lifestyle & Wellness",
+  "bali-developments": "Bali Developments",
+  inspiration: "Inspiration",
+  "how-to": "How-To",
+  spotlight: "Spotlight",
+};
+
+const formatCategoryLabel = (cat: string) => CATEGORY_LABELS[cat] || cat.charAt(0).toUpperCase() + cat.slice(1);
+
 export const MagazineWall = () => {
   const { user } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);

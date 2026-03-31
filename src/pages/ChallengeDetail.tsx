@@ -523,7 +523,7 @@ const ChallengeDetail = () => {
                           {entry.title || entry.profile?.full_name || "Creator"}
                         </p>
                         <p className="text-[10px] text-muted-foreground line-clamp-1">
-                          @{entry.profile?.username || "user"}
+                          {entry.profile?.full_name || "Creator"}
                         </p>
                       </div>
                     </div>

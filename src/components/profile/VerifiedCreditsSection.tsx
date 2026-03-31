@@ -1,32 +1,16 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  Film, 
-  Tv, 
-  Music, 
-  Disc3, 
-  Video, 
-  ExternalLink, 
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Loader2,
-  Trash2,
-  Mic2,
-  Drama,
-  PersonStanding,
-  CalendarDays,
-  Sparkles,
-  Crown,
-  Shirt,
-  Megaphone,
-  Briefcase,
+  Film, Tv, Music, Disc3, Video, ExternalLink, CheckCircle2,
+  ChevronLeft, ChevronRight, Loader2, Trash2, Mic2, Drama,
+  PersonStanding, CalendarDays, Sparkles, Crown, Shirt,
+  Megaphone, Briefcase,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface VerifiedCredit {
   id: string;
@@ -48,66 +32,23 @@ interface VerifiedCreditsSectionProps {
 }
 
 const CREDIT_TYPE_ICONS: Record<string, any> = {
-  film: Film,
-  movie: Film,
-  short_film: Film,
-  documentary: Film,
-  tv: Tv,
-  album: Disc3,
-  single: Music,
-  ep: Music,
-  mixtape: Music,
-  music_video: Video,
-  web_series: Video,
-  podcast: Mic2,
-  episode: Mic2,
-  audiobook: Mic2,
-  // Performing Arts
-  theatre: Drama,
-  theater: Drama,
-  stage: Drama,
-  play: Drama,
-  musical: Drama,
-  pantomime: Drama,
-  opera: Drama,
-  spoken_word: Mic2,
-  comedy: Drama,
-  dance: PersonStanding,
-  recital: PersonStanding,
-  // Events & Productions
-  live_event: CalendarDays,
-  concert: Music,
-  festival: CalendarDays,
-  carnival: Sparkles,
-  pageant: Crown,
-  fashion_show: Shirt,
-  awards_show: Crown,
-  exhibition: Sparkles,
-  conference: Briefcase,
-  launch_event: CalendarDays,
-  // Content & Digital
-  youtube_series: Video,
-  ugc_campaign: Video,
-  livestream: Video,
-  online_course: Briefcase,
-  workshop: Briefcase,
-  newsletter: Briefcase,
-  // Commercial & Corporate
-  commercial: Megaphone,
-  ad: Megaphone,
-  corporate: Briefcase,
-  hosting: Mic2,
-  mc: Mic2,
-  brand_campaign: Megaphone,
-  voiceover: Mic2,
-  influencer_campaign: Megaphone,
-  // Business & Industry
-  ar_project: Briefcase,
-  talent_management: Briefcase,
-  booking: Briefcase,
-  label_release: Disc3,
-  publishing: Briefcase,
-  curation: Sparkles,
+  film: Film, movie: Film, short_film: Film, documentary: Film,
+  tv: Tv, album: Disc3, single: Music, ep: Music, mixtape: Music,
+  music_video: Video, web_series: Video, podcast: Mic2, episode: Mic2,
+  audiobook: Mic2, theatre: Drama, theater: Drama, stage: Drama,
+  play: Drama, musical: Drama, pantomime: Drama, opera: Drama,
+  spoken_word: Mic2, comedy: Drama, dance: PersonStanding,
+  recital: PersonStanding, live_event: CalendarDays, concert: Music,
+  festival: CalendarDays, carnival: Sparkles, pageant: Crown,
+  fashion_show: Shirt, awards_show: Crown, exhibition: Sparkles,
+  conference: Briefcase, launch_event: CalendarDays,
+  youtube_series: Video, ugc_campaign: Video, livestream: Video,
+  online_course: Briefcase, workshop: Briefcase, newsletter: Briefcase,
+  commercial: Megaphone, ad: Megaphone, corporate: Briefcase,
+  hosting: Mic2, mc: Mic2, brand_campaign: Megaphone, voiceover: Mic2,
+  influencer_campaign: Megaphone, ar_project: Briefcase,
+  talent_management: Briefcase, booking: Briefcase, label_release: Disc3,
+  publishing: Briefcase, curation: Sparkles,
 };
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -118,10 +59,204 @@ const SOURCE_COLORS: Record<string, string> = {
   discogs: 'bg-orange-500',
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  film: '🎬 Film & TV',
+  movie: '🎬 Film & TV',
+  short_film: '🎬 Film & TV',
+  documentary: '🎬 Film & TV',
+  tv: '🎬 Film & TV',
+  album: '🎵 Music',
+  single: '🎵 Music',
+  ep: '🎵 Music',
+  mixtape: '🎵 Music',
+  music_video: '🎵 Music',
+  concert: '🎵 Music',
+  label_release: '🎵 Music',
+  podcast: '🎙️ Audio',
+  episode: '🎙️ Audio',
+  audiobook: '🎙️ Audio',
+  voiceover: '🎙️ Audio',
+  theatre: '🎭 Performing Arts',
+  theater: '🎭 Performing Arts',
+  stage: '🎭 Performing Arts',
+  play: '🎭 Performing Arts',
+  musical: '🎭 Performing Arts',
+  comedy: '🎭 Performing Arts',
+  dance: '🎭 Performing Arts',
+  live_event: '🎪 Events',
+  festival: '🎪 Events',
+  carnival: '🎪 Events',
+  awards_show: '🎪 Events',
+  fashion_show: '👗 Fashion',
+  commercial: '📢 Commercial',
+  ad: '📢 Commercial',
+  brand_campaign: '📢 Commercial',
+  influencer_campaign: '📢 Commercial',
+  ugc_campaign: '📢 Commercial',
+  youtube_series: '📹 Digital',
+  web_series: '📹 Digital',
+  livestream: '📹 Digital',
+};
+
+function getCategoryLabel(type: string): string {
+  return CATEGORY_LABELS[type] || '📁 Other';
+}
+
+// Netflix-style horizontal scroll row
+function CreditRow({ 
+  category, credits, isOwnProfile, onDelete, deletingId 
+}: { 
+  category: string; 
+  credits: VerifiedCredit[];
+  isOwnProfile?: boolean;
+  onDelete: (id: string) => void;
+  deletingId: string | null;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    el?.addEventListener('scroll', checkScroll);
+    return () => el?.removeEventListener('scroll', checkScroll);
+  }, [credits]);
+
+  const scroll = (dir: 'left' | 'right') => {
+    scrollRef.current?.scrollBy({ left: dir === 'left' ? -260 : 260, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between px-1">
+        <h3 className="text-sm font-semibold">{category}</h3>
+        <span className="text-xs text-muted-foreground">{credits.length} credit{credits.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div className="relative group">
+        {canScrollLeft && (
+          <Button
+            variant="secondary"
+            size="icon"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+            onClick={() => scroll('left')}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
+        <div
+          ref={scrollRef}
+          className="flex gap-3 overflow-x-auto no-scrollbar scroll-smooth pb-2"
+        >
+          {credits.map((credit) => (
+            <CreditCard
+              key={credit.id}
+              credit={credit}
+              isOwnProfile={isOwnProfile}
+              onDelete={() => onDelete(credit.id)}
+              isDeleting={deletingId === credit.id}
+            />
+          ))}
+        </div>
+        {canScrollRight && (
+          <Button
+            variant="secondary"
+            size="icon"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+            onClick={() => scroll('right')}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Individual credit card (poster-style)
+function CreditCard({ credit, isOwnProfile, onDelete, isDeleting }: {
+  credit: VerifiedCredit;
+  isOwnProfile?: boolean;
+  onDelete?: () => void;
+  isDeleting?: boolean;
+}) {
+  const Icon = CREDIT_TYPE_ICONS[credit.credit_type] || Film;
+  const sourceColor = SOURCE_COLORS[credit.source] || 'bg-gray-500';
+  const thumbnailUrl = credit.metadata?.posterUrl || credit.metadata?.imageUrl || credit.metadata?.thumbUrl || credit.metadata?.thumbnailUrl;
+
+  return (
+    <div className="flex-shrink-0 w-[160px] group/card">
+      <div className="relative rounded-lg overflow-hidden bg-muted border border-border/50 hover:border-primary/30 transition-all hover:shadow-md">
+        {/* Poster / Thumbnail */}
+        {thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={credit.title}
+            className="w-full h-[220px] object-cover"
+          />
+        ) : (
+          <div className="w-full h-[220px] bg-gradient-to-br from-muted to-muted-foreground/10 flex flex-col items-center justify-center gap-2">
+            <Icon className="h-10 w-10 text-muted-foreground/40" />
+            <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">
+              {credit.credit_type.replace('_', ' ')}
+            </span>
+          </div>
+        )}
+
+        {/* Source badge */}
+        <Badge 
+          variant="outline" 
+          className={cn(
+            "absolute top-2 left-2 text-[8px] h-4 px-1.5 backdrop-blur-sm bg-background/70",
+            sourceColor, "bg-opacity-10"
+          )}
+        >
+          {credit.source.toUpperCase()}
+        </Badge>
+
+        {/* Actions overlay */}
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+          {credit.verification_url && (
+            <a href={credit.verification_url} target="_blank" rel="noopener noreferrer"
+              className="h-6 w-6 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+            >
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+          {isOwnProfile && onDelete && (
+            <button
+              onClick={onDelete}
+              disabled={isDeleting}
+              className="h-6 w-6 rounded-full bg-destructive/80 backdrop-blur-sm flex items-center justify-center hover:bg-destructive transition-colors text-destructive-foreground"
+            >
+              {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Info below poster */}
+      <div className="pt-2 px-0.5">
+        <h4 className="text-xs font-semibold truncate leading-tight">{credit.title}</h4>
+        <p className="text-[10px] text-muted-foreground truncate">
+          {credit.role}
+          {credit.year && <span> • {credit.year}</span>}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged }: VerifiedCreditsSectionProps) {
   const [credits, setCredits] = useState<VerifiedCredit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -188,7 +323,6 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
 
   if (credits.length === 0) {
     if (!isOwnProfile) return null;
-    
     return (
       <Card>
         <CardHeader>
@@ -196,9 +330,6 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
             <CheckCircle2 className="h-5 w-5 text-primary" />
             Verified Credits
           </CardTitle>
-          <CardDescription>
-            Connect your platforms to import verified work credits
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">
@@ -209,20 +340,19 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
     );
   }
 
-  // Group credits by type
-  const groupedCredits = credits.reduce((acc, credit) => {
-    const type = credit.credit_type;
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(credit);
+  // Group by category label for Netflix rows
+  const grouped = credits.reduce((acc, credit) => {
+    const cat = getCategoryLabel(credit.credit_type);
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(credit);
     return acc;
   }, {} as Record<string, VerifiedCredit[]>);
 
-  const creditTypes = Object.keys(groupedCredits);
-  const displayedCredits = expanded ? credits : credits.slice(0, 6);
+  const categories = Object.keys(grouped);
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <CheckCircle2 className="h-5 w-5 text-primary" />
           Verified Credits
@@ -230,163 +360,19 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
             {credits.length} verified
           </Badge>
         </CardTitle>
-        <CardDescription>
-          Work credits verified from industry databases
-        </CardDescription>
       </CardHeader>
-      <CardContent>
-        {creditTypes.length > 1 ? (
-          <Tabs defaultValue={creditTypes[0]} className="w-full">
-            <TabsList className="w-full justify-start mb-4 overflow-x-auto">
-              {creditTypes.map((type) => {
-                const Icon = CREDIT_TYPE_ICONS[type] || Film;
-                return (
-                  <TabsTrigger key={type} value={type} className="capitalize">
-                    <Icon className="h-4 w-4 mr-2" />
-                    {type.replace('_', ' ')}s ({groupedCredits[type].length})
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-            {creditTypes.map((type) => (
-              <TabsContent key={type} value={type}>
-                <div className="grid gap-3">
-                {groupedCredits[type].slice(0, expanded ? undefined : 6).map((credit) => (
-                    <CreditItem 
-                      key={credit.id} 
-                      credit={credit} 
-                      isOwnProfile={isOwnProfile}
-                      onDelete={() => handleDeleteCredit(credit.id)}
-                      isDeleting={deletingId === credit.id}
-                    />
-                  ))}
-                </div>
-                {groupedCredits[type].length > 6 && (
-                  <Button
-                    variant="ghost"
-                    className="w-full mt-4"
-                    onClick={() => setExpanded(!expanded)}
-                  >
-                    {expanded ? (
-                      <>
-                        <ChevronUp className="h-4 w-4 mr-2" />
-                        Show Less
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4 mr-2" />
-                        Show All {groupedCredits[type].length} Credits
-                      </>
-                    )}
-                  </Button>
-                )}
-              </TabsContent>
-            ))}
-          </Tabs>
-        ) : (
-          <>
-            <div className="grid gap-3">
-              {displayedCredits.map((credit) => (
-                <CreditItem 
-                  key={credit.id} 
-                  credit={credit} 
-                  isOwnProfile={isOwnProfile}
-                  onDelete={() => handleDeleteCredit(credit.id)}
-                  isDeleting={deletingId === credit.id}
-                />
-              ))}
-            </div>
-            {credits.length > 6 && (
-              <Button
-                variant="ghost"
-                className="w-full mt-4"
-                onClick={() => setExpanded(!expanded)}
-              >
-                {expanded ? (
-                  <>
-                    <ChevronUp className="h-4 w-4 mr-2" />
-                    Show Less
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4 mr-2" />
-                    Show All {credits.length} Credits
-                  </>
-                )}
-              </Button>
-            )}
-          </>
-        )}
+      <CardContent className="space-y-5">
+        {categories.map((cat) => (
+          <CreditRow
+            key={cat}
+            category={cat}
+            credits={grouped[cat]}
+            isOwnProfile={isOwnProfile}
+            onDelete={handleDeleteCredit}
+            deletingId={deletingId}
+          />
+        ))}
       </CardContent>
     </Card>
-  );
-}
-
-interface CreditItemProps {
-  credit: VerifiedCredit;
-  isOwnProfile?: boolean;
-  onDelete?: () => void;
-  isDeleting?: boolean;
-}
-
-function CreditItem({ credit, isOwnProfile, onDelete, isDeleting }: CreditItemProps) {
-  const Icon = CREDIT_TYPE_ICONS[credit.credit_type] || Film;
-  const sourceColor = SOURCE_COLORS[credit.source] || 'bg-gray-500';
-  const thumbnailUrl = credit.metadata?.posterUrl || credit.metadata?.imageUrl || credit.metadata?.thumbUrl || credit.metadata?.thumbnailUrl;
-
-  return (
-    <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-      {thumbnailUrl ? (
-        <img
-          src={thumbnailUrl}
-          alt={credit.title}
-          className="w-12 h-12 rounded object-cover"
-        />
-      ) : (
-        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
-          <Icon className="h-6 w-6 text-muted-foreground" />
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h4 className="font-medium truncate">{credit.title}</h4>
-          <Badge variant="outline" className={`${sourceColor} bg-opacity-10 text-xs`}>
-            {credit.source.toUpperCase()}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {credit.role}
-          {credit.year && <span className="ml-2">• {credit.year}</span>}
-        </p>
-      </div>
-      <div className="flex items-center gap-1">
-        {credit.verification_url && (
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-          >
-            <a href={credit.verification_url} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          </Button>
-        )}
-        {isOwnProfile && onDelete && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDelete}
-            disabled={isDeleting}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-          >
-            {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-          </Button>
-        )}
-      </div>
-    </div>
   );
 }

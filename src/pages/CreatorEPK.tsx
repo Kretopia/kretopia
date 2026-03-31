@@ -587,7 +587,7 @@ const CreatorEPK = () => {
             <div className="space-y-2">
               {credits.map((credit) => {
                 const tierConfig = {
-                  icdb: { label: 'ICDB', className: 'bg-primary/10 text-primary border-primary/30' },
+                  icdb: { label: 'Verified', className: 'bg-primary/10 text-primary border-primary/30' },
                   peer: { label: 'Peer', className: 'bg-green-500/10 text-green-600 border-green-500/30' },
                   ai: { label: 'AI', className: 'bg-blue-500/10 text-blue-600 border-blue-500/30' },
                   payment: { label: 'Paid', className: 'bg-amber-500/10 text-amber-600 border-amber-500/30' },

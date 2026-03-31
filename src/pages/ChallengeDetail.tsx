@@ -100,7 +100,7 @@ const ChallengeDetail = () => {
         const userIds = [...new Set(data.map(e => e.user_id))];
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("user_id, full_name, avatar_url, username")
+          .select("user_id, full_name, avatar_url, creative_role")
           .in("user_id", userIds);
         
         return data.map(entry => ({

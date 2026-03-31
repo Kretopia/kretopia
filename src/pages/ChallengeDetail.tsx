@@ -140,14 +140,7 @@ const ChallengeDetail = () => {
         .insert({ entry_id: entryId, user_id: user!.id });
       if (voteError) throw voteError;
 
-      // Increment vote count
-      const entry = entries?.find((e: any) => e.id === entryId);
-      if (entry) {
-        await supabase
-          .from("challenge_entries")
-          .update({ vote_count: (entry.vote_count || 0) + 1 })
-          .eq("id", entryId);
-      }
+      // vote_count updated automatically via database trigger
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["challenge-entries", id] });
@@ -191,12 +184,7 @@ const ChallengeDetail = () => {
         media_type: mediaType,
       });
       if (error) throw error;
-
-      // Update entry count
-      await supabase
-        .from("challenges")
-        .update({ entry_count: (challenge?.entry_count || 0) + 1 })
-        .eq("id", id!);
+      // entry_count updated automatically via database trigger
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["challenge-entries", id] });
@@ -344,6 +332,40 @@ const ChallengeDetail = () => {
         </div>
 
         {/* Submit CTA */}
+        {/* Not logged in CTA */}
+        {!user && (
+          <Button 
+            className="w-full gap-2 h-12 text-sm font-semibold rounded-xl bg-gradient-to-r from-primary to-primary/80"
+            onClick={() => navigate("/auth")}
+          >
+            <Upload className="h-4 w-4" />
+            Sign in to Enter
+          </Button>
+        )}
+
+        {/* Already submitted state */}
+        {myEntry && isActive && (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-3 flex items-center gap-3">
+              <Shield className="h-5 w-5 text-primary shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">You're in this challenge!</p>
+                <p className="text-xs text-muted-foreground">Your entry has {myEntry.vote_count || 0} votes — share it to get more!</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Challenge ended, no submit */}
+        {!isActive && challenge.status !== "completed" && (
+          <Card className="border-muted bg-muted/30">
+            <CardContent className="p-3 text-center">
+              <Clock className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+              <p className="text-sm font-medium text-muted-foreground">This challenge has ended</p>
+            </CardContent>
+          </Card>
+        )}
+
         {isActive && !myEntry && user && (
           <Dialog open={showSubmit} onOpenChange={setShowSubmit}>
             <DialogTrigger asChild>

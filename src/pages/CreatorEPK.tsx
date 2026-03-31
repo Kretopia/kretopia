@@ -251,10 +251,10 @@ const CreatorEPK = () => {
           source: c.source
         }));
 
-        // ICDB claimed credits
+        // ThriveCredits claimed credits
         const icdbClaimed = (icdbRes.data || []).map((c: any) => ({
           id: c.id,
-          project_name: c.person_name || 'ICDB Credit',
+          project_name: c.person_name || 'Claimed Credit',
           role: c.role_title,
           isVerified: true,
           verificationTier: 'icdb' as const,

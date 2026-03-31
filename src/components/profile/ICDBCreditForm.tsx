@@ -535,7 +535,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium flex items-center gap-1">
                     <Database className="h-3 w-3 text-primary" />
-                    ThriveRecord™ Verified Projects
+                    ThriveCredits™ Verified Projects
                   </p>
                   {icdbMatches.slice(0, 5).map((project: any) => (
                     <Card

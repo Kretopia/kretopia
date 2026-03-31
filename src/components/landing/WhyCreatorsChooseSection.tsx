@@ -6,7 +6,7 @@ export const WhyCreatorsChooseSection = () => {
   const features = [
     {
       icon: <Award className="h-5 w-5" />,
-      title: "Verified Credits (ICDB)",
+      title: "ThriveCredits™",
       text: "Claim your work on any project — AI + peer verification builds a reputation that lasts"
     },
     {

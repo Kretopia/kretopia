@@ -221,7 +221,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
         credit_category: project.type || '',
       }));
       setStep("details");
-      toast.success("Project found in ThriveRecord! Confirm your details.");
+      toast.success("Project found in ThriveCredits! Confirm your details.");
     } catch {
       toast.error("Failed to claim — try manual entry");
     }
@@ -234,7 +234,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     setSearching(true);
     setHasSearched(true);
 
-    // Search ThriveRecord canonical database in parallel with web search
+    // Search ThriveCredits canonical database in parallel with web search
     searchIcdb(q);
 
     try {
@@ -535,7 +535,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium flex items-center gap-1">
                     <Database className="h-3 w-3 text-primary" />
-                    ThriveRecord™ Verified Projects
+                    ThriveCredits™ Verified Projects
                   </p>
                   {icdbMatches.slice(0, 5).map((project: any) => (
                     <Card

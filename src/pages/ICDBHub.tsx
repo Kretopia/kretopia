@@ -49,7 +49,7 @@ const ICDBHub = () => {
   return (
     <>
       <Helmet>
-        <title>ThriveRecord™ — Your Verified Creative Record | ThriveIN</title>
+        <title>ThriveCredits™ — Your Verified Creative History | ThriveIN</title>
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">
@@ -60,8 +60,8 @@ const ICDBHub = () => {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">ThriveRecord™</h1>
-                <p className="text-[11px] text-muted-foreground">Your verified creative record — portable, permanent, professional</p>
+                <h1 className="text-xl font-bold tracking-tight">ThriveCredits™</h1>
+                <p className="text-[11px] text-muted-foreground">Your verified creative history — portable, permanent, professional</p>
               </div>
             </div>
 
@@ -115,7 +115,7 @@ const ICDBHub = () => {
                 creditCount={creditCount}
               />
               <div className="p-4 rounded-xl bg-muted/30 border space-y-2">
-                <h3 className="text-sm font-semibold">What is your ThriveRecord™ ID?</h3>
+                <h3 className="text-sm font-semibold">What is your ThriveCredits™ ID?</h3>
                 <p className="text-xs text-muted-foreground">
                   Your unique, portable identity across the creative industry. Use it in contracts, 
                   bios, and platforms to link back to your verified creative history. Think of it as 

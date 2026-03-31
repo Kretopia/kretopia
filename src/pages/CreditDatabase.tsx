@@ -254,7 +254,7 @@ const CreditDatabase = () => {
   return (
     <>
       <Helmet>
-        <title>ThriveRecord™ — The Global Creative Record | ThriveIN</title>
+        <title>ThriveCredits™ — The Global Creative Record | ThriveIN</title>
         <meta name="description" content="The definitive database of creative work. Search projects across film, music, events, fashion, art, and all creative industries." />
       </Helmet>
 
@@ -267,8 +267,8 @@ const CreditDatabase = () => {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">ThriveRecord™</h1>
-                <p className="text-xs text-muted-foreground">The Global Creative Record</p>
+                <h1 className="text-2xl font-bold tracking-tight">ThriveCredits™</h1>
+                <p className="text-xs text-muted-foreground">Your Verified Creative History</p>
               </div>
             </div>
 
@@ -344,7 +344,7 @@ const CreditDatabase = () => {
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">
-                {debouncedSearch ? 'Searching ICDB...' : 'Loading projects...'}
+                {debouncedSearch ? 'Searching credits...' : 'Loading projects...'}
               </p>
             </div>
           ) : tab === 'projects' ? (

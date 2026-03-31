@@ -214,8 +214,8 @@ export default function Circle() {
             {connections.length > 0 && (
               <div className="border-t pt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold">Your Connections</h3>
-                  <p className="text-sm text-muted-foreground">{connections.length} connection{connections.length !== 1 ? 's' : ''}</p>
+                  <h3 className="font-semibold">Your Collaborators</h3>
+                  <p className="text-sm text-muted-foreground">{connections.length} collaborator{connections.length !== 1 ? 's' : ''}</p>
                 </div>
                 <ConnectionList connections={connections} loading={connectionsLoading} onMessage={handleMessage} />
               </div>

@@ -254,7 +254,7 @@ const CreditDatabase = () => {
   return (
     <>
       <Helmet>
-        <title>ICDB - Internet Creative Database | ThriveIN</title>
+        <title>ThriveRecord™ — The Global Creative Record | ThriveIN</title>
         <meta name="description" content="The definitive database of creative work. Search projects across film, music, events, fashion, art, and all creative industries." />
       </Helmet>
 

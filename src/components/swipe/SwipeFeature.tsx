@@ -166,6 +166,43 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
     );
   }
 
+  // Block swiping for incomplete profiles
+  if (profileIncomplete) {
+    const fieldIcons: Record<string, React.ReactNode> = {
+      'Profile Picture': <Camera className="h-4 w-4" />,
+      'Bio (20+ characters)': <FileText className="h-4 w-4" />,
+      'At least 1 Work Item (Portfolio or Credit)': <ImageIcon className="h-4 w-4" />,
+    };
+
+    return (
+      <div className="w-full flex flex-col items-center justify-center py-12 px-4 text-center space-y-5">
+        <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center">
+          <EyeOff className="h-8 w-8 text-orange-500" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-bold">Complete Your Profile to Swipe</h3>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            Other creators can't see you until your profile meets quality standards. Complete these items to unlock matching:
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 w-full max-w-xs">
+          {missingFields.map((field) => (
+            <div key={field} className="flex items-center gap-2 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/30 rounded-lg px-3 py-2.5 text-sm text-orange-800 dark:text-orange-200">
+              {fieldIcons[field] || <EyeOff className="h-4 w-4" />}
+              <span>{field}</span>
+            </div>
+          ))}
+        </div>
+        <Button onClick={() => navigate('/profile')} className="gap-2 mt-2">
+          Complete Profile <ArrowRight className="h-4 w-4" />
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          You can still <button onClick={() => navigate('/circle?tab=browse')} className="text-primary underline">browse creators</button> while you complete your profile.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       <SwipeStack

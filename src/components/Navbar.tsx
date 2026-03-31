@@ -94,7 +94,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
     ? [
         { path: "/scene", icon: Zap, label: "Scene" },
         { path: "/circle", icon: Sparkles, label: "Match" },
-        { path: "/credits", icon: Globe, label: "ICDB" },
+        { path: "/credits", icon: Globe, label: "ThriveRecord" },
         { path: "/circles", icon: MessageSquareMore, label: "Circles" },
       ]
     : [

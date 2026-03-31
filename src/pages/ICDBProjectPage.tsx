@@ -158,7 +158,7 @@ const ICDBProjectPage = () => {
         <div className="bg-gradient-to-b from-primary/8 to-background border-b">
           <div className="container mx-auto px-4 py-4">
             <Button variant="ghost" size="sm" className="mb-3 -ml-2 gap-1 text-muted-foreground" onClick={() => navigate("/credits")}>
-              <ArrowLeft className="h-4 w-4" /> ICDB
+              <ArrowLeft className="h-4 w-4" /> ThriveRecord
             </Button>
 
             <div className="space-y-3">

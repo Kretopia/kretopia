@@ -112,7 +112,7 @@ export const ICDBSection = () => {
               <h3 className="font-semibold text-foreground">AI + Peer Verification</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Credits cross-checked against IMDb, Spotify, Discogs & peer endorsements. No faking it.
+              Credits cross-checked against IMDb, Spotify, Discogs & peer endorsements. Your record is unbreakable.
             </p>
           </div>
           <div className="p-5 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-glow transition-all group">

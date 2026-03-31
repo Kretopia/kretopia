@@ -419,7 +419,7 @@ const CreatorEPK = () => {
             <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted/50 border">
               <Fingerprint className="h-3.5 w-3.5 text-primary" />
               <span className="text-[11px] font-mono font-semibold text-primary">{(profile as any).icdb_creator_id}</span>
-              <Badge variant="outline" className="text-[9px] h-4 border-primary/20">ICDB</Badge>
+              <Badge variant="outline" className="text-[9px] h-4 border-primary/20">ThriveRecord™</Badge>
             </div>
           )}
 
@@ -587,7 +587,7 @@ const CreatorEPK = () => {
             <div className="space-y-2">
               {credits.map((credit) => {
                 const tierConfig = {
-                  icdb: { label: 'ICDB', className: 'bg-primary/10 text-primary border-primary/30' },
+                  icdb: { label: 'Verified', className: 'bg-primary/10 text-primary border-primary/30' },
                   peer: { label: 'Peer', className: 'bg-green-500/10 text-green-600 border-green-500/30' },
                   ai: { label: 'AI', className: 'bg-blue-500/10 text-blue-600 border-blue-500/30' },
                   payment: { label: 'Paid', className: 'bg-amber-500/10 text-amber-600 border-amber-500/30' },

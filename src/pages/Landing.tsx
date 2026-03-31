@@ -45,8 +45,8 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="ThriveIN - The Internet Creative Database | Verified Credits, Gigs & Payments"
-        description="IMDb for every creative industry. Claim verified credits, find gigs, manage projects & get paid — the all-in-one platform for creative professionals."
+        title="ThriveIN — ThriveRecord™ | Verified Credits, Gigs & Payments for Creatives"
+        description="The global standard for creative records. Claim verified credits, find gigs, manage projects & get paid — the all-in-one platform for creative professionals."
         url="https://thrivein.io"
       />
       <HeroSection />

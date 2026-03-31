@@ -254,7 +254,7 @@ const CreditDatabase = () => {
   return (
     <>
       <Helmet>
-        <title>ICDB - Internet Creative Database | ThriveIN</title>
+        <title>ThriveRecord™ — The Global Creative Record | ThriveIN</title>
         <meta name="description" content="The definitive database of creative work. Search projects across film, music, events, fashion, art, and all creative industries." />
       </Helmet>
 
@@ -267,8 +267,8 @@ const CreditDatabase = () => {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">ICDB</h1>
-                <p className="text-xs text-muted-foreground">Internet Creative Database</p>
+                <h1 className="text-2xl font-bold tracking-tight">ThriveRecord™</h1>
+                <p className="text-xs text-muted-foreground">The Global Creative Record</p>
               </div>
             </div>
 
@@ -330,7 +330,7 @@ const CreditDatabase = () => {
           </Tabs>
           <div className="flex justify-end gap-2 mt-2">
             <Button variant="outline" size="sm" className="gap-1.5 text-[11px] h-7" onClick={() => navigate('/credits/hub')}>
-              <Database className="h-3 w-3" /> ICDB Hub
+              <Database className="h-3 w-3" /> My Record
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5 text-[11px] h-7" onClick={() => navigate('/credits/discover')}>
               <Sparkles className="h-3 w-3" /> AI Discovery

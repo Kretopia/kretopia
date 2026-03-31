@@ -49,7 +49,7 @@ const ICDBHub = () => {
   return (
     <>
       <Helmet>
-        <title>ICDB Hub - Internet Creative Database | ThriveIN</title>
+        <title>ThriveRecord™ — Your Verified Creative Record | ThriveIN</title>
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">

@@ -21,6 +21,7 @@ const CADENCE_CONFIG = {
 
 const Challenges = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [cadenceFilter, setCadenceFilter] = useState("all");
 
   if (!user) return <Navigate to="/auth" replace />;

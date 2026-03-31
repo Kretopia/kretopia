@@ -16,11 +16,9 @@ import { useAuth } from "@/hooks/useAuth";
 
 const VIEW_TABS = [
   { id: "work", label: "Work", icon: Briefcase },
-  { id: "reviews", label: "Reviews", icon: Star },
-  { id: "press", label: "Press & Awards", icon: Award },
   { id: "skills", label: "Skills", icon: Zap },
-  { id: "collabs", label: "Collabs", icon: Handshake },
-  { id: "shop", label: "Shop", icon: ShoppingBag },
+  { id: "reviews", label: "Reviews", icon: Star },
+  { id: "more", label: "More", icon: Award },
 ] as const;
 
 type TabId = typeof VIEW_TABS[number]["id"];

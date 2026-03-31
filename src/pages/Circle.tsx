@@ -65,12 +65,13 @@ export default function Circle() {
           .select('avatar_url, bio')
           .eq('user_id', user.id)
           .single();
-        const { count: portfolioCount } = await supabase
-          .from('portfolio_items')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+        const [portfolioResult, creditsResult] = await Promise.all([
+          supabase.from('portfolio_items').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        ]);
+        const workCount = (portfolioResult.count || 0) + (creditsResult.count || 0);
         if (profile) {
-          const missingFields = getDiscoveryMissingFields(profile as any, portfolioCount || 0);
+          const missingFields = getDiscoveryMissingFields(profile as any, workCount);
           setProfileVisibility({ isVisible: missingFields.length === 0, missingFields });
         }
       } catch (error) {

@@ -28,7 +28,7 @@ interface ContentBlock {
   caption?: string;
 }
 
-const CATEGORIES = ["inspiration", "business", "culture", "how-to", "spotlight"];
+const CATEGORIES = ["fashion", "art-culture", "music", "film", "events-festivals", "impact", "community", "web3-ai", "taste-of-bali", "photography", "business", "lifestyle-wellness", "bali-developments", "inspiration", "how-to", "spotlight"];
 
 const genId = () => Math.random().toString(36).slice(2, 9);
 

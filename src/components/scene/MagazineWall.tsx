@@ -28,7 +28,7 @@ interface Article {
   slug: string | null;
 }
 
-const CATEGORIES = ["all", "inspiration", "business", "culture", "how-to", "spotlight"];
+const CATEGORIES = ["all", "fashion", "art-culture", "music", "film", "events-festivals", "impact", "community", "web3-ai", "taste-of-bali", "photography", "business", "lifestyle-wellness", "bali-developments", "inspiration", "how-to", "spotlight"];
 
 export const MagazineWall = () => {
   const { user } = useAuth();

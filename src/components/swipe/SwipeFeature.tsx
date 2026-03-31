@@ -10,6 +10,9 @@ import { SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from '@/components/circle/Sw
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { getDiscoveryMissingFields } from '@/lib/profileCompletion';
+import { Button } from '@/components/ui/button';
+import { EyeOff, Camera, FileText, Image as ImageIcon, ArrowRight } from 'lucide-react';
 
 interface SwipeFeatureProps {
   onMatch?: (profile: any) => void;

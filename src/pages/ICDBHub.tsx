@@ -49,7 +49,7 @@ const ICDBHub = () => {
   return (
     <>
       <Helmet>
-        <title>ThriveRecord™ — Your Verified Creative Record | ThriveIN</title>
+        <title>ThriveCredits™ — Your Verified Creative History | ThriveIN</title>
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">

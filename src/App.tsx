@@ -94,6 +94,7 @@ const ICDBDiscovery = lazy(() => import("./pages/ICDBDiscovery"));
 const ICDBHub = lazy(() => import("./pages/ICDBHub"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const Challenges = lazy(() => import("./pages/Challenges"));
+const ChallengeDetail = lazy(() => import("./pages/ChallengeDetail"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -297,6 +298,7 @@ const AppContent = () => {
             {/* Check-in & Challenges */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
             <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
+            <Route path="/challenges/:id" element={<ProtectedRoute><ChallengeDetail /></ProtectedRoute>} />
 
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />

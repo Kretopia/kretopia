@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Trophy, Clock, Users, Flame, Zap, Crown, Timer, Star, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ const CADENCE_CONFIG = {
 
 const Challenges = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [cadenceFilter, setCadenceFilter] = useState("all");
 
   if (!user) return <Navigate to="/auth" replace />;
@@ -254,7 +255,7 @@ const Challenges = () => {
                   <Card key={challenge.id} className={cn(
                     "overflow-hidden transition-all hover:shadow-md group cursor-pointer",
                     isEndingSoon && "ring-1 ring-destructive/30"
-                  )}>
+                  )} onClick={() => navigate(`/challenges/${challenge.id}`)}>
                     {challenge.cover_image_url && (
                       <div className="relative h-28 overflow-hidden">
                         <img
@@ -345,7 +346,7 @@ const Challenges = () => {
             </h2>
             <div className="space-y-2">
               {myEntries.map((entry: any) => (
-                <Card key={entry.id} className="overflow-hidden">
+                <Card key={entry.id} className="overflow-hidden cursor-pointer hover:shadow-sm transition-shadow" onClick={() => navigate(`/challenges/${entry.challenge_id}`)}>
                   <CardContent className="p-3 flex items-center gap-3">
                     {entry.media_url && (
                       <img src={entry.media_url} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />
@@ -381,7 +382,7 @@ const Challenges = () => {
             </h2>
             <div className="grid grid-cols-2 gap-2">
               {pastChallenges.slice(0, 4).map((challenge) => (
-                <Card key={challenge.id} className="overflow-hidden group cursor-pointer hover:shadow-sm transition-shadow">
+                <Card key={challenge.id} className="overflow-hidden group cursor-pointer hover:shadow-sm transition-shadow" onClick={() => navigate(`/challenges/${challenge.id}`)}>
                   <div className="relative h-20 bg-muted">
                     {challenge.cover_image_url ? (
                       <img src={challenge.cover_image_url} alt={challenge.title} className="w-full h-full object-cover" />

@@ -28,7 +28,7 @@ interface ContentBlock {
   caption?: string;
 }
 
-const CATEGORIES = ["inspiration", "business", "culture", "how-to", "spotlight"];
+const CATEGORIES = ["fashion", "art-culture", "music", "film", "events-festivals", "impact", "community", "web3-ai", "taste-of-bali", "photography", "business", "lifestyle-wellness", "bali-developments", "inspiration", "how-to", "spotlight"];
 
 const genId = () => Math.random().toString(36).slice(2, 9);
 
@@ -260,7 +260,9 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
             <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               {CATEGORIES.map(c => (
-                <SelectItem key={c} value={c} className="capitalize text-xs">{c === "how-to" ? "How-To" : c}</SelectItem>
+                <SelectItem key={c} value={c} className="capitalize text-xs">
+                  {{"art-culture":"Art & Culture","events-festivals":"Events & Festivals","web3-ai":"Web3 & AI","taste-of-bali":"Taste of Bali","lifestyle-wellness":"Lifestyle & Wellness","bali-developments":"Bali Developments","how-to":"How-To"}[c] || c.charAt(0).toUpperCase() + c.slice(1)}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

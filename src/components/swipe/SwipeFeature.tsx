@@ -46,6 +46,8 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
   const [matchedProfile, setMatchedProfile] = useState<any>(null);
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [swipeHistory, setSwipeHistory] = useState<SwipeProfile[]>([]);
+  const [profileIncomplete, setProfileIncomplete] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   // Get current user's profile for the match modal
   useEffect(() => {

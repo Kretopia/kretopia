@@ -191,12 +191,7 @@ const ChallengeDetail = () => {
         media_type: mediaType,
       });
       if (error) throw error;
-
-      // Update entry count
-      await supabase
-        .from("challenges")
-        .update({ entry_count: (challenge?.entry_count || 0) + 1 })
-        .eq("id", id!);
+      // entry_count updated automatically via database trigger
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["challenge-entries", id] });

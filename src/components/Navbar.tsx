@@ -243,7 +243,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
                       <MenuButton icon={Trophy} label="Cre8 Arena" onClick={() => handleNavigation("/challenges")} />
-                      <MenuButton icon={MapPin} label="Nearby Creators" onClick={() => handleNavigation("/nearby")} />
+                      <MenuButton icon={MapPin} label="Creative Atlas" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={CalendarDays} label="Nearby Events" onClick={() => { handleNavigation("/scene"); setTimeout(() => document.querySelector<HTMLButtonElement>('[value="events"]')?.click(), 300); }} />
                       <MenuButton icon={BarChart3} label="My Analytics" onClick={() => handleNavigation("/my-analytics")} />
                     </>

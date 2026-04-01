@@ -76,7 +76,7 @@ export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogPro
           <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
             Maybe Later
           </Button>
-          <Button onClick={handleUpgrade} className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90">
+          <Button onClick={handleUpgrade} className="flex-1">
             Upgrade Now
           </Button>
         </div>

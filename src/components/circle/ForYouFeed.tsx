@@ -841,7 +841,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             onClick={handleLike}
             disabled={actionLoading}
           >
-            <Heart className="h-7 w-7 text-white" fill="white" />
+            <Heart className="h-7 w-7 text-primary-foreground" fill="currentColor" />
           </Button>
         </div>
       </div>

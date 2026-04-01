@@ -291,11 +291,11 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
 
         <div className="py-6 space-y-6 overflow-y-auto flex-1 pb-24">
           {/* AI Match - Pro Feature */}
-          <div className="bg-gradient-to-r from-indigo-600/10 to-indigo-500/10 rounded-xl p-4 border border-indigo-600/20">
+          <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 flex items-center justify-center">
-                  <Zap className="h-5 w-5 text-white" />
+                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+                  <Zap className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">

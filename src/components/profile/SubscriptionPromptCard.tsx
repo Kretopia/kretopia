@@ -46,7 +46,7 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
             </ul>
             <Button 
               onClick={() => navigate('/subscription')} 
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90"
+              className="w-full"
               size="sm"
             >
               Upgrade to Pro

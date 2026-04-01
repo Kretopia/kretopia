@@ -56,7 +56,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
                 
                 <div className="flex items-center gap-2 mb-3">
                   <div className={`h-10 w-10 rounded-lg ${tier.color} flex items-center justify-center`}>
-                    <Icon className="h-5 w-5 text-white" />
+                    <Icon className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <div>
                     <h3 className="font-semibold">{tier.name}</h3>

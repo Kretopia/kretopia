@@ -236,34 +236,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
       })));
 
       // Only fetch user-specific data if logged in
-      if (!user) { setLoading(false); return; }
-    try {
-      // All upcoming events
-      const { data: allEvents } = await supabase
-        .from('creative_jams')
-        .select('*, profiles!creative_jams_created_by_fkey (full_name, avatar_url)')
-        .eq('is_public', true)
-        .in('status', ['upcoming', 'active'])
-        .gte('start_time', new Date().toISOString())
-        .order('start_time', { ascending: true })
-        .limit(50);
-
-      const sessionIds = allEvents?.map(s => s.id) || [];
-      const { data: counts } = await supabase
-        .from('jam_participants')
-        .select('jam_id')
-        .in('jam_id', sessionIds.length ? sessionIds : ['none'])
-        .in('status', ['going', 'interested']);
-
-      const countMap: Record<string, number> = {};
-      counts?.forEach(c => { countMap[c.jam_id] = (countMap[c.jam_id] || 0) + 1; });
-
-      setEvents((allEvents || []).map(s => ({
-        ...s,
-        participant_count: countMap[s.id] || 0,
-        creator_name: (s.profiles as any)?.full_name || 'Unknown',
-        creator_avatar: (s.profiles as any)?.avatar_url,
-      })));
+      if (!user) return;
 
       // My created events
       const { data: mine } = await supabase

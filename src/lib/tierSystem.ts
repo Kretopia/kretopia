@@ -120,6 +120,7 @@ export const TIER_LEVELS: TierLevel[] = [
       "Ultimate partner deals",
     ],
   },
+];
 
 export const getTierByPoints = (points: number): TierLevel => {
   return (

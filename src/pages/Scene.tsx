@@ -67,6 +67,9 @@ const Scene = () => {
             <CrossModeNudge targetMode="work" label="Switch to Work →" targetPath="/desk" />
           </div>
 
+          {/* Live Activity */}
+          <LiveActivityTicker />
+
           {/* Hero Carousel */}
           <SceneHero onNavigate={handleNavigate} />
 

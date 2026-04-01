@@ -81,29 +81,32 @@ export function OnboardingCelebration({
         <div className="p-8 text-center space-y-6">
           {/* Badge Animation */}
           <div className="relative inline-flex">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 flex items-center justify-center animate-pulse shadow-lg shadow-orange-500/30">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary via-primary to-indigo-700 flex items-center justify-center shadow-lg shadow-primary/30">
               <Shield className="h-12 w-12 text-white" />
             </div>
-            <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-bold animate-bounce">
+            <div className="absolute -top-2 -right-2 bg-accent text-accent-foreground rounded-full px-2 py-0.5 text-xs font-bold animate-bounce">
               BETA
             </div>
           </div>
 
           {/* Title */}
           <div>
-            <h2 className="text-2xl font-bold mb-2">
-              Welcome, {userName?.split(" ")[0] || "Creator"}! 🎉
+            <h2 className="text-2xl font-bold mb-1">
+              Your profile is live! 🎉
             </h2>
-            <p className="text-muted-foreground text-sm">
-              You've earned the exclusive <span className="font-semibold text-amber-500">Beta Pioneer</span> badge
+            <p className="text-lg font-medium text-primary">
+              Welcome, {userName?.split(" ")[0] || "Creator"}
+            </p>
+            <p className="text-muted-foreground text-sm mt-1">
+              You've earned the exclusive <span className="font-semibold text-accent-foreground">Beta Pioneer</span> badge
             </p>
           </div>
 
           {/* Badge Card */}
-          <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/20 rounded-xl p-4 space-y-2">
+          <div className="bg-primary/5 border border-primary/15 rounded-xl p-4 space-y-2">
             <div className="flex items-center justify-center gap-2">
-              <Shield className="h-5 w-5 text-amber-500" />
-              <span className="font-bold text-amber-500">Beta Pioneer</span>
+              <Shield className="h-5 w-5 text-primary" />
+              <span className="font-bold text-primary">Beta Pioneer</span>
             </div>
             <p className="text-xs text-muted-foreground">
               As one of our earliest members, this badge permanently marks your profile.
@@ -129,16 +132,13 @@ export function OnboardingCelebration({
 
           {/* Actions */}
           <div className="space-y-3 pt-2">
-            <Button onClick={handleContinue} className="w-full gap-2">
-              Start Matching <ArrowRight className="h-4 w-4" />
+            <Button onClick={handleContinue} className="w-full gap-2" size="lg">
+              Start Exploring <ArrowRight className="h-4 w-4" />
             </Button>
             <Button onClick={handleShareCard} variant="outline" className="w-full gap-2">
               <Share2 className="h-4 w-4" />
               Share Your Creator Card
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              We'll take you to Circle — swipe to find your first collaborator!
-            </p>
           </div>
         </div>
       </DialogContent>

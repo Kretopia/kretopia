@@ -12,6 +12,7 @@ import {
   Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle
 } from "lucide-react";
 import { format } from "date-fns";
+import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";

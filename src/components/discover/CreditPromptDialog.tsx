@@ -45,8 +45,8 @@ export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogPro
           onClick={handleUpgrade}
         >
           <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-3">
-              <Sparkles className="h-6 w-6 text-white" />
+            <div className="rounded-xl bg-primary p-3">
+              <Sparkles className="h-6 w-6 text-primary-foreground" />
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-lg mb-1 flex items-center gap-2">

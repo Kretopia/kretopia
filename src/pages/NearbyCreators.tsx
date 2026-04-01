@@ -792,6 +792,42 @@ const NearbyCreators = () => {
                   )}
                 </div>
               </div>
+
+              {/* Locations Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm">📍</span>
+                  <h3 className="font-semibold text-sm">{locations.length} Spots</h3>
+                </div>
+                <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                  {locations.length === 0 ? (
+                    <Card className="p-3">
+                      <p className="text-xs text-muted-foreground text-center mb-2">
+                        No creative spots pinned nearby
+                      </p>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="w-full text-xs"
+                        onClick={() => setShowAddLocation(true)}
+                      >
+                        <Camera className="h-3 w-3 mr-1" />
+                        Pin the first spot
+                      </Button>
+                    </Card>
+                  ) : (
+                    locations.slice(0, 10).map((loc) => (
+                      <LocationListItem
+                        key={loc.id}
+                        location={loc}
+                        isSelected={selectedItem?.type === 'location' && selectedItem?.id === loc.id}
+                        onClick={() => setSelectedItem({ type: 'location', id: loc.id })}
+                        formatDistance={formatDistance}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>

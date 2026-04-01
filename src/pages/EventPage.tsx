@@ -251,11 +251,11 @@ const EventPage = () => {
           )}
           
           {/* Event Header */}
-          <div className="text-center mb-6">
-            <Badge variant="secondary" className="mb-3 text-sm">
+          <div className="text-center mb-4 sm:mb-6">
+            <Badge variant="secondary" className="mb-2 sm:mb-3 text-xs sm:text-sm">
               {CATEGORY_LABELS[event.category] || event.category}
             </Badge>
-            <h1 className="text-2xl sm:text-4xl font-bold mb-3">{event.title}</h1>
+            <h1 className="text-xl sm:text-4xl font-bold mb-2 sm:mb-3 leading-tight">{event.title}</h1>
             
             {/* Hosted By */}
             <div className="flex items-center justify-center gap-3 mb-4">

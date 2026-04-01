@@ -12,6 +12,7 @@ import {
   Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle
 } from "lucide-react";
 import { format } from "date-fns";
+import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
@@ -172,8 +173,43 @@ const EventPage = () => {
     <>
       <SEO 
         title={`${event.title} | ThriveIN Event`}
-        description={event.description || `Join ${creator?.full_name || 'a creator'} for ${event.title} on ThriveIN`}
+        description={event.description?.slice(0, 155) || `Join ${creator?.full_name || 'a creator'} for ${event.title} on ThriveIN`}
+        type="article"
+        image={event.cover_image_url || undefined}
+        url={`https://thrivein-new-beta.lovable.app/event/${eventId}`}
       />
+      {/* JSON-LD Event Schema */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Event",
+            "name": event.title,
+            "description": event.description || '',
+            "startDate": event.start_time,
+            "endDate": event.end_time || undefined,
+            "eventAttendanceMode": event.event_type === 'virtual' 
+              ? "https://schema.org/OnlineEventAttendanceMode" 
+              : "https://schema.org/OfflineEventAttendanceMode",
+            "location": event.venue_name ? {
+              "@type": "Place",
+              "name": event.venue_name,
+              "address": event.venue_address || ''
+            } : undefined,
+            "image": event.cover_image_url || undefined,
+            "organizer": {
+              "@type": "Person",
+              "name": creator?.full_name || 'ThriveIN Host'
+            },
+            "offers": event.is_ticketed && event.ticket_price ? {
+              "@type": "Offer",
+              "price": event.ticket_price,
+              "priceCurrency": event.ticket_currency || "USD",
+              "availability": isFull ? "https://schema.org/SoldOut" : "https://schema.org/InStock"
+            } : undefined
+          })}
+        </script>
+      </Helmet>
       
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Hero Cover */}
@@ -186,7 +222,7 @@ const EventPage = () => {
           <div className="h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
         )}
 
-        <div className="max-w-2xl mx-auto px-4 pb-12 -mt-8 relative z-10">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 pb-24 -mt-8 relative z-10">
           
           {/* Cancelled/Completed Banner */}
           {isCancelled && (
@@ -215,11 +251,11 @@ const EventPage = () => {
           )}
           
           {/* Event Header */}
-          <div className="text-center mb-6">
-            <Badge variant="secondary" className="mb-3 text-sm">
+          <div className="text-center mb-4 sm:mb-6">
+            <Badge variant="secondary" className="mb-2 sm:mb-3 text-xs sm:text-sm">
               {CATEGORY_LABELS[event.category] || event.category}
             </Badge>
-            <h1 className="text-2xl sm:text-4xl font-bold mb-3">{event.title}</h1>
+            <h1 className="text-xl sm:text-4xl font-bold mb-2 sm:mb-3 leading-tight">{event.title}</h1>
             
             {/* Hosted By */}
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -237,15 +273,15 @@ const EventPage = () => {
 
             {/* Countdown */}
             {!isPast && !isCancelled && diff > 0 && (
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="text-center px-4 py-2 rounded-lg bg-primary/10">
-                  <p className="text-2xl font-bold text-primary">{daysUntil}</p>
-                  <p className="text-xs text-muted-foreground uppercase">Days</p>
+              <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="text-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary/10">
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{daysUntil}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">Days</p>
                 </div>
-                <span className="text-2xl text-muted-foreground">:</span>
-                <div className="text-center px-4 py-2 rounded-lg bg-primary/10">
-                  <p className="text-2xl font-bold text-primary">{hoursUntil}</p>
-                  <p className="text-xs text-muted-foreground uppercase">Hours</p>
+                <span className="text-xl sm:text-2xl text-muted-foreground">:</span>
+                <div className="text-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary/10">
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{hoursUntil}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">Hours</p>
                 </div>
               </div>
             )}

@@ -51,10 +51,15 @@ export const SceneContentPreviews = ({ onNavigate }: Props) => {
             <img src={latestArticle.cover_image_url} alt="" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             <div className="absolute bottom-0 p-2.5">
-              <Badge className="bg-white/20 backdrop-blur-sm text-white border-0 text-[9px] gap-1 mb-1">
-                <BookOpen className="h-2.5 w-2.5" />
-                Magazine
-              </Badge>
+              <div className="flex items-center gap-1 mb-1">
+                <Badge className="bg-white/20 backdrop-blur-sm text-white border-0 text-[9px] gap-1">
+                  <BookOpen className="h-2.5 w-2.5" />
+                  Magazine
+                </Badge>
+                {latestArticle.created_at && (Date.now() - new Date(latestArticle.created_at).getTime() < 3 * 24 * 60 * 60 * 1000) && (
+                  <Badge className="bg-primary text-primary-foreground border-0 text-[9px]">New</Badge>
+                )}
+              </div>
               <p className="text-white text-[11px] font-semibold line-clamp-2 leading-tight">{latestArticle.title}</p>
             </div>
           </div>

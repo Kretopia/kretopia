@@ -23,7 +23,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
       tier: "pro",
       icon: Zap,
       fee: PLATFORM_FEES.pro,
-      color: "bg-gradient-to-r from-blue-500 to-cyan-500",
+      color: "bg-primary",
       price: "$12/mo",
       features: ["15% service fee (charged to brand)", "Talent keeps 100%", "Unlimited swipes", "All features unlocked"],
     },

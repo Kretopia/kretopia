@@ -8,78 +8,79 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 4%;
+    --background: 220 20% 98%;
+    --foreground: 230 25% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
+    --card-foreground: 230 25% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 4%;
+    --popover-foreground: 230 25% 10%;
 
-    --primary: 271 91% 65%;
+    --primary: 235 65% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 330 81% 60%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 215 20% 92%;
+    --secondary-foreground: 230 25% 18%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 6% 40%;
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 189 94% 43%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 45 90% 55%;
+    --accent-foreground: 30 50% 12%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 271 91% 65%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 235 65% 52%;
 
-    --success: 142 71% 45%;
+    --success: 152 60% 42%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
     --radius: 0.75rem;
 
-    /* Enhanced gradient system */
-    --gradient-primary: linear-gradient(135deg, hsl(271 91% 65%), hsl(330 81% 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(189 94% 43%), hsl(271 91% 65%));
-    --gradient-accent: linear-gradient(180deg, hsl(0 0% 100%), hsl(240 5% 98%));
-    --gradient-subtle: linear-gradient(180deg, hsl(271 91% 65% / 0.05), hsl(330 81% 60% / 0.05));
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.9), hsl(0 0% 100% / 0.7));
+    /* Clean gradient system */
+    --gradient-primary: linear-gradient(135deg, hsl(235 65% 52%), hsl(250 55% 62%));
+    --gradient-secondary: linear-gradient(135deg, hsl(200 70% 45%), hsl(235 65% 52%));
+    --gradient-accent: linear-gradient(180deg, hsl(220 20% 98%), hsl(220 14% 96%));
+    --gradient-subtle: linear-gradient(180deg, hsl(235 65% 52% / 0.04), hsl(250 55% 62% / 0.04));
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.92), hsl(0 0% 100% / 0.75));
+    --gradient-gold: linear-gradient(135deg, hsl(45 90% 55%), hsl(35 85% 50%));
 
     /* Refined shadow system */
-    --shadow-xs: 0 1px 2px hsl(240 10% 4% / 0.05);
-    --shadow-sm: 0 2px 4px hsl(240 10% 4% / 0.06);
-    --shadow-md: 0 4px 12px hsl(240 10% 4% / 0.08);
-    --shadow-lg: 0 8px 24px hsl(240 10% 4% / 0.12);
-    --shadow-xl: 0 16px 48px hsl(240 10% 4% / 0.16);
-    --shadow-glow: 0 0 40px hsl(271 91% 65% / 0.3);
-    --shadow-card: 0 4px 16px -4px hsl(240 10% 4% / 0.1);
-    --shadow-card-hover: 0 8px 24px -4px hsl(240 10% 4% / 0.15);
+    --shadow-xs: 0 1px 2px hsl(230 25% 10% / 0.04);
+    --shadow-sm: 0 2px 4px hsl(230 25% 10% / 0.05);
+    --shadow-md: 0 4px 12px hsl(230 25% 10% / 0.07);
+    --shadow-lg: 0 8px 24px hsl(230 25% 10% / 0.10);
+    --shadow-xl: 0 16px 48px hsl(230 25% 10% / 0.14);
+    --shadow-glow: 0 0 40px hsl(235 65% 52% / 0.2);
+    --shadow-card: 0 1px 3px hsl(230 25% 10% / 0.06), 0 4px 16px -4px hsl(230 25% 10% / 0.08);
+    --shadow-card-hover: 0 4px 8px hsl(230 25% 10% / 0.08), 0 8px 24px -4px hsl(230 25% 10% / 0.12);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     /* Mode accent tokens — overridden by [data-nav-mode] */
-    --mode-accent: 271 91% 65%;
+    --mode-accent: 235 65% 52%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 40px hsl(271 91% 65% / 0.3);
+    --mode-glow: 0 0 40px hsl(235 65% 52% / 0.2);
   }
 
-  /* Create mode — warm purple-pink creative energy */
+  /* Explore mode — deep indigo creative authority */
   [data-nav-mode="create"] {
-    --mode-accent: 271 91% 65%;
+    --mode-accent: 235 65% 52%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 40px hsl(271 91% 65% / 0.3);
+    --mode-glow: 0 0 40px hsl(235 65% 52% / 0.2);
   }
 
-  /* Work mode — cool teal-blue professional focus */
+  /* Work mode — professional blue focus */
   [data-nav-mode="work"] {
-    --mode-accent: 189 94% 43%;
+    --mode-accent: 200 70% 45%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 40px hsl(189 94% 43% / 0.3);
+    --mode-glow: 0 0 40px hsl(200 70% 45% / 0.2);
   }
 
   .dark {

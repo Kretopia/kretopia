@@ -55,7 +55,7 @@ interface NearbySession {
   created_by: string;
 }
 
-type MapItemType = 'creator' | 'session';
+type MapItemType = 'creator' | 'session' | 'location';
 
 const NearbyCreators = () => {
   const { user } = useAuth();

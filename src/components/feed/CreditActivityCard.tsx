@@ -26,7 +26,7 @@ export const CreditActivityCard = ({ item }: CreditActivityCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all">
       {item.thumbnail_url && (
-        <div className="relative aspect-video bg-gradient-to-br from-indigo-600/10 to-indigo-600/5">
+        <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-primary/5">
           <img 
             src={item.thumbnail_url} 
             alt={item.project_name}

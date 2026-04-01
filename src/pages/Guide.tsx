@@ -37,7 +37,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     title: "Build Your Profile",
     subtitle: "This is your creative resume — make it count",
     icon: <User className="h-6 w-6" />,
-    color: "from-violet-500/20 to-indigo-600/20",
+    color: "from-violet-500/20 to-primary/20",
     route: "/profile",
     steps: [
       {
@@ -165,7 +165,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     title: "Collaborate on Projects",
     subtitle: "Manage your creative projects from start to finish",
     icon: <FolderKanban className="h-6 w-6" />,
-    color: "from-indigo-500/20 to-rose-500/20",
+    color: "from-primary/20 to-rose-500/20",
     route: "/desk",
     steps: [
       {

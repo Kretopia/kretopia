@@ -22,7 +22,7 @@ const PLATFORM_STYLES: Record<string, { bg: string; text: string; icon: string }
   vimeo: { bg: 'bg-blue-500', text: 'text-white', icon: '🎬' },
   soundcloud: { bg: 'bg-orange-500', text: 'text-white', icon: '🔊' },
   tiktok: { bg: 'bg-black', text: 'text-white', icon: '🎵' },
-  instagram: { bg: 'bg-gradient-to-r from-indigo-600 to-indigo-500', text: 'text-white', icon: '📸' },
+  instagram: { bg: 'bg-gradient-to-r from-primary to-primary', text: 'text-white', icon: '📸' },
   behance: { bg: 'bg-blue-600', text: 'text-white', icon: '🎨' },
 };
 

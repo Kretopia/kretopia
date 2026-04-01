@@ -242,7 +242,7 @@ const ChallengeDetail = () => {
   const cadenceColors: Record<string, string> = {
     daily: "from-orange-500 to-amber-500",
     "48hr": "from-blue-500 to-cyan-500",
-    weekly: "from-indigo-600 to-indigo-500",
+    weekly: "from-primary to-primary",
     special: "from-amber-500 to-yellow-500",
   };
 

@@ -27,7 +27,7 @@ const BADGE_LABELS: Record<string, { label: string; color: string }> = {
   og: { label: "OG Member", color: "from-yellow-400 to-amber-600" },
   beta: { label: "Beta Pioneer", color: "from-amber-400 to-orange-600" },
   official: { label: "Official", color: "from-blue-400 to-blue-600" },
-  founder: { label: "Founder", color: "from-indigo-500 to-indigo-700" },
+  founder: { label: "Founder", color: "from-primary to-indigo-700" },
   odos: { label: "ODOS", color: "from-emerald-400 to-emerald-600" },
 };
 

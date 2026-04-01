@@ -14,10 +14,10 @@ const Slide1 = () => (
     </div>
     <div className="relative z-10 text-center space-y-12">
       <div className="space-y-4">
-        <h1 className="text-[120px] font-black tracking-tight leading-none bg-gradient-to-r from-indigo-500 via-fuchsia-400 to-purple-300 bg-clip-text text-transparent">
+        <h1 className="text-[120px] font-black tracking-tight leading-none bg-gradient-to-r from-primary via-fuchsia-400 to-purple-300 bg-clip-text text-transparent">
           ThriveIN
         </h1>
-        <div className="w-32 h-1 bg-gradient-to-r from-indigo-600 to-fuchsia-500 mx-auto rounded-full" />
+        <div className="w-32 h-1 bg-gradient-to-r from-primary to-fuchsia-500 mx-auto rounded-full" />
       </div>
       <p className="text-[42px] font-light text-white/90 max-w-[1200px] leading-tight">
         The Operating System for the Creative Economy
@@ -128,7 +128,7 @@ const Slide4 = () => (
       </div>
       <div className="grid grid-cols-4 gap-8">
         {[
-          { title: "Connect", desc: "AI-powered matching + verified profiles", icon: "🔗", color: "from-indigo-600/20 to-indigo-700/10" },
+          { title: "Connect", desc: "AI-powered matching + verified profiles", icon: "🔗", color: "from-primary/20 to-indigo-700/10" },
           { title: "Collaborate", desc: "Project workspaces with milestones and deliverables", icon: "🤝", color: "from-fuchsia-500/20 to-fuchsia-600/10" },
           { title: "Transact", desc: "Secure milestone-based escrow payments", icon: "💰", color: "from-green-500/20 to-green-600/10" },
           { title: "Reputation", desc: "A portable, verified track record", icon: "⭐", color: "from-amber-500/20 to-amber-600/10" },
@@ -318,7 +318,7 @@ const Slide9 = () => (
       </div>
       <div className="grid grid-cols-2 gap-16">
         <div className="space-y-10">
-          <div className="p-10 rounded-3xl bg-gradient-to-br from-indigo-600/20 to-fuchsia-500/10 border border-primary/30">
+          <div className="p-10 rounded-3xl bg-gradient-to-br from-primary/20 to-fuchsia-500/10 border border-primary/30">
             <p className="text-[22px] text-purple-300 font-medium uppercase tracking-wider">Catalyst</p>
             <h3 className="text-[44px] font-bold mt-3">ThriveX Festival</h3>
             <p className="text-[28px] text-white/70 mt-2">Bali · September 2026</p>
@@ -403,7 +403,7 @@ const Slide11 = () => (
       <div className="grid grid-cols-2 gap-16">
         <div className="space-y-8">
           <div className="flex items-center gap-8">
-            <div className="w-[180px] h-[180px] rounded-3xl bg-gradient-to-br from-indigo-600/30 to-fuchsia-500/20 flex items-center justify-center text-[72px]">
+            <div className="w-[180px] h-[180px] rounded-3xl bg-gradient-to-br from-primary/30 to-fuchsia-500/20 flex items-center justify-center text-[72px]">
               EA
             </div>
             <div>
@@ -474,7 +474,7 @@ const Slide12 = () => (
         </div>
       </div>
       <div className="flex flex-col justify-center">
-        <div className="p-12 rounded-3xl bg-gradient-to-br from-indigo-600/20 to-fuchsia-500/10 border border-primary/30 space-y-10">
+        <div className="p-12 rounded-3xl bg-gradient-to-br from-primary/20 to-fuchsia-500/10 border border-primary/30 space-y-10">
           <div className="space-y-4">
             <p className="text-[22px] text-purple-300 uppercase tracking-wider font-medium">Raising</p>
             <p className="text-[64px] font-black text-white">$500K</p>

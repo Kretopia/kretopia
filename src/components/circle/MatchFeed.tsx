@@ -75,7 +75,7 @@ const getVerificationBadge = (tier: string | undefined, status: string | undefin
       return {
         icon: Star,
         label: 'Industry',
-        className: 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-0'
+        className: 'bg-gradient-to-r from-primary to-primary text-white border-0'
       };
     case 'verified':
       return {
@@ -237,7 +237,7 @@ export const MatchFeed = ({
             </div>
             {currentCard.matchScore && (
               <Badge 
-                className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white border-0 font-bold px-4 py-2 text-lg shadow-2xl cursor-pointer hover:scale-105 transition-transform relative"
+                className="bg-gradient-to-r from-primary to-primary text-white border-0 font-bold px-4 py-2 text-lg shadow-2xl cursor-pointer hover:scale-105 transition-transform relative"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (isPro) {

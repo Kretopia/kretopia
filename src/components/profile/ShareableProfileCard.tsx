@@ -225,10 +225,10 @@ export const ShareableProfileCard = ({
               {/* Profile Section - fixed */}
               <div className="flex flex-col items-center text-center flex-shrink-0">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-indigo-500 rounded-full blur-md opacity-50 scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary rounded-full blur-md opacity-50 scale-110" />
                   <Avatar className="h-16 w-16 border-2 border-white/30 shadow-xl relative">
                     <AvatarImage src={profile.avatar_url || ""} />
-                    <AvatarFallback className="bg-gradient-to-br from-indigo-700 to-indigo-600 text-white text-xl font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-indigo-700 to-primary text-white text-xl font-bold">
                       {profile.full_name?.charAt(0) || "?"}
                     </AvatarFallback>
                   </Avatar>

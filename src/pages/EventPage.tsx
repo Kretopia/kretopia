@@ -172,8 +172,43 @@ const EventPage = () => {
     <>
       <SEO 
         title={`${event.title} | ThriveIN Event`}
-        description={event.description || `Join ${creator?.full_name || 'a creator'} for ${event.title} on ThriveIN`}
+        description={event.description?.slice(0, 155) || `Join ${creator?.full_name || 'a creator'} for ${event.title} on ThriveIN`}
+        type="article"
+        image={event.cover_image_url || undefined}
+        url={`https://thrivein-new-beta.lovable.app/event/${eventId}`}
       />
+      {/* JSON-LD Event Schema */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Event",
+            "name": event.title,
+            "description": event.description || '',
+            "startDate": event.start_time,
+            "endDate": event.end_time || undefined,
+            "eventAttendanceMode": event.event_type === 'virtual' 
+              ? "https://schema.org/OnlineEventAttendanceMode" 
+              : "https://schema.org/OfflineEventAttendanceMode",
+            "location": event.venue_name ? {
+              "@type": "Place",
+              "name": event.venue_name,
+              "address": event.venue_address || ''
+            } : undefined,
+            "image": event.cover_image_url || undefined,
+            "organizer": {
+              "@type": "Person",
+              "name": creator?.full_name || 'ThriveIN Host'
+            },
+            "offers": event.is_ticketed && event.ticket_price ? {
+              "@type": "Offer",
+              "price": event.ticket_price,
+              "priceCurrency": event.ticket_currency || "USD",
+              "availability": isFull ? "https://schema.org/SoldOut" : "https://schema.org/InStock"
+            } : undefined
+          })}
+        </script>
+      </Helmet>
       
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Hero Cover */}

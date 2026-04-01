@@ -1509,6 +1509,93 @@ export type Database = {
           },
         ]
       }
+      creative_locations: {
+        Row: {
+          address: string | null
+          amenities: string[] | null
+          average_rating: number | null
+          category: string | null
+          city: string | null
+          contact_info: string | null
+          country: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_urls: string[] | null
+          is_active: boolean | null
+          is_rentable: boolean | null
+          is_verified: boolean | null
+          latitude: number
+          location_type: string
+          longitude: number
+          name: string
+          price_currency: string | null
+          price_per_hour: number | null
+          review_count: number | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[] | null
+          average_rating?: number | null
+          category?: string | null
+          city?: string | null
+          contact_info?: string | null
+          country?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          is_active?: boolean | null
+          is_rentable?: boolean | null
+          is_verified?: boolean | null
+          latitude: number
+          location_type?: string
+          longitude: number
+          name: string
+          price_currency?: string | null
+          price_per_hour?: number | null
+          review_count?: number | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[] | null
+          average_rating?: number | null
+          category?: string | null
+          city?: string | null
+          contact_info?: string | null
+          country?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          is_active?: boolean | null
+          is_rentable?: boolean | null
+          is_verified?: boolean | null
+          latitude?: number
+          location_type?: string
+          longitude?: number
+          name?: string
+          price_currency?: string | null
+          price_per_hour?: number | null
+          review_count?: number | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       credit_ai_verifications: {
         Row: {
           ai_summary: string | null
@@ -3173,6 +3260,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      location_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          image_urls: string[] | null
+          location_id: string
+          rating: number
+          review_text: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_urls?: string[] | null
+          location_id: string
+          rating: number
+          review_text?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_urls?: string[] | null
+          location_id?: string
+          rating?: number
+          review_text?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_reviews_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "creative_locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       magazine_articles: {
         Row: {
@@ -9260,6 +9388,40 @@ export type Database = {
           title: string
           venue_address: string
           venue_name: string
+        }[]
+      }
+      get_nearby_locations: {
+        Args: {
+          limit_count?: number
+          radius_km?: number
+          type_filter?: string
+          user_lat: number
+          user_lon: number
+        }
+        Returns: {
+          address: string
+          amenities: string[]
+          average_rating: number
+          category: string
+          city: string
+          cover_image_url: string
+          creator_avatar: string
+          creator_name: string
+          description: string
+          distance_km: number
+          id: string
+          image_urls: string[]
+          is_rentable: boolean
+          is_verified: boolean
+          latitude: number
+          location_type: string
+          longitude: number
+          name: string
+          price_currency: string
+          price_per_hour: number
+          review_count: number
+          tags: string[]
+          user_id: string
         }[]
       }
       get_network_health: {

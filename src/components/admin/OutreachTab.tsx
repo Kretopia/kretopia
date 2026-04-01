@@ -249,7 +249,7 @@ Let me know if you have any questions 🙌`;
                 link.click();
                 toast.success(`Exported ${withSocial.length} profiles with social links`);
               }}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Export Outreach Targets ({profilesWithSocial.length})

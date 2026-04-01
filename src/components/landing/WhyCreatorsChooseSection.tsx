@@ -81,9 +81,9 @@ export const WhyCreatorsChooseSection = () => {
                 <div className="font-semibold text-blue-500 text-sm sm:text-base">Verified</div>
                 <p className="text-xs text-muted-foreground mt-1">Profile complete</p>
               </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-indigo-600/10 border border-indigo-600/20 hover:scale-105 transition-transform">
-                <Award className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-indigo-600 mb-2" />
-                <div className="font-semibold text-indigo-600 text-sm sm:text-base">Industry</div>
+              <div className="p-3 sm:p-4 rounded-xl bg-primary/10 border border-primary/20 hover:scale-105 transition-transform">
+                <Award className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
+                <div className="font-semibold text-primary text-sm sm:text-base">Industry</div>
                 <p className="text-xs text-muted-foreground mt-1">IMDB • Spotify</p>
               </div>
               <div className="p-3 sm:p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 hover:scale-105 transition-transform">

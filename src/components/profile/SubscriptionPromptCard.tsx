@@ -28,8 +28,8 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
     <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-secondary/5 overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-            <Sparkles className="h-6 w-6 text-white" />
+          <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center flex-shrink-0 shadow-lg">
+            <Sparkles className="h-6 w-6 text-primary-foreground" />
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-lg mb-1">Unlock Pro Features</h3>
@@ -46,7 +46,7 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
             </ul>
             <Button 
               onClick={() => navigate('/subscription')} 
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90"
+              className="w-full"
               size="sm"
             >
               Upgrade to Pro

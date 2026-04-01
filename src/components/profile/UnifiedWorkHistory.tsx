@@ -128,7 +128,7 @@ const SOURCE_COLORS: Record<string, string> = {
   tmdb: 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
   imdb: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
   discogs: 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
-  musicbrainz: 'bg-indigo-600/20 text-indigo-700 dark:text-indigo-500',
+  musicbrainz: 'bg-primary/20 text-indigo-700 dark:text-primary',
   project: 'bg-primary/10 text-primary',
   manual: 'bg-muted text-muted-foreground',
 };

@@ -27,7 +27,7 @@ const BADGE_LABELS: Record<string, { label: string; color: string }> = {
   og: { label: "OG Member", color: "from-yellow-400 to-amber-600" },
   beta: { label: "Beta Pioneer", color: "from-amber-400 to-orange-600" },
   official: { label: "Official", color: "from-blue-400 to-blue-600" },
-  founder: { label: "Founder", color: "from-indigo-500 to-indigo-700" },
+  founder: { label: "Founder", color: "from-primary to-indigo-700" },
   odos: { label: "ODOS", color: "from-emerald-400 to-emerald-600" },
 };
 
@@ -210,7 +210,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
             {/* Profile section */}
             <div className="px-6 -mt-8 pb-6 text-center">
               <div className="relative inline-block mb-3">
-                <div className="w-20 h-20 rounded-full border-[3px] border-indigo-600/50 overflow-hidden bg-gray-800">
+                <div className="w-20 h-20 rounded-full border-[3px] border-primary/50 overflow-hidden bg-gray-800">
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
                   ) : (
@@ -244,7 +244,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
                   {skills.map((s, i) => (
                     <span
                       key={i}
-                      className="px-2.5 py-0.5 rounded-full text-[10px] font-medium text-white/80 border border-indigo-600/30 bg-indigo-600/10"
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-medium text-white/80 border border-primary/30 bg-primary/10"
                     >
                       {s.skill}
                     </span>
@@ -264,14 +264,14 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
                 </div>
                 <div className="w-px h-6 bg-white/10" />
                 <div className="text-center">
-                  <p className="text-indigo-500 font-bold text-sm">🔥</p>
+                  <p className="text-primary font-bold text-sm">🔥</p>
                   <p className="text-white/40 text-[9px]">CREATOR</p>
                 </div>
               </div>
 
               <div className="mt-4 pt-3 border-t border-white/5">
                 <p className="text-white/30 text-[9px] tracking-widest">JOIN THE CREATIVE NETWORK</p>
-                <p className="text-indigo-500 text-[10px] font-medium mt-0.5">thrivein.io</p>
+                <p className="text-primary text-[10px] font-medium mt-0.5">thrivein.io</p>
               </div>
             </div>
           </div>
@@ -287,8 +287,8 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
               <span className="text-[10px] text-muted-foreground font-medium">WhatsApp</span>
             </button>
             <button onClick={shareToInstagramStory} className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-accent transition-colors">
-              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
-                <Instagram className="h-5 w-5 text-indigo-500" />
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Instagram className="h-5 w-5 text-primary" />
               </div>
               <span className="text-[10px] text-muted-foreground font-medium">Instagram</span>
             </button>

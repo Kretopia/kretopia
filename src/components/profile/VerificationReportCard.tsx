@@ -98,7 +98,7 @@ export function VerificationReportCard({
       case 'industry': 
         return {
           card: 'bg-gradient-to-br from-violet-950/40 via-background to-indigo-950/30 border-violet-500/40',
-          badge: 'bg-gradient-to-r from-violet-500 to-indigo-500 text-white font-semibold',
+          badge: 'bg-gradient-to-r from-violet-500 to-primary text-white font-semibold',
           accent: 'text-violet-400',
           glow: 'shadow-violet-500/20'
         };

@@ -105,7 +105,7 @@ export function FeedbackWidget() {
   const categoryColors: Record<string, string> = {
     bug: "bg-red-500/10 text-red-500",
     feature: "bg-blue-500/10 text-blue-500",
-    ui: "bg-indigo-600/10 text-indigo-600",
+    ui: "bg-primary/10 text-primary",
     general: "bg-muted text-muted-foreground",
   };
 

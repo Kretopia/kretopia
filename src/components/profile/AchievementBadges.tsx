@@ -51,15 +51,15 @@ const ACHIEVEMENT_CONFIG: Record<string, {
   },
   "Emmy Winner": {
     icon: Award,
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-600/20 border-indigo-600/50",
+    color: "text-primary",
+    bgColor: "bg-primary/20 border-primary/50",
     description: "Emmy Award Winner",
     priority: 1
   },
   "Emmy Nominated": {
     icon: Award,
-    color: "text-indigo-500",
-    bgColor: "bg-indigo-600/10 border-indigo-600/30",
+    color: "text-primary",
+    bgColor: "bg-primary/10 border-primary/30",
     description: "Emmy Award Nominee",
     priority: 2
   },
@@ -100,22 +100,22 @@ const ACHIEVEMENT_CONFIG: Record<string, {
   },
   "1M+ Followers": {
     icon: Users,
-    color: "text-indigo-500",
-    bgColor: "bg-indigo-500/20 border-indigo-500/50",
+    color: "text-primary",
+    bgColor: "bg-primary/20 border-primary/50",
     description: "Over 1 million followers",
     priority: 3
   },
   "100K+ Followers": {
     icon: Users,
     color: "text-primary",
-    bgColor: "bg-indigo-500/10 border-indigo-500/30",
+    bgColor: "bg-primary/10 border-primary/30",
     description: "Over 100K followers",
     priority: 5
   },
   "Major Label": {
     icon: Disc,
-    color: "text-indigo-500",
-    bgColor: "bg-indigo-500/20 border-indigo-500/50",
+    color: "text-primary",
+    bgColor: "bg-primary/20 border-primary/50",
     description: "Signed to a major record label",
     priority: 4
   },

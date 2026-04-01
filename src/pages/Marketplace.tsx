@@ -27,11 +27,11 @@ const LISTING_TYPE_TABS = [
 
 const CATEGORY_CARDS = [
   { value: "music", emoji: "🎵", label: "Music & Audio", gradient: "from-violet-500/20 to-fuchsia-500/20" },
-  { value: "design", emoji: "🎨", label: "Design", gradient: "from-indigo-500/20 to-rose-500/20" },
+  { value: "design", emoji: "🎨", label: "Design", gradient: "from-primary/20 to-rose-500/20" },
   { value: "video", emoji: "🎬", label: "Video & Film", gradient: "from-orange-500/20 to-amber-500/20" },
   { value: "photography", emoji: "📸", label: "Photography", gradient: "from-cyan-500/20 to-blue-500/20" },
   { value: "development", emoji: "💻", label: "Web & App", gradient: "from-emerald-500/20 to-green-500/20" },
-  { value: "education", emoji: "📚", label: "Courses", gradient: "from-indigo-500/20 to-indigo-600/20" },
+  { value: "education", emoji: "📚", label: "Courses", gradient: "from-primary/20 to-primary/20" },
 ];
 
 const Marketplace = () => {

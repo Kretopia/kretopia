@@ -23,7 +23,7 @@ import { formatDistanceToNow } from "date-fns";
 const RANKING_TIERS = [
   { name: "Popular", min: 0, color: "text-green-500", bg: "bg-green-500/10", icon: Star },
   { name: "Skilled", min: 5, color: "text-blue-500", bg: "bg-blue-500/10", icon: Target },
-  { name: "Premier", min: 15, color: "text-indigo-600", bg: "bg-indigo-600/10", icon: Medal },
+  { name: "Premier", min: 15, color: "text-primary", bg: "bg-primary/10", icon: Medal },
   { name: "Elite", min: 30, color: "text-amber-500", bg: "bg-amber-500/10", icon: Award },
   { name: "All-Star", min: 50, color: "text-red-500", bg: "bg-red-500/10", icon: Crown },
 ];
@@ -241,8 +241,8 @@ const ChallengeDetail = () => {
   const isActive = challenge.status === "active" && !isExpired;
   const cadenceColors: Record<string, string> = {
     daily: "from-orange-500 to-amber-500",
-    "48hr": "from-blue-500 to-cyan-500",
-    weekly: "from-indigo-600 to-indigo-500",
+    "48hr": "from-primary to-primary/80",
+    weekly: "from-primary to-primary",
     special: "from-amber-500 to-yellow-500",
   };
 

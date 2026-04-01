@@ -23,7 +23,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
       tier: "pro",
       icon: Zap,
       fee: PLATFORM_FEES.pro,
-      color: "bg-gradient-to-r from-blue-500 to-cyan-500",
+      color: "bg-primary",
       price: "$12/mo",
       features: ["15% service fee (charged to brand)", "Talent keeps 100%", "Unlimited swipes", "All features unlocked"],
     },
@@ -56,7 +56,7 @@ export const FeeStructure = ({ currentTier = 'free' }: FeeStructureProps) => {
                 
                 <div className="flex items-center gap-2 mb-3">
                   <div className={`h-10 w-10 rounded-lg ${tier.color} flex items-center justify-center`}>
-                    <Icon className="h-5 w-5 text-white" />
+                    <Icon className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <div>
                     <h3 className="font-semibold">{tier.name}</h3>

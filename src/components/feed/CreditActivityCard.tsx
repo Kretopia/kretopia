@@ -26,14 +26,14 @@ export const CreditActivityCard = ({ item }: CreditActivityCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all">
       {item.thumbnail_url && (
-        <div className="relative aspect-video bg-gradient-to-br from-indigo-600/10 to-indigo-600/5">
+        <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-primary/5">
           <img 
             src={item.thumbnail_url} 
             alt={item.project_name}
             className="w-full h-full object-cover"
           />
           <Badge className="absolute top-2 right-2 bg-background/90 backdrop-blur">
-            <Briefcase className="h-3 w-3 mr-1 text-indigo-600" />
+            <Briefcase className="h-3 w-3 mr-1 text-primary" />
             Credit
           </Badge>
         </div>
@@ -55,8 +55,8 @@ export const CreditActivityCard = ({ item }: CreditActivityCardProps) => {
         {/* Content */}
         <div className="flex items-start gap-3">
           {!item.thumbnail_url && (
-            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-600/10 flex items-center justify-center">
-              <Briefcase className="h-6 w-6 text-indigo-600" />
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Briefcase className="h-6 w-6 text-primary" />
             </div>
           )}
           <div className="flex-1">

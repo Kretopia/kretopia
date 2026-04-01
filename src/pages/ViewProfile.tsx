@@ -351,7 +351,7 @@ const ViewProfile = () => {
 
           {/* Match Celebration Banner */}
           {(isMatched || isFromMatch) && (
-            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-indigo-600/10 to-indigo-500/10 border-primary/20">
+            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-indigo-600/10 to-primary/10 border-primary/20">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-primary/20">

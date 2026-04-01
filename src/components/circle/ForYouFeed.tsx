@@ -837,11 +837,11 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           
           <Button
             size="lg"
-            className="h-16 w-16 rounded-full bg-gradient-to-r from-indigo-500 to-rose-500 hover:from-indigo-600 hover:to-rose-600 shadow-lg"
+            className="h-16 w-16 rounded-full bg-primary hover:bg-primary/90 shadow-lg"
             onClick={handleLike}
             disabled={actionLoading}
           >
-            <Heart className="h-7 w-7 text-white" fill="white" />
+            <Heart className="h-7 w-7 text-primary-foreground" fill="currentColor" />
           </Button>
         </div>
       </div>

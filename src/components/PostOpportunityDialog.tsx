@@ -348,7 +348,7 @@ export const PostOpportunityDialog = ({
 
               {/* Barter-specific: What You're Offering */}
               {isBarter && (
-                <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-indigo-600/5">
+                <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-primary/5">
                   <div className="flex items-center gap-2 text-sm font-semibold text-indigo-800 dark:text-purple-300">
                     <Gift className="h-4 w-4" />
                     The Exchange

@@ -27,8 +27,8 @@ const OPPORTUNITY_TYPES = [
     icon: ArrowRightLeft,
     title: "Barter & Trade",
     description: "Exchange skills and services — a music video for a logo, a photoshoot for a website.",
-    color: "from-indigo-600/20 to-indigo-600/5",
-    iconColor: "text-indigo-600",
+    color: "from-primary/20 to-primary/5",
+    iconColor: "text-primary",
   },
 ];
 

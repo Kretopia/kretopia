@@ -53,7 +53,7 @@ interface MatchFeedProps {
 
 const getBadgeColor = (badge: string) => {
   switch (badge) {
-    case 'og': return 'bg-indigo-600';
+    case 'og': return 'bg-primary';
     case 'beta': return 'bg-blue-500';
     case 'vip': return 'bg-yellow-500';
     default: return 'bg-gray-500';
@@ -75,13 +75,13 @@ const getVerificationBadge = (tier: string | undefined, status: string | undefin
       return {
         icon: Star,
         label: 'Industry',
-        className: 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-0'
+        className: 'bg-gradient-to-r from-primary to-primary text-white border-0'
       };
     case 'verified':
       return {
         icon: Verified,
         label: 'Verified',
-        className: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0'
+        className: 'bg-primary text-primary-foreground border-0'
       };
     default:
       return null;
@@ -216,7 +216,7 @@ export const MatchFeed = ({
               )}
               {/* Pro Badge */}
               {(currentCard.subscription_tier === 'pro' || currentCard.subscription_tier === 'founder') && (
-                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 font-bold shadow-2xl text-sm px-3 py-1 gap-1">
+                <Badge className="bg-primary text-primary-foreground border-0 font-bold shadow-2xl text-sm px-3 py-1 gap-1">
                   <Crown className="h-3 w-3" />
                   PRO
                 </Badge>
@@ -237,7 +237,7 @@ export const MatchFeed = ({
             </div>
             {currentCard.matchScore && (
               <Badge 
-                className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white border-0 font-bold px-4 py-2 text-lg shadow-2xl cursor-pointer hover:scale-105 transition-transform relative"
+                className="bg-gradient-to-r from-primary to-primary text-white border-0 font-bold px-4 py-2 text-lg shadow-2xl cursor-pointer hover:scale-105 transition-transform relative"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (isPro) {

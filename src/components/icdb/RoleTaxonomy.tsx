@@ -33,8 +33,8 @@ const INDUSTRY_LABELS: Record<string, string> = {
 
 const INDUSTRY_COLORS: Record<string, string> = {
   film_tv: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  music: 'bg-indigo-600/10 text-indigo-700 border-indigo-600/20',
-  fashion: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
+  music: 'bg-primary/10 text-indigo-700 border-primary/20',
+  fashion: 'bg-primary/10 text-primary border-primary/20',
   performing: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
   events: 'bg-green-500/10 text-green-600 border-green-500/20',
   digital: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',

@@ -268,8 +268,7 @@ const NearbyCreators = () => {
     setLoading(true);
     
     try {
-      // Fetch both creators and sessions in parallel
-      const [creatorsResult, sessionsResult] = await Promise.all([
+      const [creatorsResult, sessionsResult, locationsResult] = await Promise.all([
         supabase.rpc('get_nearby_creators', {
           user_lat: userLocation.lat,
           user_lon: userLocation.lng,
@@ -281,6 +280,12 @@ const NearbyCreators = () => {
           user_lon: userLocation.lng,
           radius_km: radius,
           limit_count: 20,
+        }),
+        supabase.rpc('get_nearby_locations', {
+          user_lat: userLocation.lat,
+          user_lon: userLocation.lng,
+          radius_km: radius,
+          limit_count: 50,
         })
       ]);
 
@@ -289,10 +294,12 @@ const NearbyCreators = () => {
       
       setCreators(creatorsResult.data || []);
       setSessions((sessionsResult.data || []) as NearbySession[]);
+      setLocations((locationsResult.data || []) as CreativeLocation[]);
       
       analytics.featureUsed("nearby_data_loaded", { 
         creators: creatorsResult.data?.length || 0, 
         sessions: sessionsResult.data?.length || 0,
+        locations: locationsResult.data?.length || 0,
         radius 
       });
       

@@ -327,7 +327,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                       <span className="text-xs bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full">Spotify</span>
                       <span className="text-xs bg-orange-500/10 text-orange-600 px-2 py-0.5 rounded-full">SoundCloud</span>
                       <span className="text-xs bg-red-500/10 text-red-600 px-2 py-0.5 rounded-full">YouTube</span>
-                      <span className="text-xs bg-indigo-600/10 text-indigo-700 px-2 py-0.5 rounded-full">Vimeo</span>
+                      <span className="text-xs bg-primary/10 text-indigo-700 px-2 py-0.5 rounded-full">Vimeo</span>
                     </div>
                     
                     {/* Link Input */}

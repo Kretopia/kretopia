@@ -27,7 +27,7 @@ const typeConfig: Record<string, { icon: React.ElementType; color: string; bg: s
   cashflow: { icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
   growth: { icon: Sparkles, color: "text-amber-600", bg: "bg-amber-500/10" },
   warning: { icon: AlertTriangle, color: "text-red-600", bg: "bg-red-500/10" },
-  tip: { icon: Lightbulb, color: "text-indigo-700", bg: "bg-indigo-600/10" },
+  tip: { icon: Lightbulb, color: "text-indigo-700", bg: "bg-primary/10" },
 };
 
 const priorityColors: Record<string, string> = {

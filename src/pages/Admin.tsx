@@ -402,7 +402,7 @@ export default function Admin() {
             </Card>
 
             {/* AI Discovery Agent Card */}
-            <Card className="border-indigo-600/30 bg-indigo-600/5">
+            <Card className="border-primary/30 bg-primary/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-indigo-700">
                   <Bot className="h-5 w-5" />
@@ -418,7 +418,7 @@ export default function Admin() {
                     onClick={() => runAIDiscovery(10)} 
                     disabled={runningDiscovery}
                     variant="outline"
-                    className="border-indigo-600/50 hover:bg-indigo-600/10"
+                    className="border-primary/50 hover:bg-primary/10"
                   >
                     {runningDiscovery ? (
                       <>
@@ -453,7 +453,7 @@ export default function Admin() {
                     onClick={() => runAIDiscovery(50)} 
                     disabled={runningDiscovery}
                     variant="outline"
-                    className="border-indigo-600/50 hover:bg-indigo-600/10"
+                    className="border-primary/50 hover:bg-primary/10"
                   >
                     {runningDiscovery ? (
                       <>
@@ -484,7 +484,7 @@ export default function Admin() {
                       <div className="text-2xl font-bold">{discoverySummary.discovered}</div>
                       <div className="text-xs text-muted-foreground">Discovered</div>
                     </div>
-                    <div className="bg-indigo-600/10 p-3 rounded-lg text-center">
+                    <div className="bg-primary/10 p-3 rounded-lg text-center">
                       <div className="text-2xl font-bold text-indigo-700">{discoverySummary.processed}</div>
                       <div className="text-xs text-muted-foreground">Processed</div>
                     </div>
@@ -535,7 +535,7 @@ export default function Admin() {
                           </div>
                           <div className="flex items-center gap-2">
                             {result.enriched && (
-                              <Badge variant="secondary" className="text-xs bg-indigo-600/20">
+                              <Badge variant="secondary" className="text-xs bg-primary/20">
                                 <Sparkles className="h-3 w-3 mr-1" />
                                 Enriched
                               </Badge>

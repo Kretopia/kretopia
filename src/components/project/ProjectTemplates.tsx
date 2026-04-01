@@ -27,7 +27,7 @@ const templates: Template[] = [
     name: "Video Production",
     description: "Complete workflow for video projects from pre-production to delivery",
     icon: Film,
-    color: "bg-indigo-600/10 text-indigo-600",
+    color: "bg-primary/10 text-primary",
     tasks: [
       { title: "Script Review", description: "Review and approve final script", status: "todo" },
       { title: "Shot List Creation", description: "Create detailed shot list and storyboards", status: "todo" },
@@ -51,7 +51,7 @@ const templates: Template[] = [
     name: "Music Collaboration",
     description: "Track production workflow from writing to final mix",
     icon: Music,
-    color: "bg-indigo-500/10 text-indigo-500",
+    color: "bg-primary/10 text-primary",
     tasks: [
       { title: "Song Concept Discussion", description: "Discuss overall direction and vibe", status: "todo" },
       { title: "Write Lyrics/Melody", description: "Complete songwriting phase", status: "todo" },

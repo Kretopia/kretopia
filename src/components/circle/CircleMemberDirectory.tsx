@@ -27,7 +27,7 @@ const roleDisplay = (role: string) => {
   switch (role) {
     case "admin": return { icon: Crown, label: "Admin", className: "text-amber-500 bg-amber-500/10 border-amber-500/20" };
     case "moderator": return { icon: Shield, label: "Mod", className: "text-blue-500 bg-blue-500/10 border-blue-500/20" };
-    case "mentor": return { icon: null, label: "✨ Mentor", className: "text-indigo-600 bg-indigo-600/10 border-indigo-600/20" };
+    case "mentor": return { icon: null, label: "✨ Mentor", className: "text-primary bg-primary/10 border-primary/20" };
     case "featured": return { icon: null, label: "⭐ Featured", className: "text-amber-600 bg-amber-500/10 border-amber-500/20" };
     case "vip": return { icon: null, label: "💎 VIP", className: "text-sky-500 bg-sky-500/10 border-sky-500/20" };
     case "og": return { icon: null, label: "🏆 OG", className: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" };

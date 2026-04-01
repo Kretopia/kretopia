@@ -86,7 +86,7 @@ export const ShareableProfileCard = ({
       case "elite":
         return { icon: Award, label: "Elite Verified", color: "text-amber-400" };
       case "industry":
-        return { icon: Shield, label: "Industry Verified", color: "text-indigo-500" };
+        return { icon: Shield, label: "Industry Verified", color: "text-primary" };
       case "verified":
         return { icon: CheckCircle, label: "Verified", color: "text-emerald-400" };
       default:
@@ -307,14 +307,14 @@ export const ShareableProfileCard = ({
                   <div>
                     <div className="flex items-baseline gap-0.5">
                       <span className="text-white font-bold text-base tracking-tight">Thrive</span>
-                      <span className="font-bold text-base tracking-tight text-indigo-500">IN</span>
+                      <span className="font-bold text-base tracking-tight text-primary">IN</span>
                     </div>
                     <p className="text-white/40 text-[8px]">
                       thrivein.io
                     </p>
                     {mode === "invite" && inviteCode && (
                       <p className="text-white/50 text-[9px] mt-0.5">
-                        Code: <span className="font-mono font-bold text-indigo-500">{inviteCode}</span>
+                        Code: <span className="font-mono font-bold text-primary">{inviteCode}</span>
                       </p>
                     )}
                   </div>

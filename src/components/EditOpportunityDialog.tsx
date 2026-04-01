@@ -224,7 +224,7 @@ export const EditOpportunityDialog = ({
 
             {/* Barter-specific fields */}
             {formData.type === 'barter' && (
-              <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-indigo-600/5">
+              <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-primary/5">
                 <p className="text-xs font-semibold text-indigo-700 dark:text-purple-300">🔄 Barter Details</p>
                 <div className="space-y-2">
                   <Label htmlFor="edit-barter-offering">What You're Offering</Label>

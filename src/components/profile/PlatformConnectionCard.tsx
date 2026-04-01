@@ -90,7 +90,7 @@ const PLATFORMS = [
     id: 'musicbrainz',
     name: 'MusicBrainz',
     icon: Library,
-    color: 'bg-indigo-600',
+    color: 'bg-primary',
     description: 'Import songwriting, session work & music credits (100% free)',
     searchPlaceholder: 'Your artist or producer name',
     searchType: 'musicbrainz' as const,

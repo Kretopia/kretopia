@@ -311,8 +311,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     }
     if (credit.endorsement_count > 0) {
       return (
-        <Badge variant="outline" className="text-[10px] gap-0.5 border-primary/30 text-primary bg-primary/5 h-5">
-          {credit.endorsement_count} endorsed
+        <Badge variant="outline" className="text-[10px] gap-0.5 border-accent/40 text-accent-foreground bg-accent/10 h-5">
+          <ShieldCheck className="h-2.5 w-2.5" />
+          {credit.endorsement_count} vouched
         </Badge>
       );
     }

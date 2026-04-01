@@ -416,9 +416,9 @@ const NearbyCreators = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Nearby Creators</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Creative Atlas</h1>
           <p className="text-muted-foreground">
-            Discover and connect with creators in your area
+            Discover creators, studios, shoot spots &amp; sessions near you
           </p>
         </div>
         

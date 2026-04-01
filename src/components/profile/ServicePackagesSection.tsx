@@ -208,7 +208,7 @@ export const ServicePackagesSection = ({ userId, isOwnProfile }: ServicePackages
                   ))}
                 </div>
 
-                {isOwnProfile && (
+                {isOwnProfile ? (
                   <div className="flex gap-1 mt-3">
                     <Button size="sm" variant="ghost" className="flex-1 text-xs h-7" onClick={() => openEdit(pkg)}>
                       Edit
@@ -217,6 +217,15 @@ export const ServicePackagesSection = ({ userId, isOwnProfile }: ServicePackages
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="w-full mt-3 gap-1.5"
+                    variant={pkg.tier === "standard" ? "default" : "outline"}
+                  >
+                    <ShoppingCart className="h-3.5 w-3.5" />
+                    Book Now · ${pkg.price}
+                  </Button>
                 )}
               </Card>
             );

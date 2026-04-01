@@ -279,13 +279,18 @@ export const SparkWall = () => {
 
   if (posts.length === 0) {
     return (
-      <Card className="p-8 text-center">
-        <Flame className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
-        <p className="font-semibold mb-1">The Scene is quiet... for now</p>
-        <p className="text-sm text-muted-foreground">
-          Add work to your portfolio and it'll appear here for the community to discover.
-        </p>
-      </Card>
+      <div className="space-y-4">
+        <SparkComposer userProfile={userProfile} onPostCreated={() => { hasFetched.current = false; fetchPosts(); }} />
+        <Card className="p-6 text-center border-dashed border-2 border-border/60">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-primary/8 flex items-center justify-center">
+            <Flame className="h-6 w-6 text-primary" />
+          </div>
+          <p className="font-semibold mb-1 text-sm">Be the first to spark the scene</p>
+          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+            Share your latest work, a behind-the-scenes moment, or what you're creating right now. Your community is waiting.
+          </p>
+        </Card>
+      </div>
     );
   }
 

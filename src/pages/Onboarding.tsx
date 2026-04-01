@@ -396,7 +396,7 @@ export default function Onboarding() {
   return (
     <>
       <SEO title="Welcome to ThriveIN - Set Up Your Profile" description="Set up your creator profile on ThriveIN in under 60 seconds." />
-      <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/3 to-background flex items-center justify-center p-4">
         <Card className="w-full max-w-lg p-6 sm:p-8">
           {/* Progress — hidden on email verification step */}
           {showStepProgress && (

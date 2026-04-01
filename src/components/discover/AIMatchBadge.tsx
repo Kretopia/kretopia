@@ -19,7 +19,7 @@ export const AIMatchBadge = ({ score, size = "md", showLocked = false }: AIMatch
   const getMatchColor = (score: number) => {
     if (score >= 85) return "bg-gradient-to-r from-green-500 to-emerald-500";
     if (score >= 70) return "bg-gradient-to-r from-primary to-accent";
-    if (score >= 60) return "bg-gradient-to-r from-blue-500 to-cyan-500";
+    if (score >= 60) return "bg-primary";
     return "bg-gradient-to-r from-gray-500 to-slate-500";
   };
 

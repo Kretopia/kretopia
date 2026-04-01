@@ -382,12 +382,16 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
               <TabsTrigger value="browse" className="flex-1">
                 <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Browse
               </TabsTrigger>
-              <TabsTrigger value="joined" className="flex-1">
-                <Check className="h-3.5 w-3.5 mr-1.5" /> Joined
-              </TabsTrigger>
-              <TabsTrigger value="hosting" className="flex-1">
-                <Calendar className="h-3.5 w-3.5 mr-1.5" /> Hosting
-              </TabsTrigger>
+              {user && (
+                <>
+                  <TabsTrigger value="joined" className="flex-1">
+                    <Check className="h-3.5 w-3.5 mr-1.5" /> Joined
+                  </TabsTrigger>
+                  <TabsTrigger value="hosting" className="flex-1">
+                    <Calendar className="h-3.5 w-3.5 mr-1.5" /> Hosting
+                  </TabsTrigger>
+                </>
+              )}
             </TabsList>
 
             <TabsContent value="browse" className="mt-0">
@@ -403,16 +407,16 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                     <p className="text-sm text-muted-foreground mb-4">
                       Be the first to host a creative event in your area!
                     </p>
-                    <Button variant="gradient" onClick={() => setShowCreate(true)}>
+                    <Button variant="gradient" onClick={handleHostEvent}>
                       <Plus className="h-4 w-4 mr-2" /> Host an Event
                     </Button>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-2">
-                  <FeaturedEvents events={filteredEvents} onSelect={setSelectedEvent} />
+                  <FeaturedEvents events={filteredEvents} onSelect={handleEventClick} />
                   {filteredEvents.map(event => (
-                    <EventCard key={event.id} event={event} onClick={() => setSelectedEvent(event)} />
+                    <EventCard key={event.id} event={event} onClick={() => handleEventClick(event)} />
                   ))}
                 </div>
               )}

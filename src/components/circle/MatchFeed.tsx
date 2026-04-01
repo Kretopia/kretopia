@@ -81,7 +81,7 @@ const getVerificationBadge = (tier: string | undefined, status: string | undefin
       return {
         icon: Verified,
         label: 'Verified',
-        className: 'bg-primary text-white border-0'
+        className: 'bg-primary text-primary-foreground border-0'
       };
     default:
       return null;
@@ -216,7 +216,7 @@ export const MatchFeed = ({
               )}
               {/* Pro Badge */}
               {(currentCard.subscription_tier === 'pro' || currentCard.subscription_tier === 'founder') && (
-                <Badge className="bg-primary text-white border-0 font-bold shadow-2xl text-sm px-3 py-1 gap-1">
+                <Badge className="bg-primary text-primary-foreground border-0 font-bold shadow-2xl text-sm px-3 py-1 gap-1">
                   <Crown className="h-3 w-3" />
                   PRO
                 </Badge>

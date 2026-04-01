@@ -129,7 +129,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
                   profile.badge === 'og' && "bg-amber-500/20 text-amber-200 border-amber-400/50",
                   profile.badge === 'beta' && "bg-blue-500/20 text-blue-200 border-blue-400/50",
                   profile.badge === 'odos' && "bg-green-500/20 text-green-200 border-green-400/50",
-                  profile.badge === 'founder' && "bg-purple-500/20 text-purple-200 border-purple-400/50"
+                  profile.badge === 'founder' && "bg-indigo-600/20 text-purple-200 border-indigo-500/50"
                 )}
               >
                 {profile.badge === 'og' ? '⭐ OG' : 
@@ -145,7 +145,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
               "absolute top-3 sm:top-4",
               isIndustryVerified ? "left-32 sm:left-36" : "left-16 sm:left-20"
             )}>
-              <Badge variant="outline" className="bg-purple-500/20 text-purple-200 border-purple-400/50 backdrop-blur-sm text-xs">
+              <Badge variant="outline" className="bg-indigo-600/20 text-purple-200 border-indigo-500/50 backdrop-blur-sm text-xs">
                 Lvl {profile.level}
               </Badge>
             </div>

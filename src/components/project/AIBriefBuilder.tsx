@@ -335,7 +335,7 @@ ${brief.communication_plan}
               {/* Timeline */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <Calendar className="h-4 w-4 text-purple-500" />
+                  <Calendar className="h-4 w-4 text-indigo-600" />
                   Timeline
                 </div>
                 <div className="space-y-3">
@@ -381,13 +381,13 @@ ${brief.communication_plan}
               {/* Success Metrics */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <Users className="h-4 w-4 text-pink-500" />
+                  <Users className="h-4 w-4 text-indigo-500" />
                   Success Metrics
                 </div>
                 <ul className="space-y-1">
                   {brief.success_metrics.map((metric, i) => (
                     <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
-                      <span className="text-pink-500">📊</span>
+                      <span className="text-indigo-500">📊</span>
                       {metric}
                     </li>
                   ))}

@@ -31,7 +31,7 @@ export const SocialStatsSection = ({
       icon: Instagram,
       label: "Instagram",
       value: instagramFollowers,
-      color: "text-pink-500",
+      color: "text-indigo-500",
     },
     {
       icon: Music,

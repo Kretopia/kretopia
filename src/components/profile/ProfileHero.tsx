@@ -161,7 +161,7 @@ export const ProfileHero = ({
               {profile.verification_status === 'verified' && (
                 <Badge 
                   variant="default" 
-                  className="gap-1.5 h-6 px-2 bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25"
+                  className="gap-1.5 h-6 px-2 bg-gradient-to-r from-primary via-indigo-700 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
@@ -328,7 +328,7 @@ export const ProfileHero = ({
           ) : connectionStatus === 'accepted' ? (
             <>
               {isFromMatch && (
-                <div className="w-full mb-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 border border-primary/20">
+                <div className="w-full mb-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-indigo-600/10 to-primary/10 border border-primary/20">
                   <div className="flex items-center gap-2 text-primary mb-1">
                     <Sparkles className="h-4 w-4" />
                     <span className="text-sm font-medium">You're matched!</span>

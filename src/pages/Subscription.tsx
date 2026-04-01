@@ -380,7 +380,7 @@ export default function Subscription() {
                 tier.popular
                   ? isBrand ? "border-emerald-500 shadow-lg scale-105" : "border-primary shadow-lg scale-105"
                   : tier.tier === "enterprise" || tier.tier === "brand_enterprise"
-                  ? "border-purple-500/50 shadow-md"
+                  ? "border-indigo-600/50 shadow-md"
                   : isCurrentTier
                   ? "border-green-500"
                   : ""
@@ -392,7 +392,7 @@ export default function Subscription() {
                 </Badge>
               )}
               {(tier.tier === "enterprise" || tier.tier === "brand_enterprise") && !isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-700 text-white">
                   {isBrand ? "Full Suite" : "Power User"}
                 </Badge>
               )}
@@ -406,7 +406,7 @@ export default function Subscription() {
                 <div className="flex items-center justify-between mb-2">
                   <Icon className={`h-8 w-8 ${
                     tier.tier === 'pro' || tier.tier === 'brand_pro' ? isBrand ? 'text-emerald-600' : 'text-blue-600' : 
-                    tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-purple-600' : 
+                    tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-indigo-700' : 
                     'text-muted-foreground'
                   }`} />
                   <div className="text-right">
@@ -428,7 +428,7 @@ export default function Subscription() {
                   {tier.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                        tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-purple-500' : 
+                        tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-indigo-600' : 
                         isBrand ? 'text-emerald-500' : 'text-primary'
                       }`} />
                       <span className="text-sm">{feature}</span>
@@ -444,7 +444,7 @@ export default function Subscription() {
                   <Button
                     className={`w-full ${
                       tier.tier === 'enterprise' || tier.tier === 'brand_enterprise'
-                        ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                        ? 'bg-indigo-700 hover:bg-indigo-800 text-white' 
                         : isBrand && tier.popular
                         ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                         : ''

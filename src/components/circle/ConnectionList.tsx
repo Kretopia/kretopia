@@ -33,7 +33,7 @@ interface RecentCredit {
 
 const getBadgeColor = (badge: string) => {
   switch (badge) {
-    case 'og': return 'bg-purple-500';
+    case 'og': return 'bg-indigo-600';
     case 'beta': return 'bg-blue-500';
     case 'vip': return 'bg-yellow-500';
     default: return 'bg-gray-500';

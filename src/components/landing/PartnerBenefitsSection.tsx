@@ -24,7 +24,7 @@ const partnerCategories = [
     name: "Creative Shops",
     discount: "15% off",
     locations: "12+ locations",
-    color: "from-purple-500 to-pink-600",
+    color: "from-indigo-600 to-indigo-600",
   },
   {
     icon: Music,

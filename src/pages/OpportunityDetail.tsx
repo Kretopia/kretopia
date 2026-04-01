@@ -280,17 +280,17 @@ const OpportunityDetail = () => {
 
           {/* Barter Exchange Section */}
           {opportunity.type === 'barter' && (opportunity.barter_offering || opportunity.barter_requesting) && (
-            <div className="mb-6 rounded-xl border-2 border-dashed border-purple-300 bg-purple-500/5 p-4">
+            <div className="mb-6 rounded-xl border-2 border-dashed border-purple-300 bg-indigo-600/5 p-4">
               <div className="flex items-center gap-2 mb-3">
-                <ArrowRightLeft className="h-5 w-5 text-purple-500" />
-                <h2 className="text-lg font-semibold text-purple-700 dark:text-purple-300">The Exchange</h2>
+                <ArrowRightLeft className="h-5 w-5 text-indigo-600" />
+                <h2 className="text-lg font-semibold text-indigo-800 dark:text-purple-300">The Exchange</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {opportunity.barter_offering && (
                   <div className="rounded-lg bg-background p-3 border">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <Gift className="h-4 w-4 text-purple-500" />
-                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-300 uppercase tracking-wide">What You Get</span>
+                      <Gift className="h-4 w-4 text-indigo-600" />
+                      <span className="text-xs font-semibold text-indigo-700 dark:text-purple-300 uppercase tracking-wide">What You Get</span>
                     </div>
                     <p className="text-sm font-medium">{opportunity.barter_offering}</p>
                   </div>
@@ -298,8 +298,8 @@ const OpportunityDetail = () => {
                 {opportunity.barter_requesting && (
                   <div className="rounded-lg bg-background p-3 border">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <ArrowRight className="h-4 w-4 text-purple-500" />
-                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-300 uppercase tracking-wide">What They Need</span>
+                      <ArrowRight className="h-4 w-4 text-indigo-600" />
+                      <span className="text-xs font-semibold text-indigo-700 dark:text-purple-300 uppercase tracking-wide">What They Need</span>
                     </div>
                     <p className="text-sm font-medium">{opportunity.barter_requesting}</p>
                   </div>

@@ -230,9 +230,9 @@ export function ActivityTimeline({ projectId }: ActivityTimelineProps) {
     switch (type) {
       case 'message': return 'text-blue-500';
       case 'task': return 'text-green-500';
-      case 'milestone': return 'text-purple-500';
+      case 'milestone': return 'text-indigo-600';
       case 'file': return 'text-orange-500';
-      case 'collaborator': return 'text-pink-500';
+      case 'collaborator': return 'text-indigo-500';
       case 'time_entry': return 'text-cyan-500';
       default: return 'text-gray-500';
     }

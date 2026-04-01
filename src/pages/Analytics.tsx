@@ -400,8 +400,8 @@ const Analytics = () => {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-pink-500/10">
-                  <Zap className="h-4 w-4 text-pink-500" />
+                <div className="p-2 rounded-lg bg-indigo-500/10">
+                  <Zap className="h-4 w-4 text-indigo-500" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{funnelData.swipes}</p>
@@ -413,8 +413,8 @@ const Analytics = () => {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/10">
-                  <Heart className="h-4 w-4 text-purple-500" />
+                <div className="p-2 rounded-lg bg-indigo-600/10">
+                  <Heart className="h-4 w-4 text-indigo-600" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{funnelData.matches}</p>
@@ -502,9 +502,9 @@ const Analytics = () => {
                 { label: 'Sign Ups', value: funnelData.signups, color: 'bg-green-500' },
                 { label: 'Onboarding Started', value: funnelData.onboardingStarts, color: 'bg-yellow-500' },
                 { label: 'Onboarding Completed', value: funnelData.onboardingCompletes, color: 'bg-orange-500' },
-                { label: 'Swipes', value: funnelData.swipes, color: 'bg-pink-500' },
+                { label: 'Swipes', value: funnelData.swipes, color: 'bg-indigo-500' },
                 { label: 'Matches', value: funnelData.matches, color: 'bg-red-500' },
-                { label: 'Messages Sent', value: funnelData.messages, color: 'bg-purple-500' },
+                { label: 'Messages Sent', value: funnelData.messages, color: 'bg-indigo-600' },
                 { label: 'Paywall Views', value: funnelData.paywallViews, color: 'bg-indigo-500' },
                 { label: 'Subscriptions', value: funnelData.subscriptions, color: 'bg-emerald-500' },
               ].map((step, index) => {

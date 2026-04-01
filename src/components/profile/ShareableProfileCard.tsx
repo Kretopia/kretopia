@@ -86,7 +86,7 @@ export const ShareableProfileCard = ({
       case "elite":
         return { icon: Award, label: "Elite Verified", color: "text-amber-400" };
       case "industry":
-        return { icon: Shield, label: "Industry Verified", color: "text-purple-400" };
+        return { icon: Shield, label: "Industry Verified", color: "text-indigo-500" };
       case "verified":
         return { icon: CheckCircle, label: "Verified", color: "text-emerald-400" };
       default:
@@ -225,10 +225,10 @@ export const ShareableProfileCard = ({
               {/* Profile Section - fixed */}
               <div className="flex flex-col items-center text-center flex-shrink-0">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-md opacity-50 scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-indigo-500 rounded-full blur-md opacity-50 scale-110" />
                   <Avatar className="h-16 w-16 border-2 border-white/30 shadow-xl relative">
                     <AvatarImage src={profile.avatar_url || ""} />
-                    <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-xl font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-indigo-700 to-indigo-600 text-white text-xl font-bold">
                       {profile.full_name?.charAt(0) || "?"}
                     </AvatarFallback>
                   </Avatar>
@@ -307,14 +307,14 @@ export const ShareableProfileCard = ({
                   <div>
                     <div className="flex items-baseline gap-0.5">
                       <span className="text-white font-bold text-base tracking-tight">Thrive</span>
-                      <span className="font-bold text-base tracking-tight text-purple-400">IN</span>
+                      <span className="font-bold text-base tracking-tight text-indigo-500">IN</span>
                     </div>
                     <p className="text-white/40 text-[8px]">
                       thrivein.io
                     </p>
                     {mode === "invite" && inviteCode && (
                       <p className="text-white/50 text-[9px] mt-0.5">
-                        Code: <span className="font-mono font-bold text-purple-400">{inviteCode}</span>
+                        Code: <span className="font-mono font-bold text-indigo-500">{inviteCode}</span>
                       </p>
                     )}
                   </div>

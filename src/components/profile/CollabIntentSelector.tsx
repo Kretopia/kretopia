@@ -21,7 +21,7 @@ export const COLLAB_INTENTS = [
     value: 'open_to_trade', 
     label: 'Open to Trade', 
     icon: Handshake,
-    color: 'bg-purple-500',
+    color: 'bg-indigo-600',
     description: 'Let\'s exchange skills - no money needed'
   },
   { 

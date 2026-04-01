@@ -193,7 +193,7 @@ const MyAnalytics = () => {
                   label="Projects"
                   value={stats.totalProjects}
                   subtext="Active collabs"
-                  color="text-purple-500"
+                  color="text-indigo-600"
                 />
               </div>
 

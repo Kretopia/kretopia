@@ -155,9 +155,9 @@ export function CredentialVerificationCard({
               <div className="font-medium text-blue-500">Verified</div>
               <div className="text-muted-foreground">Profile complete</div>
             </div>
-            <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
-              <Star className="w-4 h-4 mx-auto text-purple-500 mb-1" />
-              <div className="font-medium text-purple-500">Industry</div>
+            <div className="p-2 rounded-lg bg-indigo-600/10 border border-indigo-600/20">
+              <Star className="w-4 h-4 mx-auto text-indigo-600 mb-1" />
+              <div className="font-medium text-indigo-600">Industry</div>
               <div className="text-muted-foreground">IMDB/Credits</div>
             </div>
             <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">

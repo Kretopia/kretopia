@@ -226,7 +226,7 @@ export function WalletXPSection() {
     { id: "extra_invoices", name: "+3 Invoices", description: "3 extra invoices this month.", cost: 300, icon: <FileText className="h-5 w-5 text-teal-400" />, action: buyExtraInvoices, available: true },
     { id: "priority_gig", name: "Priority Gig Listing", description: "Pin your opportunity for 24h.", cost: 1500, icon: <Briefcase className="h-5 w-5 text-orange-400" />, action: buyPriorityGig, available: true },
     { id: "analytics_unlock", name: "Analytics Report", description: "Full profile analytics export (1x).", cost: 2000, icon: <BarChart3 className="h-5 w-5 text-violet-400" />, action: buyAnalyticsReport, available: true },
-    { id: "pro_trial", name: "Pro Trial (3 Days)", description: "Unlock all Pro features.", cost: 2500, icon: <Crown className="h-5 w-5 text-purple-400" />, action: buyProTrial, available: true, badge: "Best Value" },
+    { id: "pro_trial", name: "Pro Trial (3 Days)", description: "Unlock all Pro features.", cost: 2500, icon: <Crown className="h-5 w-5 text-indigo-500" />, action: buyProTrial, available: true, badge: "Best Value" },
     { id: "gift_xp", name: "Gift 100 TP", description: "Send 100 Thrive Points to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
   ];
 

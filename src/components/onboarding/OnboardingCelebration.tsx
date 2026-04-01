@@ -23,7 +23,7 @@ const confettiConfig = {
   stagger: 3,
   width: "10px",
   height: "10px",
-  colors: ["#a855f7", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6"],
+  colors: ["#4f46e5", "#6366f1", "#f59e0b", "#10b981", "#3b82f6", "#818cf8"],
 };
 
 export function OnboardingCelebration({

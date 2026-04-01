@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Plus, Calendar, Sparkles, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Plus, Calendar, Sparkles, SlidersHorizontal, ChevronDown, ChevronUp, Camera } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
@@ -18,6 +18,8 @@ import { SessionCard } from "@/components/sessions/SessionCard";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
 import { LocationPrivacySelect, LocationPrecision } from "@/components/nearby/LocationPrivacySelect";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { AddCreativeLocationDialog } from "@/components/nearby/AddCreativeLocationDialog";
+import { LocationListItem, type CreativeLocation } from "@/components/nearby/LocationListItem";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 
@@ -53,7 +55,7 @@ interface NearbySession {
   created_by: string;
 }
 
-type MapItemType = 'creator' | 'session';
+type MapItemType = 'creator' | 'session' | 'location';
 
 const NearbyCreators = () => {
   const { user } = useAuth();
@@ -64,6 +66,7 @@ const NearbyCreators = () => {
   const [locating, setLocating] = useState(false);
   const [creators, setCreators] = useState<NearbyCreator[]>([]);
   const [sessions, setSessions] = useState<NearbySession[]>([]);
+  const [locations, setLocations] = useState<CreativeLocation[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState(25); // km
   const [locationVisible, setLocationVisible] = useState(true);
@@ -71,6 +74,7 @@ const NearbyCreators = () => {
   const [selectedItem, setSelectedItem] = useState<{ type: MapItemType; id: string } | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [showCreateSession, setShowCreateSession] = useState(false);
+  const [showAddLocation, setShowAddLocation] = useState(false);
   const [selectedSession, setSelectedSession] = useState<NearbySession | null>(null);
   const [profileVisibility, setProfileVisibility] = useState<{
     isVisible: boolean;
@@ -264,8 +268,7 @@ const NearbyCreators = () => {
     setLoading(true);
     
     try {
-      // Fetch both creators and sessions in parallel
-      const [creatorsResult, sessionsResult] = await Promise.all([
+      const [creatorsResult, sessionsResult, locationsResult] = await Promise.all([
         supabase.rpc('get_nearby_creators', {
           user_lat: userLocation.lat,
           user_lon: userLocation.lng,
@@ -277,6 +280,12 @@ const NearbyCreators = () => {
           user_lon: userLocation.lng,
           radius_km: radius,
           limit_count: 20,
+        }),
+        supabase.rpc('get_nearby_locations', {
+          user_lat: userLocation.lat,
+          user_lon: userLocation.lng,
+          radius_km: radius,
+          limit_count: 50,
         })
       ]);
 
@@ -285,10 +294,12 @@ const NearbyCreators = () => {
       
       setCreators(creatorsResult.data || []);
       setSessions((sessionsResult.data || []) as NearbySession[]);
+      setLocations((locationsResult.data || []) as CreativeLocation[]);
       
       analytics.featureUsed("nearby_data_loaded", { 
         creators: creatorsResult.data?.length || 0, 
         sessions: sessionsResult.data?.length || 0,
+        locations: locationsResult.data?.length || 0,
         radius 
       });
       
@@ -405,9 +416,9 @@ const NearbyCreators = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Nearby Creators</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Creative Atlas</h1>
           <p className="text-muted-foreground">
-            Discover and connect with creators in your area
+            Discover creators, studios, shoot spots &amp; sessions near you
           </p>
         </div>
         
@@ -612,6 +623,7 @@ const NearbyCreators = () => {
               <UnifiedNearbyMap
                 creators={creators}
                 sessions={sessions}
+                locations={locations}
                 userLocation={userLocation}
                 selectedItem={selectedItem}
                 onSelectCreator={(creator) => {
@@ -625,6 +637,13 @@ const NearbyCreators = () => {
                   if (session) {
                     setSelectedItem({ type: 'session', id: session.id });
                     setSelectedSession(session);
+                  } else {
+                    setSelectedItem(null);
+                  }
+                }}
+                onSelectLocation={(location) => {
+                  if (location) {
+                    setSelectedItem({ type: 'location', id: location.id });
                   } else {
                     setSelectedItem(null);
                   }
@@ -681,14 +700,24 @@ const NearbyCreators = () => {
           {viewMode === 'map' && (
             <div className="space-y-4">
               {/* Host Session Button */}
-              <Button 
-                className="w-full" 
-                variant="gradient"
-                onClick={() => setShowCreateSession(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Host a Session
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  className="flex-1" 
+                  variant="gradient"
+                  onClick={() => setShowCreateSession(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Host Session
+                </Button>
+                <Button 
+                  className="flex-1" 
+                  variant="outline"
+                  onClick={() => setShowAddLocation(true)}
+                >
+                  <Camera className="h-4 w-4 mr-1" />
+                  Pin a Spot
+                </Button>
+              </div>
 
               {/* Creators Section */}
               <div>
@@ -763,6 +792,42 @@ const NearbyCreators = () => {
                   )}
                 </div>
               </div>
+
+              {/* Locations Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm">📍</span>
+                  <h3 className="font-semibold text-sm">{locations.length} Spots</h3>
+                </div>
+                <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                  {locations.length === 0 ? (
+                    <Card className="p-3">
+                      <p className="text-xs text-muted-foreground text-center mb-2">
+                        No creative spots pinned nearby
+                      </p>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="w-full text-xs"
+                        onClick={() => setShowAddLocation(true)}
+                      >
+                        <Camera className="h-3 w-3 mr-1" />
+                        Pin the first spot
+                      </Button>
+                    </Card>
+                  ) : (
+                    locations.slice(0, 10).map((loc) => (
+                      <LocationListItem
+                        key={loc.id}
+                        location={loc}
+                        isSelected={selectedItem?.type === 'location' && selectedItem?.id === loc.id}
+                        onClick={() => setSelectedItem({ type: 'location', id: loc.id })}
+                        formatDistance={formatDistance}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -772,6 +837,14 @@ const NearbyCreators = () => {
       <CreateSessionDialog
         open={showCreateSession}
         onOpenChange={setShowCreateSession}
+        onCreated={fetchNearbyData}
+        defaultLocation={userLocation || undefined}
+      />
+
+      {/* Add Creative Location Dialog */}
+      <AddCreativeLocationDialog
+        open={showAddLocation}
+        onOpenChange={setShowAddLocation}
         onCreated={fetchNearbyData}
         defaultLocation={userLocation || undefined}
       />

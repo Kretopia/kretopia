@@ -222,7 +222,7 @@ const EventPage = () => {
           <div className="h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
         )}
 
-        <div className="max-w-2xl mx-auto px-4 pb-12 -mt-8 relative z-10">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 pb-24 -mt-8 relative z-10">
           
           {/* Cancelled/Completed Banner */}
           {isCancelled && (

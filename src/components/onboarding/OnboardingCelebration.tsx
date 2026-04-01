@@ -81,7 +81,7 @@ export function OnboardingCelebration({
         <div className="p-8 text-center space-y-6">
           {/* Badge Animation */}
           <div className="relative inline-flex">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary via-primary to-indigo-700 flex items-center justify-center shadow-lg shadow-primary/30">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/30">
               <Shield className="h-12 w-12 text-white" />
             </div>
             <div className="absolute -top-2 -right-2 bg-accent text-accent-foreground rounded-full px-2 py-0.5 text-xs font-bold animate-bounce">

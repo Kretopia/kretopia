@@ -325,7 +325,7 @@ const CreatorEPK = () => {
       return { label: 'Elite Verified', color: 'bg-gradient-to-r from-amber-500 to-yellow-400' };
     }
     if (profile.verification_tier === 'industry') {
-      return { label: 'Industry Verified', color: 'bg-gradient-to-r from-blue-500 to-cyan-400' };
+      return { label: 'Industry Verified', color: 'bg-primary' };
     }
     if (profile.verification_status === 'verified') {
       return { label: 'Verified', color: 'bg-primary' };

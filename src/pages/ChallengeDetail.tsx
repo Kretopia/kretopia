@@ -241,7 +241,7 @@ const ChallengeDetail = () => {
   const isActive = challenge.status === "active" && !isExpired;
   const cadenceColors: Record<string, string> = {
     daily: "from-orange-500 to-amber-500",
-    "48hr": "from-blue-500 to-cyan-500",
+    "48hr": "from-primary to-primary/80",
     weekly: "from-primary to-primary",
     special: "from-amber-500 to-yellow-500",
   };

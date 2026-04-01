@@ -19,7 +19,7 @@ const TIER_INFO = {
     name: "Pro",
     price: "$12",
     icon: Sparkles,
-    color: "from-blue-500 to-cyan-500",
+    color: "from-primary to-primary/80",
   },
 };
 

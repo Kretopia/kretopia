@@ -107,7 +107,7 @@ export const MatchExplanationDialog = ({
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "from-green-500 to-emerald-500";
-    if (score >= 70) return "from-blue-500 to-cyan-500";
+    if (score >= 70) return "from-primary to-primary/80";
     return "from-primary to-primary";
   };
 

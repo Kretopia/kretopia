@@ -66,6 +66,7 @@ const NearbyCreators = () => {
   const [locating, setLocating] = useState(false);
   const [creators, setCreators] = useState<NearbyCreator[]>([]);
   const [sessions, setSessions] = useState<NearbySession[]>([]);
+  const [locations, setLocations] = useState<CreativeLocation[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState(25); // km
   const [locationVisible, setLocationVisible] = useState(true);

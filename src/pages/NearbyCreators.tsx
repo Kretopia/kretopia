@@ -841,6 +841,14 @@ const NearbyCreators = () => {
         defaultLocation={userLocation || undefined}
       />
 
+      {/* Add Creative Location Dialog */}
+      <AddCreativeLocationDialog
+        open={showAddLocation}
+        onOpenChange={setShowAddLocation}
+        onCreated={fetchNearbyData}
+        defaultLocation={userLocation || undefined}
+      />
+
       {/* Session Detail Dialog */}
       <SessionDetailDialog
         session={selectedSession}

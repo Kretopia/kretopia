@@ -196,6 +196,7 @@ const FeaturedEvents = ({ events, onSelect }: { events: EventItem[]; onSelect: (
 
 const Events = ({ embedded }: { embedded?: boolean }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [myEvents, setMyEvents] = useState<EventItem[]>([]);
@@ -205,6 +206,23 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+
+  const handleEventClick = (event: EventItem) => {
+    // For non-authenticated users, navigate to public event page
+    if (!user) {
+      navigate(`/event/${event.id}`);
+      return;
+    }
+    setSelectedEvent(event);
+  };
+
+  const handleHostEvent = () => {
+    if (!user) {
+      navigate('/auth?redirect=/scene');
+      return;
+    }
+    setShowCreate(true);
+  };
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);

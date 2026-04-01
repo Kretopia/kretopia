@@ -81,7 +81,7 @@ export const SceneContentPreviews = ({ onNavigate }: Props) => {
         className="p-0 overflow-hidden rounded-xl border-border/50 cursor-pointer group hover:border-primary/30 transition-colors"
         onClick={() => onNavigate("podcast")}
       >
-        <div className="aspect-[3/2] relative bg-gradient-to-br from-secondary/80 via-primary/60 to-accent/40">
+        <div className="aspect-[3/2] relative bg-gradient-to-br from-primary/70 via-primary/50 to-primary/30">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">

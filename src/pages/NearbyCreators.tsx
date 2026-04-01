@@ -623,6 +623,7 @@ const NearbyCreators = () => {
               <UnifiedNearbyMap
                 creators={creators}
                 sessions={sessions}
+                locations={locations}
                 userLocation={userLocation}
                 selectedItem={selectedItem}
                 onSelectCreator={(creator) => {
@@ -636,6 +637,13 @@ const NearbyCreators = () => {
                   if (session) {
                     setSelectedItem({ type: 'session', id: session.id });
                     setSelectedSession(session);
+                  } else {
+                    setSelectedItem(null);
+                  }
+                }}
+                onSelectLocation={(location) => {
+                  if (location) {
+                    setSelectedItem({ type: 'location', id: location.id });
                   } else {
                     setSelectedItem(null);
                   }

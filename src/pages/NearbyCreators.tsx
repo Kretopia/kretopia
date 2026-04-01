@@ -74,6 +74,7 @@ const NearbyCreators = () => {
   const [selectedItem, setSelectedItem] = useState<{ type: MapItemType; id: string } | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [showCreateSession, setShowCreateSession] = useState(false);
+  const [showAddLocation, setShowAddLocation] = useState(false);
   const [selectedSession, setSelectedSession] = useState<NearbySession | null>(null);
   const [profileVisibility, setProfileVisibility] = useState<{
     isVisible: boolean;

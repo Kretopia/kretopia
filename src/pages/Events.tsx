@@ -345,7 +345,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                 </p>
               )}
             </div>
-            <Button variant="gradient" size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-full">
+            <Button variant="gradient" size="sm" onClick={handleHostEvent} className="gap-1.5 rounded-full">
               <Plus className="h-4 w-4" /> Host Event
             </Button>
           </div>

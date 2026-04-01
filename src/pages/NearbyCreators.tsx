@@ -700,14 +700,24 @@ const NearbyCreators = () => {
           {viewMode === 'map' && (
             <div className="space-y-4">
               {/* Host Session Button */}
-              <Button 
-                className="w-full" 
-                variant="gradient"
-                onClick={() => setShowCreateSession(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Host a Session
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  className="flex-1" 
+                  variant="gradient"
+                  onClick={() => setShowCreateSession(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Host Session
+                </Button>
+                <Button 
+                  className="flex-1" 
+                  variant="outline"
+                  onClick={() => setShowAddLocation(true)}
+                >
+                  <Camera className="h-4 w-4 mr-1" />
+                  Pin a Spot
+                </Button>
+              </div>
 
               {/* Creators Section */}
               <div>

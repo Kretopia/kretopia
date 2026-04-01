@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Plus, Calendar, Sparkles, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, MapPin, Navigation, Users, Eye, EyeOff, RefreshCw, MessageCircle, User, Plus, Calendar, Sparkles, SlidersHorizontal, ChevronDown, ChevronUp, Camera } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
@@ -18,6 +18,8 @@ import { SessionCard } from "@/components/sessions/SessionCard";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
 import { LocationPrivacySelect, LocationPrecision } from "@/components/nearby/LocationPrivacySelect";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { AddCreativeLocationDialog } from "@/components/nearby/AddCreativeLocationDialog";
+import { LocationListItem, type CreativeLocation } from "@/components/nearby/LocationListItem";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 

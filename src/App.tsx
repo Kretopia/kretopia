@@ -137,6 +137,13 @@ const DefaultRoute = () => {
   if (onboardingLoading) return <LoadingFallback />;
   if (!isComplete) return <Navigate to="/onboarding" replace />;
   
+  // Check for pending event join (from OAuth redirect)
+  const pendingEvent = sessionStorage.getItem('pending_event_join');
+  if (pendingEvent) {
+    sessionStorage.removeItem('pending_event_join');
+    return <Navigate to={`/event/${pendingEvent}`} replace />;
+  }
+  
   // Read mode synchronously from localStorage to avoid flash
   let mode = "create";
   try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}

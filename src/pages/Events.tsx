@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -195,6 +196,7 @@ const FeaturedEvents = ({ events, onSelect }: { events: EventItem[]; onSelect: (
 
 const Events = ({ embedded }: { embedded?: boolean }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [myEvents, setMyEvents] = useState<EventItem[]>([]);
@@ -205,11 +207,27 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
+  const handleEventClick = (event: EventItem) => {
+    // For non-authenticated users, navigate to public event page
+    if (!user) {
+      navigate(`/event/${event.id}`);
+      return;
+    }
+    setSelectedEvent(event);
+  };
+
+  const handleHostEvent = () => {
+    if (!user) {
+      navigate('/auth?redirect=/scene');
+      return;
+    }
+    setShowCreate(true);
+  };
+
   const fetchEvents = useCallback(async () => {
-    if (!user) return;
     setLoading(true);
     try {
-      // All upcoming events
+      // Public browse: fetch events even without auth
       const { data: allEvents } = await supabase
         .from('creative_jams')
         .select('*, profiles!creative_jams_created_by_fkey (full_name, avatar_url)')
@@ -235,6 +253,9 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
         creator_name: (s.profiles as any)?.full_name || 'Unknown',
         creator_avatar: (s.profiles as any)?.avatar_url,
       })));
+
+      // Only fetch user-specific data if logged in
+      if (!user) return;
 
       // My created events
       const { data: mine } = await supabase
@@ -324,7 +345,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                 </p>
               )}
             </div>
-            <Button variant="gradient" size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-full">
+            <Button variant="gradient" size="sm" onClick={handleHostEvent} className="gap-1.5 rounded-full">
               <Plus className="h-4 w-4" /> Host Event
             </Button>
           </div>
@@ -361,12 +382,16 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
               <TabsTrigger value="browse" className="flex-1">
                 <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Browse
               </TabsTrigger>
-              <TabsTrigger value="joined" className="flex-1">
-                <Check className="h-3.5 w-3.5 mr-1.5" /> Joined
-              </TabsTrigger>
-              <TabsTrigger value="hosting" className="flex-1">
-                <Calendar className="h-3.5 w-3.5 mr-1.5" /> Hosting
-              </TabsTrigger>
+              {user && (
+                <>
+                  <TabsTrigger value="joined" className="flex-1">
+                    <Check className="h-3.5 w-3.5 mr-1.5" /> Joined
+                  </TabsTrigger>
+                  <TabsTrigger value="hosting" className="flex-1">
+                    <Calendar className="h-3.5 w-3.5 mr-1.5" /> Hosting
+                  </TabsTrigger>
+                </>
+              )}
             </TabsList>
 
             <TabsContent value="browse" className="mt-0">
@@ -382,16 +407,16 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                     <p className="text-sm text-muted-foreground mb-4">
                       Be the first to host a creative event in your area!
                     </p>
-                    <Button variant="gradient" onClick={() => setShowCreate(true)}>
+                    <Button variant="gradient" onClick={handleHostEvent}>
                       <Plus className="h-4 w-4 mr-2" /> Host an Event
                     </Button>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-2">
-                  <FeaturedEvents events={filteredEvents} onSelect={setSelectedEvent} />
+                  <FeaturedEvents events={filteredEvents} onSelect={handleEventClick} />
                   {filteredEvents.map(event => (
-                    <EventCard key={event.id} event={event} onClick={() => setSelectedEvent(event)} />
+                    <EventCard key={event.id} event={event} onClick={() => handleEventClick(event)} />
                   ))}
                 </div>
               )}

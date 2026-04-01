@@ -36,7 +36,12 @@ const Auth = () => {
   const { user } = useAuth();
 
   const claimProfileId = searchParams.get("claim");
-  const redirectTo = claimProfileId ? `/profile/${claimProfileId}?showClaim=true` : (searchParams.get("redirect") || "/circle");
+  const eventId = searchParams.get("event");
+  const redirectTo = claimProfileId 
+    ? `/profile/${claimProfileId}?showClaim=true` 
+    : eventId 
+      ? `/event/${eventId}` 
+      : (searchParams.get("redirect") || "/circle");
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 

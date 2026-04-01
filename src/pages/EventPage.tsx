@@ -273,15 +273,15 @@ const EventPage = () => {
 
             {/* Countdown */}
             {!isPast && !isCancelled && diff > 0 && (
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="text-center px-4 py-2 rounded-lg bg-primary/10">
-                  <p className="text-2xl font-bold text-primary">{daysUntil}</p>
-                  <p className="text-xs text-muted-foreground uppercase">Days</p>
+              <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="text-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary/10">
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{daysUntil}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">Days</p>
                 </div>
-                <span className="text-2xl text-muted-foreground">:</span>
-                <div className="text-center px-4 py-2 rounded-lg bg-primary/10">
-                  <p className="text-2xl font-bold text-primary">{hoursUntil}</p>
-                  <p className="text-xs text-muted-foreground uppercase">Hours</p>
+                <span className="text-xl sm:text-2xl text-muted-foreground">:</span>
+                <div className="text-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary/10">
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{hoursUntil}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">Hours</p>
                 </div>
               </div>
             )}

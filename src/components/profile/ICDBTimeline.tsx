@@ -476,9 +476,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
             return (
               <div
                 key={credit.id}
-                className="rounded-xl border bg-card overflow-hidden hover:border-primary/30 transition-all group"
+                className="rounded-xl border border-border/60 bg-card overflow-hidden hover:border-primary/20 hover:shadow-card transition-all group"
               >
-                {/* Visual thumbnail header — only for video/image credits with thumbnails */}
+                {/* Visual thumbnail header */}
                 {thumbnail && mediaType !== 'audio' && (
                   <div
                     className="relative aspect-video bg-muted cursor-pointer"
@@ -509,12 +509,12 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                 )}
 
                 {/* Content */}
-                <div className="p-3 space-y-1.5">
+                <div className="p-3 space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
                       {!thumbnail && (
-                        <div className="shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
-                          <Icon className="h-4.5 w-4.5 text-muted-foreground" />
+                        <div className="shrink-0 w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center">
+                          <Icon className="h-4.5 w-4.5 text-primary/70" />
                         </div>
                       )}
                       <div className="min-w-0">
@@ -525,9 +525,15 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                         </p>
                       </div>
                     </div>
-                    {/* Show verification badge inline when no thumbnail */}
                     {!thumbnail && getVerificationBadge(credit)}
                   </div>
+
+                  {/* Client brand */}
+                  {credit.client_brand && (
+                    <p className="text-[11px] text-muted-foreground font-medium">
+                      for {credit.client_brand}
+                    </p>
+                  )}
 
                   {/* Platform + location row for non-thumbnail cards */}
                   {!thumbnail && credit.platform && (
@@ -548,26 +554,26 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                     <p className="text-xs text-muted-foreground line-clamp-2">{credit.description}</p>
                   )}
 
-                  {/* Inline audio embed (Spotify/SoundCloud) */}
+                  {/* Inline audio embed */}
                   {hasEmbed && mediaType === 'audio' && renderInlineEmbed(credit)}
 
-                  {/* Collaborators */}
+                  {/* Collaborators — social proof */}
                   {collabs && collabs.length > 0 && (
-                    <div className="flex items-center gap-1 pt-1">
+                    <div className="flex items-center gap-1.5 pt-1 border-t border-border/40">
                       <div className="flex -space-x-1.5">
                         {collabs.slice(0, 4).map(c => (
                           <Avatar
                             key={c.user_id}
-                            className="h-5 w-5 border border-background cursor-pointer"
+                            className="h-5 w-5 border-2 border-card cursor-pointer"
                             onClick={() => navigate(`/profile/${c.user_id}`)}
                           >
                             <AvatarImage src={c.avatar_url || ''} />
-                            <AvatarFallback className="text-[8px]">{c.full_name?.[0]}</AvatarFallback>
+                            <AvatarFallback className="text-[8px] bg-muted">{c.full_name?.[0]}</AvatarFallback>
                           </Avatar>
                         ))}
                       </div>
                       <span className="text-[10px] text-muted-foreground">
-                        {collabs.length} collaborator{collabs.length !== 1 ? 's' : ''}
+                        {collabs.length > 1 ? `${collabs.length} worked on this` : 'Collaborated on ThriveIN'}
                       </span>
                     </div>
                   )}

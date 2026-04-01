@@ -402,9 +402,9 @@ export default function Admin() {
             </Card>
 
             {/* AI Discovery Agent Card */}
-            <Card className="border-purple-500/30 bg-purple-500/5">
+            <Card className="border-indigo-600/30 bg-indigo-600/5">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-purple-600">
+                <CardTitle className="flex items-center gap-2 text-indigo-700">
                   <Bot className="h-5 w-5" />
                   AI Creative Discovery Agent
                 </CardTitle>
@@ -418,7 +418,7 @@ export default function Admin() {
                     onClick={() => runAIDiscovery(10)} 
                     disabled={runningDiscovery}
                     variant="outline"
-                    className="border-purple-500/50 hover:bg-purple-500/10"
+                    className="border-indigo-600/50 hover:bg-indigo-600/10"
                   >
                     {runningDiscovery ? (
                       <>
@@ -435,7 +435,7 @@ export default function Admin() {
                   <Button 
                     onClick={() => runAIDiscovery(20)} 
                     disabled={runningDiscovery}
-                    className="bg-purple-600 hover:bg-purple-700"
+                    className="bg-indigo-700 hover:bg-indigo-800"
                   >
                     {runningDiscovery ? (
                       <>
@@ -453,7 +453,7 @@ export default function Admin() {
                     onClick={() => runAIDiscovery(50)} 
                     disabled={runningDiscovery}
                     variant="outline"
-                    className="border-purple-500/50 hover:bg-purple-500/10"
+                    className="border-indigo-600/50 hover:bg-indigo-600/10"
                   >
                     {runningDiscovery ? (
                       <>
@@ -484,8 +484,8 @@ export default function Admin() {
                       <div className="text-2xl font-bold">{discoverySummary.discovered}</div>
                       <div className="text-xs text-muted-foreground">Discovered</div>
                     </div>
-                    <div className="bg-purple-500/10 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-purple-600">{discoverySummary.processed}</div>
+                    <div className="bg-indigo-600/10 p-3 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-indigo-700">{discoverySummary.processed}</div>
                       <div className="text-xs text-muted-foreground">Processed</div>
                     </div>
                     <div className="bg-green-500/10 p-3 rounded-lg text-center">
@@ -535,7 +535,7 @@ export default function Admin() {
                           </div>
                           <div className="flex items-center gap-2">
                             {result.enriched && (
-                              <Badge variant="secondary" className="text-xs bg-purple-500/20">
+                              <Badge variant="secondary" className="text-xs bg-indigo-600/20">
                                 <Sparkles className="h-3 w-3 mr-1" />
                                 Enriched
                               </Badge>

@@ -274,7 +274,7 @@ const ViewProfile = () => {
     if (!profile?.verification_status || profile.verification_status !== 'verified') return null;
     
     return (
-      <Badge className="gap-1.5 bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25">
+      <Badge className="gap-1.5 bg-gradient-to-r from-primary via-indigo-700 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25">
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -351,7 +351,7 @@ const ViewProfile = () => {
 
           {/* Match Celebration Banner */}
           {(isMatched || isFromMatch) && (
-            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 border-primary/20">
+            <Card className="mb-6 bg-gradient-to-r from-primary/10 via-indigo-600/10 to-indigo-500/10 border-primary/20">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-primary/20">

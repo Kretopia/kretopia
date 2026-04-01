@@ -15,7 +15,7 @@ import { formatDistanceToNow } from "date-fns";
 const CADENCE_CONFIG = {
   daily: { label: "Daily", icon: Timer, color: "text-orange-500", bg: "bg-orange-500/10", xp: 100 },
   "48hr": { label: "48hr", icon: Zap, color: "text-blue-500", bg: "bg-blue-500/10", xp: 200 },
-  weekly: { label: "Weekly", icon: Trophy, color: "text-purple-500", bg: "bg-purple-500/10", xp: 500 },
+  weekly: { label: "Weekly", icon: Trophy, color: "text-indigo-600", bg: "bg-indigo-600/10", xp: 500 },
   special: { label: "Special", icon: Sparkles, color: "text-amber-500", bg: "bg-amber-500/10", xp: 1000 },
 } as const;
 

@@ -21,8 +21,8 @@ const FINANCE_FEATURES = [
     icon: PieChart,
     title: "P&L Dashboard",
     description: "Real-time KPIs, spending pie charts, monthly revenue comparisons & exportable reports.",
-    color: "text-purple-500",
-    bg: "bg-purple-500/10",
+    color: "text-indigo-600",
+    bg: "bg-indigo-600/10",
   },
   {
     icon: Bot,

@@ -22,7 +22,7 @@ const PLATFORM_STYLES: Record<string, { bg: string; text: string; icon: string }
   vimeo: { bg: 'bg-blue-500', text: 'text-white', icon: '🎬' },
   soundcloud: { bg: 'bg-orange-500', text: 'text-white', icon: '🔊' },
   tiktok: { bg: 'bg-black', text: 'text-white', icon: '🎵' },
-  instagram: { bg: 'bg-gradient-to-r from-purple-500 to-pink-500', text: 'text-white', icon: '📸' },
+  instagram: { bg: 'bg-gradient-to-r from-indigo-600 to-indigo-500', text: 'text-white', icon: '📸' },
   behance: { bg: 'bg-blue-600', text: 'text-white', icon: '🎨' },
 };
 
@@ -327,7 +327,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                       <span className="text-xs bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full">Spotify</span>
                       <span className="text-xs bg-orange-500/10 text-orange-600 px-2 py-0.5 rounded-full">SoundCloud</span>
                       <span className="text-xs bg-red-500/10 text-red-600 px-2 py-0.5 rounded-full">YouTube</span>
-                      <span className="text-xs bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full">Vimeo</span>
+                      <span className="text-xs bg-indigo-600/10 text-indigo-700 px-2 py-0.5 rounded-full">Vimeo</span>
                     </div>
                     
                     {/* Link Input */}

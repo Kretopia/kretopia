@@ -837,7 +837,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           
           <Button
             size="lg"
-            className="h-16 w-16 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg"
+            className="h-16 w-16 rounded-full bg-gradient-to-r from-indigo-500 to-rose-500 hover:from-indigo-600 hover:to-rose-600 shadow-lg"
             onClick={handleLike}
             disabled={actionLoading}
           >

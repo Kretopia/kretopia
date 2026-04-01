@@ -48,7 +48,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; bgColor: strin
   gig: { label: "Quick Gig", color: "text-yellow-600", bgColor: "bg-yellow-500/10 border-yellow-500/20", icon: Zap },
   project: { label: "Project", color: "text-cyan-600", bgColor: "bg-cyan-500/10 border-cyan-500/20", icon: Target },
   internship: { label: "Internship", color: "text-orange-600", bgColor: "bg-orange-500/10 border-orange-500/20", icon: GraduationCap },
-  barter: { label: "Barter", color: "text-purple-600", bgColor: "bg-purple-500/10 border-purple-500/20", icon: ArrowRightLeft },
+  barter: { label: "Barter", color: "text-indigo-700", bgColor: "bg-indigo-600/10 border-indigo-600/20", icon: ArrowRightLeft },
 };
 
 interface GigCardProps {
@@ -66,21 +66,21 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
   return (
     <Card
       className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer group ${
-        isBarter ? "border-purple-500/20" : ""
+        isBarter ? "border-indigo-600/20" : ""
       }`}
       onClick={() => navigate(`/opportunity/${opp.id}`)}
     >
       <CardContent className="p-0">
         {/* Barter Exchange Banner */}
         {isBarter && (opp.barter_offering || opp.barter_requesting) && (
-          <div className="px-3 py-2 bg-purple-500/5 border-b border-purple-500/10">
+          <div className="px-3 py-2 bg-indigo-600/5 border-b border-indigo-600/10">
             <div className="flex items-center gap-2 text-xs">
-              <Gift className="h-3.5 w-3.5 text-purple-500 shrink-0" />
-              <span className="font-medium text-purple-700 dark:text-purple-300 truncate">
+              <Gift className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+              <span className="font-medium text-indigo-800 dark:text-purple-300 truncate">
                 {opp.barter_offering || "Trade offer"}
               </span>
-              <ArrowRight className="h-3 w-3 text-purple-400 shrink-0" />
-              <span className="text-purple-600 dark:text-purple-400 truncate">
+              <ArrowRight className="h-3 w-3 text-indigo-500 shrink-0" />
+              <span className="text-indigo-700 dark:text-indigo-500 truncate">
                 {opp.barter_requesting || "Content needed"}
               </span>
             </div>
@@ -118,9 +118,9 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
               </div>
             ) : (
               <div className={`shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center ${
-                isBarter ? "bg-purple-500/10" : "bg-muted"
+                isBarter ? "bg-indigo-600/10" : "bg-muted"
               }`}>
-                <TypeIcon className={`h-5 w-5 ${isBarter ? "text-purple-500" : "text-muted-foreground"}`} />
+                <TypeIcon className={`h-5 w-5 ${isBarter ? "text-indigo-600" : "text-muted-foreground"}`} />
               </div>
             )}
             <div className="flex-1 min-w-0">

@@ -64,7 +64,7 @@ const PLATFORMS = [
     id: 'instagram',
     name: 'Instagram',
     icon: Instagram,
-    color: 'bg-gradient-to-r from-purple-500 to-pink-500',
+    color: 'bg-gradient-to-r from-indigo-600 to-indigo-500',
     description: 'Connect to verify follower count',
     requiresOAuth: true,
   },

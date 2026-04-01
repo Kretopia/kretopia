@@ -31,7 +31,7 @@ interface FeedbackItem {
 const categoryConfig: Record<string, { icon: typeof Bug; label: string; color: string }> = {
   bug: { icon: Bug, label: "Bug", color: "bg-red-500/10 text-red-500" },
   feature: { icon: Lightbulb, label: "Feature", color: "bg-blue-500/10 text-blue-500" },
-  ui: { icon: Palette, label: "UI/UX", color: "bg-purple-500/10 text-purple-500" },
+  ui: { icon: Palette, label: "UI/UX", color: "bg-indigo-600/10 text-indigo-600" },
   general: { icon: MessageCircle, label: "General", color: "bg-muted text-muted-foreground" },
 };
 

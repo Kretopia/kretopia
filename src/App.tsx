@@ -215,10 +215,10 @@ const AppContent = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             
-            {/* Core Feature Pages - Only 4 Active */}
-            <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+            {/* Core Feature Pages - Public browsable, actions gated */}
+            <Route path="/circle" element={<Circle />} />
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
-            <Route path="/circles" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
+            <Route path="/circles" element={<CirclesPage />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}

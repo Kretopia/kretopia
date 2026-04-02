@@ -57,6 +57,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
 
   const config = location ? (TYPE_CONFIG[location.location_type] || TYPE_CONFIG.shoot_spot) : TYPE_CONFIG.shoot_spot;
 

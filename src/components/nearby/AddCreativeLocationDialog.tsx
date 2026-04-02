@@ -45,6 +45,7 @@ export function AddCreativeLocationDialog({
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const { data: subcategories = [] } = useLocationCategories(locationType);
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

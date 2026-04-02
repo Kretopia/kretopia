@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2, Bookmark, BookmarkCheck, Headphones, ShoppingBag, ExternalLink } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
 
 interface LocationDetailDialogProps {

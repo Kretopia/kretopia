@@ -252,10 +252,10 @@ const AppContent = () => {
             <Route path="/outreach" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
             <Route path="/thrive-ai" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
             
-            {/* Nearby Creators */}
-            <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />
+            {/* Public Browsable Routes */}
+            <Route path="/nearby" element={<NearbyCreators />} />
             <Route path="/events" element={<Navigate to="/scene" replace />} />
-            <Route path="/scene" element={<ProtectedRoute><Scene /></ProtectedRoute>} />
+            <Route path="/scene" element={<Scene />} />
             
             {/* Public Magazine Article - SEO accessible */}
             <Route path="/magazine/:slug" element={<MagazineArticlePage />} />

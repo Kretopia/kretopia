@@ -1516,6 +1516,7 @@ export type Database = {
           average_rating: number | null
           category: string | null
           city: string | null
+          claimed_by_user_id: string | null
           contact_info: string | null
           country: string | null
           cover_image_url: string | null
@@ -1544,6 +1545,7 @@ export type Database = {
           average_rating?: number | null
           category?: string | null
           city?: string | null
+          claimed_by_user_id?: string | null
           contact_info?: string | null
           country?: string | null
           cover_image_url?: string | null
@@ -1572,6 +1574,7 @@ export type Database = {
           average_rating?: number | null
           category?: string | null
           city?: string | null
+          claimed_by_user_id?: string | null
           contact_info?: string | null
           country?: string | null
           cover_image_url?: string | null
@@ -3260,6 +3263,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      location_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          location_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_bookmarks_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "creative_locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       location_reviews: {
         Row: {

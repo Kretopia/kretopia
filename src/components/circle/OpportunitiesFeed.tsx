@@ -44,12 +44,12 @@ interface Opportunity {
 
 const TYPE_FILTERS = [
   { value: "all", label: "All", icon: Sparkles },
-  { value: "barter", label: "🔄 Barter", icon: ArrowRightLeft },
-  { value: "job", label: "💼 Paid", icon: Briefcase },
-  { value: "collab", label: "🤝 Collabs", icon: Handshake },
-  { value: "gig", label: "⚡ Gigs", icon: Zap },
-  { value: "project", label: "🎯 Projects", icon: Target },
-  { value: "internship", label: "🎓 Learn", icon: GraduationCap },
+  { value: "barter", label: "Barter", icon: ArrowRightLeft },
+  { value: "job", label: "Paid", icon: Briefcase },
+  { value: "collab", label: "Collabs", icon: Handshake },
+  { value: "gig", label: "Gigs", icon: Zap },
+  { value: "project", label: "Projects", icon: Target },
+  { value: "internship", label: "Learn", icon: GraduationCap },
 ] as const;
 
 const SKILLS_OPTIONS = [

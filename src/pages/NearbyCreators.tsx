@@ -654,9 +654,9 @@ const NearbyCreators = () => {
           <div className={viewMode === 'map' ? 'lg:col-span-2' : 'lg:col-span-3'}>
             {viewMode === 'map' ? (
               <UnifiedNearbyMap
-                creators={creators}
-                sessions={sessions}
-                locations={locations}
+                creators={filteredCreators}
+                sessions={filteredSessions}
+                locations={filteredLocations}
                 userLocation={userLocation}
                 selectedItem={selectedItem}
                 onSelectCreator={(creator) => {

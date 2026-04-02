@@ -155,7 +155,7 @@ const DefaultRoute = () => {
 // Catch-all: authenticated users go to mode-aware home
 const CatchAllRedirect = () => {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/scene" replace />;
   let mode = "create";
   try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}
   return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;

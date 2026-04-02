@@ -482,6 +482,11 @@ const NearbyCreators = () => {
             spaces: locations.filter(l => l.location_type === 'creative_space').length,
             spots: locations.filter(l => l.location_type === 'shoot_spot').length,
             venues: locations.filter(l => l.location_type === 'venue').length,
+            music_stores: locations.filter(l => l.location_type === 'music_store').length,
+            art_supplies: locations.filter(l => l.location_type === 'art_supply').length,
+            rental_houses: locations.filter(l => l.location_type === 'rental_house').length,
+            photo_labs: locations.filter(l => l.location_type === 'photo_lab').length,
+            bookmarked: locations.filter(l => bookmarkedIds.has(l.id)).length,
           }}
         />
       )}

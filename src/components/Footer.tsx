@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import { Instagram } from "lucide-react";
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,9 +11,9 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-3">
-            <h3 className="font-bold text-lg">ThriveIN</h3>
+            <h3 className="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ThriveIN</h3>
             <p className="text-sm text-muted-foreground">
-              The ultimate platform for creators and content creators to connect, collaborate, and thrive.
+              The ultimate platform for creators to connect, collaborate, and thrive.
             </p>
           </div>
 
@@ -88,16 +89,15 @@ export const Footer = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <p>© {currentYear} ThriveIN. All rights reserved.</p>
-          <div className="flex gap-4">
-            <a 
-              href="https://instagram.com/thrivein.io" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              Instagram
-            </a>
-          </div>
+          <a 
+            href="https://instagram.com/thrivein.io" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+          >
+            <Instagram className="h-4 w-4" />
+            Instagram
+          </a>
         </div>
       </div>
     </footer>

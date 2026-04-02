@@ -24,7 +24,7 @@ interface OnboardingStep {
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "welcome",
-    title: "Welcome to ThriveIN! 🎉",
+    title: "Welcome to ThriveIN",
     description: "Your creative network awaits. Let's get you set up in under 2 minutes.",
     icon: <Sparkles className="h-6 w-6" />,
     route: "/circle",
@@ -77,7 +77,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     id: "complete",
-    title: "You're All Set! ✨",
+    title: "You're All Set!",
     description: "Start connecting, collaborating, and creating amazing things together.",
     icon: <CheckCircle2 className="h-6 w-6" />,
     route: "/circle",

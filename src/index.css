@@ -49,6 +49,7 @@ All colors MUST be HSL.
     --gradient-subtle: linear-gradient(180deg, hsl(235 65% 52% / 0.04), hsl(250 55% 62% / 0.04));
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.92), hsl(0 0% 100% / 0.75));
     --gradient-gold: linear-gradient(135deg, hsl(45 90% 55%), hsl(35 85% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(235 65% 52%), hsl(250 55% 58%), hsl(45 90% 55%));
 
     /* Refined shadow system */
     --shadow-xs: 0 1px 2px hsl(230 25% 10% / 0.04);

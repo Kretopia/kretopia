@@ -302,15 +302,15 @@ const Auth = () => {
         <div className="w-full max-w-md">
           <div className="mb-6 sm:mb-8 text-center">
             <div className="lg:hidden mb-4">
-              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                thriveIN
+              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ThriveIN
               </span>
-              <span className="ml-2 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+              <span className="ml-2 rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
                 Beta
               </span>
             </div>
             <h1 className="mb-2 text-2xl sm:text-3xl font-bold">
-              {isPasswordReset ? "Reset Your Password" : "Welcome to thriveIN"}
+              {isPasswordReset ? "Reset Your Password" : "Welcome to ThriveIN"}
             </h1>
             <p className="text-sm text-muted-foreground">
               {isPasswordReset ? "Enter your new password below" : "Where creators find work — and get paid"}

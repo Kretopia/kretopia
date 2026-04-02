@@ -119,15 +119,15 @@ export const ProfessionalProfileShowcase = () => {
             <h3 className="text-2xl font-bold mb-6">Why This Changes Everything</h3>
             <div className="space-y-4">
               <Card className="p-4 bg-primary/5 border-primary/20">
-                <p className="font-semibold mb-2">🎯 No More "Link in Bio" Chaos</p>
+                <p className="font-semibold mb-2">No More "Link in Bio" Chaos</p>
                 <p className="text-sm text-muted-foreground">One professional URL. All your credentials. Actually looks legit when you send it to brands.</p>
               </Card>
               <Card className="p-4 bg-secondary/5 border-secondary/20">
-                <p className="font-semibold mb-2">✅ Verified = Trusted</p>
+                <p className="font-semibold mb-2">Verified = Trusted</p>
                 <p className="text-sm text-muted-foreground">Stats pulled directly from platforms. No fake numbers. Brands know they're working with the real deal.</p>
               </Card>
               <Card className="p-4 bg-accent/5 border-accent/20">
-                <p className="font-semibold mb-2">🚀 Built to Get You Discovered</p>
+                <p className="font-semibold mb-2">Built to Get You Discovered</p>
                 <p className="text-sm text-muted-foreground">AI scans your profile and matches you with relevant brand opportunities automatically.</p>
               </Card>
             </div>

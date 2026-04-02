@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Palette, Brain, MessageSquare, Zap, Crown, Shield, Award, Verified, DollarSign, Sparkles } from "lucide-react";
+import { Palette, Brain, MessageSquare, Shield, Award, Verified, DollarSign, Sparkles, Crown } from "lucide-react";
 
 export const WhyCreatorsChooseSection = () => {
   const features = [
@@ -42,7 +42,7 @@ export const WhyCreatorsChooseSection = () => {
         <div className="text-center mb-12">
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             Why Creators Choose{" "}
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               ThriveIN
             </span>
           </h2>
@@ -76,20 +76,20 @@ export const WhyCreatorsChooseSection = () => {
             <h3 className="mb-2 text-xl sm:text-2xl font-bold text-center">Industry-Standard Verification</h3>
             <p className="mb-6 text-center text-sm text-muted-foreground">Three levels of creator credibility</p>
             <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
-              <div className="p-3 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:scale-105 transition-transform">
-                <Verified className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-blue-500 mb-2" />
-                <div className="font-semibold text-blue-500 text-sm sm:text-base">Verified</div>
+              <div className="p-3 sm:p-4 rounded-xl bg-primary/5 border border-primary/15 hover:scale-105 transition-transform">
+                <Verified className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
+                <div className="font-semibold text-primary text-sm sm:text-base">Verified</div>
                 <p className="text-xs text-muted-foreground mt-1">Profile complete</p>
               </div>
               <div className="p-3 sm:p-4 rounded-xl bg-primary/10 border border-primary/20 hover:scale-105 transition-transform">
                 <Award className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
                 <div className="font-semibold text-primary text-sm sm:text-base">Industry</div>
-                <p className="text-xs text-muted-foreground mt-1">IMDB • Spotify</p>
+                <p className="text-xs text-muted-foreground mt-1">IMDb · Spotify</p>
               </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 hover:scale-105 transition-transform">
-                <Crown className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-yellow-500 mb-2" />
-                <div className="font-semibold text-yellow-500 text-sm sm:text-base">Elite</div>
-                <p className="text-xs text-muted-foreground mt-1">Grammy • Oscar</p>
+              <div className="p-3 sm:p-4 rounded-xl bg-accent/10 border border-accent/20 hover:scale-105 transition-transform">
+                <Crown className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-accent mb-2" />
+                <div className="font-semibold text-accent-foreground text-sm sm:text-base">Elite</div>
+                <p className="text-xs text-muted-foreground mt-1">Grammy · Oscar</p>
               </div>
             </div>
           </div>

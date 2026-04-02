@@ -110,7 +110,7 @@ export function AddCreativeLocationDialog({
       
       if (error) throw error;
       
-      toast({ title: "Spot pinned! 📍", description: `${name} has been added to the Creative Atlas.` });
+      toast({ title: "Spot pinned! 📍", description: `${name} has been added to Nearby.` });
       onCreated();
       onOpenChange(false);
       resetForm();

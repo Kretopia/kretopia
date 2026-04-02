@@ -360,7 +360,28 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             <p className="text-sm text-muted-foreground leading-relaxed">{location.description}</p>
           )}
 
-          {/* Rental Info */}
+          {/* Hours of Operation */}
+          {(location as any).hours_of_operation && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+                <Clock className="h-3 w-3" /> Hours
+              </p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
+                  const hours = (location as any).hours_of_operation?.[day];
+                  return (
+                    <div key={day} className="flex justify-between">
+                      <span className="text-muted-foreground capitalize">{day}</span>
+                      <span className={hours === 'Closed' ? 'text-destructive' : 'text-foreground font-medium'}>
+                        {hours || 'N/A'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {location.is_rentable && location.price_per_hour && (
             <Card className="border-emerald-500/20 bg-emerald-500/5">
               <CardContent className="p-3 flex items-center justify-between">

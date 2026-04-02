@@ -15,6 +15,8 @@ interface LocationDetailDialogProps {
   location: CreativeLocation | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isBookmarked?: boolean;
+  onToggleBookmark?: () => void;
 }
 
 interface Review {

@@ -320,12 +320,12 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             )}
           </div>
 
-          {/* Brand profile link */}
-          {location.claimed_by_user_id && (
+          {/* Brand profile link OR Claim button */}
+          {location.claimed_by_user_id ? (
             <Card className="border-primary/20 bg-primary/5">
               <CardContent className="p-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-primary" />
+                  <BadgeCheck className="h-4 w-4 text-primary" />
                   <div>
                     <p className="text-sm font-medium">Verified Business</p>
                     <p className="text-xs text-muted-foreground">This spot is managed by a ThriveIN business</p>
@@ -339,6 +339,14 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                 </Button>
               </CardContent>
             </Card>
+          ) : user && (
+            <button
+              onClick={() => setShowClaimDialog(true)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-primary/30 text-primary text-sm font-medium hover:bg-primary/5 transition-colors"
+            >
+              <BadgeCheck className="h-4 w-4" />
+              Own this spot? Claim it
+            </button>
           )}
 
           {/* Description */}

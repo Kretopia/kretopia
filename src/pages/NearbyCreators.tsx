@@ -24,6 +24,7 @@ import { LocationDetailDialog } from "@/components/nearby/LocationDetailDialog";
 import { AtlasFilterTabs, type AtlasFilter } from "@/components/nearby/AtlasFilterTabs";
 import { useLocationBookmarks } from "@/hooks/useLocationBookmarks";
 import { AtlasSearchBar, defaultAtlasFilters, type AtlasSearchFilters, type SortOption } from "@/components/nearby/AtlasSearchBar";
+import { SeedLocationsDialog } from "@/components/nearby/SeedLocationsDialog";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 

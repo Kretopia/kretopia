@@ -475,7 +475,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         }
 
         if (reasons.length === 0) {
-          reasons.push('✨ Active creator on ThriveIN');
+          reasons.push('Active creator on ThriveIN');
         }
 
         return {

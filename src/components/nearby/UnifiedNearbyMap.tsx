@@ -313,17 +313,17 @@ export const UnifiedNearbyMap = ({
       
       {/* Counts */}
       <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
-        <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
-          {creators.length} creators
+        <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-primary/60"></span>
+          <span className="text-foreground">{creators.length} creators</span>
         </div>
-        <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-          {sessions.length} sessions
+        <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-accent"></span>
+          <span className="text-foreground">{sessions.length} sessions</span>
         </div>
         {locations.length > 0 && (
-          <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5">
-            📍 {locations.length} spots
+          <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
+            📍 <span className="text-foreground">{locations.length} spots</span>
           </div>
         )}
       </div>

@@ -208,7 +208,41 @@ export function AddCreativeLocationDialog({
             />
           </div>
 
-          {/* Category */}
+          {/* Photos */}
+          <div>
+            <Label className="text-sm font-medium">Photos (up to 5)</Label>
+            <div className="mt-2">
+              {imagePreviews.length > 0 && (
+                <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
+                  {imagePreviews.map((url, i) => (
+                    <div key={i} className="relative shrink-0 h-20 w-20 rounded-lg overflow-hidden border border-border">
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      <button
+                        onClick={() => removeImage(i)}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center text-xs"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {imageFiles.length < 5 && (
+                <label className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+                  <Camera className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Add photos</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
           <div>
             <Label className="text-sm font-medium">Category</Label>
             <Select value={category} onValueChange={setCategory}>

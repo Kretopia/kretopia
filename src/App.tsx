@@ -134,7 +134,8 @@ const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
   
-  if (!user) return <Landing />;
+  // Guests go straight to Scene (public browsing)
+  if (!user) return <Navigate to="/scene" replace />;
   if (onboardingLoading) return <LoadingFallback />;
   if (!isComplete) return <Navigate to="/onboarding" replace />;
   

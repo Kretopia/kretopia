@@ -963,7 +963,17 @@ const NearbyCreators = () => {
         defaultLocation={userLocation || undefined}
       />
 
-      {/* Session Detail Dialog */}
+      {/* AI Seed Locations Dialog */}
+      {userLocation && (
+        <SeedLocationsDialog
+          open={showSeedDialog}
+          onOpenChange={setShowSeedDialog}
+          userLocation={userLocation}
+          onSeeded={fetchNearbyData}
+        />
+      )}
+
+
       <SessionDetailDialog
         session={selectedSession}
         open={!!selectedSession}

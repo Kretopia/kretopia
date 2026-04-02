@@ -503,6 +503,16 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             )}
           </div>
         </div>
+
+        {/* Claim Dialog */}
+        {location && (
+          <ClaimLocationDialog
+            open={showClaimDialog}
+            onOpenChange={setShowClaimDialog}
+            locationId={location.id}
+            locationName={location.name}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

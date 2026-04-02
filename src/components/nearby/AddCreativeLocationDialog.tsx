@@ -249,7 +249,16 @@ export function AddCreativeLocationDialog({
 
           {subcategories.length > 0 && (
             <div>
-              <Label className="text-sm font-medium">Subcategory</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Subcategory</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowSuggestCategory(true)}
+                  className="text-[10px] text-primary hover:underline"
+                >
+                  Missing one? Suggest it
+                </button>
+              </div>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Select a subcategory" /></SelectTrigger>
                 <SelectContent>

@@ -246,15 +246,21 @@ export function AddCreativeLocationDialog({
             </div>
           </div>
 
-          <div>
-            <Label className="text-sm font-medium">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+          {subcategories.length > 0 && (
+            <div>
+              <Label className="text-sm font-medium">Subcategory</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Select a subcategory" /></SelectTrigger>
+                <SelectContent>
+                  {subcategories.map(c => (
+                    <SelectItem key={c.slug} value={c.slug}>
+                      {c.emoji} {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Address & City */}
           <div className="grid grid-cols-2 gap-3">

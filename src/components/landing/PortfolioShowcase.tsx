@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -34,13 +34,11 @@ export const PortfolioShowcase = () => {
           return;
         }
 
-        // Filter out audio files used as thumbnails
         const valid = data.filter((d) => {
           const t = d.thumbnail_url || "";
           return !t.endsWith(".wav") && !t.endsWith(".mp3") && !t.endsWith(".ogg");
         });
 
-        // Shuffle to mix creators
         const shuffled = valid
           .map((d) => ({
             id: d.id,
@@ -64,7 +62,6 @@ export const PortfolioShowcase = () => {
 
   if (loading || items.length < 2) return null;
 
-  // Exactly 2x for seamless -50% translateX loop
   const scrollItems = [...items, ...items];
 
   return (
@@ -75,8 +72,8 @@ export const PortfolioShowcase = () => {
         </p>
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
           See what's being built on{" "}
-          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            thriveIN
+          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            ThriveIN
           </span>
         </h2>
         <p className="mt-3 text-muted-foreground max-w-lg mx-auto text-sm sm:text-base">
@@ -95,7 +92,7 @@ export const PortfolioShowcase = () => {
               key={`${item.id}-${i}`}
               className="flex-shrink-0 w-64 sm:w-72 group"
             >
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/50 bg-muted shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border/50 bg-muted shadow-sm transition-all duration-300 group-hover:shadow-card group-hover:-translate-y-1">
                 <img
                   src={item.thumbnail_url}
                   alt={item.title}
@@ -103,13 +100,13 @@ export const PortfolioShowcase = () => {
                   loading="lazy"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
-                    // Hide just this card via DOM, no state update
                     const card = (e.target as HTMLElement).closest('[data-card]');
                     if (card) (card as HTMLElement).style.display = 'none';
                   }}
                 />
                 {item.media_type === "video" && (
-                  <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-full backdrop-blur-sm">
+                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-foreground/60 text-background text-[10px] font-bold uppercase px-2 py-0.5 rounded-full backdrop-blur-sm">
+                    <Play className="h-2.5 w-2.5 fill-current" />
                     Video
                   </div>
                 )}
@@ -124,7 +121,7 @@ export const PortfolioShowcase = () => {
 
       <div className="text-center mt-10">
         <Link to="/auth">
-          <Button variant="outline" size="lg" className="group">
+          <Button variant="outline" size="lg" className="group border-primary/30 hover:border-primary/60">
             Join & showcase your work
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Button>

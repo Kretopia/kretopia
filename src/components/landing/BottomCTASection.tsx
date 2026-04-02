@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Globe, MapPin } from "lucide-react";
 
 const TRINIDAD_CONTENT = {
-  badge: "🇹🇹 Made for T&T Creatives",
+  badge: "Made for T&T Creatives",
   heading: "Link Up. Create. Get Paid.",
   subheading:
     "Whether yuh in Carnival, Soca, Film, Fashion, or Design — find verified creatives right here in T&T. Manage projects, send invoices, and grow your ting — all in one spot.",
-  tagline: "Free to start • Pro when you ready • No credit card needed",
+  tagline: "Free to start · Pro when you ready · No credit card needed",
+  isTT: true,
 };
 
 const DEFAULT_CONTENT = {
@@ -15,11 +16,11 @@ const DEFAULT_CONTENT = {
   heading: "Ready to Level Up?",
   subheading:
     "Build your verified profile, get AI-matched with collaborators, manage projects, and grow your creative business — all in one place.",
-  tagline: "Free to start • Pro when you're ready • No credit card required",
+  tagline: "Free to start · Pro when you're ready · No credit card required",
+  isTT: false,
 };
 
 export const BottomCTASection = () => {
-  // Detect TT users via Intl timezone as a lightweight, no-permission check
   const isTrinidad = (() => {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -39,8 +40,8 @@ export const BottomCTASection = () => {
   return (
     <section className="px-4 sm:px-6 py-16 sm:py-20 md:py-24 bg-muted/30">
       <div className="container mx-auto max-w-4xl">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-secondary to-accent p-8 sm:p-12 text-center shadow-card">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(0_0%_100%/0.1),transparent_50%)]" />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary/90 to-accent p-8 sm:p-12 text-center shadow-lg">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,hsl(0_0%_100%/0.12),transparent_50%)]" />
           
           <div className="relative text-primary-foreground">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm">

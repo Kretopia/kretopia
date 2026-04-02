@@ -77,7 +77,7 @@ const DEMO_CARDS: ForYouCreator[] = [
     location: 'Seminyak, Bali',
     collab_intent: 'open_to_trade',
     match_score: 78,
-    match_reasons: ['🔄 Open to trade collaborations', '✨ Fellow creative in Bali'],
+    match_reasons: ['Open to trade collaborations', 'Fellow creative in Bali'],
   },
 ];
 
@@ -453,10 +453,10 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           const complementary = complementaryPairs[currentProfile.role] || [];
           if (complementary.some(role => candidate.role?.includes(role))) {
             score += 15;
-            reasons.push(`🎯 Complementary skill: ${candidate.role}`);
+            reasons.push(`Complementary skill: ${candidate.role}`);
           } else if (candidate.role === currentProfile.role) {
             score += 5;
-            reasons.push(`✨ Fellow ${candidate.role}`);
+            reasons.push(`Fellow ${candidate.role}`);
           }
         }
 
@@ -470,12 +470,12 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           };
           if (intentMatch[currentProfile.collab_intent] === candidate.collab_intent) {
             score += 10;
-            reasons.push('🤝 Matching collaboration goals');
+            reasons.push('Matching collaboration goals');
           }
         }
 
         if (reasons.length === 0) {
-          reasons.push('✨ Active creator on ThriveIN');
+          reasons.push('Active creator on ThriveIN');
         }
 
         return {
@@ -561,11 +561,11 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
   const getCollabIntentLabel = (intent: string | null) => {
     const labels: Record<string, string> = {
-      'looking_to_hire': '💼 Hiring',
-      'available_for_hire': '✋ For Hire',
-      'open_to_trade': '🔄 Trade',
-      'seeking_collaborators': '🤝 Collab',
-      'just_networking': '👋 Networking',
+      'looking_to_hire': 'Hiring',
+      'available_for_hire': 'For Hire',
+      'open_to_trade': 'Trade',
+      'seeking_collaborators': 'Collab',
+      'just_networking': 'Networking',
     };
     return intent ? labels[intent] : null;
   };

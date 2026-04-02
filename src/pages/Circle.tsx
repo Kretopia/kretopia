@@ -150,7 +150,7 @@ export default function Circle() {
       <div className="container mx-auto px-3 sm:px-4 pt-2">
         <PageTip
           id="circle"
-          title="👋 Welcome to Match!"
+          title="Welcome to Match!"
           message="Swipe right on creators you'd like to work with. When both of you swipe right, it's a match — and you can start messaging!"
         />
       </div>

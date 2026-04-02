@@ -277,10 +277,10 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
                       <option value="member">Member</option>
                       <option value="moderator">Moderator</option>
                       <option value="admin">Admin</option>
-                      <option value="mentor">✨ Mentor</option>
-                      <option value="featured">⭐ Featured Creator</option>
-                      <option value="og">🏆 OG Member</option>
-                      <option value="vip">💎 VIP</option>
+                      <option value="mentor">Mentor</option>
+                      <option value="featured">Featured Creator</option>
+                      <option value="og">OG Member</option>
+                      <option value="vip">VIP</option>
                     </select>
                   )}
                   {member.user_id === circle.created_by && (
@@ -316,7 +316,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               </p>
               {welcomeDmEnabled && (
                 <Textarea
-                  placeholder="Hey! Welcome to the circle 👋 Feel free to introduce yourself and share what you're working on!"
+                  placeholder="Hey! Welcome to the circle — feel free to introduce yourself and share what you're working on!"
                   value={welcomeMessage}
                   onChange={e => setWelcomeMessage(e.target.value)}
                   maxLength={500}

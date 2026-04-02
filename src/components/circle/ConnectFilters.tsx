@@ -26,19 +26,19 @@ interface ConnectFiltersProps {
 
 const COLLAB_INTENT_OPTIONS = [
   { value: 'all', label: 'Any Intent' },
-  { value: 'looking_to_hire', label: '💼 Hiring' },
-  { value: 'available_for_hire', label: '✋ Available' },
-  { value: 'open_to_trade', label: '🔄 Open to Trade' },
-  { value: 'seeking_collaborators', label: '🤝 Seeking Collaborators' },
-  { value: 'just_networking', label: '👋 Networking' },
+  { value: 'looking_to_hire', label: 'Hiring' },
+  { value: 'available_for_hire', label: 'Available' },
+  { value: 'open_to_trade', label: 'Open to Trade' },
+  { value: 'seeking_collaborators', label: 'Seeking Collaborators' },
+  { value: 'just_networking', label: 'Networking' },
 ];
 
 const EXPERIENCE_OPTIONS = [
   { value: 'all', label: 'Any Experience' },
-  { value: 'beginner', label: '🌱 Beginner (0-2 years)' },
-  { value: 'intermediate', label: '📈 Intermediate (3-5 years)' },
-  { value: 'experienced', label: '⭐ Experienced (5-10 years)' },
-  { value: 'expert', label: '🏆 Expert (10+ years)' },
+  { value: 'beginner', label: 'Beginner (0-2 years)' },
+  { value: 'intermediate', label: 'Intermediate (3-5 years)' },
+  { value: 'experienced', label: 'Experienced (5-10 years)' },
+  { value: 'expert', label: 'Expert (10+ years)' },
 ];
 
 const FOLLOWER_OPTIONS = [
@@ -270,7 +270,7 @@ export const ConnectFiltersComponent = ({ filters, onFiltersChange, activeFilter
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Experience</label>
                   <div className="h-9 rounded-md border bg-muted/30 flex items-center px-3 text-sm text-muted-foreground">
-                    ⭐ Experienced
+                    Experienced
                   </div>
                 </div>
               </div>

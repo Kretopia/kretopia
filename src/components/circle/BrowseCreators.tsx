@@ -228,11 +228,11 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
 
   const getCollabIntentLabel = (intent: string) => {
     const labels: Record<string, string> = {
-      'looking_to_hire': '💼 Hiring',
-      'available_for_hire': '✋ Available',
-      'open_to_trade': '🔄 Trade',
-      'seeking_collaborators': '🤝 Collaborating',
-      'just_networking': '👋 Networking',
+      'looking_to_hire': 'Hiring',
+      'available_for_hire': 'Available',
+      'open_to_trade': 'Trade',
+      'seeking_collaborators': 'Collaborating',
+      'just_networking': 'Networking',
     };
     return labels[intent] || intent;
   };

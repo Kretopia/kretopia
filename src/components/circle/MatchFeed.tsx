@@ -247,7 +247,7 @@ export const MatchFeed = ({
                   }
                 }}
               >
-                {isPro ? '✨' : <Lock className="h-3.5 w-3.5 mr-1 inline" />} {currentCard.matchScore}%
+                {isPro ? <Sparkles className="h-3.5 w-3.5 mr-1 inline" /> : <Lock className="h-3.5 w-3.5 mr-1 inline" />} {currentCard.matchScore}%
               </Badge>
             )}
           </div>

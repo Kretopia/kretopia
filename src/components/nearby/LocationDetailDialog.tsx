@@ -531,6 +531,13 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                       {review.review_text && (
                         <p className="text-xs text-muted-foreground mt-0.5">{review.review_text}</p>
                       )}
+                      {review.image_urls?.length > 0 && (
+                        <div className="flex gap-1.5 mt-1.5">
+                          {review.image_urls.map((url, i) => (
+                            <img key={i} src={url} alt="" className="h-14 w-14 rounded-md object-cover border border-border" />
+                          ))}
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-[10px] text-muted-foreground/60">
                           {new Date(review.created_at).toLocaleDateString()}

@@ -464,6 +464,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                     rows={2}
                     className="text-sm"
                   />
+                  <ReviewPhotoUpload onPhotosUploaded={setReviewPhotos} existingPhotos={reviewPhotos} />
                   <Button 
                     size="sm" 
                     onClick={handleSubmitReview} 

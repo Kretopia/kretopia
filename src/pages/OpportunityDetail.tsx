@@ -115,13 +115,21 @@ const OpportunityDetail = () => {
       });
   }, [id, user?.id]);
 
-  const handleShare = () => {
-    const path = window.location.pathname;
-    const url = `https://www.thrivein.io${path}`;
-    navigator.clipboard.writeText(url);
+  const handleShare = async () => {
+    const url = `https://www.thrivein.io/opportunity/${id}`;
+    const shareText = `🔥 ${opportunity?.title} — ${opportunity?.type === 'barter' ? 'Barter exchange' : opportunity?.type} gig on ThriveIN!\n\nApply now 👇\n${url}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: opportunity?.title, text: shareText, url });
+        return;
+      } catch {}
+    }
+    
+    navigator.clipboard.writeText(shareText);
     toast({
       title: "Link Copied! 📋",
-      description: "Share this opportunity with others",
+      description: "Share text copied — paste it anywhere!",
     });
   };
 

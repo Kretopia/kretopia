@@ -35,10 +35,10 @@ const COLLAB_INTENT_OPTIONS = [
 
 const EXPERIENCE_OPTIONS = [
   { value: 'all', label: 'Any Experience' },
-  { value: 'beginner', label: '🌱 Beginner (0-2 years)' },
-  { value: 'intermediate', label: '📈 Intermediate (3-5 years)' },
-  { value: 'experienced', label: '⭐ Experienced (5-10 years)' },
-  { value: 'expert', label: '🏆 Expert (10+ years)' },
+  { value: 'beginner', label: 'Beginner (0-2 years)' },
+  { value: 'intermediate', label: 'Intermediate (3-5 years)' },
+  { value: 'experienced', label: 'Experienced (5-10 years)' },
+  { value: 'expert', label: 'Expert (10+ years)' },
 ];
 
 const FOLLOWER_OPTIONS = [

@@ -634,6 +634,39 @@ export type Database = {
           },
         ]
       }
+      category_suggestions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          location_type: string
+          reviewed_at: string | null
+          status: string
+          suggested_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location_type: string
+          reviewed_at?: string | null
+          status?: string
+          suggested_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location_type?: string
+          reviewed_at?: string | null
+          status?: string
+          suggested_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       challenge_entries: {
         Row: {
           challenge_id: string
@@ -3337,6 +3370,56 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "location_categories"
             referencedColumns: ["slug"]
+          },
+        ]
+      }
+      location_claims: {
+        Row: {
+          business_name: string
+          created_at: string
+          id: string
+          location_id: string
+          proof_description: string | null
+          proof_url: string | null
+          reviewed_at: string | null
+          reviewer_notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_name: string
+          created_at?: string
+          id?: string
+          location_id: string
+          proof_description?: string | null
+          proof_url?: string | null
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_name?: string
+          created_at?: string
+          id?: string
+          location_id?: string
+          proof_description?: string | null
+          proof_url?: string | null
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_claims_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "creative_locations"
+            referencedColumns: ["id"]
           },
         ]
       }

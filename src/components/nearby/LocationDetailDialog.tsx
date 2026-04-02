@@ -8,8 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2, Bookmark, BookmarkCheck, Headphones, ShoppingBag, ExternalLink } from "lucide-react";
+import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2, Bookmark, BookmarkCheck, Headphones, ShoppingBag, ExternalLink, BadgeCheck } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
+import { ClaimLocationDialog } from "./ClaimLocationDialog";
 
 interface LocationDetailDialogProps {
   location: CreativeLocation | null;
@@ -53,6 +54,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
   const [hasReviewed, setHasReviewed] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showClaimDialog, setShowClaimDialog] = useState(false);
 
   const config = location ? (TYPE_CONFIG[location.location_type] || TYPE_CONFIG.shoot_spot) : TYPE_CONFIG.shoot_spot;
 
@@ -318,12 +320,12 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             )}
           </div>
 
-          {/* Brand profile link */}
-          {location.claimed_by_user_id && (
+          {/* Brand profile link OR Claim button */}
+          {location.claimed_by_user_id ? (
             <Card className="border-primary/20 bg-primary/5">
               <CardContent className="p-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-primary" />
+                  <BadgeCheck className="h-4 w-4 text-primary" />
                   <div>
                     <p className="text-sm font-medium">Verified Business</p>
                     <p className="text-xs text-muted-foreground">This spot is managed by a ThriveIN business</p>
@@ -337,6 +339,14 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                 </Button>
               </CardContent>
             </Card>
+          ) : user && (
+            <button
+              onClick={() => setShowClaimDialog(true)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-primary/30 text-primary text-sm font-medium hover:bg-primary/5 transition-colors"
+            >
+              <BadgeCheck className="h-4 w-4" />
+              Own this spot? Claim it
+            </button>
           )}
 
           {/* Description */}
@@ -493,6 +503,16 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             )}
           </div>
         </div>
+
+        {/* Claim Dialog */}
+        {location && (
+          <ClaimLocationDialog
+            open={showClaimDialog}
+            onOpenChange={setShowClaimDialog}
+            locationId={location.id}
+            locationName={location.name}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

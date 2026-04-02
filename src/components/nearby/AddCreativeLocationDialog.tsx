@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocationCategories } from "@/hooks/useLocationCategories";
+import { SuggestCategoryDialog } from "./SuggestCategoryDialog";
 import { Loader2, MapPin, Camera, X, DollarSign } from "lucide-react";
 
 interface AddCreativeLocationDialogProps {
@@ -63,7 +64,7 @@ export function AddCreativeLocationDialog({
   const [amenities, setAmenities] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
+  const [showSuggestCategory, setShowSuggestCategory] = useState(false);
   const handleSubmit = async () => {
     if (!user || !name.trim() || !defaultLocation) return;
     
@@ -248,7 +249,16 @@ export function AddCreativeLocationDialog({
 
           {subcategories.length > 0 && (
             <div>
-              <Label className="text-sm font-medium">Subcategory</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Subcategory</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowSuggestCategory(true)}
+                  className="text-[10px] text-primary hover:underline"
+                >
+                  Missing one? Suggest it
+                </button>
+              </div>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Select a subcategory" /></SelectTrigger>
                 <SelectContent>
@@ -372,6 +382,7 @@ export function AddCreativeLocationDialog({
           </Button>
         </div>
       </DialogContent>
+      <SuggestCategoryDialog open={showSuggestCategory} onOpenChange={setShowSuggestCategory} />
     </Dialog>
   );
 }

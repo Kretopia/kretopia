@@ -53,7 +53,7 @@ const Scene = () => {
 
       <div className="min-h-screen bg-background">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
-          <ProfileVisibilityBanner isVisible={visibility.isVisible} missingFields={visibility.missingFields} />
+          {user && <ProfileVisibilityBanner isVisible={visibility.isVisible} missingFields={visibility.missingFields} />}
 
           {/* Header */}
           <div className="mb-3 flex items-start justify-between">
@@ -64,7 +64,7 @@ const Scene = () => {
               </h1>
               <p className="text-xs text-muted-foreground">Events, inspiration & creative culture</p>
             </div>
-            <CrossModeNudge targetMode="work" label="Switch to Work →" targetPath="/desk" />
+            {user && <CrossModeNudge targetMode="work" label="Switch to Work →" targetPath="/desk" />}
           </div>
 
           {/* Live Activity */}

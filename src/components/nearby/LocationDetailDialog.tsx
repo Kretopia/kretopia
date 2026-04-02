@@ -370,11 +370,21 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                     <p className="text-xs text-muted-foreground">Available for rent</p>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="text-xs">
-                  Enquire
+                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setShowBookingDialog(true)}>
+                  <CalendarIcon className="h-3 w-3" />
+                  Book Now
                 </Button>
               </CardContent>
             </Card>
+          )}
+
+          {/* Booking Dialog */}
+          {location.is_rentable && location.price_per_hour && (
+            <LocationBookingDialog
+              location={location}
+              open={showBookingDialog}
+              onOpenChange={setShowBookingDialog}
+            />
           )}
 
           {/* Amenities */}

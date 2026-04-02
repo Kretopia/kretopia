@@ -39,7 +39,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
     if (navigator.share) {
       await navigator.share({
         title: circleTitle,
-        text: `Join "${circleTitle}" on ThriveIN — where creatives connect and collaborate 🚀`,
+        text: `Join "${circleTitle}" on ThriveIN — where creatives connect and collaborate`,
         url: inviteLink,
       });
     } else {

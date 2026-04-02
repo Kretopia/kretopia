@@ -692,6 +692,15 @@ const NearbyCreators = () => {
                         onClick={() => setSelectedSession(session)}
                       />
                     ))}
+                    {locations.map((loc) => (
+                      <LocationListItem
+                        key={loc.id}
+                        location={loc}
+                        isSelected={false}
+                        onClick={() => setSelectedLocation(loc)}
+                        formatDistance={formatDistance}
+                      />
+                    ))}
                   </>
                 )}
               </div>

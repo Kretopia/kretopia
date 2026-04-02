@@ -86,6 +86,7 @@ const NearbyCreators = () => {
   }>({ isVisible: true, missingFields: [] });
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
+  const { bookmarkedIds, toggleBookmark } = useLocationBookmarks();
 
   // Check current user's profile visibility requirements
   useEffect(() => {

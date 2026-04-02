@@ -78,6 +78,7 @@ const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
+const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 

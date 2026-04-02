@@ -82,6 +82,7 @@ const NearbyCreators = () => {
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [selectedSession, setSelectedSession] = useState<NearbySession | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<CreativeLocation | null>(null);
+  const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [profileVisibility, setProfileVisibility] = useState<{
     isVisible: boolean;
     missingFields: string[];

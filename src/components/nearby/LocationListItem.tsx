@@ -1,9 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, ShoppingBag, Headphones, Bookmark, BookmarkCheck } from "lucide-react";
 
 interface CreativeLocation {
   id: string;
+  user_id?: string;
   name: string;
   description?: string;
   location_type: string;
@@ -26,6 +28,7 @@ interface CreativeLocation {
   website_url?: string;
   creator_name?: string;
   creator_avatar?: string;
+  claimed_by_user_id?: string;
   distance_km: number;
 }
 
@@ -34,6 +37,8 @@ interface LocationListItemProps {
   isSelected: boolean;
   onClick: () => void;
   formatDistance: (km: number) => string;
+  isBookmarked?: boolean;
+  onToggleBookmark?: (e: React.MouseEvent) => void;
 }
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
@@ -41,9 +46,13 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> =
   creative_space: { icon: Palette, color: 'text-emerald-500', label: 'Space' },
   shoot_spot: { icon: Camera, color: 'text-rose-500', label: 'Spot' },
   venue: { icon: Building2, color: 'text-blue-500', label: 'Venue' },
+  music_store: { icon: Headphones, color: 'text-violet-500', label: 'Music Store' },
+  art_supply: { icon: ShoppingBag, color: 'text-orange-500', label: 'Art Supply' },
+  rental_house: { icon: Building2, color: 'text-teal-500', label: 'Rental House' },
+  photo_lab: { icon: Camera, color: 'text-pink-500', label: 'Photo Lab' },
 };
 
-export function LocationListItem({ location, isSelected, onClick, formatDistance }: LocationListItemProps) {
+export function LocationListItem({ location, isSelected, onClick, formatDistance, isBookmarked, onToggleBookmark }: LocationListItemProps) {
   const config = TYPE_CONFIG[location.location_type] || TYPE_CONFIG.shoot_spot;
   const Icon = config.icon;
 
@@ -97,6 +106,22 @@ export function LocationListItem({ location, isSelected, onClick, formatDistance
               )}
             </div>
           </div>
+
+          {/* Bookmark button */}
+          {onToggleBookmark && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 shrink-0"
+              onClick={(e) => { e.stopPropagation(); onToggleBookmark(e); }}
+            >
+              {isBookmarked ? (
+                <BookmarkCheck className="h-4 w-4 text-primary fill-primary" />
+              ) : (
+                <Bookmark className="h-4 w-4 text-muted-foreground" />
+              )}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -22,6 +22,7 @@ import { AddCreativeLocationDialog } from "@/components/nearby/AddCreativeLocati
 import { LocationListItem, type CreativeLocation } from "@/components/nearby/LocationListItem";
 import { LocationDetailDialog } from "@/components/nearby/LocationDetailDialog";
 import { AtlasFilterTabs, type AtlasFilter } from "@/components/nearby/AtlasFilterTabs";
+import { useLocationBookmarks } from "@/hooks/useLocationBookmarks";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 
@@ -85,6 +86,7 @@ const NearbyCreators = () => {
   }>({ isVisible: true, missingFields: [] });
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
+  const { bookmarkedIds, toggleBookmark } = useLocationBookmarks();
 
   // Check current user's profile visibility requirements
   useEffect(() => {
@@ -418,14 +420,13 @@ const NearbyCreators = () => {
     (atlasFilter === 'all' || atlasFilter === 'sessions') ? sessions : [], 
     [atlasFilter, sessions]
   );
-  const filteredLocations = useMemo(() => 
-    atlasFilter === 'all' 
-      ? locations 
-      : ['studio', 'creative_space', 'shoot_spot', 'venue'].includes(atlasFilter) 
-        ? locations.filter(l => l.location_type === atlasFilter) 
-        : [], 
-    [atlasFilter, locations]
-  );
+  const locationTypes = ['studio', 'creative_space', 'shoot_spot', 'venue', 'music_store', 'art_supply', 'rental_house', 'photo_lab'];
+  const filteredLocations = useMemo(() => {
+    if (atlasFilter === 'all') return locations;
+    if (atlasFilter === 'bookmarked') return locations.filter(l => bookmarkedIds.has(l.id));
+    if (locationTypes.includes(atlasFilter)) return locations.filter(l => l.location_type === atlasFilter);
+    return [];
+  }, [atlasFilter, locations, bookmarkedIds]);
 
   return (
     <div className="container max-w-7xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">
@@ -481,6 +482,11 @@ const NearbyCreators = () => {
             spaces: locations.filter(l => l.location_type === 'creative_space').length,
             spots: locations.filter(l => l.location_type === 'shoot_spot').length,
             venues: locations.filter(l => l.location_type === 'venue').length,
+            music_stores: locations.filter(l => l.location_type === 'music_store').length,
+            art_supplies: locations.filter(l => l.location_type === 'art_supply').length,
+            rental_houses: locations.filter(l => l.location_type === 'rental_house').length,
+            photo_labs: locations.filter(l => l.location_type === 'photo_lab').length,
+            bookmarked: locations.filter(l => bookmarkedIds.has(l.id)).length,
           }}
         />
       )}
@@ -735,6 +741,8 @@ const NearbyCreators = () => {
                         isSelected={false}
                         onClick={() => setSelectedLocation(loc)}
                         formatDistance={formatDistance}
+                        isBookmarked={bookmarkedIds.has(loc.id)}
+                        onToggleBookmark={() => toggleBookmark(loc.id)}
                       />
                     ))}
                   </>
@@ -871,6 +879,8 @@ const NearbyCreators = () => {
                         isSelected={selectedItem?.type === 'location' && selectedItem?.id === loc.id}
                         onClick={() => { setSelectedItem({ type: 'location', id: loc.id }); setSelectedLocation(loc); }}
                         formatDistance={formatDistance}
+                        isBookmarked={bookmarkedIds.has(loc.id)}
+                        onToggleBookmark={() => toggleBookmark(loc.id)}
                       />
                     ))
                   )}
@@ -915,6 +925,8 @@ const NearbyCreators = () => {
         onOpenChange={(open) => {
           if (!open) setSelectedLocation(null);
         }}
+        isBookmarked={selectedLocation ? bookmarkedIds.has(selectedLocation.id) : false}
+        onToggleBookmark={selectedLocation ? () => toggleBookmark(selectedLocation.id) : undefined}
       />
     </div>
   );

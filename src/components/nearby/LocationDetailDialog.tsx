@@ -8,13 +8,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2, Bookmark, BookmarkCheck, Headphones, ShoppingBag, ExternalLink } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
 
 interface LocationDetailDialogProps {
   location: CreativeLocation | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isBookmarked?: boolean;
+  onToggleBookmark?: () => void;
 }
 
 interface Review {
@@ -33,9 +35,13 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string; emo
   creative_space: { icon: Palette, color: 'text-emerald-500', label: 'Creative Space', emoji: '🎨' },
   shoot_spot: { icon: Camera, color: 'text-rose-500', label: 'Shoot Spot', emoji: '📸' },
   venue: { icon: Building2, color: 'text-blue-500', label: 'Venue', emoji: '🎤' },
+  music_store: { icon: Headphones, color: 'text-violet-500', label: 'Music Store', emoji: '🎵' },
+  art_supply: { icon: ShoppingBag, color: 'text-orange-500', label: 'Art Supply', emoji: '🎨' },
+  rental_house: { icon: Building2, color: 'text-teal-500', label: 'Rental House', emoji: '🏠' },
+  photo_lab: { icon: Camera, color: 'text-pink-500', label: 'Photo Lab', emoji: '📷' },
 };
 
-export function LocationDetailDialog({ location, open, onOpenChange }: LocationDetailDialogProps) {
+export function LocationDetailDialog({ location, open, onOpenChange, isBookmarked, onToggleBookmark }: LocationDetailDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -288,6 +294,11 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
               <Navigation className="h-3.5 w-3.5" />
               Directions
             </Button>
+            {onToggleBookmark && (
+              <Button size="sm" variant={isBookmarked ? "default" : "outline"} className="gap-1.5" onClick={onToggleBookmark}>
+                {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+              </Button>
+            )}
             <Button size="sm" variant="outline" className="gap-1.5" onClick={handleShare}>
               <Share2 className="h-3.5 w-3.5" />
             </Button>
@@ -306,6 +317,27 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
               </Button>
             )}
           </div>
+
+          {/* Brand profile link */}
+          {location.claimed_by_user_id && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Verified Business</p>
+                    <p className="text-xs text-muted-foreground">This spot is managed by a ThriveIN business</p>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="text-xs gap-1" asChild>
+                  <a href={`/profile/${location.claimed_by_user_id}`}>
+                    <ExternalLink className="h-3 w-3" />
+                    View Page
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Description */}
           {location.description && (

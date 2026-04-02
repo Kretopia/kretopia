@@ -56,6 +56,10 @@ const LOCATION_TYPE_EMOJI: Record<string, string> = {
   creative_space: '🎨',
   shoot_spot: '📸',
   venue: '🎤',
+  music_store: '🎵',
+  art_supply: '🛒',
+  rental_house: '🏠',
+  photo_lab: '📷',
 };
 
 const LOCATION_TYPE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
@@ -63,6 +67,10 @@ const LOCATION_TYPE_COLORS: Record<string, { bg: string; border: string; text: s
   creative_space: { bg: 'bg-emerald-500/10', border: 'border-emerald-500', text: 'text-emerald-600' },
   shoot_spot: { bg: 'bg-rose-500/10', border: 'border-rose-500', text: 'text-rose-600' },
   venue: { bg: 'bg-blue-500/10', border: 'border-blue-500', text: 'text-blue-600' },
+  music_store: { bg: 'bg-violet-500/10', border: 'border-violet-500', text: 'text-violet-600' },
+  art_supply: { bg: 'bg-orange-500/10', border: 'border-orange-500', text: 'text-orange-600' },
+  rental_house: { bg: 'bg-teal-500/10', border: 'border-teal-500', text: 'text-teal-600' },
+  photo_lab: { bg: 'bg-pink-500/10', border: 'border-pink-500', text: 'text-pink-600' },
 };
 
 export const UnifiedNearbyMap = ({

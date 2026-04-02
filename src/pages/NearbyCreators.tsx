@@ -819,6 +819,14 @@ const NearbyCreators = () => {
                   <Camera className="h-4 w-4 mr-1" />
                   Pin a Spot
                 </Button>
+                <Button 
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setShowSeedDialog(true)}
+                  title="AI Discover Spots"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Creators Section */}

@@ -41,7 +41,7 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string; emo
   photo_lab: { icon: Camera, color: 'text-pink-500', label: 'Photo Lab', emoji: '📷' },
 };
 
-export function LocationDetailDialog({ location, open, onOpenChange }: LocationDetailDialogProps) {
+export function LocationDetailDialog({ location, open, onOpenChange, isBookmarked, onToggleBookmark }: LocationDetailDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);

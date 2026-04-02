@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocationCategories } from "@/hooks/useLocationCategories";
+import { SuggestCategoryDialog } from "./SuggestCategoryDialog";
 import { Loader2, MapPin, Camera, X, DollarSign } from "lucide-react";
 
 interface AddCreativeLocationDialogProps {

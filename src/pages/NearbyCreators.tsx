@@ -869,6 +869,15 @@ const NearbyCreators = () => {
         }}
         onRefresh={fetchNearbyData}
       />
+
+      {/* Location Detail Dialog */}
+      <LocationDetailDialog
+        location={selectedLocation}
+        open={!!selectedLocation}
+        onOpenChange={(open) => {
+          if (!open) setSelectedLocation(null);
+        }}
+      />
     </div>
   );
 };

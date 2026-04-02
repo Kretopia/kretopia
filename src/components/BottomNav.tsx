@@ -29,8 +29,8 @@ const BottomNav = memo(() => {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
-  // Hide on landing / auth
-  if (location.pathname === "/" || location.pathname === "/auth") return null;
+  // Hide on auth page only
+  if (location.pathname === "/auth") return null;
 
   const items = mode === "create" ? CREATE_ITEMS : WORK_ITEMS;
 

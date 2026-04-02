@@ -456,7 +456,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             reasons.push(`Complementary skill: ${candidate.role}`);
           } else if (candidate.role === currentProfile.role) {
             score += 5;
-            reasons.push(`✨ Fellow ${candidate.role}`);
+            reasons.push(`Fellow ${candidate.role}`);
           }
         }
 

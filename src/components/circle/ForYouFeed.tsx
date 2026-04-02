@@ -470,7 +470,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           };
           if (intentMatch[currentProfile.collab_intent] === candidate.collab_intent) {
             score += 10;
-            reasons.push('🤝 Matching collaboration goals');
+            reasons.push('Matching collaboration goals');
           }
         }
 

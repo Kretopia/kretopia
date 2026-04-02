@@ -78,6 +78,7 @@ const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const Accounting = lazy(() => import("./pages/Accounting"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
+const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 
@@ -315,6 +316,7 @@ const AppContent = () => {
             <Route path="/submit-review" element={<SubmitReview />} />
             <Route path="/claim/:claimToken" element={<ClaimProfile />} />
             <Route path="/post-opportunity" element={<PostOpportunity />} />
+            <Route path="/claim-gig/:token" element={<ClaimGig />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
             {/* Search & Notifications */}

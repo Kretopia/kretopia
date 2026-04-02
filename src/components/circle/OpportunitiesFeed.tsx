@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportunitiesDialog";
+import { ScoutGigDialog } from "@/components/opportunity/ScoutGigDialog";
 import GigCard, { type GigCreatorProfile } from "@/components/opportunity/GigCard";
 import { 
   Briefcase, Handshake, ArrowRightLeft,
@@ -169,8 +170,9 @@ export const OpportunitiesFeed = () => {
             }
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <SavedOpportunitiesDialog />
+          <ScoutGigDialog />
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">My Listings</span>

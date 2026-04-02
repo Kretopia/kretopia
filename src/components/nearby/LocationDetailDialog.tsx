@@ -294,6 +294,11 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
               <Navigation className="h-3.5 w-3.5" />
               Directions
             </Button>
+            {onToggleBookmark && (
+              <Button size="sm" variant={isBookmarked ? "default" : "outline"} className="gap-1.5" onClick={onToggleBookmark}>
+                {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+              </Button>
+            )}
             <Button size="sm" variant="outline" className="gap-1.5" onClick={handleShare}>
               <Share2 className="h-3.5 w-3.5" />
             </Button>
@@ -312,6 +317,27 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
               </Button>
             )}
           </div>
+
+          {/* Brand profile link */}
+          {location.claimed_by_user_id && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Verified Business</p>
+                    <p className="text-xs text-muted-foreground">This spot is managed by a ThriveIN business</p>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="text-xs gap-1" asChild>
+                  <a href={`/profile/${location.claimed_by_user_id}`}>
+                    <ExternalLink className="h-3 w-3" />
+                    View Page
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Description */}
           {location.description && (

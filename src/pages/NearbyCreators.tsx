@@ -925,6 +925,8 @@ const NearbyCreators = () => {
         onOpenChange={(open) => {
           if (!open) setSelectedLocation(null);
         }}
+        isBookmarked={selectedLocation ? bookmarkedIds.has(selectedLocation.id) : false}
+        onToggleBookmark={selectedLocation ? () => toggleBookmark(selectedLocation.id) : undefined}
       />
     </div>
   );

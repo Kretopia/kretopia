@@ -13,22 +13,19 @@ const OPPORTUNITY_TYPES = [
     icon: Briefcase,
     title: "Paid Jobs",
     description: "Hire verified creatives for your next project — from video shoots to brand campaigns.",
-    color: "from-green-500/20 to-green-500/5",
-    iconColor: "text-green-500",
+    accent: "primary",
   },
   {
     icon: Handshake,
     title: "Collaborations",
     description: "Find creative partners who complement your skills. Build together, grow together.",
-    color: "from-blue-500/20 to-blue-500/5",
-    iconColor: "text-blue-500",
+    accent: "primary",
   },
   {
     icon: ArrowRightLeft,
     title: "Barter & Trade",
     description: "Exchange skills and services — a music video for a logo, a photoshoot for a website.",
-    color: "from-primary/20 to-primary/5",
-    iconColor: "text-primary",
+    accent: "accent",
   },
 ];
 
@@ -46,7 +43,7 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight tracking-tight">
             Jobs, Collabs &{" "}
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Barter
             </span>
           </h2>
@@ -66,9 +63,9 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
                 className="relative group cursor-pointer"
                 onClick={() => navigate("/auth")}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${type.color} rounded-2xl blur-xl group-hover:blur-2xl transition-all`} />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/8 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
                 <div className="relative bg-card border border-border/50 rounded-2xl p-6 hover:border-primary/30 transition-all h-full">
-                  <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-muted ${type.iconColor}`}>
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h3 className="text-lg font-bold mb-1">{type.title}</h3>

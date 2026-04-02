@@ -1,17 +1,17 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, ArrowRight } from "lucide-react";
+import { Check, Sparkles, ArrowRight, Film, Briefcase, Users, MessageSquare, FolderOpen, Receipt, PieChart, Link2, MapPin } from "lucide-react";
 
 const TOOLS_REPLACED = [
-  { emoji: "🎬", tool: "Verified Creative Credits", replaces: "IMDb / Muso.AI" },
-  { emoji: "💼", tool: "Find Work & Gigs", replaces: "Fiverr / Upwork" },
-  { emoji: "🤝", tool: "AI Creator Matching", replaces: "Vampr / Bumble Bizz" },
-  { emoji: "💬", tool: "Project Workspaces", replaces: "Slack + Trello" },
-  { emoji: "📁", tool: "File Sharing & Assets", replaces: "Google Drive" },
-  { emoji: "🧾", tool: "Invoicing & Payments", replaces: "Wave / PayPal" },
-  { emoji: "📊", tool: "P&L + Expense Tracking", replaces: "QuickBooks" },
-  { emoji: "🔗", tool: "Verified Creator Profile", replaces: "LinkedIn + Behance" },
-  { emoji: "📍", tool: "Nearby Creator Discovery", replaces: "Nothing like it" },
+  { icon: Film, tool: "Verified Creative Credits", replaces: "IMDb / Muso.AI" },
+  { icon: Briefcase, tool: "Find Work & Gigs", replaces: "Fiverr / Upwork" },
+  { icon: Users, tool: "AI Creator Matching", replaces: "Vampr / Bumble Bizz" },
+  { icon: MessageSquare, tool: "Project Workspaces", replaces: "Slack + Trello" },
+  { icon: FolderOpen, tool: "File Sharing & Assets", replaces: "Google Drive" },
+  { icon: Receipt, tool: "Invoicing & Payments", replaces: "Wave / PayPal" },
+  { icon: PieChart, tool: "P&L + Expense Tracking", replaces: "QuickBooks" },
+  { icon: Link2, tool: "Verified Creator Profile", replaces: "LinkedIn + Behance" },
+  { icon: MapPin, tool: "Nearby Creator Discovery", replaces: "Nothing like it" },
 ];
 
 export const ComparisonTableSection = () => {
@@ -21,7 +21,7 @@ export const ComparisonTableSection = () => {
         <div className="text-center mb-10 sm:mb-12">
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             You're Using{" "}
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               9 Different Apps
             </span>
           </h2>
@@ -31,36 +31,41 @@ export const ComparisonTableSection = () => {
         </div>
 
         {/* Comparison rows */}
-        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-card">
           {/* Header */}
           <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2 px-4 sm:px-6 py-3 bg-muted/50 border-b border-border/40 text-xs sm:text-sm font-semibold text-muted-foreground">
             <span>What you need</span>
             <span className="w-24 sm:w-32 text-center">Before</span>
-            <span className="w-16 text-center">ThriveIN</span>
+            <span className="w-16 text-center text-primary font-bold">ThriveIN</span>
           </div>
 
-          {TOOLS_REPLACED.map((item, i) => (
-            <div
-              key={item.tool}
-              className={`grid grid-cols-[1fr_auto_auto] items-center gap-2 px-4 sm:px-6 py-3.5 ${
-                i < TOOLS_REPLACED.length - 1 ? "border-b border-border/30" : ""
-              } hover:bg-muted/20 transition-colors`}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="text-base sm:text-lg flex-shrink-0">{item.emoji}</span>
-                <div className="min-w-0">
-                  <p className="font-medium text-sm truncate">{item.tool}</p>
-                  <p className="text-[11px] text-muted-foreground truncate sm:hidden">{item.replaces}</p>
+          {TOOLS_REPLACED.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.tool}
+                className={`grid grid-cols-[1fr_auto_auto] items-center gap-2 px-4 sm:px-6 py-3.5 ${
+                  i < TOOLS_REPLACED.length - 1 ? "border-b border-border/30" : ""
+                } hover:bg-muted/20 transition-colors`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-md bg-primary/8 text-primary/70">
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm truncate">{item.tool}</p>
+                    <p className="text-[11px] text-muted-foreground truncate sm:hidden">{item.replaces}</p>
+                  </div>
                 </div>
+                <span className="w-24 sm:w-32 text-center text-xs text-muted-foreground truncate hidden sm:block">
+                  {item.replaces}
+                </span>
+                <span className="w-16 text-center">
+                  <Check className="h-4 w-4 text-primary mx-auto" />
+                </span>
               </div>
-              <span className="w-24 sm:w-32 text-center text-xs text-muted-foreground truncate hidden sm:block">
-                {item.replaces}
-              </span>
-              <span className="w-16 text-center">
-                <Check className="h-4 w-4 text-primary mx-auto" />
-              </span>
-            </div>
-          ))}
+            );
+          })}
 
           {/* ThriveIN summary row */}
           <div className="flex items-center justify-between px-4 sm:px-6 py-4 bg-primary/5 border-t-2 border-primary/30">
@@ -80,7 +85,7 @@ export const ComparisonTableSection = () => {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
-          <p className="mt-3 text-xs text-muted-foreground/70">No credit card • Upgrade when you're ready</p>
+          <p className="mt-3 text-xs text-muted-foreground/70">No credit card · Upgrade when you're ready</p>
         </div>
       </div>
     </section>

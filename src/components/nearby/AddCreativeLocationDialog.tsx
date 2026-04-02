@@ -31,10 +31,7 @@ const LOCATION_TYPES = [
   { value: 'photo_lab', label: '📷 Photo Lab', desc: 'Film processing, printing, scanning' },
 ];
 
-const CATEGORIES = [
-  'Photography', 'Music', 'Film', 'Art', 'Design', 'Dance',
-  'Fashion', 'Tech', 'Podcast', 'Content Creation', 'General',
-];
+// Categories now fetched from location_categories table
 
 const AMENITY_OPTIONS = [
   'WiFi', 'Parking', 'AC', 'Sound System', 'Lighting Equipment',

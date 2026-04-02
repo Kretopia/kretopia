@@ -20,6 +20,7 @@ import { FeedbackWidget } from "./components/FeedbackWidget";
 import { analytics } from "@/lib/analytics";
 import { NetworkStatus } from "./components/NetworkStatus";
 import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
+import { GuestBanner } from "./components/GuestBanner";
 
 // Lazy load active page components
 const Landing = lazy(() => import("./pages/Landing"));

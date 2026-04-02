@@ -637,6 +637,19 @@ const NearbyCreators = () => {
       {/* Main Content */}
       {userLocation && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {(() => {
+            // Apply atlas filter
+            const showCreators = atlasFilter === 'all' || atlasFilter === 'creators';
+            const showSessions = atlasFilter === 'all' || atlasFilter === 'sessions';
+            const filteredLocations = atlasFilter === 'all' 
+              ? locations 
+              : ['studio', 'creative_space', 'shoot_spot', 'venue'].includes(atlasFilter) 
+                ? locations.filter(l => l.location_type === atlasFilter)
+                : [];
+            const filteredCreators = showCreators ? creators : [];
+            const filteredSessions = showSessions ? sessions : [];
+
+            return (<>
           {/* Map or List View */}
           <div className={viewMode === 'map' ? 'lg:col-span-2' : 'lg:col-span-3'}>
             {viewMode === 'map' ? (

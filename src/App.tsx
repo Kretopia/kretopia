@@ -316,6 +316,7 @@ const AppContent = () => {
             <Route path="/submit-review" element={<SubmitReview />} />
             <Route path="/claim/:claimToken" element={<ClaimProfile />} />
             <Route path="/post-opportunity" element={<PostOpportunity />} />
+            <Route path="/claim-gig/:token" element={<ClaimGig />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
             {/* Search & Notifications */}

@@ -73,6 +73,18 @@ const OpportunityDetail = () => {
     setLoading(false);
   };
 
+  // Auto-open apply dialog after signup redirect
+  useEffect(() => {
+    if (!user || !id) return;
+    const pendingApply = sessionStorage.getItem('pending_apply_opportunity');
+    if (pendingApply === id) {
+      sessionStorage.removeItem('pending_apply_opportunity');
+      // Small delay to let opportunity data load first
+      const timer = setTimeout(() => setShowApplyDialog(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [user, id]);
+
   useEffect(() => {
     let isMounted = true;
     

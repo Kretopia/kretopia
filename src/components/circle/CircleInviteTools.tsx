@@ -32,7 +32,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast({ title: "Link copied! 🔗" });
+    toast({ title: "Link copied!" });
   };
 
   const shareNative = async () => {

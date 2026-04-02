@@ -4220,6 +4220,8 @@ export type Database = {
         Row: {
           barter_offering: string | null
           barter_requesting: string | null
+          claim_status: string | null
+          claim_token: string | null
           compensation: string | null
           content_deliverables: Json | null
           created_at: string | null
@@ -4239,11 +4241,14 @@ export type Database = {
           location_city: string | null
           location_country: string | null
           min_followers: number | null
+          original_source_text: string | null
           platform_requirements: string[] | null
           posted_by_manager_id: string | null
           priority_expires_at: string | null
           requirements: string | null
+          scouted_by: string | null
           skills: string[] | null
+          source_platform: string | null
           status: string | null
           tags: string[] | null
           title: string
@@ -4256,6 +4261,8 @@ export type Database = {
         Insert: {
           barter_offering?: string | null
           barter_requesting?: string | null
+          claim_status?: string | null
+          claim_token?: string | null
           compensation?: string | null
           content_deliverables?: Json | null
           created_at?: string | null
@@ -4275,11 +4282,14 @@ export type Database = {
           location_city?: string | null
           location_country?: string | null
           min_followers?: number | null
+          original_source_text?: string | null
           platform_requirements?: string[] | null
           posted_by_manager_id?: string | null
           priority_expires_at?: string | null
           requirements?: string | null
+          scouted_by?: string | null
           skills?: string[] | null
+          source_platform?: string | null
           status?: string | null
           tags?: string[] | null
           title: string
@@ -4292,6 +4302,8 @@ export type Database = {
         Update: {
           barter_offering?: string | null
           barter_requesting?: string | null
+          claim_status?: string | null
+          claim_token?: string | null
           compensation?: string | null
           content_deliverables?: Json | null
           created_at?: string | null
@@ -4311,11 +4323,14 @@ export type Database = {
           location_city?: string | null
           location_country?: string | null
           min_followers?: number | null
+          original_source_text?: string | null
           platform_requirements?: string[] | null
           posted_by_manager_id?: string | null
           priority_expires_at?: string | null
           requirements?: string | null
+          scouted_by?: string | null
           skills?: string[] | null
+          source_platform?: string | null
           status?: string | null
           tags?: string[] | null
           title?: string

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { SavedOpportunitiesDialog } from "@/components/opportunity/SavedOpportunitiesDialog";
+import { ScoutGigDialog } from "@/components/opportunity/ScoutGigDialog";
 import GigCard, { type GigCreatorProfile } from "@/components/opportunity/GigCard";
 import { 
   Briefcase, Handshake, ArrowRightLeft,

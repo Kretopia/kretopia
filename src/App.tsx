@@ -212,6 +212,7 @@ const AppContent = () => {
           <Routes>
             {/* Active MVP Routes */}
             <Route path="/" element={<DefaultRoute />} />
+            <Route path="/landing" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             

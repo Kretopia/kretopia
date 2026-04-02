@@ -767,22 +767,19 @@ const NearbyCreators = () => {
               </div>
 
               {/* Creators Section */}
+              {filteredCreators.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-cyan-500" />
-                  <h3 className="font-semibold text-sm">{creators.length} Creators</h3>
+                  <div className="w-3 h-3 rounded-full bg-primary/60" />
+                  <h3 className="font-semibold text-sm">{filteredCreators.length} Creators</h3>
                 </div>
                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                   {loading ? (
                     <div className="flex justify-center py-4">
                       <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     </div>
-                  ) : creators.length === 0 ? (
-                    <p className="text-xs text-muted-foreground py-4 text-center">
-                      No creators found nearby
-                    </p>
                   ) : (
-                    creators.slice(0, 10).map((creator) => (
+                    filteredCreators.slice(0, 10).map((creator) => (
                       <CreatorListItem
                         key={creator.user_id}
                         creator={creator}
@@ -796,19 +793,21 @@ const NearbyCreators = () => {
                   )}
                 </div>
               </div>
+              )}
 
               {/* Sessions Section */}
+              {(atlasFilter === 'all' || atlasFilter === 'sessions') && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
-                  <h3 className="font-semibold text-sm">{sessions.length} Sessions</h3>
+                  <div className="w-3 h-3 rounded-full bg-accent" />
+                  <h3 className="font-semibold text-sm">{filteredSessions.length} Sessions</h3>
                 </div>
                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                   {loading ? (
                     <div className="flex justify-center py-4">
                       <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     </div>
-                  ) : sessions.length === 0 ? (
+                  ) : filteredSessions.length === 0 ? (
                     <Card className="p-3">
                       <p className="text-xs text-muted-foreground text-center mb-2">
                         No sessions nearby
@@ -824,7 +823,7 @@ const NearbyCreators = () => {
                       </Button>
                     </Card>
                   ) : (
-                    sessions.map((session) => (
+                    filteredSessions.map((session) => (
                       <SessionListItem
                         key={session.id}
                         session={session}
@@ -839,15 +838,17 @@ const NearbyCreators = () => {
                   )}
                 </div>
               </div>
+              )}
 
               {/* Locations Section */}
+              {filteredLocations.length > 0 || atlasFilter !== 'creators' && atlasFilter !== 'sessions' ? (
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm">📍</span>
-                  <h3 className="font-semibold text-sm">{locations.length} Spots</h3>
+                  <h3 className="font-semibold text-sm">{filteredLocations.length} Spots</h3>
                 </div>
                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
-                  {locations.length === 0 ? (
+                  {filteredLocations.length === 0 ? (
                     <Card className="p-3">
                       <p className="text-xs text-muted-foreground text-center mb-2">
                         No creative spots pinned nearby
@@ -863,7 +864,7 @@ const NearbyCreators = () => {
                       </Button>
                     </Card>
                   ) : (
-                    locations.slice(0, 10).map((loc) => (
+                    filteredLocations.slice(0, 10).map((loc) => (
                       <LocationListItem
                         key={loc.id}
                         location={loc}
@@ -875,6 +876,7 @@ const NearbyCreators = () => {
                   )}
                 </div>
               </div>
+              ) : null}
             </div>
           )}
         </div>

@@ -71,7 +71,7 @@ export const AIMatchingShowcase = () => {
                 </div>
                 
                 <div className="p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20 mb-6 sm:mb-8">
-                  <p className="text-xs sm:text-sm font-semibold text-primary mb-2">🎯 Why You're a Perfect Match:</p>
+                  <p className="text-xs sm:text-sm font-semibold text-primary mb-2">Why You're a Perfect Match:</p>
                   <ul className="text-xs sm:text-sm text-muted-foreground space-y-1.5 sm:space-y-2">
                     <li>• Complementary skills: Your music production fills her need for original soundtracks</li>
                     <li>• Super close by: Only 2.3km away in Canggu—easy to meet and work together</li>

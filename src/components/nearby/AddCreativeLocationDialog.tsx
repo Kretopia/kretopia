@@ -64,7 +64,7 @@ export function AddCreativeLocationDialog({
   const [amenities, setAmenities] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
+  const [showSuggestCategory, setShowSuggestCategory] = useState(false);
   const handleSubmit = async () => {
     if (!user || !name.trim() || !defaultLocation) return;
     

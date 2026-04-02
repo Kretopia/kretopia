@@ -21,6 +21,7 @@ import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { AddCreativeLocationDialog } from "@/components/nearby/AddCreativeLocationDialog";
 import { LocationListItem, type CreativeLocation } from "@/components/nearby/LocationListItem";
 import { LocationDetailDialog } from "@/components/nearby/LocationDetailDialog";
+import { AtlasFilterTabs, type AtlasFilter } from "@/components/nearby/AtlasFilterTabs";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 

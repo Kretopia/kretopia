@@ -409,6 +409,24 @@ const NearbyCreators = () => {
     return `${km.toFixed(1)}km away`;
   };
 
+  // Filtered data based on atlas filter
+  const filteredCreators = useMemo(() => 
+    (atlasFilter === 'all' || atlasFilter === 'creators') ? creators : [], 
+    [atlasFilter, creators]
+  );
+  const filteredSessions = useMemo(() => 
+    (atlasFilter === 'all' || atlasFilter === 'sessions') ? sessions : [], 
+    [atlasFilter, sessions]
+  );
+  const filteredLocations = useMemo(() => 
+    atlasFilter === 'all' 
+      ? locations 
+      : ['studio', 'creative_space', 'shoot_spot', 'venue'].includes(atlasFilter) 
+        ? locations.filter(l => l.location_type === atlasFilter) 
+        : [], 
+    [atlasFilter, locations]
+  );
+
   return (
     <div className="container max-w-7xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">
       {/* Profile Visibility Banner - Show if user doesn't meet requirements */}

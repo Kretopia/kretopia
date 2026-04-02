@@ -420,14 +420,13 @@ const NearbyCreators = () => {
     (atlasFilter === 'all' || atlasFilter === 'sessions') ? sessions : [], 
     [atlasFilter, sessions]
   );
-  const filteredLocations = useMemo(() => 
-    atlasFilter === 'all' 
-      ? locations 
-      : ['studio', 'creative_space', 'shoot_spot', 'venue'].includes(atlasFilter) 
-        ? locations.filter(l => l.location_type === atlasFilter) 
-        : [], 
-    [atlasFilter, locations]
-  );
+  const locationTypes = ['studio', 'creative_space', 'shoot_spot', 'venue', 'music_store', 'art_supply', 'rental_house', 'photo_lab'];
+  const filteredLocations = useMemo(() => {
+    if (atlasFilter === 'all') return locations;
+    if (atlasFilter === 'bookmarked') return locations.filter(l => bookmarkedIds.has(l.id));
+    if (locationTypes.includes(atlasFilter)) return locations.filter(l => l.location_type === atlasFilter);
+    return [];
+  }, [atlasFilter, locations, bookmarkedIds]);
 
   return (
     <div className="container max-w-7xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">

@@ -127,10 +127,10 @@ const OpportunityDetail = () => {
 
   const handleApply = () => {
     if (!user) {
-      // Redirect to auth page with current opportunity as redirect target
+      // Store intent to auto-apply after signup
+      sessionStorage.setItem('pending_apply_opportunity', id!);
       navigate(`/auth?redirect=/opportunity/${id}`);
     } else {
-      // User is authenticated, open apply dialog
       setShowApplyDialog(true);
     }
   };

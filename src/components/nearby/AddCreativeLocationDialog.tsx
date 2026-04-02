@@ -45,12 +45,12 @@ export function AddCreativeLocationDialog({
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const { data: subcategories = [] } = useLocationCategories(locationType);
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [locationType, setLocationType] = useState('shoot_spot');
-  const [category, setCategory] = useState('General');
+  const [category, setCategory] = useState('');
+  const { data: subcategories = [] } = useLocationCategories(locationType);
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [isRentable, setIsRentable] = useState(false);

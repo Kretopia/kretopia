@@ -77,7 +77,7 @@ const DEMO_CARDS: ForYouCreator[] = [
     location: 'Seminyak, Bali',
     collab_intent: 'open_to_trade',
     match_score: 78,
-    match_reasons: ['🔄 Open to trade collaborations', '✨ Fellow creative in Bali'],
+    match_reasons: ['Open to trade collaborations', 'Fellow creative in Bali'],
   },
 ];
 

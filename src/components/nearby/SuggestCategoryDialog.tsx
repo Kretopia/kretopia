@@ -68,7 +68,7 @@ export function SuggestCategoryDialog({ open, onOpenChange }: SuggestCategoryDia
             Suggest a Category
           </DialogTitle>
           <DialogDescription>
-            Missing a category? Help us grow the Creative Atlas taxonomy.
+            Missing a category? Help us grow the Nearby taxonomy.
           </DialogDescription>
         </DialogHeader>
 

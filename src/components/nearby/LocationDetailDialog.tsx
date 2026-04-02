@@ -164,7 +164,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
 
   const handleShare = async () => {
     if (!location) return;
-    const text = `Check out ${location.name} on Creative Atlas!`;
+    const text = `Check out ${location.name} on ThriveIN Nearby!`;
     if (navigator.share) {
       try {
         await navigator.share({ title: location.name, text });

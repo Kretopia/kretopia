@@ -28,7 +28,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
   const inviteLink = `https://www.thrivein.io/circle/${circleId}`;
 
   const copyLink = async () => {
-    const text = `Join "${circleTitle}" on ThriveIN 🚀\n${inviteLink}`;
+    const text = `Join "${circleTitle}" on ThriveIN\n${inviteLink}`;
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

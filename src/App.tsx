@@ -305,15 +305,15 @@ const AppContent = () => {
             {/* Talent Manager */}
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
             
-            {/* Credit Database & Discover */}
-            <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
-            <Route path="/credits/hub" element={<ProtectedRoute><ICDBHub /></ProtectedRoute>} />
-            <Route path="/credits/project/:projectId" element={<ProtectedRoute><ICDBProjectPage /></ProtectedRoute>} />
-            <Route path="/credits/discover" element={<ProtectedRoute><ICDBDiscovery /></ProtectedRoute>} />
+            {/* Credit Database & Discover - Public browsable */}
+            <Route path="/credits" element={<CreditDatabase />} />
+            <Route path="/credits/hub" element={<ICDBHub />} />
+            <Route path="/credits/project/:projectId" element={<ICDBProjectPage />} />
+            <Route path="/credits/discover" element={<ICDBDiscovery />} />
             <Route path="/verify-credit" element={<BrandVerify />} />
             <Route path="/directory" element={<Navigate to="/circle?tab=browse" replace />} />
             <Route path="/discover" element={<Navigate to="/credits/discover" replace />} />
-            <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+            <Route path="/opportunities" element={<Opportunities />} />
             
             {/* Check-in & Challenges */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />

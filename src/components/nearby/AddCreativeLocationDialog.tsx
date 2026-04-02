@@ -382,6 +382,7 @@ export function AddCreativeLocationDialog({
           </Button>
         </div>
       </DialogContent>
+      <SuggestCategoryDialog open={showSuggestCategory} onOpenChange={setShowSuggestCategory} />
     </Dialog>
   );
 }

@@ -22,6 +22,7 @@ import { AddCreativeLocationDialog } from "@/components/nearby/AddCreativeLocati
 import { LocationListItem, type CreativeLocation } from "@/components/nearby/LocationListItem";
 import { LocationDetailDialog } from "@/components/nearby/LocationDetailDialog";
 import { AtlasFilterTabs, type AtlasFilter } from "@/components/nearby/AtlasFilterTabs";
+import { useLocationBookmarks } from "@/hooks/useLocationBookmarks";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 

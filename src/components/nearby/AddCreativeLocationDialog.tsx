@@ -66,6 +66,21 @@ export function AddCreativeLocationDialog({
     
     setLoading(true);
     try {
+      // Upload images first
+      let uploadedUrls: string[] = [];
+      for (const file of imageFiles) {
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('location-images')
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from('location-images')
+          .getPublicUrl(filePath);
+        uploadedUrls.push(urlData.publicUrl);
+      }
+
       const { error } = await supabase
         .from('creative_locations')
         .insert({
@@ -85,6 +100,8 @@ export function AddCreativeLocationDialog({
           website_url: websiteUrl.trim() || null,
           tags,
           amenities,
+          cover_image_url: uploadedUrls[0] || null,
+          image_urls: uploadedUrls,
         });
       
       if (error) throw error;

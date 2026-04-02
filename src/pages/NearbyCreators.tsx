@@ -533,9 +533,10 @@ const NearbyCreators = () => {
             bookmarked: locations.filter(l => bookmarkedIds.has(l.id)).length,
           }}
         />
-      )}
 
-      {/* Controls - Collapsible on mobile */}
+        {/* Search & Discovery */}
+        <AtlasSearchBar filters={searchFilters} onChange={setSearchFilters} />
+      )}
       <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen} className="lg:hidden">
         <Card className="overflow-hidden">
           <CollapsibleTrigger asChild>

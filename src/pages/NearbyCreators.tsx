@@ -705,6 +705,32 @@ const NearbyCreators = () => {
         </Card>
       )}
 
+      {/* AI Discovery CTA - Prominent on mobile */}
+      {userLocation && (
+        <Card className="lg:hidden border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <div className="shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">Discover Creative Spots</p>
+                <p className="text-xs text-muted-foreground">AI finds studios, spaces & shoot spots near you</p>
+              </div>
+              <Button
+                variant="gradient"
+                size="sm"
+                onClick={() => setShowSeedDialog(true)}
+                className="shrink-0"
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1" />
+                Search
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Main Content */}
       {userLocation && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

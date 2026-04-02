@@ -34,9 +34,9 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const prompt = `Generate 10 realistic creative industry locations near ${city} (lat: ${latitude}, lng: ${longitude}, within ${radius_km}km). 
+    const prompt = `Generate 25 realistic creative industry locations near ${city} (lat: ${latitude}, lng: ${longitude}, within ${radius_km}km). 
     
-For each location, provide realistic data that a creative professional would find useful. Include a mix of:
+For each location, provide realistic data that a creative professional would find useful. Include a diverse mix of:
 - Recording studios, photo studios, podcast studios
 - Creative coworking spaces, maker spaces
 - Shoot spots (mural walls, rooftops, scenic urban locations)

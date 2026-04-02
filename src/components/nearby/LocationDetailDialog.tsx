@@ -8,11 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2, Bookmark, BookmarkCheck, Headphones, ShoppingBag, ExternalLink, BadgeCheck, CalendarIcon } from "lucide-react";
+import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2, Bookmark, BookmarkCheck, Headphones, ShoppingBag, ExternalLink, BadgeCheck, CalendarIcon, Clock } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
 import { ClaimLocationDialog } from "./ClaimLocationDialog";
 import { LocationReviewHelpful } from "./LocationReviewHelpful";
 import { LocationBookingDialog } from "./LocationBookingDialog";
+import { ReviewPhotoUpload } from "./ReviewPhotoUpload";
 
 interface LocationDetailDialogProps {
   location: CreativeLocation | null;
@@ -58,6 +59,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
+  const [reviewPhotos, setReviewPhotos] = useState<string[]>([]);
 
   const config = location ? (TYPE_CONFIG[location.location_type] || TYPE_CONFIG.shoot_spot) : TYPE_CONFIG.shoot_spot;
 
@@ -139,6 +141,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             user_id: user.id,
             rating: userRating,
             review_text: reviewText.trim() || null,
+            image_urls: reviewPhotos.length > 0 ? reviewPhotos : null,
           });
         if (error) throw error;
         toast({ title: "Review submitted ⭐" });
@@ -357,7 +360,28 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             <p className="text-sm text-muted-foreground leading-relaxed">{location.description}</p>
           )}
 
-          {/* Rental Info */}
+          {/* Hours of Operation */}
+          {(location as any).hours_of_operation && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+                <Clock className="h-3 w-3" /> Hours
+              </p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
+                  const hours = (location as any).hours_of_operation?.[day];
+                  return (
+                    <div key={day} className="flex justify-between">
+                      <span className="text-muted-foreground capitalize">{day}</span>
+                      <span className={hours === 'Closed' ? 'text-destructive' : 'text-foreground font-medium'}>
+                        {hours || 'N/A'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {location.is_rentable && location.price_per_hour && (
             <Card className="border-emerald-500/20 bg-emerald-500/5">
               <CardContent className="p-3 flex items-center justify-between">
@@ -461,6 +485,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                     rows={2}
                     className="text-sm"
                   />
+                  <ReviewPhotoUpload onPhotosUploaded={setReviewPhotos} existingPhotos={reviewPhotos} />
                   <Button 
                     size="sm" 
                     onClick={handleSubmitReview} 
@@ -505,6 +530,13 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                       </div>
                       {review.review_text && (
                         <p className="text-xs text-muted-foreground mt-0.5">{review.review_text}</p>
+                      )}
+                      {review.image_urls?.length > 0 && (
+                        <div className="flex gap-1.5 mt-1.5">
+                          {review.image_urls.map((url, i) => (
+                            <img key={i} src={url} alt="" className="h-14 w-14 rounded-md object-cover border border-border" />
+                          ))}
+                        </div>
                       )}
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-[10px] text-muted-foreground/60">

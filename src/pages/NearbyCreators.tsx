@@ -24,6 +24,7 @@ import { LocationDetailDialog } from "@/components/nearby/LocationDetailDialog";
 import { AtlasFilterTabs, type AtlasFilter } from "@/components/nearby/AtlasFilterTabs";
 import { useLocationBookmarks } from "@/hooks/useLocationBookmarks";
 import { AtlasSearchBar, defaultAtlasFilters, type AtlasSearchFilters, type SortOption } from "@/components/nearby/AtlasSearchBar";
+import { SeedLocationsDialog } from "@/components/nearby/SeedLocationsDialog";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 
@@ -81,6 +82,7 @@ const NearbyCreators = () => {
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [selectedSession, setSelectedSession] = useState<NearbySession | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<CreativeLocation | null>(null);
+  const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [profileVisibility, setProfileVisibility] = useState<{
     isVisible: boolean;
     missingFields: string[];
@@ -817,6 +819,14 @@ const NearbyCreators = () => {
                   <Camera className="h-4 w-4 mr-1" />
                   Pin a Spot
                 </Button>
+                <Button 
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setShowSeedDialog(true)}
+                  title="AI Discover Spots"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Creators Section */}
@@ -953,7 +963,17 @@ const NearbyCreators = () => {
         defaultLocation={userLocation || undefined}
       />
 
-      {/* Session Detail Dialog */}
+      {/* AI Seed Locations Dialog */}
+      {userLocation && (
+        <SeedLocationsDialog
+          open={showSeedDialog}
+          onOpenChange={setShowSeedDialog}
+          userLocation={userLocation}
+          onSeeded={fetchNearbyData}
+        />
+      )}
+
+
       <SessionDetailDialog
         session={selectedSession}
         open={!!selectedSession}

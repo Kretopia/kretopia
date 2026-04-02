@@ -20,6 +20,7 @@ import { FeedbackWidget } from "./components/FeedbackWidget";
 import { analytics } from "@/lib/analytics";
 import { NetworkStatus } from "./components/NetworkStatus";
 import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
+import { GuestBanner } from "./components/GuestBanner";
 
 // Lazy load active page components
 const Landing = lazy(() => import("./pages/Landing"));
@@ -134,7 +135,8 @@ const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
   
-  if (!user) return <Landing />;
+  // Guests go straight to Scene (public browsing)
+  if (!user) return <Navigate to="/scene" replace />;
   if (onboardingLoading) return <LoadingFallback />;
   if (!isComplete) return <Navigate to="/onboarding" replace />;
   
@@ -154,7 +156,7 @@ const DefaultRoute = () => {
 // Catch-all: authenticated users go to mode-aware home
 const CatchAllRedirect = () => {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/scene" replace />;
   let mode = "create";
   try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}
   return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;
@@ -182,9 +184,18 @@ const AppContent = () => {
   const isPublicEvent = /^\/event\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';
   const isDeckPage = location.pathname === '/deck';
+  const isLandingPage = location.pathname === '/';
+  
+  // Public browsable routes where guests see nav
+  const publicBrowseRoutes = ['/scene', '/opportunities', '/credits', '/nearby', '/circle'];
+  const isPublicBrowse = publicBrowseRoutes.some(r => location.pathname.startsWith(r));
+  
+  // Show bottom nav for authenticated users OR guests on public browse routes
+  const showBottomNav = !isPublicEPK && !isAuthPage && !isDeckPage && !isLandingPage && (user || isPublicBrowse);
+  const showNavbar = !isPublicEPK && !isAuthPage && !isDeckPage;
   
   // Don't add bottom padding when on individual project pages or desk list
-  const shouldAddBottomPadding = user && !location.pathname.startsWith('/desk') && !isPublicEPK && !isPublicEvent && !isDeckPage;
+  const shouldAddBottomPadding = showBottomNav && !location.pathname.startsWith('/desk');
   
   return (
     <div className="h-full overflow-auto">
@@ -192,21 +203,23 @@ const AppContent = () => {
       <NetworkStatus />
       <SkipLink />
       <PageViewTracker />
-      {!isPublicEPK && !isAuthPage && !isDeckPage && <Navbar user={user} />}
-      {user && !isPublicEPK && !isAuthPage && !isDeckPage && <BottomNav />}
+      {showNavbar && <Navbar user={user} />}
+      {showBottomNav && <BottomNav />}
       {user && !isPublicEPK && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
+      {!user && isPublicBrowse && <GuestBanner />}
       <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Active MVP Routes */}
             <Route path="/" element={<DefaultRoute />} />
+            <Route path="/landing" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             
-            {/* Core Feature Pages - Only 4 Active */}
-            <Route path="/circle" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+            {/* Core Feature Pages - Public browsable, actions gated */}
+            <Route path="/circle" element={<Circle />} />
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
-            <Route path="/circles" element={<ProtectedRoute><CirclesPage /></ProtectedRoute>} />
+            <Route path="/circles" element={<CirclesPage />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}
@@ -240,10 +253,10 @@ const AppContent = () => {
             <Route path="/outreach" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
             <Route path="/thrive-ai" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
             
-            {/* Nearby Creators */}
-            <Route path="/nearby" element={<ProtectedRoute><NearbyCreators /></ProtectedRoute>} />
+            {/* Public Browsable Routes */}
+            <Route path="/nearby" element={<NearbyCreators />} />
             <Route path="/events" element={<Navigate to="/scene" replace />} />
-            <Route path="/scene" element={<ProtectedRoute><Scene /></ProtectedRoute>} />
+            <Route path="/scene" element={<Scene />} />
             
             {/* Public Magazine Article - SEO accessible */}
             <Route path="/magazine/:slug" element={<MagazineArticlePage />} />
@@ -293,15 +306,15 @@ const AppContent = () => {
             {/* Talent Manager */}
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
             
-            {/* Credit Database & Discover */}
-            <Route path="/credits" element={<ProtectedRoute><CreditDatabase /></ProtectedRoute>} />
-            <Route path="/credits/hub" element={<ProtectedRoute><ICDBHub /></ProtectedRoute>} />
-            <Route path="/credits/project/:projectId" element={<ProtectedRoute><ICDBProjectPage /></ProtectedRoute>} />
-            <Route path="/credits/discover" element={<ProtectedRoute><ICDBDiscovery /></ProtectedRoute>} />
+            {/* Credit Database & Discover - Public browsable */}
+            <Route path="/credits" element={<CreditDatabase />} />
+            <Route path="/credits/hub" element={<ICDBHub />} />
+            <Route path="/credits/project/:projectId" element={<ICDBProjectPage />} />
+            <Route path="/credits/discover" element={<ICDBDiscovery />} />
             <Route path="/verify-credit" element={<BrandVerify />} />
             <Route path="/directory" element={<Navigate to="/circle?tab=browse" replace />} />
             <Route path="/discover" element={<Navigate to="/credits/discover" replace />} />
-            <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+            <Route path="/opportunities" element={<Opportunities />} />
             
             {/* Check-in & Challenges */}
             <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />

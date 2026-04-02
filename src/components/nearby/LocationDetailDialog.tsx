@@ -506,9 +506,12 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                       {review.review_text && (
                         <p className="text-xs text-muted-foreground mt-0.5">{review.review_text}</p>
                       )}
-                      <p className="text-[10px] text-muted-foreground/60 mt-1">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-[10px] text-muted-foreground/60">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </p>
+                        <LocationReviewHelpful reviewId={review.id} />
+                      </div>
                     </div>
                   </div>
                 ))}

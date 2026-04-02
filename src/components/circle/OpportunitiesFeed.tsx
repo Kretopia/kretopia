@@ -321,7 +321,7 @@ export const OpportunitiesFeed = () => {
           )}
           {compensationFilter !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              💰 {compensationFilter}
+              {compensationFilter}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setCompensationFilter("all")} />
             </Badge>
           )}

@@ -561,11 +561,11 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
 
   const getCollabIntentLabel = (intent: string | null) => {
     const labels: Record<string, string> = {
-      'looking_to_hire': '💼 Hiring',
-      'available_for_hire': '✋ For Hire',
-      'open_to_trade': '🔄 Trade',
-      'seeking_collaborators': '🤝 Collab',
-      'just_networking': '👋 Networking',
+      'looking_to_hire': 'Hiring',
+      'available_for_hire': 'For Hire',
+      'open_to_trade': 'Trade',
+      'seeking_collaborators': 'Collab',
+      'just_networking': 'Networking',
     };
     return intent ? labels[intent] : null;
   };

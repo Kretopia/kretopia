@@ -270,7 +270,7 @@ export const ConnectFiltersComponent = ({ filters, onFiltersChange, activeFilter
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Experience</label>
                   <div className="h-9 rounded-md border bg-muted/30 flex items-center px-3 text-sm text-muted-foreground">
-                    ⭐ Experienced
+                    Experienced
                   </div>
                 </div>
               </div>

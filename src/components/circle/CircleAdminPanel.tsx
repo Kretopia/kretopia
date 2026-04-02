@@ -316,7 +316,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               </p>
               {welcomeDmEnabled && (
                 <Textarea
-                  placeholder="Hey! Welcome to the circle 👋 Feel free to introduce yourself and share what you're working on!"
+                  placeholder="Hey! Welcome to the circle — feel free to introduce yourself and share what you're working on!"
                   value={welcomeMessage}
                   onChange={e => setWelcomeMessage(e.target.value)}
                   maxLength={500}

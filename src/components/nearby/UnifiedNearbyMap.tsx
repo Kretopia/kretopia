@@ -287,29 +287,27 @@ export const UnifiedNearbyMap = ({
       )}
 
       {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs space-y-1.5">
+      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs space-y-1.5 shadow-md border border-border">
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-primary border border-white"></div>
-          <span>You</span>
+          <div className="h-3 w-3 rounded-full bg-primary border border-primary-foreground"></div>
+          <span className="text-foreground">You</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-full bg-muted border-2 border-cyan-500"></div>
-          <span>Creators ({creators.length})</span>
+          <div className="h-4 w-4 rounded-full bg-muted border-2 border-primary/60"></div>
+          <span className="text-foreground">Creators ({creators.length})</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-full bg-muted border-2 border-dashed border-amber-500"></div>
-          <span>Sessions ({sessions.length})</span>
+          <div className="h-4 w-4 rounded-full bg-muted border-2 border-dashed border-accent"></div>
+          <span className="text-foreground">Sessions ({sessions.length})</span>
         </div>
         {locations.length > 0 && (
-          <>
-            <div className="flex items-center gap-2">
-              <div className="h-4 w-4 rounded-lg bg-muted border-2 border-purple-500 text-[8px] flex items-center justify-center">🎙️</div>
-              <span>Studios & Spots ({locations.length})</span>
-            </div>
-          </>
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded-lg bg-muted border-2 border-primary/40 text-[8px] flex items-center justify-center">📍</div>
+            <span className="text-foreground">Spots ({locations.length})</span>
+          </div>
         )}
         <div className="pt-1 border-t border-border mt-1">
-          <span className="text-muted-foreground">📍 Locations are privacy-protected</span>
+          <span className="text-muted-foreground">📍 Privacy-protected</span>
         </div>
       </div>
       

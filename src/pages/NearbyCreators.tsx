@@ -20,6 +20,7 @@ import { LocationPrivacySelect, LocationPrecision } from "@/components/nearby/Lo
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { AddCreativeLocationDialog } from "@/components/nearby/AddCreativeLocationDialog";
 import { LocationListItem, type CreativeLocation } from "@/components/nearby/LocationListItem";
+import { LocationDetailDialog } from "@/components/nearby/LocationDetailDialog";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 
@@ -76,6 +77,7 @@ const NearbyCreators = () => {
   const [showCreateSession, setShowCreateSession] = useState(false);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [selectedSession, setSelectedSession] = useState<NearbySession | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<CreativeLocation | null>(null);
   const [profileVisibility, setProfileVisibility] = useState<{
     isVisible: boolean;
     missingFields: string[];
@@ -690,6 +692,15 @@ const NearbyCreators = () => {
                         onClick={() => setSelectedSession(session)}
                       />
                     ))}
+                    {locations.map((loc) => (
+                      <LocationListItem
+                        key={loc.id}
+                        location={loc}
+                        isSelected={false}
+                        onClick={() => setSelectedLocation(loc)}
+                        formatDistance={formatDistance}
+                      />
+                    ))}
                   </>
                 )}
               </div>
@@ -821,7 +832,7 @@ const NearbyCreators = () => {
                         key={loc.id}
                         location={loc}
                         isSelected={selectedItem?.type === 'location' && selectedItem?.id === loc.id}
-                        onClick={() => setSelectedItem({ type: 'location', id: loc.id })}
+                        onClick={() => { setSelectedItem({ type: 'location', id: loc.id }); setSelectedLocation(loc); }}
                         formatDistance={formatDistance}
                       />
                     ))
@@ -857,6 +868,15 @@ const NearbyCreators = () => {
           if (!open) setSelectedSession(null);
         }}
         onRefresh={fetchNearbyData}
+      />
+
+      {/* Location Detail Dialog */}
+      <LocationDetailDialog
+        location={selectedLocation}
+        open={!!selectedLocation}
+        onOpenChange={(open) => {
+          if (!open) setSelectedLocation(null);
+        }}
       />
     </div>
   );

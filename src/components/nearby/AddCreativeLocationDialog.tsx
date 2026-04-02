@@ -58,12 +58,29 @@ export function AddCreativeLocationDialog({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [amenities, setAmenities] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const handleSubmit = async () => {
     if (!user || !name.trim() || !defaultLocation) return;
     
     setLoading(true);
     try {
+      // Upload images first
+      let uploadedUrls: string[] = [];
+      for (const file of imageFiles) {
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('location-images')
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from('location-images')
+          .getPublicUrl(filePath);
+        uploadedUrls.push(urlData.publicUrl);
+      }
+
       const { error } = await supabase
         .from('creative_locations')
         .insert({
@@ -83,6 +100,8 @@ export function AddCreativeLocationDialog({
           website_url: websiteUrl.trim() || null,
           tags,
           amenities,
+          cover_image_url: uploadedUrls[0] || null,
+          image_urls: uploadedUrls,
         });
       
       if (error) throw error;
@@ -103,6 +122,24 @@ export function AddCreativeLocationDialog({
     setCategory('General'); setAddress(''); setCity('');
     setIsRentable(false); setPricePerHour(''); setTags([]);
     setAmenities([]); setContactInfo(''); setWebsiteUrl('');
+    setImageFiles([]); setImagePreviews([]);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + imageFiles.length > 5) {
+      toast({ title: "Max 5 images", variant: "destructive" });
+      return;
+    }
+    const newFiles = [...imageFiles, ...files].slice(0, 5);
+    setImageFiles(newFiles);
+    const previews = newFiles.map(f => URL.createObjectURL(f));
+    setImagePreviews(previews);
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const addTag = () => {
@@ -171,7 +208,41 @@ export function AddCreativeLocationDialog({
             />
           </div>
 
-          {/* Category */}
+          {/* Photos */}
+          <div>
+            <Label className="text-sm font-medium">Photos (up to 5)</Label>
+            <div className="mt-2">
+              {imagePreviews.length > 0 && (
+                <div className="flex gap-2 mb-2 overflow-x-auto pb-1">
+                  {imagePreviews.map((url, i) => (
+                    <div key={i} className="relative shrink-0 h-20 w-20 rounded-lg overflow-hidden border border-border">
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      <button
+                        onClick={() => removeImage(i)}
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center text-xs"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {imageFiles.length < 5 && (
+                <label className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+                  <Camera className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Add photos</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
           <div>
             <Label className="text-sm font-medium">Category</Label>
             <Select value={category} onValueChange={setCategory}>

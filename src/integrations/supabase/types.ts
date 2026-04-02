@@ -1547,6 +1547,7 @@ export type Database = {
           address: string | null
           amenities: string[] | null
           average_rating: number | null
+          booking_enabled: boolean | null
           category: string | null
           city: string | null
           claimed_by_user_id: string | null
@@ -1555,6 +1556,7 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           description: string | null
+          hours_of_operation: Json | null
           id: string
           image_urls: string[] | null
           is_active: boolean | null
@@ -1563,6 +1565,7 @@ export type Database = {
           latitude: number
           location_type: string
           longitude: number
+          min_booking_hours: number | null
           name: string
           price_currency: string | null
           price_per_hour: number | null
@@ -1576,6 +1579,7 @@ export type Database = {
           address?: string | null
           amenities?: string[] | null
           average_rating?: number | null
+          booking_enabled?: boolean | null
           category?: string | null
           city?: string | null
           claimed_by_user_id?: string | null
@@ -1584,6 +1588,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          hours_of_operation?: Json | null
           id?: string
           image_urls?: string[] | null
           is_active?: boolean | null
@@ -1592,6 +1597,7 @@ export type Database = {
           latitude: number
           location_type?: string
           longitude: number
+          min_booking_hours?: number | null
           name: string
           price_currency?: string | null
           price_per_hour?: number | null
@@ -1605,6 +1611,7 @@ export type Database = {
           address?: string | null
           amenities?: string[] | null
           average_rating?: number | null
+          booking_enabled?: boolean | null
           category?: string | null
           city?: string | null
           claimed_by_user_id?: string | null
@@ -1613,6 +1620,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          hours_of_operation?: Json | null
           id?: string
           image_urls?: string[] | null
           is_active?: boolean | null
@@ -1621,6 +1629,7 @@ export type Database = {
           latitude?: number
           location_type?: string
           longitude?: number
+          min_booking_hours?: number | null
           name?: string
           price_currency?: string | null
           price_per_hour?: number | null
@@ -3297,6 +3306,59 @@ export type Database = {
         }
         Relationships: []
       }
+      location_bookings: {
+        Row: {
+          booking_date: string
+          created_at: string
+          currency: string | null
+          end_time: string
+          id: string
+          location_id: string
+          message: string | null
+          start_time: string
+          status: string
+          total_price: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_date: string
+          created_at?: string
+          currency?: string | null
+          end_time: string
+          id?: string
+          location_id: string
+          message?: string | null
+          start_time: string
+          status?: string
+          total_price?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_date?: string
+          created_at?: string
+          currency?: string | null
+          end_time?: string
+          id?: string
+          location_id?: string
+          message?: string | null
+          start_time?: string
+          status?: string
+          total_price?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_bookings_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "creative_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_bookmarks: {
         Row: {
           created_at: string
@@ -3419,6 +3481,35 @@ export type Database = {
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "creative_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      location_review_helpful: {
+        Row: {
+          created_at: string
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_review_helpful_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "location_reviews"
             referencedColumns: ["id"]
           },
         ]

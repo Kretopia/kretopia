@@ -741,6 +741,8 @@ const NearbyCreators = () => {
                         isSelected={false}
                         onClick={() => setSelectedLocation(loc)}
                         formatDistance={formatDistance}
+                        isBookmarked={bookmarkedIds.has(loc.id)}
+                        onToggleBookmark={() => toggleBookmark(loc.id)}
                       />
                     ))}
                   </>

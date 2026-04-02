@@ -26,11 +26,11 @@ interface ConnectFiltersProps {
 
 const COLLAB_INTENT_OPTIONS = [
   { value: 'all', label: 'Any Intent' },
-  { value: 'looking_to_hire', label: '💼 Hiring' },
-  { value: 'available_for_hire', label: '✋ Available' },
-  { value: 'open_to_trade', label: '🔄 Open to Trade' },
-  { value: 'seeking_collaborators', label: '🤝 Seeking Collaborators' },
-  { value: 'just_networking', label: '👋 Networking' },
+  { value: 'looking_to_hire', label: 'Hiring' },
+  { value: 'available_for_hire', label: 'Available' },
+  { value: 'open_to_trade', label: 'Open to Trade' },
+  { value: 'seeking_collaborators', label: 'Seeking Collaborators' },
+  { value: 'just_networking', label: 'Networking' },
 ];
 
 const EXPERIENCE_OPTIONS = [

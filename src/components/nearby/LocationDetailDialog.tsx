@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, ExternalLink, Globe, Phone, Loader2, User } from "lucide-react";
+import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
 
 interface LocationDetailDialogProps {
@@ -46,12 +46,13 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
   const [submitting, setSubmitting] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const config = location ? (TYPE_CONFIG[location.location_type] || TYPE_CONFIG.shoot_spot) : TYPE_CONFIG.shoot_spot;
 
-  // Fetch reviews when dialog opens
   useEffect(() => {
     if (!location || !open) return;
+    setActiveImageIndex(0);
     fetchReviews();
   }, [location?.id, open]);
 
@@ -67,7 +68,6 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
 
       if (error) throw error;
 
-      // Fetch reviewer profiles
       const userIds = [...new Set((data || []).map(r => r.user_id))];
       let profileMap: Record<string, { full_name: string; avatar_url: string | null }> = {};
       
@@ -91,7 +91,6 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
 
       setReviews(enrichedReviews);
       
-      // Check if current user has already reviewed
       const existing = enrichedReviews.find(r => r.user_id === user?.id);
       if (existing) {
         setHasReviewed(true);
@@ -114,7 +113,6 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
     setSubmitting(true);
     try {
       if (hasReviewed) {
-        // Update existing review
         const { error } = await supabase
           .from('location_reviews')
           .update({ rating: userRating, review_text: reviewText.trim() || null })
@@ -123,7 +121,6 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
         if (error) throw error;
         toast({ title: "Review updated ✨" });
       } else {
-        // Create new review
         const { error } = await supabase
           .from('location_reviews')
           .insert({
@@ -136,6 +133,7 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
         toast({ title: "Review submitted ⭐" });
       }
       setHasReviewed(true);
+      setShowReviewForm(false);
       fetchReviews();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -144,71 +142,174 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
     }
   };
 
+  const handleGetDirections = () => {
+    if (!location) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`;
+    window.open(url, '_blank');
+  };
+
+  const handleShare = async () => {
+    if (!location) return;
+    const text = `Check out ${location.name} on Creative Atlas!`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: location.name, text });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copied to clipboard!" });
+    }
+  };
+
   if (!location) return null;
 
   const allImages = [
     ...(location.cover_image_url ? [location.cover_image_url] : []),
-    ...(location.image_urls || []),
+    ...(location.image_urls || []).filter(u => u !== location.cover_image_url),
   ];
+
+  const nextImage = () => setActiveImageIndex(i => (i + 1) % allImages.length);
+  const prevImage = () => setActiveImageIndex(i => (i - 1 + allImages.length) % allImages.length);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-0">
-        {/* Hero Image / Gradient */}
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
+        {/* Hero Image Gallery */}
         {allImages.length > 0 ? (
-          <div className="relative h-48 bg-muted">
+          <div className="relative h-56 bg-muted group">
             <img 
               src={allImages[activeImageIndex]} 
               alt={location.name}
               className="w-full h-full object-cover"
             />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+            
+            {/* Navigation arrows */}
             {allImages.length > 1 && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              <>
+                <button 
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button 
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </>
+            )}
+            
+            {/* Dots */}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                 {allImages.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImageIndex(i)}
-                    className={`w-2 h-2 rounded-full transition-all ${i === activeImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                    className={`h-1.5 rounded-full transition-all ${i === activeImageIndex ? 'bg-white w-5' : 'bg-white/50 w-1.5'}`}
                   />
                 ))}
               </div>
             )}
-            <Badge className="absolute top-3 left-3 gap-1" variant="secondary">
+
+            {/* Image count */}
+            {allImages.length > 1 && (
+              <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Camera className="h-3 w-3" />
+                {activeImageIndex + 1}/{allImages.length}
+              </div>
+            )}
+            
+            {/* Type badge */}
+            <Badge className="absolute top-3 left-3 gap-1 bg-black/40 backdrop-blur-sm border-0 text-white" variant="secondary">
               {config.emoji} {config.label}
             </Badge>
+
+            {/* Title overlay on image */}
+            <div className="absolute bottom-3 left-3 right-3">
+              <h2 className="text-lg font-bold text-white drop-shadow-md">{location.name}</h2>
+              {location.address && (
+                <p className="text-white/80 text-xs flex items-center gap-1 mt-0.5">
+                  <MapPin className="h-3 w-3" />
+                  {location.address}{location.city ? `, ${location.city}` : ''}
+                </p>
+              )}
+            </div>
           </div>
         ) : (
-          <div className="h-32 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-            <span className="text-4xl">{config.emoji}</span>
+          <div className="h-36 bg-gradient-to-br from-primary/20 to-primary/5 flex flex-col items-center justify-center gap-2 pt-6">
+            <span className="text-5xl">{config.emoji}</span>
+            <Badge variant="secondary" className="gap-1">{config.label}</Badge>
           </div>
         )}
 
-        <div className="px-6 pb-6 space-y-5">
-          {/* Title & Rating */}
-          <div className="pt-4">
-            <h2 className="text-xl font-bold">{location.name}</h2>
-            <div className="flex items-center gap-3 mt-1.5">
+        <div className="px-5 pb-5 space-y-4">
+          {/* Title (when no images) & Rating row */}
+          {allImages.length === 0 && (
+            <div className="pt-3">
+              <h2 className="text-xl font-bold">{location.name}</h2>
+              {location.address && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                  <MapPin className="h-3 w-3" /> {location.address}{location.city ? `, ${location.city}` : ''}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Rating + Distance row */}
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center gap-3">
               {(location.average_rating ?? 0) > 0 && (
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map(s => (
                     <Star key={s} className={`h-3.5 w-3.5 ${s <= Math.round(Number(location.average_rating)) ? 'fill-amber-500 text-amber-500' : 'text-muted-foreground/30'}`} />
                   ))}
-                  <span className="text-sm font-medium ml-1">{Number(location.average_rating).toFixed(1)}</span>
+                  <span className="text-sm font-semibold ml-1">{Number(location.average_rating).toFixed(1)}</span>
                   <span className="text-xs text-muted-foreground">({location.review_count})</span>
                 </div>
               )}
-              {location.address && (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {location.address}{location.city ? `, ${location.city}` : ''}
-                </span>
-              )}
             </div>
+            <span className="text-xs text-primary font-medium flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {location.distance_km < 1 
+                ? `${Math.round(location.distance_km * 1000)}m away` 
+                : `${location.distance_km.toFixed(1)}km away`
+              }
+            </span>
+          </div>
+
+          {/* Action buttons row */}
+          <div className="flex gap-2">
+            <Button size="sm" variant="default" className="flex-1 gap-1.5" onClick={handleGetDirections}>
+              <Navigation className="h-3.5 w-3.5" />
+              Directions
+            </Button>
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={handleShare}>
+              <Share2 className="h-3.5 w-3.5" />
+            </Button>
+            {location.contact_info && (
+              <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                <a href={`tel:${location.contact_info}`}>
+                  <Phone className="h-3.5 w-3.5" />
+                </a>
+              </Button>
+            )}
+            {location.website_url && (
+              <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                <a href={location.website_url} target="_blank" rel="noopener noreferrer">
+                  <Globe className="h-3.5 w-3.5" />
+                </a>
+              </Button>
+            )}
           </div>
 
           {/* Description */}
           {location.description && (
-            <p className="text-sm text-muted-foreground">{location.description}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{location.description}</p>
           )}
 
           {/* Rental Info */}
@@ -263,24 +364,25 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
             </div>
           )}
 
-          {/* Distance */}
-          <div className="flex items-center gap-1 text-xs text-primary">
-            <MapPin className="h-3 w-3" />
-            {location.distance_km < 1 
-              ? `${Math.round(location.distance_km * 1000)}m away` 
-              : `${location.distance_km.toFixed(1)}km away`
-            }
-          </div>
-
           {/* Reviews Section */}
           <div className="border-t border-border pt-4">
-            <h3 className="font-semibold text-sm mb-3">Reviews ({reviews.length})</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-sm">Reviews ({reviews.length})</h3>
+              {user && !showReviewForm && (
+                <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setShowReviewForm(true)}>
+                  {hasReviewed ? 'Edit Review' : '+ Write Review'}
+                </Button>
+              )}
+            </div>
             
-            {/* Write a review */}
-            {user && (
-              <Card className="mb-4">
+            {/* Write a review (collapsible) */}
+            {user && showReviewForm && (
+              <Card className="mb-4 border-primary/20">
                 <CardContent className="p-3 space-y-3">
-                  <p className="text-xs font-medium">{hasReviewed ? 'Update your review' : 'Rate this spot'}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium">{hasReviewed ? 'Update your review' : 'Rate this spot'}</p>
+                    <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => setShowReviewForm(false)}>Cancel</Button>
+                  </div>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map(s => (
                       <button
@@ -289,10 +391,10 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
                         onMouseLeave={() => setHoverRating(0)}
                         onClick={() => setUserRating(s)}
                       >
-                        <Star className={`h-6 w-6 transition-colors ${
+                        <Star className={`h-7 w-7 transition-colors ${
                           s <= (hoverRating || userRating) 
                             ? 'fill-amber-500 text-amber-500' 
-                            : 'text-muted-foreground/30'
+                            : 'text-muted-foreground/30 hover:text-amber-300'
                         }`} />
                       </button>
                     ))}
@@ -323,16 +425,17 @@ export function LocationDetailDialog({ location, open, onOpenChange }: LocationD
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
             ) : reviews.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-4">
-                No reviews yet — be the first!
-              </p>
+              <div className="text-center py-6">
+                <Star className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">No reviews yet — be the first to rate this spot!</p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {reviews.map(review => (
                   <div key={review.id} className="flex gap-3">
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={review.reviewer_avatar} />
-                      <AvatarFallback className="text-xs">
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
                         {review.reviewer_name?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>

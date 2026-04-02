@@ -122,6 +122,24 @@ export function AddCreativeLocationDialog({
     setCategory('General'); setAddress(''); setCity('');
     setIsRentable(false); setPricePerHour(''); setTags([]);
     setAmenities([]); setContactInfo(''); setWebsiteUrl('');
+    setImageFiles([]); setImagePreviews([]);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + imageFiles.length > 5) {
+      toast({ title: "Max 5 images", variant: "destructive" });
+      return;
+    }
+    const newFiles = [...imageFiles, ...files].slice(0, 5);
+    setImageFiles(newFiles);
+    const previews = newFiles.map(f => URL.createObjectURL(f));
+    setImagePreviews(previews);
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const addTag = () => {

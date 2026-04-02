@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +21,7 @@ import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { AddCreativeLocationDialog } from "@/components/nearby/AddCreativeLocationDialog";
 import { LocationListItem, type CreativeLocation } from "@/components/nearby/LocationListItem";
 import { LocationDetailDialog } from "@/components/nearby/LocationDetailDialog";
+import { AtlasFilterTabs, type AtlasFilter } from "@/components/nearby/AtlasFilterTabs";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 
@@ -83,6 +84,7 @@ const NearbyCreators = () => {
     missingFields: string[];
   }>({ isVisible: true, missingFields: [] });
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
 
   // Check current user's profile visibility requirements
   useEffect(() => {
@@ -407,6 +409,24 @@ const NearbyCreators = () => {
     return `${km.toFixed(1)}km away`;
   };
 
+  // Filtered data based on atlas filter
+  const filteredCreators = useMemo(() => 
+    (atlasFilter === 'all' || atlasFilter === 'creators') ? creators : [], 
+    [atlasFilter, creators]
+  );
+  const filteredSessions = useMemo(() => 
+    (atlasFilter === 'all' || atlasFilter === 'sessions') ? sessions : [], 
+    [atlasFilter, sessions]
+  );
+  const filteredLocations = useMemo(() => 
+    atlasFilter === 'all' 
+      ? locations 
+      : ['studio', 'creative_space', 'shoot_spot', 'venue'].includes(atlasFilter) 
+        ? locations.filter(l => l.location_type === atlasFilter) 
+        : [], 
+    [atlasFilter, locations]
+  );
+
   return (
     <div className="container max-w-7xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">
       {/* Profile Visibility Banner - Show if user doesn't meet requirements */}
@@ -448,6 +468,22 @@ const NearbyCreators = () => {
           </Button>
         </div>
       </div>
+
+      {/* Atlas Filter Tabs */}
+      {userLocation && (
+        <AtlasFilterTabs
+          active={atlasFilter}
+          onChange={setAtlasFilter}
+          counts={{
+            creators: creators.length,
+            sessions: sessions.length,
+            studios: locations.filter(l => l.location_type === 'studio').length,
+            spaces: locations.filter(l => l.location_type === 'creative_space').length,
+            spots: locations.filter(l => l.location_type === 'shoot_spot').length,
+            venues: locations.filter(l => l.location_type === 'venue').length,
+          }}
+        />
+      )}
 
       {/* Controls - Collapsible on mobile */}
       <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen} className="lg:hidden">
@@ -623,9 +659,9 @@ const NearbyCreators = () => {
           <div className={viewMode === 'map' ? 'lg:col-span-2' : 'lg:col-span-3'}>
             {viewMode === 'map' ? (
               <UnifiedNearbyMap
-                creators={creators}
-                sessions={sessions}
-                locations={locations}
+                creators={filteredCreators}
+                sessions={filteredSessions}
+                locations={filteredLocations}
                 userLocation={userLocation}
                 selectedItem={selectedItem}
                 onSelectCreator={(creator) => {
@@ -658,7 +694,7 @@ const NearbyCreators = () => {
                   <div className="col-span-full flex justify-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
-                ) : creators.length === 0 && sessions.length === 0 ? (
+                ) : filteredCreators.length === 0 && filteredSessions.length === 0 && filteredLocations.length === 0 ? (
                   <Card className="col-span-full py-12">
                     <CardContent className="text-center">
                       <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -674,7 +710,7 @@ const NearbyCreators = () => {
                   </Card>
                 ) : (
                   <>
-                    {creators.map((creator) => (
+                    {filteredCreators.map((creator) => (
                       <CreatorCard
                         key={creator.user_id}
                         creator={creator}
@@ -684,7 +720,7 @@ const NearbyCreators = () => {
                         getSkills={getSkills}
                       />
                     ))}
-                    {sessions.map((session) => (
+                    {filteredSessions.map((session) => (
                       <SessionCard
                         key={session.id}
                         session={session}
@@ -692,7 +728,7 @@ const NearbyCreators = () => {
                         onClick={() => setSelectedSession(session)}
                       />
                     ))}
-                    {locations.map((loc) => (
+                    {filteredLocations.map((loc) => (
                       <LocationListItem
                         key={loc.id}
                         location={loc}
@@ -731,22 +767,19 @@ const NearbyCreators = () => {
               </div>
 
               {/* Creators Section */}
+              {filteredCreators.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-cyan-500" />
-                  <h3 className="font-semibold text-sm">{creators.length} Creators</h3>
+                  <div className="w-3 h-3 rounded-full bg-primary/60" />
+                  <h3 className="font-semibold text-sm">{filteredCreators.length} Creators</h3>
                 </div>
                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                   {loading ? (
                     <div className="flex justify-center py-4">
                       <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     </div>
-                  ) : creators.length === 0 ? (
-                    <p className="text-xs text-muted-foreground py-4 text-center">
-                      No creators found nearby
-                    </p>
                   ) : (
-                    creators.slice(0, 10).map((creator) => (
+                    filteredCreators.slice(0, 10).map((creator) => (
                       <CreatorListItem
                         key={creator.user_id}
                         creator={creator}
@@ -760,19 +793,21 @@ const NearbyCreators = () => {
                   )}
                 </div>
               </div>
+              )}
 
               {/* Sessions Section */}
+              {(atlasFilter === 'all' || atlasFilter === 'sessions') && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
-                  <h3 className="font-semibold text-sm">{sessions.length} Sessions</h3>
+                  <div className="w-3 h-3 rounded-full bg-accent" />
+                  <h3 className="font-semibold text-sm">{filteredSessions.length} Sessions</h3>
                 </div>
                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                   {loading ? (
                     <div className="flex justify-center py-4">
                       <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     </div>
-                  ) : sessions.length === 0 ? (
+                  ) : filteredSessions.length === 0 ? (
                     <Card className="p-3">
                       <p className="text-xs text-muted-foreground text-center mb-2">
                         No sessions nearby
@@ -788,7 +823,7 @@ const NearbyCreators = () => {
                       </Button>
                     </Card>
                   ) : (
-                    sessions.map((session) => (
+                    filteredSessions.map((session) => (
                       <SessionListItem
                         key={session.id}
                         session={session}
@@ -803,15 +838,17 @@ const NearbyCreators = () => {
                   )}
                 </div>
               </div>
+              )}
 
               {/* Locations Section */}
+              {filteredLocations.length > 0 || atlasFilter !== 'creators' && atlasFilter !== 'sessions' ? (
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm">📍</span>
-                  <h3 className="font-semibold text-sm">{locations.length} Spots</h3>
+                  <h3 className="font-semibold text-sm">{filteredLocations.length} Spots</h3>
                 </div>
                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
-                  {locations.length === 0 ? (
+                  {filteredLocations.length === 0 ? (
                     <Card className="p-3">
                       <p className="text-xs text-muted-foreground text-center mb-2">
                         No creative spots pinned nearby
@@ -827,7 +864,7 @@ const NearbyCreators = () => {
                       </Button>
                     </Card>
                   ) : (
-                    locations.slice(0, 10).map((loc) => (
+                    filteredLocations.slice(0, 10).map((loc) => (
                       <LocationListItem
                         key={loc.id}
                         location={loc}
@@ -839,6 +876,7 @@ const NearbyCreators = () => {
                   )}
                 </div>
               </div>
+              ) : null}
             </div>
           )}
         </div>

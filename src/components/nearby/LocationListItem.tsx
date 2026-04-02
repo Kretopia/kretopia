@@ -22,6 +22,8 @@ interface CreativeLocation {
   average_rating?: number;
   review_count?: number;
   is_verified?: boolean;
+  contact_info?: string;
+  website_url?: string;
   creator_name?: string;
   creator_avatar?: string;
   distance_km: number;

@@ -8,9 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2, Bookmark, BookmarkCheck, Headphones, ShoppingBag, ExternalLink, BadgeCheck } from "lucide-react";
+import { Star, MapPin, DollarSign, Camera, Building2, Palette, Music, Navigation, Share2, Phone, Globe, ChevronLeft, ChevronRight, Loader2, Bookmark, BookmarkCheck, Headphones, ShoppingBag, ExternalLink, BadgeCheck, CalendarIcon } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
 import { ClaimLocationDialog } from "./ClaimLocationDialog";
+import { LocationReviewHelpful } from "./LocationReviewHelpful";
+import { LocationBookingDialog } from "./LocationBookingDialog";
 
 interface LocationDetailDialogProps {
   location: CreativeLocation | null;
@@ -55,6 +57,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
 
   const config = location ? (TYPE_CONFIG[location.location_type] || TYPE_CONFIG.shoot_spot) : TYPE_CONFIG.shoot_spot;
 
@@ -367,11 +370,21 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                     <p className="text-xs text-muted-foreground">Available for rent</p>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="text-xs">
-                  Enquire
+                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setShowBookingDialog(true)}>
+                  <CalendarIcon className="h-3 w-3" />
+                  Book Now
                 </Button>
               </CardContent>
             </Card>
+          )}
+
+          {/* Booking Dialog */}
+          {location.is_rentable && location.price_per_hour && (
+            <LocationBookingDialog
+              location={location}
+              open={showBookingDialog}
+              onOpenChange={setShowBookingDialog}
+            />
           )}
 
           {/* Amenities */}
@@ -493,9 +506,12 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
                       {review.review_text && (
                         <p className="text-xs text-muted-foreground mt-0.5">{review.review_text}</p>
                       )}
-                      <p className="text-[10px] text-muted-foreground/60 mt-1">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-[10px] text-muted-foreground/60">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </p>
+                        <LocationReviewHelpful reviewId={review.id} />
+                      </div>
                     </div>
                   </div>
                 ))}

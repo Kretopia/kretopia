@@ -694,7 +694,7 @@ const NearbyCreators = () => {
                   <div className="col-span-full flex justify-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
-                ) : creators.length === 0 && sessions.length === 0 ? (
+                ) : filteredCreators.length === 0 && filteredSessions.length === 0 && filteredLocations.length === 0 ? (
                   <Card className="col-span-full py-12">
                     <CardContent className="text-center">
                       <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -710,7 +710,7 @@ const NearbyCreators = () => {
                   </Card>
                 ) : (
                   <>
-                    {creators.map((creator) => (
+                    {filteredCreators.map((creator) => (
                       <CreatorCard
                         key={creator.user_id}
                         creator={creator}
@@ -720,7 +720,7 @@ const NearbyCreators = () => {
                         getSkills={getSkills}
                       />
                     ))}
-                    {sessions.map((session) => (
+                    {filteredSessions.map((session) => (
                       <SessionCard
                         key={session.id}
                         session={session}
@@ -728,7 +728,7 @@ const NearbyCreators = () => {
                         onClick={() => setSelectedSession(session)}
                       />
                     ))}
-                    {locations.map((loc) => (
+                    {filteredLocations.map((loc) => (
                       <LocationListItem
                         key={loc.id}
                         location={loc}

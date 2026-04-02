@@ -465,7 +465,7 @@ const NearbyCreators = () => {
       case 'rating': result = [...result].sort((a, b) => (Number(b.average_rating) || 0) - (Number(a.average_rating) || 0)); break;
       case 'price_low': result = [...result].sort((a, b) => (Number(a.price_per_hour) || 999) - (Number(b.price_per_hour) || 999)); break;
       case 'price_high': result = [...result].sort((a, b) => (Number(b.price_per_hour) || 0) - (Number(a.price_per_hour) || 0)); break;
-      case 'newest': result = [...result].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()); break;
+      case 'newest': result = [...result].sort((a, b) => b.distance_km - a.distance_km); break;
       default: result = [...result].sort((a, b) => a.distance_km - b.distance_km); break;
     }
 

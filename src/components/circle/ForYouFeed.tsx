@@ -453,7 +453,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           const complementary = complementaryPairs[currentProfile.role] || [];
           if (complementary.some(role => candidate.role?.includes(role))) {
             score += 15;
-            reasons.push(`🎯 Complementary skill: ${candidate.role}`);
+            reasons.push(`Complementary skill: ${candidate.role}`);
           } else if (candidate.role === currentProfile.role) {
             score += 5;
             reasons.push(`✨ Fellow ${candidate.role}`);

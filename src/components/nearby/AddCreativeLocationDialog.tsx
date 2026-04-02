@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useLocationCategories } from "@/hooks/useLocationCategories";
 import { Loader2, MapPin, Camera, X, DollarSign } from "lucide-react";
 
 interface AddCreativeLocationDialogProps {
@@ -30,10 +31,7 @@ const LOCATION_TYPES = [
   { value: 'photo_lab', label: '📷 Photo Lab', desc: 'Film processing, printing, scanning' },
 ];
 
-const CATEGORIES = [
-  'Photography', 'Music', 'Film', 'Art', 'Design', 'Dance',
-  'Fashion', 'Tech', 'Podcast', 'Content Creation', 'General',
-];
+// Categories now fetched from location_categories table
 
 const AMENITY_OPTIONS = [
   'WiFi', 'Parking', 'AC', 'Sound System', 'Lighting Equipment',
@@ -51,7 +49,8 @@ export function AddCreativeLocationDialog({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [locationType, setLocationType] = useState('shoot_spot');
-  const [category, setCategory] = useState('General');
+  const [category, setCategory] = useState('');
+  const { data: subcategories = [] } = useLocationCategories(locationType);
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [isRentable, setIsRentable] = useState(false);
@@ -247,15 +246,21 @@ export function AddCreativeLocationDialog({
             </div>
           </div>
 
-          <div>
-            <Label className="text-sm font-medium">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+          {subcategories.length > 0 && (
+            <div>
+              <Label className="text-sm font-medium">Subcategory</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Select a subcategory" /></SelectTrigger>
+                <SelectContent>
+                  {subcategories.map(c => (
+                    <SelectItem key={c.slug} value={c.slug}>
+                      {c.emoji} {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Address & City */}
           <div className="grid grid-cols-2 gap-3">

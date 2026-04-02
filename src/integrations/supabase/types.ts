@@ -3293,6 +3293,53 @@ export type Database = {
           },
         ]
       }
+      location_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          emoji: string | null
+          id: string
+          is_active: boolean | null
+          location_type: string
+          name: string
+          parent_slug: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          location_type: string
+          name: string
+          parent_slug?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          location_type?: string
+          name?: string
+          parent_slug?: string | null
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_categories_parent_slug_fkey"
+            columns: ["parent_slug"]
+            isOneToOne: false
+            referencedRelation: "location_categories"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       location_reviews: {
         Row: {
           created_at: string

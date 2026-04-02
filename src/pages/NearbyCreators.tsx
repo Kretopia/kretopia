@@ -451,6 +451,22 @@ const NearbyCreators = () => {
         </div>
       </div>
 
+      {/* Atlas Filter Tabs */}
+      {userLocation && (
+        <AtlasFilterTabs
+          active={atlasFilter}
+          onChange={setAtlasFilter}
+          counts={{
+            creators: creators.length,
+            sessions: sessions.length,
+            studios: locations.filter(l => l.location_type === 'studio').length,
+            spaces: locations.filter(l => l.location_type === 'creative_space').length,
+            spots: locations.filter(l => l.location_type === 'shoot_spot').length,
+            venues: locations.filter(l => l.location_type === 'venue').length,
+          }}
+        />
+      )}
+
       {/* Controls - Collapsible on mobile */}
       <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen} className="lg:hidden">
         <Card className="overflow-hidden">

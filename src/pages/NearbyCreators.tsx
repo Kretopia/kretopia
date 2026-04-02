@@ -413,22 +413,64 @@ const NearbyCreators = () => {
     return `${km.toFixed(1)}km away`;
   };
 
-  // Filtered data based on atlas filter
-  const filteredCreators = useMemo(() => 
-    (atlasFilter === 'all' || atlasFilter === 'creators') ? creators : [], 
-    [atlasFilter, creators]
-  );
-  const filteredSessions = useMemo(() => 
-    (atlasFilter === 'all' || atlasFilter === 'sessions') ? sessions : [], 
-    [atlasFilter, sessions]
-  );
+  // Filtered data based on atlas filter + search
+  const filteredCreators = useMemo(() => {
+    if (atlasFilter !== 'all' && atlasFilter !== 'creators') return [];
+    let result = creators;
+    if (searchFilters.query) {
+      const q = searchFilters.query.toLowerCase();
+      result = result.filter(c => c.full_name?.toLowerCase().includes(q) || c.role?.toLowerCase().includes(q));
+    }
+    return result;
+  }, [atlasFilter, creators, searchFilters.query]);
+
+  const filteredSessions = useMemo(() => {
+    if (atlasFilter !== 'all' && atlasFilter !== 'sessions') return [];
+    let result = sessions;
+    if (searchFilters.query) {
+      const q = searchFilters.query.toLowerCase();
+      result = result.filter(s => s.title?.toLowerCase().includes(q) || s.category?.toLowerCase().includes(q));
+    }
+    return result;
+  }, [atlasFilter, sessions, searchFilters.query]);
+
   const locationTypes = ['studio', 'creative_space', 'shoot_spot', 'venue', 'music_store', 'art_supply', 'rental_house', 'photo_lab'];
   const filteredLocations = useMemo(() => {
-    if (atlasFilter === 'all') return locations;
-    if (atlasFilter === 'bookmarked') return locations.filter(l => bookmarkedIds.has(l.id));
-    if (locationTypes.includes(atlasFilter)) return locations.filter(l => l.location_type === atlasFilter);
-    return [];
-  }, [atlasFilter, locations, bookmarkedIds]);
+    let result = locations;
+    
+    // Tab filter
+    if (atlasFilter === 'bookmarked') result = result.filter(l => bookmarkedIds.has(l.id));
+    else if (locationTypes.includes(atlasFilter)) result = result.filter(l => l.location_type === atlasFilter);
+    else if (atlasFilter !== 'all' && atlasFilter !== 'creators' && atlasFilter !== 'sessions') return [];
+
+    // Search query
+    if (searchFilters.query) {
+      const q = searchFilters.query.toLowerCase();
+      result = result.filter(l => 
+        l.name?.toLowerCase().includes(q) || 
+        l.address?.toLowerCase().includes(q) || 
+        l.city?.toLowerCase().includes(q) ||
+        l.tags?.some(t => t.toLowerCase().includes(q))
+      );
+    }
+
+    // Advanced filters
+    if (searchFilters.minRating > 0) result = result.filter(l => (l.average_rating ?? 0) >= searchFilters.minRating);
+    if (searchFilters.maxPrice !== null) result = result.filter(l => !l.price_per_hour || Number(l.price_per_hour) <= searchFilters.maxPrice!);
+    if (searchFilters.rentableOnly) result = result.filter(l => l.is_rentable);
+    if (searchFilters.verifiedOnly) result = result.filter(l => l.is_verified);
+
+    // Sort
+    switch (searchFilters.sortBy) {
+      case 'rating': result = [...result].sort((a, b) => (Number(b.average_rating) || 0) - (Number(a.average_rating) || 0)); break;
+      case 'price_low': result = [...result].sort((a, b) => (Number(a.price_per_hour) || 999) - (Number(b.price_per_hour) || 999)); break;
+      case 'price_high': result = [...result].sort((a, b) => (Number(b.price_per_hour) || 0) - (Number(a.price_per_hour) || 0)); break;
+      case 'newest': result = [...result].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()); break;
+      default: result = [...result].sort((a, b) => a.distance_km - b.distance_km); break;
+    }
+
+    return result;
+  }, [atlasFilter, locations, bookmarkedIds, searchFilters]);
 
   return (
     <div className="container max-w-7xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">

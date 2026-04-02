@@ -141,6 +141,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             user_id: user.id,
             rating: userRating,
             review_text: reviewText.trim() || null,
+            image_urls: reviewPhotos.length > 0 ? reviewPhotos : null,
           });
         if (error) throw error;
         toast({ title: "Review submitted ⭐" });

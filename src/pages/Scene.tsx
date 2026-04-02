@@ -100,8 +100,8 @@ const Scene = () => {
             </TabsList>
 
             <TabsContent value="spark" className="mt-0">
-              <SmartNudgeBanner />
-              <GetStartedChecklist />
+              {user && <SmartNudgeBanner />}
+              {user && <GetStartedChecklist />}
               <SparkWall />
             </TabsContent>
 

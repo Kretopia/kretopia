@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Flame, MessageSquareMore, Briefcase, LayoutDashboard, Wallet, User, Target, Database } from "lucide-react";
+import { Sparkles, Flame, Briefcase, LayoutDashboard, Wallet, User, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useRef, useCallback } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";

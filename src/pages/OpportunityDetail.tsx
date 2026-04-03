@@ -427,6 +427,17 @@ const OpportunityDetail = () => {
           opportunityDescription={opportunity.description}
         />
       )}
+      {opportunity && showEditDialog && (
+        <EditOpportunityDialog
+          opportunityId={opportunity.id}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          onSuccess={() => {
+            fetchData();
+            setShowEditDialog(false);
+          }}
+        />
+      )}
     </div>
   );
 };

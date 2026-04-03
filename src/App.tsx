@@ -297,20 +297,13 @@ const AppContent = () => {
             <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
             <Route path="/partner-submit" element={<PartnerSubmit />} />
             
-            {/* Marketplace */}
-            <Route path="/market" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-            <Route path="/market/:listingId" element={<ProtectedRoute><ListingDetail /></ProtectedRoute>} />
-            
             {/* Opportunity Management */}
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
             <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
             
-            {/* Rewards */}
-            <Route path="/rewards" element={<ProtectedRoute><RewardsShop /></ProtectedRoute>} />
-            
-            {/* Talent Manager */}
-            <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
+            {/* Rewards - hidden for now */}
+            <Route path="/rewards" element={<Navigate to="/scene" replace />} />
             
             {/* Credit Database & Discover - Public browsable */}
             <Route path="/credits" element={<CreditDatabase />} />
@@ -321,11 +314,6 @@ const AppContent = () => {
             <Route path="/directory" element={<Navigate to="/circle?tab=browse" replace />} />
             <Route path="/discover" element={<Navigate to="/credits/discover" replace />} />
             <Route path="/opportunities" element={<Opportunities />} />
-            
-            {/* Check-in & Challenges */}
-            <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-            <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
-            <Route path="/challenges/:id" element={<ProtectedRoute><ChallengeDetail /></ProtectedRoute>} />
 
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />

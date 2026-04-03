@@ -232,6 +232,11 @@ const OpportunityDetail = () => {
             Back
           </Button>
           <div className="flex gap-2">
+            {user && (opportunity.created_by === user.id || opportunity.scouted_by === user.id) && (
+              <Button variant="outline" size="icon" onClick={() => setShowEditDialog(true)}>
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
             <Button variant="outline" size="icon" onClick={handleBookmark}>
               {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
             </Button>

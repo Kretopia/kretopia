@@ -248,10 +248,16 @@ const AppContent = () => {
             
             {/* Legacy redirects for removed features */}
             <Route path="/agent" element={<Navigate to="/circle" replace />} />
-            <Route path="/sales" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
-            <Route path="/leads" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
-            <Route path="/outreach" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
-            <Route path="/thrive-ai" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
+            <Route path="/sales" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/leads" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/outreach" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/thrive-ai" element={<Navigate to="/circle" replace />} />
+            <Route path="/challenges" element={<Navigate to="/scene" replace />} />
+            <Route path="/challenges/:id" element={<Navigate to="/scene" replace />} />
+            <Route path="/market" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/market/:listingId" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/talent-manager" element={<Navigate to="/circle" replace />} />
+            <Route path="/checkin" element={<Navigate to="/scene" replace />} />
             
             {/* Public Browsable Routes */}
             <Route path="/nearby" element={<NearbyCreators />} />

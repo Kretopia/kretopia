@@ -30,6 +30,8 @@ interface Opportunity {
   platform_requirements?: string[] | null;
   min_followers?: number | null;
   content_deliverables?: any;
+  created_by?: string;
+  scouted_by?: string;
 }
 
 const OpportunityDetail = () => {
@@ -38,6 +40,7 @@ const OpportunityDetail = () => {
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();

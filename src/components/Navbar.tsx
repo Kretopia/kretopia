@@ -94,14 +94,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
     ? [
         { path: "/scene", icon: Zap, label: "Scene" },
         { path: "/circle", icon: Sparkles, label: "Match" },
+        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
         { path: "/credits", icon: Globe, label: "ThriveCredits" },
-        { path: "/circles", icon: MessageSquareMore, label: "Circles" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
         { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
-        { path: "/sales", icon: Target, label: "Pipeline" },
+        { path: "/profile", icon: User, label: "Profile" },
       ];
 
   return (

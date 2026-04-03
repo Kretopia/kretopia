@@ -94,14 +94,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
     ? [
         { path: "/scene", icon: Zap, label: "Scene" },
         { path: "/circle", icon: Sparkles, label: "Match" },
+        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
         { path: "/credits", icon: Globe, label: "ThriveCredits" },
-        { path: "/circles", icon: MessageSquareMore, label: "Circles" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
         { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
-        { path: "/sales", icon: Target, label: "Pipeline" },
+        { path: "/profile", icon: User, label: "Profile" },
       ];
 
   return (
@@ -242,8 +242,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
-                      <MenuButton icon={Trophy} label="Cre8 Arena" onClick={() => handleNavigation("/challenges")} />
-                       <MenuButton icon={MapPin} label="Nearby" onClick={() => handleNavigation("/nearby")} />
+                      <MenuButton icon={MapPin} label="Nearby" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={BarChart3} label="My Analytics" onClick={() => handleNavigation("/my-analytics")} />
                     </>
                   ) : (
@@ -257,8 +256,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
                       <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       <MenuButton icon={MapPin} label="Nearby" onClick={() => handleNavigation("/nearby")} />
-                      <MenuButton icon={ShoppingBag} label="Marketplace" onClick={() => handleNavigation("/market")} />
-                      <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                     </>
                   )}
 

@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube } from "lucide-react";
+import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit } from "lucide-react";
 import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
+import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { SEO } from "@/components/SEO";
 
 interface Opportunity {
@@ -29,6 +30,8 @@ interface Opportunity {
   platform_requirements?: string[] | null;
   min_followers?: number | null;
   content_deliverables?: any;
+  created_by?: string;
+  scouted_by?: string;
 }
 
 const OpportunityDetail = () => {
@@ -37,6 +40,7 @@ const OpportunityDetail = () => {
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -228,6 +232,11 @@ const OpportunityDetail = () => {
             Back
           </Button>
           <div className="flex gap-2">
+            {user && (opportunity.created_by === user.id || opportunity.scouted_by === user.id) && (
+              <Button variant="outline" size="icon" onClick={() => setShowEditDialog(true)}>
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
             <Button variant="outline" size="icon" onClick={handleBookmark}>
               {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
             </Button>
@@ -416,6 +425,17 @@ const OpportunityDetail = () => {
           opportunityId={opportunity.id}
           opportunityTitle={opportunity.title}
           opportunityDescription={opportunity.description}
+        />
+      )}
+      {opportunity && showEditDialog && (
+        <EditOpportunityDialog
+          opportunityId={opportunity.id}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          onSuccess={() => {
+            fetchData();
+            setShowEditDialog(false);
+          }}
         />
       )}
     </div>

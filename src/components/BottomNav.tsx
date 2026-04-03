@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Flame, MessageSquareMore, Briefcase, LayoutDashboard, Wallet, User, Target, Database } from "lucide-react";
+import { Sparkles, Flame, Briefcase, LayoutDashboard, Wallet, User, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useRef, useCallback } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";
@@ -7,15 +7,15 @@ import { useNavMode, NavMode } from "@/hooks/useNavMode";
 const CREATE_ITEMS = [
   { path: "/scene", icon: Flame, label: "Scene" },
   { path: "/circle", icon: Sparkles, label: "Match" },
+  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
   { path: "/credits", icon: Database, label: "Credits" },
-  { path: "/circles", icon: MessageSquareMore, label: "Circles" },
 ];
 
 const WORK_ITEMS = [
   { path: "/desk", icon: LayoutDashboard, label: "Desk" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
   { path: "/thrivepay", icon: Wallet, label: "Pay" },
-  { path: "/sales", icon: Target, label: "Pipeline" },
+  { path: "/profile", icon: User, label: "Profile" },
 ];
 
 const MODE_META: Record<NavMode, { label: string; accent: string }> = {

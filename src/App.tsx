@@ -248,10 +248,16 @@ const AppContent = () => {
             
             {/* Legacy redirects for removed features */}
             <Route path="/agent" element={<Navigate to="/circle" replace />} />
-            <Route path="/sales" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
-            <Route path="/leads" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
-            <Route path="/outreach" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
-            <Route path="/thrive-ai" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
+            <Route path="/sales" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/leads" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/outreach" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/thrive-ai" element={<Navigate to="/circle" replace />} />
+            <Route path="/challenges" element={<Navigate to="/scene" replace />} />
+            <Route path="/challenges/:id" element={<Navigate to="/scene" replace />} />
+            <Route path="/market" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/market/:listingId" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/talent-manager" element={<Navigate to="/circle" replace />} />
+            <Route path="/checkin" element={<Navigate to="/scene" replace />} />
             
             {/* Public Browsable Routes */}
             <Route path="/nearby" element={<NearbyCreators />} />
@@ -291,20 +297,13 @@ const AppContent = () => {
             <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
             <Route path="/partner-submit" element={<PartnerSubmit />} />
             
-            {/* Marketplace */}
-            <Route path="/market" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-            <Route path="/market/:listingId" element={<ProtectedRoute><ListingDetail /></ProtectedRoute>} />
-            
             {/* Opportunity Management */}
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
             <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
             <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
             
-            {/* Rewards */}
-            <Route path="/rewards" element={<ProtectedRoute><RewardsShop /></ProtectedRoute>} />
-            
-            {/* Talent Manager */}
-            <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
+            {/* Rewards - hidden for now */}
+            <Route path="/rewards" element={<Navigate to="/scene" replace />} />
             
             {/* Credit Database & Discover - Public browsable */}
             <Route path="/credits" element={<CreditDatabase />} />
@@ -315,11 +314,6 @@ const AppContent = () => {
             <Route path="/directory" element={<Navigate to="/circle?tab=browse" replace />} />
             <Route path="/discover" element={<Navigate to="/credits/discover" replace />} />
             <Route path="/opportunities" element={<Opportunities />} />
-            
-            {/* Check-in & Challenges */}
-            <Route path="/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-            <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
-            <Route path="/challenges/:id" element={<ProtectedRoute><ChallengeDetail /></ProtectedRoute>} />
 
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />

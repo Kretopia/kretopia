@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Wand2, ImagePlus, Sparkles } from "lucide-react";
 
 interface EditOpportunityDialogProps {
   opportunityId: string;
@@ -24,6 +24,8 @@ export const EditOpportunityDialog = ({
 }: EditOpportunityDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [enhancingText, setEnhancingText] = useState(false);
+  const [generatingImage, setGeneratingImage] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -87,11 +89,7 @@ export const EditOpportunityDialog = ({
       }
     } catch (error) {
       console.error('Error loading opportunity:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load opportunity details",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to load opportunity details", variant: "destructive" });
     } finally {
       setInitialLoading(false);
     }
@@ -102,79 +100,118 @@ export const EditOpportunityDialog = ({
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleAIEnhance = async () => {
+    setEnhancingText(true);
+    try {
+      // Save current data first
+      await handleSave();
+      
+      const { data, error } = await supabase.functions.invoke('enhance-gig', {
+        body: { opportunity_id: opportunityId, mode: "enhance_text" },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Reload with enhanced data
+      await loadOpportunity();
+      toast({ title: "✨ Enhanced!", description: "AI has polished your gig listing" });
+    } catch (error: any) {
+      console.error('AI enhance error:', error);
+      toast({ title: "Enhancement failed", description: error.message || "Try again shortly", variant: "destructive" });
+    } finally {
+      setEnhancingText(false);
+    }
+  };
+
+  const handleAIGenerateImage = async () => {
+    setGeneratingImage(true);
+    try {
+      // Save current data first so AI has latest context
+      await handleSave();
+
+      const { data, error } = await supabase.functions.invoke('enhance-gig', {
+        body: { opportunity_id: opportunityId, mode: "generate_image" },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Reload to show new image
+      await loadOpportunity();
+      toast({ title: "🎨 Cover generated!", description: "AI created a cover image for your gig" });
+    } catch (error: any) {
+      console.error('AI image error:', error);
+      toast({ title: "Image generation failed", description: error.message || "Try again shortly", variant: "destructive" });
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
+
+  const handleSave = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("You must be logged in");
+
+    let imageUrl = existingImageUrl;
+
+    if (imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('portfolio')
+        .upload(filePath, imageFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('portfolio')
+        .getPublicUrl(filePath);
+
+      imageUrl = publicUrl;
+    }
+
+    const { error } = await supabase
+      .from('opportunities')
+      .update({
+        title: formData.title,
+        type: formData.type,
+        description: formData.description,
+        compensation: formData.compensation,
+        location: formData.location,
+        requirements: formData.requirements,
+        skills: formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
+        deliverables: formData.deliverables,
+        duration: formData.duration,
+        status: formData.status,
+        image_url: imageUrl,
+        barter_offering: formData.barter_offering || null,
+        barter_requesting: formData.barter_requesting || null,
+        platform_requirements: formData.platform_requirements.length > 0 ? formData.platform_requirements : null,
+        min_followers: formData.min_followers ? parseInt(formData.min_followers) : null,
+      } as any)
+      .eq('id', opportunityId);
+
+    if (error) throw error;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("You must be logged in");
-
-      let imageUrl = existingImageUrl;
-
-      // Upload new image if provided
-      if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('portfolio')
-          .upload(filePath, imageFile);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('portfolio')
-          .getPublicUrl(filePath);
-
-        imageUrl = publicUrl;
-      }
-
-      const { error } = await supabase
-        .from('opportunities')
-        .update({
-          title: formData.title,
-          type: formData.type,
-          description: formData.description,
-          compensation: formData.compensation,
-          location: formData.location,
-          requirements: formData.requirements,
-          skills: formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
-          deliverables: formData.deliverables,
-          duration: formData.duration,
-          status: formData.status,
-          image_url: imageUrl,
-          barter_offering: formData.barter_offering || null,
-          barter_requesting: formData.barter_requesting || null,
-          platform_requirements: formData.platform_requirements.length > 0 ? formData.platform_requirements : null,
-          min_followers: formData.min_followers ? parseInt(formData.min_followers) : null,
-        } as any)
-        .eq('id', opportunityId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Opportunity updated successfully",
-      });
-
+      await handleSave();
+      toast({ title: "Success", description: "Opportunity updated successfully" });
       onOpenChange(false);
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error updating opportunity:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update opportunity",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update opportunity", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -194,23 +231,41 @@ export const EditOpportunityDialog = ({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* AI Actions Bar */}
+            <div className="flex gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAIEnhance}
+                disabled={enhancingText || generatingImage}
+                className="flex-1 gap-2 text-xs"
+              >
+                {enhancingText ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                AI Enhance Copy
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAIGenerateImage}
+                disabled={enhancingText || generatingImage}
+                className="flex-1 gap-2 text-xs"
+              >
+                {generatingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+                AI Cover Image
+              </Button>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-                maxLength={100}
-              />
+              <Input id="title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required maxLength={100} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="type">Type *</Label>
               <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="job">💼 Paid Job</SelectItem>
                   <SelectItem value="collab">🤝 Collaboration</SelectItem>
@@ -222,114 +277,63 @@ export const EditOpportunityDialog = ({
               </Select>
             </div>
 
-            {/* Barter-specific fields */}
             {formData.type === 'barter' && (
               <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-primary/5">
                 <p className="text-xs font-semibold text-indigo-700 dark:text-purple-300">🔄 Barter Details</p>
                 <div className="space-y-2">
                   <Label htmlFor="edit-barter-offering">What You're Offering</Label>
-                  <Input
-                    id="edit-barter-offering"
-                    value={formData.barter_offering}
-                    onChange={(e) => setFormData({ ...formData, barter_offering: e.target.value })}
-                    placeholder="e.g., Free dinner for 2, complimentary room night"
-                  />
+                  <Input id="edit-barter-offering" value={formData.barter_offering} onChange={(e) => setFormData({ ...formData, barter_offering: e.target.value })} placeholder="e.g., Free dinner for 2" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-barter-requesting">What You Need in Return</Label>
-                  <Input
-                    id="edit-barter-requesting"
-                    value={formData.barter_requesting}
-                    onChange={(e) => setFormData({ ...formData, barter_requesting: e.target.value })}
-                    placeholder="e.g., 1 Reel + 3 Stories tagging our venue"
-                  />
+                  <Input id="edit-barter-requesting" value={formData.barter_requesting} onChange={(e) => setFormData({ ...formData, barter_requesting: e.target.value })} placeholder="e.g., 1 Reel + 3 Stories" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-min-followers">Min. Followers (optional)</Label>
-                  <Input
-                    id="edit-min-followers"
-                    type="number"
-                    value={formData.min_followers}
-                    onChange={(e) => setFormData({ ...formData, min_followers: e.target.value })}
-                    placeholder="e.g., 5000"
-                  />
+                  <Input id="edit-min-followers" type="number" value={formData.min_followers} onChange={(e) => setFormData({ ...formData, min_followers: e.target.value })} placeholder="e.g., 5000" />
                 </div>
               </div>
             )}
+
             <div className="space-y-2">
               <Label htmlFor="description">Description *</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                required
-                rows={5}
-                maxLength={1000}
-              />
+              <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required rows={5} maxLength={1000} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="compensation">Budget/Compensation</Label>
-              <Input
-                id="compensation"
-                value={formData.compensation}
-                onChange={(e) => setFormData({ ...formData, compensation: e.target.value })}
-              />
+              <Input id="compensation" value={formData.compensation} onChange={(e) => setFormData({ ...formData, compensation: e.target.value })} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
+              <Input id="location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="requirements">Requirements</Label>
-              <Textarea
-                id="requirements"
-                value={formData.requirements}
-                onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                rows={3}
-              />
+              <Textarea id="requirements" value={formData.requirements} onChange={(e) => setFormData({ ...formData, requirements: e.target.value })} rows={3} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="skills">Skills (comma-separated)</Label>
-              <Input
-                id="skills"
-                value={formData.skills}
-                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-              />
+              <Input id="skills" value={formData.skills} onChange={(e) => setFormData({ ...formData, skills: e.target.value })} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="deliverables">Deliverables</Label>
-              <Textarea
-                id="deliverables"
-                value={formData.deliverables}
-                onChange={(e) => setFormData({ ...formData, deliverables: e.target.value })}
-                rows={3}
-              />
+              <Textarea id="deliverables" value={formData.deliverables} onChange={(e) => setFormData({ ...formData, deliverables: e.target.value })} rows={3} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="duration">Duration/Timeline</Label>
-              <Input
-                id="duration"
-                value={formData.duration}
-                onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-              />
+              <Input id="duration" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="closed">Closed</SelectItem>
@@ -338,36 +342,16 @@ export const EditOpportunityDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">Image</Label>
+              <Label>Cover Image</Label>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById('image')?.click()}
-                    className="w-full"
-                  >
+                  <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                  <Button type="button" variant="outline" onClick={() => document.getElementById('image')?.click()} className="flex-1">
                     <Upload className="mr-2 h-4 w-4" />
                     {imageFile ? "Change Image" : existingImageUrl ? "Replace Image" : "Upload Image"}
                   </Button>
                   {(imageFile || existingImageUrl) && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setImageFile(null);
-                        setImagePreview("");
-                        setExistingImageUrl("");
-                      }}
-                    >
+                    <Button type="button" variant="ghost" size="icon" onClick={() => { setImageFile(null); setImagePreview(""); setExistingImageUrl(""); }}>
                       <X className="h-4 w-4" />
                     </Button>
                   )}
@@ -381,19 +365,10 @@ export const EditOpportunityDialog = ({
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit" className="flex-1" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Update Opportunity"
-                )}
+              <Button type="submit" className="flex-1" disabled={loading || enhancingText || generatingImage}>
+                {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Updating...</>) : "Update Opportunity"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             </div>
           </form>
         )}

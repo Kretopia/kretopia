@@ -243,7 +243,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
                       <MenuButton icon={MapPin} label="Nearby" onClick={() => handleNavigation("/nearby")} />
-                      <MenuButton icon={BarChart3} label="My Analytics" onClick={() => handleNavigation("/my-analytics")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */
@@ -255,7 +254,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
                       <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
-                      <MenuButton icon={MapPin} label="Nearby" onClick={() => handleNavigation("/nearby")} />
                     </>
                   )}
 

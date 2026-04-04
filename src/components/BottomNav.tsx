@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Sparkles, Flame, Briefcase, LayoutDashboard, Wallet, User, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { memo, useRef, useCallback } from "react";
+import { memo, useRef } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";
 
 const CREATE_ITEMS = [
@@ -29,24 +29,15 @@ const BottomNav = memo(() => {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
-  // Hide on auth page only
   if (location.pathname === "/auth") return null;
 
   const items = mode === "create" ? CREATE_ITEMS : WORK_ITEMS;
 
   const isActive = (path: string) => {
-    if (path === "/circle") {
-      return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
-    }
-    if (path === "/credits") {
-      return location.pathname.startsWith("/credits");
-    }
-    if (path === "/opportunities") {
-      return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
-    }
-    if (path === "/desk") {
-      return location.pathname.startsWith("/desk");
-    }
+    if (path === "/circle") return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
+    if (path === "/credits") return location.pathname.startsWith("/credits");
+    if (path === "/opportunities") return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
+    if (path === "/desk") return location.pathname.startsWith("/desk");
     return location.pathname === path;
   };
 
@@ -58,10 +49,9 @@ const BottomNav = memo(() => {
   const onTouchEnd = (e: React.TouchEvent) => {
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
-    // Require horizontal swipe > 60px and more horizontal than vertical
     if (Math.abs(dx) > 60 && dy < 40) {
-      if (dx < 0 && mode === "create") toggle(); // swipe left → work
-      if (dx > 0 && mode === "work") toggle(); // swipe right → create
+      if (dx < 0 && mode === "create") toggle();
+      if (dx > 0 && mode === "work") toggle();
     }
   };
 
@@ -74,7 +64,6 @@ const BottomNav = memo(() => {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Mode indicator + swipe hint */}
       <div className="flex items-center justify-center gap-2 pt-1.5 pb-0.5">
         <button
           onClick={toggle}
@@ -86,7 +75,6 @@ const BottomNav = memo(() => {
         </button>
       </div>
 
-      {/* Nav items */}
       <div className="flex items-center justify-around px-2 py-1">
         {items.map((item) => {
           const active = isActive(item.path);

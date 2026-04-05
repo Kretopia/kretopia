@@ -45,8 +45,8 @@ const Landing = () => {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="ThriveIN — ThriveCredits™ | Claim, Verify & Own Your Creative Career"
-        description="The verified creative record for every industry. Claim your credits across film, music, events, fashion & more — then get discovered, hired & paid."
+        title="ThriveIN — Search & Verify Creative Credits Across Every Industry"
+        description="Find any creator, verify any credit, discover productions across film, music, events, fashion & more. The verified creative record."
         url="https://thrivein.io"
       />
       <HeroSection />
@@ -57,7 +57,6 @@ const Landing = () => {
       <ComparisonTableSection />
       <PortfolioShowcase />
       <PostOpportunitySection opportunitiesCount={opportunitiesCount} />
-      <AccountingSuiteSection />
       <BottomCTASection />
     </div>
   );

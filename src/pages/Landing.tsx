@@ -8,7 +8,7 @@ import { PostOpportunitySection } from "@/components/landing/PostOpportunitySect
 import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { BottomCTASection } from "@/components/landing/BottomCTASection";
-import { AccountingSuiteSection } from "@/components/landing/AccountingSuiteSection";
+import { BottomCTASection } from "@/components/landing/BottomCTASection";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 

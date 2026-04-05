@@ -327,7 +327,7 @@ const AppContent = () => {
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
             {/* Search & Notifications */}
-            <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+            <Route path="/search" element={<Search />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             
             {/* Legacy redirects */}

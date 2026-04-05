@@ -283,9 +283,18 @@ const OpportunityDetail = () => {
               </div>
             )}
             {opportunity.compensation && (
-              <div className="flex items-center gap-2 text-accent">
+              <div className={`flex items-center gap-2 ${!user ? 'relative' : 'text-accent'}`}>
                 <DollarSign className="h-4 w-4" />
-                {opportunity.compensation}
+                {user ? (
+                  opportunity.compensation
+                ) : (
+                  <span className="blur-sm select-none" aria-hidden>$2,500 - $5,000</span>
+                )}
+                {!user && (
+                  <button onClick={() => navigate(`/auth?redirect=/opportunity/${id}`)} className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">Sign up to see</span>
+                  </button>
+                )}
               </div>
             )}
             {opportunity.duration && (
@@ -399,20 +408,33 @@ const OpportunityDetail = () => {
 
           {/* Apply Button */}
           {isActive ? (
-            <Button size="lg" className="w-full" onClick={handleApply}>
-              {!user && <UserPlus className="mr-2 h-5 w-5" />}
-              {user ? "Apply Now" : "Sign Up to Apply"}
-            </Button>
+            !user ? (
+              <div className="relative">
+                <Button size="lg" className="w-full blur-[2px] pointer-events-none" tabIndex={-1}>
+                  Apply Now
+                </Button>
+                <button
+                  onClick={() => {
+                    sessionStorage.setItem('pending_apply_opportunity', id!);
+                    navigate(`/auth?redirect=/opportunity/${id}`);
+                  }}
+                  className="absolute inset-0 flex items-center justify-center rounded-lg bg-primary/5 border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors"
+                >
+                  <span className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <UserPlus className="h-4 w-4" />
+                    Sign up to apply — free
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <Button size="lg" className="w-full" onClick={handleApply}>
+                Apply Now
+              </Button>
+            )
           ) : (
             <Button size="lg" className="w-full" disabled>
               Campaign Ended
             </Button>
-          )}
-          
-          {!user && (
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              Create a free account to apply for this gig
-            </p>
           )}
         </div>
       </div>

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search as SearchIcon, Users, Briefcase, FolderKanban, MapPin, Clock, Loader2 } from "lucide-react";
+import { Search as SearchIcon, Users, Briefcase, Database, MapPin, Clock, Loader2, ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ProfileResult {
@@ -31,12 +31,13 @@ interface OpportunityResult {
   created_at: string | null;
 }
 
-interface ProjectResult {
+interface CreditResult {
   id: string;
-  title: string;
-  description: string | null;
-  status: string | null;
-  created_at: string | null;
+  project_name: string;
+  role: string;
+  year: number | null;
+  verification_status: string | null;
+  user_id: string;
 }
 
 const Search = () => {
@@ -48,13 +49,13 @@ const Search = () => {
   const [loading, setLoading] = useState(false);
   const [profiles, setProfiles] = useState<ProfileResult[]>([]);
   const [opportunities, setOpportunities] = useState<OpportunityResult[]>([]);
-  const [projects, setProjects] = useState<ProjectResult[]>([]);
+  const [credits, setCredits] = useState<CreditResult[]>([]);
 
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim() || searchQuery.trim().length < 2) {
       setProfiles([]);
       setOpportunities([]);
-      setProjects([]);
+      setCredits([]);
       return;
     }
 
@@ -62,7 +63,7 @@ const Search = () => {
     const q = `%${searchQuery.trim()}%`;
 
     try {
-      const [profilesRes, oppsRes, projectsRes] = await Promise.all([
+      const [profilesRes, oppsRes, creditsRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("user_id, full_name, avatar_url, role, location, professional_skills")
@@ -76,25 +77,23 @@ const Search = () => {
           .or(`title.ilike.${q},description.ilike.${q}`)
           .order("created_at", { ascending: false })
           .limit(20),
-        user
-          ? supabase
-              .from("projects")
-              .select("id, title, description, status, created_at")
-              .ilike("title", q)
-              .order("created_at", { ascending: false })
-              .limit(20)
-          : Promise.resolve({ data: [], error: null }),
+        supabase
+          .from("credits")
+          .select("id, project_name, role, year, verification_status, user_id")
+          .or(`project_name.ilike.${q},role.ilike.${q}`)
+          .order("year", { ascending: false })
+          .limit(20),
       ]);
 
       setProfiles(profilesRes.data || []);
       setOpportunities(oppsRes.data || []);
-      setProjects(projectsRes.data || []);
+      setCredits(creditsRes.data || []);
     } catch (error) {
       console.error("[Search] Error:", error);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     const q = searchParams.get("q");
@@ -111,25 +110,27 @@ const Search = () => {
     }
   };
 
-  const totalResults = profiles.length + opportunities.length + projects.length;
+  const totalResults = profiles.length + opportunities.length + credits.length;
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <SEO title="Search - ThriveIN" description="Search for creators, opportunities, and projects" />
+      <SEO title={`Search${searchParams.get("q") ? ` "${searchParams.get("q")}"` : ""} — ThriveIN`} description="Search creators, credits, and productions across every creative industry." />
       <div className="container mx-auto max-w-3xl px-4 py-6 space-y-6">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            <SearchIcon className="h-7 w-7" />
-            Search
-          </h1>
-          <p className="text-sm text-muted-foreground">Find creators, opportunities, and projects</p>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold">Search</h1>
+            <p className="text-xs text-muted-foreground">Creators, credits & productions</p>
+          </div>
         </div>
 
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search creators, opportunities, projects..."
+              placeholder="Search creators, credits, gigs..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-9"
@@ -152,20 +153,20 @@ const Search = () => {
             </p>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
+              <TabsList className="w-full justify-start overflow-x-auto">
                 <TabsTrigger value="all">All ({totalResults})</TabsTrigger>
                 <TabsTrigger value="people" className="gap-1.5">
                   <Users className="h-3.5 w-3.5" /> People ({profiles.length})
                 </TabsTrigger>
-                <TabsTrigger value="opportunities" className="gap-1.5">
-                  <Briefcase className="h-3.5 w-3.5" /> Opps ({opportunities.length})
+                <TabsTrigger value="credits" className="gap-1.5">
+                  <Database className="h-3.5 w-3.5" /> Credits ({credits.length})
                 </TabsTrigger>
-                <TabsTrigger value="projects" className="gap-1.5">
-                  <FolderKanban className="h-3.5 w-3.5" /> Projects ({projects.length})
+                <TabsTrigger value="gigs" className="gap-1.5">
+                  <Briefcase className="h-3.5 w-3.5" /> Gigs ({opportunities.length})
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="all" className="space-y-3 mt-4">
+              <TabsContent value="all" className="space-y-4 mt-4">
                 {profiles.length > 0 && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
@@ -181,23 +182,28 @@ const Search = () => {
                     )}
                   </div>
                 )}
+                {credits.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                      <Database className="h-4 w-4" /> Credits
+                    </h3>
+                    {credits.slice(0, 5).map((c) => (
+                      <CreditCard key={c.id} credit={c} onClick={() => navigate(`/profile/${c.user_id}`)} />
+                    ))}
+                    {credits.length > 5 && (
+                      <Button variant="ghost" size="sm" onClick={() => setActiveTab("credits")}>
+                        View all {credits.length} credits →
+                      </Button>
+                    )}
+                  </div>
+                )}
                 {opportunities.length > 0 && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-                      <Briefcase className="h-4 w-4" /> Opportunities
+                      <Briefcase className="h-4 w-4" /> Gigs
                     </h3>
                     {opportunities.slice(0, 5).map((o) => (
                       <OppCard key={o.id} opp={o} onClick={() => navigate(`/opportunity/${o.id}`)} />
-                    ))}
-                  </div>
-                )}
-                {projects.length > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-                      <FolderKanban className="h-4 w-4" /> Projects
-                    </h3>
-                    {projects.slice(0, 5).map((p) => (
-                      <ProjectCard key={p.id} project={p} onClick={() => navigate(`/desk/${p.id}`)} />
                     ))}
                   </div>
                 )}
@@ -217,18 +223,18 @@ const Search = () => {
                 {profiles.length === 0 && <EmptyState label="people" />}
               </TabsContent>
 
-              <TabsContent value="opportunities" className="space-y-2 mt-4">
+              <TabsContent value="credits" className="space-y-2 mt-4">
+                {credits.map((c) => (
+                  <CreditCard key={c.id} credit={c} onClick={() => navigate(`/profile/${c.user_id}`)} />
+                ))}
+                {credits.length === 0 && <EmptyState label="credits" />}
+              </TabsContent>
+
+              <TabsContent value="gigs" className="space-y-2 mt-4">
                 {opportunities.map((o) => (
                   <OppCard key={o.id} opp={o} onClick={() => navigate(`/opportunity/${o.id}`)} />
                 ))}
-                {opportunities.length === 0 && <EmptyState label="opportunities" />}
-              </TabsContent>
-
-              <TabsContent value="projects" className="space-y-2 mt-4">
-                {projects.map((p) => (
-                  <ProjectCard key={p.id} project={p} onClick={() => navigate(`/desk/${p.id}`)} />
-                ))}
-                {projects.length === 0 && <EmptyState label="projects" />}
+                {opportunities.length === 0 && <EmptyState label="gigs" />}
               </TabsContent>
             </Tabs>
           </>
@@ -271,6 +277,34 @@ const ProfileCard = ({ profile, onClick }: { profile: ProfileResult; onClick: ()
   );
 };
 
+const CreditCard = ({ credit, onClick }: { credit: CreditResult; onClick: () => void }) => {
+  const statusColors: Record<string, string> = {
+    enterprise: "bg-success/10 text-success",
+    peer: "bg-primary/10 text-primary",
+    identity: "bg-blue-500/10 text-blue-500",
+    ai: "bg-blue-500/10 text-blue-500",
+    manual: "bg-muted text-muted-foreground",
+  };
+  const vs = (credit.verification_status || "manual").toLowerCase();
+
+  return (
+    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
+      <CardContent className="p-3 flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <Database className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm truncate">{credit.project_name}</p>
+          <p className="text-xs text-muted-foreground truncate">{credit.role}{credit.year ? ` • ${credit.year}` : ""}</p>
+        </div>
+        <Badge variant="outline" className={`text-[10px] shrink-0 ${statusColors[vs] || ""}`}>
+          {vs === "enterprise" ? "Verified" : vs === "peer" ? "Peer" : vs === "ai" || vs === "identity" ? "AI" : "Manual"}
+        </Badge>
+      </CardContent>
+    </Card>
+  );
+};
+
 const OppCard = ({ opp, onClick }: { opp: OpportunityResult; onClick: () => void }) => (
   <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
     <CardContent className="p-3">
@@ -288,18 +322,6 @@ const OppCard = ({ opp, onClick }: { opp: OpportunityResult; onClick: () => void
         {opp.location && <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{opp.location}</span>}
         {opp.created_at && <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}</span>}
       </div>
-    </CardContent>
-  </Card>
-);
-
-const ProjectCard = ({ project, onClick }: { project: ProjectResult; onClick: () => void }) => (
-  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
-    <CardContent className="p-3 flex items-center justify-between">
-      <div className="min-w-0">
-        <p className="font-medium text-sm truncate">{project.title}</p>
-        {project.description && <p className="text-xs text-muted-foreground line-clamp-1">{project.description}</p>}
-      </div>
-      <Badge variant="outline" className="text-[10px] shrink-0">{project.status || "planning"}</Badge>
     </CardContent>
   </Card>
 );

@@ -20,7 +20,9 @@ import { PageTransition } from "@/components/PageTransition";
 import { LiveActivityTicker } from "@/components/scene/LiveActivityTicker";
 
 const Scene = () => {
-  const [activeTab, setActiveTab] = useState("spark");
+  const location = useLocation();
+  const isEventsRoute = location.pathname === "/events";
+  const [activeTab, setActiveTab] = useState(isEventsRoute ? "events" : "spark");
   const { user } = useAuth();
   const [visibility, setVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
 

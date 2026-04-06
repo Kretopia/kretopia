@@ -20,6 +20,7 @@ import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileDashboardDrawer } from "@/components/profile/ProfileDashboardDrawer";
+import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
@@ -389,6 +390,19 @@ const ProfileContent = () => {
             />
           }
         />
+
+        {/* Social Stats — visible on profile */}
+        <div className="mt-4">
+          <SocialStatsSection
+            youtubeSubscribers={profile.youtube_subscribers}
+            instagramFollowers={profile.instagram_followers}
+            tiktokFollowers={profile.tiktok_followers}
+            spotifyListeners={profile.spotify_listeners}
+            twitterFollowers={profile.twitter_followers}
+            linkedinConnections={profile.linkedin_connections}
+            verifiedMetrics={profile.verified_metrics}
+          />
+        </div>
 
         {/* Content Sections — immediately after hero, Instagram-style */}
         <div className="mt-4">

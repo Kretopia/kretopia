@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -238,7 +238,7 @@ export const HeroSection = () => {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {trendingCredits.slice(0, 6).map((c) => (
-                <button key={c.id} onClick={() => navigate(`/profile/${c.user_id}`)} className="group text-left">
+                <button key={c.id} onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)} className="group text-left">
                   <div className="relative rounded-xl overflow-hidden border border-[hsl(230,15%,18%)] hover:border-[hsl(235,65%,52%,0.4)] transition-all bg-[hsl(230,18%,11%)]">
                     {c.thumbnail_url ? (
                       <div className="aspect-[4/3] overflow-hidden">

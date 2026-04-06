@@ -51,8 +51,94 @@ serve(async (req) => {
     ]);
 
     const platformProfiles = profilesRes.data || [];
-    const platformCredits = creditsRes.data || [];
+    const matchedCredits = creditsRes.data || [];
     const platformOpps = oppsRes.data || [];
+
+    // Step 1b: For each matched credit, fetch ALL sibling credits on the same project
+    const projectNames = [...new Set(matchedCredits.map(c => c.project_name))];
+    let allRelatedCredits: any[] = [];
+    if (projectNames.length > 0) {
+      const { data: siblings } = await supabase
+        .from('credits')
+        .select('id, project_name, role, year, verification_status, credit_category, thumbnail_url, user_id, collaborator_user_ids, client_brand, platform, description')
+        .in('project_name', projectNames)
+        .order('year', { ascending: false })
+        .limit(100);
+      allRelatedCredits = siblings || [];
+    }
+
+    // Group credits by project_name into production cards
+    const projectMap = new Map<string, any>();
+    for (const credit of allRelatedCredits) {
+      if (!projectMap.has(credit.project_name)) {
+        // Use the first (highest-ranked) credit as the "primary"
+        const primary = matchedCredits.find(c => c.project_name === credit.project_name) || credit;
+        projectMap.set(credit.project_name, {
+          project_name: credit.project_name,
+          year: primary.year,
+          credit_category: primary.credit_category,
+          thumbnail_url: primary.thumbnail_url,
+          client_brand: primary.client_brand,
+          platform: primary.platform,
+          description: primary.description,
+          verification_status: primary.verification_status,
+          roles: [],
+        });
+      }
+      projectMap.get(credit.project_name).roles.push({
+        id: credit.id,
+        role: credit.role,
+        user_id: credit.user_id,
+        verification_status: credit.verification_status,
+      });
+    }
+    // Also add matched credits that had no siblings returned
+    for (const credit of matchedCredits) {
+      if (!projectMap.has(credit.project_name)) {
+        projectMap.set(credit.project_name, {
+          project_name: credit.project_name,
+          year: credit.year,
+          credit_category: credit.credit_category,
+          thumbnail_url: credit.thumbnail_url,
+          client_brand: credit.client_brand,
+          platform: credit.platform,
+          description: credit.description,
+          verification_status: credit.verification_status,
+          roles: [{
+            id: credit.id,
+            role: credit.role,
+            user_id: credit.user_id,
+            verification_status: credit.verification_status,
+          }],
+        });
+      }
+    }
+    const platformCredits = Array.from(projectMap.values());
+
+    // Step 1c: Fetch profile info for all user_ids in roles
+    const allRoleUserIds = new Set<string>();
+    platformCredits.forEach(p => p.roles.forEach((r: any) => allRoleUserIds.add(r.user_id)));
+    let roleProfiles: Record<string, { full_name: string; avatar_url: string | null }> = {};
+    if (allRoleUserIds.size > 0) {
+      const { data: rp } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .in('user_id', Array.from(allRoleUserIds).slice(0, 50));
+      if (rp) {
+        for (const p of rp) {
+          roleProfiles[p.user_id] = { full_name: p.full_name, avatar_url: p.avatar_url };
+        }
+      }
+    }
+
+    // Enrich roles with profile info
+    platformCredits.forEach(p => {
+      p.roles = p.roles.map((r: any) => ({
+        ...r,
+        full_name: roleProfiles[r.user_id]?.full_name || null,
+        avatar_url: roleProfiles[r.user_id]?.avatar_url || null,
+      }));
+    });
 
     // Step 2: AI-powered external knowledge synthesis
     let externalResults: any = null;

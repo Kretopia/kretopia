@@ -3,9 +3,12 @@
  * 
  * Calculates a creator's status tier based on verified credits.
  * Enterprise (Green) = 100pts, Peer (Purple) = 25pts, Identity/AI (Blue) = 5pts, Manual (Gray) = 1pt
+ * 
+ * Tier names are aspirational career-stage labels:
+ * Hobbyist → Freelancer → Thriver → Professional → Celebrity → Icon
  */
 
-export type StatusTier = "emerging" | "proven" | "elite" | "legacy" | "icon";
+export type StatusTier = "hobbyist" | "freelancer" | "thriver" | "professional" | "celebrity" | "icon";
 
 export interface StatusResult {
   tier: StatusTier;
@@ -29,30 +32,36 @@ const VERIFICATION_POINTS: Record<string, number> = {
 
 const TIER_THRESHOLDS: { tier: StatusTier; min: number }[] = [
   { tier: "icon", min: 1000 },
-  { tier: "legacy", min: 500 },
-  { tier: "elite", min: 150 },
-  { tier: "proven", min: 25 },
-  { tier: "emerging", min: 0 },
+  { tier: "celebrity", min: 500 },
+  { tier: "professional", min: 150 },
+  { tier: "thriver", min: 50 },
+  { tier: "freelancer", min: 10 },
+  { tier: "hobbyist", min: 0 },
 ];
 
 const TIER_META: Record<StatusTier, { label: string; color: string; ringClass: string }> = {
-  emerging: {
-    label: "Emerging",
+  hobbyist: {
+    label: "Hobbyist",
     color: "text-muted-foreground",
     ringClass: "ring-2 ring-border",
   },
-  proven: {
-    label: "Proven",
+  freelancer: {
+    label: "Freelancer",
     color: "text-[hsl(0,0%,70%)]",   // silver
     ringClass: "ring-2 ring-[hsl(0,0%,75%)]",
   },
-  elite: {
-    label: "Elite",
+  thriver: {
+    label: "Thriver",
+    color: "text-primary",
+    ringClass: "ring-2 ring-primary",
+  },
+  professional: {
+    label: "Professional",
     color: "text-accent",             // gold
     ringClass: "ring-2 ring-accent",
   },
-  legacy: {
-    label: "Legacy",
+  celebrity: {
+    label: "Celebrity",
     color: "text-foreground",          // obsidian
     ringClass: "ring-2 ring-foreground",
   },
@@ -70,7 +79,7 @@ export function calculateStatus(credits: { verification_status?: string | null }
     points += VERIFICATION_POINTS[status] ?? 1;
   }
 
-  let matchedTier: StatusTier = "emerging";
+  let matchedTier: StatusTier = "hobbyist";
   for (const { tier, min } of TIER_THRESHOLDS) {
     if (points >= min) {
       matchedTier = tier;

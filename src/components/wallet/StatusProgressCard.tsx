@@ -2,25 +2,27 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Shield, CheckCircle2, Star, Crown, Gem } from "lucide-react";
+import { Shield, CheckCircle2, Star, Crown, Gem, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { calculateStatus, type StatusResult } from "@/lib/statusEngine";
 
 const TIER_ICONS: Record<string, any> = {
-  emerging: Shield,
-  proven: CheckCircle2,
-  elite: Star,
-  legacy: Crown,
+  hobbyist: Shield,
+  freelancer: Zap,
+  thriver: CheckCircle2,
+  professional: Star,
+  celebrity: Crown,
   icon: Gem,
 };
 
 const TIER_DESCRIPTIONS: Record<string, string> = {
-  emerging: "Start verifying your credits to climb the ranks.",
-  proven: "You're building credibility. Keep adding verified work.",
-  elite: "Industry recognizes your track record. You're in demand.",
-  legacy: "A seasoned professional with extensive verified history.",
-  icon: "Top-tier creator. Your work speaks for itself.",
+  hobbyist: "Start adding and verifying your credits to build your reputation.",
+  freelancer: "You're getting noticed. Keep verifying work to level up.",
+  thriver: "You're building real credibility. Industry eyes are on you.",
+  professional: "A recognized professional with a strong verified track record.",
+  celebrity: "Top-tier creator. Your reputation precedes you.",
+  icon: "Legendary status. Your work defines the industry.",
 };
 
 export function StatusProgressCard() {
@@ -30,7 +32,7 @@ export function StatusProgressCard() {
 
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data } = await supabase
         .from("credits")
         .select("verification_status")
@@ -40,7 +42,7 @@ export function StatusProgressCard() {
         setCreditCount(data.length);
       }
     };
-    fetch();
+    fetchData();
   }, [user]);
 
   if (!status) return null;
@@ -112,13 +114,14 @@ export function StatusProgressCard() {
       {/* Tier Roadmap */}
       <Card>
         <CardContent className="p-5">
-          <h4 className="text-sm font-semibold text-foreground mb-3">Tier Roadmap</h4>
+          <h4 className="text-sm font-semibold text-foreground mb-3">Status Roadmap</h4>
           <div className="space-y-2">
             {[
-              { tier: "Emerging", min: 0, color: "text-muted-foreground" },
-              { tier: "Proven", min: 25, color: "text-[hsl(0,0%,70%)]" },
-              { tier: "Elite", min: 150, color: "text-accent" },
-              { tier: "Legacy", min: 500, color: "text-foreground" },
+              { tier: "Hobbyist", min: 0, color: "text-muted-foreground" },
+              { tier: "Freelancer", min: 10, color: "text-[hsl(0,0%,70%)]" },
+              { tier: "Thriver", min: 50, color: "text-primary" },
+              { tier: "Professional", min: 150, color: "text-accent" },
+              { tier: "Celebrity", min: 500, color: "text-foreground" },
               { tier: "Icon", min: 1000, color: "text-primary" },
             ].map((t) => (
               <div key={t.tier} className={`flex items-center justify-between py-1.5 ${status.points >= t.min ? 'opacity-100' : 'opacity-40'}`}>

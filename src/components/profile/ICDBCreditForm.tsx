@@ -537,7 +537,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
             {step === "search" ? (
               <>
                 <Wand2 className="h-5 w-5 text-primary" />
-                Claim Your Work
+                Add Work
               </>
             ) : (
               "Credit Details"
@@ -545,7 +545,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
           </DialogTitle>
           <DialogDescription className="text-xs">
             {step === "search"
-              ? "Paste a link or search — we'll fill in the details"
+              ? "Upload, paste a link, or search — AI fills in the rest"
               : "Confirm your role and details"
             }
           </DialogDescription>

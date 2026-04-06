@@ -1789,13 +1789,19 @@ export type Database = {
           id: string
           is_featured: boolean | null
           location: string | null
+          media_type: string | null
           media_urls: string[] | null
+          metadata: Json | null
           payment_verified: boolean | null
           platform: string | null
+          primary_media_url: string | null
           project_name: string
           project_type: string | null
           role: string
+          source: string | null
+          source_id: string | null
           start_date: string | null
+          tags: string[] | null
           thumbnail_url: string | null
           updated_at: string
           url: string | null
@@ -1804,6 +1810,7 @@ export type Database = {
           verification_url: string | null
           verified_by_name: string | null
           verified_by_user_id: string | null
+          view_count: number | null
           year: number | null
         }
         Insert: {
@@ -1821,13 +1828,19 @@ export type Database = {
           id?: string
           is_featured?: boolean | null
           location?: string | null
+          media_type?: string | null
           media_urls?: string[] | null
+          metadata?: Json | null
           payment_verified?: boolean | null
           platform?: string | null
+          primary_media_url?: string | null
           project_name: string
           project_type?: string | null
           role: string
+          source?: string | null
+          source_id?: string | null
           start_date?: string | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           updated_at?: string
           url?: string | null
@@ -1836,6 +1849,7 @@ export type Database = {
           verification_url?: string | null
           verified_by_name?: string | null
           verified_by_user_id?: string | null
+          view_count?: number | null
           year?: number | null
         }
         Update: {
@@ -1853,13 +1867,19 @@ export type Database = {
           id?: string
           is_featured?: boolean | null
           location?: string | null
+          media_type?: string | null
           media_urls?: string[] | null
+          metadata?: Json | null
           payment_verified?: boolean | null
           platform?: string | null
+          primary_media_url?: string | null
           project_name?: string
           project_type?: string | null
           role?: string
+          source?: string | null
+          source_id?: string | null
           start_date?: string | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           updated_at?: string
           url?: string | null
@@ -1868,6 +1888,7 @@ export type Database = {
           verification_url?: string | null
           verified_by_name?: string | null
           verified_by_user_id?: string | null
+          view_count?: number | null
           year?: number | null
         }
         Relationships: []

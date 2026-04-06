@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail, Database, ShieldCheck, UserPlus } from "lucide-react";
+import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail, Database, ShieldCheck, UserPlus, Upload, Image as ImageIcon, Video, Music } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { parseMediaUrl } from "@/lib/mediaUtils";
@@ -124,6 +124,11 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
   const [step, setStep] = useState<FormStep>("search");
   const [saving, setSaving] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<{ url: string; type: string; name: string } | null>(null);
   
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -162,6 +167,71 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
   });
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  // Handle file upload → AI analysis → auto-fill
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (file.size > maxSize) {
+      toast.error("File too large (max 20MB)");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Determine media type
+      let mediaType = 'image';
+      if (file.type.startsWith('video/')) mediaType = 'video';
+      else if (file.type.startsWith('audio/')) mediaType = 'audio';
+
+      // Upload to storage
+      const ext = file.name.split('.').pop();
+      const path = `${userId}/credits/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('portfolio')
+        .upload(path, file, { cacheControl: '3600', upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('portfolio')
+        .getPublicUrl(path);
+
+      setUploadedFile({ url: publicUrl, type: mediaType, name: file.name });
+
+      // AI analysis of the uploaded file name to pre-populate
+      const { data: aiData } = await supabase.functions.invoke('ai-credit-import', {
+        body: { type: 'text', content: file.name, userId },
+      });
+
+      if (aiData) {
+        setForm(prev => ({
+          ...prev,
+          project_name: aiData.project_name || prev.project_name || file.name.replace(/\.[^/.]+$/, ''),
+          role: aiData.role || prev.role,
+          project_type: aiData.project_type || prev.project_type,
+          credit_category: aiData.project_type || prev.credit_category,
+        }));
+      } else {
+        // Fallback: use filename as project name
+        setForm(prev => ({
+          ...prev,
+          project_name: prev.project_name || file.name.replace(/\.[^/.]+$/, ''),
+        }));
+      }
+
+      setStep("details");
+      toast.success("Media uploaded! Confirm your credit details.");
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error("Upload failed — try again");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   // Detect if input is a URL
   const isUrl = (str: string) => {
@@ -359,6 +429,10 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
         url: form.url || null,
         client_brand: form.client_brand || null,
         collaborator_user_ids: collaboratorIds.length > 0 ? collaboratorIds : null,
+        source: uploadedFile ? 'upload' : 'manual',
+        media_type: uploadedFile?.type || null,
+        primary_media_url: uploadedFile?.url || null,
+        thumbnail_url: uploadedFile?.type === 'image' ? uploadedFile.url : null,
       };
 
       const { data: insertedData, error } = await supabase
@@ -441,6 +515,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     setIcdbSuggestions([]);
     setHasSearched(false);
     setShowMore(false);
+    setUploadedFile(null);
     setForm({
       project_name: "", project_type: "", role: "", description: "",
       start_date: "", end_date: "", location: "", platform: "",
@@ -462,7 +537,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
             {step === "search" ? (
               <>
                 <Wand2 className="h-5 w-5 text-primary" />
-                Claim Your Work
+                Add Work
               </>
             ) : (
               "Credit Details"
@@ -470,7 +545,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
           </DialogTitle>
           <DialogDescription className="text-xs">
             {step === "search"
-              ? "Paste a link or search — we'll fill in the details"
+              ? "Upload, paste a link, or search — AI fills in the rest"
               : "Confirm your role and details"
             }
           </DialogDescription>
@@ -479,6 +554,44 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
         <ScrollArea className="max-h-[70vh] px-6 pb-6">
           {step === "search" ? (
             <div className="space-y-4">
+              {/* Upload media */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*,audio/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full border-2 border-dashed rounded-xl p-4 flex flex-col items-center gap-2 text-muted-foreground hover:border-primary/50 hover:bg-primary/5 transition-all"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span className="text-xs font-medium">Uploading & analyzing...</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Upload className="h-5 w-5" />
+                      <ImageIcon className="h-4 w-4" />
+                      <Video className="h-4 w-4" />
+                      <Music className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-medium">Upload photo, video, or audio</span>
+                    <span className="text-[10px]">AI will auto-detect project details</span>
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">or paste a link</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
               {/* Paste a Link */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium flex items-center gap-1">
@@ -692,6 +805,26 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
               <Button variant="ghost" size="sm" className="h-7 text-xs -ml-2" onClick={() => setStep("search")}>
                 ← Back
               </Button>
+
+              {/* Uploaded media preview */}
+              {uploadedFile && (
+                <div className="relative rounded-lg overflow-hidden bg-muted/30 border">
+                  {uploadedFile.type === 'image' ? (
+                    <img src={uploadedFile.url} alt="Upload" className="w-full h-32 object-cover" />
+                  ) : (
+                    <div className="w-full h-20 flex items-center justify-center gap-2 text-muted-foreground">
+                      {uploadedFile.type === 'video' ? <Video className="h-6 w-6" /> : <Music className="h-6 w-6" />}
+                      <span className="text-xs font-medium">{uploadedFile.name}</span>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setUploadedFile(null)}
+                    className="absolute top-1.5 right-1.5 rounded-full bg-black/60 text-white p-1 hover:bg-black/80"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
 
               {/* Essential fields only */}
               <div className="space-y-1.5">

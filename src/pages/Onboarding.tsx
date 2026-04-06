@@ -22,9 +22,7 @@ import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
 
 const STEPS = [
   { id: 1, title: "You", icon: User },
-  { id: 2, title: "Skills", icon: Briefcase },
-  { id: 3, title: "First Credit", icon: CheckCircle2 },
-  { id: 4, title: "Done", icon: Sparkles },
+  { id: 2, title: "Boost Profile", icon: Sparkles },
 ];
 
 // Top skills — curated for speed, not exhaustive

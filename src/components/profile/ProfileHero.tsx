@@ -58,7 +58,8 @@ export const ProfileHero = ({
   onRefresh,
   creditsCount = 0,
   verifiedCreditsCount = 0,
-  awardsCount = 0
+  awardsCount = 0,
+  dashboardTrigger,
 }: ProfileHeroProps) => {
   const { user } = useAuth();
   const tier = getTierByPoints(profile.points || 0);

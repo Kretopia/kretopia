@@ -515,6 +515,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
     setIcdbSuggestions([]);
     setHasSearched(false);
     setShowMore(false);
+    setUploadedFile(null);
     setForm({
       project_name: "", project_type: "", role: "", description: "",
       start_date: "", end_date: "", location: "", platform: "",

@@ -140,11 +140,16 @@ serve(async (req) => {
       }));
     });
 
-    // Step 2: AI-powered external knowledge synthesis
+    // Step 2: AI-powered external knowledge synthesis — ALWAYS runs to ensure rich results
     let externalResults: any = null;
 
     if (lovableApiKey) {
       try {
+        const hasPlatformData = platformProfiles.length > 0 || platformCredits.length > 0;
+        const platformContext = hasPlatformData
+          ? `\n\nPlatform already has these results (avoid duplicating): ${platformCredits.map(c => c.project_name).join(', ')}. ${platformProfiles.map(p => p.full_name).join(', ')}.`
+          : '';
+
         const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -156,28 +161,34 @@ serve(async (req) => {
             messages: [
               {
                 role: 'system',
-                content: `You are a creative industry knowledge engine. When given a search query, synthesize what you know about the person, project, production, brand, or concept from public knowledge (like IMDB, Wikipedia, Spotify, music databases, film databases, fashion archives, etc.).
+                content: `You are a creative industry knowledge engine for ThriveIN — the "IMDb for creatives." When given a search query, synthesize what you know about the person, project, production, brand, or concept from public knowledge (IMDB, Wikipedia, Spotify, music databases, film databases, fashion archives, LinkedIn, etc.).
+
+CRITICAL: You MUST always provide useful results. Even for obscure queries, provide related industry knowledge, suggest what it might be, or offer adjacent searches. NEVER return empty results.
 
 Return a JSON object with this structure:
 {
   "knowledge_card": {
-    "type": "person" | "production" | "brand" | "concept" | "none",
-    "name": "Official name",
-    "description": "2-3 sentence professional summary",
+    "type": "person" | "production" | "brand" | "concept" | "genre" | "role",
+    "name": "Official name or best interpretation",
+    "description": "2-3 sentence professional summary. If you're unsure, explain what you know and suggest possibilities.",
     "known_for": ["Notable work 1", "Notable work 2", "Notable work 3"],
-    "industry": "Film" | "Music" | "Fashion" | "Events" | "Digital" | "Mixed",
+    "industry": "Film" | "Music" | "Fashion" | "Events" | "Digital" | "Mixed" | "Photography" | "Dance" | "Theatre",
     "key_credits": [
       {"project": "Project Name", "role": "Role", "year": 2023}
     ],
     "collaborators": ["Name 1", "Name 2"],
-    "fun_fact": "One interesting fact",
+    "fun_fact": "One interesting fact or industry insight",
     "claim_prompt": "A compelling reason to claim/verify this profile on ThriveIN"
   },
-  "related_searches": ["Related search 1", "Related search 2", "Related search 3"]
+  "related_searches": ["Related search 1", "Related search 2", "Related search 3", "Related search 4", "Related search 5"]
 }
 
-If the query is too vague or you have no knowledge, set type to "none" and provide helpful related_searches.
-Keep key_credits to max 5 entries. Be factual — only include information you're confident about.`
+Rules:
+- For people: Include real credits from IMDb, Discogs, Spotify, etc. Include at least 3-5 key_credits.
+- For productions: Include known cast/crew. Include platform/distributor info.
+- For vague queries: Set type to the best guess (e.g. "role" for job titles) and provide industry context + 5 related searches.
+- ALWAYS include at least 5 related_searches to keep users exploring.
+- Be factual — only include information you're confident about. But DO provide context even for less-known subjects.${platformContext}`
               },
               {
                 role: 'user',
@@ -194,10 +205,26 @@ Keep key_credits to max 5 entries. Be factual — only include information you'r
           if (content) {
             externalResults = JSON.parse(content);
           }
+        } else if (aiResponse.status === 429 || aiResponse.status === 402) {
+          console.warn('AI rate limited/credits exhausted, returning platform-only results');
         }
       } catch (aiErr) {
         console.error('AI synthesis error:', aiErr);
       }
+    }
+
+    // Fallback: if AI returned nothing, generate basic related searches
+    if (!externalResults) {
+      externalResults = {
+        knowledge_card: null,
+        related_searches: [
+          `${query} film`,
+          `${query} music`,
+          `${query} photographer`,
+          `${query} events`,
+          `${query} credits`,
+        ],
+      };
     }
 
     return new Response(JSON.stringify({

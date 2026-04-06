@@ -73,13 +73,13 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
       if (!user) return;
       
       const { data } = await supabase
-        .from('portfolio_items')
-        .select('collection_name')
+        .from('credits')
+        .select('metadata')
         .eq('user_id', user.id)
-        .not('collection_name', 'is', null);
+        .eq('source', 'portfolio')
       
       if (data) {
-        const unique = [...new Set(data.map(d => d.collection_name).filter(Boolean))];
+        const unique = [...new Set(data.map(d => (d.metadata as any)?.collection_name).filter(Boolean))];
         setExistingCollections(unique as string[]);
       }
     };
@@ -208,17 +208,21 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
       return;
     }
 
-    const { error } = await supabase.from('portfolio_items').insert({
+    const { error } = await supabase.from('credits').insert({
       user_id: user.id,
-      title: newItem.title,
+      project_name: newItem.title,
+      role: 'Creator',
+      source: 'portfolio',
       description: newItem.description,
       media_type: newItem.media_type,
-      media_url: newItem.media_url,
+      primary_media_url: newItem.media_url,
       thumbnail_url: newItem.thumbnail_url,
-      embed_code: newItem.embed_code,
-      category: newItem.category,
+      credit_category: newItem.category || 'Other',
       tags: newItem.tags.split(',').map(t => t.trim()).filter(Boolean),
-      collection_name: newItem.collection_name || null
+      metadata: {
+        embed_code: newItem.embed_code,
+        collection_name: newItem.collection_name || null
+      }
     });
 
     if (error) {
@@ -253,7 +257,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('portfolio_items').delete().eq('id', id);
+    const { error } = await supabase.from('credits').delete().eq('id', id);
     if (error) {
       toast({ title: "Error", description: "Failed to delete item", variant: "destructive" });
     } else {

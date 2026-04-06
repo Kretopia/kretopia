@@ -8571,6 +8571,7 @@ export type Database = {
           full_name: string | null
           level: number | null
           location: string | null
+          professional_skills: Json | null
           role: string | null
           user_id: string | null
           verification_score: number | null
@@ -8584,6 +8585,7 @@ export type Database = {
           full_name?: string | null
           level?: number | null
           location?: string | null
+          professional_skills?: Json | null
           role?: string | null
           user_id?: string | null
           verification_score?: number | null
@@ -8597,6 +8599,7 @@ export type Database = {
           full_name?: string | null
           level?: number | null
           location?: string | null
+          professional_skills?: Json | null
           role?: string | null
           user_id?: string | null
           verification_score?: number | null
@@ -9284,6 +9287,10 @@ export type Database = {
       }
     }
     Functions: {
+      auto_join_circles_for_role: {
+        Args: { p_role: string; p_user_id: string }
+        Returns: undefined
+      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number

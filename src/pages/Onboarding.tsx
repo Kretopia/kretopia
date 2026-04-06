@@ -22,9 +22,7 @@ import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
 
 const STEPS = [
   { id: 1, title: "You", icon: User },
-  { id: 2, title: "Skills", icon: Briefcase },
-  { id: 3, title: "First Credit", icon: CheckCircle2 },
-  { id: 4, title: "Done", icon: Sparkles },
+  { id: 2, title: "Boost Profile", icon: Sparkles },
 ];
 
 // Top skills — curated for speed, not exhaustive
@@ -171,20 +169,19 @@ export default function Onboarding() {
         toast({ title: "Update failed", description: "Please try again.", variant: "destructive" });
         return;
       }
+      // Show optional boost step
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      analytics.onboardingStep(2, selectedSkills.length > 0 ? "skills_selected" : "skills_skipped");
-      try {
-        await supabase.from("profiles").update({
-          onboarding_step: 3,
-          professional_skills: selectedSkills.length > 0
-            ? selectedSkills.map(skill => ({ skill, level: 3, category: "General" })) as any
-            : null,
-        }).eq("user_id", user!.id);
-      } catch (e) { console.error("Error saving skills:", e); }
-      setCurrentStep(3);
-    } else if (currentStep === 3) {
-      analytics.onboardingStep(3, firstCredit.project_name ? "credit_added" : "credit_skipped");
+      // Save skills if any
+      if (selectedSkills.length > 0) {
+        try {
+          await supabase.from("profiles").update({
+            professional_skills: selectedSkills.map(skill => ({ skill, level: 3, category: "General" })) as any,
+          }).eq("user_id", user!.id);
+        } catch (e) { console.error("Error saving skills:", e); }
+      }
+      // Save credit if any
+      analytics.onboardingStep(2, firstCredit.project_name ? "credit_added" : "boost_skipped");
       if (firstCredit.project_name && firstCredit.role) {
         try {
           await supabase.from("credits").insert({
@@ -198,6 +195,12 @@ export default function Onboarding() {
       }
       await completeOnboarding();
     }
+  };
+
+  const handleSkipToComplete = async () => {
+    const { analytics } = await import("@/lib/analytics");
+    analytics.onboardingStep(2, "skipped_boost");
+    await completeOnboarding();
   };
 
   const uploadAvatar = async (croppedImage: Blob) => {
@@ -248,6 +251,12 @@ export default function Onboarding() {
         xp: 100,
       };
       await supabase.from("profiles").update(updateData).eq("user_id", user.id);
+
+      // Auto-join circles based on role
+      try {
+        await supabase.rpc('auto_join_circles_for_role', { p_user_id: user.id, p_role: profile.role });
+        console.log('[Onboarding] Auto-joined circles for role:', profile.role);
+      } catch (e) { console.error('[Onboarding] Auto-join circles error:', e); }
 
       const pendingConnect = localStorage.getItem('pendingConnect');
       if (pendingConnect) {
@@ -389,9 +398,9 @@ export default function Onboarding() {
     }
   }, [currentStep, navigate]);
 
-  const progress = currentStep >= 4 ? 100 : (currentStep / 4) * 100;
+  const progress = currentStep >= 2 ? 100 : (currentStep / 2) * 100;
   const isRoleInOptions = ROLE_OPTIONS.some(opt => opt.value === profile.role);
-  const showStepProgress = currentStep <= 4;
+  const showStepProgress = currentStep <= 2;
 
   return (
     <>
@@ -517,218 +526,126 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 2: Skills */}
+          {/* Step 2: Boost Profile (optional — skills + first credit combined) */}
           {currentStep === 2 && (
             <div className="space-y-5">
               <div className="text-center">
-                <h2 className="text-2xl font-bold mb-1">What are your skills?</h2>
-                <p className="text-muted-foreground text-sm">Pick a few so we can match you better</p>
+                <h2 className="text-2xl font-bold mb-1">Boost your profile ✨</h2>
+                <p className="text-muted-foreground text-sm">Optional — do this now or anytime from your profile</p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {POPULAR_SKILLS.map((skill) => (
-                  <Button
-                    key={skill}
-                    variant={selectedSkills.includes(skill) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleSkill(skill)}
-                    className="rounded-full text-xs h-8 px-3"
-                  >
-                    {skill}
-                    {selectedSkills.includes(skill) && <X className="ml-1 h-3 w-3" />}
-                  </Button>
-                ))}
+              {/* Skills — compact */}
+              <div>
+                <Label className="text-sm font-medium">Quick skills (tap to select)</Label>
+                <div className="flex flex-wrap gap-1.5 mt-2 max-h-32 overflow-y-auto">
+                  {POPULAR_SKILLS.filter(s => {
+                    const r = profile.role?.toLowerCase() || '';
+                    if (r.includes('music') || r.includes('producer') || r.includes('dj')) return s.includes('Music') || s.includes('Song') || s.includes('Sing') || s.includes('DJ') || s.includes('Beat') || s.includes('Audio') || s.includes('Sound') || s.includes('Rap') || s.includes('Voice');
+                    if (r.includes('film') || r.includes('video') || r.includes('director')) return s.includes('Video') || s.includes('Film') || s.includes('Direct') || s.includes('Cinemat') || s.includes('Screen') || s.includes('Color') || s.includes('VFX') || s.includes('Edit');
+                    if (r.includes('design') || r.includes('illustrat')) return s.includes('Design') || s.includes('Illustr') || s.includes('3D') || s.includes('UI') || s.includes('Brand') || s.includes('Animation') || s.includes('Motion');
+                    if (r.includes('photo')) return s.includes('Photo') || s.includes('Light') || s.includes('Edit');
+                    return true;
+                  }).slice(0, 20).map((skill) => (
+                    <Button
+                      key={skill}
+                      variant={selectedSkills.includes(skill) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => toggleSkill(skill)}
+                      className="rounded-full text-xs h-7 px-2.5"
+                    >
+                      {skill}
+                      {selectedSkills.includes(skill) && <X className="ml-1 h-3 w-3" />}
+                    </Button>
+                  ))}
+                </div>
+                {selectedSkills.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">{selectedSkills.length} selected</p>
+                )}
               </div>
 
-              {selectedSkills.length > 0 && (
-                <p className="text-sm text-muted-foreground text-center">
-                  {selectedSkills.length} selected
-                </p>
-              )}
+              {/* First credit — compact */}
+              <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-medium">Add your first work credit</Label>
+                </div>
+                <p className="text-xs text-muted-foreground">Like IMDb but for every creative industry. Search or paste a link.</p>
 
-              {/* Navigation */}
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
-                <Button onClick={handleNext} disabled={loading} className="flex-1 gap-2" size="lg">
-                  Continue <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
+                <Tabs defaultValue="search" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 h-8">
+                    <TabsTrigger value="search" className="text-xs gap-1"><Search className="h-3 w-3" /> Search</TabsTrigger>
+                    <TabsTrigger value="link" className="text-xs gap-1"><Link2 className="h-3 w-3" /> Link</TabsTrigger>
+                    <TabsTrigger value="manual" className="text-xs gap-1"><Briefcase className="h-3 w-3" /> Manual</TabsTrigger>
+                  </TabsList>
 
-              {selectedSkills.length === 0 && (
-                <p className="text-xs text-center text-muted-foreground">
-                  You can skip this — add skills from your profile anytime
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Step 3: First Credit */}
-          {currentStep === 3 && (
-            <div className="space-y-5">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-1">Add your first credit</h2>
-                <p className="text-muted-foreground text-sm">What's one project you've worked on? This builds your verified resume.</p>
-              </div>
-
-              <Tabs defaultValue="search" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 h-9">
-                  <TabsTrigger value="search" className="text-xs gap-1"><Search className="h-3 w-3" /> AI Search</TabsTrigger>
-                  <TabsTrigger value="link" className="text-xs gap-1"><Link2 className="h-3 w-3" /> Paste Link</TabsTrigger>
-                  <TabsTrigger value="manual" className="text-xs gap-1"><Briefcase className="h-3 w-3" /> Manual</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="search" className="mt-3">
-                  <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
-                    <p className="text-xs text-muted-foreground">Search for a project you worked on — type its name or yours and AI will find it.</p>
+                  <TabsContent value="search" className="mt-2 space-y-2">
                     <div className="flex gap-2">
-                      <Input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder='e.g. "Machel Montano Soca Kingdom" or your name'
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && searchQuery.trim().length >= 2) {
-                            e.preventDefault();
-                            handleCreditSearch();
-                          }
-                        }}
-                      />
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        disabled={searchQuery.trim().length < 2 || searchLoading}
-                        onClick={handleCreditSearch}
-                      >
+                      <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder='Project name or your name' className="h-9 text-sm"
+                        onKeyDown={(e) => { if (e.key === 'Enter' && searchQuery.trim().length >= 2) { e.preventDefault(); handleCreditSearch(); } }} />
+                      <Button variant="secondary" size="icon" className="h-9 w-9" disabled={searchQuery.trim().length < 2 || searchLoading} onClick={handleCreditSearch}>
                         {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                       </Button>
                     </div>
-                    {searchLoading && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
-                        <Loader2 className="h-3 w-3 animate-spin" /> Searching creative databases...
-                      </div>
-                    )}
-                    {hasSearched && !searchLoading && searchResults.length === 0 && (
-                      <p className="text-xs text-muted-foreground text-center py-2">No results found. Try a different search or add manually.</p>
-                    )}
+                    {searchLoading && <div className="flex items-center gap-2 text-xs text-muted-foreground py-1"><Loader2 className="h-3 w-3 animate-spin" /> Searching...</div>}
+                    {hasSearched && !searchLoading && searchResults.length === 0 && <p className="text-xs text-muted-foreground text-center py-1">No results. Try manual entry.</p>}
                     {searchResults.length > 0 && (
-                      <div className="max-h-48 overflow-y-auto space-y-2">
+                      <div className="max-h-36 overflow-y-auto space-y-1.5">
                         {searchResults.map((result, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            className="w-full text-left border border-border rounded-md p-2.5 hover:bg-accent/50 transition-colors"
-                            onClick={() => {
-                              setFirstCredit({
-                                project_name: result.title || '',
-                                role: result.role_suggestion || '',
-                                project_type: result.type || '',
-                              });
-                              setSearchResults([]);
-                              toast({ title: "✨ Credit selected!", description: result.title });
-                            }}
-                          >
+                          <button key={i} type="button" className="w-full text-left border border-border rounded-md p-2 hover:bg-accent/50 transition-colors"
+                            onClick={() => { setFirstCredit({ project_name: result.title || '', role: result.role_suggestion || '', project_type: result.type || '' }); setSearchResults([]); toast({ title: "✨ Credit selected!", description: result.title }); }}>
                             <p className="font-medium text-sm truncate">{result.title}</p>
                             <div className="flex items-center gap-2 mt-0.5">
                               {result.year && <span className="text-xs text-muted-foreground">{result.year}</span>}
                               {result.type && <span className="text-xs text-muted-foreground capitalize">• {result.type.replace(/_/g, ' ')}</span>}
-                              {result.platform && <span className="text-xs text-muted-foreground">• {result.platform}</span>}
                             </div>
-                            {result.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{result.description}</p>}
                           </button>
                         ))}
                       </div>
                     )}
-                  </div>
-                </TabsContent>
+                  </TabsContent>
 
-                <TabsContent value="link" className="mt-3">
-                  <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
-                    <p className="text-xs text-muted-foreground">Paste a link to your work (YouTube, Spotify, Vimeo, SoundCloud, Behance, etc.) and we'll auto-fill the details.</p>
-                    <Input
-                      value={creditLink}
-                      onChange={(e) => setCreditLink(e.target.value)}
-                      placeholder="https://youtube.com/watch?v=... or spotify.com/track/..."
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="w-full gap-2"
-                      disabled={!creditLink.trim() || aiLoading}
+                  <TabsContent value="link" className="mt-2 space-y-2">
+                    <Input value={creditLink} onChange={(e) => setCreditLink(e.target.value)} placeholder="YouTube, Spotify, Vimeo link..." className="h-9 text-sm" />
+                    <Button variant="secondary" size="sm" className="w-full gap-2" disabled={!creditLink.trim() || aiLoading}
                       onClick={async () => {
                         setAiLoading(true);
                         try {
-                          const { data } = await supabase.functions.invoke('ai-credit-import', {
-                            body: { type: 'link', content: creditLink, userId: user!.id }
-                          });
-                          if (data?.project_name) {
-                            setFirstCredit({ project_name: data.project_name, role: data.role || '', project_type: data.project_type || '' });
-                            toast({ title: "✨ Credit imported!", description: `Found: ${data.project_name}` });
-                          } else {
-                            toast({ title: "Couldn't extract details", description: "Try adding manually instead", variant: "destructive" });
-                          }
-                        } catch (e) {
-                          console.error('Link import error:', e);
-                          toast({ title: "Import failed", description: "Try adding manually instead", variant: "destructive" });
-                        } finally { setAiLoading(false); }
-                      }}
-                    >
-                      {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-                      Import from Link
+                          const { data } = await supabase.functions.invoke('ai-credit-import', { body: { type: 'link', content: creditLink, userId: user!.id } });
+                          if (data?.project_name) { setFirstCredit({ project_name: data.project_name, role: data.role || '', project_type: data.project_type || '' }); toast({ title: "✨ Imported!", description: data.project_name }); }
+                          else toast({ title: "Couldn't extract", description: "Try manual entry", variant: "destructive" });
+                        } catch (e) { toast({ title: "Import failed", variant: "destructive" }); } finally { setAiLoading(false); }
+                      }}>
+                      {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />} Import
                     </Button>
+                  </TabsContent>
+
+                  <TabsContent value="manual" className="mt-2 space-y-2">
+                    <Input value={firstCredit.project_name} onChange={(e) => setFirstCredit(prev => ({ ...prev, project_name: e.target.value }))} placeholder="Project name" className="h-9 text-sm" />
+                    <Input value={firstCredit.role} onChange={(e) => setFirstCredit(prev => ({ ...prev, role: e.target.value }))} placeholder="Your role" className="h-9 text-sm" />
+                  </TabsContent>
+                </Tabs>
+
+                {firstCredit.project_name && (
+                  <div className="border border-primary/20 rounded-lg p-2 bg-primary/5">
+                    <p className="font-medium text-sm">{firstCredit.project_name}</p>
+                    {firstCredit.role && <p className="text-xs text-muted-foreground">{firstCredit.role}</p>}
                   </div>
-                </TabsContent>
+                )}
+              </div>
 
-                <TabsContent value="manual" className="mt-3">
-                  <div className="border border-border rounded-lg p-4 space-y-4 bg-muted/30">
-                    <div>
-                      <Label htmlFor="project_name">Project Name</Label>
-                      <Input id="project_name" value={firstCredit.project_name} onChange={(e) => setFirstCredit(prev => ({ ...prev, project_name: e.target.value }))} placeholder='e.g. "Summer Vibes EP", "Nike Campaign"' />
-                    </div>
-                    <div>
-                      <Label htmlFor="credit_role">Your Role</Label>
-                      <Input id="credit_role" value={firstCredit.role} onChange={(e) => setFirstCredit(prev => ({ ...prev, role: e.target.value }))} placeholder="e.g. Producer, Director, Designer" />
-                    </div>
-                    <div>
-                      <Label htmlFor="project_type">Type</Label>
-                      <Select value={firstCredit.project_type || undefined} onValueChange={(v) => setFirstCredit(prev => ({ ...prev, project_type: v }))}>
-                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="music">Music</SelectItem>
-                          <SelectItem value="film">Film / Video</SelectItem>
-                          <SelectItem value="design">Design</SelectItem>
-                          <SelectItem value="photography">Photography</SelectItem>
-                          <SelectItem value="fashion">Fashion</SelectItem>
-                          <SelectItem value="event">Event</SelectItem>
-                          <SelectItem value="brand">Brand Campaign</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-
-              {/* Show preview if credit is populated */}
-              {firstCredit.project_name && (
-                <div className="border border-primary/20 rounded-lg p-3 bg-primary/5">
-                  <p className="text-xs text-muted-foreground mb-1">Credit Preview</p>
-                  <p className="font-medium text-sm">{firstCredit.project_name}</p>
-                  {firstCredit.role && <p className="text-xs text-muted-foreground">{firstCredit.role}</p>}
-                  {firstCredit.project_type && <p className="text-xs text-muted-foreground capitalize">{firstCredit.project_type}</p>}
-                </div>
-              )}
-
-              <p className="text-xs text-center text-muted-foreground">
-                This is the start of your ICDB profile — like IMDb, but for every creative industry.
-              </p>
-
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => setCurrentStep(2)}>Back</Button>
+              {/* Actions */}
+              <div className="flex gap-3 pt-1">
+                <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
                 <Button onClick={handleNext} disabled={loading} className="flex-1 gap-2" size="lg">
                   {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Setting up...</> : <>
-                    {firstCredit.project_name ? "Finish" : "Skip for now"} <ArrowRight className="h-4 w-4" />
+                    {(selectedSkills.length > 0 || firstCredit.project_name) ? "Finish" : "Skip & Explore"} <ArrowRight className="h-4 w-4" />
                   </>}
                 </Button>
               </div>
+
+              <button onClick={handleSkipToComplete} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+                Skip everything → go straight to the feed
+              </button>
             </div>
           )}
 

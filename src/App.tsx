@@ -78,6 +78,7 @@ const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
 const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const Accounting = lazy(() => import("./pages/Accounting"));
+const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
@@ -130,13 +131,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Mode-aware default route: Create→Scene, Work→Desk
+// Mode-aware default route: Create→Scene, Work→Desk, Guests→Landing dashboard
 const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
   
-  // Guests go straight to Scene (public browsing)
-  if (!user) return <Navigate to="/scene" replace />;
+  // Guests see the landing dashboard (with full nav visible)
+  if (!user) return <Landing />;
   if (onboardingLoading) return <LoadingFallback />;
   if (!isComplete) return <Navigate to="/onboarding" replace />;
   
@@ -186,13 +187,14 @@ const AppContent = () => {
   const isDeckPage = location.pathname === '/deck';
   const isLandingPage = location.pathname === '/';
   
-  // Public browsable routes where guests see nav
-  const publicBrowseRoutes = ['/scene', '/opportunities', '/credits', '/nearby', '/circle'];
+  // Public browsable routes where guests see nav — expanded to show platform value
+  const publicBrowseRoutes = ['/scene', '/opportunities', '/credits', '/nearby', '/circle', '/search', '/production', '/event', '/magazine', '/profile'];
   const isPublicBrowse = publicBrowseRoutes.some(r => location.pathname.startsWith(r));
   
-  // Show bottom nav for authenticated users OR guests on public browse routes
-  const showBottomNav = !isPublicEPK && !isAuthPage && !isDeckPage && !isLandingPage && (user || isPublicBrowse);
+  // Show bottom nav for authenticated users OR guests on public browse routes (+ landing)
+  const showBottomNav = !isPublicEPK && !isAuthPage && !isDeckPage && (user || isPublicBrowse || isLandingPage);
   const showNavbar = !isPublicEPK && !isAuthPage && !isDeckPage;
+  const showGuestBanner = !user && (isPublicBrowse || isLandingPage) && !isAuthPage;
   
   // Don't add bottom padding when on individual project pages or desk list
   const shouldAddBottomPadding = showBottomNav && !location.pathname.startsWith('/desk');
@@ -206,7 +208,7 @@ const AppContent = () => {
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
       {user && !isPublicEPK && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
-      {!user && isPublicBrowse && <GuestBanner />}
+      {showGuestBanner && <GuestBanner />}
       <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
@@ -326,8 +328,9 @@ const AppContent = () => {
             <Route path="/claim-gig/:token" element={<ClaimGig />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
-            {/* Search & Notifications */}
+            {/* Search, Production Detail & Notifications */}
             <Route path="/search" element={<Search />} />
+            <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             
             {/* Legacy redirects */}

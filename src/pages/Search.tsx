@@ -304,7 +304,7 @@ const Search = () => {
                   });
                 };
                 return (
-                  <div key={`c-${c.project_name}-${idx}`} className="rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all">
+                  <div key={`c-${c.project_name}-${idx}`} onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)} className="cursor-pointer rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all">
                     {c.thumbnail_url && (
                       <div className="aspect-[21/9] overflow-hidden relative">
                         <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover" />
@@ -385,7 +385,7 @@ const Search = () => {
               if (item.type === "external_credit") {
                 const ec = item.data as { project: string; role: string; year: number };
                 return (
-                  <button key={`ec-${ec.project}-${idx}`} onClick={() => navigate(`/search?q=${encodeURIComponent(ec.project)}`)} className="w-full text-left rounded-xl border border-dashed border-[hsl(230,15%,22%)] bg-[hsl(230,18%,9%)] p-3 hover:border-[hsl(235,65%,52%,0.3)] transition-all">
+                  <button key={`ec-${ec.project}-${idx}`} onClick={() => navigate(`/production?name=${encodeURIComponent(ec.project)}`)} className="w-full text-left rounded-xl border border-dashed border-[hsl(230,15%,22%)] bg-[hsl(230,18%,9%)] p-3 hover:border-[hsl(235,65%,52%,0.3)] transition-all">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge className="text-[8px] bg-[hsl(235,65%,52%,0.1)] border-[hsl(235,65%,52%,0.2)] text-[hsl(235,70%,70%)]">
                         <ExternalLink className="h-2 w-2 mr-0.5" /> Web Source

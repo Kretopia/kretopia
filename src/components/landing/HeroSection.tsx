@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -238,7 +238,7 @@ export const HeroSection = () => {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {trendingCredits.slice(0, 6).map((c) => (
-                <button key={c.id} onClick={() => navigate(`/profile/${c.user_id}`)} className="group text-left">
+                <button key={c.id} onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)} className="group text-left">
                   <div className="relative rounded-xl overflow-hidden border border-[hsl(230,15%,18%)] hover:border-[hsl(235,65%,52%,0.4)] transition-all bg-[hsl(230,18%,11%)]">
                     {c.thumbnail_url ? (
                       <div className="aspect-[4/3] overflow-hidden">
@@ -341,8 +341,102 @@ export const HeroSection = () => {
           </div>
         </div>
 
+        {/* Quick Post CTAs — get people onboarding */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <Link
+            to="/post-opportunity"
+            className="rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-4 hover:border-success/40 transition-all group"
+          >
+            <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center mb-3 group-hover:bg-success/15 transition-colors">
+              <PlusCircle className="h-5 w-5 text-success" />
+            </div>
+            <p className="text-xs font-semibold text-white mb-1">Post a Gig</p>
+            <p className="text-[10px] text-[hsl(220,10%,45%)] leading-relaxed">Find verified talent for your next production</p>
+          </Link>
+          <Link
+            to="/scene"
+            className="rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-4 hover:border-[hsl(235,65%,52%,0.4)] transition-all group"
+          >
+            <div className="h-10 w-10 rounded-xl bg-[hsl(235,65%,52%,0.1)] flex items-center justify-center mb-3 group-hover:bg-[hsl(235,65%,52%,0.15)] transition-colors">
+              <CalendarDays className="h-5 w-5 text-[hsl(235,70%,65%)]" />
+            </div>
+            <p className="text-xs font-semibold text-white mb-1">Post an Event</p>
+            <p className="text-[10px] text-[hsl(220,10%,45%)] leading-relaxed">Host creative meetups, jams & workshops</p>
+          </Link>
+        </div>
+
+        {/* Flywheel — show visitors the full platform value */}
+        <div className="mt-8 rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-5">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-[hsl(220,10%,50%)] mb-4 text-center">
+            Everything creatives need in one place
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { icon: Database, label: "Verified Credits", desc: "IMDb for every creative industry", to: "/credits" },
+              { icon: Users, label: "Find Collaborators", desc: "Connect with like-minded creatives", to: "/circle" },
+              { icon: Briefcase, label: "Get Hired", desc: "Paid gigs, barters & collabs", to: "/opportunities" },
+              { icon: DollarSign, label: "Get Paid", desc: "Invoicing, escrow & payments", to: "/auth" },
+            ].map((item) => (
+              <Link key={item.label} to={item.to} className="text-center p-3 rounded-xl hover:bg-[hsl(230,15%,13%)] transition-colors group">
+                <item.icon className="h-5 w-5 mx-auto mb-2 text-[hsl(235,70%,65%)] group-hover:text-white transition-colors" />
+                <p className="text-[11px] font-semibold text-white mb-0.5">{item.label}</p>
+                <p className="text-[9px] text-[hsl(220,10%,42%)]">{item.desc}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Talent Manager CTA */}
+        <div className="mt-4 rounded-2xl border border-[hsl(45,90%,55%,0.15)] bg-gradient-to-r from-[hsl(45,90%,55%,0.05)] to-[hsl(230,18%,9%)] p-5">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[hsl(45,90%,55%,0.1)] flex items-center justify-center shrink-0">
+              <Handshake className="h-5 w-5 text-[hsl(45,90%,60%)]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white mb-1">Agencies & Talent Managers</p>
+              <p className="text-[11px] text-[hsl(220,10%,50%)] leading-relaxed mb-3">
+                Onboard your roster, post opportunities, and earn 10% commission on every booking through your network.
+              </p>
+              <Link to="/auth" className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[hsl(45,90%,60%)] hover:underline">
+                Start earning <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Magazine & Podcast teaser */}
+        <div className="mt-4 rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-[hsl(220,10%,50%)] flex items-center gap-2">
+              <Newspaper className="h-3.5 w-3.5 text-[hsl(235,70%,65%)]" />
+              From the Community
+            </h2>
+            <Link to="/scene" className="text-[10px] text-[hsl(235,70%,65%)] hover:underline flex items-center gap-1">
+              View all <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Link to="/scene" className="rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,11%)] p-4 hover:border-[hsl(235,65%,52%,0.3)] transition-all">
+              <div className="flex items-center gap-2 mb-2">
+                <Newspaper className="h-4 w-4 text-[hsl(235,70%,65%)]" />
+                <Badge className="text-[8px] bg-[hsl(235,65%,52%,0.1)] border-[hsl(235,65%,52%,0.2)] text-[hsl(235,70%,70%)]">Magazine</Badge>
+              </div>
+              <p className="text-xs font-semibold text-white mb-1">Industry stories & interviews</p>
+              <p className="text-[10px] text-[hsl(220,10%,45%)]">Read articles from creatives across film, music, fashion & events</p>
+            </Link>
+            <Link to="/scene" className="rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,11%)] p-4 hover:border-[hsl(235,65%,52%,0.3)] transition-all">
+              <div className="flex items-center gap-2 mb-2">
+                <Mic2 className="h-4 w-4 text-[hsl(45,90%,60%)]" />
+                <Badge className="text-[8px] bg-[hsl(45,90%,55%,0.1)] border-[hsl(45,90%,55%,0.2)] text-[hsl(45,90%,65%)]">Podcast</Badge>
+              </div>
+              <p className="text-xs font-semibold text-white mb-1">Behind the scenes</p>
+              <p className="text-[10px] text-[hsl(220,10%,45%)]">Listen to conversations with industry leaders & emerging talent</p>
+            </Link>
+          </div>
+        </div>
+
         {/* Footer links */}
-        <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-[hsl(220,10%,38%)] mt-10">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-[hsl(220,10%,38%)] mt-10 pb-4">
           <Link to="/about" className="hover:text-white transition-colors">About</Link>
           <span className="text-[hsl(230,15%,20%)]">·</span>
           <Link to="/faq" className="hover:text-white transition-colors">FAQ</Link>

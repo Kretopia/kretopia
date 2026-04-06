@@ -85,9 +85,9 @@ export function LevelUpCelebration({ newLevel, xp, previousLevel, open, onClose 
 
           {/* Actions */}
           <div className="flex flex-col gap-2">
-            <Button onClick={() => { onClose(); navigate("/rewards"); }} variant="default" className="gap-2">
+            <Button onClick={() => { onClose(); navigate("/profile"); }} variant="default" className="gap-2">
               <ShoppingBag className="h-4 w-4" />
-              Spend XP in Shop
+              View Profile
             </Button>
             <Button onClick={onClose} variant="ghost" className="gap-2">
               Keep Going <ArrowRight className="h-4 w-4" />

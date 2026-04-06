@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Crown, Sparkles, Gift } from "lucide-react";
+import { Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -22,23 +22,11 @@ interface DiscoveryGateProps {
  * Pro/Enterprise/Founder users see everything.
  */
 export function DiscoveryGate({ totalItems, freePreviewCount, index, itemLabel, children }: DiscoveryGateProps) {
-  const { user, subscriptionInfo } = useAuth();
+  const { subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   // Pro users see everything
   if (isPro) return <>{children}</>;
-
-  // Check if user unlocked via Thrive Points
-  if (user) {
-    try {
-      const unlockKey = `thrivein_discovery_unlocked_${user.id}`;
-      const stored = localStorage.getItem(unlockKey);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.unlocked) return <>{children}</>;
-      }
-    } catch {}
-  }
 
   // Free users: show items within preview limit
   if (index < freePreviewCount) return <>{children}</>;
@@ -64,21 +52,12 @@ interface DiscoveryUpsellProps {
 
 /**
  * Upsell CTA shown after the free preview items.
- * Offers subscription upgrade OR Thrive Points unlock.
+ * Offers Pro subscription upgrade.
  */
 export function DiscoveryUpsell({ totalItems, freePreviewCount, itemLabel }: DiscoveryUpsellProps) {
   const navigate = useNavigate();
-  const { user, subscriptionInfo } = useAuth();
+  const { subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
-
-  // Check points-based unlock
-  if (user) {
-    try {
-      const unlockKey = `thrivein_discovery_unlocked_${user.id}`;
-      const stored = localStorage.getItem(unlockKey);
-      if (stored && JSON.parse(stored).unlocked) return null;
-    } catch {}
-  }
 
   if (isPro || totalItems <= freePreviewCount) return null;
 
@@ -94,25 +73,15 @@ export function DiscoveryUpsell({ totalItems, freePreviewCount, itemLabel }: Dis
           {remaining}+ more {itemLabel} to explore
         </h3>
         <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-          Unlock the full directory with a Pro subscription or use your Thrive Points.
+          Upgrade to Pro for unlimited access to {itemLabel}, advanced filters, and AI-powered matching.
         </p>
-        <div className="flex flex-col sm:flex-row gap-2 justify-center max-w-xs mx-auto">
-          <Button
-            onClick={() => navigate("/subscription")}
-            className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2"
-          >
-            <Sparkles className="h-4 w-4" />
-            Go Pro — $12/mo
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate("/thrivepay?tab=rewards")}
-            className="flex-1 border-primary/30 text-primary hover:bg-primary/10 gap-2"
-          >
-            <Gift className="h-4 w-4" />
-            Use Points
-          </Button>
-        </div>
+        <Button
+          onClick={() => navigate("/subscription")}
+          className="w-full max-w-xs bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2"
+        >
+          <Sparkles className="h-4 w-4" />
+          Go Pro — $12/mo
+        </Button>
       </div>
     </div>
   );

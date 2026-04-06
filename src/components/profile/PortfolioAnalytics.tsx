@@ -45,16 +45,16 @@ export const PortfolioAnalytics = ({ userId }: PortfolioAnalyticsProps) => {
 
       // Fetch reactions per item
       const { data: reactionsData, error: reactionsError } = await supabase
-        .from('portfolio_reactions')
-        .select('portfolio_item_id');
+        .from('credit_reactions')
+        .select('credit_id');
 
       if (reactionsError) throw reactionsError;
 
       // Count reactions per item
       const reactionCounts: Record<string, number> = {};
       reactionsData?.forEach(reaction => {
-        reactionCounts[reaction.portfolio_item_id] = 
-          (reactionCounts[reaction.portfolio_item_id] || 0) + 1;
+        reactionCounts[reaction.credit_id] = 
+          (reactionCounts[reaction.credit_id] || 0) + 1;
       });
 
       setItems((portfolioData || []).map((c: any) => ({ id: c.id, title: c.project_name, view_count: c.view_count, created_at: c.created_at, media_type: c.media_type })));

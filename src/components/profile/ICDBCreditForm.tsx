@@ -554,6 +554,44 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
         <ScrollArea className="max-h-[70vh] px-6 pb-6">
           {step === "search" ? (
             <div className="space-y-4">
+              {/* Upload media */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*,audio/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full border-2 border-dashed rounded-xl p-4 flex flex-col items-center gap-2 text-muted-foreground hover:border-primary/50 hover:bg-primary/5 transition-all"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span className="text-xs font-medium">Uploading & analyzing...</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Upload className="h-5 w-5" />
+                      <ImageIcon className="h-4 w-4" />
+                      <Video className="h-4 w-4" />
+                      <Music className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-medium">Upload photo, video, or audio</span>
+                    <span className="text-[10px]">AI will auto-detect project details</span>
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">or paste a link</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
               {/* Paste a Link */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium flex items-center gap-1">

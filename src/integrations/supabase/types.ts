@@ -8564,6 +8564,7 @@ export type Database = {
       public_profiles_discovery: {
         Row: {
           avatar_url: string | null
+          badge: Database["public"]["Enums"]["user_badge"] | null
           bio: string | null
           collab_intent: string | null
           created_at: string | null
@@ -8576,6 +8577,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          badge?: Database["public"]["Enums"]["user_badge"] | null
           bio?: string | null
           collab_intent?: string | null
           created_at?: string | null
@@ -8588,6 +8590,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          badge?: Database["public"]["Enums"]["user_badge"] | null
           bio?: string | null
           collab_intent?: string | null
           created_at?: string | null

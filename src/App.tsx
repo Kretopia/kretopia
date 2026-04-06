@@ -328,8 +328,9 @@ const AppContent = () => {
             <Route path="/claim-gig/:token" element={<ClaimGig />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
-            {/* Search & Notifications */}
+            {/* Search, Production Detail & Notifications */}
             <Route path="/search" element={<Search />} />
+            <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             
             {/* Legacy redirects */}

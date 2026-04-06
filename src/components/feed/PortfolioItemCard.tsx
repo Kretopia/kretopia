@@ -49,18 +49,18 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
     
     // Get reaction count
     const { count } = await supabase
-      .from('portfolio_reactions')
+      .from('credit_reactions')
       .select('*', { count: 'exact', head: true })
-      .eq('portfolio_item_id', item.id);
+      .eq('credit_id', item.id);
 
     setReactionCount(count || 0);
 
     // Check if current user has reacted
     if (user) {
       const { data } = await supabase
-        .from('portfolio_reactions')
+        .from('credit_reactions')
         .select('id')
-        .eq('portfolio_item_id', item.id)
+        .eq('credit_id', item.id)
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -79,9 +79,9 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
       if (hasReacted) {
         // Remove reaction
         await supabase
-          .from('portfolio_reactions')
+          .from('credit_reactions')
           .delete()
-          .eq('portfolio_item_id', item.id)
+          .eq('credit_id', item.id)
           .eq('user_id', user.id);
 
         setHasReacted(false);
@@ -89,9 +89,9 @@ export const PortfolioItemCard = ({ item }: PortfolioItemCardProps) => {
       } else {
         // Add reaction
         await supabase
-          .from('portfolio_reactions')
+          .from('credit_reactions')
           .insert({
-            portfolio_item_id: item.id,
+            credit_id: item.id,
             user_id: user.id
           });
 

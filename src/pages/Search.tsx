@@ -460,6 +460,7 @@ const Search = () => {
                 );
               }
 
+              if (item.type === "opportunity") {
                 const o = item.data as OpportunityResult;
                 return (
                   <button key={`o-${o.id}`} onClick={() => navigate(`/opportunity/${o.id}`)} className="w-full text-left rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] p-3 hover:border-[hsl(235,65%,52%,0.4)] transition-all">

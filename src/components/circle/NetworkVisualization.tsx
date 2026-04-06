@@ -324,27 +324,27 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
         </div>
       </Card>
 
-      {/* XP & Rewards Quick Links */}
+      {/* Quick Links */}
       <div className="grid grid-cols-2 gap-2 mb-4">
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={() => navigate('/rewards')} 
+          onClick={() => navigate('/credits')} 
           className="gap-1.5 h-auto py-2.5 flex-col items-center"
         >
           <Trophy className="h-4 w-4 text-primary" />
-          <span className="text-xs">Rewards Shop</span>
-          <span className="text-[10px] text-muted-foreground">Spend your XP</span>
+          <span className="text-xs">ThriveCredits</span>
+          <span className="text-[10px] text-muted-foreground">Build your record</span>
         </Button>
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={() => navigate('/dashboard')} 
+          onClick={() => navigate('/opportunities')} 
           className="gap-1.5 h-auto py-2.5 flex-col items-center"
         >
           <Flame className="h-4 w-4 text-destructive" />
-          <span className="text-xs">Daily Streak</span>
-          <span className="text-[10px] text-muted-foreground">Keep it going!</span>
+          <span className="text-xs">Find Gigs</span>
+          <span className="text-[10px] text-muted-foreground">Get booked</span>
         </Button>
       </div>
 

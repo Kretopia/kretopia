@@ -252,6 +252,12 @@ export default function Onboarding() {
       };
       await supabase.from("profiles").update(updateData).eq("user_id", user.id);
 
+      // Auto-join circles based on role
+      try {
+        await supabase.rpc('auto_join_circles_for_role', { p_user_id: user.id, p_role: profile.role });
+        console.log('[Onboarding] Auto-joined circles for role:', profile.role);
+      } catch (e) { console.error('[Onboarding] Auto-join circles error:', e); }
+
       const pendingConnect = localStorage.getItem('pendingConnect');
       if (pendingConnect) {
         await processPendingConnection(pendingConnect);

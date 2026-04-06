@@ -124,6 +124,11 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
   const [step, setStep] = useState<FormStep>("search");
   const [saving, setSaving] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<{ url: string; type: string; name: string } | null>(null);
   
   // Search state
   const [searchQuery, setSearchQuery] = useState("");

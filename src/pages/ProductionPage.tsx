@@ -132,6 +132,11 @@ const ProductionPage = () => {
 
   const handleClaim = async (roleName: string) => {
     if (!user) {
+      // Store claim intent for auto-attach after signup
+      sessionStorage.setItem("thrivein_pending_claim", JSON.stringify({
+        project_name: projectName,
+        role: roleName,
+      }));
       requireAuth("claim this credit");
       return;
     }
@@ -202,7 +207,15 @@ const ProductionPage = () => {
     <>
       <Helmet>
         <title>{projectName} — ThriveCredits™ | ThriveIN</title>
-        <meta name="description" content={production.description || `${projectName} — production credits on ThriveCredits™.`} />
+        <meta name="description" content={production.description || `${projectName} — production credits on ThriveCredits™. See the full roll call and claim your credit.`} />
+        <meta property="og:title" content={`${projectName} — ThriveCredits™`} />
+        <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on ThriveIN`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        {production.image_url && <meta property="og:image" content={production.image_url} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${projectName} — ThriveCredits™`} />
+        <meta name="twitter:description" content={`${production.total_roles} roles · ${totalClaimed} claimed on ThriveIN`} />
       </Helmet>
 
       <div className="min-h-screen bg-[hsl(230,20%,7%)] text-white pb-24">

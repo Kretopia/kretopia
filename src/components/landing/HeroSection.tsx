@@ -4,6 +4,7 @@ import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, 
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { QuickPostModal } from "@/components/QuickPostModal";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";
@@ -52,6 +53,7 @@ export const HeroSection = () => {
   const [stats, setStats] = useState({ creators: 0, credits: 0, gigs: 0 });
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
 
   // Fetch all dashboard data
   useEffect(() => {
@@ -343,27 +345,33 @@ export const HeroSection = () => {
 
         {/* Quick Post CTAs — get people onboarding */}
         <div className="grid grid-cols-2 gap-3 mt-4">
-          <Link
-            to="/post-opportunity"
-            className="rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-4 hover:border-success/40 transition-all group"
+          <button
+            onClick={() => setQuickPostType("gig")}
+            className="rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-4 hover:border-success/40 transition-all group text-left"
           >
             <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center mb-3 group-hover:bg-success/15 transition-colors">
               <PlusCircle className="h-5 w-5 text-success" />
             </div>
             <p className="text-xs font-semibold text-white mb-1">Post a Gig</p>
-            <p className="text-[10px] text-[hsl(220,10%,45%)] leading-relaxed">Find verified talent for your next production</p>
-          </Link>
-          <Link
-            to="/scene"
-            className="rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-4 hover:border-[hsl(235,65%,52%,0.4)] transition-all group"
+            <p className="text-[10px] text-[hsl(220,10%,45%)] leading-relaxed">Find verified talent — post in 30 seconds</p>
+          </button>
+          <button
+            onClick={() => setQuickPostType("event")}
+            className="rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-4 hover:border-[hsl(235,65%,52%,0.4)] transition-all group text-left"
           >
             <div className="h-10 w-10 rounded-xl bg-[hsl(235,65%,52%,0.1)] flex items-center justify-center mb-3 group-hover:bg-[hsl(235,65%,52%,0.15)] transition-colors">
               <CalendarDays className="h-5 w-5 text-[hsl(235,70%,65%)]" />
             </div>
             <p className="text-xs font-semibold text-white mb-1">Post an Event</p>
-            <p className="text-[10px] text-[hsl(220,10%,45%)] leading-relaxed">Host creative meetups, jams & workshops</p>
-          </Link>
+            <p className="text-[10px] text-[hsl(220,10%,45%)] leading-relaxed">Host creative meetups & workshops</p>
+          </button>
         </div>
+
+        <QuickPostModal
+          open={quickPostType !== null}
+          onOpenChange={(open) => !open && setQuickPostType(null)}
+          type={quickPostType || "gig"}
+        />
 
         {/* Flywheel — show visitors the full platform value */}
         <div className="mt-8 rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-5">

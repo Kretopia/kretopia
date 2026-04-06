@@ -94,6 +94,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Auto-attach pending credit claim after signup/login
+  const processPendingClaim = async (userId: string) => {
+    try {
+      const raw = sessionStorage.getItem("thrivein_pending_claim");
+      if (!raw) return;
+      sessionStorage.removeItem("thrivein_pending_claim");
+      const { project_name, role } = JSON.parse(raw);
+      if (!project_name) return;
+      
+      // Insert the credit claim
+      await supabase.from("credits").insert({
+        user_id: userId,
+        project_name,
+        role: role || "Contributor",
+        verification_status: "manual",
+      });
+      console.log("[AuthContext] Auto-attached pending credit claim:", project_name);
+    } catch (e) {
+      console.warn("[AuthContext] Failed to process pending claim:", e);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
     let retryCount = 0;
@@ -117,6 +139,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userId = session.user.id;
           setTimeout(() => {
             checkSubscription(userId, true);
+            // Auto-attach pending credit claim after signup
+            processPendingClaim(userId);
           }, 0);
         }
       }

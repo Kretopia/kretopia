@@ -50,8 +50,8 @@ export const FREE_TIER_MONTHLY_CAPS = {
   aiApplicantRankings: 2,
   aiJobDescriptions: 2,
 
-  // Work / Credits
-  workCredits: 10,
+  // Work / Credits — claiming credits is FREE & UNLIMITED to drive network growth
+  workCredits: -1,
 } as const;
 
 export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {

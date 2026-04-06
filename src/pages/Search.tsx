@@ -433,11 +433,35 @@ const Search = () => {
               return null;
             })}
 
+            {/* ═══ MANUAL CREDIT PROMPT ═══ */}
+            {hasQuery && (
+              <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+                <p className="text-sm font-semibold text-foreground mb-1">Not what you're looking for?</p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Paste a link from IMDb, Spotify, YouTube, LinkedIn, or any platform to manually add your credit.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => navigate('/credits')}
+                    className="text-xs font-medium px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  >
+                    Add Credit Manually
+                  </button>
+                  <button
+                    onClick={() => navigate('/profile')}
+                    className="text-xs font-medium px-4 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                  >
+                    Claim Your Profile
+                  </button>
+                </div>
+              </div>
+            )}
+
             {!hasResults && !hasKnowledge && (
               <div className="text-center py-16">
-                <SearchIcon className="h-12 w-12 mx-auto mb-4 text-[hsl(230,15%,20%)]" />
-                <p className="text-[hsl(220,10%,45%)]">No results found for "{searchParams.get("q")}"</p>
-                <p className="text-[hsl(220,10%,35%)] text-sm mt-1">Try different keywords or a broader search</p>
+                <SearchIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/20" />
+                <p className="text-muted-foreground">No results found for "{searchParams.get("q")}"</p>
+                <p className="text-muted-foreground/70 text-sm mt-1">Try different keywords or add your credit manually above</p>
               </div>
             )}
           </div>

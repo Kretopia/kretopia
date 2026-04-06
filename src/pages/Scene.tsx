@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
+import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Flame, BookOpen, Headphones } from "lucide-react";
 import Events from "./Events";
@@ -19,7 +20,9 @@ import { PageTransition } from "@/components/PageTransition";
 import { LiveActivityTicker } from "@/components/scene/LiveActivityTicker";
 
 const Scene = () => {
-  const [activeTab, setActiveTab] = useState("spark");
+  const location = useLocation();
+  const isEventsRoute = location.pathname === "/events";
+  const [activeTab, setActiveTab] = useState(isEventsRoute ? "events" : "spark");
   const { user } = useAuth();
   const [visibility, setVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
 

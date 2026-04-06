@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2 } from "lucide-react";
+import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2, Film, Music, Camera, Calendar, Palette, Video, Mic } from "lucide-react";
 
 interface ProfileResult {
   user_id: string;
@@ -52,14 +52,28 @@ interface KnowledgeCard {
   description: string;
   known_for: string[];
   industry: string;
-  key_credits: { project: string; role: string; year: number }[];
+  key_credits: { project: string; role: string; year: number; platform?: string; image_suggestion?: string }[];
   collaborators: string[];
   fun_fact: string;
   claim_prompt: string;
+  platforms?: string[];
+  social_links?: Record<string, string>;
+}
+
+interface VisualResult {
+  title: string;
+  subtitle?: string;
+  type: string;
+  year?: number;
+  platform?: string;
+  description?: string;
+  image_suggestion?: string;
+  url?: string;
 }
 
 interface ExternalData {
   knowledge_card: KnowledgeCard | null;
+  visual_results?: VisualResult[];
   related_searches: string[];
 }
 
@@ -168,6 +182,11 @@ const Search = () => {
         blendedItems.push({ type: "external_credit", data: kc, weight: 60 - i });
       }
     });
+  }
+
+  // Add visual results grid from AI
+  if (external?.visual_results && external.visual_results.length > 0) {
+    blendedItems.push({ type: "visual_grid", data: external.visual_results, weight: 55 });
   }
 
   // Related searches
@@ -395,6 +414,49 @@ const Search = () => {
                     <p className="text-[10px] text-[hsl(220,10%,48%)] mt-0.5">{ec.role}{ec.year ? ` · ${ec.year}` : ""}</p>
                     <p className="text-[9px] text-[hsl(235,70%,60%)] mt-1.5">Not yet on ThriveIN — Claim this credit →</p>
                   </button>
+                );
+              }
+
+              if (item.type === "visual_grid") {
+                const results = item.data as VisualResult[];
+                const typeIcons: Record<string, any> = {
+                  film: Film, music: Music, photo: Camera, event: Calendar,
+                  podcast: Mic, video: Video, fashion: Palette, design: Palette,
+                };
+                return (
+                  <div key="visual-grid" className="space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[hsl(220,10%,42%)]">Discovered Works</p>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {results.map((vr, vi) => {
+                        const VrIcon = typeIcons[vr.type] || Globe;
+                        return (
+                          <button
+                            key={`vr-${vi}`}
+                            onClick={() => navigate(`/production?name=${encodeURIComponent(vr.title)}`)}
+                            className="text-left rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all group"
+                          >
+                            <div className="aspect-[4/3] bg-gradient-to-br from-[hsl(235,65%,52%,0.15)] to-[hsl(230,18%,8%)] flex items-center justify-center relative">
+                              <VrIcon className="h-8 w-8 text-[hsl(235,65%,52%,0.3)]" />
+                              {vr.platform && (
+                                <Badge className="absolute top-1.5 right-1.5 text-[7px] bg-[hsl(230,18%,12%,0.9)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,55%)]">
+                                  {vr.platform}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="p-2.5">
+                              <p className="text-[11px] font-semibold text-white line-clamp-2 leading-tight">{vr.title}</p>
+                              {vr.subtitle && <p className="text-[9px] text-[hsl(220,10%,50%)] mt-0.5">{vr.subtitle}</p>}
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <Badge className="text-[7px] bg-[hsl(230,15%,15%)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,55%)]">{vr.type}</Badge>
+                                {vr.year && <span className="text-[8px] text-[hsl(220,10%,40%)]">{vr.year}</span>}
+                              </div>
+                              {vr.description && <p className="text-[9px] text-[hsl(220,10%,45%)] mt-1.5 line-clamp-2">{vr.description}</p>}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               }
 

@@ -1,12 +1,13 @@
 import { type StatusResult } from "@/lib/statusEngine";
-import { Shield, Award, Crown, Star, Sparkles } from "lucide-react";
+import { Shield, Award, Crown, Star, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TIER_ICONS = {
-  emerging: Shield,
-  proven: Award,
-  elite: Crown,
-  legacy: Star,
+  hobbyist: Shield,
+  freelancer: Zap,
+  thriver: Award,
+  professional: Star,
+  celebrity: Crown,
   icon: Sparkles,
 };
 
@@ -17,17 +18,18 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, showPoints = false, size = "sm" }: StatusBadgeProps) {
-  const Icon = TIER_ICONS[status.tier];
+  const Icon = TIER_ICONS[status.tier] || Shield;
   const isSmall = size === "sm";
 
   return (
     <div className={cn(
       "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 backdrop-blur-sm",
       status.tier === "icon" && "border-primary/40 bg-primary/5",
-      status.tier === "elite" && "border-accent/40 bg-accent/5",
-      status.tier === "legacy" && "border-foreground/30 bg-foreground/5",
-      status.tier === "proven" && "border-border bg-muted/50",
-      status.tier === "emerging" && "border-border bg-muted/30",
+      status.tier === "celebrity" && "border-foreground/30 bg-foreground/5",
+      status.tier === "professional" && "border-accent/40 bg-accent/5",
+      status.tier === "thriver" && "border-primary/30 bg-primary/5",
+      status.tier === "freelancer" && "border-border bg-muted/50",
+      status.tier === "hobbyist" && "border-border bg-muted/30",
     )}>
       <Icon className={cn(
         status.color,

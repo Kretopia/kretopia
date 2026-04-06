@@ -14,7 +14,7 @@ import { SEO } from "@/components/SEO";
 import { FeeStructure } from "@/components/FeeStructure";
 import { FeeCalculator } from "@/components/FeeCalculator";
 import { getFeeDisplayText } from "@/lib/platformFees";
-import { StatusProgressCard } from "@/components/wallet/StatusProgressCard";
+
 import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
@@ -323,7 +323,7 @@ export default function ThrivePay() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="w-full grid grid-cols-4 h-10 sm:h-11">
+          <TabsList className="w-full grid grid-cols-3 h-10 sm:h-11">
             <TabsTrigger value="wallet" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <Wallet className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Wallet</span>
@@ -331,10 +331,6 @@ export default function ThrivePay() {
             <TabsTrigger value="earnings" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <TrendingUp className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Earnings</span>
-            </TabsTrigger>
-            <TabsTrigger value="status" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
-              <Shield className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Status</span>
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <CreditCard className="h-4 w-4 flex-shrink-0" />
@@ -408,10 +404,6 @@ export default function ThrivePay() {
             </FreeTierGate>
           </TabsContent>
 
-          {/* Status Tab */}
-          <TabsContent value="status" className="space-y-6">
-            <StatusProgressCard />
-          </TabsContent>
 
           {/* Payments Tab - Stripe Connect */}
           <TabsContent value="payments" className="space-y-6">

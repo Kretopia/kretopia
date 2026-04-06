@@ -71,7 +71,6 @@ serve(async (req) => {
     const projectMap = new Map<string, any>();
     for (const credit of allRelatedCredits) {
       if (!projectMap.has(credit.project_name)) {
-        // Use the first (highest-ranked) credit as the "primary"
         const primary = matchedCredits.find(c => c.project_name === credit.project_name) || credit;
         projectMap.set(credit.project_name, {
           project_name: credit.project_name,
@@ -92,7 +91,6 @@ serve(async (req) => {
         verification_status: credit.verification_status,
       });
     }
-    // Also add matched credits that had no siblings returned
     for (const credit of matchedCredits) {
       if (!projectMap.has(credit.project_name)) {
         projectMap.set(credit.project_name, {
@@ -131,7 +129,6 @@ serve(async (req) => {
       }
     }
 
-    // Enrich roles with profile info
     platformCredits.forEach(p => {
       p.roles = p.roles.map((r: any) => ({
         ...r,
@@ -140,7 +137,7 @@ serve(async (req) => {
       }));
     });
 
-    // Step 2: AI-powered external knowledge synthesis — ALWAYS runs to ensure rich results
+    // Step 2: AI-powered external knowledge synthesis
     let externalResults: any = null;
 
     if (lovableApiKey) {
@@ -161,41 +158,68 @@ serve(async (req) => {
             messages: [
               {
                 role: 'system',
-                content: `You are a creative industry knowledge engine for ThriveIN — the "IMDb for creatives." When given a search query, synthesize what you know about the person, project, production, brand, show, podcast, YouTube channel, or concept from public knowledge (IMDB, Wikipedia, Spotify, Apple Podcasts, YouTube, Discogs, music databases, film databases, fashion archives, LinkedIn, etc.).
+                content: `You are the creative industry's most comprehensive knowledge engine for ThriveIN — the "IMDb + LinkedIn for ALL creatives." You must search across EVERY possible source of creative work.
+
+SEARCH ACROSS ALL OF THESE (not just film/music):
+- Film & TV: IMDb, TMDb, Letterboxd, TV Guide
+- Music: Spotify, Apple Music, SoundCloud, Discogs, Genius, Bandcamp, YouTube Music
+- Video & Content: YouTube channels, TikTok creators, Vimeo, Twitch
+- Podcasts: Apple Podcasts, Spotify Podcasts, YouTube podcasts, Google Podcasts
+- Social Media: Instagram (photographers, models, influencers), Twitter/X, LinkedIn
+- Design & Visual: Behance, Dribbble, DeviantArt, ArtStation
+- Fashion: Vogue, runway shows, fashion weeks, model agencies, editorial shoots
+- Events: Eventbrite, festival lineups, conference speakers, DJ sets, live performances
+- Photography: Getty Images, Shutterstock contributors, photo exhibitions
+- Dance & Theatre: Broadway, West End, dance companies, choreography credits
+- Writing & Publishing: Amazon, Medium, Substack, published books, articles
+- Advertising & Brand: Campaign archives, ad agencies, brand collaborations
+- Gaming: Game credits, voice acting, game design
+- Press & Media: News articles, magazine features, interviews, press releases
+- Flyers, posters, event promotions, brand campaigns
 
 CRITICAL RULES:
-1. You MUST always provide useful results. Even for obscure queries, provide related industry knowledge.
-2. NEVER return empty key_credits or collaborators if you have ANY knowledge about the subject.
-3. If a query looks like a SHOW, PODCAST, or YOUTUBE CHANNEL name, treat it as a "production" and list episodes, guests, hosts, and platforms.
-4. If you're unsure whether something is a person vs. a production, default to treating it as a production with key collaborators.
-5. For podcasts/shows: include host(s), notable guests, platform (Spotify/YouTube/Apple), and episode count if known.
-6. ALWAYS include at least 5 related_searches to keep users exploring.
+1. ALWAYS return results. For ANY query, find relevant creative work, people, or projects.
+2. Include thumbnail_url suggestions when you know the visual identity (album art URLs, movie posters, YouTube thumbnails).
+3. For shows/podcasts/YouTube channels: list the HOST, notable guests, episode count, and all platforms.
+4. Include "image_suggestion" field: describe what a visual card for this result should look like.
+5. For people: search across ALL platforms they might be on — not just one.
+6. For events/festivals: include venue, date, lineup, and poster/flyer info.
+7. For brands: include campaign work, ambassadors, and creative team.
+8. Always return at least 5 key_credits and 5 related_searches.
 
-Return a JSON object with this structure:
+Return a JSON object:
 {
   "knowledge_card": {
-    "type": "person" | "production" | "brand" | "concept" | "genre" | "role" | "podcast" | "show",
-    "name": "Official name or best interpretation",
-    "description": "2-3 sentence professional summary. If you're unsure, explain what you know and suggest possibilities.",
-    "known_for": ["Notable work 1", "Notable work 2", "Notable work 3"],
-    "industry": "Film" | "Music" | "Fashion" | "Events" | "Digital" | "Mixed" | "Photography" | "Dance" | "Theatre" | "Podcast",
+    "type": "person" | "production" | "brand" | "event" | "podcast" | "show" | "channel" | "festival" | "agency" | "venue" | "concept",
+    "name": "Official name",
+    "description": "2-3 sentence summary with specific details (episode counts, follower counts, years active, etc.)",
+    "known_for": ["Specific work 1", "Specific work 2", "Specific work 3"],
+    "industry": "Film | Music | Fashion | Events | Digital | Photography | Dance | Theatre | Podcast | Content Creation | Mixed",
     "key_credits": [
-      {"project": "Project Name", "role": "Role", "year": 2023}
+      {"project": "Project Name", "role": "Specific Role", "year": 2023, "platform": "YouTube/Spotify/IMDb/etc", "image_suggestion": "Description of what a visual card should show"}
     ],
-    "collaborators": ["Name 1", "Name 2"],
-    "fun_fact": "One interesting fact or industry insight",
-    "claim_prompt": "A compelling reason to claim/verify this profile on ThriveIN",
-    "platforms": ["YouTube", "Spotify"]
+    "collaborators": ["Name 1", "Name 2", "Name 3"],
+    "platforms": ["YouTube", "Spotify", "Instagram"],
+    "fun_fact": "Interesting industry detail",
+    "claim_prompt": "Why this person/project should be on ThriveIN",
+    "social_links": {"instagram": "handle", "youtube": "channel", "spotify": "link"}
   },
-  "related_searches": ["Related search 1", "Related search 2", "Related search 3", "Related search 4", "Related search 5"]
+  "visual_results": [
+    {
+      "title": "Project/Work Name",
+      "subtitle": "Role or context",
+      "type": "film | music | event | podcast | photo | video | fashion | design",
+      "year": 2023,
+      "platform": "Where it lives",
+      "description": "One-line description",
+      "image_suggestion": "What a thumbnail should depict",
+      "url": "Known URL if any"
+    }
+  ],
+  "related_searches": ["Search 1", "Search 2", "Search 3", "Search 4", "Search 5"]
 }
 
-Rules:
-- For people: Include real credits from IMDb, Discogs, Spotify, etc. Include at least 3-5 key_credits.
-- For productions/shows/podcasts: Include known cast/crew/hosts/guests. Include platform/distributor info in "platforms" array.
-- For vague queries: Set type to the best guess and provide industry context + 5 related searches.
-- Be factual — only include information you're confident about. But DO provide context even for less-known subjects.
-- If a query could be a Caribbean/Trinidad creative industry show or podcast, acknowledge that possibility and suggest searching for the host or related creators.${platformContext}`
+IMPORTANT: The "visual_results" array should contain 5-10 individual works/projects that match the query, each as a visual card. Think of these as search results you'd see on Google Images but for creative work.${platformContext}`
               },
               {
                 role: 'user',
@@ -220,10 +244,11 @@ Rules:
       }
     }
 
-    // Fallback: if AI returned nothing, generate basic related searches
+    // Fallback
     if (!externalResults) {
       externalResults = {
         knowledge_card: null,
+        visual_results: [],
         related_searches: [
           `${query} film`,
           `${query} music`,

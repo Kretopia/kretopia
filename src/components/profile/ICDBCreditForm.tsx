@@ -168,6 +168,71 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
+  // Handle file upload → AI analysis → auto-fill
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (file.size > maxSize) {
+      toast.error("File too large (max 20MB)");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Determine media type
+      let mediaType = 'image';
+      if (file.type.startsWith('video/')) mediaType = 'video';
+      else if (file.type.startsWith('audio/')) mediaType = 'audio';
+
+      // Upload to storage
+      const ext = file.name.split('.').pop();
+      const path = `${userId}/credits/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('portfolio')
+        .upload(path, file, { cacheControl: '3600', upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('portfolio')
+        .getPublicUrl(path);
+
+      setUploadedFile({ url: publicUrl, type: mediaType, name: file.name });
+
+      // AI analysis of the uploaded file name to pre-populate
+      const { data: aiData } = await supabase.functions.invoke('ai-credit-import', {
+        body: { type: 'text', content: file.name, userId },
+      });
+
+      if (aiData) {
+        setForm(prev => ({
+          ...prev,
+          project_name: aiData.project_name || prev.project_name || file.name.replace(/\.[^/.]+$/, ''),
+          role: aiData.role || prev.role,
+          project_type: aiData.project_type || prev.project_type,
+          credit_category: aiData.project_type || prev.credit_category,
+        }));
+      } else {
+        // Fallback: use filename as project name
+        setForm(prev => ({
+          ...prev,
+          project_name: prev.project_name || file.name.replace(/\.[^/.]+$/, ''),
+        }));
+      }
+
+      setStep("details");
+      toast.success("Media uploaded! Confirm your credit details.");
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error("Upload failed — try again");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   // Detect if input is a URL
   const isUrl = (str: string) => {
     try { new URL(str); return true; } catch { return false; }

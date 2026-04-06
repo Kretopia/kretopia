@@ -135,12 +135,13 @@ const ViewProfile = () => {
       if (!profileData) return;
       setProfile(profileData);
 
-      // Fetch portfolio items
+      // Fetch portfolio items (credits with source=portfolio)
       const { data: portfolioData } = await supabase
-        .from('portfolio_items')
+        .from('credits')
         .select('*')
         .eq('user_id', userId)
-        .order('featured', { ascending: false })
+        .eq('source', 'portfolio')
+        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false });
 
       setPortfolioItems(portfolioData || []);

@@ -147,12 +147,13 @@ const CreatorEPK = () => {
         setProfile(profileData);
 
         // Fetch all data in parallel
-        const [portfolioRes, pressRes, awardsRes, creditsRes, verifiedCreditsRes, statsRes, productsRes, icdbRes, reviewsRes] = await Promise.all([
-          // Portfolio items
+        const [portfolioRes, pressRes, awardsRes, creditsRes, statsRes, productsRes, icdbRes, reviewsRes] = await Promise.all([
+          // Portfolio items (from credits with source=portfolio)
           supabase
-            .from('portfolio_items')
-            .select('id, title, description, media_url, media_type, thumbnail_url')
+            .from('credits')
+            .select('id, project_name, description, primary_media_url, media_type, thumbnail_url')
             .eq('user_id', userId)
+            .eq('source', 'portfolio')
             .order('created_at', { ascending: false })
             .limit(9),
           
@@ -170,21 +171,13 @@ const CreatorEPK = () => {
             .eq('user_id', userId)
             .limit(4),
           
-          // Manual Credits (work history)
+          // All Credits (work history)
           supabase
             .from('credits')
-            .select('id, project_name, role, year, platform, verification_status, ai_confidence, endorsement_count')
+            .select('id, project_name, role, year, platform, verification_status, ai_confidence, endorsement_count, source')
             .eq('user_id', userId)
             .order('year', { ascending: false })
-            .limit(6),
-          
-          // Verified Credits (auto-imported)
-          supabase
-            .from('verified_credits')
-            .select('id, title, role, year, source')
-            .eq('user_id', userId)
-            .order('year', { ascending: false })
-            .limit(6),
+            .limit(12),
           
           // Industry stats
           supabase

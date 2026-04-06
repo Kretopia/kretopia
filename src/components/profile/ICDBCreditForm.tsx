@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail, Database, ShieldCheck, UserPlus } from "lucide-react";
+import { Plus, X, Search, Loader2, MapPin, Calendar, Link2, Users, Building2, Sparkles, ChevronRight, Wand2, ChevronDown, Mail, Database, ShieldCheck, UserPlus, Upload, Image as ImageIcon, Video, Music } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { parseMediaUrl } from "@/lib/mediaUtils";

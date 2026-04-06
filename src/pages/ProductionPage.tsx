@@ -132,6 +132,11 @@ const ProductionPage = () => {
 
   const handleClaim = async (roleName: string) => {
     if (!user) {
+      // Store claim intent for auto-attach after signup
+      sessionStorage.setItem("thrivein_pending_claim", JSON.stringify({
+        project_name: projectName,
+        role: roleName,
+      }));
       requireAuth("claim this credit");
       return;
     }

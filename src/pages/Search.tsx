@@ -67,6 +67,7 @@ const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [query, setQuery] = useState(searchParams.get("q") || "");
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [profiles, setProfiles] = useState<ProfileResult[]>([]);
@@ -293,11 +294,20 @@ const Search = () => {
               if (item.type === "credit") {
                 const c = item.data as CreditResult;
                 const v = verBadge(c.verification_status);
+                const isExpanded = expandedProjects.has(c.project_name);
+                const toggleExpand = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  setExpandedProjects(prev => {
+                    const next = new Set(prev);
+                    next.has(c.project_name) ? next.delete(c.project_name) : next.add(c.project_name);
+                    return next;
+                  });
+                };
                 return (
-                  <button key={`c-${c.id}`} onClick={() => navigate(`/profile/${c.user_id}`)} className="w-full text-left rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all group">
+                  <div key={`c-${c.project_name}-${idx}`} className="rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all">
                     {c.thumbnail_url && (
                       <div className="aspect-[21/9] overflow-hidden relative">
-                        <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-t from-[hsl(230,20%,7%)] via-transparent to-transparent" />
                         <Badge className={`absolute top-2 left-2 text-[9px] border ${v.cls}`}><Verified className="h-2.5 w-2.5 mr-1" />{v.text}</Badge>
                       </div>
@@ -305,14 +315,70 @@ const Search = () => {
                     <div className="p-3">
                       {!c.thumbnail_url && <Badge className={`text-[9px] border mb-2 ${v.cls}`}><Verified className="h-2.5 w-2.5 mr-1" />{v.text}</Badge>}
                       <p className="font-semibold text-sm text-white leading-tight line-clamp-2">{c.project_name}</p>
-                      <p className="text-[11px] text-[hsl(220,10%,50%)] mt-1">{c.role}{c.year ? ` · ${c.year}` : ""}{c.credit_category ? ` · ${c.credit_category}` : ""}</p>
-                      {c.collaborator_user_ids && c.collaborator_user_ids.length > 0 && (
-                        <div className="mt-2 flex items-center gap-1 text-[10px] text-[hsl(220,10%,40%)]">
-                          <Database className="h-3 w-3" /> Verified Roll Call · {c.collaborator_user_ids.length} collaborators
+                      <p className="text-[11px] text-[hsl(220,10%,50%)] mt-1">
+                        {c.roles.length} credit{c.roles.length !== 1 ? "s" : ""}
+                        {c.year ? ` · ${c.year}` : ""}
+                        {c.credit_category ? ` · ${c.credit_category}` : ""}
+                        {c.client_brand ? ` · ${c.client_brand}` : ""}
+                      </p>
+
+                      {/* Roll Call toggle */}
+                      <button onClick={toggleExpand} className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-[hsl(235,70%,65%)] hover:text-[hsl(235,70%,75%)] transition-colors">
+                        <Database className="h-3 w-3" />
+                        {isExpanded ? "Hide" : "Show"} Roll Call · {c.roles.length} role{c.roles.length !== 1 ? "s" : ""}
+                        {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                      </button>
+
+                      {/* Expanded Roll Call */}
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-[hsl(230,15%,16%)] space-y-1.5">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[hsl(220,10%,38%)] mb-2">Production Credits</p>
+                          {c.roles.map((r, ri) => {
+                            const rv = verBadge(r.verification_status);
+                            return (
+                              <div key={r.id || ri} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-[hsl(230,15%,13%)] transition-colors">
+                                <Avatar className="h-7 w-7 border border-[hsl(230,15%,20%)]">
+                                  <AvatarImage src={r.avatar_url || ""} />
+                                  <AvatarFallback className="text-[10px] bg-[hsl(235,65%,52%,0.15)] text-[hsl(235,70%,75%)]">
+                                    {(r.full_name || "?")[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium text-white truncate">{r.full_name || "Unclaimed"}</p>
+                                  <p className="text-[10px] text-[hsl(220,10%,50%)] truncate">{r.role}</p>
+                                </div>
+                                {r.full_name ? (
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <CheckCircle2 className={`h-3.5 w-3.5 ${rv.cls.includes("success") ? "text-success" : "text-[hsl(220,10%,35%)]"}`} />
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); navigate(`/profile/${r.user_id}`); }}
+                                      className="text-[10px] font-medium text-[hsl(235,70%,65%)] hover:underline"
+                                    >
+                                      View
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); navigate('/auth'); }}
+                                    className="flex items-center gap-1 text-[10px] font-semibold text-[hsl(235,70%,65%)] hover:text-[hsl(235,70%,75%)] shrink-0"
+                                  >
+                                    <UserPlus className="h-3 w-3" /> Claim
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                          {/* Generic claim CTA */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigate(user ? '/credits' : '/auth'); }}
+                            className="w-full mt-2 py-2 rounded-lg border border-dashed border-[hsl(235,65%,52%,0.3)] text-[10px] font-semibold text-[hsl(235,70%,65%)] hover:bg-[hsl(235,65%,52%,0.08)] transition-colors flex items-center justify-center gap-1.5"
+                          >
+                            <UserPlus className="h-3 w-3" /> Worked on this? Claim your credit
+                          </button>
                         </div>
                       )}
                     </div>
-                  </button>
+                  </div>
                 );
               }
 

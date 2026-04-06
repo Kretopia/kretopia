@@ -379,11 +379,9 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         if (p.user_id === user.id) return false;
         if (swipedUserIds.has(p.user_id)) return false;
         if (connectedUserIds.has(p.user_id)) return false;
-        // Must have avatar
-        if (!p.avatar_url || p.avatar_url.trim() === '') return false;
-        // Must have bio (20+ chars)
-        if (!p.bio || p.bio.trim().length < 20) return false;
-        // Must have at least 1 portfolio item OR credit
+        // Must have bio (10+ chars — lowered from 20)
+        if (!p.bio || p.bio.trim().length < 10) return false;
+        // Must have at least 1 credit
         if (!workUserIds.has(p.user_id)) return false;
         // Hide unclaimed profiles (unless ODOS badge)
         if (p.is_claimed === false && p.badge !== 'odos') return false;

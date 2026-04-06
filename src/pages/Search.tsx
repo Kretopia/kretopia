@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2 } from "lucide-react";
+import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2, Film, Music, Camera, Calendar, Palette, Video, Mic } from "lucide-react";
 
 interface ProfileResult {
   user_id: string;
@@ -52,14 +52,28 @@ interface KnowledgeCard {
   description: string;
   known_for: string[];
   industry: string;
-  key_credits: { project: string; role: string; year: number }[];
+  key_credits: { project: string; role: string; year: number; platform?: string; image_suggestion?: string }[];
   collaborators: string[];
   fun_fact: string;
   claim_prompt: string;
+  platforms?: string[];
+  social_links?: Record<string, string>;
+}
+
+interface VisualResult {
+  title: string;
+  subtitle?: string;
+  type: string;
+  year?: number;
+  platform?: string;
+  description?: string;
+  image_suggestion?: string;
+  url?: string;
 }
 
 interface ExternalData {
   knowledge_card: KnowledgeCard | null;
+  visual_results?: VisualResult[];
   related_searches: string[];
 }
 

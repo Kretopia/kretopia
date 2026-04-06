@@ -67,7 +67,7 @@ const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [profiles, setProfiles] = useState<ProfileResult[]>([]);
   const [credits, setCredits] = useState<CreditResult[]>([]);
@@ -97,15 +97,24 @@ const Search = () => {
       setExternal(data?.external || null);
     } catch (err) {
       console.error("[Search] Error:", err);
-      // Fallback to direct queries
+      // Fallback to direct queries (group locally)
       const q = `%${searchQuery.trim()}%`;
       const [profilesRes, creditsRes, oppsRes] = await Promise.all([
         supabase.from("profiles").select("user_id, full_name, avatar_url, role, location, professional_skills").or(`full_name.ilike.${q},role.ilike.${q},location.ilike.${q}`).eq("onboarding_completed", true).limit(15),
-        supabase.from("credits").select("id, project_name, role, year, verification_status, credit_category, thumbnail_url, user_id, collaborator_user_ids").or(`project_name.ilike.${q},role.ilike.${q}`).order("year", { ascending: false }).limit(20),
+        supabase.from("credits").select("id, project_name, role, year, verification_status, credit_category, thumbnail_url, user_id").or(`project_name.ilike.${q},role.ilike.${q}`).order("year", { ascending: false }).limit(20),
         supabase.from("opportunities").select("id, title, description, type, compensation, location").eq("status", "active").or(`title.ilike.${q},description.ilike.${q}`).limit(10),
       ]);
       setProfiles(profilesRes.data || []);
-      setCredits(creditsRes.data || []);
+      // Group fallback credits by project_name
+      const fallbackCredits = creditsRes.data || [];
+      const grouped = new Map<string, CreditResult>();
+      for (const c of fallbackCredits) {
+        if (!grouped.has(c.project_name)) {
+          grouped.set(c.project_name, { project_name: c.project_name, year: c.year, verification_status: c.verification_status, credit_category: c.credit_category, thumbnail_url: c.thumbnail_url, client_brand: null, platform: null, description: null, roles: [] });
+        }
+        grouped.get(c.project_name)!.roles.push({ id: c.id, role: c.role, user_id: c.user_id, verification_status: c.verification_status, full_name: null, avatar_url: null });
+      }
+      setCredits(Array.from(grouped.values()));
       setOpportunities(oppsRes.data || []);
     } finally {
       setLoading(false);

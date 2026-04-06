@@ -117,6 +117,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userId = session.user.id;
           setTimeout(() => {
             checkSubscription(userId, true);
+            // Auto-attach pending credit claim after signup
+            processPendingClaim(userId);
           }, 0);
         }
       }

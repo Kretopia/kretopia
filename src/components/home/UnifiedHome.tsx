@@ -90,7 +90,7 @@ export const UnifiedHome = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Live search
+  // Live search — DB first, AI fallback if empty
   useEffect(() => {
     if (query.trim().length < 2) { setSuggestions([]); return; }
     const timer = setTimeout(async () => {
@@ -102,13 +102,34 @@ export const UnifiedHome = () => {
           supabase.from("credits").select("id, project_name, role").or(`project_name.ilike.${q},role.ilike.${q}`).limit(4),
           supabase.from("opportunities").select("id, title, type").eq("status", "active").ilike("title", q).limit(3),
         ]);
-        setSuggestions([
+        const dbResults: Suggestion[] = [
           ...(profiles.data || []).map((p) => ({ type: "creator" as const, id: p.user_id, title: p.full_name || "Creator", subtitle: p.role || undefined, avatar: p.avatar_url })),
           ...(credits.data || []).map((c) => ({ type: "credit" as const, id: c.id, title: c.project_name, subtitle: c.role })),
           ...(opps.data || []).map((o) => ({ type: "gig" as const, id: o.id, title: o.title, subtitle: o.type })),
-        ]);
+        ];
+
+        if (dbResults.length > 0) {
+          setSuggestions(dbResults);
+        } else {
+          // AI fallback — call search-credits-web for instant results
+          try {
+            const { data: aiData } = await supabase.functions.invoke('search-credits-web', {
+              body: { query: query.trim() },
+            });
+            const aiResults: Suggestion[] = (aiData?.results || []).slice(0, 5).map((r: any, i: number) => ({
+              type: "credit" as const,
+              id: `ai-${i}`,
+              title: r.title,
+              subtitle: [r.type, r.year, r.platform].filter(Boolean).join(" · "),
+              avatar: null,
+            }));
+            setSuggestions(aiResults.length > 0 ? aiResults : []);
+          } catch {
+            setSuggestions([]);
+          }
+        }
       } catch { setSuggestions([]); } finally { setLoading(false); }
-    }, 300);
+    }, 400);
     return () => clearTimeout(timer);
   }, [query]);
 
@@ -320,9 +341,24 @@ export const UnifiedHome = () => {
                   </div>
                 </button>
               ))}
-              {trendingCredits.length === 0 && Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-border bg-muted/20 aspect-[4/3] animate-pulse" />
-              ))}
+              {trendingCredits.length === 0 && (
+                <>
+                  {/* Seed content — shows the platform works even with no data */}
+                  {[
+                    { name: "Search any production", desc: "Films, music, events & more", icon: "🎬" },
+                    { name: "Verify your credits", desc: "Build your professional record", icon: "✓" },
+                    { name: "Discover creators", desc: "Find talent across industries", icon: "🔍" },
+                  ].map((seed, i) => (
+                    <button key={i} onClick={() => navigate("/search")} className="group text-left">
+                      <div className="relative rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-all bg-muted/20 aspect-[4/3] flex flex-col items-center justify-center p-3">
+                        <span className="text-2xl mb-2">{seed.icon}</span>
+                        <p className="text-[10px] font-semibold text-foreground text-center leading-tight">{seed.name}</p>
+                        <p className="text-[8px] text-muted-foreground text-center mt-0.5">{seed.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           </div>
 
@@ -349,7 +385,14 @@ export const UnifiedHome = () => {
                   )}
                 </button>
               ))}
-              {activeGigs.length === 0 && <div className="text-center py-6 text-muted-foreground text-xs">No active gigs yet</div>}
+              {activeGigs.length === 0 && (
+                <div className="text-center py-6">
+                  <p className="text-xs text-muted-foreground mb-2">Be the first to post a gig</p>
+                  <button onClick={() => setQuickPostType("gig")} className="text-[10px] font-medium text-primary hover:underline">
+                    Post a Gig — 30 seconds
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -377,9 +420,14 @@ export const UnifiedHome = () => {
                   </div>
                 </button>
               ))}
-              {featuredCreators.length === 0 && Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="shrink-0 w-[88px] h-[100px] rounded-xl border border-border bg-muted/10 animate-pulse" />
-              ))}
+              {featuredCreators.length === 0 && (
+                <div className="w-full text-center py-4">
+                  <p className="text-xs text-muted-foreground mb-2">Join a growing network of verified creatives</p>
+                  <button onClick={() => navigate("/auth")} className="text-[10px] font-medium text-primary hover:underline">
+                    Create Your Profile
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

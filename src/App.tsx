@@ -24,6 +24,7 @@ import { GuestBanner } from "./components/GuestBanner";
 
 // Lazy load active page components
 const Landing = lazy(() => import("./pages/Landing"));
+const PersonalizedHomePage = lazy(() => import("./components/home/PersonalizedHome").then(m => ({ default: m.PersonalizedHome })));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
@@ -131,7 +132,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Mode-aware default route: Create→Scene, Work→Desk, Guests→Landing dashboard
+// Mode-aware default route: Guests→Landing, Logged-in→Personalized Home
 const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
@@ -148,10 +149,8 @@ const DefaultRoute = () => {
     return <Navigate to={`/event/${pendingEvent}`} replace />;
   }
   
-  // Read mode synchronously from localStorage to avoid flash
-  let mode = "create";
-  try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}
-  return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;
+  // Logged-in users see their personalized home
+  return <PersonalizedHomePage />;
 };
 
 // Catch-all: authenticated users go to mode-aware home

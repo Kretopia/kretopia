@@ -35,6 +35,7 @@ interface ProfileHeroProps {
   creditsCount?: number;
   verifiedCreditsCount?: number;
   awardsCount?: number;
+  dashboardTrigger?: React.ReactNode;
 }
 
 export const ProfileHero = ({

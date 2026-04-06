@@ -55,8 +55,8 @@ export const BRAND_SUBSCRIPTION_PRODUCTS = {
 /** Features shown on subscription page, split by account type */
 export const FREE_FEATURES: Record<AccountType, string[]> = {
   individual: [
+    "Unlimited credit claiming",
     "30 swipes/day",
-    "Work credits (up to 10/month)",
     "Direct messaging",
     "🤖 3 AI briefs/month",
     "📊 5 expenses/month",
@@ -64,8 +64,10 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
     "🔓 2 approval requests/month",
     "🔓 3 milestones/month",
     "🔓 1 template use/month",
+    "2 gig/event posts/month",
   ],
   company: [
+    "Unlimited credit claiming",
     "3 opportunity postings/month",
     "Basic company page",
     "Direct messaging",

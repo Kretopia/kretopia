@@ -9,7 +9,7 @@ import {
   Film, Tv, Music, Disc3, Video, Mic2, CalendarDays, Sparkles, Crown,
   Shirt, Megaphone, Briefcase, ShieldCheck, ExternalLink, Loader2,
   Plus, Trash2, Play, UserPlus, Filter, MapPin, Building2, ChevronDown,
-  Youtube, Headphones, Eye, Image as ImageIcon,
+  Youtube, Headphones, Eye, Image as ImageIcon, Grid3X3, LayoutGrid,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,18 @@ interface ICDBCredit {
   credit_category: string | null;
   is_featured: boolean | null;
   source: 'manual' | 'project' | 'verified';
+}
+
+interface PortfolioItem {
+  id: string;
+  title: string;
+  description: string | null;
+  media_type: string;
+  media_url: string;
+  thumbnail_url: string | null;
+  category: string | null;
+  featured: boolean;
+  created_at: string;
 }
 
 interface CollaboratorProfile {
@@ -89,7 +101,18 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
   talent_management: "business", booking: "business", label_release: "business", publishing: "business", curation: "business",
 };
 
-// Detect if a credit has playable/viewable media
+// Poster placeholder gradients for credits without thumbnails
+const POSTER_GRADIENTS = [
+  "from-rose-900/80 via-rose-800/60 to-black",
+  "from-blue-900/80 via-indigo-800/60 to-black",
+  "from-amber-900/80 via-orange-800/60 to-black",
+  "from-emerald-900/80 via-teal-800/60 to-black",
+  "from-purple-900/80 via-violet-800/60 to-black",
+  "from-cyan-900/80 via-sky-800/60 to-black",
+  "from-pink-900/80 via-fuchsia-800/60 to-black",
+  "from-slate-800/80 via-zinc-700/60 to-black",
+];
+
 const getMediaType = (credit: ICDBCredit): 'video' | 'audio' | 'image' | 'link' | null => {
   if (!credit.url) return null;
   const mediaInfo = parseMediaUrl(credit.url);
@@ -119,16 +142,6 @@ const getPlatformIcon = (platform: string | null) => {
   return null;
 };
 
-// Helper to map portfolio media_type to a credit project_type
-const mapMediaTypeToProjectType = (mediaType: string): string => {
-  const map: Record<string, string> = {
-    video: 'youtube_series', image: 'photography', audio: 'single',
-    document: 'publishing', link: 'ugc_campaign',
-  };
-  return map[mediaType?.toLowerCase()] || 'ugc_campaign';
-};
-
-// Helper to detect platform from URL
 const detectPlatformFromUrl = (url: string | null): string | null => {
   if (!url) return null;
   if (url.includes('youtube.com') || url.includes('youtu.be')) return 'YouTube';
@@ -149,20 +162,23 @@ interface ICDBTimelineProps {
 
 export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelineProps) {
   const [credits, setCredits] = useState<ICDBCredit[]>([]);
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filterType, setFilterType] = useState("all");
   const [filterYear, setFilterYear] = useState("all");
-  const [showAll, setShowAll] = useState(false);
+  const [showAllCredits, setShowAllCredits] = useState(false);
+  const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [endorsementCredit, setEndorsementCredit] = useState<any>(null);
   const [collaboratorProfiles, setCollaboratorProfiles] = useState<Map<string, CollaboratorProfile>>(new Map());
   const [activeMedia, setActiveMedia] = useState<ICDBCredit | null>(null);
+  const [activePortfolioMedia, setActivePortfolioMedia] = useState<PortfolioItem | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => { fetchCredits(); }, [userId]);
+  useEffect(() => { fetchData(); }, [userId]);
 
-  const fetchCredits = async () => {
+  const fetchData = async () => {
     try {
       const [manualRes, verifiedRes, portfolioRes] = await Promise.all([
         supabase.from('credits').select('*').eq('user_id', userId).order('year', { ascending: false }),
@@ -170,6 +186,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         supabase.from('portfolio_items').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       ]);
 
+      // Credits — keep as credits (NOT merged with portfolio)
       const manual: ICDBCredit[] = (manualRes.data || []).map((c: any) => ({
         ...c,
         endorsement_count: c.endorsement_count || 0,
@@ -199,40 +216,19 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         source: 'verified' as const,
       }));
 
-      // Convert portfolio items into ICDBCredit format so they appear in the unified Work view
-      const portfolio: ICDBCredit[] = (portfolioRes.data || []).map((p: any) => ({
-        id: `portfolio-${p.id}`,
-        project_name: p.title,
-        role: p.category || 'Portfolio',
-        year: p.created_at ? new Date(p.created_at).getFullYear() : null,
-        project_type: mapMediaTypeToProjectType(p.media_type),
-        description: p.description,
-        start_date: null,
-        end_date: null,
-        location: null,
-        platform: detectPlatformFromUrl(p.media_url),
-        url: p.media_url,
-        client_brand: null,
-        thumbnail_url: p.thumbnail_url,
-        verification_status: null,
-        endorsement_count: 0,
-        collaborator_user_ids: null,
-        ai_confidence: null,
-        credit_category: p.category,
-        is_featured: p.featured || false,
-        source: 'manual' as const,
-      }));
-
-      const all = [...verified, ...manual, ...portfolio].sort((a, b) => {
-        // Featured items first, then by year
+      const allCredits = [...verified, ...manual].sort((a, b) => {
         if (a.is_featured && !b.is_featured) return -1;
         if (!a.is_featured && b.is_featured) return 1;
         return (b.year || 0) - (a.year || 0);
       });
-      setCredits(all);
+      setCredits(allCredits);
 
+      // Portfolio items — separate
+      setPortfolioItems(portfolioRes.data || []);
+
+      // Fetch collaborator profiles
       const allCollabIds = new Set<string>();
-      all.forEach(c => c.collaborator_user_ids?.forEach(id => allCollabIds.add(id)));
+      allCredits.forEach(c => c.collaborator_user_ids?.forEach(id => allCollabIds.add(id)));
       if (allCollabIds.size > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
@@ -276,7 +272,8 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     return result;
   }, [credits, filterType, filterYear]);
 
-  const displayCredits = showAll ? filteredCredits : filteredCredits.slice(0, 8);
+  const displayCredits = showAllCredits ? filteredCredits : filteredCredits.slice(0, 6);
+  const displayPortfolio = showAllPortfolio ? portfolioItems : portfolioItems.slice(0, 9);
   const verifiedCount = credits.filter(c => c.verification_status === 'verified').length;
 
   const years = useMemo(() => {
@@ -320,7 +317,6 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     return null;
   };
 
-  // Get thumbnail for a credit
   const getCreditThumbnail = (credit: ICDBCredit): string | null => {
     if (credit.thumbnail_url) return credit.thumbnail_url;
     if (credit.url) {
@@ -330,76 +326,16 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     return null;
   };
 
-  // Render inline embed for playable content
-  const renderInlineEmbed = (credit: ICDBCredit) => {
-    if (!credit.url) return null;
-    const mediaInfo = parseMediaUrl(credit.url);
-    if (!mediaInfo) return null;
-
-    // Spotify — compact inline player
-    if (mediaInfo.platform === 'spotify') {
-      return (
-        <div className="mt-2 rounded-lg overflow-hidden">
-          <iframe
-            src={`${mediaInfo.embedUrl}?theme=0`}
-            width="100%"
-            height="80"
-            frameBorder="0"
-            allow="encrypted-media"
-            loading="lazy"
-            className="rounded-lg"
-          />
-        </div>
-      );
-    }
-
-    // SoundCloud — compact inline player
-    if (mediaInfo.platform === 'soundcloud') {
-      return (
-        <div className="mt-2 rounded-lg overflow-hidden">
-          <iframe
-            src={mediaInfo.embedUrl}
-            width="100%"
-            height="80"
-            frameBorder="0"
-            loading="lazy"
-            className="rounded-lg"
-          />
-        </div>
-      );
-    }
-
-    // YouTube/Vimeo — thumbnail with play button (click to expand)
-    if (['youtube', 'vimeo'].includes(mediaInfo.platform)) {
-      const thumb = mediaInfo.thumbnailUrl;
-      return (
-        <div
-          className="mt-2 relative rounded-lg overflow-hidden cursor-pointer group aspect-video bg-muted"
-          onClick={() => setActiveMedia(credit)}
-        >
-          {thumb && (
-            <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
-          )}
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-              <Play className="h-5 w-5 text-foreground ml-0.5" />
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return null;
-  };
+  const totalItems = credits.length + portfolioItems.length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="text-lg font-semibold">Work</h3>
           <Badge variant="secondary" className="text-xs gap-1">
-            {credits.length}
+            {totalItems}
           </Badge>
           {verifiedCount > 0 && (
             <Badge variant="secondary" className="text-xs gap-1 bg-green-500/10 text-green-600 dark:text-green-400">
@@ -411,224 +347,280 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         {isOwnProfile && (
           <Button variant="outline" size="sm" onClick={() => setIsFormOpen(true)} className="h-8 text-xs">
             <Plus className="h-3.5 w-3.5 mr-1" />
-            Add Work
+            Add Credit
           </Button>
         )}
       </div>
 
-      {/* Filters */}
+      {/* ── CREDITS SECTION — Poster-style cards ── */}
       {credits.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="h-8 w-auto min-w-[130px] text-xs">
-              <Filter className="h-3 w-3 mr-1" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {FILTER_OPTIONS.map(o => (
-                <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {years.length > 1 && (
-            <Select value={filterYear} onValueChange={setFilterYear}>
-              <SelectTrigger className="h-8 w-auto min-w-[90px] text-xs">
-                <CalendarDays className="h-3 w-3 mr-1" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-xs">All Years</SelectItem>
-                {years.map(y => (
-                  <SelectItem key={y} value={y.toString()} className="text-xs">{y}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {credits.length === 0 ? (
-        <div className="rounded-xl border border-dashed bg-muted/20 p-8 text-center">
-          <Film className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
-          <h3 className="mb-1 text-base font-semibold">No work added yet</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            {isOwnProfile
-              ? "Paste a link or search to claim your work — we'll fill in the details"
-              : "No credits to display"}
-          </p>
-          {isOwnProfile && (
-            <Button size="sm" onClick={() => setIsFormOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" /> Claim Your Work
-            </Button>
-          )}
-        </div>
-      ) : (
-        /* Visual Card Grid */
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {displayCredits.map(credit => {
-            const Icon = TYPE_ICONS[credit.project_type || credit.credit_category || ''] || Film;
-            const collabs = credit.collaborator_user_ids?.map(id => collaboratorProfiles.get(id)).filter(Boolean) as CollaboratorProfile[] | undefined;
-            const mediaType = getMediaType(credit);
-            const thumbnail = getCreditThumbnail(credit);
-            const hasEmbed = credit.url && parseMediaUrl(credit.url) && ['spotify', 'soundcloud', 'youtube', 'vimeo'].includes(parseMediaUrl(credit.url)?.platform || '');
-            const platformIcon = getPlatformIcon(credit.platform);
-
-            return (
-              <div
-                key={credit.id}
-                className="rounded-xl border border-border/60 bg-card overflow-hidden hover:border-primary/20 hover:shadow-card transition-all group"
-              >
-                {/* Visual thumbnail header */}
-                {thumbnail && mediaType !== 'audio' && (
-                  <div
-                    className="relative aspect-video bg-muted cursor-pointer"
-                    onClick={() => credit.url && setActiveMedia(credit)}
-                  >
-                    <img src={thumbnail} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    {mediaType === 'video' && (
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
-                          <Play className="h-5 w-5 text-foreground ml-0.5" />
-                        </div>
-                      </div>
-                    )}
-                    {/* Verification badge overlay */}
-                    <div className="absolute top-2 right-2">
-                      {getVerificationBadge(credit)}
-                    </div>
-                    {/* Platform badge */}
-                    {credit.platform && (
-                      <div className="absolute bottom-2 left-2">
-                        <Badge variant="secondary" className="text-[10px] gap-1 bg-black/60 text-white border-0 backdrop-blur-sm">
-                          {platformIcon}
-                          {credit.platform}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
+        <div className="space-y-3">
+          {/* Filter pills */}
+          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+            {FILTER_OPTIONS.slice(0, 6).map(o => (
+              <button
+                key={o.value}
+                onClick={() => setFilterType(o.value)}
+                className={cn(
+                  "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                  filterType === o.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/60 text-muted-foreground hover:bg-muted"
                 )}
+              >
+                {o.label}
+              </button>
+            ))}
+            {years.length > 1 && (
+              <Select value={filterYear} onValueChange={setFilterYear}>
+                <SelectTrigger className="h-7 w-auto min-w-[80px] text-xs rounded-full border-0 bg-muted/60">
+                  <CalendarDays className="h-3 w-3 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="text-xs">All Years</SelectItem>
+                  {years.map(y => (
+                    <SelectItem key={y} value={y.toString()} className="text-xs">{y}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
 
-                {/* Content */}
-                <div className="p-3 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                      {!thumbnail && (
-                        <div className="shrink-0 w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center">
-                          <Icon className="h-4.5 w-4.5 text-primary/70" />
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <h4 className="font-semibold text-sm truncate">{credit.project_name}</h4>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
-                          <span className="font-medium text-foreground/80">{credit.role}</span>
-                          {credit.year && <span>· {credit.year}</span>}
-                        </p>
-                      </div>
-                    </div>
-                    {!thumbnail && getVerificationBadge(credit)}
-                  </div>
+          {/* Poster Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {displayCredits.map((credit, idx) => {
+              const Icon = TYPE_ICONS[credit.project_type || credit.credit_category || ''] || Film;
+              const collabs = credit.collaborator_user_ids?.map(id => collaboratorProfiles.get(id)).filter(Boolean) as CollaboratorProfile[] | undefined;
+              const thumbnail = getCreditThumbnail(credit);
+              const gradientIdx = idx % POSTER_GRADIENTS.length;
+              const platformIcon = getPlatformIcon(credit.platform);
+              const mediaType = getMediaType(credit);
 
-                  {/* Client brand */}
-                  {credit.client_brand && (
-                    <p className="text-[11px] text-muted-foreground font-medium">
-                      for {credit.client_brand}
-                    </p>
+              return (
+                <div
+                  key={credit.id}
+                  className="group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg"
+                  style={{ aspectRatio: "2/3" }}
+                  onClick={() => {
+                    if (credit.url) setActiveMedia(credit);
+                  }}
+                >
+                  {/* Poster background */}
+                  {thumbnail ? (
+                    <img
+                      src={thumbnail}
+                      alt={credit.project_name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={cn("absolute inset-0 bg-gradient-to-b", POSTER_GRADIENTS[gradientIdx])} />
                   )}
 
-                  {/* Platform + location row for non-thumbnail cards */}
-                  {!thumbnail && credit.platform && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <Badge variant="outline" className="text-[10px] gap-1 h-5">
+                  {/* Dark overlay for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+
+                  {/* Top badges */}
+                  <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-1">
+                    {getVerificationBadge(credit)}
+                    {credit.platform && (
+                      <Badge variant="secondary" className="text-[9px] gap-0.5 bg-black/50 text-white border-0 backdrop-blur-sm h-5 shrink-0">
                         {platformIcon}
                         {credit.platform}
                       </Badge>
-                      {credit.location && (
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                          <MapPin className="h-2.5 w-2.5" /> {credit.location}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
 
-                  {credit.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-2">{credit.description}</p>
-                  )}
-
-                  {/* Inline audio embed */}
-                  {hasEmbed && mediaType === 'audio' && renderInlineEmbed(credit)}
-
-                  {/* Collaborators — social proof */}
-                  {collabs && collabs.length > 0 && (
-                    <div className="flex items-center gap-1.5 pt-1 border-t border-border/40">
-                      <div className="flex -space-x-1.5">
-                        {collabs.slice(0, 4).map(c => (
-                          <Avatar
-                            key={c.user_id}
-                            className="h-5 w-5 border-2 border-card cursor-pointer"
-                            onClick={() => navigate(`/profile/${c.user_id}`)}
-                          >
-                            <AvatarImage src={c.avatar_url || ''} />
-                            <AvatarFallback className="text-[8px] bg-muted">{c.full_name?.[0]}</AvatarFallback>
-                          </Avatar>
-                        ))}
+                  {/* Play button overlay for video/audio */}
+                  {mediaType === 'video' && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                        <Play className="h-6 w-6 text-foreground ml-0.5" />
                       </div>
-                      <span className="text-[10px] text-muted-foreground">
-                        {collabs.length > 1 ? `${collabs.length} worked on this` : 'Collaborated on ThriveIN'}
-                      </span>
                     </div>
                   )}
 
-                  {/* Actions row */}
-                  {isOwnProfile && (
-                    <div className="flex items-center gap-1 pt-1 border-t border-border/50 mt-2">
-                      {credit.url && (
-                        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground" asChild>
-                          <a href={credit.url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-3 w-3" />
-                            {mediaType === 'video' ? 'Watch' : mediaType === 'audio' ? 'Listen' : 'View'}
-                          </a>
-                        </Button>
+                  {/* Type icon for no-thumbnail posters */}
+                  {!thumbnail && (
+                    <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                      <Icon className="h-10 w-10 text-white/30" />
+                    </div>
+                  )}
+
+                  {/* Bottom content */}
+                  <div className="absolute bottom-0 left-0 right-0 p-2.5 space-y-1">
+                    <h4 className="font-bold text-white text-sm leading-tight line-clamp-2 drop-shadow-md">
+                      {credit.project_name}
+                    </h4>
+                    <p className="text-white/80 text-[11px] font-medium truncate">
+                      {credit.role}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-white/60 text-[10px]">
+                      {credit.year && <span>{credit.year}</span>}
+                      {credit.client_brand && (
+                        <>
+                          <span>·</span>
+                          <span className="truncate">{credit.client_brand}</span>
+                        </>
                       )}
+                    </div>
+
+                    {/* Collaborator avatars */}
+                    {collabs && collabs.length > 0 && (
+                      <div className="flex items-center gap-1 pt-1">
+                        <div className="flex -space-x-1.5">
+                          {collabs.slice(0, 3).map(c => (
+                            <Avatar
+                              key={c.user_id}
+                              className="h-5 w-5 border border-black/50"
+                              onClick={(e) => { e.stopPropagation(); navigate(`/profile/${c.user_id}`); }}
+                            >
+                              <AvatarImage src={c.avatar_url || ''} />
+                              <AvatarFallback className="text-[7px] bg-muted">{c.full_name?.[0]}</AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
+                        <span className="text-white/50 text-[9px]">
+                          +{collabs.length}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Owner actions (on hover) */}
+                  {isOwnProfile && (
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                       {credit.verification_status !== 'verified' && credit.source !== 'verified' && (
                         <Button
-                          variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary"
-                          onClick={() => setEndorsementCredit({
-                            id: credit.id, project_name: credit.project_name,
-                            role: credit.role, year: credit.year,
-                          })}
+                          variant="secondary" size="icon"
+                          className="h-7 w-7 bg-black/50 text-white border-0 backdrop-blur-sm hover:bg-black/70"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEndorsementCredit({
+                              id: credit.id, project_name: credit.project_name,
+                              role: credit.role, year: credit.year,
+                            });
+                          }}
                         >
-                          <UserPlus className="h-3 w-3" /> Endorse
+                          <UserPlus className="h-3.5 w-3.5" />
                         </Button>
                       )}
-                      <div className="flex-1" />
                       {credit.source !== 'verified' && (
                         <Button
-                          variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive"
+                          variant="secondary" size="icon"
+                          className="h-7 w-7 bg-black/50 text-white border-0 backdrop-blur-sm hover:bg-destructive/80"
                           disabled={deletingId === credit.id}
-                          onClick={() => handleDelete(credit.id, credit.source)}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(credit.id, credit.source); }}
                         >
-                          {deletingId === credit.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                          {deletingId === credit.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                         </Button>
                       )}
                     </div>
                   )}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          {filteredCredits.length > 6 && !showAllCredits && (
+            <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={() => setShowAllCredits(true)}>
+              <ChevronDown className="h-4 w-4 mr-1" />
+              Show {filteredCredits.length - 6} more credits
+            </Button>
+          )}
         </div>
       )}
 
-      {/* Show more */}
-      {filteredCredits.length > 8 && !showAll && (
-        <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={() => setShowAll(true)}>
-          <ChevronDown className="h-4 w-4 mr-1" />
-          Show {filteredCredits.length - 8} more
-        </Button>
+      {/* ── PORTFOLIO SECTION — Instagram-style grid ── */}
+      {portfolioItems.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Grid3X3 className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Portfolio</h3>
+            <Badge variant="secondary" className="text-xs">{portfolioItems.length}</Badge>
+          </div>
+
+          <div className="grid grid-cols-3 gap-1 rounded-lg overflow-hidden">
+            {displayPortfolio.map((item) => {
+              const thumbSrc = item.thumbnail_url || (item.media_type === 'image' ? item.media_url : null);
+              const mediaInfo = item.media_url ? parseMediaUrl(item.media_url) : null;
+              const finalThumb = thumbSrc || mediaInfo?.thumbnailUrl;
+              const isVideo = item.media_type === 'video' || (mediaInfo && ['youtube', 'vimeo', 'tiktok'].includes(mediaInfo.platform));
+              const isAudio = item.media_type === 'audio' || (mediaInfo && ['spotify', 'soundcloud'].includes(mediaInfo.platform));
+
+              return (
+                <div
+                  key={item.id}
+                  className="relative aspect-square bg-muted cursor-pointer group overflow-hidden"
+                  onClick={() => setActivePortfolioMedia(item)}
+                >
+                  {finalThumb ? (
+                    <img
+                      src={finalThumb}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                      {isVideo ? <Video className="h-8 w-8 text-muted-foreground/40" /> :
+                       isAudio ? <Music className="h-8 w-8 text-muted-foreground/40" /> :
+                       <ImageIcon className="h-8 w-8 text-muted-foreground/40" />}
+                    </div>
+                  )}
+
+                  {/* Media type indicator */}
+                  {isVideo && (
+                    <div className="absolute top-1.5 right-1.5">
+                      <Play className="h-4 w-4 text-white drop-shadow-md" />
+                    </div>
+                  )}
+                  {isAudio && (
+                    <div className="absolute top-1.5 right-1.5">
+                      <Music className="h-4 w-4 text-white drop-shadow-md" />
+                    </div>
+                  )}
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                    <p className="text-white text-xs font-medium text-center px-2 opacity-0 group-hover:opacity-100 transition-opacity line-clamp-2">
+                      {item.title}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {portfolioItems.length > 9 && !showAllPortfolio && (
+            <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={() => setShowAllPortfolio(true)}>
+              <ChevronDown className="h-4 w-4 mr-1" />
+              Show {portfolioItems.length - 9} more
+            </Button>
+          )}
+        </div>
       )}
 
-      {/* Media Player Modal */}
+      {/* Empty state — no credits AND no portfolio */}
+      {credits.length === 0 && portfolioItems.length === 0 && (
+        <div className="rounded-xl border border-dashed bg-muted/20 p-8 text-center">
+          <Film className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
+          <h3 className="mb-1 text-base font-semibold">No work added yet</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            {isOwnProfile
+              ? "Add your credits and portfolio to showcase your creative work"
+              : "No work to display"}
+          </p>
+          {isOwnProfile && (
+            <Button size="sm" onClick={() => setIsFormOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Add Your First Credit
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Media Player Modal — Credits */}
       {activeMedia && (
         <MediaPlayerModal
           isOpen={!!activeMedia}
@@ -643,11 +635,26 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         />
       )}
 
+      {/* Media Player Modal — Portfolio */}
+      {activePortfolioMedia && (
+        <MediaPlayerModal
+          isOpen={!!activePortfolioMedia}
+          onClose={() => setActivePortfolioMedia(null)}
+          item={{
+            title: activePortfolioMedia.title,
+            description: activePortfolioMedia.description,
+            media_type: activePortfolioMedia.media_type,
+            media_url: activePortfolioMedia.media_url,
+            thumbnail_url: activePortfolioMedia.thumbnail_url,
+          }}
+        />
+      )}
+
       {/* Form Dialog */}
       <ICDBCreditForm
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
-        onSuccess={() => { fetchCredits(); onRefresh?.(); }}
+        onSuccess={() => { fetchData(); onRefresh?.(); }}
         userId={userId}
       />
 

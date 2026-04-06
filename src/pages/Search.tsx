@@ -417,7 +417,49 @@ const Search = () => {
                 );
               }
 
-              if (item.type === "opportunity") {
+              if (item.type === "visual_grid") {
+                const results = item.data as VisualResult[];
+                const typeIcons: Record<string, any> = {
+                  film: Film, music: Music, photo: Camera, event: Calendar,
+                  podcast: Mic, video: Video, fashion: Palette, design: Palette,
+                };
+                return (
+                  <div key="visual-grid" className="space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[hsl(220,10%,42%)]">Discovered Works</p>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {results.map((vr, vi) => {
+                        const VrIcon = typeIcons[vr.type] || Globe;
+                        return (
+                          <button
+                            key={`vr-${vi}`}
+                            onClick={() => navigate(`/production?name=${encodeURIComponent(vr.title)}`)}
+                            className="text-left rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all group"
+                          >
+                            <div className="aspect-[4/3] bg-gradient-to-br from-[hsl(235,65%,52%,0.15)] to-[hsl(230,18%,8%)] flex items-center justify-center relative">
+                              <VrIcon className="h-8 w-8 text-[hsl(235,65%,52%,0.3)]" />
+                              {vr.platform && (
+                                <Badge className="absolute top-1.5 right-1.5 text-[7px] bg-[hsl(230,18%,12%,0.9)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,55%)]">
+                                  {vr.platform}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="p-2.5">
+                              <p className="text-[11px] font-semibold text-white line-clamp-2 leading-tight">{vr.title}</p>
+                              {vr.subtitle && <p className="text-[9px] text-[hsl(220,10%,50%)] mt-0.5">{vr.subtitle}</p>}
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <Badge className="text-[7px] bg-[hsl(230,15%,15%)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,55%)]">{vr.type}</Badge>
+                                {vr.year && <span className="text-[8px] text-[hsl(220,10%,40%)]">{vr.year}</span>}
+                              </div>
+                              {vr.description && <p className="text-[9px] text-[hsl(220,10%,45%)] mt-1.5 line-clamp-2">{vr.description}</p>}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+
                 const o = item.data as OpportunityResult;
                 return (
                   <button key={`o-${o.id}`} onClick={() => navigate(`/opportunity/${o.id}`)} className="w-full text-left rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] p-3 hover:border-[hsl(235,65%,52%,0.4)] transition-all">

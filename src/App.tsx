@@ -34,70 +34,46 @@ const ViewProfile = lazy(() => import("./pages/ViewProfile"));
 
 const Circle = lazy(() => import("./pages/Circle"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
-const CirclesPage = lazy(() => import("./pages/Circles"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ProjectsList = lazy(() => import("./pages/ProjectsList"));
-const Analytics = lazy(() => import("./pages/Analytics"));
-const MyAnalytics = lazy(() => import("./pages/MyAnalytics"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Settings = lazy(() => import("./pages/Settings"));
-const NotFound = lazy(() => import("./pages/NotFound"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
-const AdminBroadcast = lazy(() => import("./pages/AdminBroadcast"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
-const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
-const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 
 const Search = lazy(() => import("./pages/Search"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
-const TestEmails = lazy(() => import("./pages/TestEmails"));
-const PurchaseSuccess = lazy(() => import("./pages/PurchaseSuccess"));
-const MyPurchases = lazy(() => import("./pages/MyPurchases"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
-const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
-const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
 
-const Marketplace = lazy(() => import("./pages/Marketplace"));
-const ListingDetail = lazy(() => import("./pages/ListingDetail"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
-const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
-const Accounting = lazy(() => import("./pages/Accounting"));
 const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
-const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
-const CheckIn = lazy(() => import("./pages/CheckIn"));
 
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
-const Guide = lazy(() => import("./pages/Guide"));
 const EventPage = lazy(() => import("./pages/EventPage"));
-const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
-const MagazineArticlePage = lazy(() => import("./pages/MagazineArticlePage"));
-const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const ICDBDiscovery = lazy(() => import("./pages/ICDBDiscovery"));
 const ICDBHub = lazy(() => import("./pages/ICDBHub"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
-const Challenges = lazy(() => import("./pages/Challenges"));
-const ChallengeDetail = lazy(() => import("./pages/ChallengeDetail"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({
   defaultOptions: {

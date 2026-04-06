@@ -141,7 +141,7 @@ export const HeroSection = () => {
   const typeColor = { creator: "text-primary", credit: "text-accent", gig: "text-success" };
 
   return (
-    <section className="relative min-h-screen bg-[hsl(230,20%,7%)] overflow-hidden">
+    <section className="relative bg-[hsl(230,20%,7%)]">
       {/* Background glows */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(235,65%,52%,0.06),transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_90%_90%,hsl(45,90%,55%,0.03),transparent_50%)]" />

@@ -303,7 +303,19 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
         .order('year', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
-      setCredits(data || []);
+      const mapped: VerifiedCredit[] = (data || []).map((c: any) => ({
+        id: c.id,
+        source: c.source || c.platform || 'import',
+        source_id: c.source_id || '',
+        credit_type: c.credit_category || c.project_type || 'Other',
+        title: c.project_name,
+        role: c.role,
+        year: c.year,
+        metadata: c.metadata,
+        verification_url: c.verification_url || c.url || '',
+        verified_at: c.metadata?.verified_at || c.created_at,
+      }));
+      setCredits(mapped);
     } catch (error) {
       console.error('Error fetching verified credits:', error);
     } finally {

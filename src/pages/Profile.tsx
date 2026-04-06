@@ -23,6 +23,7 @@ import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEdi
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProTrialBanner } from "@/components/profile/ProTrialBanner";
 import { CreditScore } from "@/components/profile/CreditScore";
+import { StatusProgressCard } from "@/components/wallet/StatusProgressCard";
 
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
@@ -440,6 +441,11 @@ const ProfileContent = () => {
           userTier={userTier}
           onRefresh={fetchData}
         />
+
+        {/* Status Tier */}
+        <div className="mb-4">
+          <StatusProgressCard />
+        </div>
 
         {/* Credit Score */}
         {(credits?.length > 0 || awards?.length > 0) && (

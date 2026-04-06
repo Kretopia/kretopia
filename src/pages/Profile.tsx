@@ -16,22 +16,15 @@ import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 
 // Components
 import { ProfileHero } from "@/components/profile/ProfileHero";
-import { ProfileStrengthScore, calculateProfileStrength } from "@/components/profile/ProfileStrengthScore";
-import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
-import { ProTrialBanner } from "@/components/profile/ProTrialBanner";
-import { CreditScore } from "@/components/profile/CreditScore";
-import { StatusProgressCard } from "@/components/wallet/StatusProgressCard";
+import { ProfileDashboardDrawer } from "@/components/profile/ProfileDashboardDrawer";
 
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
-import { ProfileVerificationSection } from "@/pages/profile/ProfileVerificationSection";
-import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 
-import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 
 const ProfileContent = () => {
@@ -52,7 +45,6 @@ const ProfileContent = () => {
     isLoading,
   } = useProfileContext();
 
-  // Track profile page view
   useEffect(() => {
     const trackView = async () => {
       const { analytics } = await import("@/lib/analytics");
@@ -61,7 +53,6 @@ const ProfileContent = () => {
     trackView();
   }, []);
 
-  // Get user's subscription tier
   const userTier: SubscriptionTier = (profile?.subscription_tier as SubscriptionTier) || "free";
   const hasAdvancedProfile = TIER_LIMITS[userTier].hasAdvancedProfile;
 
@@ -95,7 +86,6 @@ const ProfileContent = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Open creator card if ?share=true in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("share") === "true" && profile) {
@@ -360,13 +350,7 @@ const ProfileContent = () => {
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
-        <PageTip
-          id="profile"
-          title="🎨 Make your profile shine!"
-          message="Add a photo, bio, skills, and portfolio links. Complete profiles get 5x more matches. Tap any section to edit it."
-          className="mb-4 mt-2"
-        />
-        {/* Profile Hero */}
+        {/* Profile Hero — compact, Instagram-style */}
         <ProfileHero
           profile={profile}
           stats={stats}
@@ -393,94 +377,32 @@ const ProfileContent = () => {
           isUploadingAvatar={isUploadingAvatar}
           onShowQR={() => setIsQRDialogOpen(true)}
           onCreatorCard={() => setIsCreatorCardOpen(true)}
+          dashboardTrigger={
+            <ProfileDashboardDrawer
+              profile={profile}
+              portfolioItems={portfolioItems}
+              credits={credits}
+              awards={awards}
+              pressLinks={pressLinks}
+              userTier={userTier}
+              onRefresh={fetchData}
+            />
+          }
         />
 
-        {/* Banners */}
-        <div className="space-y-2 mb-2">
-          <ProTrialBanner 
-            subscriptionStatus={profile.subscription_status}
-            subscriptionEndDate={profile.subscription_end_date}
-            subscriptionTier={profile.subscription_tier}
-          />
-          {(() => {
-            const missingFields = getDiscoveryMissingFields(profile as any, portfolioItems.length);
-            return (
-              <ProfileVisibilityBanner 
-                isVisible={missingFields.length === 0} 
-                missingFields={missingFields} 
-              />
-            );
-          })()}
-        </div>
-
-        {/* Profile Strength Score - show if not 100% */}
-        {(() => {
-          const { score } = calculateProfileStrength(
-            profile as any,
-            portfolioItems.length,
-            credits?.length || 0,
-            awards?.length || 0,
-            pressLinks?.length || 0
-          );
-          return score < 100 ? (
-            <div className="mb-4">
-              <ProfileStrengthScore
-                profile={profile as any}
-                portfolioCount={portfolioItems.length}
-                creditsCount={credits?.length || 0}
-                awardsCount={awards?.length || 0}
-                pressCount={pressLinks?.length || 0}
-              />
-            </div>
-          ) : null;
-        })()}
-
-        {/* Verification & Trust */}
-        <ProfileVerificationSection
-          profile={profile}
-          userTier={userTier}
-          onRefresh={fetchData}
-        />
-
-        {/* Status Tier */}
-        <div className="mb-4">
-          <StatusProgressCard />
-        </div>
-
-        {/* Credit Score */}
-        {(credits?.length > 0 || awards?.length > 0) && (
-          <CreditScore
-            totalCredits={credits?.length || 0}
-            verifiedCredits={credits?.filter((c: any) => c.verification_status === 'verified').length || 0}
-            awardsCount={awards?.length || 0}
-            portfolioCount={portfolioItems?.length || 0}
-          />
-        )}
-
-        {/* Social Stats - visible on main profile */}
-        <div className="mb-4">
-          <SocialStatsSection
-            youtubeSubscribers={profile.youtube_subscribers}
-            instagramFollowers={profile.instagram_followers}
-            tiktokFollowers={profile.tiktok_followers}
-            spotifyListeners={profile.spotify_listeners}
-            twitterFollowers={profile.twitter_followers}
-            linkedinConnections={profile.linkedin_connections}
-            verifiedMetrics={profile.social_verified}
+        {/* Content Sections — immediately after hero, Instagram-style */}
+        <div className="mt-4">
+          <ProfileContentSections
+            profile={profile}
+            portfolioItems={portfolioItems}
+            reviews={reviews}
+            industryStats={industryStats}
+            credits={credits}
+            userTier={userTier}
+            hasAdvancedProfile={hasAdvancedProfile}
+            onRefresh={fetchData}
           />
         </div>
-
-        {/* Content Sections */}
-        <ProfileContentSections
-          profile={profile}
-          portfolioItems={portfolioItems}
-          reviews={reviews}
-          industryStats={industryStats}
-          credits={credits}
-          userTier={userTier}
-          hasAdvancedProfile={hasAdvancedProfile}
-          onRefresh={fetchData}
-        />
       </div>
 
       {/* All Dialogs */}

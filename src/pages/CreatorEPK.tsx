@@ -212,7 +212,7 @@ const CreatorEPK = () => {
             .limit(5),
         ]);
 
-        setPortfolioItems(portfolioRes.data || []);
+        setPortfolioItems((portfolioRes.data || []).map((c: any) => ({ id: c.id, title: c.project_name, description: c.description, media_url: c.primary_media_url, media_type: c.media_type, thumbnail_url: c.thumbnail_url })));
         setPressLinks(pressRes.data || []);
         setAwards(awardsRes.data || []);
         setIndustryStats(statsRes.data || []);
@@ -222,27 +222,18 @@ const CreatorEPK = () => {
           reviewer_name: 'Verified Client',
         })));
         
-        // Combine manual and verified credits
+        // Process credits with verification tiers
         const manualCredits = (creditsRes.data || []).map((c: any) => {
           let tier: Credit['verificationTier'] = 'manual';
           if (c.verification_status === 'verified' && c.endorsement_count >= 2) tier = 'peer';
           else if (c.ai_confidence && c.ai_confidence >= 0.7) tier = 'ai';
+          else if (c.source && c.source !== 'manual' && c.source !== 'portfolio') tier = 'ai';
           return {
             ...c,
             isVerified: tier !== 'manual',
             verificationTier: tier,
           };
         });
-        const verifiedCreditsData = (verifiedCreditsRes.data || []).map((c: any) => ({
-          id: c.id,
-          project_name: c.title,
-          role: c.role,
-          year: c.year,
-          platform: c.source,
-          isVerified: true,
-          verificationTier: 'ai' as const,
-          source: c.source
-        }));
 
         // ThriveCredits claimed credits
         const icdbClaimed = (icdbRes.data || []).map((c: any) => ({
@@ -254,7 +245,7 @@ const CreatorEPK = () => {
         }));
         
         // Combine and sort by year
-        const allCredits = [...icdbClaimed, ...verifiedCreditsData, ...manualCredits]
+        const allCredits = [...icdbClaimed, ...manualCredits]
           .sort((a, b) => (b.year || 0) - (a.year || 0))
           .slice(0, 12);
         

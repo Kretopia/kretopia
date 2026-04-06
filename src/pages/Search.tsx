@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe } from "lucide-react";
+import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2 } from "lucide-react";
 
 interface ProfileResult {
   user_id: string;

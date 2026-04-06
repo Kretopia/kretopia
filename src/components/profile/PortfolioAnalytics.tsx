@@ -57,7 +57,7 @@ export const PortfolioAnalytics = ({ userId }: PortfolioAnalyticsProps) => {
           (reactionCounts[reaction.portfolio_item_id] || 0) + 1;
       });
 
-      setItems(portfolioData || []);
+      setItems((portfolioData || []).map((c: any) => ({ id: c.id, title: c.project_name, view_count: c.view_count, created_at: c.created_at, media_type: c.media_type })));
       setReactions(reactionCounts);
     } catch (error: any) {
       toast({

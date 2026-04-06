@@ -35,6 +35,7 @@ interface ProfileHeroProps {
   creditsCount?: number;
   verifiedCreditsCount?: number;
   awardsCount?: number;
+  dashboardTrigger?: React.ReactNode;
 }
 
 export const ProfileHero = ({
@@ -57,7 +58,8 @@ export const ProfileHero = ({
   onRefresh,
   creditsCount = 0,
   verifiedCreditsCount = 0,
-  awardsCount = 0
+  awardsCount = 0,
+  dashboardTrigger,
 }: ProfileHeroProps) => {
   const { user } = useAuth();
   const tier = getTierByPoints(profile.points || 0);
@@ -350,17 +352,10 @@ export const ProfileHero = ({
                 <Edit className="h-3.5 w-3.5" />
                 Edit Profile
               </Button>
-              <Button variant="outline" size="sm" onClick={onShowQR} className="gap-1.5 h-9">
-                <QrCode className="h-3.5 w-3.5" />
-              </Button>
-              {onCreatorCard && (
-                <Button variant="outline" size="sm" onClick={onCreatorCard} className="gap-1.5 h-9">
-                  <IdCard className="h-3.5 w-3.5" />
-                </Button>
-              )}
               <Button variant="outline" size="sm" className="h-9" onClick={onShare}>
                 <Share2 className="h-3.5 w-3.5" />
               </Button>
+              {dashboardTrigger}
             </>
           ) : isUnclaimedProfile ? (
             <>

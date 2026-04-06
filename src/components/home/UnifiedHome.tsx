@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { QuickPostModal } from "@/components/QuickPostModal";
+import { SEO } from "@/components/SEO";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";
@@ -129,6 +130,11 @@ export const UnifiedHome = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO
+        title="ThriveIN — Search the Creative Economy"
+        description="Find any creator, verify any credit, discover productions across film, music, events, fashion & more. The verified ledger for the creative industry."
+        url="https://thrivein.io"
+      />
       <div className="container relative mx-auto max-w-5xl px-4 sm:px-6 pt-4 pb-24">
 
         {/* ═══ PERSONALIZED HEADER (auth only) ═══ */}

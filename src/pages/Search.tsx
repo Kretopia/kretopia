@@ -184,6 +184,11 @@ const Search = () => {
     });
   }
 
+  // Add visual results grid from AI
+  if (external?.visual_results && external.visual_results.length > 0) {
+    blendedItems.push({ type: "visual_grid", data: external.visual_results, weight: 55 });
+  }
+
   // Related searches
   if (external?.related_searches && external.related_searches.length > 0) {
     blendedItems.push({ type: "related", data: external.related_searches, weight: 0 });

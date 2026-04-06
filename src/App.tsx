@@ -194,7 +194,7 @@ const AppContent = () => {
             {/* Core Feature Pages - Public browsable, actions gated */}
             <Route path="/circle" element={<Circle />} />
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
-            <Route path="/circles" element={<CirclesPage />} />
+            <Route path="/circles" element={<Navigate to="/circle" replace />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}
@@ -202,8 +202,8 @@ const AppContent = () => {
             <Route path="/epk/:userId" element={<CreatorEPK />} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/my-analytics" element={<ProtectedRoute><MyAnalytics /></ProtectedRoute>} />
-            <Route path="/guide" element={<Guide />} />
+            <Route path="/my-analytics" element={<Navigate to="/profile" replace />} />
+            <Route path="/guide" element={<Navigate to="/" replace />} />
             
             {/* ThriveDesk - Lightweight Project Workspace */}
             <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
@@ -214,10 +214,10 @@ const AppContent = () => {
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
             <Route path="/wallet" element={<Navigate to="/thrivepay" replace />} />
-            <Route path="/purchases" element={<ProtectedRoute><MyPurchases /></ProtectedRoute>} />
+            <Route path="/purchases" element={<Navigate to="/thrivepay" replace />} />
             <Route path="/accounting" element={<Navigate to="/thrivepay?tab=earnings" replace />} />
             <Route path="/thrivemoney" element={<Navigate to="/thrivepay?tab=earnings" replace />} />
-            <Route path="/purchase-success" element={<PurchaseSuccess />} />
+            <Route path="/purchase-success" element={<PaymentSuccess />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             
@@ -240,7 +240,7 @@ const AppContent = () => {
             <Route path="/scene" element={<Scene />} />
             
             {/* Public Magazine Article - SEO accessible */}
-            <Route path="/magazine/:slug" element={<MagazineArticlePage />} />
+            <Route path="/magazine/:slug" element={<Navigate to="/" replace />} />
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />
@@ -253,11 +253,11 @@ const AppContent = () => {
             
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
-            <Route path="/waitlist-admin" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
-            <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
-            <Route path="/feedback-admin" element={<ProtectedRoute><FeedbackAdmin /></ProtectedRoute>} />
+            <Route path="/analytics" element={<Navigate to="/admin" replace />} />
+            <Route path="/admin-broadcast" element={<Navigate to="/admin" replace />} />
+            <Route path="/waitlist-admin" element={<Navigate to="/admin" replace />} />
+            <Route path="/test-emails" element={<Navigate to="/admin" replace />} />
+            <Route path="/feedback-admin" element={<Navigate to="/admin" replace />} />
 
             {/* Pitch Deck */}
             <Route path="/deck" element={<PitchDeck />} />
@@ -268,9 +268,9 @@ const AppContent = () => {
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             
-            {/* Partner Pages */}
-            <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
-            <Route path="/partner-submit" element={<PartnerSubmit />} />
+            {/* Partner Pages — redirected */}
+            <Route path="/partner-directory" element={<Navigate to="/" replace />} />
+            <Route path="/partner-submit" element={<Navigate to="/" replace />} />
             
             {/* Opportunity Management */}
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />

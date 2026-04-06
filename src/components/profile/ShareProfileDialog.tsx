@@ -37,33 +37,33 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
 
   const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
   
-  const shareText = `Find your next creative collaborator on ThriveIN 🎬✨
+  const shareText = `${profile.full_name} | ${profile.role} — Verified Creative Portfolio on ThriveIN
 
-${profile.full_name} | ${profile.role}
 ${profile.bio ? profile.bio.slice(0, 100) + (profile.bio.length > 100 ? '...' : '') : ''}
 
-Swipe verified portfolios or discover creators near you:
-${profileUrl}
-
-#ThriveIN #CreativeCollabs`;
+${profileUrl}`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${profile.full_name}'s Creative Portfolio`,
+          title: `${profile.full_name} — Creative Portfolio`,
           text: shareText,
           url: profileUrl,
         });
         toast({
           title: "Shared successfully",
-          description: "Profile shared via native share",
+          description: "Profile shared",
         });
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
-          console.error('Share failed:', err);
+          // Fallback to clipboard
+          await copyToClipboard(profileUrl, 'url');
         }
       }
+    } else {
+      // Desktop fallback
+      await copyToClipboard(profileUrl, 'url');
     }
   };
 

@@ -80,6 +80,7 @@ const WorkHome = () => {
   }
 
   const activeProjects = projects.filter(p => p.status === "active");
+  const completedProjects = projects.filter(p => p.status === "completed" || p.status === "archived");
   const activeGigs = gigs.filter(g => g.status === "active" || g.status === "open");
 
   return (
@@ -146,6 +147,25 @@ const WorkHome = () => {
             </div>
           )}
         </Widget>
+
+        {/* Completed Projects */}
+        {completedProjects.length > 0 && (
+          <Widget title="Past Projects" icon={CheckCircle2} action={{ label: "All", path: "/desk/projects" }}>
+            <div className="space-y-2">
+              {completedProjects.slice(0, 3).map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all opacity-70"
+                  onClick={() => navigate(`/desk/${p.id}`)}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-medium truncate flex-1">{p.title}</span>
+                  <Badge variant="secondary" className="text-[10px]">Completed</Badge>
+                </div>
+              ))}
+            </div>
+          </Widget>
+        )}
 
         {/* Gigs Widget */}
         <Widget title="Your Gigs" icon={Briefcase} action={{ label: "Manage", path: "/manage-opportunities" }}>

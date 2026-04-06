@@ -30,11 +30,17 @@ const PROJECT_TYPES = [
     { value: "ep", label: "EP" },
     { value: "podcast", label: "Podcast" },
     { value: "audiobook", label: "Audiobook" },
+    { value: "soca", label: "Soca Release" },
+    { value: "dancehall", label: "Dancehall Release" },
+    { value: "afrobeats", label: "Afrobeats Release" },
+    { value: "gospel_concert", label: "Gospel Concert / Album" },
   ]},
   { label: "Performing Arts", value: "performing", items: [
     { value: "theatre", label: "Theatre / Play" },
     { value: "musical", label: "Musical Theatre" },
     { value: "dance", label: "Dance Performance" },
+    { value: "choreography", label: "Choreography" },
+    { value: "backup_dancer", label: "Backup Dancer / Tour" },
     { value: "comedy", label: "Stand-up / Comedy" },
     { value: "spoken_word", label: "Spoken Word" },
     { value: "opera", label: "Opera" },
@@ -42,6 +48,7 @@ const PROJECT_TYPES = [
   { label: "Events & Productions", value: "events", items: [
     { value: "live_event", label: "Live Event" },
     { value: "concert", label: "Concert" },
+    { value: "tour", label: "Tour" },
     { value: "festival", label: "Festival" },
     { value: "carnival", label: "Carnival / Mas" },
     { value: "pageant", label: "Pageant" },
@@ -49,6 +56,8 @@ const PROJECT_TYPES = [
     { value: "awards_show", label: "Awards Ceremony" },
     { value: "exhibition", label: "Exhibition / Gallery" },
     { value: "conference", label: "Conference / Summit" },
+    { value: "dj_set", label: "DJ Set" },
+    { value: "mc_hosting", label: "MC / Hosting" },
   ]},
   { label: "Content & Digital", value: "digital", items: [
     { value: "youtube_series", label: "YouTube Series" },
@@ -213,6 +222,9 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
           role: aiData.role || prev.role,
           project_type: aiData.project_type || prev.project_type,
           credit_category: aiData.project_type || prev.credit_category,
+          platform: aiData.platform || prev.platform,
+          description: aiData.description || prev.description,
+          start_date: aiData.year ? `${aiData.year}-01-01` : prev.start_date,
         }));
       } else {
         // Fallback: use filename as project name

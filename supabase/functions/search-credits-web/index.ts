@@ -39,7 +39,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           {
             role: 'system',
@@ -47,7 +47,7 @@ serve(async (req) => {
 
 Return a JSON object with a "results" array. Each result should have:
 - "title": project/work name (be specific — include subtitle or distinguishing info if needed)
-- "type": one of: film, tv, short_film, documentary, music_video, album, single, ep, concert, festival, live_event, fashion_show, exhibition, podcast, youtube_series, brand_campaign, theatre, dance, photography, animation, art_exhibition, commercial, runway, editorial_shoot, workshop, conference
+- "type": one of: film, tv, short_film, documentary, music_video, web_series, album, single, ep, concert, festival, live_event, fashion_show, exhibition, podcast, audiobook, youtube_series, brand_campaign, theatre, musical, dance, comedy, spoken_word, opera, photography, animation, art_exhibition, commercial, runway, editorial_shoot, workshop, conference, carnival, pageant, awards_show, ugc_campaign, livestream, online_course, voiceover, influencer_campaign, mural, graphic_design, fashion_collection, beauty_campaign, styling, talent_management, booking, label_release, publishing, curation, tour, choreography, backup_dancer, dj_set, mc_hosting, soca, dancehall, afrobeats, gospel_concert, corporate
 - "role_suggestion": likely role if creator_name provided, otherwise null
 - "year": year (number or null)
 - "platform": specific platform where published (e.g., "YouTube", "Spotify", "Netflix", "Vimeo", "SoundCloud", "Behance", "IMDb", "Apple Music", "Amazon Prime", "HBO", "BBC")

@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
+import { motion } from "framer-motion";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";
@@ -15,6 +16,9 @@ interface Suggestion {
   subtitle?: string;
   avatar?: string | null;
 }
+
+// Rotating headline words for guest hero
+const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director"];
 
 export const UnifiedHome = () => {
   const { user } = useAuth();
@@ -26,6 +30,7 @@ export const UnifiedHome = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
+  const [heroRoleIdx, setHeroRoleIdx] = useState(0);
 
   // Dashboard data
   const [trendingCredits, setTrendingCredits] = useState<any[]>([]);
@@ -46,12 +51,19 @@ export const UnifiedHome = () => {
     else setGreeting("Good evening");
   }, []);
 
+  // Rotate hero roles
+  useEffect(() => {
+    if (user) return;
+    const interval = setInterval(() => setHeroRoleIdx(i => (i + 1) % HERO_ROLES.length), 2500);
+    return () => clearInterval(interval);
+  }, [user]);
+
   // Fetch public dashboard data
   useEffect(() => {
     const fetchPublic = async () => {
       const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs] = await Promise.all([
-        supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, user_id, year").in("verification_status", ["enterprise", "peer", "verified"]).order("created_at", { ascending: false }).limit(6),
-        supabase.from("profiles").select("user_id, full_name, avatar_url, role, verification_tier").eq("onboarding_completed", true).not("avatar_url", "is", null).order("created_at", { ascending: false }).limit(8),
+        supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, user_id, year").in("verification_status", ["enterprise", "peer", "verified"]).order("created_at", { ascending: false }).limit(8),
+        supabase.from("profiles").select("user_id, full_name, avatar_url, role, verification_tier").eq("onboarding_completed", true).not("avatar_url", "is", null).order("created_at", { ascending: false }).limit(10),
         supabase.from("opportunities").select("id, title, type, location, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(4),
         supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
         supabase.from("credits").select("id", { count: "exact", head: true }),
@@ -90,7 +102,7 @@ export const UnifiedHome = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Live search — DB first, AI fallback if empty
+  // Live search
   useEffect(() => {
     if (query.trim().length < 2) { setSuggestions([]); return; }
     const timer = setTimeout(async () => {
@@ -111,7 +123,6 @@ export const UnifiedHome = () => {
         if (dbResults.length > 0) {
           setSuggestions(dbResults);
         } else {
-          // AI fallback — call search-credits-web for instant results
           try {
             const { data: aiData } = await supabase.functions.invoke('search-credits-web', {
               body: { query: query.trim() },
@@ -152,71 +163,169 @@ export const UnifiedHome = () => {
   return (
     <div className="bg-background min-h-screen">
       <SEO
-        title="ThriveIN — Search the Creative Economy"
-        description="Find any creator, verify any credit, discover productions across film, music, events, fashion & more. The verified ledger for the creative industry."
+        title="ThriveIN — The Creative OS"
+        description="Find any creator, verify any credit, discover productions across film, music, events, fashion & more."
         url="https://thrivein.io"
       />
-      <div className="container relative mx-auto max-w-5xl px-4 sm:px-6 pt-4 pb-24">
 
-        {/* ═══ PERSONALIZED HEADER (auth only) ═══ */}
-        {user && profile && (
+      {/* ═══════════ GUEST HERO ═══════════ */}
+      {!user && (
+        <div className="relative overflow-hidden">
+          {/* Background gradient orbs */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/8 blur-3xl" />
+            <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-accent/10 blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/3 blur-3xl" />
+          </div>
+
+          <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-10 sm:pt-16 pb-8">
+            {/* Rotating headline */}
+            <div className="text-center mb-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">The Creative OS</p>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-2">
+                You're a{" "}
+                <span className="relative inline-block">
+                  <motion.span
+                    key={heroRoleIdx}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -20, opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                  >
+                    {HERO_ROLES[heroRoleIdx]}
+                  </motion.span>
+                </span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                Claim your credits. Get verified. Get discovered by the industry.
+              </p>
+            </div>
+
+            {/* Search bar */}
+            <div ref={wrapperRef} className="relative max-w-xl mx-auto mb-6">
+              <form onSubmit={handleSubmit}>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
+                    onFocus={() => setShowSuggestions(true)}
+                    placeholder="Search creators, productions, gigs..."
+                    className="w-full h-13 sm:h-14 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm pl-12 pr-14 text-sm text-foreground shadow-lg focus:outline-none focus:border-primary focus:shadow-glow transition-all placeholder:text-muted-foreground/50"
+                  />
+                  <button type="submit" className="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-md">
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </form>
+
+              {/* Suggestions dropdown */}
+              {showSuggestions && (query.trim().length >= 2 || suggestions.length > 0) && (
+                <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-border bg-popover shadow-xl z-50 overflow-hidden backdrop-blur-lg">
+                  {loading && <div className="px-4 py-3 text-sm text-muted-foreground animate-pulse">Searching...</div>}
+                  {!loading && suggestions.length === 0 && query.trim().length >= 2 && (
+                    <div className="px-4 py-3 text-sm text-muted-foreground">
+                      <Sparkles className="inline h-3.5 w-3.5 mr-1.5 text-primary" />
+                      Press Enter for AI-powered deep search
+                    </div>
+                  )}
+                  {suggestions.map((s, i) => (
+                    <button key={`${s.type}-${s.id}-${i}`} onClick={() => handleSuggestionClick(s)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left">
+                      {s.type === "creator" ? (
+                        <Avatar className="h-8 w-8"><AvatarImage src={s.avatar || ""} /><AvatarFallback className="text-xs bg-primary/10 text-primary">{(s.title || "?")[0]}</AvatarFallback></Avatar>
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center"><Database className="h-3.5 w-3.5 text-primary" /></div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{s.title}</p>
+                        {s.subtitle && <p className="text-xs text-muted-foreground truncate">{s.subtitle}</p>}
+                      </div>
+                      <Badge variant="outline" className={`text-[10px] shrink-0 ${typeColor[s.type]}`}>{typeLabel[s.type]}</Badge>
+                    </button>
+                  ))}
+                  {query.trim().length >= 2 && suggestions.length > 0 && (
+                    <button onClick={handleSubmit as any} className="w-full px-4 py-3 text-sm text-primary font-medium hover:bg-muted/50 transition-colors border-t border-border flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" /> Deep search for "{query}"
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Quick chips */}
+            <div className="flex items-center justify-center gap-2 flex-wrap mb-8">
+              {["🎬 Film", "🎵 Music", "📸 Photography", "🎨 Design", "🎭 Theater", "💃 Dance"].map(tag => (
+                <button key={tag} onClick={() => navigate(`/search?q=${tag.split(" ")[1]}`)} className="text-xs px-3.5 py-2 rounded-full bg-card/60 backdrop-blur-sm border border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-card transition-all">
+                  {tag}
+                </button>
+              ))}
+            </div>
+
+            {/* Social proof stats */}
+            <div className="flex items-center justify-center gap-8 text-sm">
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Creators</p>
+              </div>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.credits.toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Credits</p>
+              </div>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.gigs}</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Live Gigs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════ AUTH HEADER ═══════════ */}
+      {user && profile && (
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 border-2 border-primary/30">
+              <Avatar className="h-11 w-11 border-2 border-primary/30 shadow-md">
                 <AvatarImage src={profile.avatar_url || ""} />
                 <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">{firstName[0]}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm font-bold text-foreground leading-tight">{greeting}, {firstName}</p>
-                <p className="text-[10px] text-muted-foreground">{profile.role || "Creative Professional"}</p>
+                <p className="text-base font-bold text-foreground leading-tight">{greeting}, {firstName}</p>
+                <p className="text-xs text-muted-foreground">{profile.role || "Creative Professional"}</p>
               </div>
             </div>
-            <Link to="/messages" className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors">
+            <Link to="/messages" className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors">
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </Link>
           </div>
-        )}
 
-        {/* ═══ SEARCH — Hero element ═══ */}
-        <div className={user ? "mb-5" : "pt-8 sm:pt-14 mb-6"}>
-          {!user && (
-            <div className="text-center mb-5">
-              <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-tight text-foreground mb-1.5 leading-tight">
-                Search the creative economy
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-                Find any creator, verify any credit, discover productions across every creative industry.
-              </p>
-            </div>
-          )}
-
-          <div ref={wrapperRef} className="relative max-w-xl mx-auto">
+          {/* Auth search */}
+          <div ref={!user ? undefined : wrapperRef} className="relative mb-4">
             <form onSubmit={handleSubmit}>
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
                 <input
-                  ref={inputRef}
+                  ref={user ? inputRef : undefined}
                   type="text"
                   value={query}
                   onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
                   onFocus={() => setShowSuggestions(true)}
-                  placeholder="Search creators, credits, gigs..."
-                  className="w-full h-12 sm:h-13 rounded-2xl border border-border bg-card pl-12 pr-14 text-sm text-foreground shadow-card focus:outline-none focus:border-primary focus:shadow-glow transition-all placeholder:text-muted-foreground/60"
+                  placeholder="Search creators, productions, gigs..."
+                  className="w-full h-11 rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
                 />
-                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors">
-                  <Search className="h-3.5 w-3.5" />
-                </button>
               </div>
             </form>
-
-            {/* Suggestions dropdown */}
             {showSuggestions && (query.trim().length >= 2 || suggestions.length > 0) && (
               <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-border bg-popover shadow-xl z-50 overflow-hidden">
                 {loading && <div className="px-4 py-3 text-sm text-muted-foreground animate-pulse">Searching...</div>}
                 {!loading && suggestions.length === 0 && query.trim().length >= 2 && (
                   <div className="px-4 py-3 text-sm text-muted-foreground">
-                    <Sparkles className="inline h-3.5 w-3.5 mr-1.5 text-primary" />
-                    Press Enter for AI-powered deep search
+                    <Sparkles className="inline h-3.5 w-3.5 mr-1.5 text-primary" /> Press Enter for deep search
                   </div>
                 )}
                 {suggestions.map((s, i) => (
@@ -233,46 +342,27 @@ export const UnifiedHome = () => {
                     <Badge variant="outline" className={`text-[10px] shrink-0 ${typeColor[s.type]}`}>{typeLabel[s.type]}</Badge>
                   </button>
                 ))}
-                {query.trim().length >= 2 && suggestions.length > 0 && (
-                  <button onClick={handleSubmit as any} className="w-full px-4 py-3 text-sm text-primary font-medium hover:bg-muted/50 transition-colors border-t border-border flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" /> Deep search for "{query}"
-                  </button>
-                )}
               </div>
             )}
           </div>
 
-          {/* Quick category chips — below search */}
-          <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-            {["Filmmakers", "Musicians", "Photographers", "Designers", "Models"].map(tag => (
-              <button key={tag} onClick={() => navigate(`/search?q=${tag}`)} className="text-[10px] px-3 py-1.5 rounded-full border border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all">
-                {tag}
-              </button>
+          {/* Quick stats — glass style */}
+          <div className="grid grid-cols-3 gap-2.5 mb-4">
+            {[
+              { label: "Credits", value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
+              { label: "Connections", value: myConnections, to: "/circle", icon: Users, color: "text-accent" },
+              { label: "Live Gigs", value: stats.gigs, to: "/opportunities", icon: Briefcase, color: "text-success" },
+            ].map(s => (
+              <Link key={s.label} to={s.to} className="group relative overflow-hidden rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-all text-center">
+                <s.icon className={`h-3.5 w-3.5 ${s.color} mx-auto mb-1 opacity-60`} />
+                <p className="text-lg font-bold text-foreground">{s.value}</p>
+                <p className="text-[10px] text-muted-foreground font-medium">{s.label}</p>
+              </Link>
             ))}
           </div>
-        </div>
 
-        {/* ═══ AUTH QUICK STATS (injected) ═══ */}
-        {user && (
-          <div className="grid grid-cols-3 gap-2.5 mb-5">
-            <Link to="/profile" className="rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-colors text-center">
-              <p className="text-lg font-bold text-foreground">{myCredits}</p>
-              <p className="text-[10px] text-muted-foreground font-medium">My Credits</p>
-            </Link>
-            <Link to="/circle" className="rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-colors text-center">
-              <p className="text-lg font-bold text-foreground">{myConnections}</p>
-              <p className="text-[10px] text-muted-foreground font-medium">Connections</p>
-            </Link>
-            <Link to="/opportunities" className="rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-colors text-center">
-              <p className="text-lg font-bold text-foreground">{stats.gigs}</p>
-              <p className="text-[10px] text-muted-foreground font-medium">Live Gigs</p>
-            </Link>
-          </div>
-        )}
-
-        {/* ═══ AUTH QUICK ACTIONS ═══ */}
-        {user && (
-          <div className="grid grid-cols-4 gap-2 mb-6">
+          {/* Quick actions */}
+          <div className="grid grid-cols-4 gap-2 mb-5">
             {[
               { icon: PlusCircle, label: "Post Gig", action: () => setQuickPostType("gig"), color: "text-success" },
               { icon: Database, label: "Credits", to: "/credits", color: "text-primary" },
@@ -284,191 +374,234 @@ export const UnifiedHome = () => {
                 onClick={() => a.action ? a.action() : navigate(a.to!)}
                 className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-muted/50 transition-colors"
               >
-                <div className="h-9 w-9 rounded-xl bg-muted/60 flex items-center justify-center">
-                  <a.icon className={`h-4 w-4 ${a.color}`} />
+                <div className="h-10 w-10 rounded-xl bg-muted/60 flex items-center justify-center">
+                  <a.icon className={`h-4.5 w-4.5 ${a.color}`} />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground">{a.label}</span>
               </button>
             ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* ═══ PLATFORM STATS (guest only) ═══ */}
-        {!user && (
-          <div className="flex items-center justify-center gap-6 text-[10px] text-muted-foreground mb-6">
-            <span className="flex items-center gap-1.5"><Users className="h-3 w-3" /> {stats.creators.toLocaleString()} Creators</span>
-            <span className="flex items-center gap-1.5"><Database className="h-3 w-3" /> {stats.credits.toLocaleString()} Credits</span>
-            <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3" /> {stats.gigs} Live Gigs</span>
+      {/* ═══════════ CONTENT SECTIONS ═══════════ */}
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
+
+        {/* ── TRENDING PRODUCTIONS — Visual carousel ── */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Trending Productions
+            </h2>
+            <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+              View all <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
-        )}
+          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
+            {trendingCredits.map((c, i) => (
+              <motion.button
+                key={c.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)}
+                className="shrink-0 w-[160px] sm:w-[200px] group text-left snap-start"
+              >
+                <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
+                  {c.thumbnail_url ? (
+                    <div className="aspect-[3/4] overflow-hidden">
+                      <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+                    </div>
+                  ) : (
+                    <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                      <Play className="h-8 w-8 text-primary/30" />
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Verified className="h-3 w-3 text-primary" />
+                      <span className="text-[8px] font-bold text-primary uppercase tracking-widest">Verified</span>
+                    </div>
+                    <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+            {trendingCredits.length === 0 && Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="shrink-0 w-[160px] sm:w-[200px] rounded-2xl border border-border bg-card aspect-[3/4] animate-pulse" />
+            ))}
+          </div>
+        </section>
 
-        {/* ═══ CONTENT GRID ═══ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-          {/* Trending Productions */}
-          <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                Trending Productions
-              </h2>
-              <Link to="/credits" className="text-[10px] text-primary hover:underline flex items-center gap-1">
-                View all <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {trendingCredits.slice(0, 6).map((c) => (
-                <button key={c.id} onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)} className="group text-left">
-                  <div className="relative rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-all bg-muted/20">
-                    {c.thumbnail_url ? (
-                      <div className="aspect-[4/3] overflow-hidden">
-                        <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-                      </div>
-                    ) : (
-                      <div className="aspect-[4/3] bg-muted/30 flex items-center justify-center">
-                        <Database className="h-6 w-6 text-muted-foreground/30" />
+        {/* ── DISCOVER CREATORS — Large avatar row ── */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-accent" />
+              Discover Creators
+            </h2>
+            <Link to="/circle" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+              Explore <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x">
+            {featuredCreators.map((c, i) => (
+              <motion.button
+                key={c.user_id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.04 }}
+                onClick={() => navigate(`/profile/${c.user_id}`)}
+                className="shrink-0 group snap-start"
+              >
+                <div className="flex flex-col items-center gap-2 w-[80px]">
+                  <div className="relative">
+                    <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
+                    <Avatar className="relative h-14 w-14 border-2 border-border group-hover:border-primary/50 transition-colors shadow-sm">
+                      <AvatarImage src={c.avatar_url || ""} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">{(c.full_name || "?")[0]}</AvatarFallback>
+                    </Avatar>
+                    {c.verification_tier && c.verification_tier !== 'none' && (
+                      <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center border-2 border-background">
+                        <Verified className="h-2.5 w-2.5 text-primary-foreground" />
                       </div>
                     )}
-                    <div className="absolute bottom-0 left-0 right-0 p-2">
-                      <div className="flex items-center gap-1 mb-0.5">
-                        <Verified className="h-2.5 w-2.5 text-primary" />
-                        <span className="text-[7px] font-medium text-primary uppercase tracking-wide">Verified</span>
-                      </div>
-                      <p className="text-[10px] font-semibold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
-                      <p className="text-[8px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>
-                    </div>
                   </div>
-                </button>
-              ))}
-              {trendingCredits.length === 0 && (
-                <>
-                  {/* Seed content — shows the platform works even with no data */}
-                  {[
-                    { name: "Search any production", desc: "Films, music, events & more", icon: "🎬" },
-                    { name: "Verify your credits", desc: "Build your professional record", icon: "✓" },
-                    { name: "Discover creators", desc: "Find talent across industries", icon: "🔍" },
-                  ].map((seed, i) => (
-                    <button key={i} onClick={() => navigate("/search")} className="group text-left">
-                      <div className="relative rounded-xl overflow-hidden border border-border hover:border-primary/40 transition-all bg-muted/20 aspect-[4/3] flex flex-col items-center justify-center p-3">
-                        <span className="text-2xl mb-2">{seed.icon}</span>
-                        <p className="text-[10px] font-semibold text-foreground text-center leading-tight">{seed.name}</p>
-                        <p className="text-[8px] text-muted-foreground text-center mt-0.5">{seed.desc}</p>
-                      </div>
-                    </button>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Open Gigs */}
-          <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Briefcase className="h-3.5 w-3.5 text-success" />
-                {user ? "Gigs For You" : "Open Gigs"}
-              </h2>
-              <Link to="/opportunities" className="text-[10px] text-primary hover:underline flex items-center gap-1">
-                Browse <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="space-y-2">
-              {activeGigs.map((g) => (
-                <button key={g.id} onClick={() => navigate(`/opportunity/${g.id}`)} className="w-full text-left rounded-xl border border-border bg-muted/10 p-3 hover:border-primary/30 transition-all">
-                  <Badge className="text-[8px] mb-1.5 bg-success/15 text-success border-success/25">{g.type}</Badge>
-                  <p className="text-xs font-semibold text-foreground line-clamp-2 leading-tight">{g.title}</p>
-                  {g.location && (
-                    <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                      <MapPin className="h-2.5 w-2.5" /> {g.location}
-                    </p>
-                  )}
-                </button>
-              ))}
-              {activeGigs.length === 0 && (
-                <div className="text-center py-6">
-                  <p className="text-xs text-muted-foreground mb-2">Be the first to post a gig</p>
-                  <button onClick={() => setQuickPostType("gig")} className="text-[10px] font-medium text-primary hover:underline">
-                    Post a Gig — 30 seconds
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Verified Creators */}
-          <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Users className="h-3.5 w-3.5 text-primary" />
-                {user ? "Discover Creators" : "Verified Creators"}
-              </h2>
-              <Link to="/circle" className="text-[10px] text-primary hover:underline flex items-center gap-1">
-                Explore <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-              {featuredCreators.map((c) => (
-                <button key={c.user_id} onClick={() => navigate(`/profile/${c.user_id}`)} className="shrink-0 flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-muted/10 hover:border-primary/30 transition-all w-[88px]">
-                  <Avatar className="h-11 w-11 border-2 border-primary/20">
-                    <AvatarImage src={c.avatar_url || ""} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs">{(c.full_name || "?")[0]}</AvatarFallback>
-                  </Avatar>
                   <div className="text-center min-w-0 w-full">
                     <p className="text-[10px] font-semibold text-foreground truncate">{c.full_name}</p>
                     <p className="text-[8px] text-muted-foreground truncate">{c.role}</p>
                   </div>
-                </button>
-              ))}
-              {featuredCreators.length === 0 && (
-                <div className="w-full text-center py-4">
-                  <p className="text-xs text-muted-foreground mb-2">Join a growing network of verified creatives</p>
-                  <button onClick={() => navigate("/auth")} className="text-[10px] font-medium text-primary hover:underline">
-                    Create Your Profile
-                  </button>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* CTA Card */}
-          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-card p-5 flex flex-col justify-between">
-            <div>
-              <Sparkles className="h-5 w-5 text-primary mb-2.5" />
-              <h3 className="text-sm font-bold text-foreground mb-1.5">
-                {user ? "Upgrade to Pro" : "Your career deserves a verified record"}
-              </h3>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                {user
-                  ? "Unlock AI matching, unlimited discovery, and the embeddable credits widget."
-                  : "Join ThriveIN to claim your credits, build your verified identity, and get discovered."}
-              </p>
-            </div>
-            <Link
-              to={user ? "/subscription" : "/auth"}
-              className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              {user ? "View Plans" : "Claim Your Credits — Free"} <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Quick Post CTAs */}
-        {!user && (
-          <div className="grid grid-cols-2 gap-3 mt-4">
-            <button onClick={() => setQuickPostType("gig")} className="rounded-2xl border border-border bg-card p-4 hover:border-success/40 transition-all group text-left">
-              <div className="h-9 w-9 rounded-xl bg-success/10 flex items-center justify-center mb-2.5 group-hover:bg-success/15 transition-colors">
-                <PlusCircle className="h-4.5 w-4.5 text-success" />
+              </motion.button>
+            ))}
+            {featuredCreators.length === 0 && Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="shrink-0 flex flex-col items-center gap-2 w-[80px]">
+                <div className="h-14 w-14 rounded-full bg-muted animate-pulse" />
+                <div className="h-2 w-12 rounded bg-muted animate-pulse" />
               </div>
-              <p className="text-xs font-semibold text-foreground mb-0.5">Post a Gig</p>
-              <p className="text-[10px] text-muted-foreground leading-relaxed">Find verified talent — post in 30 seconds</p>
+            ))}
+          </div>
+        </section>
+
+        {/* ── OPEN GIGS — Card list ── */}
+        {activeGigs.length > 0 && (
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
+                <Zap className="h-4 w-4 text-warning" />
+                {user ? "Gigs For You" : "Open Gigs"}
+              </h2>
+              <Link to="/opportunities" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                Browse <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {activeGigs.map((g, i) => (
+                <motion.button
+                  key={g.id}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  onClick={() => navigate(`/opportunity/${g.id}`)}
+                  className="w-full text-left group"
+                >
+                  <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <Badge className="text-[8px] mb-2 bg-success/15 text-success border-success/25 font-semibold">{g.type}</Badge>
+                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{g.title}</p>
+                        {g.location && (
+                          <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                            <MapPin className="h-3 w-3" /> {g.location}
+                          </p>
+                        )}
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-1 group-hover:text-primary transition-colors" />
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── HOW IT WORKS (guest) ── */}
+        {!user && (
+          <section className="mb-8">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { icon: Database, title: "Claim Credits", desc: "Build your verified work history", color: "from-primary/15 to-primary/5" },
+                { icon: Globe, title: "Get Discovered", desc: "Show up in industry searches", color: "from-accent/15 to-accent/5" },
+                { icon: Briefcase, title: "Get Hired", desc: "Land gigs from top productions", color: "from-success/15 to-success/5" },
+              ].map((step, i) => (
+                <motion.div
+                  key={step.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                  className={`rounded-2xl bg-gradient-to-b ${step.color} border border-border/50 p-4 text-center`}
+                >
+                  <step.icon className="h-5 w-5 text-foreground mx-auto mb-2" />
+                  <p className="text-xs font-bold text-foreground mb-1">{step.title}</p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">{step.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── CTA CARD ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="rounded-2xl overflow-hidden relative"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-accent/80" />
+          <div className="relative p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shrink-0">
+                <Star className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base sm:text-lg font-bold text-white mb-1">
+                  {user ? "Upgrade to Pro" : "Your career deserves a verified record"}
+                </h3>
+                <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-4">
+                  {user
+                    ? "Unlock AI matching, unlimited discovery, and the embeddable credits widget."
+                    : "Join ThriveIN to claim your credits, build your verified identity, and get discovered by the industry."}
+                </p>
+                <Link
+                  to={user ? "/subscription" : "/auth"}
+                  className="inline-flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur-sm border border-white/20 px-5 py-2.5 text-xs font-bold text-white hover:bg-white/30 transition-colors"
+                >
+                  {user ? "View Plans" : "Get Started — Free"} <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── Guest Post CTAs ── */}
+        {!user && (
+          <div className="grid grid-cols-2 gap-3 mt-6">
+            <button onClick={() => setQuickPostType("gig")} className="rounded-2xl border border-border bg-card p-4 hover:border-success/40 transition-all group text-left">
+              <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center mb-3 group-hover:bg-success/15 transition-colors">
+                <PlusCircle className="h-5 w-5 text-success" />
+              </div>
+              <p className="text-xs font-bold text-foreground mb-0.5">Post a Gig</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">Find verified talent fast</p>
             </button>
             <button onClick={() => setQuickPostType("event")} className="rounded-2xl border border-border bg-card p-4 hover:border-primary/40 transition-all group text-left">
-              <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center mb-2.5 group-hover:bg-primary/15 transition-colors">
-                <CalendarDays className="h-4.5 w-4.5 text-primary" />
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/15 transition-colors">
+                <CalendarDays className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-xs font-semibold text-foreground mb-0.5">Post an Event</p>
-              <p className="text-[10px] text-muted-foreground leading-relaxed">Host creative meetups & workshops</p>
+              <p className="text-xs font-bold text-foreground mb-0.5">Post an Event</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">Host creative meetups</p>
             </button>
           </div>
         )}

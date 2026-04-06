@@ -222,9 +222,6 @@ export const ProfileContentSections = ({
       {/* Video Intro */}
       <VideoIntroSection videoUrl={profile.video_intro_url} isOwnProfile={true} onRefresh={onRefresh} />
 
-      {/* Service Packages */}
-      <ServicePackagesSection userId={profile.user_id} isOwnProfile={true} />
-
       {/* Sentinel for sticky detection */}
       <div ref={tabBarSentinelRef} className="h-0" />
 

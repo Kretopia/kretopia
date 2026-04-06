@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, ShoppingBag } from "lucide-react";
+import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, ShoppingBag, Code } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
+import { EmbeddableCreditsWidget } from "@/components/profile/EmbeddableCreditsWidget";
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
@@ -189,6 +190,21 @@ export const ProfileContentSections = ({
             {/* Shop */}
             <div>
               <DigitalProductsSection userId={profile.user_id} isOwner={true} />
+            </div>
+
+            {/* Embeddable Credits Widget */}
+            <div>
+              <EmbeddableCreditsWidget
+                userId={profile.user_id}
+                displayName={profile.full_name || "Creator"}
+                thriveId={profile.thrive_id}
+                creditCount={credits.length}
+                topCredits={credits.slice(0, 3).map((c: any) => ({
+                  project_name: c.project_name,
+                  role: c.role,
+                  verification_status: c.verification_status,
+                }))}
+              />
             </div>
           </div>
         );

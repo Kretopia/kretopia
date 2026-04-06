@@ -3,12 +3,12 @@ import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 
 const Opportunities = () => {
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-[hsl(230,20%,7%)] pb-20">
       <SEO
-        title="Gigs - Find Creative Work"
-        description="Browse and apply for creative gigs, jobs, and collaborations on ThriveIN"
+        title="Productions — Find Creative Work | ThriveIN"
+        description="Browse and apply for creative productions, paid gigs, collaborations, and barter opportunities on ThriveIN"
       />
-      <div className="container mx-auto max-w-4xl px-4 py-6">
+      <div className="container mx-auto max-w-5xl px-4 py-6">
         <OpportunitiesFeed />
       </div>
     </div>

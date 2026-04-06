@@ -288,14 +288,16 @@ export const AddPortfolioStep = ({ userId, onComplete, onSkip }: AddPortfolioSte
     setIsLoading(true);
     try {
       const insertPromises = items.map(item =>
-        supabase.from("portfolio_items").insert({
+        supabase.from("credits").insert({
           user_id: userId,
-          title: item.title,
+          project_name: item.title,
+          role: 'Creator',
+          source: 'portfolio',
           description: item.description,
-          media_url: item.media_url,
+          primary_media_url: item.media_url,
           media_type: item.media_type,
           thumbnail_url: item.thumbnail_url,
-          category: item.category,
+          credit_category: item.category || 'Other',
           tags: []
         })
       );

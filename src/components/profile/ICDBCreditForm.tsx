@@ -429,6 +429,10 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
         url: form.url || null,
         client_brand: form.client_brand || null,
         collaborator_user_ids: collaboratorIds.length > 0 ? collaboratorIds : null,
+        source: uploadedFile ? 'upload' : 'manual',
+        media_type: uploadedFile?.type || null,
+        primary_media_url: uploadedFile?.url || null,
+        thumbnail_url: uploadedFile?.type === 'image' ? uploadedFile.url : null,
       };
 
       const { data: insertedData, error } = await supabase

@@ -268,7 +268,7 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
     setDeletingId(creditId);
     try {
       const { error } = await supabase
-        .from('verified_credits')
+        .from('credits')
         .delete()
         .eq('id', creditId)
         .eq('user_id', userId);
@@ -296,9 +296,10 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
   const fetchCredits = async () => {
     try {
       const { data, error } = await supabase
-        .from('verified_credits')
+        .from('credits')
         .select('*')
         .eq('user_id', userId)
+        .not('source', 'eq', 'manual')
         .order('year', { ascending: false, nullsFirst: false });
 
       if (error) throw error;

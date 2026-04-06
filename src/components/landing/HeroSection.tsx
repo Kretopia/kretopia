@@ -142,28 +142,81 @@ export const HeroSection = () => {
   const typeLabel = { creator: "Creator", credit: "Credit", gig: "Production" };
   const typeColor = { creator: "text-primary", credit: "text-accent", gig: "text-success" };
 
+  const roles = ["Filmmaker", "Musician", "Photographer", "Designer", "Dancer", "Stylist", "Producer", "DJ", "Writer", "Model"];
+  const [roleIdx, setRoleIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setRoleIdx(i => (i + 1) % roles.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+
   return (
     <section className="relative bg-[hsl(230,20%,7%)]">
       {/* Background glows */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(235,65%,52%,0.06),transparent_60%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_90%_90%,hsl(45,90%,55%,0.03),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(235,65%,52%,0.08),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_90%_90%,hsl(45,90%,55%,0.04),transparent_50%)]" />
 
-      <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 pt-8 pb-16">
-        {/* Search hero */}
-        <div className="text-center pt-8 sm:pt-12 pb-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[hsl(235,65%,52%,0.25)] bg-[hsl(235,65%,52%,0.08)] px-4 py-1.5 text-[11px] font-medium text-[hsl(235,70%,75%)] mb-5">
-            <Database className="h-3 w-3" />
-            ThriveCredits™ — The Creative Industry's Verified Ledger
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white mb-3 leading-tight">
-            Search any creator. Verify any credit.
-          </h1>
-          <p className="text-sm text-[hsl(220,10%,50%)] mb-6 max-w-md mx-auto">
-            AI-powered search across the creative economy — people, productions, and opportunities.
+      <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 pt-6 pb-16">
+        
+        {/* ═══════ HERO — Identity-first ═══════ */}
+        <div className="text-center pt-6 sm:pt-10 pb-6">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[hsl(235,70%,70%)] mb-4">
+            The creative industry's home
           </p>
 
-          {/* Search bar */}
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-2 leading-[1.15]">
+            You're a{" "}
+            <span className="text-[hsl(235,70%,65%)] inline-block min-w-[120px] sm:min-w-[180px] transition-all duration-500">
+              {roles[roleIdx]}
+            </span>
+            <br />
+            <span className="text-[hsl(220,10%,55%)]">Your work should speak for itself.</span>
+          </h1>
+
+          <p className="text-sm sm:text-base text-[hsl(220,10%,50%)] max-w-lg mx-auto mt-3 mb-6 leading-relaxed">
+            Build your verified creative record. Get discovered by brands. 
+            Land gigs. Get paid — all in one place.
+          </p>
+
+          {/* Dual CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+            <Link to="/auth" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-[hsl(235,65%,52%)] px-7 py-3.5 text-sm font-bold text-white hover:bg-[hsl(235,65%,58%)] transition-all shadow-[0_4px_20px_hsl(235,65%,52%,0.3)]">
+              Claim Your Credits — Free <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link to="/gigs" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-[hsl(230,15%,22%)] bg-[hsl(230,18%,11%)] px-7 py-3.5 text-sm font-semibold text-white hover:border-[hsl(235,65%,52%,0.4)] transition-all">
+              <Briefcase className="h-4 w-4 text-success" /> Browse Gigs
+            </Link>
+          </div>
+
+          {/* Social proof stats */}
+          <div className="flex items-center justify-center gap-6 text-[11px] text-[hsl(220,10%,42%)]">
+            <span className="flex items-center gap-1.5"><Users className="h-3 w-3" /> {stats.creators.toLocaleString()} Creators</span>
+            <span className="flex items-center gap-1.5"><Database className="h-3 w-3" /> {stats.credits.toLocaleString()} Credits</span>
+            <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3" /> {stats.gigs} Live Gigs</span>
+          </div>
+        </div>
+
+        {/* ═══════ HOW IT WORKS — 3-step value prop ═══════ */}
+        <div className="grid grid-cols-3 gap-3 my-6">
+          {[
+            { step: "1", icon: Database, title: "Claim Credits", desc: "Add your work to the verified creative ledger — like IMDb, but for every industry" },
+            { step: "2", icon: Users, title: "Get Discovered", desc: "Brands and collaborators find you by your verified track record, not just a portfolio" },
+            { step: "3", icon: DollarSign, title: "Get Paid", desc: "Land gigs, send invoices, and manage projects — all from one creative HQ" },
+          ].map((s) => (
+            <div key={s.step} className="text-center p-3 sm:p-4 rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)]">
+              <div className="h-10 w-10 rounded-xl bg-[hsl(235,65%,52%,0.1)] flex items-center justify-center mx-auto mb-2.5">
+                <s.icon className="h-4.5 w-4.5 text-[hsl(235,70%,65%)]" />
+              </div>
+              <p className="text-xs font-bold text-white mb-1">{s.title}</p>
+              <p className="text-[9px] sm:text-[10px] text-[hsl(220,10%,45%)] leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══════ SEARCH BAR — below the fold ═══════ */}
+        <div className="mb-6">
+          <p className="text-center text-[10px] uppercase tracking-widest text-[hsl(220,10%,38%)] font-semibold mb-3">
+            Search the creative economy
+          </p>
           <div ref={wrapperRef} className="relative max-w-xl mx-auto">
             <form onSubmit={handleSubmit}>
               <div className="relative">
@@ -175,9 +228,9 @@ export const HeroSection = () => {
                   onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
                   onFocus={() => setShowSuggestions(true)}
                   placeholder="Try 'Beyoncé', 'Squid Game', 'Photographer in Lagos'..."
-                  className="w-full h-14 rounded-2xl border border-[hsl(230,15%,20%)] bg-[hsl(230,18%,11%)] pl-12 pr-14 text-sm text-white shadow-[0_4px_30px_hsl(235,65%,52%,0.08)] focus:outline-none focus:border-[hsl(235,65%,52%)] focus:shadow-[0_0_40px_hsl(235,65%,52%,0.15)] transition-all placeholder:text-[hsl(220,10%,38%)]"
+                  className="w-full h-13 rounded-2xl border border-[hsl(230,15%,20%)] bg-[hsl(230,18%,11%)] pl-12 pr-14 text-sm text-white shadow-[0_4px_30px_hsl(235,65%,52%,0.08)] focus:outline-none focus:border-[hsl(235,65%,52%)] focus:shadow-[0_0_40px_hsl(235,65%,52%,0.15)] transition-all placeholder:text-[hsl(220,10%,38%)]"
                 />
-                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-[hsl(235,65%,52%)] text-white flex items-center justify-center hover:bg-[hsl(235,65%,58%)] transition-colors">
+                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-[hsl(235,65%,52%)] text-white flex items-center justify-center hover:bg-[hsl(235,65%,58%)] transition-colors">
                   <Search className="h-4 w-4" />
                 </button>
               </div>
@@ -186,7 +239,7 @@ export const HeroSection = () => {
             {/* Suggestions dropdown */}
             {showSuggestions && (query.trim().length >= 2 || suggestions.length > 0) && (
               <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-[hsl(230,15%,20%)] bg-[hsl(230,18%,10%)] shadow-2xl z-50 overflow-hidden">
-                {loading && <div className="px-4 py-3 text-sm text-[hsl(220,10%,50%)] animate-pulse">Searching platform + AI knowledge...</div>}
+                {loading && <div className="px-4 py-3 text-sm text-[hsl(220,10%,50%)] animate-pulse">Searching...</div>}
                 {!loading && suggestions.length === 0 && query.trim().length >= 2 && (
                   <div className="px-4 py-3 text-sm text-[hsl(220,10%,50%)]">
                     <Sparkles className="inline h-3.5 w-3.5 mr-1.5 text-[hsl(235,70%,65%)]" />
@@ -215,17 +268,10 @@ export const HeroSection = () => {
               </div>
             )}
           </div>
-
-          {/* Quick stats */}
-          <div className="flex items-center justify-center gap-6 mt-5 text-[11px] text-[hsl(220,10%,42%)]">
-            <span className="flex items-center gap-1.5"><Users className="h-3 w-3" /> {stats.creators} Creators</span>
-            <span className="flex items-center gap-1.5"><Database className="h-3 w-3" /> {stats.credits} Credits</span>
-            <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3" /> {stats.gigs} Active Gigs</span>
-          </div>
         </div>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        {/* ═══════ SOCIAL PROOF GRID ═══════ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
           {/* Trending Productions */}
           <div className="lg:col-span-2 rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-5">
@@ -343,7 +389,7 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* Quick Post CTAs — get people onboarding */}
+        {/* Quick Post CTAs */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <button
             onClick={() => setQuickPostType("gig")}
@@ -373,27 +419,6 @@ export const HeroSection = () => {
           type={quickPostType || "gig"}
         />
 
-        {/* Flywheel — show visitors the full platform value */}
-        <div className="mt-8 rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-5">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-[hsl(220,10%,50%)] mb-4 text-center">
-            Everything creatives need in one place
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { icon: Database, label: "Verified Credits", desc: "IMDb for every creative industry", to: "/credits" },
-              { icon: Users, label: "Find Collaborators", desc: "Connect with like-minded creatives", to: "/circle" },
-              { icon: Briefcase, label: "Get Hired", desc: "Paid gigs, barters & collabs", to: "/opportunities" },
-              { icon: DollarSign, label: "Get Paid", desc: "Invoicing, escrow & payments", to: "/auth" },
-            ].map((item) => (
-              <Link key={item.label} to={item.to} className="text-center p-3 rounded-xl hover:bg-[hsl(230,15%,13%)] transition-colors group">
-                <item.icon className="h-5 w-5 mx-auto mb-2 text-[hsl(235,70%,65%)] group-hover:text-white transition-colors" />
-                <p className="text-[11px] font-semibold text-white mb-0.5">{item.label}</p>
-                <p className="text-[9px] text-[hsl(220,10%,42%)]">{item.desc}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-
         {/* Talent Manager CTA */}
         <div className="mt-4 rounded-2xl border border-[hsl(45,90%,55%,0.15)] bg-gradient-to-r from-[hsl(45,90%,55%,0.05)] to-[hsl(230,18%,9%)] p-5">
           <div className="flex items-start gap-3">
@@ -409,37 +434,6 @@ export const HeroSection = () => {
                 Start earning <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
-          </div>
-        </div>
-
-        {/* Magazine & Podcast teaser */}
-        <div className="mt-4 rounded-2xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-[hsl(220,10%,50%)] flex items-center gap-2">
-              <Newspaper className="h-3.5 w-3.5 text-[hsl(235,70%,65%)]" />
-              From the Community
-            </h2>
-            <Link to="/scene" className="text-[10px] text-[hsl(235,70%,65%)] hover:underline flex items-center gap-1">
-              View all <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Link to="/scene" className="rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,11%)] p-4 hover:border-[hsl(235,65%,52%,0.3)] transition-all">
-              <div className="flex items-center gap-2 mb-2">
-                <Newspaper className="h-4 w-4 text-[hsl(235,70%,65%)]" />
-                <Badge className="text-[8px] bg-[hsl(235,65%,52%,0.1)] border-[hsl(235,65%,52%,0.2)] text-[hsl(235,70%,70%)]">Magazine</Badge>
-              </div>
-              <p className="text-xs font-semibold text-white mb-1">Industry stories & interviews</p>
-              <p className="text-[10px] text-[hsl(220,10%,45%)]">Read articles from creatives across film, music, fashion & events</p>
-            </Link>
-            <Link to="/scene" className="rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,11%)] p-4 hover:border-[hsl(235,65%,52%,0.3)] transition-all">
-              <div className="flex items-center gap-2 mb-2">
-                <Mic2 className="h-4 w-4 text-[hsl(45,90%,60%)]" />
-                <Badge className="text-[8px] bg-[hsl(45,90%,55%,0.1)] border-[hsl(45,90%,55%,0.2)] text-[hsl(45,90%,65%)]">Podcast</Badge>
-              </div>
-              <p className="text-xs font-semibold text-white mb-1">Behind the scenes</p>
-              <p className="text-[10px] text-[hsl(220,10%,45%)]">Listen to conversations with industry leaders & emerging talent</p>
-            </Link>
           </div>
         </div>
 

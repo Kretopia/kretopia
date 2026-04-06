@@ -222,6 +222,9 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
           role: aiData.role || prev.role,
           project_type: aiData.project_type || prev.project_type,
           credit_category: aiData.project_type || prev.credit_category,
+          platform: aiData.platform || prev.platform,
+          description: aiData.description || prev.description,
+          start_date: aiData.year ? `${aiData.year}-01-01` : prev.start_date,
         }));
       } else {
         // Fallback: use filename as project name

@@ -23,8 +23,7 @@ import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 import { GuestBanner } from "./components/GuestBanner";
 
 // Lazy load active page components
-const Landing = lazy(() => import("./pages/Landing"));
-const PersonalizedHomePage = lazy(() => import("./components/home/PersonalizedHome").then(m => ({ default: m.PersonalizedHome })));
+const UnifiedHome = lazy(() => import("./components/home/UnifiedHome"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
@@ -132,25 +131,24 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Mode-aware default route: Guests→Landing, Logged-in→Personalized Home
+// Unified home: same layout for guests & authenticated users
 const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
   
-  // Guests see the landing dashboard (with full nav visible)
-  if (!user) return <Landing />;
-  if (onboardingLoading) return <LoadingFallback />;
-  if (!isComplete) return <Navigate to="/onboarding" replace />;
-  
-  // Check for pending event join (from OAuth redirect)
-  const pendingEvent = sessionStorage.getItem('pending_event_join');
-  if (pendingEvent) {
-    sessionStorage.removeItem('pending_event_join');
-    return <Navigate to={`/event/${pendingEvent}`} replace />;
+  if (user) {
+    if (onboardingLoading) return <LoadingFallback />;
+    if (!isComplete) return <Navigate to="/onboarding" replace />;
+    
+    // Check for pending event join (from OAuth redirect)
+    const pendingEvent = sessionStorage.getItem('pending_event_join');
+    if (pendingEvent) {
+      sessionStorage.removeItem('pending_event_join');
+      return <Navigate to={`/event/${pendingEvent}`} replace />;
+    }
   }
   
-  // Logged-in users see their personalized home
-  return <PersonalizedHomePage />;
+  return <UnifiedHome />;
 };
 
 // Catch-all: authenticated users go to mode-aware home
@@ -213,7 +211,7 @@ const AppContent = () => {
           <Routes>
             {/* Active MVP Routes */}
             <Route path="/" element={<DefaultRoute />} />
-            <Route path="/landing" element={<Landing />} />
+            <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             

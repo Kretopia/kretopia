@@ -23,8 +23,7 @@ import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 import { GuestBanner } from "./components/GuestBanner";
 
 // Lazy load active page components
-const Landing = lazy(() => import("./pages/Landing"));
-const PersonalizedHomePage = lazy(() => import("./components/home/PersonalizedHome").then(m => ({ default: m.PersonalizedHome })));
+const UnifiedHome = lazy(() => import("./components/home/UnifiedHome"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
@@ -35,70 +34,46 @@ const ViewProfile = lazy(() => import("./pages/ViewProfile"));
 
 const Circle = lazy(() => import("./pages/Circle"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
-const CirclesPage = lazy(() => import("./pages/Circles"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ProjectsList = lazy(() => import("./pages/ProjectsList"));
-const Analytics = lazy(() => import("./pages/Analytics"));
-const MyAnalytics = lazy(() => import("./pages/MyAnalytics"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Settings = lazy(() => import("./pages/Settings"));
-const NotFound = lazy(() => import("./pages/NotFound"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
-const AdminBroadcast = lazy(() => import("./pages/AdminBroadcast"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
-const PartnerDirectory = lazy(() => import("./pages/PartnerDirectory"));
-const PartnerSubmit = lazy(() => import("./pages/PartnerSubmit"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 
 const Search = lazy(() => import("./pages/Search"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
-const TestEmails = lazy(() => import("./pages/TestEmails"));
-const PurchaseSuccess = lazy(() => import("./pages/PurchaseSuccess"));
-const MyPurchases = lazy(() => import("./pages/MyPurchases"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
-const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
-const WaitlistAdmin = lazy(() => import("./pages/WaitlistAdmin"));
 
-const Marketplace = lazy(() => import("./pages/Marketplace"));
-const ListingDetail = lazy(() => import("./pages/ListingDetail"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
-const RewardsShop = lazy(() => import("./pages/RewardsShop"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
-const Accounting = lazy(() => import("./pages/Accounting"));
 const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
-const FeedbackAdmin = lazy(() => import("./pages/FeedbackAdmin"));
-const CheckIn = lazy(() => import("./pages/CheckIn"));
 
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
-const Guide = lazy(() => import("./pages/Guide"));
 const EventPage = lazy(() => import("./pages/EventPage"));
-const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
-const MagazineArticlePage = lazy(() => import("./pages/MagazineArticlePage"));
-const TalentManager = lazy(() => import("./pages/TalentManager"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const ICDBDiscovery = lazy(() => import("./pages/ICDBDiscovery"));
 const ICDBHub = lazy(() => import("./pages/ICDBHub"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
-const Challenges = lazy(() => import("./pages/Challenges"));
-const ChallengeDetail = lazy(() => import("./pages/ChallengeDetail"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,25 +107,24 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Mode-aware default route: Guests→Landing, Logged-in→Personalized Home
+// Unified home: same layout for guests & authenticated users
 const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
   
-  // Guests see the landing dashboard (with full nav visible)
-  if (!user) return <Landing />;
-  if (onboardingLoading) return <LoadingFallback />;
-  if (!isComplete) return <Navigate to="/onboarding" replace />;
-  
-  // Check for pending event join (from OAuth redirect)
-  const pendingEvent = sessionStorage.getItem('pending_event_join');
-  if (pendingEvent) {
-    sessionStorage.removeItem('pending_event_join');
-    return <Navigate to={`/event/${pendingEvent}`} replace />;
+  if (user) {
+    if (onboardingLoading) return <LoadingFallback />;
+    if (!isComplete) return <Navigate to="/onboarding" replace />;
+    
+    // Check for pending event join (from OAuth redirect)
+    const pendingEvent = sessionStorage.getItem('pending_event_join');
+    if (pendingEvent) {
+      sessionStorage.removeItem('pending_event_join');
+      return <Navigate to={`/event/${pendingEvent}`} replace />;
+    }
   }
   
-  // Logged-in users see their personalized home
-  return <PersonalizedHomePage />;
+  return <UnifiedHome />;
 };
 
 // Catch-all: authenticated users go to mode-aware home
@@ -213,14 +187,14 @@ const AppContent = () => {
           <Routes>
             {/* Active MVP Routes */}
             <Route path="/" element={<DefaultRoute />} />
-            <Route path="/landing" element={<Landing />} />
+            <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             
             {/* Core Feature Pages - Public browsable, actions gated */}
             <Route path="/circle" element={<Circle />} />
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
-            <Route path="/circles" element={<CirclesPage />} />
+            <Route path="/circles" element={<Navigate to="/circle" replace />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}
@@ -228,8 +202,8 @@ const AppContent = () => {
             <Route path="/epk/:userId" element={<CreatorEPK />} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/my-analytics" element={<ProtectedRoute><MyAnalytics /></ProtectedRoute>} />
-            <Route path="/guide" element={<Guide />} />
+            <Route path="/my-analytics" element={<Navigate to="/profile" replace />} />
+            <Route path="/guide" element={<Navigate to="/" replace />} />
             
             {/* ThriveDesk - Lightweight Project Workspace */}
             <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
@@ -240,10 +214,10 @@ const AppContent = () => {
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
             <Route path="/wallet" element={<Navigate to="/thrivepay" replace />} />
-            <Route path="/purchases" element={<ProtectedRoute><MyPurchases /></ProtectedRoute>} />
+            <Route path="/purchases" element={<Navigate to="/thrivepay" replace />} />
             <Route path="/accounting" element={<Navigate to="/thrivepay?tab=earnings" replace />} />
             <Route path="/thrivemoney" element={<Navigate to="/thrivepay?tab=earnings" replace />} />
-            <Route path="/purchase-success" element={<PurchaseSuccess />} />
+            <Route path="/purchase-success" element={<PaymentSuccess />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             
@@ -266,7 +240,7 @@ const AppContent = () => {
             <Route path="/scene" element={<Scene />} />
             
             {/* Public Magazine Article - SEO accessible */}
-            <Route path="/magazine/:slug" element={<MagazineArticlePage />} />
+            <Route path="/magazine/:slug" element={<Navigate to="/" replace />} />
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />
@@ -279,11 +253,11 @@ const AppContent = () => {
             
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            <Route path="/admin-broadcast" element={<ProtectedRoute><AdminBroadcast /></ProtectedRoute>} />
-            <Route path="/waitlist-admin" element={<ProtectedRoute><WaitlistAdmin /></ProtectedRoute>} />
-            <Route path="/test-emails" element={<ProtectedRoute><TestEmails /></ProtectedRoute>} />
-            <Route path="/feedback-admin" element={<ProtectedRoute><FeedbackAdmin /></ProtectedRoute>} />
+            <Route path="/analytics" element={<Navigate to="/admin" replace />} />
+            <Route path="/admin-broadcast" element={<Navigate to="/admin" replace />} />
+            <Route path="/waitlist-admin" element={<Navigate to="/admin" replace />} />
+            <Route path="/test-emails" element={<Navigate to="/admin" replace />} />
+            <Route path="/feedback-admin" element={<Navigate to="/admin" replace />} />
 
             {/* Pitch Deck */}
             <Route path="/deck" element={<PitchDeck />} />
@@ -294,9 +268,9 @@ const AppContent = () => {
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             
-            {/* Partner Pages */}
-            <Route path="/partner-directory" element={<ProtectedRoute><PartnerDirectory /></ProtectedRoute>} />
-            <Route path="/partner-submit" element={<PartnerSubmit />} />
+            {/* Partner Pages — redirected */}
+            <Route path="/partner-directory" element={<Navigate to="/" replace />} />
+            <Route path="/partner-submit" element={<Navigate to="/" replace />} />
             
             {/* Opportunity Management */}
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />

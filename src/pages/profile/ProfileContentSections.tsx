@@ -17,7 +17,6 @@ import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
 import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
-import { ServicePackagesSection } from "@/components/profile/ServicePackagesSection";
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
 interface ProfileContentSectionsProps {

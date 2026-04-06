@@ -14,7 +14,7 @@ import { SEO } from "@/components/SEO";
 import { FeeStructure } from "@/components/FeeStructure";
 import { FeeCalculator } from "@/components/FeeCalculator";
 import { getFeeDisplayText } from "@/lib/platformFees";
-import { WalletXPSection } from "@/components/wallet/WalletXPSection";
+import { StatusProgressCard } from "@/components/wallet/StatusProgressCard";
 import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
@@ -259,7 +259,7 @@ export default function ThrivePay() {
     <>
       <SEO
         title="ThrivePay — Wallet & Payments"
-        description="Manage your wallet, Thrive Points, earnings and payment account"
+        description="Manage your wallet, earnings, status, and payment account"
       />
 
       <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
@@ -323,7 +323,7 @@ export default function ThrivePay() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="w-full grid grid-cols-5 h-10 sm:h-11">
+          <TabsList className="w-full grid grid-cols-4 h-10 sm:h-11">
             <TabsTrigger value="wallet" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <Wallet className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Wallet</span>
@@ -332,17 +332,13 @@ export default function ThrivePay() {
               <TrendingUp className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Earnings</span>
             </TabsTrigger>
-            <TabsTrigger value="xp" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
-              <Sparkles className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Points</span>
+            <TabsTrigger value="status" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
+              <Shield className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Status</span>
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <CreditCard className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Payments</span>
-            </TabsTrigger>
-            <TabsTrigger value="fees" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
-              <Percent className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Fees</span>
             </TabsTrigger>
           </TabsList>
 
@@ -412,9 +408,9 @@ export default function ThrivePay() {
             </FreeTierGate>
           </TabsContent>
 
-          {/* Thrive Points Tab */}
-          <TabsContent value="xp" className="space-y-6">
-            <WalletXPSection />
+          {/* Status Tab */}
+          <TabsContent value="status" className="space-y-6">
+            <StatusProgressCard />
           </TabsContent>
 
           {/* Payments Tab - Stripe Connect */}

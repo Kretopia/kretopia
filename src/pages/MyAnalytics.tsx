@@ -65,7 +65,7 @@ const MyAnalytics = () => {
           .eq('user_id', user.id).eq('status', 'accepted'),
         supabase.from('swipes').select('*', { count: 'exact', head: true })
           .eq('user_id', user.id),
-        supabase.from('portfolio_items').select('*', { count: 'exact', head: true })
+        supabase.from('credits').select('*', { count: 'exact', head: true })
           .eq('user_id', user.id),
         supabase.from('projects').select('*', { count: 'exact', head: true })
           .or(`creator_id.eq.${user.id}`),

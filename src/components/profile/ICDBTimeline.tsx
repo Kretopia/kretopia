@@ -382,48 +382,27 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
 
   const fetchData = async () => {
     try {
-      const [manualRes, verifiedRes] = await Promise.all([
-        supabase.from('credits').select('*').eq('user_id', userId).order('year', { ascending: false }),
-        supabase.from('verified_credits').select('*').eq('user_id', userId).order('year', { ascending: false, nullsFirst: false }),
-      ]);
+      const { data, error } = await supabase
+        .from('credits')
+        .select('*')
+        .eq('user_id', userId)
+        .order('year', { ascending: false });
 
-      const manual: ICDBCredit[] = (manualRes.data || []).map((c: any) => ({
+      if (error) throw error;
+
+      const allCredits: ICDBCredit[] = (data || []).map((c: any) => ({
         ...c,
         endorsement_count: c.endorsement_count || 0,
-        source: c.source || (c.verification_status === 'verified' ? 'project' : 'manual'),
+        source: c.source || 'manual',
       }));
 
-      const verified: ICDBCredit[] = (verifiedRes.data || []).map((c: any) => ({
-        id: c.id,
-        project_name: c.title,
-        role: c.role,
-        year: c.year,
-        project_type: c.credit_type,
-        description: null,
-        start_date: null,
-        end_date: null,
-        location: null,
-        platform: c.source,
-        url: c.verification_url,
-        client_brand: null,
-        thumbnail_url: c.metadata?.posterUrl || c.metadata?.imageUrl || null,
-        verification_status: 'verified',
-        endorsement_count: 0,
-        collaborator_user_ids: null,
-        ai_confidence: 1,
-        credit_category: c.credit_type,
-        is_featured: false,
-        source: 'verified',
-        media_type: null,
-        primary_media_url: null,
-        tags: null,
-      }));
-
-      const allCredits = [...verified, ...manual].sort((a, b) => {
+      // Sort: featured first, then by year
+      allCredits.sort((a, b) => {
         if (a.is_featured && !b.is_featured) return -1;
         if (!a.is_featured && b.is_featured) return 1;
         return (b.year || 0) - (a.year || 0);
       });
+
       setCredits(allCredits);
 
       // Fetch collaborator profiles
@@ -448,8 +427,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const handleDelete = async (id: string, source: string) => {
     setDeletingId(id);
     try {
-      const table = source === 'verified' ? 'verified_credits' : 'credits';
-      const { error } = await supabase.from(table).delete().eq("id", id);
+      const { error } = await supabase.from('credits').delete().eq("id", id);
       if (error) throw error;
       setCredits(prev => prev.filter(c => c.id !== id));
       toast.success("Credit removed");

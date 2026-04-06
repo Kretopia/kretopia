@@ -44,7 +44,7 @@ export const useProfileData = () => {
       const [profileResult, connectionsResult, portfolioResult] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', currentUserId).maybeSingle(),
         supabase.from('connections').select('*', { count: 'exact', head: true }).eq('user_id', currentUserId).eq('status', 'accepted'),
-        supabase.from('portfolio_items').select('*').eq('user_id', currentUserId).order('created_at', { ascending: false }).limit(6)
+        supabase.from('credits').select('*').eq('user_id', currentUserId).eq('source', 'portfolio').order('created_at', { ascending: false }).limit(6)
       ]);
 
       let { data, error } = profileResult;
@@ -215,7 +215,7 @@ export const useProfileData = () => {
       .channel('profile-changes')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'portfolio_items' },
+        { event: 'INSERT', schema: 'public', table: 'credits' },
         () => {
           clearTimeout(updateTimeout);
           updateTimeout = setTimeout(() => fetchData(), 2000);

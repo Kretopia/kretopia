@@ -40,8 +40,8 @@ export const SavedSparksDialog = ({ open, onOpenChange }: SavedSparksDialogProps
       
       await Promise.all([
         groupedByType['portfolio'] && supabase
-          .from('portfolio_items')
-          .select('id, title, media_url, thumbnail_url, profiles:user_id(full_name, avatar_url)')
+          .from('credits')
+          .select('id, project_name, primary_media_url, thumbnail_url, profiles:user_id(full_name, avatar_url)')
           .in('id', groupedByType['portfolio'])
           .then(({ data }) => data?.forEach(item => detailsMap[item.id] = item)),
         

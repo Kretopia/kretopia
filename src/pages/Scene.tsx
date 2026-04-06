@@ -32,7 +32,7 @@ const Scene = () => {
       const [profileRes, creditsRes, portfolioRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("user_id", user.id).single(),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("portfolio_items").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       ]);
       if (profileRes.data) {
         const workCount = (creditsRes.count || 0) + (portfolioRes.count || 0);

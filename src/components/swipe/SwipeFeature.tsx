@@ -54,7 +54,7 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
     if (user?.id) {
       Promise.all([
         supabase.from('profiles').select('avatar_url, full_name, bio').eq('user_id', user.id).single(),
-        supabase.from('portfolio_items').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       ]).then(([profileRes, portfolioRes, creditsRes]) => {
         if (profileRes.data) {

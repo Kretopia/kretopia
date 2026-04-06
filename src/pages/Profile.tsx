@@ -134,18 +134,20 @@ const ProfileContent = () => {
         .filter((item: any) => item.title && item.media_url)
         .map((item: any) => ({
           user_id: user.id,
-          title: item.title,
+          project_name: item.title,
+          role: 'Creator',
+          source: 'portfolio',
           description: item.description || null,
-          media_url: item.media_url,
+          primary_media_url: item.media_url,
           media_type: item.media_type || 'image',
           thumbnail_url: item.thumbnail_url || null,
           tags: item.tags || null,
-          category: 'imported',
+          credit_category: 'imported',
         }));
 
       if (portfolioInserts.length > 0) {
         const { error: portfolioError, data: inserted } = await supabase
-          .from('portfolio_items')
+          .from('credits')
           .insert(portfolioInserts)
           .select('id');
 

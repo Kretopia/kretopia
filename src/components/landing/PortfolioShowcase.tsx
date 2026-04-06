@@ -20,9 +20,9 @@ export const PortfolioShowcase = () => {
     const fetchPortfolio = async () => {
       try {
         const { data, error } = await supabase
-          .from("portfolio_items")
-          .select("id, title, media_url, thumbnail_url, media_type")
-          .not("media_url", "is", null)
+          .from("credits")
+          .select("id, project_name, primary_media_url, thumbnail_url, media_type")
+          .not("primary_media_url", "is", null)
           .not("thumbnail_url", "is", null)
           .neq("thumbnail_url", "")
           .order("created_at", { ascending: false })
@@ -42,7 +42,7 @@ export const PortfolioShowcase = () => {
         const shuffled = valid
           .map((d) => ({
             id: d.id,
-            title: d.title || "Untitled",
+            title: d.project_name || "Untitled",
             thumbnail_url: d.thumbnail_url!,
             media_type: d.media_type || "image",
           }))

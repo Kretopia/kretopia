@@ -42,7 +42,7 @@ export function AchievementBadges() {
         supabase.from("profiles").select("streak_count, longest_streak, xp, level").eq("user_id", user.id).maybeSingle(),
         supabase.from("connections").select("id").eq("user_id", user.id).eq("status", "accepted"),
         supabase.from("feed_posts").select("id").eq("user_id", user.id),
-        supabase.from("portfolio_items").select("id").eq("user_id", user.id),
+        supabase.from("credits").select("id").eq("user_id", user.id),
         supabase.from("credits").select("id").eq("user_id", user.id),
       ]);
 

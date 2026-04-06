@@ -81,7 +81,7 @@ export const EasyApplyButton = ({ opportunityId, opportunityTitle, className, si
           .eq("user_id", user.id)
           .maybeSingle(),
         supabase
-          .from("portfolio_items")
+          .from("credits")
           .select("id, title, media_url, media_type, thumbnail_url")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })

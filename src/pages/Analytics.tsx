@@ -252,7 +252,7 @@ const Analytics = () => {
 
       // Fetch portfolio items and sum view counts
       const { data: portfolioItems } = await supabase
-        .from("portfolio_items")
+        .from("credits")
         .select("view_count")
         .eq("user_id", user.id);
 

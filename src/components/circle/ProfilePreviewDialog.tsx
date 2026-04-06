@@ -57,7 +57,7 @@ export const ProfilePreviewDialog = ({
     queryFn: async () => {
       if (!userId) return [];
       const { data, error } = await supabase
-        .from('portfolio_items')
+        .from('credits')
         .select('id, title, media_url, thumbnail_url')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })

@@ -154,55 +154,28 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
     fetchAllCredits();
   }, [userId]);
 
-  const fetchAllCredits = async () => {
+   const fetchAllCredits = async () => {
     try {
-      // Fetch both manual and verified credits in parallel
-      const [manualRes, verifiedRes] = await Promise.all([
-        supabase
-          .from('credits')
-          .select('*')
-          .eq('user_id', userId)
-          .order('year', { ascending: false }),
-        supabase
-          .from('verified_credits')
-          .select('*')
-          .eq('user_id', userId)
-          .order('year', { ascending: false, nullsFirst: false })
-      ]);
+      const { data, error } = await supabase
+        .from('credits')
+        .select('*')
+        .eq('user_id', userId)
+        .order('year', { ascending: false });
 
-      const manualCredits: UnifiedCredit[] = (manualRes.data || []).map((c: any) => ({
+      if (error) throw error;
+
+      const allCredits: UnifiedCredit[] = (data || []).map((c: any) => ({
         id: c.id,
         title: c.project_name,
         role: c.role,
         year: c.year,
-        platform: c.platform,
-        url: c.url,
-        thumbnailUrl: c.thumbnail_url,
+        platform: c.platform || c.source,
+        url: c.url || c.verification_url,
+        thumbnailUrl: c.thumbnail_url || c.primary_media_url,
         isVerified: c.verification_status === 'verified',
-        source: c.verification_status === 'verified' ? 'project' : 'manual',
-        creditType: 'credit'
+        source: c.source || 'manual',
+        creditType: c.credit_category || c.project_type || 'credit'
       }));
-
-      const verifiedCredits: UnifiedCredit[] = (verifiedRes.data || []).map((c: any) => ({
-        id: c.id,
-        title: c.title,
-        role: c.role,
-        year: c.year,
-        platform: c.source,
-        url: c.verification_url,
-        thumbnailUrl: c.metadata?.posterUrl || c.metadata?.imageUrl || c.metadata?.thumbUrl,
-        isVerified: true,
-        source: c.source,
-        creditType: c.credit_type
-      }));
-
-      // Combine and sort by year (descending)
-      const allCredits = [...verifiedCredits, ...manualCredits].sort((a, b) => {
-        if (!a.year && !b.year) return 0;
-        if (!a.year) return 1;
-        if (!b.year) return -1;
-        return b.year - a.year;
-      });
 
       setCredits(allCredits);
     } catch (error) {
@@ -263,11 +236,10 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
     }
   };
 
-  const handleDelete = async (id: string, isVerified: boolean) => {
+   const handleDelete = async (id: string, isVerified: boolean) => {
     setDeletingId(id);
     try {
-      const table = isVerified ? 'verified_credits' : 'credits';
-      const { error } = await supabase.from(table).delete().eq("id", id);
+      const { error } = await supabase.from('credits').delete().eq("id", id);
       if (error) throw error;
 
       setCredits(prev => prev.filter(c => c.id !== id));

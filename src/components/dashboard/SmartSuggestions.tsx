@@ -51,7 +51,7 @@ export const SmartSuggestions = ({ userId, userProfile }: SmartSuggestionsProps)
         .eq('status', 'accepted');
 
       const { data: portfolio } = await supabase
-        .from('portfolio_items')
+        .from('credits')
         .select('*', { count: 'exact' })
         .eq('user_id', userId);
 

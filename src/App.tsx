@@ -131,13 +131,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Mode-aware default route: Create→Scene, Work→Desk
+// Mode-aware default route: Create→Scene, Work→Desk, Guests→Landing dashboard
 const DefaultRoute = () => {
   const { user } = useAuth();
   const { isComplete, loading: onboardingLoading } = useOnboarding();
   
-  // Guests go straight to Scene (public browsing)
-  if (!user) return <Navigate to="/scene" replace />;
+  // Guests see the landing dashboard (with full nav visible)
+  if (!user) return <Landing />;
   if (onboardingLoading) return <LoadingFallback />;
   if (!isComplete) return <Navigate to="/onboarding" replace />;
   

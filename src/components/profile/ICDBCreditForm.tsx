@@ -806,6 +806,26 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                 ← Back
               </Button>
 
+              {/* Uploaded media preview */}
+              {uploadedFile && (
+                <div className="relative rounded-lg overflow-hidden bg-muted/30 border">
+                  {uploadedFile.type === 'image' ? (
+                    <img src={uploadedFile.url} alt="Upload" className="w-full h-32 object-cover" />
+                  ) : (
+                    <div className="w-full h-20 flex items-center justify-center gap-2 text-muted-foreground">
+                      {uploadedFile.type === 'video' ? <Video className="h-6 w-6" /> : <Music className="h-6 w-6" />}
+                      <span className="text-xs font-medium">{uploadedFile.name}</span>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setUploadedFile(null)}
+                    className="absolute top-1.5 right-1.5 rounded-full bg-black/60 text-white p-1 hover:bg-black/80"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+
               {/* Essential fields only */}
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Project Title *</Label>

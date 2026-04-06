@@ -104,14 +104,42 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/profile", icon: User, label: "Profile" },
       ];
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setSearchOpen(false);
+    }
+  };
+
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2.5">
-        <Link to={user ? "/circle" : "/"} className="flex items-center gap-2 sm:gap-3" aria-label="ThriveIN Home">
-          <img src={thriveinIcon} alt="ThriveIN Icon" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
-          <span className="text-xl sm:text-2xl font-bold tracking-tight gradient-text">thriveIN</span>
-          <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-semibold">BETA</Badge>
+        <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="ThriveIN Home">
+          <img src={thriveinIcon} alt="ThriveIN Icon" className="h-9 w-9 sm:h-10 sm:w-10 object-contain" />
+          <span className="text-lg sm:text-xl font-bold tracking-tight gradient-text hidden sm:inline">thriveIN</span>
+          <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-semibold hidden sm:inline-flex">BETA</Badge>
         </Link>
+
+        {/* ═══ PERSISTENT SEARCH BAR ═══ */}
+        {user && !isLandingPage && (
+          <form onSubmit={handleSearchSubmit} className="hidden sm:flex flex-1 max-w-sm mx-4">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search creators, credits, gigs..."
+                className="w-full h-9 rounded-xl border border-border bg-muted/40 pl-9 pr-3 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-all placeholder:text-muted-foreground/50"
+              />
+            </div>
+          </form>
+        )}
 
         {/* Desktop Navigation - Mode Aware */}
         {user && !isLandingPage && (
@@ -159,16 +187,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
           </div>
         )}
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {user && !isLandingPage && (
-            <div className="flex items-center gap-1">
-              <Link to="/search" aria-label="Search">
-                <Button variant="ghost" size="icon" className="h-10 w-10">
-                  <Search className="h-5 w-5" />
-                </Button>
-              </Link>
+            <div className="flex items-center gap-0.5">
+              {/* Mobile search toggle */}
+              <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
+                <Search className="h-5 w-5" />
+              </Button>
               <Link to="/messages" aria-label="Messages">
-                <Button variant="ghost" size="icon" className="h-10 w-10 relative">
+                <Button variant="ghost" size="icon" className="h-9 w-9 relative">
                   <MessageCircle className="h-5 w-5" />
                 </Button>
               </Link>
@@ -220,29 +247,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                      <MenuButton icon={Globe} label="View EPK" onClick={() => handleNavigation(`/epk/${user?.id}`)} />
-                      <Button
-                        variant="ghost"
-                        className="justify-start gap-3 h-12 w-full text-muted-foreground"
-                        onClick={() => {
-                          setIsOpen(false);
-                          const epkUrl = `${window.location.origin}/epk/${user?.id}`;
-                          if (navigator.share) {
-                            navigator.share({ title: 'My Creative EPK', url: epkUrl }).catch(() => {});
-                          } else {
-                            navigator.clipboard.writeText(epkUrl);
-                            toast({ title: "EPK link copied!", description: "Share it anywhere" });
-                          }
-                        }}
-                      >
-                        <Share2 className="h-5 w-5" />
-                        <span className="flex-1 text-left">Share EPK Link</span>
-                      </Button>
 
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
                       <MenuButton icon={MapPin} label="Nearby" onClick={() => handleNavigation("/nearby")} />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/events")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */
@@ -254,6 +264,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
                       <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
+                      {isManagerMode && (
+                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
+                      )}
                     </>
                   )}
 
@@ -343,6 +356,25 @@ const Navbar = memo(({ user }: NavbarProps) => {
           ) : null}
         </div>
       </div>
+      
+      {/* Mobile search bar — slides open */}
+      {searchOpen && user && !isLandingPage && (
+        <div className="sm:hidden border-t border-border/50 px-3 py-2 bg-background">
+          <form onSubmit={(e) => { handleSearchSubmit(e); setSearchOpen(false); }}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search creators, credits, gigs..."
+                autoFocus
+                className="w-full h-10 rounded-xl border border-border bg-muted/40 pl-9 pr-3 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
+              />
+            </div>
+          </form>
+        </div>
+      )}
     </nav>
   );
 });

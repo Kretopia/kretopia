@@ -129,7 +129,7 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
       if (filtered.length > 0) {
         const userIds = filtered.map(p => p.user_id);
         const [portfolioResult, creditsResult, awardsResult] = await Promise.all([
-          supabase.from('portfolio_items').select('user_id').in('user_id', userIds),
+          supabase.from('credits').select('user_id').in('user_id', userIds),
           supabase.from('credits').select('user_id').in('user_id', userIds),
           supabase.from('awards').select('user_id').in('user_id', userIds)
         ]);

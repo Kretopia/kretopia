@@ -36,7 +36,7 @@ export const PortfolioAnalytics = ({ userId }: PortfolioAnalyticsProps) => {
     try {
       // Fetch portfolio items
       const { data: portfolioData, error: portfolioError } = await supabase
-        .from('portfolio_items')
+        .from('credits')
         .select('id, title, view_count, created_at, media_type')
         .eq('user_id', userId)
         .order('view_count', { ascending: false });

@@ -66,7 +66,7 @@ export default function Circle() {
           .eq('user_id', user.id)
           .single();
         const [portfolioResult, creditsResult] = await Promise.all([
-          supabase.from('portfolio_items').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
           supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         ]);
         const workCount = (portfolioResult.count || 0) + (creditsResult.count || 0);

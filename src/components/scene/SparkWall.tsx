@@ -62,7 +62,7 @@ export const SparkWall = () => {
     try {
       // Fetch both portfolio items AND user-created spark posts in parallel
       const [portfolioRes, sparkPostsRes] = await Promise.all([
-        supabase.from("portfolio_items").select("*").order("created_at", { ascending: false }).limit(30),
+        supabase.from("credits").select("*").order("created_at", { ascending: false }).limit(30),
         supabase.from("feed_posts").select("*").in("source_type", ["spark", "ai_spark"]).order("created_at", { ascending: false }).limit(20),
       ]);
 

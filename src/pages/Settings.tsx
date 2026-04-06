@@ -339,7 +339,7 @@ const Settings = () => {
         .single();
 
       const { data: portfolio } = await supabase
-        .from('portfolio_items')
+        .from('credits')
         .select('*')
         .eq('user_id', user.id);
 

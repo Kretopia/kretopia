@@ -39,7 +39,7 @@ export function GetStartedChecklist() {
       const [profileRes, creditsRes, portfolioRes, connectionRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("user_id", user.id).single(),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("portfolio_items").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("connections").select("id", { count: "exact", head: true })
           .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
           .eq("status", "accepted"),

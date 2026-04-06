@@ -20,7 +20,7 @@ export const PortfolioShowcase = () => {
     const fetchPortfolio = async () => {
       try {
         const { data, error } = await supabase
-          .from("portfolio_items")
+          .from("credits")
           .select("id, title, media_url, thumbnail_url, media_type")
           .not("media_url", "is", null)
           .not("thumbnail_url", "is", null)

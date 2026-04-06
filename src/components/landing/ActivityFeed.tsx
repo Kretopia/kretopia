@@ -42,7 +42,7 @@ export const ActivityFeed = () => {
             .order("created_at", { ascending: false })
             .limit(3),
           supabase
-            .from("portfolio_items")
+            .from("credits")
             .select("id, title, user_id, created_at, profiles(full_name, avatar_url)")
             .order("created_at", { ascending: false })
             .limit(3)

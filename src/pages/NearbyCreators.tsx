@@ -63,7 +63,7 @@ const NearbyCreators = () => {
       try {
         const [profileRes, portfolioRes, creditsRes] = await Promise.all([
           supabase.from('profiles').select('avatar_url, bio').eq('user_id', user.id).single(),
-          supabase.from('portfolio_items').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+          supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
           supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         ]);
         if (profileRes.data) {

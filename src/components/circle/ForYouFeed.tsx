@@ -340,7 +340,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         // Get accepted connections only
         supabase.from('connections').select('user_id, connected_user_id').eq('status', 'accepted'),
         // Get all portfolio items to find users with portfolios
-        supabase.from('portfolio_items').select('user_id'),
+        supabase.from('credits').select('user_id'),
         // Get all credits to find users with work credits
         supabase.from('credits').select('user_id'),
         // Get all profiles with onboarding completed

@@ -16,16 +16,25 @@ interface ProfileResult {
   professional_skills: any;
 }
 
-interface CreditResult {
+interface RoleEntry {
   id: string;
-  project_name: string;
   role: string;
+  user_id: string;
+  verification_status: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
+interface CreditResult {
+  project_name: string;
   year: number | null;
   verification_status: string | null;
   credit_category: string | null;
   thumbnail_url: string | null;
-  user_id: string;
-  collaborator_user_ids: string[] | null;
+  client_brand: string | null;
+  platform: string | null;
+  description: string | null;
+  roles: RoleEntry[];
 }
 
 interface OpportunityResult {

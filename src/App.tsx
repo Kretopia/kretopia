@@ -24,6 +24,7 @@ import { GuestBanner } from "./components/GuestBanner";
 
 // Lazy load active page components
 const Landing = lazy(() => import("./pages/Landing"));
+const PersonalizedHomePage = lazy(() => import("./components/home/PersonalizedHome").then(m => ({ default: m.PersonalizedHome })));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));

@@ -669,7 +669,7 @@ export const UnifiedHome = () => {
           </div>
           <div
             className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 p-5 cursor-pointer hover:border-primary/30 transition-all group"
-            onClick={() => window.open("https://www.youtube.com/playlist?list=PL3IHAVyb_6H2OpHnvwDa7EubXaanmXfOY", "_blank")}
+            onClick={() => navigate("/scene")}
           >
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">

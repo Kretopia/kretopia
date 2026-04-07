@@ -409,23 +409,18 @@ const OpportunityDetail = () => {
           {/* Apply Button */}
           {isActive ? (
             !user ? (
-              <div className="relative">
-                <Button size="lg" className="w-full blur-[2px] pointer-events-none" tabIndex={-1}>
-                  Apply Now
-                </Button>
-                <button
-                  onClick={() => {
-                    sessionStorage.setItem('pending_apply_opportunity', id!);
-                    navigate(`/auth?redirect=/opportunity/${id}`);
-                  }}
-                  className="absolute inset-0 flex items-center justify-center rounded-lg bg-primary/5 border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors"
-                >
-                  <span className="flex items-center gap-2 text-sm font-semibold text-primary">
-                    <UserPlus className="h-4 w-4" />
-                    Sign up to apply — free
-                  </span>
-                </button>
-              </div>
+              <Button
+                size="lg"
+                variant="gradient"
+                className="w-full"
+                onClick={() => {
+                  sessionStorage.setItem('pending_apply_opportunity', id!);
+                  navigate(`/auth?redirect=/opportunity/${id}`);
+                }}
+              >
+                <UserPlus className="h-4 w-4" />
+                Sign Up to Apply — Free
+              </Button>
             ) : (
               <Button size="lg" className="w-full" onClick={handleApply}>
                 Apply Now

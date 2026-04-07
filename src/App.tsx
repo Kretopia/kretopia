@@ -21,6 +21,7 @@ import { analytics } from "@/lib/analytics";
 import { NetworkStatus } from "./components/NetworkStatus";
 import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 import { GuestBanner } from "./components/GuestBanner";
+import { AuthGate } from "./components/AuthGate";
 
 // Lazy load active page components
 const UnifiedHome = lazy(() => import("./components/home/UnifiedHome"));

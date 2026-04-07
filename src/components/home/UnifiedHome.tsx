@@ -430,8 +430,11 @@ export const UnifiedHome = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                     </div>
                   ) : (
-                    <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                      <Play className="h-8 w-8 text-primary/30" />
+                    <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center animate-pulse">
+                      <div className="flex flex-col items-center gap-2">
+                        <Play className="h-8 w-8 text-primary/20" />
+                        <span className="text-[8px] text-muted-foreground/50 font-medium">Loading...</span>
+                      </div>
                     </div>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 p-3">

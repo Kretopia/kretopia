@@ -233,7 +233,7 @@ const AppContent = () => {
             {/* Public Browsable Routes */}
             <Route path="/nearby" element={<Navigate to="/search" replace />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/scene" element={<Navigate to="/" replace />} />
+            <Route path="/scene" element={<Scene />} />
             
             {/* Public Magazine Article - SEO accessible */}
             <Route path="/magazine/:slug" element={<Navigate to="/" replace />} />

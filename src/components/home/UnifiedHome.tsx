@@ -620,7 +620,7 @@ export const UnifiedHome = () => {
                 <BookOpen className="h-4 w-4 text-primary" />
                 Magazine
               </h2>
-              <Link to="/scene" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+              <Link to="/scene?tab=magazine" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                 Read all <ArrowRight className="h-3 w-3" />
               </Link>
             </div>

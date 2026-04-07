@@ -195,22 +195,22 @@ const Search = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[hsl(230,20%,7%)] text-white pb-20">
+    <div className="min-h-screen bg-background text-foreground pb-20">
       <SEO title={`Search${searchParams.get("q") ? ` "${searchParams.get("q")}"` : ""} — ThriveIN`} description="AI-powered search across the creative economy." />
 
       <div className="container mx-auto max-w-3xl px-4 sm:px-6 py-6">
         {/* Search bar */}
         <form onSubmit={handleSearch} className="mb-6">
           <div className="relative">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[hsl(220,10%,40%)]" />
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <input
               placeholder="Search people, productions, gigs, or anything creative..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full h-14 rounded-2xl border border-[hsl(230,15%,20%)] bg-[hsl(230,18%,11%)] pl-12 pr-14 text-sm text-white focus:outline-none focus:border-[hsl(235,65%,52%)] focus:shadow-[0_0_30px_hsl(235,65%,52%,0.15)] transition-all placeholder:text-[hsl(220,10%,38%)]"
+              className="w-full h-14 rounded-2xl border border-border bg-card pl-12 pr-14 text-sm text-foreground focus:outline-none focus:border-primary focus:shadow-[var(--shadow-glow)] transition-all placeholder:text-muted-foreground/50"
               autoFocus
             />
-            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-[hsl(235,65%,52%)] text-white flex items-center justify-center hover:bg-[hsl(235,65%,58%)] transition-colors">
+            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors">
               <SearchIcon className="h-4 w-4" />
             </button>
           </div>
@@ -219,8 +219,8 @@ const Search = () => {
         {/* Loading */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-[hsl(235,70%,65%)]" />
-            <p className="text-xs text-[hsl(220,10%,45%)] animate-pulse">Searching platform + AI knowledge base...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-xs text-muted-foreground animate-pulse">Searching platform + AI knowledge base...</p>
           </div>
         )}
 
@@ -231,41 +231,41 @@ const Search = () => {
               if (item.type === "knowledge") {
                 const kc = item.data as KnowledgeCard;
                 return (
-                  <div key="knowledge" className="rounded-2xl border border-[hsl(235,65%,52%,0.25)] bg-gradient-to-br from-[hsl(235,65%,52%,0.08)] to-[hsl(230,18%,9%)] p-5">
+                  <div key="knowledge" className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-card p-5">
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-xl bg-[hsl(235,65%,52%,0.2)] flex items-center justify-center shrink-0">
-                        <Globe className="h-5 w-5 text-[hsl(235,70%,65%)]" />
+                      <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                        <Globe className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <h3 className="font-bold text-base text-white">{kc.name}</h3>
-                          <Badge className="text-[8px] bg-[hsl(235,65%,52%,0.15)] border-[hsl(235,65%,52%,0.3)] text-[hsl(235,70%,75%)]">
+                          <h3 className="font-bold text-base text-foreground">{kc.name}</h3>
+                          <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
                             <Sparkles className="h-2 w-2 mr-0.5" /> AI Knowledge
                           </Badge>
                         </div>
-                        <p className="text-xs text-[hsl(220,10%,55%)]">{kc.industry}</p>
+                        <p className="text-xs text-muted-foreground">{kc.industry}</p>
                       </div>
                     </div>
-                    <p className="text-sm text-[hsl(220,10%,65%)] mb-3 leading-relaxed">{kc.description}</p>
+                    <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{kc.description}</p>
 
                     {kc.known_for && kc.known_for.length > 0 && (
                       <div className="mb-3">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[hsl(220,10%,42%)] mb-1.5">Known For</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1.5">Known For</p>
                         <div className="flex flex-wrap gap-1.5">
                           {kc.known_for.map((k) => (
-                            <Badge key={k} className="text-[10px] bg-[hsl(230,15%,15%)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,65%)]">{k}</Badge>
+                            <Badge key={k} className="text-[10px] bg-muted border-border text-muted-foreground">{k}</Badge>
                           ))}
                         </div>
                       </div>
                     )}
 
                     {kc.fun_fact && (
-                      <p className="text-[11px] text-[hsl(220,10%,48%)] italic mb-3">💡 {kc.fun_fact}</p>
+                      <p className="text-[11px] text-muted-foreground italic mb-3">💡 {kc.fun_fact}</p>
                     )}
 
-                    <div className="flex items-center justify-between pt-3 border-t border-[hsl(230,15%,18%)]">
-                      <p className="text-[10px] text-[hsl(235,70%,65%)]">{kc.claim_prompt}</p>
-                      <button onClick={() => navigate('/auth')} className="text-[10px] font-semibold text-[hsl(235,70%,65%)] hover:underline flex items-center gap-1">
+                    <div className="flex items-center justify-between pt-3 border-t border-border">
+                      <p className="text-[10px] text-primary">{kc.claim_prompt}</p>
+                      <button onClick={() => navigate('/auth')} className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1">
                         Claim Profile <ArrowRight className="h-3 w-3" />
                       </button>
                     </div>
@@ -277,33 +277,33 @@ const Search = () => {
                 const p = item.data as ProfileResult;
                 const skills = Array.isArray(p.professional_skills) ? p.professional_skills.slice(0, 3).map((s: any) => typeof s === "string" ? s : s?.skill || "").filter(Boolean) : [];
                 return (
-                  <button key={`p-${p.user_id}`} onClick={() => navigate(`/profile/${p.user_id}`)} className="w-full text-left rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] p-4 hover:border-[hsl(235,65%,52%,0.4)] transition-all group">
+                  <button key={`p-${p.user_id}`} onClick={() => navigate(`/profile/${p.user_id}`)} className="w-full text-left rounded-xl border border-border bg-card p-4 hover:border-primary/40 transition-all group">
                     <div className="flex items-start gap-3">
-                      <Avatar className="h-11 w-11 border-2 border-[hsl(230,15%,20%)]">
+                      <Avatar className="h-11 w-11 border-2 border-border">
                         <AvatarImage src={p.avatar_url || ""} />
-                        <AvatarFallback className="bg-[hsl(235,65%,52%,0.15)] text-[hsl(235,70%,75%)]">{(p.full_name || "?")[0]}</AvatarFallback>
+                        <AvatarFallback className="bg-primary/10 text-primary">{(p.full_name || "?")[0]}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <p className="font-semibold text-sm text-white truncate">{p.full_name}</p>
-                          <Badge className="text-[8px] bg-[hsl(235,65%,52%,0.15)] border-[hsl(235,65%,52%,0.25)] text-[hsl(235,70%,75%)]">
+                          <p className="font-semibold text-sm text-foreground truncate">{p.full_name}</p>
+                          <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
                             <Verified className="h-2 w-2 mr-0.5" /> On Platform
                           </Badge>
                         </div>
-                        <p className="text-xs text-[hsl(220,10%,50%)]">{p.role}</p>
+                        <p className="text-xs text-muted-foreground">{p.role}</p>
                         {skills.length > 0 && (
                           <div className="flex gap-1.5 mt-2 flex-wrap">
                             {skills.map((s: string) => (
-                              <Badge key={s} className="text-[9px] px-2 py-0.5 bg-[hsl(230,15%,15%)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,60%)]">{s}</Badge>
+                              <Badge key={s} className="text-[9px] px-2 py-0.5 bg-muted border-border text-muted-foreground">{s}</Badge>
                             ))}
                           </div>
                         )}
                       </div>
                     </div>
                     {p.location && (
-                      <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[hsl(230,15%,15%)]">
-                        <span className="text-[10px] text-[hsl(220,10%,40%)] flex items-center gap-1"><MapPin className="h-3 w-3" /> {p.location}</span>
-                        <span className="text-[10px] text-[hsl(235,70%,65%)] font-medium group-hover:underline flex items-center gap-1">View <ArrowRight className="h-3 w-3" /></span>
+                      <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-border">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> {p.location}</span>
+                        <span className="text-[10px] text-primary font-medium group-hover:underline flex items-center gap-1">View <ArrowRight className="h-3 w-3" /></span>
                       </div>
                     )}
                   </button>
@@ -323,18 +323,18 @@ const Search = () => {
                   });
                 };
                 return (
-                  <div key={`c-${c.project_name}-${idx}`} onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)} className="cursor-pointer rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all">
+                  <div key={`c-${c.project_name}-${idx}`} onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)} className="cursor-pointer rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all">
                     {c.thumbnail_url && (
                       <div className="aspect-[21/9] overflow-hidden relative">
-                        <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(230,20%,7%)] via-transparent to-transparent" />
+                        <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover" loading="lazy" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
                         <Badge className={`absolute top-2 left-2 text-[9px] border ${v.cls}`}><Verified className="h-2.5 w-2.5 mr-1" />{v.text}</Badge>
                       </div>
                     )}
                     <div className="p-3">
                       {!c.thumbnail_url && <Badge className={`text-[9px] border mb-2 ${v.cls}`}><Verified className="h-2.5 w-2.5 mr-1" />{v.text}</Badge>}
-                      <p className="font-semibold text-sm text-white leading-tight line-clamp-2">{c.project_name}</p>
-                      <p className="text-[11px] text-[hsl(220,10%,50%)] mt-1">
+                      <p className="font-semibold text-sm text-foreground leading-tight line-clamp-2">{c.project_name}</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">
                         {c.roles.length} credit{c.roles.length !== 1 ? "s" : ""}
                         {c.year ? ` · ${c.year}` : ""}
                         {c.credit_category ? ` · ${c.credit_category}` : ""}
@@ -342,7 +342,7 @@ const Search = () => {
                       </p>
 
                       {/* Roll Call toggle */}
-                      <button onClick={toggleExpand} className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-[hsl(235,70%,65%)] hover:text-[hsl(235,70%,75%)] transition-colors">
+                      <button onClick={toggleExpand} className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors">
                         <Database className="h-3 w-3" />
                         {isExpanded ? "Hide" : "Show"} Roll Call · {c.roles.length} role{c.roles.length !== 1 ? "s" : ""}
                         {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -350,28 +350,28 @@ const Search = () => {
 
                       {/* Expanded Roll Call */}
                       {isExpanded && (
-                        <div className="mt-3 pt-3 border-t border-[hsl(230,15%,16%)] space-y-1.5">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-[hsl(220,10%,38%)] mb-2">Production Credits</p>
+                        <div className="mt-3 pt-3 border-t border-border space-y-1.5">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">Production Credits</p>
                           {c.roles.map((r, ri) => {
                             const rv = verBadge(r.verification_status);
                             return (
-                              <div key={r.id || ri} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-[hsl(230,15%,13%)] transition-colors">
-                                <Avatar className="h-7 w-7 border border-[hsl(230,15%,20%)]">
+                              <div key={r.id || ri} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
+                                <Avatar className="h-7 w-7 border border-border">
                                   <AvatarImage src={r.avatar_url || ""} />
-                                  <AvatarFallback className="text-[10px] bg-[hsl(235,65%,52%,0.15)] text-[hsl(235,70%,75%)]">
+                                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
                                     {(r.full_name || "?")[0]}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium text-white truncate">{r.full_name || "Unclaimed"}</p>
-                                  <p className="text-[10px] text-[hsl(220,10%,50%)] truncate">{r.role}</p>
+                                  <p className="text-xs font-medium text-foreground truncate">{r.full_name || "Unclaimed"}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate">{r.role}</p>
                                 </div>
                                 {r.full_name ? (
                                   <div className="flex items-center gap-1.5 shrink-0">
-                                    <CheckCircle2 className={`h-3.5 w-3.5 ${rv.cls.includes("success") ? "text-success" : "text-[hsl(220,10%,35%)]"}`} />
+                                    <CheckCircle2 className={`h-3.5 w-3.5 ${rv.cls.includes("success") ? "text-success" : "text-muted-foreground/40"}`} />
                                     <button
                                       onClick={(e) => { e.stopPropagation(); navigate(`/profile/${r.user_id}`); }}
-                                      className="text-[10px] font-medium text-[hsl(235,70%,65%)] hover:underline"
+                                      className="text-[10px] font-medium text-primary hover:underline"
                                     >
                                       View
                                     </button>
@@ -379,7 +379,7 @@ const Search = () => {
                                 ) : (
                                   <button
                                     onClick={(e) => { e.stopPropagation(); navigate('/auth'); }}
-                                    className="flex items-center gap-1 text-[10px] font-semibold text-[hsl(235,70%,65%)] hover:text-[hsl(235,70%,75%)] shrink-0"
+                                    className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 shrink-0"
                                   >
                                     <UserPlus className="h-3 w-3" /> Claim
                                   </button>
@@ -390,7 +390,7 @@ const Search = () => {
                           {/* Generic claim CTA */}
                           <button
                             onClick={(e) => { e.stopPropagation(); navigate(user ? '/credits' : '/auth'); }}
-                            className="w-full mt-2 py-2 rounded-lg border border-dashed border-[hsl(235,65%,52%,0.3)] text-[10px] font-semibold text-[hsl(235,70%,65%)] hover:bg-[hsl(235,65%,52%,0.08)] transition-colors flex items-center justify-center gap-1.5"
+                            className="w-full mt-2 py-2 rounded-lg border border-dashed border-primary/25 text-[10px] font-semibold text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-1.5"
                           >
                             <UserPlus className="h-3 w-3" /> Worked on this? Claim your credit
                           </button>
@@ -404,15 +404,15 @@ const Search = () => {
               if (item.type === "external_credit") {
                 const ec = item.data as { project: string; role: string; year: number };
                 return (
-                  <button key={`ec-${ec.project}-${idx}`} onClick={() => navigate(`/production?name=${encodeURIComponent(ec.project)}`)} className="w-full text-left rounded-xl border border-dashed border-[hsl(230,15%,22%)] bg-[hsl(230,18%,9%)] p-3 hover:border-[hsl(235,65%,52%,0.3)] transition-all">
+                  <button key={`ec-${ec.project}-${idx}`} onClick={() => navigate(`/production?name=${encodeURIComponent(ec.project)}`)} className="w-full text-left rounded-xl border border-dashed border-border bg-card p-3 hover:border-primary/30 transition-all">
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge className="text-[8px] bg-[hsl(235,65%,52%,0.1)] border-[hsl(235,65%,52%,0.2)] text-[hsl(235,70%,70%)]">
+                      <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
                         <ExternalLink className="h-2 w-2 mr-0.5" /> Web Source
                       </Badge>
                     </div>
-                    <p className="text-xs font-semibold text-white">{ec.project}</p>
-                    <p className="text-[10px] text-[hsl(220,10%,48%)] mt-0.5">{ec.role}{ec.year ? ` · ${ec.year}` : ""}</p>
-                    <p className="text-[9px] text-[hsl(235,70%,60%)] mt-1.5">Not yet on ThriveIN — Claim this credit →</p>
+                    <p className="text-xs font-semibold text-foreground">{ec.project}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{ec.role}{ec.year ? ` · ${ec.year}` : ""}</p>
+                    <p className="text-[9px] text-primary mt-1.5">Not yet on ThriveIN — Claim this credit →</p>
                   </button>
                 );
               }
@@ -425,7 +425,7 @@ const Search = () => {
                 };
                 return (
                   <div key="visual-grid" className="space-y-3">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[hsl(220,10%,42%)]">Discovered Works</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Discovered Works</p>
                     <div className="grid grid-cols-2 gap-2.5">
                       {results.map((vr, vi) => {
                         const VrIcon = typeIcons[vr.type] || Globe;
@@ -433,24 +433,24 @@ const Search = () => {
                           <button
                             key={`vr-${vi}`}
                             onClick={() => navigate(`/production?name=${encodeURIComponent(vr.title)}`)}
-                            className="text-left rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all group"
+                            className="text-left rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all group"
                           >
-                            <div className="aspect-[4/3] bg-gradient-to-br from-[hsl(235,65%,52%,0.15)] to-[hsl(230,18%,8%)] flex items-center justify-center relative">
-                              <VrIcon className="h-8 w-8 text-[hsl(235,65%,52%,0.3)]" />
+                            <div className="aspect-[4/3] bg-gradient-to-br from-primary/10 to-muted flex items-center justify-center relative">
+                              <VrIcon className="h-8 w-8 text-primary/20" />
                               {vr.platform && (
-                                <Badge className="absolute top-1.5 right-1.5 text-[7px] bg-[hsl(230,18%,12%,0.9)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,55%)]">
+                                <Badge className="absolute top-1.5 right-1.5 text-[7px] bg-card/90 border-border text-muted-foreground">
                                   {vr.platform}
                                 </Badge>
                               )}
                             </div>
                             <div className="p-2.5">
-                              <p className="text-[11px] font-semibold text-white line-clamp-2 leading-tight">{vr.title}</p>
-                              {vr.subtitle && <p className="text-[9px] text-[hsl(220,10%,50%)] mt-0.5">{vr.subtitle}</p>}
+                              <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-tight">{vr.title}</p>
+                              {vr.subtitle && <p className="text-[9px] text-muted-foreground mt-0.5">{vr.subtitle}</p>}
                               <div className="flex items-center gap-1.5 mt-1.5">
-                                <Badge className="text-[7px] bg-[hsl(230,15%,15%)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,55%)]">{vr.type}</Badge>
-                                {vr.year && <span className="text-[8px] text-[hsl(220,10%,40%)]">{vr.year}</span>}
+                                <Badge className="text-[7px] bg-muted border-border text-muted-foreground">{vr.type}</Badge>
+                                {vr.year && <span className="text-[8px] text-muted-foreground">{vr.year}</span>}
                               </div>
-                              {vr.description && <p className="text-[9px] text-[hsl(220,10%,45%)] mt-1.5 line-clamp-2">{vr.description}</p>}
+                              {vr.description && <p className="text-[9px] text-muted-foreground mt-1.5 line-clamp-2">{vr.description}</p>}
                             </div>
                           </button>
                         );
@@ -463,15 +463,15 @@ const Search = () => {
               if (item.type === "opportunity") {
                 const o = item.data as OpportunityResult;
                 return (
-                  <button key={`o-${o.id}`} onClick={() => navigate(`/opportunity/${o.id}`)} className="w-full text-left rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] p-3 hover:border-[hsl(235,65%,52%,0.4)] transition-all">
+                  <button key={`o-${o.id}`} onClick={() => navigate(`/opportunity/${o.id}`)} className="w-full text-left rounded-xl border border-border bg-card p-3 hover:border-primary/40 transition-all">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge className="text-[9px] bg-success/20 text-success border-success/30"><Briefcase className="h-2.5 w-2.5 mr-1" />{o.type}</Badge>
                       {o.compensation && !user && (
-                        <Badge className="text-[9px] bg-[hsl(230,15%,15%)] text-[hsl(220,10%,40%)] border-[hsl(230,15%,22%)]"><Lock className="h-2.5 w-2.5 mr-1" />Sign in to see</Badge>
+                        <Badge className="text-[9px] bg-muted text-muted-foreground border-border"><Lock className="h-2.5 w-2.5 mr-1" />Sign in to see</Badge>
                       )}
                     </div>
-                    <p className="font-semibold text-sm text-white truncate">{o.title}</p>
-                    <p className="text-[11px] text-[hsl(220,10%,50%)] line-clamp-1 mt-0.5">{o.description}</p>
+                    <p className="font-semibold text-sm text-foreground truncate">{o.title}</p>
+                    <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">{o.description}</p>
                   </button>
                 );
               }
@@ -479,11 +479,11 @@ const Search = () => {
               if (item.type === "related") {
                 const searches = item.data as string[];
                 return (
-                  <div key="related" className="rounded-xl border border-[hsl(230,15%,16%)] bg-[hsl(230,18%,9%)] p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[hsl(220,10%,42%)] mb-2">Related Searches</p>
+                  <div key="related" className="rounded-xl border border-border bg-card p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-2">Related Searches</p>
                     <div className="flex flex-wrap gap-2">
                       {searches.map((s) => (
-                        <button key={s} onClick={() => setSearchParams({ q: s })} className="text-xs px-3 py-1.5 rounded-lg border border-[hsl(230,15%,20%)] bg-[hsl(230,18%,11%)] text-[hsl(220,10%,60%)] hover:border-[hsl(235,65%,52%,0.4)] hover:text-white transition-all">
+                        <button key={s} onClick={() => setSearchParams({ q: s })} className="text-xs px-3 py-1.5 rounded-lg border border-border bg-muted text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all">
                           {s}
                         </button>
                       ))}
@@ -532,9 +532,9 @@ const Search = () => {
         {/* Empty state */}
         {!loading && !hasQuery && (
           <div className="text-center py-16">
-            <Sparkles className="h-12 w-12 mx-auto mb-4 text-[hsl(235,65%,52%,0.3)]" />
-            <p className="text-[hsl(220,10%,45%)] text-sm">AI-powered search across the creative economy</p>
-            <p className="text-[hsl(220,10%,35%)] text-xs mt-1">Try searching for any creator, production, or brand</p>
+            <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary/20" />
+            <p className="text-muted-foreground text-sm">AI-powered search across the creative economy</p>
+            <p className="text-muted-foreground/60 text-xs mt-1">Try searching for any creator, production, or brand</p>
           </div>
         )}
       </div>

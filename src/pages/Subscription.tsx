@@ -287,19 +287,19 @@ export default function Subscription() {
               : 'border-amber-500/50 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5'
           }`}>
             {isFounder && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
                 ⭕ Your Plan — Lifetime Member
               </Badge>
             )}
             {!isFounder && founderSpotsRemaining > 0 && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-accent to-accent/80 text-accent-foreground">
                 ⭕ Limited Edition — {founderSpotsRemaining} spots left
               </Badge>
             )}
 
             <CardHeader className="text-center">
-              <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-                <Crown className="h-7 w-7 text-white" />
+              <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg">
+                <Crown className="h-7 w-7 text-accent-foreground" />
               </div>
               <CardTitle className="text-2xl">Founder Circle <span className="text-amber-500">⭕</span></CardTitle>
               <CardDescription>
@@ -344,7 +344,7 @@ export default function Subscription() {
                 <Button className="w-full" variant="outline" disabled>Sold Out</Button>
               ) : (
                 <Button
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                  className="w-full gradient-primary text-primary-foreground hover:opacity-90"
                   onClick={handleFounderCheckout}
                   disabled={loading === "founder"}
                 >
@@ -392,7 +392,7 @@ export default function Subscription() {
                 </Badge>
               )}
               {(tier.tier === "enterprise" || tier.tier === "brand_enterprise") && !isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-700 text-white">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                   {isBrand ? "Full Suite" : "Power User"}
                 </Badge>
               )}
@@ -444,9 +444,9 @@ export default function Subscription() {
                   <Button
                     className={`w-full ${
                       tier.tier === 'enterprise' || tier.tier === 'brand_enterprise'
-                        ? 'bg-indigo-700 hover:bg-indigo-800 text-white' 
+                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
                         : isBrand && tier.popular
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        ? 'bg-success hover:bg-success/90 text-success-foreground'
                         : ''
                     }`}
                     onClick={() => handleSubscribe(tier.priceId, tier.tier)}

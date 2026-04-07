@@ -275,7 +275,7 @@ const ViewProfile = () => {
     if (!profile?.verification_status || profile.verification_status !== 'verified') return null;
     
     return (
-      <Badge className="gap-1.5 bg-gradient-to-r from-primary via-indigo-700 to-primary bg-[length:200%_100%] animate-gradient text-white border-0 shadow-lg shadow-primary/25">
+      <Badge className="gap-1.5 gradient-primary text-primary-foreground border-0 shadow-lg shadow-primary/25">
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -391,7 +391,7 @@ const ViewProfile = () => {
                       <Button 
                         size="sm" 
                         onClick={() => setShowClaimDialog(true)}
-                        className="gap-1.5 h-8 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+                        className="gap-1.5 h-8 gradient-primary text-primary-foreground border-0"
                       >
                         <UserCheck className="h-3.5 w-3.5" />
                         Claim
@@ -421,7 +421,7 @@ const ViewProfile = () => {
                     
                     {/* Industry Verified Badge */}
                     {isIndustryVerified && (
-                      <Badge className="gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+                      <Badge className="gap-1.5 bg-accent text-accent-foreground border-0">
                         <Sparkles className="h-3 w-3" />
                         <span className="text-xs font-semibold">Industry Verified</span>
                       </Badge>
@@ -501,7 +501,7 @@ const ViewProfile = () => {
                   {profile.achievement_badges && profile.achievement_badges.length > 0 && (
                     <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
                       {profile.achievement_badges.slice(0, 3).map((badge, i) => (
-                        <Badge key={i} className="bg-gradient-to-r from-amber-500 to-orange-500 text-white gap-1">
+                        <Badge key={i} className="bg-accent text-accent-foreground gap-1">
                           <Award className="h-3 w-3" />
                           {badge}
                         </Badge>

@@ -283,25 +283,25 @@ export default function Subscription() {
         <div className="max-w-2xl mx-auto mb-12">
           <Card className={`relative border-2 overflow-visible ${
             isFounder 
-              ? 'border-amber-500 bg-gradient-to-br from-amber-500/10 via-background to-orange-500/10' 
-              : 'border-amber-500/50 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5'
+              ? 'border-accent bg-gradient-to-br from-accent/10 via-background to-accent/5' 
+              : 'border-accent/50 bg-gradient-to-br from-accent/5 via-background to-accent/3'
           }`}>
             {isFounder && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
                 ⭕ Your Plan — Lifetime Member
               </Badge>
             )}
             {!isFounder && founderSpotsRemaining > 0 && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-accent to-accent/80 text-accent-foreground">
                 ⭕ Limited Edition — {founderSpotsRemaining} spots left
               </Badge>
             )}
 
             <CardHeader className="text-center">
-              <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-                <Crown className="h-7 w-7 text-white" />
+              <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg">
+                <Crown className="h-7 w-7 text-accent-foreground" />
               </div>
-              <CardTitle className="text-2xl">Founder Circle <span className="text-amber-500">⭕</span></CardTitle>
+              <CardTitle className="text-2xl">Founder Circle <span className="text-accent">⭕</span></CardTitle>
               <CardDescription>
                 Join the founding members. Lifetime Enterprise access with exclusive perks.
               </CardDescription>
@@ -315,7 +315,7 @@ export default function Subscription() {
               <div className="grid sm:grid-cols-2 gap-2">
                 {FOUNDER_FEATURES.map((feature, index) => (
                   <div key={index} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <Check className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
@@ -329,7 +329,7 @@ export default function Subscription() {
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div 
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all"
+                      className="h-full rounded-full gradient-primary transition-all"
                       style={{ width: `${(founderSpotsTaken / SUBSCRIPTION_PRODUCTS.founder.maxSpots) * 100}%` }}
                     />
                   </div>
@@ -344,7 +344,7 @@ export default function Subscription() {
                 <Button className="w-full" variant="outline" disabled>Sold Out</Button>
               ) : (
                 <Button
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                  className="w-full gradient-primary text-primary-foreground hover:opacity-90"
                   onClick={handleFounderCheckout}
                   disabled={loading === "founder"}
                 >
@@ -378,26 +378,26 @@ export default function Subscription() {
               key={tier.tier}
               className={`relative ${
                 tier.popular
-                  ? isBrand ? "border-emerald-500 shadow-lg scale-105" : "border-primary shadow-lg scale-105"
+                  ? "border-primary shadow-lg scale-105"
                   : tier.tier === "enterprise" || tier.tier === "brand_enterprise"
-                  ? "border-indigo-600/50 shadow-md"
+                  ? "border-primary/50 shadow-md"
                   : isCurrentTier
-                  ? "border-green-500"
+                  ? "border-success"
                   : ""
               }`}
             >
               {tier.popular && !isCurrentTier && (
-                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 ${isBrand ? 'bg-emerald-600' : ''}`}>
+                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2`}>
                   {isBrand ? "Best for Hiring" : "Most Popular"}
                 </Badge>
               )}
               {(tier.tier === "enterprise" || tier.tier === "brand_enterprise") && !isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-700 text-white">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                   {isBrand ? "Full Suite" : "Power User"}
                 </Badge>
               )}
               {isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-success text-success-foreground">
                   Your Plan
                 </Badge>
               )}
@@ -405,8 +405,8 @@ export default function Subscription() {
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
                   <Icon className={`h-8 w-8 ${
-                    tier.tier === 'pro' || tier.tier === 'brand_pro' ? isBrand ? 'text-emerald-600' : 'text-blue-600' : 
-                    tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-indigo-700' : 
+                    tier.tier === 'pro' || tier.tier === 'brand_pro' ? 'text-primary' : 
+                    tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
                     'text-muted-foreground'
                   }`} />
                   <div className="text-right">
@@ -427,10 +427,7 @@ export default function Subscription() {
                 <ul className="space-y-3">
                   {tier.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                        tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-indigo-600' : 
-                        isBrand ? 'text-emerald-500' : 'text-primary'
-                      }`} />
+                      <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 text-primary`} />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
@@ -444,9 +441,9 @@ export default function Subscription() {
                   <Button
                     className={`w-full ${
                       tier.tier === 'enterprise' || tier.tier === 'brand_enterprise'
-                        ? 'bg-indigo-700 hover:bg-indigo-800 text-white' 
+                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
                         : isBrand && tier.popular
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        ? 'bg-success hover:bg-success/90 text-success-foreground'
                         : ''
                     }`}
                     onClick={() => handleSubscribe(tier.priceId, tier.tier)}

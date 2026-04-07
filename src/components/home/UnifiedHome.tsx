@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";
@@ -17,8 +17,15 @@ interface Suggestion {
   avatar?: string | null;
 }
 
-// Rotating headline words for guest hero
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director"];
+
+// Simulated live activity for social proof
+const ACTIVITY_TEMPLATES = [
+  (n: string) => `${n} just claimed a credit on a new production`,
+  (n: string) => `${n} got verified as a professional creator`,
+  (n: string) => `${n} landed a gig through ThriveIN`,
+  (n: string) => `${n} joined the creative community`,
+];
 
 export const UnifiedHome = () => {
   const { user } = useAuth();
@@ -43,6 +50,10 @@ export const UnifiedHome = () => {
   const [myCredits, setMyCredits] = useState(0);
   const [myConnections, setMyConnections] = useState(0);
   const [greeting, setGreeting] = useState("");
+
+  // Live activity pulse
+  const [activityMsg, setActivityMsg] = useState("");
+  const [activityNames, setActivityNames] = useState<string[]>([]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -71,9 +82,13 @@ export const UnifiedHome = () => {
       ]);
       const credits = creditsRes.data || [];
       setTrendingCredits(credits);
-      setFeaturedCreators(creatorsRes.data || []);
+      const creators = creatorsRes.data || [];
+      setFeaturedCreators(creators);
       setActiveGigs(gigsRes.data || []);
       setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0 });
+
+      // Set activity names from real creators
+      setActivityNames(creators.filter((c: any) => c.full_name).map((c: any) => c.full_name.split(" ")[0]));
 
       // Lazy-fetch thumbnails for credits that don't have one
       const missing = credits.filter((c: any) => !c.thumbnail_url);
@@ -91,6 +106,19 @@ export const UnifiedHome = () => {
     };
     fetchPublic();
   }, []);
+
+  // Live activity ticker
+  useEffect(() => {
+    if (activityNames.length === 0) return;
+    const tick = () => {
+      const name = activityNames[Math.floor(Math.random() * activityNames.length)];
+      const template = ACTIVITY_TEMPLATES[Math.floor(Math.random() * ACTIVITY_TEMPLATES.length)];
+      setActivityMsg(template(name));
+    };
+    tick();
+    const interval = setInterval(tick, 5000);
+    return () => clearInterval(interval);
+  }, [activityNames]);
 
   // Fetch auth-specific data
   useEffect(() => {
@@ -193,32 +221,34 @@ export const UnifiedHome = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/3 blur-3xl" />
           </div>
 
-          <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-10 sm:pt-16 pb-8">
+          <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-8 sm:pt-14 pb-6">
             {/* Rotating headline */}
-            <div className="text-center mb-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3">The Creative OS</p>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-2">
+            <div className="text-center mb-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary/80 mb-3">The Creative OS</p>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-3">
                 You're a{" "}
-                <span className="relative inline-block">
-                  <motion.span
-                    key={heroRoleIdx}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
-                  >
-                    {HERO_ROLES[heroRoleIdx]}
-                  </motion.span>
+                <span className="relative inline-block min-w-[120px]">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={heroRoleIdx}
+                      initial={{ y: 20, opacity: 0, filter: "blur(4px)" }}
+                      animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                      exit={{ y: -20, opacity: 0, filter: "blur(4px)" }}
+                      transition={{ duration: 0.35 }}
+                      className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                    >
+                      {HERO_ROLES[heroRoleIdx]}
+                    </motion.span>
+                  </AnimatePresence>
                 </span>
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                Claim your credits. Get verified. Get discovered by the industry.
+              <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
+                Claim your credits. Get verified. Get discovered.
               </p>
             </div>
 
             {/* Search bar */}
-            <div ref={wrapperRef} className="relative max-w-xl mx-auto mb-6">
+            <div ref={wrapperRef} className="relative max-w-xl mx-auto mb-5">
               <form onSubmit={handleSubmit}>
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -229,7 +259,7 @@ export const UnifiedHome = () => {
                     onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
                     onFocus={() => setShowSuggestions(true)}
                     placeholder="Search creators, productions, gigs..."
-                    className="w-full h-13 sm:h-14 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm pl-12 pr-14 text-sm text-foreground shadow-lg focus:outline-none focus:border-primary focus:shadow-glow transition-all placeholder:text-muted-foreground/50"
+                    className="w-full h-12 sm:h-14 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm pl-12 pr-14 text-sm text-foreground shadow-lg focus:outline-none focus:border-primary focus:shadow-[var(--shadow-glow)] transition-all placeholder:text-muted-foreground/50"
                   />
                   <button type="submit" className="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-md">
                     <ArrowRight className="h-4 w-4" />
@@ -271,16 +301,16 @@ export const UnifiedHome = () => {
             </div>
 
             {/* Quick chips */}
-            <div className="flex items-center justify-center gap-2 flex-wrap mb-8">
-              {["🎬 Film", "🎵 Music", "📸 Photography", "🎨 Design", "🎭 Theater", "💃 Dance"].map(tag => (
-                <button key={tag} onClick={() => navigate(`/search?q=${tag.split(" ")[1]}`)} className="text-xs px-3.5 py-2 rounded-full bg-card/60 backdrop-blur-sm border border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-card transition-all">
+            <div className="flex items-center justify-center gap-2 flex-wrap mb-6">
+              {["Film", "Music", "Photography", "Design", "Theater", "Dance"].map(tag => (
+                <button key={tag} onClick={() => navigate(`/search?q=${tag}`)} className="text-[11px] px-3.5 py-1.5 rounded-full bg-card/60 backdrop-blur-sm border border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-card transition-all font-medium">
                   {tag}
                 </button>
               ))}
             </div>
 
             {/* Social proof stats */}
-            <div className="flex items-center justify-center gap-8 text-sm">
+            <div className="flex items-center justify-center gap-6 sm:gap-8 mb-4">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Creators</p>
@@ -296,6 +326,40 @@ export const UnifiedHome = () => {
                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Live Gigs</p>
               </div>
             </div>
+
+            {/* Primary CTA */}
+            <div className="flex justify-center mb-2">
+              <Link
+                to="/auth"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-7 py-3 text-sm font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:shadow-primary/20 active:scale-[0.98]"
+              >
+                Join Free — Build Your Profile <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════ LIVE ACTIVITY TICKER ═══════════ */}
+      {activityMsg && !user && (
+        <div className="border-y border-border/50 bg-muted/30">
+          <div className="container mx-auto max-w-5xl px-4">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activityMsg}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center justify-center gap-2 py-2"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                </span>
+                <p className="text-[11px] text-muted-foreground">{activityMsg}</p>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       )}
@@ -323,7 +387,7 @@ export const UnifiedHome = () => {
           <div ref={!user ? undefined : wrapperRef} className="relative mb-4">
             <form onSubmit={handleSubmit}>
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   ref={user ? inputRef : undefined}
                   type="text"
@@ -361,7 +425,7 @@ export const UnifiedHome = () => {
             )}
           </div>
 
-          {/* Quick stats — glass style */}
+          {/* Quick stats */}
           <div className="grid grid-cols-3 gap-2.5 mb-4">
             {[
               { label: "Credits", value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
@@ -390,7 +454,7 @@ export const UnifiedHome = () => {
                 className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-muted/50 transition-colors"
               >
                 <div className="h-10 w-10 rounded-xl bg-muted/60 flex items-center justify-center">
-                  <a.icon className={`h-4.5 w-4.5 ${a.color}`} />
+                  <a.icon className={`h-5 w-5 ${a.color}`} />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground">{a.label}</span>
               </button>
@@ -402,10 +466,10 @@ export const UnifiedHome = () => {
       {/* ═══════════ CONTENT SECTIONS ═══════════ */}
       <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
 
-        {/* ── TRENDING PRODUCTIONS — Visual carousel ── */}
+        {/* ── TRENDING PRODUCTIONS ── */}
         <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               Trending Productions
             </h2>
@@ -421,20 +485,17 @@ export const UnifiedHome = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)}
-                className="shrink-0 w-[160px] sm:w-[200px] group text-left snap-start"
+                className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
               >
                 <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
                   {c.thumbnail_url ? (
                     <div className="aspect-[3/4] overflow-hidden">
-                      <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                     </div>
                   ) : (
-                    <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center animate-pulse">
-                      <div className="flex flex-col items-center gap-2">
-                        <Play className="h-8 w-8 text-primary/20" />
-                        <span className="text-[8px] text-muted-foreground/50 font-medium">Loading...</span>
-                      </div>
+                    <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center">
+                      <Play className="h-8 w-8 text-primary/20" />
                     </div>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -449,15 +510,15 @@ export const UnifiedHome = () => {
               </motion.button>
             ))}
             {trendingCredits.length === 0 && Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="shrink-0 w-[160px] sm:w-[200px] rounded-2xl border border-border bg-card aspect-[3/4] animate-pulse" />
+              <div key={i} className="shrink-0 w-[140px] sm:w-[180px] rounded-2xl border border-border bg-card aspect-[3/4] animate-pulse" />
             ))}
           </div>
         </section>
 
-        {/* ── DISCOVER CREATORS — Large avatar row ── */}
+        {/* ── DISCOVER CREATORS ── */}
         <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-accent" />
               Discover Creators
             </h2>
@@ -475,7 +536,7 @@ export const UnifiedHome = () => {
                 onClick={() => navigate(`/profile/${c.user_id}`)}
                 className="shrink-0 group snap-start"
               >
-                <div className="flex flex-col items-center gap-2 w-[80px]">
+                <div className="flex flex-col items-center gap-2 w-[72px]">
                   <div className="relative">
                     <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
                     <Avatar className="relative h-14 w-14 border-2 border-border group-hover:border-primary/50 transition-colors shadow-sm">
@@ -496,7 +557,7 @@ export const UnifiedHome = () => {
               </motion.button>
             ))}
             {featuredCreators.length === 0 && Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="shrink-0 flex flex-col items-center gap-2 w-[80px]">
+              <div key={i} className="shrink-0 flex flex-col items-center gap-2 w-[72px]">
                 <div className="h-14 w-14 rounded-full bg-muted animate-pulse" />
                 <div className="h-2 w-12 rounded bg-muted animate-pulse" />
               </div>
@@ -504,11 +565,11 @@ export const UnifiedHome = () => {
           </div>
         </section>
 
-        {/* ── OPEN GIGS — Card list ── */}
+        {/* ── OPEN GIGS ── */}
         {activeGigs.length > 0 && (
           <section className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <Zap className="h-4 w-4 text-warning" />
                 {user ? "Gigs For You" : "Open Gigs"}
               </h2>
@@ -546,26 +607,44 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── HOW IT WORKS (guest) ── */}
+        {/* ── TRUST SIGNALS (guest) ── */}
         {!user && (
           <section className="mb-8">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 mb-6">
+              {/* How it works */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { icon: Database, title: "Claim Credits", desc: "Build your verified work history", step: "1" },
+                  { icon: Globe, title: "Get Discovered", desc: "Show up in industry searches", step: "2" },
+                  { icon: Briefcase, title: "Get Hired", desc: "Land gigs from top productions", step: "3" },
+                ].map((s, i) => (
+                  <motion.div
+                    key={s.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className="rounded-2xl bg-card border border-border/60 p-3 text-center relative overflow-hidden"
+                  >
+                    <span className="absolute top-2 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
+                    <s.icon className="h-5 w-5 text-primary mx-auto mb-2" />
+                    <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
+                    <p className="text-[9px] text-muted-foreground leading-relaxed">{s.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Trust badges */}
+            <div className="flex items-center justify-center gap-4 flex-wrap mb-6">
               {[
-                { icon: Database, title: "Claim Credits", desc: "Build your verified work history", color: "from-primary/15 to-primary/5" },
-                { icon: Globe, title: "Get Discovered", desc: "Show up in industry searches", color: "from-accent/15 to-accent/5" },
-                { icon: Briefcase, title: "Get Hired", desc: "Land gigs from top productions", color: "from-success/15 to-success/5" },
-              ].map((step, i) => (
-                <motion.div
-                  key={step.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
-                  className={`rounded-2xl bg-gradient-to-b ${step.color} border border-border/50 p-4 text-center`}
-                >
-                  <step.icon className="h-5 w-5 text-foreground mx-auto mb-2" />
-                  <p className="text-xs font-bold text-foreground mb-1">{step.title}</p>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">{step.desc}</p>
-                </motion.div>
+                { icon: Shield, label: "Verified Identity" },
+                { icon: CheckCircle, label: "Escrow Protected" },
+                { icon: Star, label: "Peer Endorsed" },
+              ].map(b => (
+                <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                  <b.icon className="h-3.5 w-3.5 text-primary/60" />
+                  <span className="font-medium">{b.label}</span>
+                </div>
               ))}
             </div>
           </section>
@@ -595,7 +674,7 @@ export const UnifiedHome = () => {
                 </p>
                 <Link
                   to={user ? "/subscription" : "/auth"}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur-sm border border-white/20 px-5 py-2.5 text-xs font-bold text-white hover:bg-white/30 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-5 py-2.5 text-xs font-bold hover:bg-white/90 transition-colors shadow-md"
                 >
                   {user ? "View Plans" : "Get Started — Free"} <ArrowRight className="h-3.5 w-3.5" />
                 </Link>

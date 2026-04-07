@@ -52,27 +52,21 @@ const Search = lazy(() => import("./pages/Search"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
-const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
-const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
-const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 
-const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const Scene = lazy(() => import("./pages/Scene"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
-const ICDBDiscovery = lazy(() => import("./pages/ICDBDiscovery"));
-const ICDBHub = lazy(() => import("./pages/ICDBHub"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({
@@ -161,7 +155,7 @@ const AppContent = () => {
   const isLandingPage = location.pathname === '/';
   
   // Public browsable routes where guests see nav — expanded to show platform value
-  const publicBrowseRoutes = ['/scene', '/opportunities', '/credits', '/nearby', '/circle', '/search', '/event', '/magazine', '/profile'];
+  const publicBrowseRoutes = ['/scene', '/opportunities', '/credits', '/circle', '/search', '/event', '/profile'];
   const isPublicBrowse = publicBrowseRoutes.some(r => location.pathname.startsWith(r));
   
   // Show bottom nav for authenticated users OR guests on public browse routes (+ landing)
@@ -235,7 +229,7 @@ const AppContent = () => {
             <Route path="/checkin" element={<Navigate to="/scene" replace />} />
             
             {/* Public Browsable Routes */}
-            <Route path="/nearby" element={<NearbyCreators />} />
+            <Route path="/nearby" element={<Navigate to="/search" replace />} />
             <Route path="/events" element={<Scene />} />
             <Route path="/scene" element={<Scene />} />
             
@@ -260,7 +254,7 @@ const AppContent = () => {
             <Route path="/feedback-admin" element={<Navigate to="/admin" replace />} />
 
             {/* Pitch Deck */}
-            <Route path="/deck" element={<PitchDeck />} />
+            <Route path="/deck" element={<Navigate to="/" replace />} />
 
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />
@@ -274,17 +268,17 @@ const AppContent = () => {
             
             {/* Opportunity Management */}
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
-            <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
-            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+            <Route path="/opportunity-dashboard" element={<Navigate to="/desk" replace />} />
+            <Route path="/manage-opportunities" element={<Navigate to="/desk" replace />} />
             
             {/* Rewards - hidden for now */}
             <Route path="/rewards" element={<Navigate to="/scene" replace />} />
             
             {/* Credit Database & Discover - Public browsable */}
             <Route path="/credits" element={<CreditDatabase />} />
-            <Route path="/credits/hub" element={<ICDBHub />} />
+            <Route path="/credits/hub" element={<Navigate to="/credits" replace />} />
             <Route path="/credits/project/:projectId" element={<ICDBProjectPage />} />
-            <Route path="/credits/discover" element={<ICDBDiscovery />} />
+            <Route path="/credits/discover" element={<Navigate to="/credits" replace />} />
             <Route path="/verify-credit" element={<BrandVerify />} />
             <Route path="/directory" element={<Navigate to="/search" replace />} />
             <Route path="/discover" element={<Navigate to="/search" replace />} />

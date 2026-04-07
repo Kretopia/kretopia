@@ -3,7 +3,7 @@ import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 
 const Opportunities = () => {
   return (
-    <div className="min-h-screen bg-[hsl(230,20%,7%)] pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <SEO
         title="Productions — Find Creative Work | ThriveIN"
         description="Browse and apply for creative productions, paid gigs, collaborations, and barter opportunities on ThriveIN"

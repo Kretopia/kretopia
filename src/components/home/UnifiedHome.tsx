@@ -271,7 +271,7 @@ export const UnifiedHome = () => {
 
               {/* Suggestions dropdown */}
               {showSuggestions && (query.trim().length >= 2 || suggestions.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-border bg-popover shadow-xl z-50 overflow-hidden backdrop-blur-lg">
+                <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-border bg-popover shadow-xl z-[100] overflow-y-auto max-h-[60vh] backdrop-blur-lg">
                   {loading && <div className="px-4 py-3 text-sm text-muted-foreground animate-pulse">Searching...</div>}
                   {!loading && suggestions.length === 0 && query.trim().length >= 2 && (
                     <div className="px-4 py-3 text-sm text-muted-foreground">

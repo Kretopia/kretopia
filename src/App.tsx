@@ -35,6 +35,7 @@ const ViewProfile = lazy(() => import("./pages/ViewProfile"));
 
 const Circle = lazy(() => import("./pages/Circle"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
+const Circles = lazy(() => import("./pages/Circles"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ProjectsList = lazy(() => import("./pages/ProjectsList"));
@@ -188,7 +189,7 @@ const AppContent = () => {
             {/* Core Feature Pages - Public browsable, actions gated */}
             <Route path="/circle" element={<Circle />} />
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
-            <Route path="/circles" element={<Navigate to="/circle" replace />} />
+            <Route path="/circles" element={<Circles />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}

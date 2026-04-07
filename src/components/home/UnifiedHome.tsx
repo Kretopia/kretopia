@@ -194,6 +194,8 @@ export const UnifiedHome = () => {
 
   const handleSuggestionClick = (s: Suggestion) => {
     setShowSuggestions(false);
+    setQuery("");
+    setSuggestions([]);
     if (s.type === "creator") navigate(`/profile/${s.id}`);
     else if (s.type === "gig") navigate(`/opportunity/${s.id}`);
     else navigate(`/production?name=${encodeURIComponent(s.title)}`);

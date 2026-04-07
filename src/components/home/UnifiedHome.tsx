@@ -612,7 +612,78 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── TRUST SIGNALS (guest) ── */}
+        {/* ── MAGAZINE ── */}
+        {latestArticles.length > 0 && (
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-primary" />
+                Magazine
+              </h2>
+              <Link to="/scene" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                Read all <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
+              {latestArticles.map((a: any, i: number) => (
+                <motion.div
+                  key={a.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  className="shrink-0 w-[200px] sm:w-[240px] snap-start"
+                >
+                  <div className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
+                    onClick={() => navigate(a.slug ? `/magazine/${a.slug}` : "/scene")}
+                  >
+                    {a.cover_image_url ? (
+                      <div className="aspect-[16/9] overflow-hidden">
+                        <img src={a.cover_image_url} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      </div>
+                    ) : (
+                      <div className="aspect-[16/9] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                        <BookOpen className="h-6 w-6 text-primary/30" />
+                      </div>
+                    )}
+                    <div className="p-3">
+                      <Badge variant="outline" className="text-[8px] mb-1.5">{a.category || "Article"}</Badge>
+                      <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{a.title}</p>
+                      {a.read_time_minutes && (
+                        <p className="text-[10px] text-muted-foreground mt-1">{a.read_time_minutes} min read</p>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── PODCAST ── */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Headphones className="h-4 w-4 text-accent" />
+              Podcast
+            </h2>
+          </div>
+          <div
+            className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 p-5 cursor-pointer hover:border-primary/30 transition-all group"
+            onClick={() => window.open("https://www.youtube.com/playlist?list=PL3IHAVyb_6H2OpHnvwDa7EubXaanmXfOY", "_blank")}
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
+                <Headphones className="h-7 w-7 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-foreground mb-0.5">Discover A Thriver</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">Stories, insights & conversations with creatives shaping the industry</p>
+              </div>
+              <Play className="h-5 w-5 text-primary shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
+        </section>
+
         {!user && (
           <section className="mb-8">
             <div className="grid grid-cols-1 gap-3 mb-6">

@@ -21,6 +21,7 @@ import { analytics } from "@/lib/analytics";
 import { NetworkStatus } from "./components/NetworkStatus";
 import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 import { GuestBanner } from "./components/GuestBanner";
+import { AuthGate } from "./components/AuthGate";
 
 // Lazy load active page components
 const UnifiedHome = lazy(() => import("./components/home/UnifiedHome"));
@@ -88,14 +89,13 @@ const LoadingFallback = () => (
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  const location = useLocation();
   
   if (loading) {
     return <LoadingFallback />;
   }
   
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <AuthGate>{children}</AuthGate>;
   }
   
   return <>{children}</>;

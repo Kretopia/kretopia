@@ -229,7 +229,7 @@ const AppContent = () => {
             <Route path="/checkin" element={<Navigate to="/scene" replace />} />
             
             {/* Public Browsable Routes */}
-            <Route path="/nearby" element={<NearbyCreators />} />
+            <Route path="/nearby" element={<Navigate to="/search" replace />} />
             <Route path="/events" element={<Scene />} />
             <Route path="/scene" element={<Scene />} />
             

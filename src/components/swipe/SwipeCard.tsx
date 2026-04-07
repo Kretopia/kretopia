@@ -112,7 +112,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             )}>
               <Badge 
                 variant="outline" 
-                className="bg-violet-500/30 text-violet-200 border-violet-400/50 backdrop-blur-sm text-xs"
+                className="bg-primary/30 text-primary-foreground border-primary/50 backdrop-blur-sm text-xs"
               >
                 ✨ Unclaimed
               </Badge>

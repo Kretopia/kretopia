@@ -196,7 +196,7 @@ export const UnifiedHome = () => {
     setShowSuggestions(false);
     if (s.type === "creator") navigate(`/profile/${s.id}`);
     else if (s.type === "gig") navigate(`/opportunity/${s.id}`);
-    else navigate(`/search?q=${encodeURIComponent(s.title)}`);
+    else navigate(`/production?name=${encodeURIComponent(s.title)}`);
   };
 
   const typeLabel = { creator: "Creator", credit: "Credit", gig: "Gig" };

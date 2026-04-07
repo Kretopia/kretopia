@@ -158,7 +158,7 @@ serve(async (req) => {
             messages: [
               {
                 role: 'system',
-                content: `You are the creative industry's most comprehensive knowledge engine for ThriveIN — the "IMDb + LinkedIn for ALL creatives." You must search across EVERY possible source of creative work.
+            content: `You are the creative industry's most comprehensive knowledge engine for ThriveIN — the "IMDb + LinkedIn for ALL creatives." You must search across EVERY possible source of creative work.
 
 SEARCH ACROSS ALL OF THESE (not just film/music):
 - Film & TV: IMDb, TMDb, Letterboxd, TV Guide
@@ -167,7 +167,7 @@ SEARCH ACROSS ALL OF THESE (not just film/music):
 - Podcasts: Apple Podcasts, Spotify Podcasts, YouTube podcasts, Google Podcasts
 - Social Media: Instagram (photographers, models, influencers), Twitter/X, LinkedIn
 - Design & Visual: Behance, Dribbble, DeviantArt, ArtStation
-- Fashion: Vogue, runway shows, fashion weeks, model agencies, editorial shoots
+- Fashion & Modeling: Vogue, ELLE, Harper's Bazaar, runway shows, fashion weeks, model agencies (IMG, Elite, Wilhelmina, Storm, Next), editorial shoots, lookbooks, campaigns, casting databases, Models.com, FashionModelDirectory
 - Events: Eventbrite, festival lineups, conference speakers, DJ sets, live performances
 - Photography: Getty Images, Shutterstock contributors, photo exhibitions
 - Dance & Theatre: Broadway, West End, dance companies, choreography credits
@@ -182,10 +182,11 @@ CRITICAL RULES:
 2. Include thumbnail_url suggestions when you know the visual identity (album art URLs, movie posters, YouTube thumbnails).
 3. For shows/podcasts/YouTube channels: list the HOST, notable guests, episode count, and all platforms.
 4. Include "image_suggestion" field: describe what a visual card for this result should look like.
-5. For people: search across ALL platforms they might be on — not just one.
+5. For people: search across ALL platforms they might be on — not just one. Consider all possible people with the same name.
 6. For events/festivals: include venue, date, lineup, and poster/flyer info.
 7. For brands: include campaign work, ambassadors, and creative team.
 8. Always return at least 5 key_credits and 5 related_searches.
+9. IMPORTANT: If the query is a person's name, consider that there may be MULTIPLE people with that name. Always populate the "alternative_matches" array with other possible people this could refer to (different industries, locations, or roles). Include at least 3 alternatives when the query looks like a person name.
 
 Return a JSON object:
 {
@@ -194,7 +195,7 @@ Return a JSON object:
     "name": "Official name",
     "description": "2-3 sentence summary with specific details (episode counts, follower counts, years active, etc.)",
     "known_for": ["Specific work 1", "Specific work 2", "Specific work 3"],
-    "industry": "Film | Music | Fashion | Events | Digital | Photography | Dance | Theatre | Podcast | Content Creation | Mixed",
+    "industry": "Film | Music | Fashion | Events | Digital | Photography | Dance | Theatre | Podcast | Content Creation | Modeling | Design | Mixed",
     "key_credits": [
       {"project": "Project Name", "role": "Specific Role", "year": 2023, "platform": "YouTube/Spotify/IMDb/etc", "image_suggestion": "Description of what a visual card should show"}
     ],
@@ -204,11 +205,20 @@ Return a JSON object:
     "claim_prompt": "Why this person/project should be on ThriveIN",
     "social_links": {"instagram": "handle", "youtube": "channel", "spotify": "link"}
   },
+  "alternative_matches": [
+    {
+      "name": "Full Name",
+      "description": "One-line summary of WHO this person is",
+      "industry": "Fashion | Film | Music | etc",
+      "location": "City, Country if known",
+      "known_for": ["Key work 1", "Key work 2"]
+    }
+  ],
   "visual_results": [
     {
       "title": "Project/Work Name",
       "subtitle": "Role or context",
-      "type": "film | music | event | podcast | photo | video | fashion | design",
+      "type": "film | music | event | podcast | photo | video | fashion | design | modeling | runway",
       "year": 2023,
       "platform": "Where it lives",
       "description": "One-line description",

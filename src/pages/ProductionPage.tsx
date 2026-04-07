@@ -194,8 +194,8 @@ const ProductionPage = () => {
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
         <Database className="h-12 w-12 text-muted-foreground/30" />
         <p className="text-muted-foreground">Production not found</p>
-        <Button variant="outline" onClick={() => navigate(-1)} className="gap-1">
-          <ArrowLeft className="h-4 w-4" /> Go Back
+        <Button variant="outline" onClick={() => navigate('/')} className="gap-1">
+          <ArrowLeft className="h-4 w-4" /> Go Home
         </Button>
       </div>
     );
@@ -228,8 +228,16 @@ const ProductionPage = () => {
             </div>
           )}
           <div className="relative container mx-auto max-w-3xl px-4 py-5">
-            <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors">
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to search
+            <button onClick={() => {
+              const referrer = document.referrer;
+              const isInternal = referrer && new URL(referrer).origin === window.location.origin;
+              if (isInternal && window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/');
+              }
+            }} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors">
+              <ArrowLeft className="h-3.5 w-3.5" /> Back
             </button>
 
             <div className="flex items-start gap-4">

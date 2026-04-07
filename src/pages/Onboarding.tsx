@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, User, Briefcase, Link2, Wand2, Search } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, User, Briefcase, Link2, Wand2, Search, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { SEO } from "@/components/SEO";
@@ -81,6 +81,9 @@ export default function Onboarding() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("");
+  const [suggestedCircles, setSuggestedCircles] = useState<any[]>([]);
+  const [joinedCircleIds, setJoinedCircleIds] = useState<Set<string>>(new Set());
+  const [joiningCircleId, setJoiningCircleId] = useState<string | null>(null);
 
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");

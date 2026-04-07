@@ -279,7 +279,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     className="justify-start gap-3 h-auto w-full py-3"
                     onClick={() => handleNavigation("/subscription")}
                   >
-                    {isPro ? <Crown className="h-5 w-5 text-amber-500" /> : <Sparkles className="h-5 w-5 text-primary" />}
+                    {isPro ? <Crown className="h-5 w-5 text-accent" /> : <Sparkles className="h-5 w-5 text-primary" />}
                     <div className="flex flex-col items-start gap-0.5">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">Subscription</span>
@@ -287,7 +287,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           variant="secondary"
                           className={cn(
                             "text-[10px] uppercase tracking-wider",
-                            isPro ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"
+                            isPro ? "bg-accent/10 text-accent-foreground" : "bg-muted text-muted-foreground"
                           )}
                         >
                           {tierName}

@@ -259,7 +259,7 @@ export const MatchFeed = ({
           <div className="absolute bottom-0 left-0 right-0 p-6 pb-8 text-white z-10">
             <div className="space-y-3">
               <h3 className="text-3xl font-bold drop-shadow-lg flex items-center gap-2">
-                {currentCard.name}
+                {maskCreatorName(currentCard.name, !!user)}
                 {currentCard.verification_status === 'verified' && (
                   <Verified className="h-6 w-6 text-blue-400" />
                 )}

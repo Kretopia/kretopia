@@ -155,7 +155,7 @@ const Search = () => {
     const s = (status || "").toLowerCase();
     if (s === "enterprise" || s === "verified") return { text: "Verified", cls: "bg-success/20 text-success border-success/30" };
     if (s === "peer") return { text: "Peer Verified", cls: "bg-primary/20 text-primary border-primary/30" };
-    return { text: "Unverified", cls: "bg-[hsl(220,10%,20%)] text-[hsl(220,10%,50%)] border-[hsl(230,15%,25%)]" };
+    return { text: "Unverified", cls: "bg-muted text-muted-foreground border-border" };
   };
 
   // Build blended results list

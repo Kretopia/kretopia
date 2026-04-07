@@ -73,7 +73,7 @@ export const UnifiedHome = () => {
   useEffect(() => {
     const fetchPublic = async () => {
       const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs] = await Promise.all([
-        supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, url, project_type, user_id, year").in("verification_status", ["enterprise", "peer", "verified"]).order("created_at", { ascending: false }).limit(8),
+        supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, primary_media_url, url, project_type, user_id, year").not("thumbnail_url", "is", null).order("created_at", { ascending: false }).limit(8),
         supabase.from("profiles").select("user_id, full_name, avatar_url, role, verification_tier").eq("onboarding_completed", true).not("avatar_url", "is", null).order("created_at", { ascending: false }).limit(10),
         supabase.from("opportunities").select("id, title, type, location, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(4),
         supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
@@ -488,9 +488,9 @@ export const UnifiedHome = () => {
                 className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
               >
                 <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
-                  {c.thumbnail_url ? (
+                  {(c.thumbnail_url || c.primary_media_url) ? (
                     <div className="aspect-[3/4] overflow-hidden">
-                      <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                      <img src={c.thumbnail_url || c.primary_media_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                     </div>
                   ) : (

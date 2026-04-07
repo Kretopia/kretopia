@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2,
-  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays
+  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
@@ -92,10 +92,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
   // Desktop nav items per mode
   const desktopNavItems = mode === "create"
     ? [
+        { path: "/", icon: Home, label: "Home" },
         { path: "/scene", icon: Zap, label: "Scene" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-        { path: "/credits", icon: Globe, label: "ThriveCredits" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },

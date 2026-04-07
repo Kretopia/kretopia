@@ -73,19 +73,21 @@ export const UnifiedHome = () => {
   // Fetch public dashboard data
   useEffect(() => {
     const fetchPublic = async () => {
-      const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs] = await Promise.all([
+      const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs, articlesRes] = await Promise.all([
         supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, primary_media_url, url, project_type, user_id, year").not("thumbnail_url", "is", null).order("created_at", { ascending: false }).limit(8),
         supabase.from("profiles").select("user_id, full_name, avatar_url, role, verification_tier").eq("onboarding_completed", true).not("avatar_url", "is", null).order("created_at", { ascending: false }).limit(10),
         supabase.from("opportunities").select("id, title, type, location, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(4),
         supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
         supabase.from("credits").select("id", { count: "exact", head: true }),
         supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("magazine_articles").select("id, title, subtitle, cover_image_url, category, read_time_minutes, created_at, slug").eq("is_published", true).order("created_at", { ascending: false }).limit(3),
       ]);
       const credits = creditsRes.data || [];
       setTrendingCredits(credits);
       const creators = creatorsRes.data || [];
       setFeaturedCreators(creators);
       setActiveGigs(gigsRes.data || []);
+      setLatestArticles(articlesRes.data || []);
       setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0 });
 
       // Set activity names from real creators

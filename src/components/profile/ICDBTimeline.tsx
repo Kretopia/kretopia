@@ -438,38 +438,6 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     finally { setDeletingId(null); }
   };
 
-  // Group credits by category for Netflix-style rows
-  const categoryRows = useMemo(() => {
-    const groups: Record<string, ICDBCredit[]> = {};
-    
-    // Featured row first
-    const featured = credits.filter(c => c.is_featured);
-    if (featured.length > 0) groups['featured'] = featured;
-
-    credits.forEach(c => {
-      const cat = TYPE_TO_CATEGORY[c.project_type || c.credit_category || ''] || 'other';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(c);
-    });
-
-    // Sort categories by count (most credits first)
-    const sortedKeys = Object.keys(groups)
-      .filter(k => k !== 'featured')
-      .sort((a, b) => groups[b].length - groups[a].length);
-
-    return featured.length > 0 ? ['featured', ...sortedKeys] : sortedKeys;
-  }, [credits]);
-
-  const verifiedCount = credits.filter(c => c.verification_status === 'verified').length;
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   const categoryGroups = useMemo(() => {
     const groups: Record<string, ICDBCredit[]> = {};
     credits.forEach(c => {
@@ -481,6 +449,25 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     if (featured.length > 0) groups['featured'] = featured;
     return groups;
   }, [credits]);
+
+  // Group credits by category for Netflix-style rows
+  const categoryRows = useMemo(() => {
+    const sortedKeys = Object.keys(categoryGroups)
+      .filter(k => k !== 'featured')
+      .sort((a, b) => (categoryGroups[b]?.length || 0) - (categoryGroups[a]?.length || 0));
+
+    return categoryGroups['featured'] ? ['featured', ...sortedKeys] : sortedKeys;
+  }, [categoryGroups]);
+
+  const verifiedCount = credits.filter(c => c.verification_status === 'verified').length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

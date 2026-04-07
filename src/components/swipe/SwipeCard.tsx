@@ -96,7 +96,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
               <Badge 
                 variant="outline" 
-                className="bg-gradient-to-r from-amber-500/40 to-orange-500/40 text-amber-100 border-amber-400/60 backdrop-blur-sm text-xs"
+                className="bg-gradient-to-r from-accent/40 to-accent/30 text-accent-foreground border-accent/60 backdrop-blur-sm text-xs"
               >
                 <Sparkles className="h-3 w-3 mr-1" />
                 Industry Verified

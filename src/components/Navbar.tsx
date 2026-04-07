@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2,
-  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays
+  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import thriveinIcon from "@/assets/thrivein-icon.png";
@@ -40,7 +40,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
-  const isLandingPage = location.pathname === "/";
+  const isLandingPage = location.pathname === "/" && !user;
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
 
@@ -92,10 +92,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
   // Desktop nav items per mode
   const desktopNavItems = mode === "create"
     ? [
+        { path: "/", icon: Home, label: "Home" },
         { path: "/scene", icon: Zap, label: "Scene" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-        { path: "/credits", icon: Globe, label: "ThriveCredits" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },
@@ -251,6 +251,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
+                      <MenuButton icon={Globe} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={MapPin} label="Nearby" onClick={() => handleNavigation("/nearby")} />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/events")} />
                     </>
@@ -349,10 +350,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <Button variant="gradient">Get Started</Button>
               </Link>
             </>
-          ) : user && isLandingPage ? (
-            <Link to="/circle">
-              <Button variant="gradient">Start Matching</Button>
-            </Link>
           ) : null}
         </div>
       </div>

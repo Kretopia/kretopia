@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { maskCreatorName } from "@/lib/guestUtils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,13 +40,11 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
   const [search, setSearch] = useState("");
 
   const fetchProfiles = useCallback(async () => {
-    if (!user?.id) return;
     setLoading(true);
     try {
       let query = supabase
         .from("public_profiles_discovery")
-        .select("user_id, full_name, avatar_url, role, bio, location, badge, verification_score, level")
-        .neq("user_id", user.id);
+        .select("user_id, full_name, avatar_url, role, bio, location, badge, verification_score, level");
 
       if (search.trim()) {
         query = query.or(`full_name.ilike.%${search}%,role.ilike.%${search}%,location.ilike.%${search}%`);
@@ -169,7 +168,7 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
                     </div>
 
                     <h3 className="font-semibold text-xs sm:text-sm truncate group-hover:text-primary transition-colors">
-                      {profile.full_name}
+                      {maskCreatorName(profile.full_name, !!user)}
                     </h3>
                     <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                       {profile.role || "Creator"}

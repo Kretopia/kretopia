@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { maskCreatorName } from "@/lib/guestUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -120,11 +121,12 @@ function ProFilterLabel({ label, isPro }: { label: string; isPro: boolean }) {
 
 // --- Rich Creator Card ---
 
-function CreatorCard({ creator, onConnect, onMessage, onNavigate }: {
+function CreatorCard({ creator, onConnect, onMessage, onNavigate, isAuthenticated }: {
   creator: CreatorWithCredits;
   onConnect: (id: string) => void;
   onMessage: (id: string) => void;
   onNavigate: (id: string) => void;
+  isAuthenticated: boolean;
 }) {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all cursor-pointer group" onClick={() => onNavigate(creator.user_id)}>
@@ -134,15 +136,17 @@ function CreatorCard({ creator, onConnect, onMessage, onNavigate }: {
           <AvatarImage src={creator.avatar_url || ''} />
           <AvatarFallback className="text-base font-semibold bg-primary/10">{creator.full_name?.[0] || '?'}</AvatarFallback>
         </Avatar>
-        {/* Actions in top-right */}
-        <div className="absolute top-1.5 right-1.5 flex gap-1">
-          <Button variant="secondary" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); onMessage(creator.user_id); }}>
-            <MessageSquare className="h-3.5 w-3.5" />
-          </Button>
-          <Button variant="secondary" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); onConnect(creator.user_id); }}>
-            <UserPlus className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        {/* Actions in top-right - only for authenticated users */}
+        {isAuthenticated && (
+          <div className="absolute top-1.5 right-1.5 flex gap-1">
+            <Button variant="secondary" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); onMessage(creator.user_id); }}>
+              <MessageSquare className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="secondary" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); onConnect(creator.user_id); }}>
+              <UserPlus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
       </div>
 
       <CardContent className="pt-9 pb-3 px-3 space-y-1.5">
@@ -158,7 +162,7 @@ function CreatorCard({ creator, onConnect, onMessage, onNavigate }: {
         {/* Name & badges */}
         <div className="min-w-0">
           <div className="flex items-center gap-1">
-            <p className="text-sm font-bold truncate max-w-[80%]">{creator.full_name}</p>
+            <p className="text-sm font-bold truncate max-w-[80%]">{maskCreatorName(creator.full_name, isAuthenticated)}</p>
             {(creator.badge === 'odos' || creator.badge === 'ODOS') && (
               <Badge variant="secondary" className="text-[8px] h-3.5 px-1 bg-primary/10 text-primary shrink-0">ODOS</Badge>
             )}
@@ -644,6 +648,7 @@ export function CreatorBrowseGrid() {
                     onConnect={handleConnect}
                     onMessage={(id) => navigate(`/messages?user=${id}`)}
                     onNavigate={(id) => navigate(`/profile/${id}`)}
+                    isAuthenticated={!!user}
                   />
                 ))}
               </div>
@@ -661,7 +666,7 @@ export function CreatorBrowseGrid() {
                       </Avatar>
                       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/profile/${creator.user_id}`)}>
                         <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold truncate">{creator.full_name}</p>
+                          <p className="text-sm font-semibold truncate">{maskCreatorName(creator.full_name, !!user)}</p>
                           {(creator.badge === 'odos' || creator.badge === 'ODOS') && <Badge variant="secondary" className="text-[9px] h-4">ODOS</Badge>}
                           {creator.verification_status === 'verified' && <ShieldCheck className="h-3 w-3 text-primary" />}
                         </div>
@@ -671,14 +676,16 @@ export function CreatorBrowseGrid() {
                           {(creator.credit_count ?? 0) > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Award className="h-2.5 w-2.5" /> {creator.credit_count}</span>}
                         </div>
                       </div>
-                      <div className="flex gap-1.5 shrink-0">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate(`/messages?user=${creator.user_id}`)}>
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => handleConnect(creator.user_id)}>
-                          <UserPlus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {user && (
+                        <div className="flex gap-1.5 shrink-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate(`/messages?user=${creator.user_id}`)}>
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => handleConnect(creator.user_id)}>
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}

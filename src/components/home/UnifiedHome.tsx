@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe, Shield, CheckCircle, BookOpen, Headphones } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +43,7 @@ export const UnifiedHome = () => {
   const [trendingCredits, setTrendingCredits] = useState<any[]>([]);
   const [featuredCreators, setFeaturedCreators] = useState<any[]>([]);
   const [activeGigs, setActiveGigs] = useState<any[]>([]);
+  const [latestArticles, setLatestArticles] = useState<any[]>([]);
   const [stats, setStats] = useState({ creators: 0, credits: 0, gigs: 0 });
 
   // Auth-only data

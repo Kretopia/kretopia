@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { SwipeCard } from "@/components/ui/swipe-card";
 import { MapPin, Star, X, Heart, Sparkles, User, Verified, Crown, Shield, Lock } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { maskCreatorName } from "@/lib/guestUtils";
 import { ProfilePreviewDialog } from "./ProfilePreviewDialog";
 import { MatchExplanationDialog } from "@/components/discover/MatchExplanationDialog";
 import { CollabIntentBadge } from "@/components/profile/CollabIntentSelector";
@@ -103,6 +105,7 @@ export const MatchFeed = ({
   cardRef,
   isPro = false
 }: MatchFeedProps) => {
+  const { user } = useAuth();
   const [previewUserId, setPreviewUserId] = useState<string | null>(null);
   const [showMatchExplanation, setShowMatchExplanation] = useState(false);
   const [showProUpgrade, setShowProUpgrade] = useState(false);

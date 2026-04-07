@@ -233,6 +233,74 @@ export default function Onboarding() {
     setShowCropDialog(true);
   };
 
+  // Fetch suggested circles when entering step 2
+  useEffect(() => {
+    if (currentStep === 2 && user) {
+      const fetchCircles = async () => {
+        const role = (profile.role || '').toLowerCase();
+        // Map roles to circle categories
+        const roleCategoryMap: Record<string, string[]> = {
+          film: ['film'], filmmaker: ['film'], videographer: ['film'], director: ['film'], cinematographer: ['film'],
+          music: ['music'], producer: ['music'], 'music producer': ['music'], dj: ['music'], singer: ['music'], songwriter: ['music'], artist: ['music'],
+          photographer: ['photo'], photo: ['photo'],
+          designer: ['design'], illustrator: ['design'], 'graphic designer': ['design'], 'ui/ux': ['design'],
+          writer: ['writing'], author: ['writing'], content: ['writing'], copywriter: ['writing'], blogger: ['writing'],
+          podcaster: ['podcast'], podcast: ['podcast'],
+          developer: ['tech'], engineer: ['tech'],
+          model: ['fashion'], fashion: ['fashion'], stylist: ['fashion'], 'makeup artist': ['fashion'],
+          event: ['events'], promoter: ['events'],
+        };
+        
+        const matchedCategories = new Set<string>(['collab']); // Always include Collabs
+        for (const [keyword, cats] of Object.entries(roleCategoryMap)) {
+          if (role.includes(keyword)) cats.forEach(c => matchedCategories.add(c));
+        }
+        // If no specific match, show all
+        if (matchedCategories.size <= 1) {
+          ['film', 'music', 'photo', 'design', 'events'].forEach(c => matchedCategories.add(c));
+        }
+
+        const { data } = await supabase
+          .from('spark_rooms')
+          .select('id, title, description, category, icon_emoji, member_count, cover_image_url')
+          .eq('is_active', true)
+          .in('category', Array.from(matchedCategories))
+          .order('member_count', { ascending: false })
+          .limit(6);
+        
+        setSuggestedCircles(data || []);
+      };
+      fetchCircles();
+    }
+  }, [currentStep, user, profile.role]);
+
+  const handleJoinCircle = async (circleId: string) => {
+    if (!user || joinedCircleIds.has(circleId)) return;
+    setJoiningCircleId(circleId);
+    try {
+      await supabase.from('spark_room_members').insert({
+        room_id: circleId,
+        user_id: user.id,
+        role: 'member',
+      });
+      setJoinedCircleIds(prev => new Set([...prev, circleId]));
+      // Increment member count
+      const circle = suggestedCircles.find(c => c.id === circleId);
+      if (circle) {
+        await supabase.from('spark_rooms').update({ member_count: (circle.member_count || 0) + 1 }).eq('id', circleId);
+      }
+      toast({ title: "Joined! 🎉", description: `You're now part of the community` });
+    } catch (e: any) {
+      if (e?.code === '23505') {
+        setJoinedCircleIds(prev => new Set([...prev, circleId]));
+      } else {
+        toast({ title: "Couldn't join", description: "Try again later", variant: "destructive" });
+      }
+    } finally {
+      setJoiningCircleId(null);
+    }
+  };
+
   const toggleSkill = (skill: string) => {
     setSelectedSkills(prev =>
       prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]

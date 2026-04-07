@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, User, Briefcase, Link2, Wand2, Search } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, User, Briefcase, Link2, Wand2, Search, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { SEO } from "@/components/SEO";
@@ -81,6 +81,9 @@ export default function Onboarding() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState("");
+  const [suggestedCircles, setSuggestedCircles] = useState<any[]>([]);
+  const [joinedCircleIds, setJoinedCircleIds] = useState<Set<string>>(new Set());
+  const [joiningCircleId, setJoiningCircleId] = useState<string | null>(null);
 
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");
@@ -228,6 +231,74 @@ export default function Onboarding() {
     const imageUrl = URL.createObjectURL(file);
     setTempImageUrl(imageUrl);
     setShowCropDialog(true);
+  };
+
+  // Fetch suggested circles when entering step 2
+  useEffect(() => {
+    if (currentStep === 2 && user) {
+      const fetchCircles = async () => {
+        const role = (profile.role || '').toLowerCase();
+        // Map roles to circle categories
+        const roleCategoryMap: Record<string, string[]> = {
+          film: ['film'], filmmaker: ['film'], videographer: ['film'], director: ['film'], cinematographer: ['film'],
+          music: ['music'], producer: ['music'], 'music producer': ['music'], dj: ['music'], singer: ['music'], songwriter: ['music'], artist: ['music'],
+          photographer: ['photo'], photo: ['photo'],
+          designer: ['design'], illustrator: ['design'], 'graphic designer': ['design'], 'ui/ux': ['design'],
+          writer: ['writing'], author: ['writing'], content: ['writing'], copywriter: ['writing'], blogger: ['writing'],
+          podcaster: ['podcast'], podcast: ['podcast'],
+          developer: ['tech'], engineer: ['tech'],
+          model: ['fashion'], fashion: ['fashion'], stylist: ['fashion'], 'makeup artist': ['fashion'],
+          event: ['events'], promoter: ['events'],
+        };
+        
+        const matchedCategories = new Set<string>(['collab']); // Always include Collabs
+        for (const [keyword, cats] of Object.entries(roleCategoryMap)) {
+          if (role.includes(keyword)) cats.forEach(c => matchedCategories.add(c));
+        }
+        // If no specific match, show all
+        if (matchedCategories.size <= 1) {
+          ['film', 'music', 'photo', 'design', 'events'].forEach(c => matchedCategories.add(c));
+        }
+
+        const { data } = await supabase
+          .from('spark_rooms')
+          .select('id, title, description, category, icon_emoji, member_count, cover_image_url')
+          .eq('is_active', true)
+          .in('category', Array.from(matchedCategories))
+          .order('member_count', { ascending: false })
+          .limit(6);
+        
+        setSuggestedCircles(data || []);
+      };
+      fetchCircles();
+    }
+  }, [currentStep, user, profile.role]);
+
+  const handleJoinCircle = async (circleId: string) => {
+    if (!user || joinedCircleIds.has(circleId)) return;
+    setJoiningCircleId(circleId);
+    try {
+      await supabase.from('spark_room_members').insert({
+        room_id: circleId,
+        user_id: user.id,
+        role: 'member',
+      });
+      setJoinedCircleIds(prev => new Set([...prev, circleId]));
+      // Increment member count
+      const circle = suggestedCircles.find(c => c.id === circleId);
+      if (circle) {
+        await supabase.from('spark_rooms').update({ member_count: (circle.member_count || 0) + 1 }).eq('id', circleId);
+      }
+      toast({ title: "Joined! 🎉", description: `You're now part of the community` });
+    } catch (e: any) {
+      if (e?.code === '23505') {
+        setJoinedCircleIds(prev => new Set([...prev, circleId]));
+      } else {
+        toast({ title: "Couldn't join", description: "Try again later", variant: "destructive" });
+      }
+    } finally {
+      setJoiningCircleId(null);
+    }
   };
 
   const toggleSkill = (skill: string) => {
@@ -563,7 +634,53 @@ export default function Onboarding() {
                 )}
               </div>
 
-              {/* First credit — compact */}
+              {/* Join Circles — suggested based on role */}
+              {suggestedCircles.length > 0 && (
+                <div className="border border-primary/20 rounded-lg p-4 space-y-3 bg-primary/5">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-medium">Your Circles are waiting 🔥</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Join communities of creatives like you. Collaborate, get gigs, and grow together.
+                  </p>
+                  <div className="space-y-2">
+                    {suggestedCircles.map((circle) => {
+                      const joined = joinedCircleIds.has(circle.id);
+                      const joining = joiningCircleId === circle.id;
+                      return (
+                        <div key={circle.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card hover:border-primary/30 transition-all">
+                          <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-lg">
+                            {circle.icon_emoji || '🎨'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{circle.title}</p>
+                            {circle.description && (
+                              <p className="text-[10px] text-muted-foreground truncate">{circle.description}</p>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={joined ? "outline" : "default"}
+                            className="h-7 text-xs px-3 shrink-0"
+                            disabled={joined || joining}
+                            onClick={() => handleJoinCircle(circle.id)}
+                          >
+                            {joining ? <Loader2 className="h-3 w-3 animate-spin" /> : joined ? '✓ Joined' : 'Join'}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {joinedCircleIds.size > 0 && (
+                    <p className="text-[11px] text-primary font-medium text-center">
+                      🎉 {joinedCircleIds.size} circle{joinedCircleIds.size !== 1 ? 's' : ''} joined — you're already connected!
+                    </p>
+                  )}
+                </div>
+              )}
+
+
               <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />

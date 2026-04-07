@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Flame, Briefcase, LayoutDashboard, Wallet, User, Home } from "lucide-react";
+import { Sparkles, Flame, Briefcase, LayoutDashboard, Wallet, User, Home, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useRef } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";
@@ -8,7 +8,7 @@ const CREATE_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/scene", icon: Flame, label: "Scene" },
   { path: "/circle", icon: Sparkles, label: "Match" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+  { path: "/circles", icon: Users, label: "Circles" },
 ];
 
 const WORK_ITEMS = [
@@ -36,6 +36,7 @@ const BottomNav = memo(() => {
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     if (path === "/circle") return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
+    if (path === "/circles") return location.pathname === "/circles";
     if (path === "/opportunities") return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
     if (path === "/desk") return location.pathname.startsWith("/desk");
     return location.pathname === path;

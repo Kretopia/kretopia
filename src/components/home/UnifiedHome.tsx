@@ -62,17 +62,32 @@ export const UnifiedHome = () => {
   useEffect(() => {
     const fetchPublic = async () => {
       const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs] = await Promise.all([
-        supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, user_id, year").in("verification_status", ["enterprise", "peer", "verified"]).order("created_at", { ascending: false }).limit(8),
+        supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, url, project_type, user_id, year").in("verification_status", ["enterprise", "peer", "verified"]).order("created_at", { ascending: false }).limit(8),
         supabase.from("profiles").select("user_id, full_name, avatar_url, role, verification_tier").eq("onboarding_completed", true).not("avatar_url", "is", null).order("created_at", { ascending: false }).limit(10),
         supabase.from("opportunities").select("id, title, type, location, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(4),
         supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
         supabase.from("credits").select("id", { count: "exact", head: true }),
         supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),
       ]);
-      setTrendingCredits(creditsRes.data || []);
+      const credits = creditsRes.data || [];
+      setTrendingCredits(credits);
       setFeaturedCreators(creatorsRes.data || []);
       setActiveGigs(gigsRes.data || []);
       setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0 });
+
+      // Lazy-fetch thumbnails for credits that don't have one
+      const missing = credits.filter((c: any) => !c.thumbnail_url);
+      if (missing.length > 0) {
+        for (const credit of missing.slice(0, 4)) {
+          supabase.functions.invoke('scrape-thumbnail', {
+            body: { credit_id: credit.id, project_name: credit.project_name, url: credit.url, project_type: credit.project_type },
+          }).then(({ data }) => {
+            if (data?.image_url) {
+              setTrendingCredits(prev => prev.map(c => c.id === credit.id ? { ...c, thumbnail_url: data.image_url } : c));
+            }
+          }).catch(() => {});
+        }
+      }
     };
     fetchPublic();
   }, []);
@@ -415,8 +430,11 @@ export const UnifiedHome = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                     </div>
                   ) : (
-                    <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                      <Play className="h-8 w-8 text-primary/30" />
+                    <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center animate-pulse">
+                      <div className="flex flex-col items-center gap-2">
+                        <Play className="h-8 w-8 text-primary/20" />
+                        <span className="text-[8px] text-muted-foreground/50 font-medium">Loading...</span>
+                      </div>
                     </div>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 p-3">

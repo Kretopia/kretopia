@@ -22,7 +22,9 @@ import { LiveActivityTicker } from "@/components/scene/LiveActivityTicker";
 const Scene = () => {
   const location = useLocation();
   const isEventsRoute = location.pathname === "/events";
-  const [activeTab, setActiveTab] = useState(isEventsRoute ? "events" : "spark");
+  const searchParams = new URLSearchParams(location.search);
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || (isEventsRoute ? "events" : "magazine"));
   const { user } = useAuth();
   const [visibility, setVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
 

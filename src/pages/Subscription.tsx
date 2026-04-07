@@ -283,8 +283,8 @@ export default function Subscription() {
         <div className="max-w-2xl mx-auto mb-12">
           <Card className={`relative border-2 overflow-visible ${
             isFounder 
-              ? 'border-amber-500 bg-gradient-to-br from-amber-500/10 via-background to-orange-500/10' 
-              : 'border-amber-500/50 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5'
+              ? 'border-accent bg-gradient-to-br from-accent/10 via-background to-accent/5' 
+              : 'border-accent/50 bg-gradient-to-br from-accent/5 via-background to-accent/3'
           }`}>
             {isFounder && (
               <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
@@ -301,7 +301,7 @@ export default function Subscription() {
               <div className="mx-auto mb-3 h-14 w-14 rounded-full bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg">
                 <Crown className="h-7 w-7 text-accent-foreground" />
               </div>
-              <CardTitle className="text-2xl">Founder Circle <span className="text-amber-500">⭕</span></CardTitle>
+              <CardTitle className="text-2xl">Founder Circle <span className="text-accent">⭕</span></CardTitle>
               <CardDescription>
                 Join the founding members. Lifetime Enterprise access with exclusive perks.
               </CardDescription>
@@ -315,7 +315,7 @@ export default function Subscription() {
               <div className="grid sm:grid-cols-2 gap-2">
                 {FOUNDER_FEATURES.map((feature, index) => (
                   <div key={index} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <Check className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}
@@ -329,7 +329,7 @@ export default function Subscription() {
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div 
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all"
+                      className="h-full rounded-full gradient-primary transition-all"
                       style={{ width: `${(founderSpotsTaken / SUBSCRIPTION_PRODUCTS.founder.maxSpots) * 100}%` }}
                     />
                   </div>

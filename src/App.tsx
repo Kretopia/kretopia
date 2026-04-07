@@ -62,7 +62,7 @@ const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
-// ProductionPage removed — redirects to /opportunities
+const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 
@@ -303,7 +303,7 @@ const AppContent = () => {
             
             {/* Search & Notifications */}
             <Route path="/search" element={<Search />} />
-            <Route path="/production" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             
             {/* Legacy redirects — consolidated */}

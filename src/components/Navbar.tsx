@@ -40,7 +40,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
-  const isLandingPage = location.pathname === "/";
+  const isLandingPage = location.pathname === "/" && !user;
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
 
@@ -350,10 +350,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <Button variant="gradient">Get Started</Button>
               </Link>
             </>
-          ) : user && isLandingPage ? (
-            <Link to="/circle">
-              <Button variant="gradient">Start Matching</Button>
-            </Link>
+          ) : null}
           ) : null}
         </div>
       </div>

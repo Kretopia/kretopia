@@ -62,7 +62,7 @@ const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
-const ProductionPage = lazy(() => import("./pages/ProductionPage"));
+// ProductionPage removed — redirects to /opportunities
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 
@@ -161,7 +161,7 @@ const AppContent = () => {
   const isLandingPage = location.pathname === '/';
   
   // Public browsable routes where guests see nav — expanded to show platform value
-  const publicBrowseRoutes = ['/scene', '/opportunities', '/credits', '/nearby', '/circle', '/search', '/production', '/event', '/magazine', '/profile'];
+  const publicBrowseRoutes = ['/scene', '/opportunities', '/credits', '/nearby', '/circle', '/search', '/event', '/magazine', '/profile'];
   const isPublicBrowse = publicBrowseRoutes.some(r => location.pathname.startsWith(r));
   
   // Show bottom nav for authenticated users OR guests on public browse routes (+ landing)
@@ -286,8 +286,8 @@ const AppContent = () => {
             <Route path="/credits/project/:projectId" element={<ICDBProjectPage />} />
             <Route path="/credits/discover" element={<ICDBDiscovery />} />
             <Route path="/verify-credit" element={<BrandVerify />} />
-            <Route path="/directory" element={<Navigate to="/circle?tab=browse" replace />} />
-            <Route path="/discover" element={<Navigate to="/credits/discover" replace />} />
+            <Route path="/directory" element={<Navigate to="/search" replace />} />
+            <Route path="/discover" element={<Navigate to="/search" replace />} />
             <Route path="/opportunities" element={<Opportunities />} />
 
             {/* Public Event Page */}
@@ -301,17 +301,16 @@ const AppContent = () => {
             <Route path="/claim-gig/:token" element={<ClaimGig />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
-            {/* Search, Production Detail & Notifications */}
+            {/* Search & Notifications */}
             <Route path="/search" element={<Search />} />
-            <Route path="/production" element={<ProductionPage />} />
+            <Route path="/production" element={<Navigate to="/opportunities" replace />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             
-            {/* Legacy redirects */}
-            <Route path="/dashboard" element={<Navigate to="/my-analytics" replace />} />
-            <Route path="/spark" element={<Navigate to="/circle" replace />} />
-            <Route path="/cre8" element={<Navigate to="/circle" replace />} />
-            
-            <Route path="/marketplace" element={<Navigate to="/market" replace />} />
+            {/* Legacy redirects — consolidated */}
+            <Route path="/dashboard" element={<Navigate to="/desk" replace />} />
+            <Route path="/spark" element={<Navigate to="/scene" replace />} />
+            <Route path="/cre8" element={<Navigate to="/scene" replace />} />
+            <Route path="/marketplace" element={<Navigate to="/opportunities" replace />} />
             
             {/* 404 - Catch all: redirect to main app */}
             <Route path="*" element={<CatchAllRedirect />} />

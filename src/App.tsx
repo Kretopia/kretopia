@@ -52,27 +52,21 @@ const Search = lazy(() => import("./pages/Search"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
-const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const Install = lazy(() => import("./pages/Install"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
-const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
-const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 
-const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const Scene = lazy(() => import("./pages/Scene"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
-const ICDBDiscovery = lazy(() => import("./pages/ICDBDiscovery"));
-const ICDBHub = lazy(() => import("./pages/ICDBHub"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const queryClient = new QueryClient({

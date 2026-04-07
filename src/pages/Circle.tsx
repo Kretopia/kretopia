@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { PageTip } from "@/components/PageTip";
+import { AuthGate } from "@/components/AuthGate";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -202,7 +203,13 @@ export default function Circle() {
           </TabsList>
 
           <TabsContent value="foryou" className="space-y-4">
-            <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
+            {user ? (
+              <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
+            ) : (
+              <AuthGate>
+                <div className="h-[60vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl" />
+              </AuthGate>
+            )}
           </TabsContent>
 
           <TabsContent value="browse" className="space-y-4">
@@ -210,28 +217,36 @@ export default function Circle() {
           </TabsContent>
 
           <TabsContent value="network" className="space-y-6">
-            <NetworkVisualization onInvite={() => setShowInvite(true)} />
-            {connections.length > 0 && (
-              <div className="border-t pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold">Your Collaborators</h3>
-                  <p className="text-sm text-muted-foreground">{connections.length} collaborator{connections.length !== 1 ? 's' : ''}</p>
-                </div>
-                <ConnectionList connections={connections} loading={connectionsLoading} onMessage={handleMessage} />
-              </div>
-            )}
-            {connections.length === 0 && !connectionsLoading && (
-              <div className="text-center py-6 border-t">
-                <p className="text-muted-foreground mb-4">Start connecting with creators to grow your professional circle!</p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button onClick={() => setActiveTab("foryou")} variant="outline" className="gap-2">
-                    <Sparkles className="h-4 w-4" /> View Today's Picks
-                  </Button>
-                  <Button onClick={() => setShowInvite(true)} className="gap-2">
-                    <UserPlus className="h-4 w-4" /> Invite Creators
-                  </Button>
-                </div>
-              </div>
+            {user ? (
+              <>
+                <NetworkVisualization onInvite={() => setShowInvite(true)} />
+                {connections.length > 0 && (
+                  <div className="border-t pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold">Your Collaborators</h3>
+                      <p className="text-sm text-muted-foreground">{connections.length} collaborator{connections.length !== 1 ? 's' : ''}</p>
+                    </div>
+                    <ConnectionList connections={connections} loading={connectionsLoading} onMessage={handleMessage} />
+                  </div>
+                )}
+                {connections.length === 0 && !connectionsLoading && (
+                  <div className="text-center py-6 border-t">
+                    <p className="text-muted-foreground mb-4">Start connecting with creators to grow your professional circle!</p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button onClick={() => setActiveTab("foryou")} variant="outline" className="gap-2">
+                        <Sparkles className="h-4 w-4" /> View Today's Picks
+                      </Button>
+                      <Button onClick={() => setShowInvite(true)} className="gap-2">
+                        <UserPlus className="h-4 w-4" /> Invite Creators
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <AuthGate>
+                <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
+              </AuthGate>
             )}
           </TabsContent>
         </Tabs>

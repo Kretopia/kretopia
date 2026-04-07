@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { maskCreatorName } from "@/lib/guestUtils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
@@ -416,7 +417,7 @@ const ViewProfile = () => {
                 {/* Info */}
                 <div className="flex-1 text-center sm:text-left">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-                    <h1 className="text-2xl font-bold">{profile.full_name}</h1>
+                    <h1 className="text-2xl font-bold">{maskCreatorName(profile.full_name, !!user)}</h1>
                     {getVerificationBadge()}
                     
                     {/* Industry Verified Badge */}
@@ -551,14 +552,17 @@ const ViewProfile = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-6 pt-6 border-t">
-                {/* Unclaimed profile - only show Discover More since claim is in banner */}
-                {isUnclaimedProfile ? (
+                {!user ? (
+                  <Button onClick={() => navigate('/auth')} className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Sign Up to Connect
+                  </Button>
+                ) : isUnclaimedProfile ? (
                   <Button variant="outline" onClick={() => navigate('/circle')} className="gap-2">
                     <Users className="h-4 w-4" />
                     Discover More
                   </Button>
                 ) : isMatched ? (
-                  /* Already matched - show full actions */
                   <>
                     <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
                       <MessageCircle className="h-4 w-4" />
@@ -570,7 +574,6 @@ const ViewProfile = () => {
                     </Button>
                   </>
                 ) : connectionStatus === 'connected' ? (
-                  /* Connected but not matched - allow messaging */
                   <>
                     <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
                       <MessageCircle className="h-4 w-4" />
@@ -582,13 +585,11 @@ const ViewProfile = () => {
                     </Button>
                   </>
                 ) : connectionStatus === 'pending' ? (
-                  /* Pending connection */
                   <Button variant="outline" disabled className="gap-2">
                     <Clock className="h-4 w-4" />
                     Request Pending
                   </Button>
                 ) : (
-                  /* No connection - show connect option */
                   <>
                     <Button 
                       onClick={handleConnect} 

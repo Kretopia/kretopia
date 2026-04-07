@@ -66,6 +66,7 @@ const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 
 const EventPage = lazy(() => import("./pages/EventPage"));
+const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));

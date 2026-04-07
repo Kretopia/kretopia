@@ -445,7 +445,7 @@ export const UnifiedHome = () => {
           {/* Quick actions */}
           <div className="grid grid-cols-4 gap-2 mb-5">
             {[
-              { icon: PlusCircle, label: "Post Gig", action: () => setQuickPostType("gig"), color: "text-success" },
+              { icon: PlusCircle, label: "Post / Hire", action: () => setQuickPostType("gig"), color: "text-success" },
               { icon: Database, label: "Credits", to: "/credits", color: "text-primary" },
               { icon: CalendarDays, label: "Events", action: () => setQuickPostType("event"), color: "text-warning" },
               { icon: Briefcase, label: "Desk", to: "/desk", color: "text-accent" },
@@ -685,22 +685,17 @@ export const UnifiedHome = () => {
           </div>
         </motion.div>
 
-        {/* ── Guest Post CTAs ── */}
+        {/* ── Guest Post CTA ── */}
         {!user && (
-          <div className="grid grid-cols-2 gap-3 mt-6">
-            <button onClick={() => setQuickPostType("gig")} className="rounded-2xl border border-border bg-card p-4 hover:border-success/40 transition-all group text-left">
-              <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center mb-3 group-hover:bg-success/15 transition-colors">
-                <PlusCircle className="h-5 w-5 text-success" />
+          <div className="mt-6">
+            <button onClick={() => setQuickPostType("gig")} className="w-full rounded-2xl border border-border bg-card p-4 hover:border-success/40 transition-all group text-left flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center shrink-0 group-hover:bg-success/15 transition-colors">
+                <PlusCircle className="h-6 w-6 text-success" />
               </div>
-              <p className="text-xs font-bold text-foreground mb-0.5">Post a Gig</p>
-              <p className="text-[10px] text-muted-foreground leading-relaxed">Find verified talent fast</p>
-            </button>
-            <button onClick={() => setQuickPostType("event")} className="rounded-2xl border border-border bg-card p-4 hover:border-primary/40 transition-all group text-left">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/15 transition-colors">
-                <CalendarDays className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm font-bold text-foreground mb-0.5">Post a Gig or Hire Talent</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">Find verified creatives for your next project — casting, music, design & more</p>
               </div>
-              <p className="text-xs font-bold text-foreground mb-0.5">Post an Event</p>
-              <p className="text-[10px] text-muted-foreground leading-relaxed">Host creative meetups</p>
             </button>
           </div>
         )}

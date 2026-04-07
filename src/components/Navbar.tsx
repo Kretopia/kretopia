@@ -351,7 +351,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </Link>
             </>
           ) : null}
-          ) : null}
         </div>
       </div>
       

@@ -484,7 +484,7 @@ export const UnifiedHome = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)}
+                onClick={() => navigate(`/production/${c.id}`)}
                 className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
               >
                 <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">

@@ -66,6 +66,7 @@ const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 
 const EventPage = lazy(() => import("./pages/EventPage"));
+const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
@@ -222,17 +223,17 @@ const AppContent = () => {
             <Route path="/leads" element={<Navigate to="/opportunities" replace />} />
             <Route path="/outreach" element={<Navigate to="/opportunities" replace />} />
             <Route path="/thrive-ai" element={<Navigate to="/circle" replace />} />
-            <Route path="/challenges" element={<Navigate to="/scene" replace />} />
-            <Route path="/challenges/:id" element={<Navigate to="/scene" replace />} />
+            <Route path="/challenges" element={<Navigate to="/" replace />} />
+            <Route path="/challenges/:id" element={<Navigate to="/" replace />} />
             <Route path="/market" element={<Navigate to="/opportunities" replace />} />
             <Route path="/market/:listingId" element={<Navigate to="/opportunities" replace />} />
             <Route path="/talent-manager" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
-            <Route path="/checkin" element={<Navigate to="/scene" replace />} />
+            <Route path="/checkin" element={<Navigate to="/" replace />} />
             
             {/* Public Browsable Routes */}
             <Route path="/nearby" element={<Navigate to="/search" replace />} />
-            <Route path="/events" element={<Scene />} />
-            <Route path="/scene" element={<Scene />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/scene" element={<Navigate to="/" replace />} />
             
             {/* Public Magazine Article - SEO accessible */}
             <Route path="/magazine/:slug" element={<Navigate to="/" replace />} />
@@ -273,7 +274,7 @@ const AppContent = () => {
             <Route path="/manage-opportunities" element={<Navigate to="/desk" replace />} />
             
             {/* Rewards - hidden for now */}
-            <Route path="/rewards" element={<Navigate to="/scene" replace />} />
+            <Route path="/rewards" element={<Navigate to="/" replace />} />
             
             {/* Credit Database & Discover - Public browsable */}
             <Route path="/credits" element={<CreditDatabase />} />
@@ -303,8 +304,8 @@ const AppContent = () => {
             
             {/* Legacy redirects — consolidated */}
             <Route path="/dashboard" element={<Navigate to="/desk" replace />} />
-            <Route path="/spark" element={<Navigate to="/scene" replace />} />
-            <Route path="/cre8" element={<Navigate to="/scene" replace />} />
+            <Route path="/spark" element={<Navigate to="/" replace />} />
+            <Route path="/cre8" element={<Navigate to="/" replace />} />
             <Route path="/marketplace" element={<Navigate to="/opportunities" replace />} />
             
             {/* 404 - Catch all: redirect to main app */}

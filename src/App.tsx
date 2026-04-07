@@ -254,7 +254,7 @@ const AppContent = () => {
             <Route path="/feedback-admin" element={<Navigate to="/admin" replace />} />
 
             {/* Pitch Deck */}
-            <Route path="/deck" element={<PitchDeck />} />
+            <Route path="/deck" element={<Navigate to="/" replace />} />
 
             {/* Legal & Info Pages */}
             <Route path="/terms" element={<Terms />} />
@@ -268,17 +268,17 @@ const AppContent = () => {
             
             {/* Opportunity Management */}
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
-            <Route path="/opportunity-dashboard" element={<ProtectedRoute><OpportunityDashboard /></ProtectedRoute>} />
-            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+            <Route path="/opportunity-dashboard" element={<Navigate to="/desk" replace />} />
+            <Route path="/manage-opportunities" element={<Navigate to="/desk" replace />} />
             
             {/* Rewards - hidden for now */}
             <Route path="/rewards" element={<Navigate to="/scene" replace />} />
             
             {/* Credit Database & Discover - Public browsable */}
             <Route path="/credits" element={<CreditDatabase />} />
-            <Route path="/credits/hub" element={<ICDBHub />} />
+            <Route path="/credits/hub" element={<Navigate to="/credits" replace />} />
             <Route path="/credits/project/:projectId" element={<ICDBProjectPage />} />
-            <Route path="/credits/discover" element={<ICDBDiscovery />} />
+            <Route path="/credits/discover" element={<Navigate to="/credits" replace />} />
             <Route path="/verify-credit" element={<BrandVerify />} />
             <Route path="/directory" element={<Navigate to="/search" replace />} />
             <Route path="/discover" element={<Navigate to="/search" replace />} />

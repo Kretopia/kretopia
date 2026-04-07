@@ -488,9 +488,9 @@ export const UnifiedHome = () => {
                 className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
               >
                 <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
-                  {c.thumbnail_url ? (
+                  {(c.thumbnail_url || c.primary_media_url) ? (
                     <div className="aspect-[3/4] overflow-hidden">
-                      <img src={c.thumbnail_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                      <img src={c.thumbnail_url || c.primary_media_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                     </div>
                   ) : (

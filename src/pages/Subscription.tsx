@@ -378,16 +378,16 @@ export default function Subscription() {
               key={tier.tier}
               className={`relative ${
                 tier.popular
-                  ? isBrand ? "border-emerald-500 shadow-lg scale-105" : "border-primary shadow-lg scale-105"
+                  ? "border-primary shadow-lg scale-105"
                   : tier.tier === "enterprise" || tier.tier === "brand_enterprise"
-                  ? "border-indigo-600/50 shadow-md"
+                  ? "border-primary/50 shadow-md"
                   : isCurrentTier
-                  ? "border-green-500"
+                  ? "border-success"
                   : ""
               }`}
             >
               {tier.popular && !isCurrentTier && (
-                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 ${isBrand ? 'bg-emerald-600' : ''}`}>
+                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2`}>
                   {isBrand ? "Best for Hiring" : "Most Popular"}
                 </Badge>
               )}
@@ -397,7 +397,7 @@ export default function Subscription() {
                 </Badge>
               )}
               {isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-success text-success-foreground">
                   Your Plan
                 </Badge>
               )}
@@ -405,8 +405,8 @@ export default function Subscription() {
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
                   <Icon className={`h-8 w-8 ${
-                    tier.tier === 'pro' || tier.tier === 'brand_pro' ? isBrand ? 'text-emerald-600' : 'text-blue-600' : 
-                    tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-indigo-700' : 
+                    tier.tier === 'pro' || tier.tier === 'brand_pro' ? 'text-primary' : 
+                    tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
                     'text-muted-foreground'
                   }`} />
                   <div className="text-right">
@@ -427,10 +427,7 @@ export default function Subscription() {
                 <ul className="space-y-3">
                   {tier.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                        tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-indigo-600' : 
-                        isBrand ? 'text-emerald-500' : 'text-primary'
-                      }`} />
+                      <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 text-primary`} />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}

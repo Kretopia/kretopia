@@ -648,6 +648,7 @@ export function CreatorBrowseGrid() {
                     onConnect={handleConnect}
                     onMessage={(id) => navigate(`/messages?user=${id}`)}
                     onNavigate={(id) => navigate(`/profile/${id}`)}
+                    isAuthenticated={!!user}
                   />
                 ))}
               </div>
@@ -665,7 +666,7 @@ export function CreatorBrowseGrid() {
                       </Avatar>
                       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/profile/${creator.user_id}`)}>
                         <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold truncate">{creator.full_name}</p>
+                          <p className="text-sm font-semibold truncate">{maskCreatorName(creator.full_name, !!user)}</p>
                           {(creator.badge === 'odos' || creator.badge === 'ODOS') && <Badge variant="secondary" className="text-[9px] h-4">ODOS</Badge>}
                           {creator.verification_status === 'verified' && <ShieldCheck className="h-3 w-3 text-primary" />}
                         </div>
@@ -675,14 +676,16 @@ export function CreatorBrowseGrid() {
                           {(creator.credit_count ?? 0) > 0 && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Award className="h-2.5 w-2.5" /> {creator.credit_count}</span>}
                         </div>
                       </div>
-                      <div className="flex gap-1.5 shrink-0">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate(`/messages?user=${creator.user_id}`)}>
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => handleConnect(creator.user_id)}>
-                          <UserPlus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {user && (
+                        <div className="flex gap-1.5 shrink-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate(`/messages?user=${creator.user_id}`)}>
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => handleConnect(creator.user_id)}>
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}

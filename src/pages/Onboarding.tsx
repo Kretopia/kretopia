@@ -634,7 +634,53 @@ export default function Onboarding() {
                 )}
               </div>
 
-              {/* First credit — compact */}
+              {/* Join Circles — suggested based on role */}
+              {suggestedCircles.length > 0 && (
+                <div className="border border-primary/20 rounded-lg p-4 space-y-3 bg-primary/5">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-medium">Your Circles are waiting 🔥</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Join communities of creatives like you. Collaborate, get gigs, and grow together.
+                  </p>
+                  <div className="space-y-2">
+                    {suggestedCircles.map((circle) => {
+                      const joined = joinedCircleIds.has(circle.id);
+                      const joining = joiningCircleId === circle.id;
+                      return (
+                        <div key={circle.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card hover:border-primary/30 transition-all">
+                          <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-lg">
+                            {circle.icon_emoji || '🎨'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{circle.title}</p>
+                            {circle.description && (
+                              <p className="text-[10px] text-muted-foreground truncate">{circle.description}</p>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={joined ? "outline" : "default"}
+                            className="h-7 text-xs px-3 shrink-0"
+                            disabled={joined || joining}
+                            onClick={() => handleJoinCircle(circle.id)}
+                          >
+                            {joining ? <Loader2 className="h-3 w-3 animate-spin" /> : joined ? '✓ Joined' : 'Join'}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {joinedCircleIds.size > 0 && (
+                    <p className="text-[11px] text-primary font-medium text-center">
+                      🎉 {joinedCircleIds.size} circle{joinedCircleIds.size !== 1 ? 's' : ''} joined — you're already connected!
+                    </p>
+                  )}
+                </div>
+              )}
+
+
               <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />

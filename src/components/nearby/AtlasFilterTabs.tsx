@@ -53,7 +53,7 @@ export function AtlasFilterTabs({ active, onChange, counts }: AtlasFilterTabsPro
   const activeMoreLabel = MORE_TABS.find(t => t.value === active)?.label;
 
   return (
-    <div className="flex gap-1.5 items-center">
+    <div className="flex gap-1.5 items-center whitespace-nowrap min-w-max pb-1">
       {/* Primary quick-access tabs */}
       {PRIMARY_TABS.map(tab => {
         const Icon = tab.icon;

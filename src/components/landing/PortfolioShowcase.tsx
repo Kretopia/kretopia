@@ -72,7 +72,7 @@ export const PortfolioShowcase = () => {
         </p>
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
           See what's being built on{" "}
-          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <span className="text-primary">
             ThriveIN
           </span>
         </h2>

@@ -29,12 +29,13 @@ export interface StatusResult {
 }
 
 const VERIFICATION_POINTS: Record<string, number> = {
-  enterprise: 100,
-  peer: 25,
-  identity: 5,
-  ai: 5,
-  verified: 5,     // generic "verified" (AI or identity confirmed)
-  manual: 1,
+  enterprise: 100,  // Company/brand verified (e.g. Netflix confirms credit)
+  peer: 25,         // Endorsed by a colleague on the platform
+  identity: 5,      // Identity-verified creator
+  ai: 5,            // AI cross-referenced and confirmed
+  verified: 5,      // Generic verified (AI or identity confirmed)
+  imported: 2,      // External source (IMDb, Spotify) — real but unclaimed
+  manual: 1,        // Self-claimed, no verification yet
   pending: 0,
   unverified: 0,
 };
